@@ -1,0 +1,18 @@
+{
+  "extends": "./.svelte-kit/tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "allowImportingTsExtensions": true,
+    "checkJs": true,
+    "moduleResolution": "bundler",
+    "strict": true,
+    "target": "ES2022"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.svelte",
+    "vite.config.ts",
+    "../../*.d.ts"
+  ]
+}
