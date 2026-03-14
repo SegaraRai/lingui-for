@@ -1,8 +1,5 @@
-import { msg } from "lingui-svelte/macro";
-import {
-  createI18n,
-  type MessageDescriptor,
-} from "lingui-svelte/runtime";
+import { msg } from "lingui-for-svelte/macro";
+import { createI18n, type MessageDescriptor } from "lingui-for-svelte/runtime";
 
 import { catalogs, type SupportedLocale } from "./catalogs";
 import { playgroundCopy } from "./messages";

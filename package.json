@@ -1,5 +1,5 @@
 {
-  "name": "lingui-svelte-workspace",
+  "name": "lingui-for-workspace",
   "private": true,
   "workspaces": [
     "examples/*",
@@ -7,11 +7,11 @@
   ],
   "scripts": {
     "build": "pnpm run build:lib && pnpm run build:examples",
-    "build:lib": "pnpm --filter lingui-svelte build",
+    "build:lib": "pnpm --filter lingui-for-svelte build",
     "build:examples": "pnpm --filter e2e-svelte build",
     "check": "pnpm run check:ts && pnpm run check:svelte",
-    "check:svelte": "pnpm --filter lingui-svelte run check:svelte && pnpm --filter e2e-svelte run check:svelte",
-    "check:ts": "pnpm --filter lingui-svelte run check:ts && pnpm --filter e2e-svelte run check:ts",
+    "check:svelte": "pnpm --filter lingui-for-svelte run check:svelte && pnpm --filter e2e-svelte run check:svelte",
+    "check:ts": "pnpm --filter lingui-for-svelte run check:ts && pnpm --filter e2e-svelte run check:ts",
     "dev:e2e-svelte": "pnpm --filter e2e-svelte dev",
     "format": "prettier --write .",
     "test": "pnpm exec vitest run --config vitest.workspace.ts"

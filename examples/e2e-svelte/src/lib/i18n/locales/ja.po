@@ -76,7 +76,7 @@ msgstr "ルート、コンポーネント、素のモジュールで Lingui macr
 #. js-lingui-explicit-id
 #: messages.ts:11
 msgid "kit.app.title"
-msgstr "lingui-svelte の SvelteKit サンプル"
+msgstr "lingui-for-svelte の SvelteKit サンプル"
 
 #. js-lingui-explicit-id
 #: messages.ts:129
@@ -152,7 +152,7 @@ msgstr "route script からのタグ付きテンプレート literal。"
 #. js-lingui-explicit-id
 #: messages.ts:66
 msgid "kit.card.route.body"
-msgstr "lingui-svelte/macro が作った descriptor を route から返し、ページ側で runtime に流しています。"
+msgstr "lingui-for-svelte/macro が作った descriptor を route から返し、ページ側で runtime に流しています。"
 
 #. js-lingui-explicit-id
 #: messages.ts:120

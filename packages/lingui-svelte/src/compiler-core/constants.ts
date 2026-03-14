@@ -1,5 +1,5 @@
-export const MACRO_PACKAGE = "lingui-svelte/macro";
-export const RUNTIME_PACKAGE = "lingui-svelte/runtime";
+export const MACRO_PACKAGE = "lingui-for-svelte/macro";
+export const RUNTIME_PACKAGE = "lingui-for-svelte/runtime";
 export const SYNTHETIC_EXPRESSION_PREFIX = "__lingui_svelte_expr_";
 export const REACTIVE_TRANSLATION_WRAPPER = "__lingui_svelte_reactive_translation__";
 export const DEFAULT_CONTEXT_BINDING = "__l4s_ctx";

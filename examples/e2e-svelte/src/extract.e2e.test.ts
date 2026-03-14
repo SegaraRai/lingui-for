@@ -11,7 +11,7 @@ const localesDir = resolve(exampleDir, "src/lib/i18n/locales");
 
 describe.sequential("lingui cli e2e", () => {
   beforeAll(() => {
-    execSync("pnpm --filter lingui-svelte build", {
+    execSync("pnpm --filter lingui-for-svelte build", {
       cwd: workspaceDir,
       stdio: "inherit",
     });

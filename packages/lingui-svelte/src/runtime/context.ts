@@ -13,12 +13,12 @@ export type LinguiContext = {
 
 function createI18nStore(instance: I18n): Readable<I18n> {
   return readable(instance, (set) => {
-    const update = () => {
+    const update = (): void => {
       set(instance);
     };
 
     instance.on("change", update);
-    return () => {
+    return (): void => {
       instance.removeListener("change", update);
     };
   });

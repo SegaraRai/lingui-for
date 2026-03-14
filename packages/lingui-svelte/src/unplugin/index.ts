@@ -1,25 +1,25 @@
-import type { LinguiConfig } from "@lingui/conf";
-import { createUnplugin } from "unplugin";
+import {
+  createUnplugin,
+  type UnpluginFactory,
+  type UnpluginInstance,
+} from "unplugin";
 
 import {
   isTransformableScript,
   transformJavaScriptMacros,
   transformSvelte,
 } from "../compiler-core/index.ts";
-
-export type LinguiSveltePluginOptions = {
-  linguiConfig?: Partial<LinguiConfig>;
-};
+import type { LinguiSveltePluginOptions } from "./types.ts";
 
 function stripQuery(id: string): string {
   const queryIndex = id.indexOf("?");
   return queryIndex === -1 ? id : id.slice(0, queryIndex);
 }
 
-export const linguiSvelte = createUnplugin<
+export const unpluginFactory: UnpluginFactory<
   LinguiSveltePluginOptions | undefined
->((options) => ({
-  name: "lingui-svelte",
+> = (options) => ({
+  name: "lingui-for-svelte",
   enforce: "pre",
   transform(code, id) {
     const filename = stripQuery(id);
@@ -60,6 +60,10 @@ export const linguiSvelte = createUnplugin<
   vite: {
     enforce: "pre",
   },
-}));
+});
 
-export default linguiSvelte;
+// TODO: Remove type assertion once tsdown builds successfully without it.
+export const unplugin: UnpluginInstance<LinguiSveltePluginOptions | undefined> =
+  /* #__PURE__ */ createUnplugin(unpluginFactory);
+
+export default unplugin;

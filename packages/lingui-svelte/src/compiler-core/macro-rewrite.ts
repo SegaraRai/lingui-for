@@ -40,7 +40,10 @@ function collectMacroLocals(
     }
 
     statement.specifiers.forEach((specifier) => {
-      if (!t.isImportSpecifier(specifier) || !t.isIdentifier(specifier.imported)) {
+      if (
+        !t.isImportSpecifier(specifier) ||
+        !t.isIdentifier(specifier.imported)
+      ) {
         return;
       }
 
@@ -207,7 +210,9 @@ function isRuntimeI18nCall(
 function isInsideSyntheticExpression(
   path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
 ): boolean {
-  const declarator = path.findParent((ancestor) => ancestor.isVariableDeclarator());
+  const declarator = path.findParent((ancestor) =>
+    ancestor.isVariableDeclarator(),
+  );
 
   return (
     declarator?.isVariableDeclarator() === true &&
@@ -247,7 +252,7 @@ function removeRuntimeI18nImports(
 
 export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
   return {
-    name: "lingui-svelte-macro-preprocess",
+    name: "lingui-for-svelte-macro-preprocess",
     pre() {
       Object.assign(this, createInitialState());
     },
@@ -303,7 +308,7 @@ export function createMacroPostprocessPlugin(
   request: ProgramTransformRequest,
 ): PluginObj<MacroRewriteState> {
   return {
-    name: "lingui-svelte-macro-postprocess",
+    name: "lingui-for-svelte-macro-postprocess",
     pre() {
       Object.assign(this, createInitialState());
     },
@@ -333,7 +338,9 @@ export function createMacroPostprocessPlugin(
           isRuntimeI18nCall(path.node, state.runtimeI18nLocals)
         ) {
           if (t.isMemberExpression(path.node.callee)) {
-            path.node.callee.object = t.identifier(request.runtimeBindings.i18n);
+            path.node.callee.object = t.identifier(
+              request.runtimeBindings.i18n,
+            );
           }
         }
 
@@ -365,7 +372,10 @@ export function createMacroPostprocessPlugin(
           return;
         }
 
-        if (request.translationMode === "svelte-context" && request.runtimeBindings) {
+        if (
+          request.translationMode === "svelte-context" &&
+          request.runtimeBindings
+        ) {
           const reactiveCall = t.callExpression(
             t.identifier(`$${request.runtimeBindings.translate}`),
             [t.cloneNode(descriptor)],

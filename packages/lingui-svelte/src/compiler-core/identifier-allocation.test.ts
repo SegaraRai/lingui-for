@@ -7,7 +7,7 @@ describe("createUniqueNameAllocator", () => {
   it("avoids collisions with existing top-level bindings", () => {
     const allocate = createUniqueNameAllocator(
       dedent`
-        import { getLinguiContext } from "lingui-svelte/runtime";
+        import { getLinguiContext } from "lingui-for-svelte/runtime";
 
         const __l4s_ctx = {};
         const __l4s_i18n = {};

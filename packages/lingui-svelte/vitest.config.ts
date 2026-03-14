@@ -5,6 +5,6 @@ export default defineProject({
     environment: "node",
     fileParallelism: false,
     include: ["src/**/*.test.ts"],
-    name: "lingui-svelte",
+    name: "lingui-for-svelte",
   },
 });

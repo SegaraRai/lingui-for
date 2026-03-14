@@ -15,7 +15,7 @@ function collectTopLevelBindings(
   const bindings = new Set<string>();
 
   const plugin: PluginObj<{ bindings: Set<string> }> = {
-    name: "lingui-svelte-collect-bindings",
+    name: "lingui-for-svelte-collect-bindings",
     pre() {
       this.bindings = bindings;
     },

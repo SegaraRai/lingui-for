@@ -10,7 +10,7 @@ import {
   transformJavaScriptMacros,
 } from "../compiler-core/index.ts";
 
-const MACRO_PACKAGE = "lingui-svelte/macro";
+const MACRO_PACKAGE = "lingui-for-svelte/macro";
 
 function getParserPlugins(
   filename: string,

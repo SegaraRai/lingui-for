@@ -76,7 +76,7 @@ msgstr "Lingui macros inside routes, components, and plain modules"
 #. js-lingui-explicit-id
 #: messages.ts:11
 msgid "kit.app.title"
-msgstr "lingui-svelte SvelteKit example"
+msgstr "lingui-for-svelte SvelteKit example"
 
 #. js-lingui-explicit-id
 #: messages.ts:129
@@ -152,7 +152,7 @@ msgstr "Tagged template literal from route script."
 #. js-lingui-explicit-id
 #: messages.ts:66
 msgid "kit.card.route.body"
-msgstr "The route serializes descriptors produced by lingui-svelte/macro and the page renders them with the runtime."
+msgstr "The route serializes descriptors produced by lingui-for-svelte/macro and the page renders them with the runtime."
 
 #. js-lingui-explicit-id
 #: messages.ts:120

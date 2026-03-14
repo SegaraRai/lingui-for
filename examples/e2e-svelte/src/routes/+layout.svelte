@@ -7,8 +7,8 @@
     ensureLocale,
   } from "$lib/i18n/session.svelte";
   import type { SupportedLocale } from "$lib/i18n/session.svelte";
-  import type { MessageDescriptor } from "lingui-svelte/runtime";
-  import { setLinguiContext } from "lingui-svelte/runtime";
+  import type { MessageDescriptor } from "lingui-for-svelte/runtime";
+  import { setLinguiContext } from "lingui-for-svelte/runtime";
 
   let { data, children } = $props();
   setLinguiContext(appI18n);
@@ -43,7 +43,7 @@
 
 <div class="shell">
   <header class="topbar">
-    <a class="brand" href={withLocale("/")}>lingui-svelte</a>
+    <a class="brand" href={withLocale("/")}>lingui-for-svelte</a>
     <nav>
       <a href={withLocale("/")}>{translate(navHome)}</a>
       <a href={withLocale("/playground")}>{translate(navPlayground)}</a>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  //import { t } from "lingui-svelte/macro";
+  import { t } from "lingui-for-svelte/macro";
   import {
     decrementPlayground,
     formatDescriptor,

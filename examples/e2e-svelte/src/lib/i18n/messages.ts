@@ -1,5 +1,5 @@
-import { msg } from "lingui-svelte/macro";
-import type { MessageDescriptor } from "lingui-svelte/runtime";
+import { msg } from "lingui-for-svelte/macro";
+import type { MessageDescriptor } from "lingui-for-svelte/runtime";
 
 export type RouteCardCopy = {
   href: string;
@@ -10,7 +10,7 @@ export type RouteCardCopy = {
 
 export const appTitle = msg({
   id: "kit.app.title",
-  message: "lingui-svelte SvelteKit example",
+  message: "lingui-for-svelte SvelteKit example",
 });
 
 export const rawTaggedDescriptor = msg`Tagged template descriptor from raw TypeScript.`;
@@ -66,7 +66,7 @@ export const routeCards: RouteCardCopy[] = [
     body: msg({
       id: "kit.card.route.body",
       message:
-        "The route serializes descriptors produced by lingui-svelte/macro and the page renders them with the runtime.",
+        "The route serializes descriptors produced by lingui-for-svelte/macro and the page renders them with the runtime.",
     }),
   },
   {

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from "$app/state";
-  import type { MessageDescriptor } from "lingui-svelte/runtime";
+  import type { MessageDescriptor } from "lingui-for-svelte/runtime";
 
   import { formatDescriptor } from "$lib/i18n/session.svelte";
 

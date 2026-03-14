@@ -2,7 +2,7 @@ import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 import { describe, expect, it } from "vitest";
 
 import { normalizeLinguiConfig } from "../compiler-core/config.ts";
-import { jstsExtractor, svelteExtractor } from "./extractor.ts";
+import { jstsExtractor, svelteExtractor } from "./index.ts";
 
 function createExtractorContext(): { linguiConfig: LinguiConfigNormalized } {
   return {
@@ -26,7 +26,7 @@ describe("svelteExtractor", () => {
   it("extracts tagged template literals from svelte sources", async () => {
     const source = [
       '<script lang="ts">',
-      '  import { msg, t } from "lingui-svelte/macro";',
+      '  import { msg, t } from "lingui-for-svelte/macro";',
       "  const descriptor = msg`Tagged descriptor from Svelte`;",
       "  const eager = t`Tagged eager from Svelte`;",
       '  const name = "Ada";',
@@ -66,12 +66,31 @@ describe("svelteExtractor", () => {
       true,
     );
   });
+
+  it("extracts markup-only components without a user-authored script block", async () => {
+    const source = ["<p>{$t`Markup-only extraction`}</p>"].join("\n");
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        svelteExtractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(
+      messages.some((message) => message.message === "Markup-only extraction"),
+    ).toBe(true);
+  });
 });
 
 describe("jstsExtractor", () => {
   it("extracts tagged template literals from plain TypeScript sources", async () => {
     const source = [
-      'import { msg, t } from "lingui-svelte/macro";',
+      'import { msg, t } from "lingui-for-svelte/macro";',
       "const count = 2;",
       'const name = "Ada";',
       "export const descriptor = msg`Tagged descriptor from TypeScript`;",

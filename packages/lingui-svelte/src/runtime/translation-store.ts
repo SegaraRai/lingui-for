@@ -14,7 +14,6 @@ export function createTranslationStore(
   getRawI18n: () => I18n,
 ): TranslationStore {
   const store = ((message: MessageDescriptor) => getRawI18n()._(message)) as TranslationStore;
-
   store.subscribe = (run) =>
     derived(getStore(), (instance) => bindTranslate(instance)).subscribe(run);
 

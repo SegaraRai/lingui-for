@@ -15,7 +15,7 @@ export type { LinguiContext } from "./context.ts";
 
 export type CreateI18nOptions = Parameters<typeof setupI18n>[0];
 
-const LINGUI_CONTEXT = Symbol.for("lingui-svelte.context");
+const LINGUI_CONTEXT = Symbol.for("lingui-for-svelte.context");
 
 export const Trans = TransComponent as Component<{
   message: MessageDescriptor;

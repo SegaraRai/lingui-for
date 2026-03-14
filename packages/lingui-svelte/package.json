@@ -1,5 +1,5 @@
 {
-  "name": "lingui-svelte",
+  "name": "lingui-for-svelte",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/runtime/index.mjs",
@@ -22,6 +22,10 @@
       "svelte": "./dist/runtime/index.mjs",
       "default": "./dist/runtime/index.mjs"
     },
+    "./extractor": {
+      "types": "./dist/extractor/index.d.mts",
+      "default": "./dist/extractor/index.mjs"
+    },
     "./runtime": {
       "types": "./dist/runtime/index.d.mts",
       "svelte": "./dist/runtime/index.mjs",
@@ -35,9 +39,33 @@
       "types": "./dist/unplugin/index.d.mts",
       "default": "./dist/unplugin/index.mjs"
     },
-    "./extractor": {
-      "types": "./dist/extractor/index.d.mts",
-      "default": "./dist/extractor/index.mjs"
+    "./unplugin/types": {
+      "types": "./dist/unplugin/types.d.mts",
+      "default": "./dist/unplugin/types.mjs"
+    },
+    "./unplugin/esbuild": {
+      "types": "./dist/unplugin/esbuild.d.mts",
+      "default": "./dist/unplugin/esbuild.mjs"
+    },
+    "./unplugin/farm": {
+      "types": "./dist/unplugin/farm.d.mts",
+      "default": "./dist/unplugin/farm.mjs"
+    },
+    "./unplugin/rollup": {
+      "types": "./dist/unplugin/rollup.d.mts",
+      "default": "./dist/unplugin/rollup.mjs"
+    },
+    "./unplugin/rspack": {
+      "types": "./dist/unplugin/rspack.d.mts",
+      "default": "./dist/unplugin/rspack.mjs"
+    },
+    "./unplugin/vite": {
+      "types": "./dist/unplugin/vite.d.mts",
+      "default": "./dist/unplugin/vite.mjs"
+    },
+    "./unplugin/webpack": {
+      "types": "./dist/unplugin/webpack.d.mts",
+      "default": "./dist/unplugin/webpack.mjs"
     },
     "./package.json": "./package.json"
   },

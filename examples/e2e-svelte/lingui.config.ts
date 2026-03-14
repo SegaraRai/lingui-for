@@ -1,5 +1,5 @@
 import { defineConfig } from "@lingui/conf";
-import { jstsExtractor, svelteExtractor } from "lingui-svelte/extractor";
+import { jstsExtractor, svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default defineConfig({
   locales: ["en", "ja"],

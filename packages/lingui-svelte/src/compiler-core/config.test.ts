@@ -3,18 +3,15 @@ import { describe, expect, it } from "vitest";
 import { getParserPlugins, normalizeLinguiConfig } from "./config.ts";
 
 describe("normalizeLinguiConfig", () => {
-  it("adds lingui-svelte macro packages and runtime bindings", () => {
+  it("adds lingui-for-svelte macro packages and runtime bindings", () => {
     const config = normalizeLinguiConfig();
     const macro = config.macro!;
 
-    expect(macro.corePackage).toContain("lingui-svelte/macro");
-    expect(macro.jsxPackage).toContain("lingui-svelte/macro");
-    expect(config.runtimeConfigModule.i18n).toEqual([
-      "@lingui/core",
-      "i18n",
-    ]);
+    expect(macro.corePackage).toContain("lingui-for-svelte/macro");
+    expect(macro.jsxPackage).toContain("lingui-for-svelte/macro");
+    expect(config.runtimeConfigModule.i18n).toEqual(["@lingui/core", "i18n"]);
     expect(config.runtimeConfigModule.Trans).toEqual([
-      "lingui-svelte/runtime",
+      "lingui-for-svelte/runtime",
       "Trans",
     ]);
   });
@@ -35,7 +32,7 @@ describe("normalizeLinguiConfig", () => {
       "customI18n",
     ]);
     expect(macro.corePackage).toContain("custom-macro");
-    expect(macro.corePackage).toContain("lingui-svelte/macro");
+    expect(macro.corePackage).toContain("lingui-for-svelte/macro");
   });
 });
 

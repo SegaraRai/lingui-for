@@ -17,7 +17,7 @@ function createReactiveMacro<TMacro extends (...args: never[]) => unknown>(
   return Object.assign(macro as Readable<TMacro> & TMacro, {
     subscribe() {
       throw new Error(
-        `lingui-svelte/macro "${name}" must be compiled before it can be subscribed to.`,
+        `lingui-for-svelte/macro "${name}" must be compiled before it can be subscribed to.`,
       );
     },
   });
@@ -32,5 +32,5 @@ export const selectOrdinal = createReactiveMacro(
 );
 
 console.warn(
-  "lingui-svelte/macro is not meant to be used at runtime. If you see this warning, it means that the macro was not compiled correctly. Please ensure that your build setup is configured to compile lingui-svelte/macro using the appropriate Babel plugin.",
+  "lingui-for-svelte/macro is not meant to be used at runtime. If you see this warning, it means that the macro was not compiled correctly. Please ensure that your build setup is configured to compile lingui-for-svelte/macro using the appropriate Babel plugin.",
 );
