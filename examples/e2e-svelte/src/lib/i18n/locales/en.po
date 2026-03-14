@@ -1,0 +1,170 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-03-12 21:00+0900\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. js-lingui-explicit-id
+#: messages.ts:107
+msgid "kit.playground.eyebrow"
+msgstr ".svelte.ts state"
+
+#. js-lingui-explicit-id
+#: messages.ts:149
+msgid "kit.playground.summary"
+msgstr "{count, plural, one {# queued action for {name}} other {# queued actions for {name}}}"
+
+#. js-lingui-explicit-id
+#: messages.ts:62
+msgid "kit.card.route.title"
+msgstr "+page.ts returns message descriptors"
+
+#. js-lingui-explicit-id
+#: messages.ts:141
+msgid "kit.playground.increment"
+msgstr "Add"
+
+#. js-lingui-explicit-id
+#: messages.ts:74
+msgid "kit.card.component.eyebrow"
+msgstr "Component"
+
+#. js-lingui-explicit-id
+#: messages.ts:82
+msgid "kit.card.component.body"
+msgstr "Components receive descriptors and call the runtime without duplicating extractor logic."
+
+#. js-lingui-explicit-id
+#: messages.ts:133
+msgid "kit.playground.field.count"
+msgstr "Count"
+
+#. js-lingui-explicit-id
+#: messages.ts:29
+msgid "kit.locale.en"
+msgstr "English"
+
+#. js-lingui-explicit-id
+#: messages.ts:137
+msgid "kit.playground.greeting"
+msgstr "Hello {name}!"
+
+#. js-lingui-explicit-id
+#: messages.ts:18
+msgid "kit.nav.home"
+msgstr "Home"
+
+#. js-lingui-explicit-id
+#: messages.ts:33
+msgid "kit.locale.ja"
+msgstr "Japanese"
+
+#. js-lingui-explicit-id
+#: messages.ts:44
+msgid "kit.home.title"
+msgstr "Lingui macros inside routes, components, and plain modules"
+
+#. js-lingui-explicit-id
+#: messages.ts:11
+msgid "kit.app.title"
+msgstr "lingui-svelte SvelteKit example"
+
+#. js-lingui-explicit-id
+#: messages.ts:129
+msgid "kit.playground.field.name"
+msgstr "Name"
+
+#. js-lingui-explicit-id
+#: messages.ts:125
+msgid "kit.playground.routeLink"
+msgstr "Open the playground route"
+
+#. js-lingui-explicit-id
+#: messages.ts:94
+msgid "kit.card.module.title"
+msgstr "Plain TypeScript can define shared copy"
+
+#. js-lingui-explicit-id
+#: messages.ts:23
+msgid "kit.nav.playground"
+msgstr "Playground"
+
+#. js-lingui-explicit-id
+#: messages.ts:90
+msgid "kit.card.module.eyebrow"
+msgstr "Raw .ts"
+
+#. js-lingui-explicit-id
+#: messages.ts:111
+msgid "kit.playground.title"
+msgstr "Reactive state from a .svelte.ts module"
+
+#. js-lingui-explicit-id
+#: messages.ts:98
+msgid "kit.card.module.body"
+msgstr "Regular modules export descriptors and helper metadata for routes and components."
+
+#. js-lingui-explicit-id
+#: messages.ts:145
+msgid "kit.playground.decrement"
+msgstr "Remove"
+
+#. js-lingui-explicit-id
+#: messages.ts:78
+msgid "kit.card.component.title"
+msgstr "Reusable Svelte components stay thin"
+
+#. js-lingui-explicit-id
+#: messages.ts:58
+msgid "kit.card.route.eyebrow"
+msgstr "Route load"
+
+#. js-lingui-explicit-id
+#: messages.ts:40
+msgid "kit.home.eyebrow"
+msgstr "SvelteKit route"
+
+#: session.svelte.ts:61
+msgid "Tagged template descriptor from .svelte.ts state."
+msgstr "Tagged template descriptor from .svelte.ts state."
+
+#: messages.ts:16
+msgid "Tagged template descriptor from raw TypeScript."
+msgstr "Tagged template descriptor from raw TypeScript."
+
+#: src/routes/playground/+page.svelte:53
+msgid "Tagged template literal from markup expression."
+msgstr "Tagged template literal from markup expression."
+
+#: src/routes/playground/+page.svelte:15
+msgid "Tagged template literal from route script."
+msgstr "Tagged template literal from route script."
+
+#. js-lingui-explicit-id
+#: messages.ts:66
+msgid "kit.card.route.body"
+msgstr "The route serializes descriptors produced by lingui-svelte/macro and the page renders them with the runtime."
+
+#. js-lingui-explicit-id
+#: messages.ts:120
+msgid "kit.playground.helper"
+msgstr "The summary above comes from a .svelte.ts file, not directly from the component."
+
+#. js-lingui-explicit-id
+#: messages.ts:48
+msgid "kit.home.body"
+msgstr "This page mixes load functions, component props, raw TypeScript, and .svelte.ts state."
+
+#. js-lingui-explicit-id
+#: messages.ts:115
+msgid "kit.playground.body"
+msgstr "This route uses a rune-backed module to hold client state and translate summaries through Lingui."

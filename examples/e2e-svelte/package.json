@@ -5,20 +5,27 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "svelte-kit sync && vite build",
+    "test:browser": "pnpm run lingui:build && vitest run --config vitest.browser.config.ts",
+    "lingui:extract": "lingui extract --config lingui.config.ts --workers 1 --clean --overwrite",
+    "lingui:compile": "lingui compile --config lingui.config.ts --workers 1 && prettier --write src/lib/i18n/locales",
+    "lingui:build": "pnpm -C ../.. --filter lingui-svelte build && pnpm run lingui:extract && pnpm run lingui:compile",
+    "build": "pnpm run lingui:build && svelte-kit sync && vite build",
     "preview": "node build",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+    "check": "pnpm run lingui:build && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
   },
   "dependencies": {
     "@lingui/core": "^5.9.2",
-    "@lingui/message-utils": "^5.9.2",
     "lingui-svelte": "workspace:*",
     "svelte": "^5.53.10"
   },
   "devDependencies": {
-    "@sveltejs/adapter-node": "^5.3.3",
+    "@lingui/cli": "^5.9.2",
+    "@lingui/conf": "^5.9.2",
+    "@sveltejs/adapter-node": "^5.5.4",
     "@sveltejs/kit": "^2.54.0",
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
+    "@vitest/browser-playwright": "^4.0.18",
+    "playwright": "^1.55.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }

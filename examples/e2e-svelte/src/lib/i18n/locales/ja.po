@@ -1,0 +1,170 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-03-12 21:00+0900\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: ja\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. js-lingui-explicit-id
+#: messages.ts:107
+msgid "kit.playground.eyebrow"
+msgstr ".svelte.ts state"
+
+#. js-lingui-explicit-id
+#: messages.ts:149
+msgid "kit.playground.summary"
+msgstr "{count, plural, one {{name} の待機中アクション # 件} other {{name} の待機中アクション # 件}}"
+
+#. js-lingui-explicit-id
+#: messages.ts:62
+msgid "kit.card.route.title"
+msgstr "+page.ts が message descriptor を返す"
+
+#. js-lingui-explicit-id
+#: messages.ts:141
+msgid "kit.playground.increment"
+msgstr "追加"
+
+#. js-lingui-explicit-id
+#: messages.ts:74
+msgid "kit.card.component.eyebrow"
+msgstr "コンポーネント"
+
+#. js-lingui-explicit-id
+#: messages.ts:82
+msgid "kit.card.component.body"
+msgstr "コンポーネントは descriptor を受け取り、extractor ロジックを重複させずに runtime だけ呼びます。"
+
+#. js-lingui-explicit-id
+#: messages.ts:133
+msgid "kit.playground.field.count"
+msgstr "件数"
+
+#. js-lingui-explicit-id
+#: messages.ts:29
+msgid "kit.locale.en"
+msgstr "英語"
+
+#. js-lingui-explicit-id
+#: messages.ts:137
+msgid "kit.playground.greeting"
+msgstr "{name} さん、こんにちは！"
+
+#. js-lingui-explicit-id
+#: messages.ts:18
+msgid "kit.nav.home"
+msgstr "ホーム"
+
+#. js-lingui-explicit-id
+#: messages.ts:33
+msgid "kit.locale.ja"
+msgstr "日本語"
+
+#. js-lingui-explicit-id
+#: messages.ts:44
+msgid "kit.home.title"
+msgstr "ルート、コンポーネント、素のモジュールで Lingui macro を使う"
+
+#. js-lingui-explicit-id
+#: messages.ts:11
+msgid "kit.app.title"
+msgstr "lingui-svelte の SvelteKit サンプル"
+
+#. js-lingui-explicit-id
+#: messages.ts:129
+msgid "kit.playground.field.name"
+msgstr "名前"
+
+#. js-lingui-explicit-id
+#: messages.ts:125
+msgid "kit.playground.routeLink"
+msgstr "プレイグラウンドへ移動"
+
+#. js-lingui-explicit-id
+#: messages.ts:94
+msgid "kit.card.module.title"
+msgstr "通常の TypeScript で共有 copy を定義できる"
+
+#. js-lingui-explicit-id
+#: messages.ts:23
+msgid "kit.nav.playground"
+msgstr "プレイグラウンド"
+
+#. js-lingui-explicit-id
+#: messages.ts:90
+msgid "kit.card.module.eyebrow"
+msgstr "Raw .ts"
+
+#. js-lingui-explicit-id
+#: messages.ts:111
+msgid "kit.playground.title"
+msgstr ".svelte.ts モジュールの reactive state"
+
+#. js-lingui-explicit-id
+#: messages.ts:98
+msgid "kit.card.module.body"
+msgstr "通常モジュールが descriptor と補助データを export し、route と component がそれを再利用します。"
+
+#. js-lingui-explicit-id
+#: messages.ts:145
+msgid "kit.playground.decrement"
+msgstr "減らす"
+
+#. js-lingui-explicit-id
+#: messages.ts:78
+msgid "kit.card.component.title"
+msgstr "再利用コンポーネントは薄いまま保てる"
+
+#. js-lingui-explicit-id
+#: messages.ts:58
+msgid "kit.card.route.eyebrow"
+msgstr "Route load"
+
+#. js-lingui-explicit-id
+#: messages.ts:40
+msgid "kit.home.eyebrow"
+msgstr "SvelteKit ルート"
+
+#: session.svelte.ts:61
+msgid "Tagged template descriptor from .svelte.ts state."
+msgstr ".svelte.ts state からのタグ付きテンプレート descriptor。"
+
+#: messages.ts:16
+msgid "Tagged template descriptor from raw TypeScript."
+msgstr "通常の TypeScript からのタグ付きテンプレート descriptor。"
+
+#: src/routes/playground/+page.svelte:53
+msgid "Tagged template literal from markup expression."
+msgstr "markup expression からのタグ付きテンプレート literal。"
+
+#: src/routes/playground/+page.svelte:15
+msgid "Tagged template literal from route script."
+msgstr "route script からのタグ付きテンプレート literal。"
+
+#. js-lingui-explicit-id
+#: messages.ts:66
+msgid "kit.card.route.body"
+msgstr "lingui-svelte/macro が作った descriptor を route から返し、ページ側で runtime に流しています。"
+
+#. js-lingui-explicit-id
+#: messages.ts:120
+msgid "kit.playground.helper"
+msgstr "上の summary は component ではなく .svelte.ts ファイルから作っています。"
+
+#. js-lingui-explicit-id
+#: messages.ts:48
+msgid "kit.home.body"
+msgstr "このページは load 関数、コンポーネント props、通常の TypeScript、.svelte.ts の状態管理を混ぜています。"
+
+#. js-lingui-explicit-id
+#: messages.ts:115
+msgid "kit.playground.body"
+msgstr "このルートは rune ベースのモジュールで client state を保持し、その summary を Lingui 経由で翻訳します。"

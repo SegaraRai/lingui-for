@@ -1,23 +1,26 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import { localeLabels } from "$lib/i18n/messages";
-  import {
-    activateLocale,
-    formatDescriptor,
-    localeState,
-    supportedLocales,
-    type SupportedLocale,
-  } from "$lib/i18n/session.svelte";
+  import type { SupportedLocale } from "$lib/i18n/session.svelte";
+  import { formatDescriptor, supportedLocales } from "$lib/i18n/session.svelte";
+
+  let { locale } = $props<{ locale: SupportedLocale }>();
+
+  function buildLocaleHref(locale: string): string {
+    const query = new URLSearchParams(page.url.searchParams);
+    query.set("lang", locale);
+    return `${page.url.pathname}?${query.toString()}`;
+  }
 </script>
 
 <div class="switcher" aria-label="Locale switcher">
-  {#each supportedLocales as locale}
-    <button
-      class:active={localeState.current === locale}
-      onclick={() => activateLocale(locale as SupportedLocale)}
-      type="button"
+  {#each supportedLocales as supportedLocale}
+    <a
+      href={buildLocaleHref(supportedLocale)}
+      class:active={supportedLocale === locale}
     >
-      {formatDescriptor(localeLabels[locale])}
-    </button>
+      {formatDescriptor(localeLabels[supportedLocale])}
+    </a>
   {/each}
 </div>
 
@@ -31,7 +34,9 @@
     border: 1px solid rgba(31, 26, 20, 0.1);
   }
 
-  button {
+  a {
+    display: inline-flex;
+    align-items: center;
     border: 0;
     border-radius: 999px;
     padding: 0.55rem 0.9rem;
@@ -39,9 +44,10 @@
     color: #694729;
     font: inherit;
     cursor: pointer;
+    text-decoration: none;
   }
 
-  button.active {
+  a.active {
     background: #201914;
     color: #fff6ec;
   }

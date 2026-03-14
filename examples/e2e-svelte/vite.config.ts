@@ -1,6 +1,6 @@
+import { sveltekit } from "@sveltejs/kit/vite";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
 
 export default defineConfig(async () => {

@@ -10,6 +10,10 @@ import {
   SYNTHETIC_EXPRESSION_PREFIX,
   SYNTHETIC_MACRO_IMPORT,
 } from "./constants.ts";
+import {
+  createMacroPostprocessPlugin,
+  createMacroPreprocessPlugin,
+} from "./macro-rewrite.ts";
 import { addLineMappings, createOffsetToPosition } from "./source-map.ts";
 import type {
   MarkupExpression,
@@ -27,7 +31,10 @@ export function buildCombinedProgram(
   filename: string,
   script: ScriptBlock | null,
   expressions: readonly MarkupExpression[],
-): { code: string; map: RawSourceMap } {
+): {
+  code: string;
+  map: RawSourceMap;
+} {
   const generator = new SourceMapGenerator({ file: filename });
   const toPosition = createOffsetToPosition(source);
   let code = "";
@@ -81,7 +88,7 @@ export function buildCombinedProgram(
 
   return {
     code,
-    map: generator.toJSON() as RawSourceMap,
+    map: generator.toJSON(),
   };
 }
 
@@ -89,13 +96,34 @@ export function transformProgram(
   code: string,
   request: ProgramTransformRequest,
 ): ProgramTransform {
-  const result = transformSync(code, {
-    ast: true,
+  const preprocessed = transformSync(code, {
+    ast: false,
     babelrc: false,
     code: true,
     configFile: false,
     filename: request.filename,
     inputSourceMap: request.inputSourceMap,
+    parserOpts: {
+      sourceType: "module",
+      plugins: getParserPlugins(request.lang),
+    },
+    plugins: [createMacroPreprocessPlugin()],
+    sourceMaps: true,
+  });
+
+  if (!preprocessed?.code) {
+    throw new Error(`Failed to preprocess ${request.filename}`);
+  }
+
+  const result = transformSync(preprocessed.code, {
+    ast: true,
+    babelrc: false,
+    code: true,
+    configFile: false,
+    filename: request.filename,
+    inputSourceMap:
+      (preprocessed.map as RawSourceMap | null | undefined) ??
+      request.inputSourceMap,
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
@@ -109,6 +137,7 @@ export function transformProgram(
           stripMessageField: request.extract ? false : undefined,
         },
       ],
+      createMacroPostprocessPlugin(request),
     ],
     sourceMaps: true,
   });

@@ -56,5 +56,8 @@
     "magic-string": "^0.30.21",
     "source-map": "^0.7.6",
     "unplugin": "^3.0.0"
+  },
+  "devDependencies": {
+    "dedent": "^1.7.2"
   }
 }

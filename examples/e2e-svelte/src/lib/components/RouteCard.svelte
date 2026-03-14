@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { page } from "$app/state";
   import type { MessageDescriptor } from "lingui-svelte/runtime";
 
   import { formatDescriptor } from "$lib/i18n/session.svelte";
@@ -14,9 +15,14 @@
     title: MessageDescriptor;
     body: MessageDescriptor;
   } = $props();
+
+  function withCurrentLocale(pathname: string): string {
+    const query = new URLSearchParams(page.url.searchParams);
+    return query.size > 0 ? `${pathname}?${query.toString()}` : pathname;
+  }
 </script>
 
-<a class="card" href={href}>
+<a class="card" href={withCurrentLocale(href)}>
   <p class="eyebrow">{formatDescriptor(eyebrow)}</p>
   <h2>{formatDescriptor(title)}</h2>
   <p class="body">{formatDescriptor(body)}</p>

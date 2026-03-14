@@ -1,5 +1,5 @@
-import type { MessageDescriptor } from "lingui-svelte/runtime";
 import { msg } from "lingui-svelte/macro";
+import type { MessageDescriptor } from "lingui-svelte/runtime";
 
 export type RouteCardCopy = {
   href: string;
@@ -133,6 +133,10 @@ export const playgroundCopy = {
   fieldCount: msg({
     id: "kit.playground.field.count",
     message: "Count",
+  }),
+  greeting: msg({
+    id: "kit.playground.greeting",
+    message: "Hello {name}!",
   }),
   increment: msg({
     id: "kit.playground.increment",

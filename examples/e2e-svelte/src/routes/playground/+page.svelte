@@ -3,6 +3,7 @@
   import {
     decrementPlayground,
     formatDescriptor,
+    getPlaygroundGreeting,
     getPlaygroundSummary,
     incrementPlayground,
     playgroundState,
@@ -11,7 +12,9 @@
   } from "$lib/i18n/session.svelte";
 
   let { data } = $props();
-  const taggedScriptCopy = t`Tagged template literal from route script.`;
+  const taggedScriptCopy = $derived(
+    $t`Tagged template literal from route script.`,
+  );
 </script>
 
 <section class="panel">
@@ -45,10 +48,11 @@
   </div>
 
   <p class="summary">{getPlaygroundSummary()}</p>
+  <p class="summary">{getPlaygroundGreeting()}</p>
   <p class="summary">{taggedScriptCopy}</p>
-  <p class="summary">{t`Tagged template literal from markup expression.`}</p>
-  <p class="helper">{formatDescriptor(data.copy.rawTagged)}</p>
-  <p class="helper">{formatDescriptor(stateTaggedDescriptor)}</p>
+  <p class="summary">{$t`Tagged template literal from markup expression.`}</p>
+  <p class="helper">{$t(data.copy.rawTagged)}</p>
+  <p class="helper">{$t(stateTaggedDescriptor)}</p>
   <p class="helper">{formatDescriptor(data.copy.helper)}</p>
 </section>
 

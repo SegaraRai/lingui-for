@@ -1,11 +1,8 @@
 import MagicString from "magic-string";
+import type { RawSourceMap } from "source-map";
 
 import { normalizeLinguiConfig } from "./config.ts";
-import {
-  createScriptFilename,
-  isTransformableScript,
-  stripQuery,
-} from "./paths.ts";
+import { createScriptFilename, stripQuery } from "./paths.ts";
 import {
   buildCombinedProgram,
   splitSyntheticDeclarations,
@@ -20,18 +17,14 @@ import type {
   SvelteTransformResult,
 } from "./types.ts";
 
-function getJavaScriptLang(filename: string): ScriptLang {
-  return filename.endsWith(".ts") || filename.endsWith(".tsx") ? "ts" : "js";
-}
-
-export { isTransformableScript };
-export type { ExtractionUnit, LinguiSvelteTransformOptions };
+export { isTransformableScript } from "./paths.ts";
+export type { ExtractionUnit, LinguiSvelteTransformOptions } from "./types.ts";
 
 export function transformJavaScriptMacros(
   code: string,
   options: LinguiSvelteTransformOptions,
   extract = false,
-): { code: string; map: ReturnType<typeof transformProgram>["map"] } | null {
+): { code: string; map: RawSourceMap | null } | null {
   if (!code.includes("lingui-svelte/macro")) {
     return null;
   }
@@ -42,6 +35,7 @@ export function transformJavaScriptMacros(
     filename,
     lang: getJavaScriptLang(filename),
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
+    translationMode: extract ? "extract" : "raw",
   });
 
   return {
@@ -68,6 +62,7 @@ export function transformSvelte(
       ),
       lang: analysis.module.lang,
       linguiConfig,
+      translationMode: "raw",
       inputSourceMap: buildDirectProgramMap(
         source,
         options.filename,
@@ -99,6 +94,7 @@ export function transformSvelte(
       ),
       lang: analysis.instance?.lang ?? "ts",
       linguiConfig,
+      translationMode: "svelte-store",
       inputSourceMap: combined.map,
     });
     const split = splitSyntheticDeclarations(transformedInstance);
@@ -162,6 +158,7 @@ export function createExtractionUnits(
       ),
       lang: analysis.module.lang,
       linguiConfig,
+      translationMode: "extract",
       inputSourceMap: buildDirectProgramMap(
         source,
         options.filename,
@@ -194,6 +191,7 @@ export function createExtractionUnits(
       ),
       lang: analysis.instance?.lang ?? "ts",
       linguiConfig,
+      translationMode: "extract",
       inputSourceMap: combined.map,
     });
 
@@ -206,4 +204,8 @@ export function createExtractionUnits(
   }
 
   return units;
+}
+
+function getJavaScriptLang(filename: string): ScriptLang {
+  return filename.endsWith(".ts") || filename.endsWith(".tsx") ? "ts" : "js";
 }

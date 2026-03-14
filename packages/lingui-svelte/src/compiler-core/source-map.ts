@@ -69,5 +69,5 @@ export function buildDirectProgramMap(
   addLineMappings(generator, filename, 1, snippet, originalStart, toPosition);
   generator.setSourceContent(filename, source);
 
-  return generator.toJSON() as RawSourceMap;
+  return generator.toJSON();
 }

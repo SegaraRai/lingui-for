@@ -1,32 +1,54 @@
 <script lang="ts">
   import LocaleSwitcher from "$lib/components/LocaleSwitcher.svelte";
   import { appTitle, navHome, navPlayground } from "$lib/i18n/messages";
-  import {
-    ensureLocale,
-    formatDescriptor,
-  } from "$lib/i18n/session.svelte";
+  import { formatDescriptor, ensureLocale } from "$lib/i18n/session.svelte";
+  import type { SupportedLocale } from "$lib/i18n/session.svelte";
+  import type { MessageDescriptor } from "lingui-svelte/runtime";
   import { i18n, setI18nContext } from "lingui-svelte/runtime";
 
+  let { data, children } = $props();
   setI18nContext(i18n);
-  ensureLocale();
+
+  function currentLocale(): SupportedLocale {
+    return data.locale;
+  }
+
+  ensureLocale(currentLocale());
+
+  $effect(() => {
+    ensureLocale(currentLocale());
+  });
+
+  function translate(
+    descriptor: MessageDescriptor,
+    values?: Record<string, unknown>,
+  ): string {
+    return formatDescriptor(descriptor, values);
+  }
+
+  function withLocale(pathname: string): string {
+    const query = new URLSearchParams();
+    query.set("lang", currentLocale());
+    return `${pathname}?${query.toString()}`;
+  }
 </script>
 
 <svelte:head>
-  <title>{formatDescriptor(appTitle)}</title>
+  <title>{translate(appTitle)}</title>
 </svelte:head>
 
 <div class="shell">
   <header class="topbar">
-    <a class="brand" href="/">lingui-svelte</a>
+    <a class="brand" href={withLocale("/")}>lingui-svelte</a>
     <nav>
-      <a href="/">{formatDescriptor(navHome)}</a>
-      <a href="/playground">{formatDescriptor(navPlayground)}</a>
+      <a href={withLocale("/")}>{translate(navHome)}</a>
+      <a href={withLocale("/playground")}>{translate(navPlayground)}</a>
     </nav>
-    <LocaleSwitcher />
+    <LocaleSwitcher locale={currentLocale()} />
   </header>
 
   <main>
-    <slot />
+    {@render children?.()}
   </main>
 </div>
 
@@ -35,7 +57,11 @@
     margin: 0;
     font-family: "IBM Plex Sans", sans-serif;
     background:
-      radial-gradient(circle at top, rgba(255, 214, 153, 0.85), transparent 30%),
+      radial-gradient(
+        circle at top,
+        rgba(255, 214, 153, 0.85),
+        transparent 30%
+      ),
       linear-gradient(180deg, #f5efe6 0%, #e6dece 100%);
     color: #201914;
   }

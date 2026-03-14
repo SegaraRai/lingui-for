@@ -6,7 +6,9 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm -r --if-present build",
+    "build": "pnpm run build:lib && pnpm run build:examples",
+    "build:lib": "pnpm --filter lingui-svelte build",
+    "build:examples": "pnpm --filter e2e-svelte build",
     "check": "pnpm run check:ts && pnpm run check:svelte",
     "check:svelte": "pnpm --filter lingui-svelte build && pnpm exec svelte-check --tsconfig ./packages/lingui-svelte/tsconfig.json && pnpm --filter e2e-svelte exec svelte-kit sync && pnpm --filter e2e-svelte exec svelte-check --tsconfig ./tsconfig.json",
     "check:ts": "pnpm --filter lingui-svelte build && pnpm --filter lingui-svelte exec tsc -p tsconfig.json --noEmit && pnpm --filter e2e-svelte exec svelte-kit sync && pnpm --filter e2e-svelte exec tsc -p tsconfig.json --noEmit",

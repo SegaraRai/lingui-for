@@ -1,4 +1,3 @@
-import { compileMessage } from "@lingui/message-utils/compileMessage";
 import { msg } from "lingui-svelte/macro";
 import {
   i18n,
@@ -11,16 +10,19 @@ import { playgroundCopy } from "./messages";
 
 export type { SupportedLocale } from "./catalogs";
 
-i18n.setMessagesCompiler(compileMessage);
+export const supportedLocales = Object.keys(
+  catalogs,
+) as readonly SupportedLocale[];
 
-export const supportedLocales = Object.keys(catalogs) as SupportedLocale[];
 export const localeState = $state({
   current: "en" as SupportedLocale,
 });
 
 let initialized = false;
 
-export function ensureLocale(locale: SupportedLocale = localeState.current): void {
+export function ensureLocale(
+  locale: SupportedLocale = localeState.current,
+): void {
   if (!initialized || localeState.current !== locale) {
     activateLocale(locale);
   }
@@ -39,15 +41,23 @@ export function formatDescriptor(
   descriptor: MessageDescriptor,
   values?: Record<string, unknown>,
 ): string {
-  return i18n._({
-    ...descriptor,
-    values: {
-      ...(descriptor.values ?? {}),
-      ...(values ?? {}),
+  localeState.current;
+
+  return i18n._(
+    descriptor.id,
+    {
+      ...descriptor.values,
+      ...values,
     },
-  });
+    {
+      message: descriptor.message,
+      comment: descriptor.comment,
+    },
+  );
 }
 
+// `$t(...)` cannot be used in `.svelte.ts` modules because store auto-subscriptions
+// are only available inside `.svelte` component files.
 export const stateTaggedDescriptor = msg`Tagged template descriptor from .svelte.ts state.`;
 
 export const playgroundState = $state({
@@ -70,6 +80,12 @@ export function setPlaygroundName(name: string): void {
 export function getPlaygroundSummary(): string {
   return formatDescriptor(playgroundCopy.summary, {
     count: playgroundState.count,
+    name: playgroundState.name,
+  });
+}
+
+export function getPlaygroundGreeting(): string {
+  return formatDescriptor(playgroundCopy.greeting, {
     name: playgroundState.name,
   });
 }

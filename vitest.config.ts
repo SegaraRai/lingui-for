@@ -5,5 +5,6 @@ export default defineConfig({
     environment: "node",
     fileParallelism: false,
     include: ["packages/**/*.test.ts", "examples/**/*.test.ts"],
+    exclude: ["**/node_modules/**", "examples/**/*.browser.test.ts"],
   },
 });
