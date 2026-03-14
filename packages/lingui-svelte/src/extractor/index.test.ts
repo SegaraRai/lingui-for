@@ -2,7 +2,7 @@ import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 import dedent from "dedent";
 import { describe, expect, it } from "vitest";
 
-import { normalizeLinguiConfig } from "../compiler-core/config.ts";
+import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 import { jstsExtractor, svelteExtractor } from "./index.ts";
 
 function createExtractorContext(): { linguiConfig: LinguiConfigNormalized } {

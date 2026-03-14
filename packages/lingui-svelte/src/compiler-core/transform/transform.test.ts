@@ -5,7 +5,7 @@ import {
   createExtractionUnits,
   transformJavaScriptMacros,
   transformSvelte,
-} from "./transform.ts";
+} from "../transform.ts";
 
 describe("transformJavaScriptMacros", () => {
   it("keeps .svelte.ts eager translations on Lingui core semantics", () => {

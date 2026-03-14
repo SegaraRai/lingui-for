@@ -7,7 +7,7 @@
     mergeRuntimeTransValues,
     toRuntimeTransDescriptor,
     type TransComponentMap,
-  } from "./component-utils";
+  } from "../component-utils";
   import RenderTransNodes from "./RenderTransNodes.svelte";
 
   let {

@@ -1,8 +1,8 @@
 import type { MessageDescriptor } from "@lingui/core";
 import type { Component } from "svelte";
 
-import RuntimeTransComponent from "./RuntimeTrans.svelte";
-import type { TransComponentMap } from "./rich-text.ts";
+import RuntimeTransComponent from "./trans/RuntimeTrans.svelte";
+import type { TransComponentMap } from "./trans/rich-text.ts";
 
 export type {
   I18n,
@@ -15,11 +15,11 @@ export {
   getLinguiContext,
   setLinguiContext,
   type LinguiContext,
-} from "./context.ts";
+} from "./core/context.ts";
 export type {
   TransComponentDescriptor,
   TransComponentMap,
-} from "./rich-text.ts";
+} from "./trans/rich-text.ts";
 
 type RuntimeTransType = Component<{
   id?: string;

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   mergeRuntimeTransValues,
   toRuntimeTransDescriptor,
-} from "./runtime-trans.ts";
+} from "./trans-descriptor.ts";
 
 describe("toRuntimeTransDescriptor", () => {
   it("preserves descriptor inputs", () => {

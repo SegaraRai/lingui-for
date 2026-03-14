@@ -2,12 +2,12 @@ import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
-import { normalizeLinguiConfig } from "../compiler-core/config.ts";
-import type { LinguiSvelteTransformOptions } from "../compiler-core/index.ts";
 import {
   createExtractionUnits,
   isTransformableScript,
+  normalizeLinguiConfig,
   transformJavaScriptMacros,
+  type LinguiSvelteTransformOptions,
 } from "../compiler-core/index.ts";
 
 const MACRO_PACKAGE = "lingui-for-svelte/macro";

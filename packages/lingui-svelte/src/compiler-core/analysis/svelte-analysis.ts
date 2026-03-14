@@ -1,10 +1,10 @@
 import { parse, type AST } from "svelte/compiler";
 
-import { EXPRESSION_KEYS } from "./constants.ts";
+import { EXPRESSION_KEYS } from "../shared/constants.ts";
 import {
   expressionUsesMacroBinding,
   parseMacroBindings,
-} from "./macro-bindings.ts";
+} from "../shared/macro-bindings.ts";
 import type {
   MacroComponent,
   MarkupExpression,
@@ -13,7 +13,7 @@ import type {
   ScriptKind,
   ScriptLang,
   SvelteAnalysis,
-} from "./types.ts";
+} from "../shared/types.ts";
 
 type UnknownRecord = Record<string, unknown>;
 

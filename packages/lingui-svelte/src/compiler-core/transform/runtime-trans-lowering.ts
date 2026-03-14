@@ -1,187 +1,18 @@
-import { transformSync, type PluginItem } from "@babel/core";
 import { generate } from "@babel/generator";
 import * as t from "@babel/types";
-import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
-import { SourceMapGenerator, type RawSourceMap } from "source-map";
 
-import { getParserPlugins } from "./config.ts";
 import {
   RUNTIME_PACKAGE,
   SYNTHETIC_COMPONENT_PREFIX,
   SYNTHETIC_EXPRESSION_PREFIX,
-} from "./constants.ts";
-import {
-  createMacroPostprocessPlugin,
-  createMacroPreprocessPlugin,
-} from "./macro-rewrite.ts";
-import { addLineMappings, createOffsetToPosition } from "./source-map.ts";
-import type {
-  MacroComponent,
-  MarkupExpression,
-  ProgramTransform,
-  ProgramTransformRequest,
-  ScriptBlock,
-} from "./types.ts";
+} from "../shared/constants.ts";
+import type { ProgramTransform } from "../shared/types.ts";
 
-export function buildCombinedProgram(
-  source: string,
-  filename: string,
-  script: ScriptBlock | null,
-  expressions: readonly MarkupExpression[],
-  components: readonly MacroComponent[],
-): {
-  code: string;
-  map: RawSourceMap;
-} {
-  const generator = new SourceMapGenerator({ file: filename });
-  const toPosition = createOffsetToPosition(source);
-  let code = "";
-
-  generator.setSourceContent(filename, source);
-
-  if (script) {
-    const generatedLine = code.split("\n").length;
-    code += script.content;
-    addLineMappings(
-      generator,
-      filename,
-      generatedLine,
-      script.content,
-      script.contentStart,
-      toPosition,
-    );
-
-    if (!code.endsWith("\n")) {
-      code += "\n";
-    }
-  }
-
-  expressions.forEach((expression) => {
-    const generatedLine = code.split("\n").length;
-    const name = `${SYNTHETIC_EXPRESSION_PREFIX}${expression.index}`;
-
-    code += `const ${name} = (\n`;
-    generator.addMapping({
-      generated: { line: generatedLine, column: 0 },
-      original: toPosition(expression.start),
-      source: filename,
-    });
-
-    code += expression.source;
-    addLineMappings(
-      generator,
-      filename,
-      generatedLine + 1,
-      expression.source,
-      expression.start,
-      toPosition,
-    );
-
-    code += "\n);\n";
-  });
-
-  components.forEach((component) => {
-    const generatedLine = code.split("\n").length;
-    const name = `${SYNTHETIC_COMPONENT_PREFIX}${component.index}`;
-
-    code += `const ${name} = (\n`;
-    generator.addMapping({
-      generated: { line: generatedLine, column: 0 },
-      original: toPosition(component.start),
-      source: filename,
-    });
-
-    code += component.source;
-    addLineMappings(
-      generator,
-      filename,
-      generatedLine + 1,
-      component.source,
-      component.start,
-      toPosition,
-    );
-
-    code += "\n);\n";
-  });
-
-  return {
-    code,
-    map: generator.toJSON(),
-  };
-}
-
-export function transformProgram(
-  code: string,
-  request: ProgramTransformRequest,
-): ProgramTransform {
-  const preprocessed = transformSync(code, {
-    ast: false,
-    babelrc: false,
-    code: true,
-    configFile: false,
-    filename: request.filename,
-    inputSourceMap: request.inputSourceMap,
-    parserOpts: {
-      sourceType: "module",
-      plugins: getParserPlugins(request.lang),
-    },
-    plugins: [createMacroPreprocessPlugin()],
-    sourceMaps: true,
-  });
-
-  if (!preprocessed?.code) {
-    throw new Error(`Failed to preprocess ${request.filename}`);
-  }
-
-  const result = transformSync(preprocessed.code, {
-    ast: true,
-    babelrc: false,
-    code: true,
-    configFile: false,
-    filename: request.filename,
-    inputSourceMap:
-      (preprocessed.map as RawSourceMap | null | undefined) ??
-      request.inputSourceMap,
-    parserOpts: {
-      sourceType: "module",
-      plugins: getParserPlugins(request.lang),
-    },
-    plugins: [
-      [
-        linguiMacroPlugin as unknown as PluginItem,
-        {
-          extract: request.extract,
-          linguiConfig: request.linguiConfig,
-          stripMessageField: request.extract ? false : undefined,
-        },
-      ],
-      createMacroPostprocessPlugin(request),
-    ],
-    sourceMaps: true,
-  });
-
-  if (!result?.ast || !result.code) {
-    throw new Error(`Failed to transform ${request.filename}`);
-  }
-
-  return {
-    code: result.code,
-    ast: result.ast,
-    map: (result.map as RawSourceMap | null | undefined) ?? null,
-  };
-}
-
-function createProgramCode(body: t.Statement[]): string {
-  if (body.length === 0) {
-    return "";
-  }
-
-  return generate(t.file(t.program(body, [], "module")), {
-    comments: true,
-    jsescOption: { minimal: true },
-    retainLines: false,
-  }).code;
-}
+const GENERATE_OPTIONS = {
+  comments: true,
+  jsescOption: { minimal: true },
+  retainLines: false,
+} as const;
 
 export function splitSyntheticDeclarations(
   transformed: ProgramTransform,
@@ -220,11 +51,7 @@ export function splitSyntheticDeclarations(
       if (Number.isFinite(index) && declaration.init) {
         expressionReplacements.set(
           index,
-          generate(declaration.init, {
-            comments: true,
-            jsescOption: { minimal: true },
-            retainLines: false,
-          }).code,
+          generate(declaration.init, GENERATE_OPTIONS).code,
         );
         return;
       }
@@ -265,6 +92,14 @@ export function splitSyntheticDeclarations(
     expressionReplacements,
     componentReplacements,
   };
+}
+
+function createProgramCode(body: t.Statement[]): string {
+  if (body.length === 0) {
+    return "";
+  }
+
+  return generate(t.file(t.program(body, [], "module")), GENERATE_OPTIONS).code;
 }
 
 function convertRuntimeTransJsxToSvelte(
@@ -543,12 +378,6 @@ function jsxAttributeValueToExpression(
 
   return value.expression;
 }
-
-const GENERATE_OPTIONS = {
-  comments: true,
-  jsescOption: { minimal: true },
-  retainLines: false,
-} as const;
 
 function getRuntimeTransLocalName(node: t.JSXElement): string | null {
   const name = node.openingElement.name;

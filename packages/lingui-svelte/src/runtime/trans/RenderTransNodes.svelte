@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TransComponentMap, TransRenderNode } from "./component-utils";
+  import type { TransComponentMap, TransRenderNode } from "../component-utils";
   import RenderTransNodes from "./RenderTransNodes.svelte";
 
   let {

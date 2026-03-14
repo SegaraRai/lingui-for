@@ -5,9 +5,9 @@ import {
   REACTIVE_TRANSLATION_WRAPPER,
   RUNTIME_PACKAGE,
   SYNTHETIC_EXPRESSION_PREFIX,
-} from "./constants.ts";
-import { collectMacroImportLocals } from "./macro-bindings.ts";
-import type { ProgramTransformRequest } from "./types.ts";
+} from "../shared/constants.ts";
+import { collectMacroImportLocals } from "../shared/macro-bindings.ts";
+import type { ProgramTransformRequest } from "../shared/types.ts";
 
 type MacroRewriteState = {
   runtimeTImports: Set<string>;
