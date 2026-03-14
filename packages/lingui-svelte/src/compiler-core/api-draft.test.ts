@@ -4,6 +4,37 @@ import { describe, expect, it } from "vitest";
 import { transformJavaScriptMacros, transformSvelte } from "./index.ts";
 
 describe("draft macro api: core semantics", () => {
+  it("keeps .svelte.ts eager translations on Lingui core semantics", () => {
+    const result = transformJavaScriptMacros(
+      dedent`
+        import { t } from "lingui-svelte/macro";
+
+        // .svelte.ts cannot use store auto-subscriptions, so bare t keeps
+        // the same eager semantics as @lingui/core.
+        const name = "Ada";
+        const label = t\`Hello \${name}\`;
+      `,
+      { filename: "/virtual/state.svelte.ts" },
+    );
+
+    expect(result).not.toBeNull();
+    expect(result?.code).toMatchInlineSnapshot(`
+      "// .svelte.ts cannot use store auto-subscriptions, so bare t keeps
+      // the same eager semantics as @lingui/core.
+      import { i18n as _i18n } from "@lingui/core";
+      const name = "Ada";
+      const label = _i18n._(
+      /*i18n*/
+      {
+        id: "OVaF9k",
+        message: "Hello {name}",
+        values: {
+          name: name
+        }
+      });"
+    `);
+  });
+
   it("t tagged templates lower to eager translations with captured values", () => {
     const result = transformJavaScriptMacros(
       dedent`
@@ -234,5 +265,31 @@ describe("draft macro api: svelte usage", () => {
         }
       })}</p>"
     `);
+  });
+
+  it("treats $plural, $select, and $selectOrdinal as reactive string macros", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          import { plural, select, selectOrdinal } from "lingui-svelte/macro";
+
+          let count = $state(2);
+          let gender = $state("female");
+        </script>
+
+        <p>{$plural(count, { one: "# Book", other: "# Books" })}</p>
+        <p>{$select(gender, { female: "she", other: "they" })}</p>
+        <p>{$selectOrdinal(count, { one: "#st", other: "#th" })}</p>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).toContain("const __l4s_translate = __l4s_ctx._;");
+    expect(result.code).toContain("<p>{$__l4s_translate(");
+    expect(result.code).toContain('message: "{count, plural, one {# Book} other {# Books}}"');
+    expect(result.code).toContain('message: "{gender, select, female {she} other {they}}"');
+    expect(result.code).toContain(
+      'message: "{count, selectordinal, one {#st} other {#th}}"',
+    );
   });
 });

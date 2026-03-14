@@ -35,7 +35,7 @@ export const linguiSvelte = createUnplugin<
 
       return {
         code: transformed.code,
-        map: null,
+        map: transformed.map,
       };
     }
 
@@ -51,7 +51,7 @@ export const linguiSvelte = createUnplugin<
 
       return {
         code: transformed.code,
-        map: null,
+        map: transformed.map,
       };
     }
 
