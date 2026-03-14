@@ -4,15 +4,17 @@ export type TransComponentDescriptor =
   | {
       kind: "element";
       tag: string;
-      props?: Record<string, unknown>;
+      props?: Readonly<Record<string, unknown>>;
     }
   | {
       kind: "component";
       component: Component<Record<string, unknown>>;
-      props?: Record<string, unknown>;
+      props?: Readonly<Record<string, unknown>>;
     };
 
-export type TransComponentMap = Record<string, TransComponentDescriptor>;
+export type TransComponentMap = Readonly<
+  Record<string, TransComponentDescriptor>
+>;
 
 export type TransRenderNode =
   | string
@@ -20,7 +22,7 @@ export type TransRenderNode =
       kind: "component";
       key: string;
       name: string;
-      children: TransRenderNode[];
+      children: readonly TransRenderNode[];
     };
 
 export function formatRichTextTranslation(
@@ -39,6 +41,7 @@ function parseNodes(
 ): {
   nodes: TransRenderNode[];
   index: number;
+  closed: boolean;
 } {
   const nodes: TransRenderNode[] = [];
   let cursor = start;
@@ -47,7 +50,11 @@ function parseNodes(
     const tagStart = value.indexOf("<", cursor);
     if (tagStart === -1) {
       pushText(nodes, value.slice(cursor));
-      return { nodes, index: value.length };
+      return {
+        nodes,
+        index: value.length,
+        closed: expectedClosingTag === undefined,
+      };
     }
 
     if (tagStart > cursor) {
@@ -57,7 +64,11 @@ function parseNodes(
     const closing = matchClosingTag(value, tagStart);
     if (closing) {
       if (expectedClosingTag === closing.name) {
-        return { nodes, index: closing.end };
+        return {
+          nodes,
+          index: closing.end,
+          closed: true,
+        };
       }
 
       pushText(nodes, value.slice(tagStart, closing.end));
@@ -97,6 +108,12 @@ function parseNodes(
     );
     const component = components[opening.name];
 
+    if (!parsedChildren.closed) {
+      pushText(nodes, value.slice(tagStart, parsedChildren.index));
+      cursor = parsedChildren.index;
+      continue;
+    }
+
     if (component) {
       const key = allocateStableNodeKey(opening.name, keyCounters);
       nodes.push({
@@ -112,7 +129,11 @@ function parseNodes(
     cursor = parsedChildren.index;
   }
 
-  return { nodes, index: cursor };
+  return {
+    nodes,
+    index: cursor,
+    closed: expectedClosingTag === undefined,
+  };
 }
 
 function allocateStableNodeKey(

@@ -6,7 +6,7 @@
     nodes,
     components,
   }: {
-    nodes: TransRenderNode[];
+    nodes: readonly TransRenderNode[];
     components: TransComponentMap;
   } = $props();
 </script>

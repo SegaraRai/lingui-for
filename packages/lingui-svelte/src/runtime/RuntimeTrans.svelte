@@ -4,6 +4,8 @@
   import {
     formatRichTextTranslation,
     getLinguiContext,
+    mergeRuntimeTransValues,
+    toRuntimeTransDescriptor,
     type TransComponentMap,
   } from "./component-utils";
   import RenderTransNodes from "./RenderTransNodes.svelte";
@@ -16,32 +18,17 @@
   }: {
     id?: string;
     message: MessageDescriptor | string;
-    values?: Record<string, unknown>;
+    values?: Readonly<Record<string, unknown>>;
     components?: TransComponentMap;
   } = $props();
 
   const { _ } = getLinguiContext();
 
-  const descriptor = $derived.by((): MessageDescriptor => {
-    if (typeof message === "string") {
-      return {
-        id: id ?? message,
-        message,
-      };
-    }
-
-    return message;
-  });
-
-  const translated = $derived(
-    $_({
-      ...descriptor,
-      values: {
-        ...(descriptor.values ?? {}),
-        ...values,
-      },
-    }),
+  const descriptor = $derived.by(
+    (): MessageDescriptor => toRuntimeTransDescriptor(message, id),
   );
+
+  const translated = $derived($_(mergeRuntimeTransValues(descriptor, values)));
 
   const richTextNodes = $derived(
     components ? formatRichTextTranslation(translated, components) : [],

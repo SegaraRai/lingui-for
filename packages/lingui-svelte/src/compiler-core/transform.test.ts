@@ -22,6 +22,8 @@ describe("transformJavaScriptMacros", () => {
     );
 
     expect(result).not.toBeNull();
+    expect(result?.code).toContain("/*i18n*/");
+    expect(result?.code).toContain("_i18n._(");
     expect(result?.code).toMatchInlineSnapshot(`
       "// .svelte.ts cannot use store auto-subscriptions, so bare t keeps
       // the same eager semantics as @lingui/core.
@@ -50,6 +52,8 @@ describe("transformJavaScriptMacros", () => {
     );
 
     expect(result).not.toBeNull();
+    expect(result?.code).toContain("/*i18n*/");
+    expect(result?.code).toContain("_i18n._(");
     expect(result?.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
       const label = _i18n._(
@@ -73,6 +77,8 @@ describe("transformJavaScriptMacros", () => {
     );
 
     expect(result).not.toBeNull();
+    expect(result?.code).toContain("/*i18n*/");
+    expect(result?.code).not.toContain("_i18n._(");
     expect(result?.code).toMatchInlineSnapshot(`
       "const name = "Ada";
       const message =
@@ -120,6 +126,8 @@ describe("transformJavaScriptMacros", () => {
     );
 
     expect(result).not.toBeNull();
+    expect(result?.code).toContain("/*i18n*/");
+    expect(result?.code).toContain("_i18n._(");
     expect(result?.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
       const count = 2;
@@ -181,6 +189,8 @@ describe("transformJavaScriptMacros", () => {
     );
 
     expect(result).not.toBeNull();
+    expect(result?.code).toContain("/*i18n*/");
+    expect(result?.code).not.toContain("_i18n._(");
     expect(result?.code).toMatchInlineSnapshot(`
       "const count = 2;
       const name = "Ada";
@@ -257,6 +267,8 @@ describe("transformSvelte", () => {
       filename: "/virtual/App.svelte",
     });
 
+    expect(result.code).toContain("/*i18n*/");
+    expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
       const __l4s_ctx = getLinguiContext();
@@ -296,6 +308,9 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
+    expect(result.code).toContain("/*i18n*/");
+    expect(result.code).not.toContain("_i18n._(");
+    expect(result.code).toContain("$derived($__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
       const __l4s_ctx = getLinguiContext();
@@ -335,6 +350,9 @@ describe("transformSvelte", () => {
       filename: "/virtual/App.svelte",
     });
 
+    expect(result.code).toContain("/*i18n*/");
+    expect(result.code).toContain("_i18n._(");
+    expect(result.code).toContain("$derived($__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
       const __l4s_ctx = getLinguiContext();
@@ -380,6 +398,9 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
+    expect(result.code).toContain("/*i18n*/");
+    expect(result.code).not.toContain("_i18n._(");
+    expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
       const __l4s_ctx = getLinguiContext();
@@ -417,17 +438,46 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
-    expect(result.code).toContain("const __l4s_translate = __l4s_ctx._;");
-    expect(result.code).toContain("<p>{$__l4s_translate(");
-    expect(result.code).toContain(
-      'message: "{count, plural, one {# Book} other {# Books}}"',
-    );
-    expect(result.code).toContain(
-      'message: "{gender, select, female {she} other {they}}"',
-    );
-    expect(result.code).toContain(
-      'message: "{count, selectordinal, one {#st} other {#th}}"',
-    );
+    expect(result.code).toContain("/*i18n*/");
+    expect(result.code).not.toContain("_i18n._(");
+    expect(result.code).toContain("$__l4s_translate(");
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = getLinguiContext();
+      const __l4s_i18n = __l4s_ctx.i18n;
+      const __l4s_translate = __l4s_ctx._;
+      import { i18n as _i18n } from "@lingui/core";
+      let count = $state(2);
+      let gender = $state("female");</script>
+
+      <p>{$__l4s_translate(
+      /*i18n*/
+      {
+        id: "V/M0Vc",
+        message: "{count, plural, one {# Book} other {# Books}}",
+        values: {
+          count: count
+        }
+      })}</p>
+      <p>{$__l4s_translate(
+      /*i18n*/
+      {
+        id: "BGY2VE",
+        message: "{gender, select, female {she} other {they}}",
+        values: {
+          gender: gender
+        }
+      })}</p>
+      <p>{$__l4s_translate(
+      /*i18n*/
+      {
+        id: "0ALwK4",
+        message: "{count, selectordinal, one {#st} other {#th}}",
+        values: {
+          count: count
+        }
+      })}</p>"
+    `);
   });
 
   it("lowers Trans with embedded elements to the runtime RuntimeTrans component", () => {
@@ -442,6 +492,8 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
+    expect(result.code).toContain("<L4sRuntimeTrans");
+    expect(result.code).not.toContain("<Trans");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
       let name = $state("Ada");</script>
@@ -465,6 +517,82 @@ describe("transformSvelte", () => {
     `);
   });
 
+  it("lowers Trans with nested embedded elements and components", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          import DocLink from "./DocLink.svelte";
+
+          let name = $state("Ada");
+        </script>
+
+        <Trans>Read <strong><DocLink href="/docs">{name}</DocLink></strong> carefully.</Trans>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).toContain("<L4sRuntimeTrans");
+    expect(result.code).not.toContain("<Trans");
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+      import DocLink from "./DocLink.svelte";
+      let name = $state("Ada");</script>
+
+      <L4sRuntimeTrans {...{
+        id: "N+nKUg",
+        message: "Read <0><1>{name}</1></0> carefully.",
+        values: {
+          name: name
+        },
+        components: {
+          0: {
+            kind: "element",
+            tag: "strong",
+            props: {}
+          },
+          1: {
+            kind: "component",
+            component: DocLink,
+            props: {
+              href: "/docs"
+            }
+          }
+        }
+      }} />"
+    `);
+  });
+
+  it("injects RuntimeTrans for markup-only Trans components", () => {
+    const result = transformSvelte(
+      dedent`
+        <Trans id="demo.docs">Read the <a href="/docs">docs</a>.</Trans>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).toContain("<L4sRuntimeTrans");
+    expect(result.code).not.toContain("<Trans");
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script>
+      import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+      </script>
+
+      <L4sRuntimeTrans {...{
+        id: "demo.docs",
+        message: "Read the <0>docs</0>.",
+        components: {
+          0: {
+            kind: "element",
+            tag: "a",
+            props: {
+              href: "/docs"
+            }
+          }
+        }
+      }} />"
+    `);
+  });
+
   it("injects a script block for markup-only components", () => {
     const source = dedent`
       <p>{$t\`Hello from markup-only component\`}</p>
@@ -474,6 +602,8 @@ describe("transformSvelte", () => {
       filename: "/virtual/App.svelte",
     });
 
+    expect(result.code).toContain("<script>");
+    expect(result.code).toContain("import ");
     expect(result.code).toMatchInlineSnapshot(`
       "<script>
       import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
@@ -510,13 +640,28 @@ describe("transformSvelte", () => {
       filename: "/virtual/App.svelte",
     });
 
-    expect(result.code).toContain(
-      'import { getLinguiContext as getLinguiContext_1 } from "lingui-for-svelte/runtime";',
-    );
-    expect(result.code).toContain("const __l4s_ctx_1 = getLinguiContext_1();");
-    expect(result.code).toContain("const __l4s_i18n_1 = __l4s_ctx_1.i18n;");
-    expect(result.code).toContain("const __l4s_translate_1 = __l4s_ctx_1._;");
-    expect(result.code).toContain("<p>{$__l4s_translate_1(");
+    expect(result.code).toContain("const __l4s_ctx_1 =");
+    expect(result.code).toContain("const __l4s_i18n_1 =");
+    expect(result.code).toContain("const __l4s_translate_1 =");
+    expect(result.code).toContain("$__l4s_translate_1(");
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script lang="ts">import { getLinguiContext as getLinguiContext_1 } from "lingui-for-svelte/runtime";
+      const __l4s_ctx_1 = getLinguiContext_1();
+      const __l4s_i18n_1 = __l4s_ctx_1.i18n;
+      const __l4s_translate_1 = __l4s_ctx_1._;
+      import { i18n as _i18n } from "@lingui/core";
+      const getLinguiContext = "occupied";
+      const __l4s_ctx = "occupied";
+      const __l4s_i18n = "occupied";
+      const __l4s_translate = "occupied";</script>
+
+      <p>{$__l4s_translate_1(
+      /*i18n*/
+      {
+        id: "uzTaYi",
+        message: "Hello"
+      })}</p>"
+    `);
   });
 });
 
@@ -534,7 +679,9 @@ describe("createExtractionUnits", () => {
       filename: "/virtual/App.svelte",
     });
 
-    expect(units.length).toBeGreaterThan(0);
+    expect(units).toHaveLength(1);
+    expect(units[0]?.code).toContain("/*i18n*/");
+    expect(units[0]?.code).toContain("_i18n._(");
     expect(units[0]?.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
       const __lingui_svelte_expr_0 = _i18n._(
@@ -556,6 +703,8 @@ describe("createExtractionUnits", () => {
     });
 
     expect(units).toHaveLength(1);
+    expect(units[0]?.code).toContain("/*i18n*/");
+    expect(units[0]?.code).toContain("_i18n._(");
     expect(units[0]?.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
       const __lingui_svelte_expr_0 = _i18n._(
@@ -581,6 +730,8 @@ describe("createExtractionUnits", () => {
     });
 
     expect(units).toHaveLength(1);
+    expect(units[0]?.code).toContain("/*i18n*/");
+    expect(units[0]?.code).toContain("<_Trans ");
     expect(units[0]?.code).toMatchInlineSnapshot(`
       "import { RuntimeTrans as _Trans } from "lingui-for-svelte/runtime";
       let name = "Ada";
@@ -594,6 +745,44 @@ describe("createExtractionUnits", () => {
         },
         components: {
           0: <a href="/docs" />
+        }
+      }} />;"
+    `);
+  });
+
+  it("includes nested rich-text components in extraction output", () => {
+    const source = dedent`
+      <script lang="ts">
+        import DocLink from "./DocLink.svelte";
+
+        let name = "Ada";
+      </script>
+
+      <Trans>Read <strong><DocLink href="/docs">{name}</DocLink></strong> carefully.</Trans>
+    `;
+
+    const units = createExtractionUnits(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(units).toHaveLength(1);
+    expect(units[0]?.code).toContain("/*i18n*/");
+    expect(units[0]?.code).toContain("<_Trans ");
+    expect(units[0]?.code).toMatchInlineSnapshot(`
+      "import { RuntimeTrans as _Trans } from "lingui-for-svelte/runtime";
+      import DocLink from "./DocLink.svelte";
+      let name = "Ada";
+      const __lingui_svelte_component_0 = <_Trans {...
+      /*i18n*/
+      {
+        id: "N+nKUg",
+        message: "Read <0><1>{name}</1></0> carefully.",
+        values: {
+          name: name
+        },
+        components: {
+          0: <strong />,
+          1: <DocLink href="/docs" />
         }
       }} />;"
     `);

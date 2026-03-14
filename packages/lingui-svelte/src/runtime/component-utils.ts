@@ -2,4 +2,5 @@
 
 export * from "./context.ts";
 export * from "./rich-text.ts";
+export * from "./runtime-trans.ts";
 export * from "./translation-store.ts";
