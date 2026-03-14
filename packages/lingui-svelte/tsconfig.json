@@ -17,7 +17,6 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.svelte",
-    "src/**/*.d.svelte.ts",
     "scripts/**/*.mjs",
     "tsdown.config.ts",
     "vitest.config.ts",

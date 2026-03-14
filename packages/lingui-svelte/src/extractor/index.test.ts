@@ -147,6 +147,49 @@ describe("svelteExtractor", () => {
       ),
     ).toBe(true);
   });
+
+  it("extracts Plural, Select, and SelectOrdinal component macros", async () => {
+    const source = dedent`
+      <script lang="ts">
+        let count = 2;
+        let gender = "female";
+      </script>
+
+      <Plural value={count} one="# Book" other="# Books" />
+      <Select value={gender} _female="she" other="they" />
+      <SelectOrdinal value={count} one="#st" other="#th" />
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        svelteExtractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(
+      messages.some(
+        (message) =>
+          message.message === "{count, plural, one {# Book} other {# Books}}",
+      ),
+    ).toBe(true);
+    expect(
+      messages.some(
+        (message) =>
+          message.message === "{gender, select, female {she} other {they}}",
+      ),
+    ).toBe(true);
+    expect(
+      messages.some(
+        (message) =>
+          message.message === "{count, selectordinal, one {#st} other {#th}}",
+      ),
+    ).toBe(true);
+  });
 });
 
 describe("jstsExtractor", () => {

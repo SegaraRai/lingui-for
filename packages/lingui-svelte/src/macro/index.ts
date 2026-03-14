@@ -37,6 +37,35 @@ export const Trans = null as unknown as Component<{
   children?: Snippet;
 }>;
 
+export const Plural = null as unknown as Component<{
+  value: number;
+  offset?: number;
+  zero?: string;
+  one?: string;
+  two?: string;
+  few?: string;
+  many?: string;
+  other: string;
+}>;
+
+export const Select = null as unknown as Component<
+  {
+    value: string;
+    other: string;
+  } & Record<string, string>
+>;
+
+export const SelectOrdinal = null as unknown as Component<{
+  value: number;
+  offset?: number;
+  zero?: string;
+  one?: string;
+  two?: string;
+  few?: string;
+  many?: string;
+  other: string;
+}>;
+
 console.warn(
   "lingui-for-svelte/macro is not meant to be used at runtime. If you see this warning, it means that the macro was not compiled correctly. Please ensure that your build setup is configured to compile lingui-for-svelte/macro using the appropriate Babel plugin.",
 );

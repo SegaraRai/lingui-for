@@ -12,8 +12,8 @@
     "build": "pnpm run lingui:build && svelte-kit sync && vite build",
     "preview": "node build",
     "check": "pnpm run check:ts && pnpm run check:svelte",
-    "check:svelte": "pnpm run lingui:build && svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:ts": "pnpm run lingui:build && svelte-kit sync && tsc -p tsconfig.json --noEmit"
+    "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
+    "check:ts": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@lingui/core": "^5.9.3",

@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsdown --config tsdown.config.ts && node ./scripts/copy-trans.mjs",
     "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
-    "check:ts": "pnpm run build && tsc -p tsconfig.json --noEmit"
+    "check:ts": "tsc -p tsconfig.json --noEmit"
   },
   "files": [
     "dist"
@@ -80,6 +80,7 @@
     "@lingui/cli": "^5.9.3",
     "@lingui/conf": "^5.9.3",
     "@lingui/core": "^5.9.3",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@types/babel__core": "^7.20.5",
     "@types/babel__generator": "^7.27.0",
     "@types/node": "^25.5.0",

@@ -1,5 +1,11 @@
 <script lang="ts">
-  import { t, Trans } from "lingui-for-svelte/macro";
+  import {
+    Plural,
+    Select,
+    SelectOrdinal,
+    t,
+    Trans,
+  } from "lingui-for-svelte/macro";
   import { RuntimeTrans } from "lingui-for-svelte";
   import { playgroundCopy, rawTaggedDescriptor } from "$lib/i18n/messages";
   import {
@@ -12,6 +18,9 @@
 
   let { data } = $props();
   const taggedScriptCopy = $t`Tagged template literal from route script.`;
+  const reviewerRole = $derived(
+    playgroundState.count === 1 ? "female" : "other",
+  );
 </script>
 
 <section class="panel">
@@ -66,6 +75,29 @@
       values={{
         name: playgroundState.name,
       }}
+    />
+  </p>
+  <p class="summary component-copy">
+    <Plural
+      value={playgroundState.count}
+      one="# component task is queued"
+      other="# component tasks are queued"
+    />
+  </p>
+  <p class="summary component-copy">
+    <Select
+      value={reviewerRole}
+      _female="She approves the locale switch."
+      other="They approve the locale switch."
+    />
+  </p>
+  <p class="summary component-copy">
+    <SelectOrdinal
+      value={playgroundState.count}
+      one="#st release candidate"
+      two="#nd release candidate"
+      few="#rd release candidate"
+      other="#th release candidate"
     />
   </p>
   <p class="summary">{taggedScriptCopy}</p>

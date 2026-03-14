@@ -13,7 +13,10 @@ describe("analyzeSvelte", () => {
 </script>
 
 <div title={count}>{count + 1}</div>
-<Trans>Hello {count}</Trans>`;
+<Trans>Hello {count}</Trans>
+<Plural value={count} one="# book" other="# books" />
+<Select value={"female"} _female="she" other="they" />
+<SelectOrdinal value={count} one="#st" other="#th" />`;
 
     const analysis = analyzeSvelte(source, "Component.svelte");
 
@@ -26,6 +29,9 @@ describe("analyzeSvelte", () => {
     );
     expect(analysis.components.map((component) => component.name)).toEqual([
       "Trans",
+      "Plural",
+      "Select",
+      "SelectOrdinal",
     ]);
   });
 

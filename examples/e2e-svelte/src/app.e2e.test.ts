@@ -1,4 +1,8 @@
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import {
+  execSync,
+  spawn,
+  type ChildProcessWithoutNullStreams,
+} from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -32,6 +36,11 @@ async function waitForServer(url: string): Promise<void> {
 
 describe.sequential("e2e-svelte application", () => {
   beforeAll(async () => {
+    execSync("pnpm run build", {
+      cwd: exampleDir,
+      stdio: "pipe",
+    });
+
     server = spawn("node", [".sveltekit-build/index.js"], {
       cwd: exampleDir,
       env: {
@@ -51,7 +60,7 @@ describe.sequential("e2e-svelte application", () => {
     });
 
     await waitForServer(`${origin}/playground?lang=en`);
-  }, 90_000);
+  }, 180_000);
 
   afterAll(() => {
     server?.kill();
@@ -69,6 +78,9 @@ describe.sequential("e2e-svelte application", () => {
     expect(html).toContain("Tagged template descriptor from .svelte.ts state.");
     expect(html).toContain("Hello SvelteKit!");
     expect(html).toContain("2 queued actions for SvelteKit");
+    expect(html).toContain("2 component tasks are queued");
+    expect(html).toContain("They approve the locale switch.");
+    expect(html).toContain("2nd release candidate");
     expect(html).toContain("<code>");
     expect(html).toContain("name");
     expect(html).toContain("count");
@@ -107,6 +119,9 @@ describe.sequential("e2e-svelte application", () => {
     );
     expect(html).toContain("SvelteKit さん、こんにちは！");
     expect(html).toContain("SvelteKit の待機中アクション 2 件");
+    expect(html).toContain("component task は 2 件待機中です");
+    expect(html).toContain("ロケール切り替えを承認しました。");
+    expect(html).toContain("第 2 リリース候補");
     expect(html).toContain(
       "Lingui 経由で再レンダーされる様子を確認してください。",
     );

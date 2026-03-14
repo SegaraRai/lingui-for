@@ -8,7 +8,7 @@ export type TransComponentDescriptor =
     }
   | {
       kind: "component";
-      component: Component<Record<string, unknown>>;
+      component: Component<any>;
       props?: Readonly<Record<string, unknown>>;
     };
 

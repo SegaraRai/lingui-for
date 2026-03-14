@@ -593,6 +593,51 @@ describe("transformSvelte", () => {
     `);
   });
 
+  it("lowers Plural, Select, and SelectOrdinal component macros to RuntimeTrans", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          let count = $state(2);
+          let gender = $state("female");
+        </script>
+
+        <Plural value={count} one="# Book" other="# Books" />
+        <Select value={gender} _female="she" other="they" />
+        <SelectOrdinal value={count} one="#st" other="#th" />
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).toContain("<L4sRuntimeTrans");
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+      let count = $state(2);
+      let gender = $state("female");</script>
+
+      <L4sRuntimeTrans {...{
+        id: "V/M0Vc",
+        message: "{count, plural, one {# Book} other {# Books}}",
+        values: {
+          count: count
+        }
+      }} />
+      <L4sRuntimeTrans {...{
+        id: "BGY2VE",
+        message: "{gender, select, female {she} other {they}}",
+        values: {
+          gender: gender
+        }
+      }} />
+      <L4sRuntimeTrans {...{
+        id: "0ALwK4",
+        message: "{count, selectordinal, one {#st} other {#th}}",
+        values: {
+          count: count
+        }
+      }} />"
+    `);
+  });
+
   it("injects a script block for markup-only components", () => {
     const source = dedent`
       <p>{$t\`Hello from markup-only component\`}</p>
@@ -783,6 +828,59 @@ describe("createExtractionUnits", () => {
         components: {
           0: <strong />,
           1: <DocLink href="/docs" />
+        }
+      }} />;"
+    `);
+  });
+
+  it("includes Plural, Select, and SelectOrdinal component macros in extraction output", () => {
+    const source = dedent`
+      <script lang="ts">
+        let count = 2;
+        let gender = "female";
+      </script>
+
+      <Plural value={count} one="# Book" other="# Books" />
+      <Select value={gender} _female="she" other="they" />
+      <SelectOrdinal value={count} one="#st" other="#th" />
+    `;
+
+    const units = createExtractionUnits(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(units).toHaveLength(1);
+    expect(units[0]?.code).toContain("/*i18n*/");
+    expect(units[0]?.code).toContain("<_Trans ");
+    expect(units[0]?.code).toMatchInlineSnapshot(`
+      "import { RuntimeTrans as _Trans } from "lingui-for-svelte/runtime";
+      let count = 2;
+      let gender = "female";
+      const __lingui_svelte_component_0 = <_Trans {...
+      /*i18n*/
+      {
+        id: "V/M0Vc",
+        message: "{count, plural, one {# Book} other {# Books}}",
+        values: {
+          count: count
+        }
+      }} />;
+      const __lingui_svelte_component_1 = <_Trans {...
+      /*i18n*/
+      {
+        id: "BGY2VE",
+        message: "{gender, select, female {she} other {they}}",
+        values: {
+          gender: gender
+        }
+      }} />;
+      const __lingui_svelte_component_2 = <_Trans {...
+      /*i18n*/
+      {
+        id: "0ALwK4",
+        message: "{count, selectordinal, one {#st} other {#th}}",
+        values: {
+          count: count
         }
       }} />;"
     `);

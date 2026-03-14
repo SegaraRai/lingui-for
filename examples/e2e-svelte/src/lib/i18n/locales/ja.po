@@ -18,10 +18,24 @@ msgstr ""
 msgid "kit.playground.eyebrow"
 msgstr ".svelte.ts state"
 
+#. placeholder {0}: playgroundState.count
+#: src/routes/playground/+page.svelte:81
+msgid "{0, plural, one {# component task is queued} other {# component tasks are queued}}"
+msgstr "{0, plural, one {component task は # 件待機中です} other {component task は # 件待機中です}}"
+
+#. placeholder {0}: playgroundState.count
+#: src/routes/playground/+page.svelte:95
+msgid "{0, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
+msgstr "{0, selectordinal, one {第 # リリース候補} two {第 # リリース候補} few {第 # リリース候補} other {第 # リリース候補}}"
+
 #. js-lingui-explicit-id
 #: messages.ts:149
 msgid "kit.playground.summary"
 msgstr "{count, plural, one {{name} の待機中アクション # 件} other {{name} の待機中アクション # 件}}"
+
+#: src/routes/playground/+page.svelte:88
+msgid "{reviewerRole, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
+msgstr "{reviewerRole, select, female {彼女がロケール切り替えを承認しました。} other {ロケール切り替えを承認しました。}}"
 
 #. js-lingui-explicit-id
 #: messages.ts:62
@@ -55,7 +69,7 @@ msgstr "件数"
 
 #. js-lingui-explicit-id
 #. placeholder {0}: playgroundState.name
-#: src/routes/playground/+page.svelte:23
+#: src/routes/playground/+page.svelte:32
 msgid "kit.playground.rich-copy"
 msgstr "<0>name</0> と <1>count</1> を編集して、<2>{0}</2> が Lingui 経由で再レンダーされる様子を確認してください。"
 
@@ -152,11 +166,11 @@ msgstr ".svelte.ts state からのタグ付きテンプレート descriptor。"
 msgid "Tagged template descriptor from raw TypeScript."
 msgstr "通常の TypeScript からのタグ付きテンプレート descriptor。"
 
-#: src/routes/playground/+page.svelte:72
+#: src/routes/playground/+page.svelte:104
 msgid "Tagged template literal from markup expression."
 msgstr "markup expression からのタグ付きテンプレート literal。"
 
-#: src/routes/playground/+page.svelte:14
+#: src/routes/playground/+page.svelte:20
 msgid "Tagged template literal from route script."
 msgstr "route script からのタグ付きテンプレート literal。"
 
