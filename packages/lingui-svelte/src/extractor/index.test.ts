@@ -60,7 +60,9 @@ describe("svelteExtractor", () => {
       ),
     ).toBe(true);
     expect(
-      messages.some((message) => message.message === "Tagged eager from Svelte"),
+      messages.some(
+        (message) => message.message === "Tagged eager from Svelte",
+      ),
     ).toBe(true);
     expect(messages.some((message) => message.message === "Hello {name}")).toBe(
       true,

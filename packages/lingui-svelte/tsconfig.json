@@ -10,12 +10,14 @@
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
+    "allowArbitraryExtensions": true,
     "types": ["node"]
   },
   "include": [
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.svelte",
+    "src/**/*.d.svelte.ts",
     "scripts/**/*.mjs",
     "tsdown.config.ts",
     "vitest.config.ts",

@@ -12,7 +12,7 @@ describe("normalizeLinguiConfig", () => {
     expect(config.runtimeConfigModule.i18n).toEqual(["@lingui/core", "i18n"]);
     expect(config.runtimeConfigModule.Trans).toEqual([
       "lingui-for-svelte/runtime",
-      "Trans",
+      "RuntimeTrans",
     ]);
   });
 

@@ -1,5 +1,5 @@
-import { commands } from "vitest/browser";
 import { describe, expect, test } from "vitest";
+import { commands } from "vitest/browser";
 
 describe("dev hydration", () => {
   test("does not log Lingui locale initialization errors during hydration", async () => {
@@ -13,7 +13,9 @@ describe("dev hydration", () => {
 
     expect(result.bodyText).toContain("プレイグラウンド");
     expect(result.bodyText).toContain("SvelteKit さん、こんにちは！");
-    expect(result.bodyText).toContain("Lingui 経由で再レンダーされる様子を確認してください。");
+    expect(result.bodyText).toContain(
+      "Lingui 経由で再レンダーされる様子を確認してください。",
+    );
     expect(result.errors).toEqual([]);
   });
 });

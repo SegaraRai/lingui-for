@@ -430,7 +430,7 @@ describe("transformSvelte", () => {
     );
   });
 
-  it("lowers Trans with embedded elements to the runtime Trans component", () => {
+  it("lowers Trans with embedded elements to the runtime RuntimeTrans component", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -443,10 +443,10 @@ describe("transformSvelte", () => {
     );
 
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { Trans as L4sTrans } from "lingui-for-svelte/runtime";
+      "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
       let name = $state("Ada");</script>
 
-      <L4sTrans {...{
+      <L4sRuntimeTrans {...{
         id: "demo.docs",
         message: "Read the <0>docs</0>, {name}.",
         values: {
@@ -582,7 +582,7 @@ describe("createExtractionUnits", () => {
 
     expect(units).toHaveLength(1);
     expect(units[0]?.code).toMatchInlineSnapshot(`
-      "import { Trans as _Trans } from "lingui-for-svelte/runtime";
+      "import { RuntimeTrans as _Trans } from "lingui-for-svelte/runtime";
       let name = "Ada";
       const __lingui_svelte_component_0 = <_Trans {...
       /*i18n*/

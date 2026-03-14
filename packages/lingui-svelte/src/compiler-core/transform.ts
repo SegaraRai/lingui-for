@@ -5,7 +5,7 @@ import { normalizeLinguiConfig } from "./config.ts";
 import {
   DEFAULT_CONTEXT_BINDING,
   DEFAULT_I18N_BINDING,
-  DEFAULT_TRANS_COMPONENT_BINDING,
+  DEFAULT_RUNTIME_TRANS_COMPONENT_BINDING,
   DEFAULT_TRANSLATOR_BINDING,
   GET_LINGUI_CONTEXT_EXPORT,
   RUNTIME_PACKAGE,
@@ -57,20 +57,23 @@ export function transformSvelte(
   const analysis = analyzeSvelte(source, options.filename);
   const linguiConfig = normalizeLinguiConfig(options.linguiConfig);
   const string = new MagicString(source);
-  const allocateName = createUniqueNameAllocator(analysis.instance?.content ?? "", {
-    filename: createScriptFilename(
-      options.filename,
-      "instance",
-      analysis.instance?.lang ?? "ts",
-    ),
-    lang: analysis.instance?.lang ?? "ts",
-  });
+  const allocateName = createUniqueNameAllocator(
+    analysis.instance?.content ?? "",
+    {
+      filename: createScriptFilename(
+        options.filename,
+        "instance",
+        analysis.instance?.lang ?? "ts",
+      ),
+      lang: analysis.instance?.lang ?? "ts",
+    },
+  );
   const runtimeBindings = {
     getLinguiContext: allocateName(GET_LINGUI_CONTEXT_EXPORT),
     context: allocateName(DEFAULT_CONTEXT_BINDING),
     i18n: allocateName(DEFAULT_I18N_BINDING),
     translate: allocateName(DEFAULT_TRANSLATOR_BINDING),
-    transComponent: allocateName(DEFAULT_TRANS_COMPONENT_BINDING),
+    transComponent: allocateName(DEFAULT_RUNTIME_TRANS_COMPONENT_BINDING),
   };
 
   if (analysis.module) {
@@ -128,8 +131,12 @@ export function transformSvelte(
       transformedInstance,
       runtimeBindings.transComponent,
     );
-    const expressionsCode = Array.from(split.expressionReplacements.values()).join("\n");
-    const componentsCode = Array.from(split.componentReplacements.values()).join("\n");
+    const expressionsCode = Array.from(
+      split.expressionReplacements.values(),
+    ).join("\n");
+    const componentsCode = Array.from(
+      split.componentReplacements.values(),
+    ).join("\n");
     const needsLinguiContextBindings =
       split.scriptCode.includes(runtimeBindings.i18n) ||
       split.scriptCode.includes(runtimeBindings.translate) ||
@@ -290,7 +297,7 @@ function injectRuntimeBindings(
 
   if (includeLinguiContext && includeTransComponent) {
     prelude.push(
-      `import { Trans as ${runtimeBindings.transComponent}, getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${RUNTIME_PACKAGE}";`,
+      `import { RuntimeTrans as ${runtimeBindings.transComponent}, getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${RUNTIME_PACKAGE}";`,
     );
   } else if (includeLinguiContext) {
     prelude.push(
@@ -298,7 +305,7 @@ function injectRuntimeBindings(
     );
   } else if (includeTransComponent) {
     prelude.push(
-      `import { Trans as ${runtimeBindings.transComponent} } from "${RUNTIME_PACKAGE}";`,
+      `import { RuntimeTrans as ${runtimeBindings.transComponent} } from "${RUNTIME_PACKAGE}";`,
     );
   }
 

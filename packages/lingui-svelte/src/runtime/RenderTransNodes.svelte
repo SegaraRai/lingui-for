@@ -1,6 +1,6 @@
 <script lang="ts">
+  import type { TransComponentMap, TransRenderNode } from "./component-utils";
   import RenderTransNodes from "./RenderTransNodes.svelte";
-  import type { TransComponentMap, TransRenderNode } from "./rich-text";
 
   let {
     nodes,
@@ -19,12 +19,12 @@
     {#if !component}
       <RenderTransNodes nodes={node.children} {components} />
     {:else if component.kind === "element"}
-      <svelte:element this={component.tag} {...component.props ?? {}}>
+      <svelte:element this={component.tag} {...component.props}>
         <RenderTransNodes nodes={node.children} {components} />
       </svelte:element>
     {:else}
       {@const DynamicComponent = component.component}
-      <DynamicComponent {...component.props ?? {}}>
+      <DynamicComponent {...component.props}>
         <RenderTransNodes nodes={node.children} {components} />
       </DynamicComponent>
     {/if}

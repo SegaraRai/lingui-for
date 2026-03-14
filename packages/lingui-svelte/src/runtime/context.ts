@@ -1,10 +1,13 @@
 import type { I18n } from "@lingui/core";
+import { getContext, setContext } from "svelte";
 import { readable, type Readable } from "svelte/store";
 
 import {
   createTranslationStore,
   type TranslationStore,
 } from "./translation-store.ts";
+
+const LINGUI_CONTEXT = Symbol.for("lingui-for-svelte.context");
 
 export type LinguiContext = {
   i18n: I18n;
@@ -24,7 +27,7 @@ function createI18nStore(instance: I18n): Readable<I18n> {
   });
 }
 
-export function createLinguiContext(instance: I18n): LinguiContext {
+function createLinguiContext(instance: I18n): LinguiContext {
   return {
     i18n: instance,
     _: createTranslationStore(
@@ -32,4 +35,14 @@ export function createLinguiContext(instance: I18n): LinguiContext {
       () => instance,
     ),
   };
+}
+
+export function setLinguiContext(instance: I18n): LinguiContext {
+  const context = createLinguiContext(instance);
+  setContext(LINGUI_CONTEXT, context);
+  return context;
+}
+
+export function getLinguiContext(): LinguiContext {
+  return getContext<LinguiContext>(LINGUI_CONTEXT);
 }

@@ -7,7 +7,7 @@ export default defineConfig({
     "extractor/index": "src/extractor/index.ts",
     "macro/index": "src/macro/index.ts",
     "runtime/index": "src/runtime/index.ts",
-    "runtime/rich-text": "src/runtime/rich-text.ts",
+    "runtime/component-utils": "src/runtime/component-utils.ts", // Required for *.svelte files, as tsdown cannot rewrite imports within .svelte files.
     "unplugin/index": "src/unplugin/index.ts",
     "unplugin/types": "src/unplugin/types.ts",
     "unplugin/esbuild": "src/unplugin/esbuild.ts",

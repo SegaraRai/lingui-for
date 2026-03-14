@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const packageDir = resolve(rootDir, "..");
-const runtimeFiles = ["Trans.svelte", "RenderTransNodes.svelte"];
+const runtimeFiles = ["RuntimeTrans.svelte", "RenderTransNodes.svelte"];
 const runtimeDistDir = resolve(packageDir, "dist/runtime");
 
 await mkdir(runtimeDistDir, { recursive: true });

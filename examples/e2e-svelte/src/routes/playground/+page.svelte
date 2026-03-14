@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t, Trans } from "lingui-for-svelte/macro";
-  import { Trans as LinguiTrans } from "lingui-for-svelte";
+  import { RuntimeTrans } from "lingui-for-svelte";
   import { playgroundCopy, rawTaggedDescriptor } from "$lib/i18n/messages";
   import {
     decrementPlayground,
@@ -52,7 +52,7 @@
   </div>
 
   <p class="summary">
-    <LinguiTrans
+    <RuntimeTrans
       message={playgroundCopy.summary}
       values={{
         count: playgroundState.count,
@@ -61,7 +61,7 @@
     />
   </p>
   <p class="summary">
-    <LinguiTrans
+    <RuntimeTrans
       message={playgroundCopy.greeting}
       values={{
         name: playgroundState.name,

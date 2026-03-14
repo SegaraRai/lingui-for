@@ -45,7 +45,10 @@ export function buildCombinedProgram(
 
   generator.setSourceContent(filename, source);
 
-  if (!isMacroImportPresent(script) && (expressions.length > 0 || components.length > 0)) {
+  if (
+    !isMacroImportPresent(script) &&
+    (expressions.length > 0 || components.length > 0)
+  ) {
     code += SYNTHETIC_MACRO_IMPORT;
   }
 
@@ -195,7 +198,7 @@ function createProgramCode(body: t.Statement[]): string {
 
 export function splitSyntheticDeclarations(
   transformed: ProgramTransform,
-  runtimeTransComponentName = "L4sTrans",
+  runtimeTransComponentName = "L4sRuntimeTrans",
 ): {
   scriptCode: string;
   expressionReplacements: Map<number, string>;
@@ -245,7 +248,11 @@ export function splitSyntheticDeclarations(
         declaration.id.name.slice(SYNTHETIC_COMPONENT_PREFIX.length),
       );
 
-      if (Number.isFinite(index) && declaration.init && t.isJSXElement(declaration.init)) {
+      if (
+        Number.isFinite(index) &&
+        declaration.init &&
+        t.isJSXElement(declaration.init)
+      ) {
         const runtimeTransLocal = getRuntimeTransLocalName(declaration.init);
         if (runtimeTransLocal) {
           runtimeTransLocalsToRemove.add(runtimeTransLocal);
@@ -293,7 +300,9 @@ function convertRuntimeTransAttribute(
   }
 
   if (!t.isJSXIdentifier(attribute.name)) {
-    throw new Error("Unsupported namespaced JSX attribute in runtime Trans lowering");
+    throw new Error(
+      "Unsupported namespaced JSX attribute in runtime Trans lowering",
+    );
   }
 
   const name = attribute.name.name;
@@ -306,7 +315,9 @@ function convertRuntimeTransAttribute(
   return ` ${name}={${generate(expression, GENERATE_OPTIONS).code}}`;
 }
 
-function convertRuntimeTransSpreadArgument(argument: t.Expression): t.Expression {
+function convertRuntimeTransSpreadArgument(
+  argument: t.Expression,
+): t.Expression {
   if (!t.isObjectExpression(argument)) {
     return argument;
   }
@@ -318,7 +329,9 @@ function convertRuntimeTransSpreadArgument(argument: t.Expression): t.Expression
       }
 
       if (!t.isObjectProperty(property)) {
-        throw new Error("Unsupported object method in runtime Trans spread props");
+        throw new Error(
+          "Unsupported object method in runtime Trans spread props",
+        );
       }
 
       if (getObjectPropertyName(property.key) === "components") {
@@ -345,7 +358,9 @@ function convertRuntimeTransAttributeValue(
   }
 
   if (!t.isJSXExpressionContainer(value)) {
-    throw new Error(`Unsupported JSX attribute value for runtime Trans prop "${name}"`);
+    throw new Error(
+      `Unsupported JSX attribute value for runtime Trans prop "${name}"`,
+    );
   }
 
   if (name === "components") {
@@ -353,7 +368,9 @@ function convertRuntimeTransAttributeValue(
   }
 
   if (!t.isExpression(value.expression)) {
-    throw new Error(`Unsupported JSX expression value for runtime Trans prop "${name}"`);
+    throw new Error(
+      `Unsupported JSX expression value for runtime Trans prop "${name}"`,
+    );
   }
 
   return value.expression;
@@ -363,7 +380,9 @@ function convertComponentsExpression(
   expression: t.Expression | t.JSXEmptyExpression,
 ): t.Expression {
   if (!t.isObjectExpression(expression)) {
-    throw new Error("Runtime Trans components must lower from an object expression");
+    throw new Error(
+      "Runtime Trans components must lower from an object expression",
+    );
   }
 
   return t.objectExpression(
@@ -373,7 +392,9 @@ function convertComponentsExpression(
       }
 
       if (!t.isObjectProperty(property)) {
-        throw new Error("Unsupported object method in runtime Trans components");
+        throw new Error(
+          "Unsupported object method in runtime Trans components",
+        );
       }
 
       return t.objectProperty(
@@ -411,7 +432,9 @@ function convertRichTextComponentValue(
   }
 
   if (t.isJSXFragment(value)) {
-    throw new Error("JSX fragments are not supported in Trans embedded components");
+    throw new Error(
+      "JSX fragments are not supported in Trans embedded components",
+    );
   }
 
   if (!t.isExpression(value)) {
@@ -421,7 +444,9 @@ function convertRichTextComponentValue(
   return value;
 }
 
-function convertJsxElementDescriptor(element: t.JSXElement): t.ObjectExpression {
+function convertJsxElementDescriptor(
+  element: t.JSXElement,
+): t.ObjectExpression {
   const tagName = getJsxTagName(element.openingElement.name);
   const props = convertJsxAttributesToObject(element.openingElement.attributes);
 
@@ -446,7 +471,9 @@ function getJsxTagName(
   | { kind: "element"; name: string }
   | { kind: "component"; expression: t.Expression } {
   if (t.isJSXNamespacedName(name)) {
-    throw new Error("JSX namespaced elements are not supported in Trans embedded components");
+    throw new Error(
+      "JSX namespaced elements are not supported in Trans embedded components",
+    );
   }
 
   if (t.isJSXIdentifier(name)) {
@@ -469,7 +496,9 @@ function getJsxTagName(
   };
 }
 
-function convertJsxMemberExpression(expression: t.JSXMemberExpression): t.Expression {
+function convertJsxMemberExpression(
+  expression: t.JSXMemberExpression,
+): t.Expression {
   const object = t.isJSXIdentifier(expression.object)
     ? t.identifier(expression.object.name)
     : convertJsxMemberExpression(expression.object);
@@ -487,14 +516,19 @@ function convertJsxAttributesToObject(
       }
 
       if (!t.isJSXIdentifier(attribute.name)) {
-        throw new Error("Unsupported namespaced JSX attribute in Trans embedded components");
+        throw new Error(
+          "Unsupported namespaced JSX attribute in Trans embedded components",
+        );
       }
 
       const key = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(attribute.name.name)
         ? t.identifier(attribute.name.name)
         : t.stringLiteral(attribute.name.name);
 
-      return t.objectProperty(key, jsxAttributeValueToExpression(attribute.value));
+      return t.objectProperty(
+        key,
+        jsxAttributeValueToExpression(attribute.value),
+      );
     }),
   );
 }
@@ -515,7 +549,9 @@ function jsxAttributeValueToExpression(
   }
 
   if (!t.isJSXExpressionContainer(value) || !t.isExpression(value.expression)) {
-    throw new Error("Unsupported JSX attribute value in Trans embedded components");
+    throw new Error(
+      "Unsupported JSX attribute value in Trans embedded components",
+    );
   }
 
   return value.expression;
@@ -551,7 +587,7 @@ function removeRuntimeTransImports(
     statement.specifiers = statement.specifiers.filter((specifier) => {
       return !(
         t.isImportSpecifier(specifier) &&
-        t.isIdentifier(specifier.imported, { name: "Trans" }) &&
+        t.isIdentifier(specifier.imported, { name: "RuntimeTrans" }) &&
         runtimeTransLocalsToRemove.has(specifier.local.name)
       );
     });

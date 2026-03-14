@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { MessageDescriptor } from "@lingui/core";
 
-  import { getLinguiContext } from "./index";
-  import RenderTransNodes from "./RenderTransNodes.svelte";
   import {
     formatRichTextTranslation,
+    getLinguiContext,
     type TransComponentMap,
-  } from "./rich-text";
+  } from "./component-utils";
+  import RenderTransNodes from "./RenderTransNodes.svelte";
 
   let {
     id,

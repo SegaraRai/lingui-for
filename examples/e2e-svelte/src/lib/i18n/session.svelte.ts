@@ -1,5 +1,5 @@
+import { setupI18n } from "@lingui/core";
 import { msg } from "lingui-for-svelte/macro";
-import { createI18n } from "lingui-for-svelte/runtime";
 
 import { catalogs, type SupportedLocale } from "./catalogs";
 
@@ -9,7 +9,7 @@ export const supportedLocales = Object.keys(
   catalogs,
 ) as readonly SupportedLocale[];
 
-export const appI18n = createI18n();
+export const appI18n = setupI18n();
 
 export const localeState = $state({
   current: "en" as SupportedLocale,
