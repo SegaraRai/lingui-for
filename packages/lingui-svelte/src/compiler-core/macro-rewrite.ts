@@ -3,25 +3,33 @@ import * as t from "@babel/types";
 
 import {
   MACRO_PACKAGE,
-  REACTIVE_T_WRAPPER,
+  REACTIVE_TRANSLATION_WRAPPER,
   RUNTIME_PACKAGE,
+  SYNTHETIC_EXPRESSION_PREFIX,
 } from "./constants.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 
 type MacroRewriteState = {
   runtimeTImports: Set<string>;
   tLocals: Set<string>;
+  reactiveStringLocals: Set<string>;
+  runtimeI18nLocals: Set<string>;
 };
 
 function createInitialState(): MacroRewriteState {
   return {
     runtimeTImports: new Set<string>(),
     tLocals: new Set<string>(),
+    reactiveStringLocals: new Set<string>(),
+    runtimeI18nLocals: new Set<string>(),
   };
 }
 
-function collectTLocals(program: t.Program): Set<string> {
-  const tLocals = new Set<string>();
+function collectMacroLocals(
+  program: t.Program,
+  importedNames: readonly string[],
+): Set<string> {
+  const locals = new Set<string>();
 
   program.body.forEach((statement) => {
     if (
@@ -32,27 +40,52 @@ function collectTLocals(program: t.Program): Set<string> {
     }
 
     statement.specifiers.forEach((specifier) => {
-      if (
-        t.isImportSpecifier(specifier) &&
-        t.isIdentifier(specifier.imported, { name: "t" })
-      ) {
-        tLocals.add(specifier.local.name);
+      if (!t.isImportSpecifier(specifier) || !t.isIdentifier(specifier.imported)) {
+        return;
+      }
+
+      if (importedNames.includes(specifier.imported.name)) {
+        locals.add(specifier.local.name);
       }
     });
   });
 
-  return tLocals;
+  return locals;
+}
+
+function collectRuntimeI18nLocals(program: t.Program): Set<string> {
+  const locals = new Set<string>();
+
+  program.body.forEach((statement) => {
+    if (
+      !t.isImportDeclaration(statement) ||
+      statement.source.value !== RUNTIME_PACKAGE
+    ) {
+      return;
+    }
+
+    statement.specifiers.forEach((specifier) => {
+      if (
+        t.isImportSpecifier(specifier) &&
+        t.isIdentifier(specifier.imported, { name: "i18n" })
+      ) {
+        locals.add(specifier.local.name);
+      }
+    });
+  });
+
+  return locals;
 }
 
 function getReactiveLocalName(
   expression: t.Expression | t.V8IntrinsicIdentifier,
-  tLocals: ReadonlySet<string>,
+  reactiveStringLocals: ReadonlySet<string>,
 ): string | null {
   if (!t.isIdentifier(expression)) {
     return null;
   }
 
-  for (const localName of tLocals) {
+  for (const localName of reactiveStringLocals) {
     if (expression.name === `$${localName}`) {
       return localName;
     }
@@ -61,28 +94,14 @@ function getReactiveLocalName(
   return null;
 }
 
-function isRawTranslation(
-  expression: t.Expression | t.V8IntrinsicIdentifier,
-  tLocals: ReadonlySet<string>,
-): boolean {
-  if (
-    !t.isMemberExpression(expression) ||
-    expression.computed ||
-    !t.isIdentifier(expression.property, { name: "raw" }) ||
-    !t.isIdentifier(expression.object)
-  ) {
-    return false;
-  }
-
-  return tLocals.has(expression.object.name);
-}
-
 function isWrappedReactiveCall(
   path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
 ): boolean {
   return (
     path.parentPath.isCallExpression() &&
-    t.isIdentifier(path.parentPath.node.callee, { name: REACTIVE_T_WRAPPER }) &&
+    t.isIdentifier(path.parentPath.node.callee, {
+      name: REACTIVE_TRANSLATION_WRAPPER,
+    }) &&
     path.parentPath.node.arguments[0] === path.node
   );
 }
@@ -95,7 +114,7 @@ function wrapReactiveTranslation(
     ? t.callExpression(t.identifier(localName), node.arguments)
     : t.taggedTemplateExpression(t.identifier(localName), node.quasi);
 
-  return t.callExpression(t.identifier(REACTIVE_T_WRAPPER), [
+  return t.callExpression(t.identifier(REACTIVE_TRANSLATION_WRAPPER), [
     inner,
     t.stringLiteral(localName),
   ]);
@@ -172,6 +191,60 @@ function ensureRuntimeTImport(program: t.Program, localName: string): void {
   program.body.splice(firstImportIndex, 0, importDeclaration);
 }
 
+function isRuntimeI18nCall(
+  node: t.CallExpression,
+  runtimeI18nLocals: ReadonlySet<string>,
+): boolean {
+  return (
+    t.isMemberExpression(node.callee) &&
+    !node.callee.computed &&
+    t.isIdentifier(node.callee.object) &&
+    runtimeI18nLocals.has(node.callee.object.name) &&
+    t.isIdentifier(node.callee.property, { name: "_" })
+  );
+}
+
+function isInsideSyntheticExpression(
+  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
+): boolean {
+  const declarator = path.findParent((ancestor) => ancestor.isVariableDeclarator());
+
+  return (
+    declarator?.isVariableDeclarator() === true &&
+    t.isIdentifier(declarator.node.id) &&
+    declarator.node.id.name.startsWith(SYNTHETIC_EXPRESSION_PREFIX)
+  );
+}
+
+function removeRuntimeI18nImports(
+  program: t.Program,
+  runtimeI18nLocals: ReadonlySet<string>,
+): void {
+  if (runtimeI18nLocals.size === 0) {
+    return;
+  }
+
+  program.body = program.body.flatMap((statement) => {
+    if (
+      !t.isImportDeclaration(statement) ||
+      statement.source.value !== RUNTIME_PACKAGE
+    ) {
+      return [statement];
+    }
+
+    statement.specifiers = statement.specifiers.filter((specifier) => {
+      return !(
+        t.isImportSpecifier(specifier) &&
+        t.isIdentifier(specifier.imported, { name: "i18n" }) &&
+        t.isIdentifier(specifier.local) &&
+        runtimeI18nLocals.has(specifier.local.name)
+      );
+    });
+
+    return statement.specifiers.length > 0 ? [statement] : [];
+  });
+}
+
 export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
   return {
     name: "lingui-svelte-macro-preprocess",
@@ -181,7 +254,13 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
     visitor: {
       Program: {
         enter(path, state) {
-          state.tLocals = collectTLocals(path.node);
+          state.tLocals = collectMacroLocals(path.node, ["t"]);
+          state.reactiveStringLocals = collectMacroLocals(path.node, [
+            "t",
+            "plural",
+            "select",
+            "selectOrdinal",
+          ]);
         },
       },
       CallExpression(path, state) {
@@ -189,15 +268,10 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
           return;
         }
 
-        if (isRawTranslation(path.node.callee, state.tLocals)) {
-          const callee = path.node.callee;
-          if (t.isMemberExpression(callee) && t.isIdentifier(callee.object)) {
-            path.get("callee").replaceWith(t.identifier(callee.object.name));
-          }
-          return;
-        }
-
-        const localName = getReactiveLocalName(path.node.callee, state.tLocals);
+        const localName = getReactiveLocalName(
+          path.node.callee,
+          state.reactiveStringLocals,
+        );
         if (!localName) {
           return;
         }
@@ -210,15 +284,10 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
           return;
         }
 
-        if (isRawTranslation(path.node.tag, state.tLocals)) {
-          const tag = path.node.tag;
-          if (t.isMemberExpression(tag) && t.isIdentifier(tag.object)) {
-            path.get("tag").replaceWith(t.identifier(tag.object.name));
-          }
-          return;
-        }
-
-        const localName = getReactiveLocalName(path.node.tag, state.tLocals);
+        const localName = getReactiveLocalName(
+          path.node.tag,
+          state.reactiveStringLocals,
+        );
         if (!localName) {
           return;
         }
@@ -239,8 +308,40 @@ export function createMacroPostprocessPlugin(
       Object.assign(this, createInitialState());
     },
     visitor: {
+      Program: {
+        enter(path, state) {
+          state.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
+        },
+        exit(path, state) {
+          if (request.translationMode === "svelte-context") {
+            removeRuntimeI18nImports(path.node, state.runtimeI18nLocals);
+          }
+
+          if (request.translationMode === "extract") {
+            return;
+          }
+
+          state.runtimeTImports.forEach((localName) => {
+            ensureRuntimeTImport(path.node, localName);
+          });
+        },
+      },
       CallExpression(path, state) {
-        if (!t.isIdentifier(path.node.callee, { name: REACTIVE_T_WRAPPER })) {
+        if (
+          request.translationMode === "svelte-context" &&
+          request.runtimeBindings &&
+          isRuntimeI18nCall(path.node, state.runtimeI18nLocals)
+        ) {
+          if (t.isMemberExpression(path.node.callee)) {
+            path.node.callee.object = t.identifier(request.runtimeBindings.i18n);
+          }
+        }
+
+        if (
+          !t.isIdentifier(path.node.callee, {
+            name: REACTIVE_TRANSLATION_WRAPPER,
+          })
+        ) {
           return;
         }
 
@@ -264,34 +365,25 @@ export function createMacroPostprocessPlugin(
           return;
         }
 
-        state.runtimeTImports.add(localName);
+        if (request.translationMode === "svelte-context" && request.runtimeBindings) {
+          const reactiveCall = t.callExpression(
+            t.identifier(`$${request.runtimeBindings.translate}`),
+            [t.cloneNode(descriptor)],
+          );
 
-        if (request.translationMode === "svelte-store") {
           path.replaceWith(
-            t.callExpression(t.identifier(`$${localName}`), [
-              t.cloneNode(descriptor),
-            ]),
+            isInsideSyntheticExpression(path)
+              ? reactiveCall
+              : t.callExpression(t.identifier("$derived"), [reactiveCall]),
           );
           return;
         }
 
-        path.replaceWith(
-          t.callExpression(
-            t.memberExpression(t.identifier(localName), t.identifier("raw")),
-            [t.cloneNode(descriptor)],
-          ),
-        );
-      },
-      Program: {
-        exit(path, state) {
-          if (request.translationMode === "extract") {
-            return;
-          }
+        state.runtimeTImports.add(localName);
 
-          state.runtimeTImports.forEach((localName) => {
-            ensureRuntimeTImport(path.node, localName);
-          });
-        },
+        path.replaceWith(
+          t.callExpression(t.identifier(localName), [t.cloneNode(descriptor)]),
+        );
       },
     },
   };

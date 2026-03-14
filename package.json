@@ -10,23 +10,17 @@
     "build:lib": "pnpm --filter lingui-svelte build",
     "build:examples": "pnpm --filter e2e-svelte build",
     "check": "pnpm run check:ts && pnpm run check:svelte",
-    "check:svelte": "pnpm --filter lingui-svelte build && pnpm exec svelte-check --tsconfig ./packages/lingui-svelte/tsconfig.json && pnpm --filter e2e-svelte exec svelte-kit sync && pnpm --filter e2e-svelte exec svelte-check --tsconfig ./tsconfig.json",
-    "check:ts": "pnpm --filter lingui-svelte build && pnpm --filter lingui-svelte exec tsc -p tsconfig.json --noEmit && pnpm --filter e2e-svelte exec svelte-kit sync && pnpm --filter e2e-svelte exec tsc -p tsconfig.json --noEmit",
+    "check:svelte": "pnpm --filter lingui-svelte run check:svelte && pnpm --filter e2e-svelte run check:svelte",
+    "check:ts": "pnpm --filter lingui-svelte run check:ts && pnpm --filter e2e-svelte run check:ts",
     "dev:e2e-svelte": "pnpm --filter e2e-svelte dev",
     "format": "prettier --write .",
-    "test": "pnpm exec vitest run"
+    "test": "pnpm exec vitest run --config vitest.workspace.ts"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.20.5",
-    "@types/babel__generator": "^7.27.0",
-    "@types/node": "^25.4.0",
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-svelte": "^3.5.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "svelte-check": "^4.4.5",
-    "tsdown": "0.21.2",
-    "typescript": "^5.9.3",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.0"
   }
 }

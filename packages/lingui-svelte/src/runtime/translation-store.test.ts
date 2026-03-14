@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { createTranslationStore } from "./translation-store.ts";
 
 describe("createTranslationStore", () => {
-  it("translates descriptors eagerly through raw", () => {
+  it("translates descriptors eagerly through direct calls", () => {
     const instance = setupI18n({
       locale: "en",
       messages: {
@@ -20,7 +20,7 @@ describe("createTranslationStore", () => {
       () => instance,
     );
 
-    expect(store.raw({ id: "hello", message: "Hello" })).toBe("Hello");
+    expect(store({ id: "hello", message: "Hello" })).toBe("Hello");
   });
 
   it("publishes a translator function and updates subscribers on locale changes", () => {

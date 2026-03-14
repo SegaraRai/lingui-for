@@ -1,7 +1,6 @@
 import { msg } from "lingui-svelte/macro";
 import {
-  i18n,
-  loadAndActivate,
+  createI18n,
   type MessageDescriptor,
 } from "lingui-svelte/runtime";
 
@@ -13,6 +12,8 @@ export type { SupportedLocale } from "./catalogs";
 export const supportedLocales = Object.keys(
   catalogs,
 ) as readonly SupportedLocale[];
+
+export const appI18n = createI18n();
 
 export const localeState = $state({
   current: "en" as SupportedLocale,
@@ -30,7 +31,7 @@ export function ensureLocale(
 
 export function activateLocale(locale: SupportedLocale): void {
   localeState.current = locale;
-  loadAndActivate({
+  appI18n.loadAndActivate({
     locale,
     messages: catalogs[locale],
   });
@@ -43,17 +44,13 @@ export function formatDescriptor(
 ): string {
   localeState.current;
 
-  return i18n._(
-    descriptor.id,
-    {
-      ...descriptor.values,
+  return appI18n._({
+    ...descriptor,
+    values: {
+      ...(descriptor.values ?? {}),
       ...values,
     },
-    {
-      message: descriptor.message,
-      comment: descriptor.comment,
-    },
-  );
+  });
 }
 
 // `$t(...)` cannot be used in `.svelte.ts` modules because store auto-subscriptions

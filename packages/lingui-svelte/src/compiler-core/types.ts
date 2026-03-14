@@ -60,7 +60,13 @@ export type ProgramTransformRequest = {
   lang: ScriptLang;
   linguiConfig: LinguiConfigNormalized;
   extract: boolean;
-  translationMode: "extract" | "raw" | "svelte-store";
+  translationMode: "extract" | "raw" | "svelte-context";
+  runtimeBindings?: {
+    getLinguiContext: string;
+    context: string;
+    i18n: string;
+    translate: string;
+  };
   inputSourceMap?: RawSourceMap;
 };
 

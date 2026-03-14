@@ -1,13 +1,17 @@
 <script lang="ts">
   import LocaleSwitcher from "$lib/components/LocaleSwitcher.svelte";
   import { appTitle, navHome, navPlayground } from "$lib/i18n/messages";
-  import { formatDescriptor, ensureLocale } from "$lib/i18n/session.svelte";
+  import {
+    appI18n,
+    formatDescriptor,
+    ensureLocale,
+  } from "$lib/i18n/session.svelte";
   import type { SupportedLocale } from "$lib/i18n/session.svelte";
   import type { MessageDescriptor } from "lingui-svelte/runtime";
-  import { i18n, setI18nContext } from "lingui-svelte/runtime";
+  import { setLinguiContext } from "lingui-svelte/runtime";
 
   let { data, children } = $props();
-  setI18nContext(i18n);
+  setLinguiContext(appI18n);
 
   function currentLocale(): SupportedLocale {
     return data.locale;

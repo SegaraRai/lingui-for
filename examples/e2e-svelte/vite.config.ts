@@ -1,13 +1,14 @@
 import { sveltekit } from "@sveltejs/kit/vite";
-import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { defineConfig } from "vite";
+
+const projectRoot = dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = resolve(projectRoot, "..", "..");
 
 export default defineConfig(async () => {
   const pluginEntry = resolve(
-    process.cwd(),
-    "..",
-    "..",
+    workspaceRoot,
     "packages",
     "lingui-svelte",
     "dist",

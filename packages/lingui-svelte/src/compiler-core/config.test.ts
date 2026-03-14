@@ -10,12 +10,8 @@ describe("normalizeLinguiConfig", () => {
     expect(macro.corePackage).toContain("lingui-svelte/macro");
     expect(macro.jsxPackage).toContain("lingui-svelte/macro");
     expect(config.runtimeConfigModule.i18n).toEqual([
-      "lingui-svelte/runtime",
+      "@lingui/core",
       "i18n",
-    ]);
-    expect(config.runtimeConfigModule.useLingui).toEqual([
-      "lingui-svelte/runtime",
-      "useLingui",
     ]);
     expect(config.runtimeConfigModule.Trans).toEqual([
       "lingui-svelte/runtime",

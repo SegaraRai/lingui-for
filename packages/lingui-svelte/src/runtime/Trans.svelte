@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { MessageDescriptor } from "@lingui/core";
 
-  import { getI18nStore } from "./index";
+  import { getLinguiContext } from "./index";
 
   let {
     message,
@@ -11,10 +11,10 @@
     values?: Record<string, unknown>;
   } = $props();
 
-  const lingui = getI18nStore();
+  const { _ } = getLinguiContext();
 
   const translated = $derived(
-    $lingui._({
+    $_({
       ...message,
       values: {
         ...(message.values ?? {}),

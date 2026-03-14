@@ -8,19 +8,19 @@ import {
 } from "./index.ts";
 
 describe("transformJavaScriptMacros", () => {
-  it("rewrites t.raw through the official Lingui transform", () => {
+  it("rewrites t through the official Lingui transform", () => {
     const result = transformJavaScriptMacros(
       dedent`
         import { t } from "lingui-svelte/macro";
 
-        const label = t.raw({ message: "Save" });
+        const label = t({ message: "Save" });
       `,
       { filename: "/virtual/file.ts" },
     );
 
     expect(result).not.toBeNull();
     expect(result?.code).toMatchInlineSnapshot(`
-      "import { i18n as _i18n } from "lingui-svelte/runtime";
+      "import { i18n as _i18n } from "@lingui/core";
       const label = _i18n._(
       /*i18n*/
       {
@@ -30,23 +30,23 @@ describe("transformJavaScriptMacros", () => {
     `);
   });
 
-  it("rewrites tagged template literals from t.raw through the official Lingui transform", () => {
+  it("rewrites tagged template literals from t through the official Lingui transform", () => {
     const result = transformJavaScriptMacros(
       dedent`
         import { msg, t } from "lingui-svelte/macro";
 
         const name = "Ada";
         const descriptor = msg\`Tagged descriptor\`;
-        const label = t.raw\`Tagged label\`;
+        const label = t\`Tagged label\`;
         const greeting = msg\`Hello \${name}\`;
-        const namedLabel = t.raw\`Named \${name}\`;
+        const namedLabel = t\`Named \${name}\`;
       `,
       { filename: "/virtual/file.ts" },
     );
 
     expect(result).not.toBeNull();
     expect(result?.code).toMatchInlineSnapshot(`
-      "import { i18n as _i18n } from "lingui-svelte/runtime";
+      "import { i18n as _i18n } from "@lingui/core";
       const name = "Ada";
       const descriptor =
       /*i18n*/
@@ -97,7 +97,7 @@ describe("transformSvelte", () => {
         import { msg, t } from "lingui-svelte/macro";
 
         const heading = msg({ id: "demo.heading", message: "Hello" });
-        const label = t.raw({ message: "Save" });
+        const label = t({ message: "Save" });
       </script>
 
       <h1>{$t(heading)}</h1>
@@ -109,7 +109,11 @@ describe("transformSvelte", () => {
     });
 
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { i18n as _i18n, t } from "lingui-svelte/runtime";
+      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-svelte/runtime";
+      const __l4s_ctx = getLinguiContext();
+      const __l4s_i18n = __l4s_ctx.i18n;
+      const __l4s_translate = __l4s_ctx._;
+      import { i18n as _i18n } from "@lingui/core";
       const heading =
       /*i18n*/
       {
@@ -123,7 +127,7 @@ describe("transformSvelte", () => {
         message: "Save"
       });</script>
 
-      <h1>{$t(heading)}</h1>
+      <h1>{$__l4s_translate(heading)}</h1>
       <p>{label}</p>"
     `);
   });
@@ -135,7 +139,7 @@ describe("transformSvelte", () => {
         const count = 2;
         const name = "Ada";
         const descriptor = msg\`Tagged descriptor in script\`;
-        const eager = t.raw\`Tagged raw in script\`;
+        const eager = t\`Tagged eager in script\`;
         const summary = msg({ message: "{count, plural, one {# task for {name}} other {# tasks for {name}}}" });
       </script>
 
@@ -151,7 +155,11 @@ describe("transformSvelte", () => {
     });
 
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { i18n as _i18n, t } from "lingui-svelte/runtime";
+      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-svelte/runtime";
+      const __l4s_ctx = getLinguiContext();
+      const __l4s_i18n = __l4s_ctx.i18n;
+      const __l4s_translate = __l4s_ctx._;
+      import { i18n as _i18n } from "@lingui/core";
       const count = 2;
       const name = "Ada";
       const descriptor =
@@ -163,8 +171,8 @@ describe("transformSvelte", () => {
       const eager = _i18n._(
       /*i18n*/
       {
-        id: "jeNeAe",
-        message: "Tagged raw in script"
+        id: "unHtsG",
+        message: "Tagged eager in script"
       });
       const summary =
       /*i18n*/
@@ -174,7 +182,7 @@ describe("transformSvelte", () => {
       };</script>
 
       <p>{summary.message}</p>
-      <p>{$t(
+      <p>{$__l4s_translate(
       /*i18n*/
       {
         id: "OVaF9k",
@@ -183,7 +191,7 @@ describe("transformSvelte", () => {
           name: name
         }
       })}</p>
-      <p>{$t(
+      <p>{$__l4s_translate(
       /*i18n*/
       {
         id: "eX1B4l",
@@ -203,7 +211,7 @@ describe("transformSvelte", () => {
         let name = $state("Ada");
 
         const greeting = $derived(msg\`Hello \${name}\`);
-        const eager = t.raw\`Non-reactive greeting for \${name}\`;
+        const eager = t\`Non-reactive greeting for \${name}\`;
         const summary = $plural(count, {
           one: "One task for {name}",
           other: "{count} tasks for {name}",
@@ -220,7 +228,7 @@ describe("transformSvelte", () => {
     });
 
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { i18n as _i18n } from "lingui-svelte/runtime";
+      "<script lang="ts">import { i18n as _i18n } from "@lingui/core";
       let count = $state(2);
       let name = $state("Ada");
       const greeting = $derived(
@@ -251,6 +259,33 @@ describe("transformSvelte", () => {
       <p>{summary}</p>"
     `);
   });
+
+  it("avoids collisions when injecting hidden Lingui bindings", () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-svelte/macro";
+
+        const getLinguiContext = "occupied";
+        const __l4s_ctx = "occupied";
+        const __l4s_i18n = "occupied";
+        const __l4s_translate = "occupied";
+      </script>
+
+      <p>{$t\`Hello\`}</p>
+    `;
+
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.code).toContain(
+      'import { getLinguiContext as getLinguiContext_1 } from "lingui-svelte/runtime";',
+    );
+    expect(result.code).toContain("const __l4s_ctx_1 = getLinguiContext_1();");
+    expect(result.code).toContain("const __l4s_i18n_1 = __l4s_ctx_1.i18n;");
+    expect(result.code).toContain("const __l4s_translate_1 = __l4s_ctx_1._;");
+    expect(result.code).toContain("<p>{$__l4s_translate_1(");
+  });
 });
 
 describe("createExtractionUnits", () => {
@@ -269,7 +304,7 @@ describe("createExtractionUnits", () => {
 
     expect(units.length).toBeGreaterThan(0);
     expect(units[0]?.code).toMatchInlineSnapshot(`
-      "import { i18n as _i18n } from "lingui-svelte/runtime";
+      "import { i18n as _i18n } from "@lingui/core";
       const __lingui_svelte_expr_0 = _i18n._(
       /*i18n*/
       {
@@ -301,7 +336,7 @@ describe("createExtractionUnits", () => {
 
     expect(units.length).toBeGreaterThan(0);
     expect(units[0]?.code).toMatchInlineSnapshot(`
-      "import { i18n as _i18n } from "lingui-svelte/runtime";
+      "import { i18n as _i18n } from "@lingui/core";
       const count = 2;
       const name = "Ada";
       const descriptor =

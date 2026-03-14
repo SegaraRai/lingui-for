@@ -40,8 +40,7 @@ export function normalizeLinguiConfig(
         ]),
       },
       runtimeConfigModule: {
-        i18n: [RUNTIME_PACKAGE, "i18n"] as const,
-        useLingui: [RUNTIME_PACKAGE, "useLingui"] as const,
+        i18n: ["@lingui/core", "i18n"] as const,
         Trans: [RUNTIME_PACKAGE, "Trans"] as const,
         ...runtimeConfigModule,
       },

@@ -1,12 +1,15 @@
 import { playwright } from "@vitest/browser-playwright";
 import { sveltekit } from "@sveltejs/kit/vite";
 import type { BrowserContext, ConsoleMessage } from "playwright";
-import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
-import { defineConfig } from "vitest/config";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+import { defineProject } from "vitest/config";
 
 const devPort = 41732;
 const devOrigin = `http://127.0.0.1:${devPort}`;
+const projectRoot = dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = resolve(projectRoot, "..", "..");
+
 async function waitForServer(
   url: string,
   output: () => string,
@@ -34,7 +37,7 @@ async function startDevServer(): Promise<{
 }> {
   const { createServer } = await import("vite");
   const viteServer = await createServer({
-    configFile: resolve(process.cwd(), "vite.config.ts"),
+    configFile: resolve(projectRoot, "vite.config.ts"),
     server: {
       host: "127.0.0.1",
       port: devPort,
@@ -54,9 +57,7 @@ async function startDevServer(): Promise<{
 }
 
 const pluginEntry = resolve(
-  process.cwd(),
-  "..",
-  "..",
+  workspaceRoot,
   "packages",
   "lingui-svelte",
   "dist",
@@ -65,7 +66,7 @@ const pluginEntry = resolve(
 );
 const { linguiSvelte } = await import(pathToFileURL(pluginEntry).href);
 
-export default defineConfig({
+export default defineProject({
   plugins: [linguiSvelte.vite(), sveltekit()],
   test: {
     name: "e2e-browser",

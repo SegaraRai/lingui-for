@@ -28,7 +28,7 @@ describe("svelteExtractor", () => {
       '<script lang="ts">',
       '  import { msg, t } from "lingui-svelte/macro";',
       "  const descriptor = msg`Tagged descriptor from Svelte`;",
-      "  const eager = t.raw`Tagged raw from Svelte`;",
+      "  const eager = t`Tagged eager from Svelte`;",
       '  const name = "Ada";',
       "</script>",
       "",
@@ -60,7 +60,7 @@ describe("svelteExtractor", () => {
       ),
     ).toBe(true);
     expect(
-      messages.some((message) => message.message === "Tagged raw from Svelte"),
+      messages.some((message) => message.message === "Tagged eager from Svelte"),
     ).toBe(true);
     expect(messages.some((message) => message.message === "Hello {name}")).toBe(
       true,
@@ -75,7 +75,7 @@ describe("jstsExtractor", () => {
       "const count = 2;",
       'const name = "Ada";',
       "export const descriptor = msg`Tagged descriptor from TypeScript`;",
-      "export const label = t.raw`Tagged label from TypeScript`;",
+      "export const label = t`Tagged label from TypeScript`;",
       "export const greeting = msg`Hello ${name}`;",
       'export const summary = msg({ message: "{count, plural, one {# task for {name}} other {# tasks for {name}}}" });',
       "",

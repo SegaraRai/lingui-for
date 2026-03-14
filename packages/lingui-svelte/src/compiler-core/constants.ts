@@ -1,9 +1,12 @@
 export const MACRO_PACKAGE = "lingui-svelte/macro";
 export const RUNTIME_PACKAGE = "lingui-svelte/runtime";
 export const SYNTHETIC_EXPRESSION_PREFIX = "__lingui_svelte_expr_";
-export const REACTIVE_T_WRAPPER = "__lingui_svelte_reactive_t__";
-export const RAW_T_IDENTIFIER = "__lingui_svelte_t_raw__";
-export const SYNTHETIC_MACRO_IMPORT = `import { Trans, defineMessage, msg, plural, select, selectOrdinal, t, useLingui } from "${MACRO_PACKAGE}";\n`;
+export const REACTIVE_TRANSLATION_WRAPPER = "__lingui_svelte_reactive_translation__";
+export const DEFAULT_CONTEXT_BINDING = "__l4s_ctx";
+export const DEFAULT_I18N_BINDING = "__l4s_i18n";
+export const DEFAULT_TRANSLATOR_BINDING = "__l4s_translate";
+export const GET_LINGUI_CONTEXT_EXPORT = "getLinguiContext";
+export const SYNTHETIC_MACRO_IMPORT = `import { Trans, defineMessage, msg, plural, select, selectOrdinal, t } from "${MACRO_PACKAGE}";\n`;
 export const JS_TS_EXTENSIONS = [
   ".js",
   ".jsx",

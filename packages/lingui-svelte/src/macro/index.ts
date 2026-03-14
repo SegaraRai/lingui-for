@@ -10,16 +10,12 @@ export {
   selectOrdinal,
 } from "@lingui/core/macro";
 
-export { Trans, useLingui } from "../runtime/index.ts";
+export { Trans } from "../runtime/index.ts";
 
 type LinguiMacroT = typeof linguiT;
-type ReactiveMacroTranslator = Readable<LinguiMacroT> &
-  LinguiMacroT & {
-    raw: LinguiMacroT;
-  };
+type ReactiveMacroTranslator = Readable<LinguiMacroT> & LinguiMacroT;
 
 export const t = Object.assign(linguiT as ReactiveMacroTranslator, {
-  raw: linguiT,
   subscribe() {
     throw new Error(
       'lingui-svelte/macro "t" must be compiled before it can be subscribed to.',

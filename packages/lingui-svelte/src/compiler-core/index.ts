@@ -2,6 +2,14 @@ import MagicString from "magic-string";
 import type { RawSourceMap } from "source-map";
 
 import { normalizeLinguiConfig } from "./config.ts";
+import {
+  DEFAULT_CONTEXT_BINDING,
+  DEFAULT_I18N_BINDING,
+  DEFAULT_TRANSLATOR_BINDING,
+  GET_LINGUI_CONTEXT_EXPORT,
+  RUNTIME_PACKAGE,
+} from "./constants.ts";
+import { createUniqueNameAllocator } from "./identifier-allocation.ts";
 import { createScriptFilename, stripQuery } from "./paths.ts";
 import {
   buildCombinedProgram,
@@ -51,6 +59,20 @@ export function transformSvelte(
   const analysis = analyzeSvelte(source, options.filename);
   const linguiConfig = normalizeLinguiConfig(options.linguiConfig);
   const string = new MagicString(source);
+  const allocateName = createUniqueNameAllocator(analysis.instance?.content ?? "", {
+    filename: createScriptFilename(
+      options.filename,
+      "instance",
+      analysis.instance?.lang ?? "ts",
+    ),
+    lang: analysis.instance?.lang ?? "ts",
+  });
+  const runtimeBindings = {
+    getLinguiContext: allocateName(GET_LINGUI_CONTEXT_EXPORT),
+    context: allocateName(DEFAULT_CONTEXT_BINDING),
+    i18n: allocateName(DEFAULT_I18N_BINDING),
+    translate: allocateName(DEFAULT_TRANSLATOR_BINDING),
+  };
 
   if (analysis.module) {
     const transformedModule = transformProgram(analysis.module.content, {
@@ -94,10 +116,20 @@ export function transformSvelte(
       ),
       lang: analysis.instance?.lang ?? "ts",
       linguiConfig,
-      translationMode: "svelte-store",
+      translationMode: "svelte-context",
+      runtimeBindings,
       inputSourceMap: combined.map,
     });
     const split = splitSyntheticDeclarations(transformedInstance);
+    const expressionsCode = Array.from(split.expressionReplacements.values()).join("\n");
+    const needsLinguiContextBindings =
+      split.scriptCode.includes(runtimeBindings.i18n) ||
+      split.scriptCode.includes(runtimeBindings.translate) ||
+      expressionsCode.includes(runtimeBindings.i18n) ||
+      expressionsCode.includes(runtimeBindings.translate);
+    const scriptCode = needsLinguiContextBindings
+      ? injectLinguiContextBindings(split.scriptCode, runtimeBindings)
+      : split.scriptCode;
 
     analysis.expressions
       .slice()
@@ -113,15 +145,15 @@ export function transformSvelte(
       string.overwrite(
         analysis.instance.contentStart,
         analysis.instance.contentEnd,
-        split.scriptCode,
+        scriptCode,
       );
-    } else if (split.scriptCode.trim().length > 0) {
-      const block = `<script>\n${split.scriptCode}\n</script>\n\n`;
+    } else if (scriptCode.trim().length > 0) {
+      const block = `<script>\n${scriptCode}\n</script>\n\n`;
 
       if (analysis.module) {
         string.appendLeft(
           analysis.module.end,
-          `\n\n<script>\n${split.scriptCode}\n</script>`,
+          `\n\n<script>\n${scriptCode}\n</script>`,
         );
       } else {
         string.prepend(block);
@@ -208,4 +240,23 @@ export function createExtractionUnits(
 
 function getJavaScriptLang(filename: string): ScriptLang {
   return filename.endsWith(".ts") || filename.endsWith(".tsx") ? "ts" : "js";
+}
+
+function injectLinguiContextBindings(
+  code: string,
+  runtimeBindings: {
+    getLinguiContext: string;
+    context: string;
+    i18n: string;
+    translate: string;
+  },
+): string {
+  const prelude = [
+    `import { getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${RUNTIME_PACKAGE}";`,
+    `const ${runtimeBindings.context} = ${runtimeBindings.getLinguiContext}();`,
+    `const ${runtimeBindings.i18n} = ${runtimeBindings.context}.i18n;`,
+    `const ${runtimeBindings.translate} = ${runtimeBindings.context}._;`,
+  ].join("\n");
+
+  return code.trim().length === 0 ? prelude : `${prelude}\n${code}`;
 }
