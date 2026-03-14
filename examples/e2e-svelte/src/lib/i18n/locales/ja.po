@@ -133,7 +133,7 @@ msgstr "Route load"
 msgid "kit.home.eyebrow"
 msgstr "SvelteKit ルート"
 
-#: session.svelte.ts:61
+#: session.svelte.ts:55
 msgid "Tagged template descriptor from .svelte.ts state."
 msgstr ".svelte.ts state からのタグ付きテンプレート descriptor。"
 

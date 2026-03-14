@@ -12,7 +12,8 @@ describe("analyzeSvelte", () => {
   const count = 1;
 </script>
 
-<div title={count}>{count + 1}</div>`;
+<div title={count}>{count + 1}</div>
+<Trans>Hello {count}</Trans>`;
 
     const analysis = analyzeSvelte(source, "Component.svelte");
 
@@ -23,6 +24,9 @@ describe("analyzeSvelte", () => {
     expect(analysis.expressions.map((expression) => expression.source)).toEqual(
       ["count", "count + 1"],
     );
+    expect(analysis.components.map((component) => component.name)).toEqual([
+      "Trans",
+    ]);
   });
 
   it("returns no scripts for markup-only components", () => {
@@ -31,5 +35,6 @@ describe("analyzeSvelte", () => {
     expect(analysis.instance).toBeNull();
     expect(analysis.module).toBeNull();
     expect(analysis.expressions).toHaveLength(1);
+    expect(analysis.components).toHaveLength(0);
   });
 });

@@ -2,26 +2,54 @@
   import type { MessageDescriptor } from "@lingui/core";
 
   import { getLinguiContext } from "./index";
+  import RenderTransNodes from "./RenderTransNodes.svelte";
+  import {
+    formatRichTextTranslation,
+    type TransComponentMap,
+  } from "./rich-text.ts";
 
   let {
+    id,
     message,
     values = {},
+    components,
   }: {
-    message: MessageDescriptor;
+    id?: string;
+    message: MessageDescriptor | string;
     values?: Record<string, unknown>;
+    components?: TransComponentMap;
   } = $props();
 
   const { _ } = getLinguiContext();
 
+  const descriptor = $derived.by((): MessageDescriptor => {
+    if (typeof message === "string") {
+      return {
+        id: id ?? message,
+        message,
+      };
+    }
+
+    return message;
+  });
+
   const translated = $derived(
     $_({
-      ...message,
+      ...descriptor,
       values: {
-        ...(message.values ?? {}),
+        ...(descriptor.values ?? {}),
         ...values,
       },
     }),
   );
+
+  const richTextNodes = $derived(
+    components ? formatRichTextTranslation(translated, components) : [],
+  );
 </script>
 
-{translated}
+{#if components}
+  <RenderTransNodes nodes={richTextNodes} {components} />
+{:else}
+  {translated}
+{/if}

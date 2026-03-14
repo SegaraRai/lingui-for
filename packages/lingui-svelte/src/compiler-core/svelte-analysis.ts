@@ -1,7 +1,8 @@
 import { parse, type AST } from "svelte/compiler";
 
-import { EXPRESSION_KEYS } from "./constants.ts";
+import { COMPONENT_MACRO_NAMES, EXPRESSION_KEYS } from "./constants.ts";
 import type {
+  MacroComponent,
   MarkupExpression,
   RangeNode,
   ScriptBlock,
@@ -66,9 +67,13 @@ function toScriptBlock(
 function collectExpressions(
   source: string,
   fragment: AST.Fragment,
-): MarkupExpression[] {
+): {
+  expressions: MarkupExpression[];
+  components: MacroComponent[];
+} {
   const seen = new Set<string>();
   const expressions: MarkupExpression[] = [];
+  const components: MacroComponent[] = [];
 
   const visit = (node: unknown): void => {
     if (!node) {
@@ -86,6 +91,23 @@ function collectExpressions(
 
     if (node.type === "Fragment" && Array.isArray(node.nodes)) {
       visit(node.nodes);
+      return;
+    }
+
+    if (
+      node.type === "Component" &&
+      typeof node.name === "string" &&
+      COMPONENT_MACRO_NAMES.has(node.name) &&
+      typeof node.start === "number" &&
+      typeof node.end === "number"
+    ) {
+      components.push({
+        index: components.length,
+        name: node.name,
+        start: node.start,
+        end: node.end,
+        source: source.slice(node.start, node.end),
+      });
       return;
     }
 
@@ -114,7 +136,10 @@ function collectExpressions(
   };
 
   visit(fragment);
-  return expressions;
+  return {
+    expressions,
+    components,
+  };
 }
 
 export function analyzeSvelte(
@@ -122,10 +147,12 @@ export function analyzeSvelte(
   filename?: string,
 ): SvelteAnalysis {
   const ast = parse(source, { filename, modern: true });
+  const { expressions, components } = collectExpressions(source, ast.fragment);
 
   return {
     instance: toScriptBlock(ast.instance, "instance", source),
     module: toScriptBlock(ast.module, "module", source),
-    expressions: collectExpressions(source, ast.fragment),
+    expressions,
+    components,
   };
 }

@@ -430,6 +430,41 @@ describe("transformSvelte", () => {
     );
   });
 
+  it("lowers Trans with embedded elements to the runtime Trans component", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          let name = $state("Ada");
+        </script>
+
+        <Trans id="demo.docs">Read the <a href="/docs">docs</a>, {name}.</Trans>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script lang="ts">import { Trans as L4sTrans } from "lingui-for-svelte/runtime";
+      let name = $state("Ada");</script>
+
+      <L4sTrans {...{
+        id: "demo.docs",
+        message: "Read the <0>docs</0>, {name}.",
+        values: {
+          name: name
+        },
+        components: {
+          0: {
+            kind: "element",
+            tag: "a",
+            props: {
+              href: "/docs"
+            }
+          }
+        }
+      }} />"
+    `);
+  });
+
   it("injects a script block for markup-only components", () => {
     const source = dedent`
       <p>{$t\`Hello from markup-only component\`}</p>
@@ -529,6 +564,38 @@ describe("createExtractionUnits", () => {
         id: "T592ov",
         message: "Extract from markup-only component"
       });"
+    `);
+  });
+
+  it("includes Trans component macros in extraction output", () => {
+    const source = dedent`
+      <script lang="ts">
+        let name = "Ada";
+      </script>
+
+      <Trans id="demo.docs">Read the <a href="/docs">docs</a>, {name}.</Trans>
+    `;
+
+    const units = createExtractionUnits(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(units).toHaveLength(1);
+    expect(units[0]?.code).toMatchInlineSnapshot(`
+      "import { Trans as _Trans } from "lingui-for-svelte/runtime";
+      let name = "Ada";
+      const __lingui_svelte_component_0 = <_Trans {...
+      /*i18n*/
+      {
+        id: "demo.docs",
+        message: "Read the <0>docs</0>, {name}.",
+        values: {
+          name: name
+        },
+        components: {
+          0: <a href="/docs" />
+        }
+      }} />;"
     `);
   });
 });

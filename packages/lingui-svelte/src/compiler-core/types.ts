@@ -43,10 +43,17 @@ export type MarkupExpression = RangeNode & {
   source: string;
 };
 
+export type MacroComponent = RangeNode & {
+  index: number;
+  name: string;
+  source: string;
+};
+
 export type SvelteAnalysis = {
   instance: ScriptBlock | null;
   module: ScriptBlock | null;
   expressions: MarkupExpression[];
+  components: MacroComponent[];
 };
 
 export type ProgramTransform = {

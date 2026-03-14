@@ -85,6 +85,35 @@ describe("svelteExtractor", () => {
       messages.some((message) => message.message === "Markup-only extraction"),
     ).toBe(true);
   });
+
+  it("extracts Trans component macros with embedded elements", async () => {
+    const source = [
+      '<script lang="ts">',
+      '  let name = "Ada";',
+      "</script>",
+      "",
+      '<Trans id="demo.docs">Read the <a href="/docs">docs</a>, {name}.</Trans>',
+    ].join("\n");
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        svelteExtractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(
+      messages.some(
+        (message) =>
+          message.id === "demo.docs" &&
+          message.message === "Read the <0>docs</0>, {name}.",
+      ),
+    ).toBe(true);
+  });
 });
 
 describe("jstsExtractor", () => {
