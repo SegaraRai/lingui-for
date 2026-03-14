@@ -4,11 +4,10 @@ import {
   selectOrdinal as linguiSelectOrdinal,
   t as linguiT,
 } from "@lingui/core/macro";
+import type { Component, Snippet } from "svelte";
 import type { Readable } from "svelte/store";
 
 export { defineMessage, msg, ph } from "@lingui/core/macro";
-
-export { Trans } from "../runtime/index.ts";
 
 function createReactiveMacro<TMacro extends (...args: never[]) => unknown>(
   macro: TMacro,
@@ -30,6 +29,13 @@ export const selectOrdinal = createReactiveMacro(
   linguiSelectOrdinal,
   "selectOrdinal",
 );
+
+export const Trans = null as unknown as Component<{
+  id?: string;
+  comment?: string;
+  context?: string;
+  children?: Snippet;
+}>;
 
 console.warn(
   "lingui-for-svelte/macro is not meant to be used at runtime. If you see this warning, it means that the macro was not compiled correctly. Please ensure that your build setup is configured to compile lingui-for-svelte/macro using the appropriate Babel plugin.",
