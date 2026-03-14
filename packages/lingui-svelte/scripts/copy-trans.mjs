@@ -4,8 +4,14 @@ import { fileURLToPath } from "node:url";
 
 const rootDir = dirname(fileURLToPath(import.meta.url));
 const packageDir = resolve(rootDir, "..");
-const source = resolve(packageDir, "src/runtime/Trans.svelte");
-const destination = resolve(packageDir, "dist/runtime/Trans.svelte");
+const runtimeFiles = ["Trans.svelte", "RenderTransNodes.svelte"];
+const runtimeDistDir = resolve(packageDir, "dist/runtime");
 
-await mkdir(dirname(destination), { recursive: true });
-await copyFile(source, destination);
+await mkdir(runtimeDistDir, { recursive: true });
+
+for (const file of runtimeFiles) {
+  await copyFile(
+    resolve(packageDir, "src/runtime", file),
+    resolve(runtimeDistDir, file),
+  );
+}

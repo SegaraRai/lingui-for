@@ -6,6 +6,7 @@ export default defineProject({
     fileParallelism: false,
     include: ["src/**/*.test.ts"],
     exclude: ["src/**/*.browser.test.ts"],
+    maxWorkers: 1,
     name: "e2e-svelte",
   },
 });

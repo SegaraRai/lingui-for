@@ -6,7 +6,7 @@
   import {
     formatRichTextTranslation,
     type TransComponentMap,
-  } from "./rich-text.ts";
+  } from "./rich-text";
 
   let {
     id,

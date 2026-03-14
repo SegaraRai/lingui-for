@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { t } from "lingui-for-svelte/macro";
+  import { t, Trans } from "lingui-for-svelte/macro";
+  import { Trans as LinguiTrans } from "lingui-for-svelte";
+  import { playgroundCopy, rawTaggedDescriptor } from "$lib/i18n/messages";
   import {
     decrementPlayground,
-    formatDescriptor,
-    getPlaygroundGreeting,
-    getPlaygroundSummary,
     incrementPlayground,
     playgroundState,
     stateTaggedDescriptor,
@@ -12,19 +11,24 @@
   } from "$lib/i18n/session.svelte";
 
   let { data } = $props();
-  const taggedScriptCopy = $derived(
-    $t`Tagged template literal from route script.`,
-  );
+  const taggedScriptCopy = $t`Tagged template literal from route script.`;
 </script>
 
 <section class="panel">
-  <p class="eyebrow">{formatDescriptor(data.copy.eyebrow)}</p>
-  <h1>{formatDescriptor(data.copy.title)}</h1>
-  <p class="body">{formatDescriptor(data.copy.body)}</p>
+  <p class="eyebrow">{$t(data.copy.eyebrow)}</p>
+  <h1>{$t(data.copy.title)}</h1>
+  <p class="body">{$t(data.copy.body)}</p>
+  <p class="body">
+    <!-- The {" "} preserves the space between "watch" and the following <strong> element, which the strip-whitespace plugin would otherwise remove. -->
+    <Trans id="kit.playground.rich-copy">
+      Edit the <code>name</code> and <code>count</code> fields to watch{" "}
+      <strong>{playgroundState.name}</strong> re-render through Lingui.
+    </Trans>
+  </p>
 
   <div class="fields">
     <label>
-      <span>{formatDescriptor(data.copy.fieldName)}</span>
+      <span>{$t(data.copy.fieldName)}</span>
       <input
         bind:value={playgroundState.name}
         oninput={(event) =>
@@ -33,27 +37,42 @@
     </label>
 
     <label>
-      <span>{formatDescriptor(data.copy.fieldCount)}</span>
+      <span>{$t(data.copy.fieldCount)}</span>
       <input bind:value={playgroundState.count} min="0" type="number" />
     </label>
   </div>
 
   <div class="actions">
     <button onclick={decrementPlayground} type="button">
-      {formatDescriptor(data.copy.decrement)}
+      {$t(data.copy.decrement)}
     </button>
     <button onclick={incrementPlayground} type="button">
-      {formatDescriptor(data.copy.increment)}
+      {$t(data.copy.increment)}
     </button>
   </div>
 
-  <p class="summary">{getPlaygroundSummary()}</p>
-  <p class="summary">{getPlaygroundGreeting()}</p>
+  <p class="summary">
+    <LinguiTrans
+      message={playgroundCopy.summary}
+      values={{
+        count: playgroundState.count,
+        name: playgroundState.name,
+      }}
+    />
+  </p>
+  <p class="summary">
+    <LinguiTrans
+      message={playgroundCopy.greeting}
+      values={{
+        name: playgroundState.name,
+      }}
+    />
+  </p>
   <p class="summary">{taggedScriptCopy}</p>
   <p class="summary">{$t`Tagged template literal from markup expression.`}</p>
-  <p class="helper">{$t(data.copy.rawTagged)}</p>
+  <p class="helper">{$t(rawTaggedDescriptor)}</p>
   <p class="helper">{$t(stateTaggedDescriptor)}</p>
-  <p class="helper">{formatDescriptor(data.copy.helper)}</p>
+  <p class="helper">{$t(data.copy.helper)}</p>
 </section>
 
 <style>

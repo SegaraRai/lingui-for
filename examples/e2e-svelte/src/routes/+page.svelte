@@ -1,14 +1,26 @@
 <script lang="ts">
+  import { page } from "$app/state";
+  import { t, Trans } from "lingui-for-svelte/macro";
   import RouteCard from "$lib/components/RouteCard.svelte";
-  import { formatDescriptor } from "$lib/i18n/session.svelte";
 
   let { data } = $props();
+
+  function withCurrentLocale(pathname: string): string {
+    const query = new URLSearchParams(page.url.searchParams);
+    return query.size > 0 ? `${pathname}?${query.toString()}` : pathname;
+  }
 </script>
 
 <section class="hero">
-  <p class="eyebrow">{formatDescriptor(data.hero.eyebrow)}</p>
-  <h1>{formatDescriptor(data.hero.title)}</h1>
-  <p class="body">{formatDescriptor(data.hero.body)}</p>
+  <p class="eyebrow">{$t(data.hero.eyebrow)}</p>
+  <h1>{$t(data.hero.title)}</h1>
+  <p class="body">{$t(data.hero.body)}</p>
+  <p class="body rich-copy">
+    <Trans id="kit.home.rich-copy">
+      Browse the <a href={withCurrentLocale("/playground")}>playground</a> to
+      see <strong>embedded elements</strong> and locale-aware runtime updates.
+    </Trans>
+  </p>
 </section>
 
 <section class="grid">

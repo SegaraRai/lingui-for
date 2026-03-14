@@ -1,8 +1,7 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { t } from "lingui-for-svelte/macro";
   import type { MessageDescriptor } from "lingui-for-svelte/runtime";
-
-  import { formatDescriptor } from "$lib/i18n/session.svelte";
 
   let {
     href,
@@ -23,9 +22,9 @@
 </script>
 
 <a class="card" href={withCurrentLocale(href)}>
-  <p class="eyebrow">{formatDescriptor(eyebrow)}</p>
-  <h2>{formatDescriptor(title)}</h2>
-  <p class="body">{formatDescriptor(body)}</p>
+  <p class="eyebrow">{$t(eyebrow)}</p>
+  <h2>{$t(title)}</h2>
+  <p class="body">{$t(body)}</p>
 </a>
 
 <style>

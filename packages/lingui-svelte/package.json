@@ -47,10 +47,6 @@
       "types": "./dist/unplugin/esbuild.d.mts",
       "default": "./dist/unplugin/esbuild.mjs"
     },
-    "./unplugin/farm": {
-      "types": "./dist/unplugin/farm.d.mts",
-      "default": "./dist/unplugin/farm.mjs"
-    },
     "./unplugin/rollup": {
       "types": "./dist/unplugin/rollup.d.mts",
       "default": "./dist/unplugin/rollup.mjs"
@@ -68,12 +64,6 @@
       "default": "./dist/unplugin/webpack.mjs"
     },
     "./package.json": "./package.json"
-  },
-  "peerDependencies": {
-    "@lingui/cli": "^5.0.0",
-    "@lingui/conf": "^5.0.0",
-    "@lingui/core": "^5.0.0",
-    "svelte": "^5.0.0"
   },
   "dependencies": {
     "@babel/core": "^7.29.0",
@@ -98,5 +88,29 @@
     "tsdown": "0.21.2",
     "typescript": "^5.9.3",
     "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@lingui/cli": "^5.0.0",
+    "@lingui/conf": "^5.0.0",
+    "@lingui/core": "^5.0.0",
+    "svelte": "^5.0.0",
+    "esbuild": "*",
+    "rollup": "^3 || ^4",
+    "vite": ">=3",
+    "webpack": "^4 || ^5"
+  },
+  "peerDependenciesMeta": {
+    "esbuild": {
+      "optional": true
+    },
+    "rollup": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    }
   }
 }

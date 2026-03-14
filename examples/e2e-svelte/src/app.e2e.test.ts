@@ -1,15 +1,10 @@
-import {
-  execSync,
-  spawn,
-  type ChildProcessWithoutNullStreams,
-} from "node:child_process";
+import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const exampleDir = resolve(currentDir, "..");
-const workspaceDir = resolve(exampleDir, "..", "..");
 const port = 41731;
 const origin = `http://127.0.0.1:${port}`;
 
@@ -37,11 +32,6 @@ async function waitForServer(url: string): Promise<void> {
 
 describe.sequential("e2e-svelte application", () => {
   beforeAll(async () => {
-    execSync("pnpm --filter e2e-svelte build", {
-      cwd: workspaceDir,
-      stdio: "inherit",
-    });
-
     server = spawn("node", [".sveltekit-build/index.js"], {
       cwd: exampleDir,
       env: {
@@ -79,6 +69,24 @@ describe.sequential("e2e-svelte application", () => {
     expect(html).toContain("Tagged template descriptor from .svelte.ts state.");
     expect(html).toContain("Hello SvelteKit!");
     expect(html).toContain("2 queued actions for SvelteKit");
+    expect(html).toContain("<code>");
+    expect(html).toContain("name");
+    expect(html).toContain("count");
+    expect(html).toContain("<strong>");
+    expect(html).toContain("re-render through Lingui.");
+  });
+
+  it("renders compiled english catalogs with rich text on the home route", async () => {
+    const response = await fetch(`${origin}/?lang=en`);
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain(
+      "Lingui macros inside routes, components, and plain modules",
+    );
+    expect(html).toContain('href="/playground?lang=en"');
+    expect(html).toContain("embedded elements");
+    expect(html).toContain("locale-aware runtime updates.");
   });
 
   it("renders compiled japanese catalogs on the playground route", async () => {
@@ -99,5 +107,23 @@ describe.sequential("e2e-svelte application", () => {
     );
     expect(html).toContain("SvelteKit さん、こんにちは！");
     expect(html).toContain("SvelteKit の待機中アクション 2 件");
+    expect(html).toContain(
+      "Lingui 経由で再レンダーされる様子を確認してください。",
+    );
+  });
+
+  it("renders compiled japanese catalogs with rich text on the home route", async () => {
+    const response = await fetch(`${origin}/?lang=ja`);
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain(
+      "ルート、コンポーネント、素のモジュールで Lingui macro を使う",
+    );
+    expect(html).toContain('href="/playground?lang=ja"');
+    expect(html).toContain("埋め込み要素");
+    expect(html).toContain(
+      "ロケールに応じたランタイム更新を確認してください。",
+    );
   });
 });

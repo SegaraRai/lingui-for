@@ -13,6 +13,7 @@ describe("dev hydration", () => {
 
     expect(result.bodyText).toContain("プレイグラウンド");
     expect(result.bodyText).toContain("SvelteKit さん、こんにちは！");
+    expect(result.bodyText).toContain("Lingui 経由で再レンダーされる様子を確認してください。");
     expect(result.errors).toEqual([]);
   });
 });

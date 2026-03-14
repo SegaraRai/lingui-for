@@ -34,6 +34,11 @@ msgid "kit.playground.increment"
 msgstr "Add"
 
 #. js-lingui-explicit-id
+#: src/routes/+page.svelte:19
+msgid "kit.home.rich-copy"
+msgstr "Browse the <0>playground</0> to see <1>embedded elements</1> and locale-aware runtime updates."
+
+#. js-lingui-explicit-id
 #: messages.ts:74
 msgid "kit.card.component.eyebrow"
 msgstr "Component"
@@ -47,6 +52,12 @@ msgstr "Components receive descriptors and call the runtime without duplicating 
 #: messages.ts:133
 msgid "kit.playground.field.count"
 msgstr "Count"
+
+#. js-lingui-explicit-id
+#. placeholder {0}: playgroundState.name
+#: src/routes/playground/+page.svelte:23
+msgid "kit.playground.rich-copy"
+msgstr "Edit the <0>name</0> and <1>count</1> fields to watch <2>{0}</2> re-render through Lingui."
 
 #. js-lingui-explicit-id
 #: messages.ts:29
@@ -133,7 +144,7 @@ msgstr "Route load"
 msgid "kit.home.eyebrow"
 msgstr "SvelteKit route"
 
-#: session.svelte.ts:55
+#: session.svelte.ts:39
 msgid "Tagged template descriptor from .svelte.ts state."
 msgstr "Tagged template descriptor from .svelte.ts state."
 
@@ -141,11 +152,11 @@ msgstr "Tagged template descriptor from .svelte.ts state."
 msgid "Tagged template descriptor from raw TypeScript."
 msgstr "Tagged template descriptor from raw TypeScript."
 
-#: src/routes/playground/+page.svelte:53
+#: src/routes/playground/+page.svelte:72
 msgid "Tagged template literal from markup expression."
 msgstr "Tagged template literal from markup expression."
 
-#: src/routes/playground/+page.svelte:15
+#: src/routes/playground/+page.svelte:14
 msgid "Tagged template literal from route script."
 msgstr "Tagged template literal from route script."
 

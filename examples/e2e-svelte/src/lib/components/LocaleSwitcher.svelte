@@ -1,8 +1,9 @@
 <script lang="ts">
   import { page } from "$app/state";
+  import { t } from "lingui-for-svelte/macro";
   import { localeLabels } from "$lib/i18n/messages";
   import type { SupportedLocale } from "$lib/i18n/session.svelte";
-  import { formatDescriptor, supportedLocales } from "$lib/i18n/session.svelte";
+  import { supportedLocales } from "$lib/i18n/session.svelte";
 
   let { locale } = $props<{ locale: SupportedLocale }>();
 
@@ -19,7 +20,7 @@
       href={buildLocaleHref(supportedLocale)}
       class:active={supportedLocale === locale}
     >
-      {formatDescriptor(localeLabels[supportedLocale])}
+      {$t(localeLabels[supportedLocale])}
     </a>
   {/each}
 </div>

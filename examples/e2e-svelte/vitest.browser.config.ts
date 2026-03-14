@@ -57,7 +57,7 @@ async function startDevServer(): Promise<{
 export default defineProject({
   plugins: [linguiForSvelte(), sveltekit()],
   test: {
-    name: "e2e-browser",
+    name: "e2e-svelte-browser",
     include: ["src/**/*.browser.test.ts"],
     browser: {
       enabled: true,
