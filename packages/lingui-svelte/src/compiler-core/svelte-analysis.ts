@@ -1,6 +1,10 @@
 import { parse, type AST } from "svelte/compiler";
 
-import { COMPONENT_MACRO_NAMES, EXPRESSION_KEYS } from "./constants.ts";
+import { EXPRESSION_KEYS } from "./constants.ts";
+import {
+  expressionUsesMacroBinding,
+  parseMacroBindings,
+} from "./macro-bindings.ts";
 import type {
   MacroComponent,
   MarkupExpression,
@@ -67,6 +71,8 @@ function toScriptBlock(
 function collectExpressions(
   source: string,
   fragment: AST.Fragment,
+  componentBindings: ReadonlySet<string>,
+  expressionSourceUsesMacro: (source: string) => boolean,
 ): {
   expressions: MarkupExpression[];
   components: MacroComponent[];
@@ -97,7 +103,7 @@ function collectExpressions(
     if (
       node.type === "Component" &&
       typeof node.name === "string" &&
-      COMPONENT_MACRO_NAMES.has(node.name) &&
+      componentBindings.has(node.name) &&
       typeof node.start === "number" &&
       typeof node.end === "number"
     ) {
@@ -119,7 +125,10 @@ function collectExpressions(
       if (EXPRESSION_KEYS.has(key) && hasRange(value)) {
         const identity = `${value.start}:${value.end}`;
 
-        if (!seen.has(identity)) {
+        if (
+          !seen.has(identity) &&
+          expressionSourceUsesMacro(source.slice(value.start, value.end))
+        ) {
           seen.add(identity);
           expressions.push({
             index: expressions.length,
@@ -147,11 +156,27 @@ export function analyzeSvelte(
   filename?: string,
 ): SvelteAnalysis {
   const ast = parse(source, { filename, modern: true });
-  const { expressions, components } = collectExpressions(source, ast.fragment);
+  const instance = toScriptBlock(ast.instance, "instance", source);
+  const module = toScriptBlock(ast.module, "module", source);
+  const expressionLang = instance?.lang ?? module?.lang ?? "ts";
+  const macroBindings = instance
+    ? parseMacroBindings(instance.content, instance.lang)
+    : parseMacroBindings("", expressionLang);
+  const { expressions, components } = collectExpressions(
+    source,
+    ast.fragment,
+    macroBindings.components,
+    (expressionSource) =>
+      expressionUsesMacroBinding(
+        expressionSource,
+        expressionLang,
+        macroBindings,
+      ),
+  );
 
   return {
-    instance: toScriptBlock(ast.instance, "instance", source),
-    module: toScriptBlock(ast.module, "module", source),
+    instance,
+    module,
     expressions,
     components,
   };

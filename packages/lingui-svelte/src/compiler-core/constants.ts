@@ -9,7 +9,6 @@ export const DEFAULT_I18N_BINDING = "__l4s_i18n";
 export const DEFAULT_TRANSLATOR_BINDING = "__l4s_translate";
 export const DEFAULT_RUNTIME_TRANS_COMPONENT_BINDING = "L4sRuntimeTrans";
 export const GET_LINGUI_CONTEXT_EXPORT = "getLinguiContext";
-export const SYNTHETIC_MACRO_IMPORT = `import { Plural, Select, SelectOrdinal, Trans, defineMessage, msg, plural, select, selectOrdinal, t } from "${MACRO_PACKAGE}";\n`;
 export const JS_TS_EXTENSIONS = [
   ".js",
   ".jsx",

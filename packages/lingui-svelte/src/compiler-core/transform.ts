@@ -233,7 +233,7 @@ export function createExtractionUnits(
       ),
     });
 
-    if (transformedModule.code.trim().length > 0) {
+    if (isExtractionCodeRelevant(transformedModule.code)) {
       units.push({
         code: transformedModule.code,
         map: transformedModule.map,
@@ -266,7 +266,7 @@ export function createExtractionUnits(
       inputSourceMap: combined.map,
     });
 
-    if (transformedInstance.code.trim().length > 0) {
+    if (isExtractionCodeRelevant(transformedInstance.code)) {
       units.push({
         code: transformedInstance.code,
         map: transformedInstance.map,
@@ -275,6 +275,10 @@ export function createExtractionUnits(
   }
 
   return units;
+}
+
+function isExtractionCodeRelevant(code: string): boolean {
+  return code.includes("/*i18n*/");
 }
 
 function getJavaScriptLang(filename: string): ScriptLang {

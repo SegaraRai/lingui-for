@@ -65,6 +65,21 @@ describe("transformJavaScriptMacros", () => {
     `);
   });
 
+  it("supports aliased JS macro imports", () => {
+    const result = transformJavaScriptMacros(
+      dedent`
+        import { t as translate } from "lingui-for-svelte/macro";
+
+        const label = translate({ message: "Save" });
+      `,
+      { filename: "/virtual/file.ts" },
+    );
+
+    expect(result).not.toBeNull();
+    expect(result?.code).toContain("_i18n._(");
+    expect(result?.code).toContain('message: "Save"');
+  });
+
   it("msg tagged templates lower to descriptors and retain captured values", () => {
     const result = transformJavaScriptMacros(
       dedent`
@@ -484,6 +499,8 @@ describe("transformSvelte", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+
           let name = $state("Ada");
         </script>
 
@@ -521,6 +538,7 @@ describe("transformSvelte", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
           import DocLink from "./DocLink.svelte";
 
           let name = $state("Ada");
@@ -562,10 +580,14 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("injects RuntimeTrans for markup-only Trans components", () => {
+  it("injects RuntimeTrans for imported alias component macros", () => {
     const result = transformSvelte(
       dedent`
-        <Trans id="demo.docs">Read the <a href="/docs">docs</a>.</Trans>
+        <script lang="ts">
+          import { Trans as LocalTrans } from "lingui-for-svelte/macro";
+        </script>
+
+        <LocalTrans id="demo.docs">Read the <a href="/docs">docs</a>.</LocalTrans>
       `,
       { filename: "/virtual/App.svelte" },
     );
@@ -573,9 +595,7 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("<L4sRuntimeTrans");
     expect(result.code).not.toContain("<Trans");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script>
-      import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-      </script>
+      "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";</script>
 
       <L4sRuntimeTrans {...{
         id: "demo.docs",
@@ -597,6 +617,12 @@ describe("transformSvelte", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
+          import {
+            Plural,
+            Select,
+            SelectOrdinal,
+          } from "lingui-for-svelte/macro";
+
           let count = $state(2);
           let gender = $state("female");
         </script>
@@ -638,25 +664,62 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("injects a script block for markup-only components", () => {
+  it("does not activate markup macros without a macro import", () => {
     const source = dedent`
       <p>{$t\`Hello from markup-only component\`}</p>
+      <Trans id="demo.docs">Read the docs.</Trans>
     `;
 
     const result = transformSvelte(source, {
       filename: "/virtual/App.svelte",
     });
 
-    expect(result.code).toContain("<script>");
-    expect(result.code).toContain("import ");
+    expect(result.code).not.toContain("getLinguiContext");
+    expect(result.code).not.toContain("RuntimeTrans");
+    expect(result.code).toBe(source.trim());
+  });
+
+  it("does not activate same-name components imported from other modules", () => {
+    const source = dedent`
+      <script lang="ts">
+        import Trans from "./Trans.svelte";
+      </script>
+
+      <Trans id="demo.docs">Read the docs.</Trans>
+    `;
+
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.code).not.toContain("RuntimeTrans");
+    expect(result.code).toContain('import Trans from "./Trans.svelte";');
+    expect(result.code).toContain(
+      '<Trans id="demo.docs">Read the docs.</Trans>',
+    );
+  });
+
+  it("injects a script block for imported markup-only expressions", () => {
+    const source = dedent`
+      <script>
+        import { t as translate } from "lingui-for-svelte/macro";
+      </script>
+
+      <p>{$translate\`Hello from markup-only component\`}</p>
+    `;
+
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.code).toContain("getLinguiContext");
+    expect(result.code).toContain("$__l4s_translate");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script>
-      import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
+      "<script>import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
       const __l4s_ctx = getLinguiContext();
       const __l4s_i18n = __l4s_ctx.i18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
-      </script>
+      import { i18n as _i18n } from "@lingui/core";</script>
 
       <p>{$__l4s_translate(
       /*i18n*/
@@ -738,9 +801,26 @@ describe("createExtractionUnits", () => {
     `);
   });
 
-  it("extracts markup-only components by synthesizing a script import", () => {
+  it("does not extract markup macros when the macro import is missing", () => {
     const source = dedent`
       <button>{$t\`Extract from markup-only component\`}</button>
+      <Select value={"female"} _female="she" other="they" />
+    `;
+
+    const units = createExtractionUnits(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(units).toEqual([]);
+  });
+
+  it("extracts imported alias markup expressions", () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t as translate } from "lingui-for-svelte/macro";
+      </script>
+
+      <button>{$translate\`Extract from markup-only component\`}</button>
     `;
 
     const units = createExtractionUnits(source, {
@@ -764,6 +844,7 @@ describe("createExtractionUnits", () => {
   it("includes Trans component macros in extraction output", () => {
     const source = dedent`
       <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
         let name = "Ada";
       </script>
 
@@ -798,6 +879,7 @@ describe("createExtractionUnits", () => {
   it("includes nested rich-text components in extraction output", () => {
     const source = dedent`
       <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
         import DocLink from "./DocLink.svelte";
 
         let name = "Ada";
@@ -836,12 +918,17 @@ describe("createExtractionUnits", () => {
   it("includes Plural, Select, and SelectOrdinal component macros in extraction output", () => {
     const source = dedent`
       <script lang="ts">
+        import {
+          Plural,
+          Select as Choice,
+          SelectOrdinal,
+        } from "lingui-for-svelte/macro";
         let count = 2;
         let gender = "female";
       </script>
 
       <Plural value={count} one="# Book" other="# Books" />
-      <Select value={gender} _female="she" other="they" />
+      <Choice value={gender} _female="she" other="they" />
       <SelectOrdinal value={count} one="#st" other="#th" />
     `;
 

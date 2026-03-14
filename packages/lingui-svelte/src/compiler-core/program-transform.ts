@@ -6,11 +6,9 @@ import { SourceMapGenerator, type RawSourceMap } from "source-map";
 
 import { getParserPlugins } from "./config.ts";
 import {
-  MACRO_PACKAGE,
   RUNTIME_PACKAGE,
   SYNTHETIC_COMPONENT_PREFIX,
   SYNTHETIC_EXPRESSION_PREFIX,
-  SYNTHETIC_MACRO_IMPORT,
 } from "./constants.ts";
 import {
   createMacroPostprocessPlugin,
@@ -24,10 +22,6 @@ import type {
   ProgramTransformRequest,
   ScriptBlock,
 } from "./types.ts";
-
-function isMacroImportPresent(script: ScriptBlock | null): boolean {
-  return script?.content.includes(MACRO_PACKAGE) ?? false;
-}
 
 export function buildCombinedProgram(
   source: string,
@@ -44,13 +38,6 @@ export function buildCombinedProgram(
   let code = "";
 
   generator.setSourceContent(filename, source);
-
-  if (
-    !isMacroImportPresent(script) &&
-    (expressions.length > 0 || components.length > 0)
-  ) {
-    code += SYNTHETIC_MACRO_IMPORT;
-  }
 
   if (script) {
     const generatedLine = code.split("\n").length;

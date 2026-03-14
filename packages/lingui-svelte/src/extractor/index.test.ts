@@ -70,9 +70,32 @@ describe("svelteExtractor", () => {
     );
   });
 
-  it("extracts markup-only components without a user-authored script block", async () => {
+  it("does not extract markup macros without a user-authored macro import", async () => {
     const source = dedent`
       <p>{$t\`Markup-only extraction\`}</p>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        svelteExtractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(messages).toEqual([]);
+  });
+
+  it("extracts imported alias markup expressions", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t as translate } from "lingui-for-svelte/macro";
+      </script>
+
+      <p>{$translate\`Markup-only extraction\`}</p>
     `;
 
     const messages = await collectMessages((onMessageExtracted) =>
@@ -94,6 +117,7 @@ describe("svelteExtractor", () => {
   it("extracts Trans component macros with embedded elements", async () => {
     const source = dedent`
       <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
         let name = "Ada";
       </script>
 
@@ -123,6 +147,7 @@ describe("svelteExtractor", () => {
   it("extracts nested rich-text placeholders from Trans component macros", async () => {
     const source = dedent`
       <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
         import DocLink from "./DocLink.svelte";
         let name = "Ada";
       </script>
@@ -151,12 +176,17 @@ describe("svelteExtractor", () => {
   it("extracts Plural, Select, and SelectOrdinal component macros", async () => {
     const source = dedent`
       <script lang="ts">
+        import {
+          Plural,
+          Select as Choice,
+          SelectOrdinal,
+        } from "lingui-for-svelte/macro";
         let count = 2;
         let gender = "female";
       </script>
 
       <Plural value={count} one="# Book" other="# Books" />
-      <Select value={gender} _female="she" other="they" />
+      <Choice value={gender} _female="she" other="they" />
       <SelectOrdinal value={count} one="#st" other="#th" />
     `;
 

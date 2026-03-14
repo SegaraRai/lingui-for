@@ -2,11 +2,11 @@ import type { NodePath, PluginObj } from "@babel/core";
 import * as t from "@babel/types";
 
 import {
-  MACRO_PACKAGE,
   REACTIVE_TRANSLATION_WRAPPER,
   RUNTIME_PACKAGE,
   SYNTHETIC_EXPRESSION_PREFIX,
 } from "./constants.ts";
+import { collectMacroImportLocals } from "./macro-bindings.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 
 type MacroRewriteState = {
@@ -23,37 +23,6 @@ function createInitialState(): MacroRewriteState {
     reactiveStringLocals: new Set<string>(),
     runtimeI18nLocals: new Set<string>(),
   };
-}
-
-function collectMacroLocals(
-  program: t.Program,
-  importedNames: readonly string[],
-): Set<string> {
-  const locals = new Set<string>();
-
-  program.body.forEach((statement) => {
-    if (
-      !t.isImportDeclaration(statement) ||
-      statement.source.value !== MACRO_PACKAGE
-    ) {
-      return;
-    }
-
-    statement.specifiers.forEach((specifier) => {
-      if (
-        !t.isImportSpecifier(specifier) ||
-        !t.isIdentifier(specifier.imported)
-      ) {
-        return;
-      }
-
-      if (importedNames.includes(specifier.imported.name)) {
-        locals.add(specifier.local.name);
-      }
-    });
-  });
-
-  return locals;
 }
 
 function collectRuntimeI18nLocals(program: t.Program): Set<string> {
@@ -259,8 +228,8 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
     visitor: {
       Program: {
         enter(path, state) {
-          state.tLocals = collectMacroLocals(path.node, ["t"]);
-          state.reactiveStringLocals = collectMacroLocals(path.node, [
+          state.tLocals = collectMacroImportLocals(path.node, ["t"]);
+          state.reactiveStringLocals = collectMacroImportLocals(path.node, [
             "t",
             "plural",
             "select",

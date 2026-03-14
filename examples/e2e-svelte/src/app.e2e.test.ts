@@ -1,8 +1,4 @@
-import {
-  execSync,
-  spawn,
-  type ChildProcessWithoutNullStreams,
-} from "node:child_process";
+import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -36,11 +32,6 @@ async function waitForServer(url: string): Promise<void> {
 
 describe.sequential("e2e-svelte application", () => {
   beforeAll(async () => {
-    execSync("pnpm run build", {
-      cwd: exampleDir,
-      stdio: "pipe",
-    });
-
     server = spawn("node", [".sveltekit-build/index.js"], {
       cwd: exampleDir,
       env: {
@@ -60,7 +51,7 @@ describe.sequential("e2e-svelte application", () => {
     });
 
     await waitForServer(`${origin}/playground?lang=en`);
-  }, 180_000);
+  }, 30_000);
 
   afterAll(() => {
     server?.kill();
