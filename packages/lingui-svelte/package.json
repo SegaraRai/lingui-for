@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsdown --config tsdown.config.ts",
     "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
-    "check:ts": "tsc -p tsconfig.json --noEmit"
+    "check:ts": "tsc -b --noEmit"
   },
   "files": [
     "dist"
@@ -43,9 +43,17 @@
       "types": "./dist/unplugin/types.d.mts",
       "default": "./dist/unplugin/types.mjs"
     },
+    "./unplugin/bun": {
+      "types": "./dist/unplugin/bun.d.mts",
+      "default": "./dist/unplugin/bun.mjs"
+    },
     "./unplugin/esbuild": {
       "types": "./dist/unplugin/esbuild.d.mts",
       "default": "./dist/unplugin/esbuild.mjs"
+    },
+    "./unplugin/rolldown": {
+      "types": "./dist/unplugin/rolldown.d.mts",
+      "default": "./dist/unplugin/rolldown.mjs"
     },
     "./unplugin/rollup": {
       "types": "./dist/unplugin/rollup.d.mts",
@@ -85,23 +93,29 @@
     "@types/babel__generator": "^7.27.0",
     "@types/node": "^25.5.0",
     "dedent": "^1.7.2",
+    "svelte": "^5.53.12",
     "svelte-check": "^4.4.5",
     "tsdown": "0.21.2",
     "typescript": "^5.9.3",
+    "unplugin-svelte-import": "workspace:*",
     "vitest": "^4.1.0"
   },
   "peerDependencies": {
     "@lingui/cli": "^5.0.0",
     "@lingui/conf": "^5.0.0",
     "@lingui/core": "^5.0.0",
-    "svelte": "^5.0.0",
     "esbuild": "*",
+    "rolldown": "^1.0.0-0",
     "rollup": "^3 || ^4",
+    "svelte": "^5.0.0",
     "vite": ">=3",
     "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {
     "esbuild": {
+      "optional": true
+    },
+    "rolldown": {
       "optional": true
     },
     "rollup": {

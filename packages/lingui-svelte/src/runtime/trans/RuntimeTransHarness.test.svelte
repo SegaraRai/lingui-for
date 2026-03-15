@@ -2,7 +2,8 @@
   import type { I18n, MessageDescriptor } from "@lingui/core";
   import { untrack } from "svelte";
 
-  import { setLinguiContext, type TransComponentMap } from "../component-utils";
+  import { setLinguiContext } from "../core/context.ts";
+  import type { TransComponentMap } from "./rich-text.ts";
   import RuntimeTrans from "./RuntimeTrans.svelte";
 
   let {

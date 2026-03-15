@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "es2024",
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2024"],
+    "strict": true,
+    "emitDeclarationOnly": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": ["build", "tsdown.config.ts", "vitest.config.ts"]
+}

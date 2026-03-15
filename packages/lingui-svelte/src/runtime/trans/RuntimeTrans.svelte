@@ -1,14 +1,16 @@
 <script lang="ts">
   import type { MessageDescriptor } from "@lingui/core";
 
+  import { getLinguiContext } from "../core/context.ts";
+  import RenderTransNodes from "./RenderTransNodes.svelte";
   import {
     formatRichTextTranslation,
-    getLinguiContext,
+    type TransComponentMap,
+  } from "./rich-text.ts";
+  import {
     mergeRuntimeTransValues,
     toRuntimeTransDescriptor,
-    type TransComponentMap,
-  } from "../component-utils";
-  import RenderTransNodes from "./RenderTransNodes.svelte";
+  } from "./trans-descriptor.ts";
 
   let {
     id,

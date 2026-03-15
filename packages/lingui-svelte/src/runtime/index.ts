@@ -29,5 +29,6 @@ type RuntimeTransType = Component<{
 }>;
 
 export const RuntimeTrans =
-  // Type erasure: We cannot re-export Svelte components since type definitions for `.svelte` files cannot be generated (as of now)
+  // Type erasure: We cannot re-export Svelte components directly since type definitions for `.svelte` files cannot be generated (as of now)
+  // FYI I tried https://github.com/sxzz/tsdown-templates/tree/main/svelte but it doesn't seem to work with our codebase for some reason.
   RuntimeTransComponent satisfies RuntimeTransType as RuntimeTransType;
