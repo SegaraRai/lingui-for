@@ -227,4 +227,51 @@ describe("transformJavaScriptMacros", () => {
       }),
     ).toBeNull();
   });
+
+  it("returns null for same-name imports from non-macro modules", () => {
+    expect(
+      transformJavaScriptMacros(
+        dedent`
+          import { t } from "./macro";
+
+          const label = t\`Hello\`;
+        `,
+        { filename: "/virtual/file.ts" },
+      ),
+    ).toBeNull();
+  });
+
+  it("does not rewrite shadowed aliases that no longer point at the macro import", () => {
+    const result = transformJavaScriptMacros(
+      dedent`
+        import { t as translate } from "lingui-for-svelte/macro";
+
+        const outer = translate\`Outer\`;
+
+        function render() {
+          const translate = notMacro;
+          return translate\`Inner\`;
+        }
+      `,
+      { filename: "/virtual/file.ts" },
+    );
+
+    expect(result).not.toBeNull();
+    expect(result?.code).toContain('message: "Outer"');
+    expect(result?.code).toContain("return translate`Inner`;");
+    expect(result?.code).not.toContain('message: "Inner"');
+    expect(result?.code).toMatchInlineSnapshot(`
+      "import { i18n as _i18n } from "@lingui/core";
+      const outer = _i18n._(
+      /*i18n*/
+      {
+        id: "wVGQ6j",
+        message: "Outer"
+      });
+      function render() {
+        const translate = notMacro;
+        return translate\`Inner\`;
+      }"
+    `);
+  });
 });

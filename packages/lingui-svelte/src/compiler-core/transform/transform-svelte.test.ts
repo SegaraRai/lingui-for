@@ -710,6 +710,116 @@ describe("transformSvelte", () => {
     );
   });
 
+  it("does not activate same-name non-component macros imported from other modules", () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "./macro";
+
+        const label = t\`Hello from another module\`;
+      </script>
+
+      <p>{label}</p>
+      <p>{$t\`Reactive from markup without a macro import\`}</p>
+    `;
+
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.code).not.toContain("getLinguiContext");
+    expect(result.code).not.toContain("__l4s_translate");
+    expect(result.code).toContain(
+      "const label = t`Hello from another module`;",
+    );
+    expect(result.code).toContain(
+      "<p>{$t`Reactive from markup without a macro import`}</p>",
+    );
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script lang="ts">import { t } from "./macro";
+      const label = t\`Hello from another module\`;</script>
+
+      <p>{label}</p>
+      <p>{$t\`Reactive from markup without a macro import\`}</p>"
+    `);
+  });
+
+  it("keeps shadowed macro aliases untouched while rewriting the still-bound usages", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          import { t as translate } from "lingui-for-svelte/macro";
+
+          const outer = translate\`Outer\`;
+
+          function render() {
+            const translate = notMacro;
+            return translate\`Inner\`;
+          }
+        </script>
+
+        <p>{outer}</p>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).toContain('message: "Outer"');
+    expect(result.code).toContain("return translate`Inner`;");
+    expect(result.code).not.toContain('message: "Inner"');
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script lang="ts">import { i18n as _i18n } from "@lingui/core";
+      const outer = _i18n._(
+      /*i18n*/
+      {
+        id: "wVGQ6j",
+        message: "Outer"
+      });
+      function render() {
+        const translate = notMacro;
+        return translate\`Inner\`;
+      }</script>
+
+      <p>{outer}</p>"
+    `);
+  });
+
+  it("does not lower same-name components from non-macro imports even when macro expressions are present", () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+        import Trans from "./Trans.svelte";
+      </script>
+
+      <p>{$t\`Reactive greeting\`}</p>
+      <Trans id="demo.docs">Read the docs.</Trans>
+    `;
+
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.code).toContain("$__l4s_translate(");
+    expect(result.code).toContain(
+      '<Trans id="demo.docs">Read the docs.</Trans>',
+    );
+    expect(result.code).not.toContain("<L4sRuntimeTrans");
+    expect(result.code).toMatchInlineSnapshot(`
+      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = getLinguiContext();
+      const __l4s_i18n = __l4s_ctx.i18n;
+      const __l4s_translate = __l4s_ctx._;
+      import { i18n as _i18n } from "@lingui/core";
+      import Trans from "./Trans.svelte";</script>
+
+      <p>{$__l4s_translate(
+      /*i18n*/
+      {
+        id: "UmW678",
+        message: "Reactive greeting"
+      })}</p>
+      <Trans id="demo.docs">Read the docs.</Trans>"
+    `);
+  });
+
   it("injects a script block for imported markup-only expressions", () => {
     const source = dedent`
       <script>

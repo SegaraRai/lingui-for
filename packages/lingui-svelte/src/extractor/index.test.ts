@@ -89,6 +89,29 @@ describe("svelteExtractor", () => {
     expect(messages).toEqual([]);
   });
 
+  it("does not extract same-name markup macros imported from other modules", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "./macro";
+      </script>
+
+      <p>{$t\`Ignored markup extraction\`}</p>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        svelteExtractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(messages).toEqual([]);
+  });
+
   it("extracts imported alias markup expressions", async () => {
     const source = dedent`
       <script lang="ts">
@@ -112,6 +135,60 @@ describe("svelteExtractor", () => {
     expect(
       messages.some((message) => message.message === "Markup-only extraction"),
     ).toBe(true);
+  });
+
+  it("does not extract same-name component macros imported from other modules", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import Trans from "./Trans.svelte";
+      </script>
+
+      <Trans id="demo.docs">Read the docs.</Trans>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        svelteExtractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(messages).toEqual([]);
+  });
+
+  it("does not extract shadowed macro aliases that no longer reference the import", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t as translate } from "lingui-for-svelte/macro";
+
+        const outer = translate\`Outer\`;
+
+        function render() {
+          const translate = notMacro;
+          return translate\`Inner\`;
+        }
+      </script>
+
+      <p>{outer}</p>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        svelteExtractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(messages.some((message) => message.message === "Outer")).toBe(true);
+    expect(messages.some((message) => message.message === "Inner")).toBe(false);
   });
 
   it("extracts Trans component macros with embedded elements", async () => {
@@ -265,5 +342,51 @@ describe("jstsExtractor", () => {
           "{count, plural, one {# task for {name}} other {# tasks for {name}}}",
       ),
     ).toBe(true);
+  });
+
+  it("does not extract same-name macro imports from non-macro modules", async () => {
+    const source = dedent`
+      import { t } from "./macro";
+      export const label = t\`Ignored\`;
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        jstsExtractor.extract(
+          "/virtual/messages.ts",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(messages).toEqual([]);
+  });
+
+  it("does not extract shadowed macro aliases in plain TypeScript", async () => {
+    const source = dedent`
+      import { t as translate } from "lingui-for-svelte/macro";
+      export const label = translate\`Outer\`;
+
+      export function render() {
+        const translate = notMacro;
+        return translate\`Inner\`;
+      }
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        jstsExtractor.extract(
+          "/virtual/messages.ts",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(messages.some((message) => message.message === "Outer")).toBe(true);
+    expect(messages.some((message) => message.message === "Inner")).toBe(false);
   });
 });
