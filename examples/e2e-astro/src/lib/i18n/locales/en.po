@@ -64,7 +64,7 @@ msgstr "{0, selectordinal, one {React finished #st.} two {React finished #nd.} f
 msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 msgstr "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:28
+#: src/components/svelte/SvelteLinguiIsland.svelte:29
 msgid "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
 msgstr "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
 
@@ -522,7 +522,7 @@ msgstr "Svelte rich text keeps component placeholders intact."
 msgid "Svelte runs plural, select, and selectOrdinal macros in component code."
 msgstr "Svelte runs plural, select, and selectOrdinal macros in component code."
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:34
+#: src/components/svelte/SvelteLinguiIsland.svelte:35
 msgid "Svelte sees locale {localeLabel}."
 msgstr "Svelte sees locale {localeLabel}."
 

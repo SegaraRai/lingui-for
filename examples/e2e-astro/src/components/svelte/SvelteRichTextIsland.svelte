@@ -26,7 +26,8 @@
     </p>
     <p class="text-base-content/70">
       <Trans>
-        Svelte can preserve <strong>strong emphasis</strong> in translated output.
+        Svelte can preserve{" "}<strong>strong emphasis</strong>{" "}in
+        translated output.
       </Trans>
     </p>
   </div>

@@ -21,7 +21,8 @@
     <h2 class="card-title">{$t`Svelte macros keep working inside Astro.`}</h2>
     <p class="text-base-content/70">
       <Trans>
-        The active <strong>Lingui context</strong> is created inside the Svelte island.
+        The active{" "}<strong>Lingui context</strong>{" "}is created inside the
+        Svelte island.
       </Trans>
     </p>
     <p class="text-base-content/70">

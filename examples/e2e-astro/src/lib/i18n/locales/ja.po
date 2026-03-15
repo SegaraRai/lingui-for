@@ -64,7 +64,7 @@ msgstr "{0, selectordinal, one {React は # 位でした。} two {React は # �
 msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 msgstr "{0, selectordinal, one {Svelte は # 位でした。} two {Svelte は # 位でした。} few {Svelte は # 位でした。} other {Svelte は # 位でした。}}"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:28
+#: src/components/svelte/SvelteLinguiIsland.svelte:29
 msgid "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
 msgstr "{count, plural, one {# 件の Svelte 例} other {# 件の Svelte 例}}"
 
@@ -522,7 +522,7 @@ msgstr "Svelte リッチテキストはコンポーネントのプレースホ�
 msgid "Svelte runs plural, select, and selectOrdinal macros in component code."
 msgstr "Svelte はコンポーネントコードの中で plural、select、selectOrdinal マクロを実行します。"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:34
+#: src/components/svelte/SvelteLinguiIsland.svelte:35
 msgid "Svelte sees locale {localeLabel}."
 msgstr "Svelte からはロケール {localeLabel} が見えます。"
 
