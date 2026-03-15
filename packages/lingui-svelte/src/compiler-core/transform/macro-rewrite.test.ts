@@ -71,11 +71,11 @@ describe("createMacroPreprocessPlugin", () => {
 
   it("does not rewrite $-prefixed calls without a Lingui macro import", () => {
     const code = runWithPlugin(
-      'const label = $t`Hello ${name}`;',
+      "const label = $t`Hello ${name}`;",
       createMacroPreprocessPlugin(),
     );
 
-    expect(code).toBe('const label = $t`Hello ${name}`;');
+    expect(code).toBe("const label = $t`Hello ${name}`;");
   });
 });
 

@@ -166,7 +166,9 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
-    expect(result.code).toContain('return state === "idle" ? $__l4s_translate(');
+    expect(result.code).toContain(
+      'return state === "idle" ? $__l4s_translate(',
+    );
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
       const __l4s_ctx = getLinguiContext();
@@ -254,7 +256,9 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
-    expect(result.code).toContain('const label = $derived(state === "idle" ? $__l4s_translate(');
+    expect(result.code).toContain(
+      'const label = $derived(state === "idle" ? $__l4s_translate(',
+    );
     expect(result.code).not.toContain("$derived($__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
@@ -336,7 +340,9 @@ describe("transformSvelte", () => {
     );
 
     expect(result.code).not.toContain("const getStatusText = $derived(");
-    expect(result.code).toContain("const getStatusText = () => $__l4s_translate(");
+    expect(result.code).toContain(
+      "const getStatusText = () => $__l4s_translate(",
+    );
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
       const __l4s_ctx = getLinguiContext();
