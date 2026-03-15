@@ -5,7 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import stripWhitespace from "astro-strip-whitespace";
 import { defineConfig } from "astro/config";
 
-import linguiForAstro from "lingui-for-astro/unplugin/vite";
+import linguiForAstro from "lingui-for-astro/integration";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 
 export default defineConfig({
@@ -13,8 +13,8 @@ export default defineConfig({
   adapter: node({
     mode: "standalone",
   }),
-  integrations: [react(), svelte(), stripWhitespace()],
+  integrations: [react(), svelte(), stripWhitespace(), linguiForAstro()],
   vite: {
-    plugins: [linguiForAstro(), linguiForSvelte(), tailwindcss()],
+    plugins: [linguiForSvelte(), tailwindcss()],
   },
 });

@@ -5,6 +5,7 @@
     "allowImportingTsExtensions": true,
     "checkJs": true,
     "moduleResolution": "bundler",
+    "skipLibCheck": true,
     "strict": true,
     "target": "ES2022"
   },

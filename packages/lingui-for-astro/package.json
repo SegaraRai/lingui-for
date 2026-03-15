@@ -22,10 +22,6 @@
       "types": "./dist/runtime/index.d.mts",
       "default": "./dist/runtime/index.mjs"
     },
-    "./compiler-core": {
-      "types": "./dist/compiler-core/index.d.mts",
-      "default": "./dist/compiler-core/index.mjs"
-    },
     "./extractor": {
       "types": "./dist/extractor/index.d.mts",
       "default": "./dist/extractor/index.mjs"
@@ -38,7 +34,10 @@
       "types": "./dist/runtime/index.d.mts",
       "default": "./dist/runtime/index.mjs"
     },
-    "./runtime/RuntimeTrans.astro": "./dist/runtime/trans/RuntimeTrans.astro",
+    "./integration": {
+      "types": "./dist/integration/index.d.mts",
+      "default": "./dist/integration/index.mjs"
+    },
     "./unplugin": {
       "types": "./dist/unplugin/index.d.mts",
       "default": "./dist/unplugin/index.mjs"

@@ -1,21 +1,12 @@
-import linguiMacro from "@lingui/core/macro";
-
-const {
+export {
   defineMessage,
   msg,
   ph,
-  plural: linguiPlural,
-  select: linguiSelect,
-  selectOrdinal: linguiSelectOrdinal,
-  t: linguiT,
-} = linguiMacro as typeof import("@lingui/core/macro");
-
-export { defineMessage, msg, ph };
-
-export const t = linguiT;
-export const plural = linguiPlural;
-export const select = linguiSelect;
-export const selectOrdinal = linguiSelectOrdinal;
+  plural,
+  select,
+  selectOrdinal,
+  t,
+} from "@lingui/core/macro";
 
 export interface TransProps {
   id?: string | undefined;

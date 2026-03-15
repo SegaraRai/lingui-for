@@ -28,14 +28,18 @@
       "types": "./dist/extractor/index.d.mts",
       "default": "./dist/extractor/index.mjs"
     },
+    "./macro": {
+      "types": "./dist/macro/index.d.mts",
+      "default": "./dist/macro/index.mjs"
+    },
     "./runtime": {
       "types": "./dist/runtime/index.d.mts",
       "svelte": "./dist/runtime/index.mjs",
       "default": "./dist/runtime/index.mjs"
     },
-    "./macro": {
-      "types": "./dist/macro/index.d.mts",
-      "default": "./dist/macro/index.mjs"
+    "./integration": {
+      "types": "./dist/integration/index.d.mts",
+      "default": "./dist/integration/index.mjs"
     },
     "./unplugin": {
       "types": "./dist/unplugin/index.d.mts",

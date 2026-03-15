@@ -6,10 +6,10 @@ export default defineConfig({
   dts: true,
   tsconfig: "tsconfig.lib.json",
   entry: {
-    "compiler-core/index": "src/compiler-core/index.ts",
     "extractor/index": "src/extractor/index.ts",
     "macro/index": "src/macro/index.ts",
     "runtime/index": "src/runtime/index.ts",
+    "integration/index": "src/integration/index.ts",
     "unplugin/index": "src/unplugin/index.ts",
     "unplugin/types": "src/unplugin/types.ts",
     "unplugin/bun": "src/unplugin/bun.ts",
