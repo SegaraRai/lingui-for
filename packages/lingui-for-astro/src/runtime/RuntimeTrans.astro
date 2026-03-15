@@ -1,0 +1,37 @@
+---
+import type { MessageDescriptor } from "@lingui/core";
+
+import {
+  formatRichTextTranslation,
+  getLinguiContext,
+  translateRuntimeTrans,
+  type TransComponentMap,
+} from "./index.mjs";
+import RenderTransNodes from "./RenderTransNodes.astro";
+
+const {
+  id,
+  message,
+  values = {},
+  components,
+}: {
+  id?: string | undefined;
+  message?: MessageDescriptor | string | undefined;
+  values?: Readonly<Record<string, unknown>> | undefined;
+  components?: TransComponentMap | undefined;
+} = Astro.props;
+
+const { i18n } = getLinguiContext(Astro);
+const translated = translateRuntimeTrans(i18n, message, values, id);
+const nodes = components
+  ? formatRichTextTranslation(translated, components)
+  : [];
+---
+
+{
+  components ? (
+    <RenderTransNodes nodes={nodes} components={components} />
+  ) : (
+    translated
+  )
+}

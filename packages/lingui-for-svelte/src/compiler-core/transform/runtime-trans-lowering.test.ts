@@ -18,7 +18,7 @@ function parseProgram(code: string): ProgramTransform {
     },
   });
 
-  if (!result?.ast || !result.code) {
+  if (!result?.ast || result.code == null) {
     throw new Error("Failed to parse runtime trans fixture");
   }
 

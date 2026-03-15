@@ -1,0 +1,672 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-03-15 00:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: manual bootstrap\n"
+"Language: ja\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: 3
+#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-expression:10
+msgid "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
+msgstr "{0, plural, one {# 件の Astro フォーマットサンプル} other {# 件の Astro フォーマットサンプル}}"
+
+#. placeholder {0}: 3
+#: ReactFormatsIsland.tsx:20
+msgid "{0, plural, one {# React format sample} other {# React format samples}}"
+msgstr "{0, plural, one {# 件の React フォーマットサンプル} other {# 件の React フォーマットサンプル}}"
+
+#. placeholder {0}: 3
+#: src/components/svelte/SvelteFormatsIsland.svelte:54
+#: src/components/svelte/SvelteFormatsIsland.svelte:29
+msgid "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}"
+msgstr "{0, plural, one {# 件の Svelte フォーマットサンプル} other {# 件の Svelte フォーマットサンプル}}"
+
+#. placeholder {0}: "excited"
+#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-expression:10
+msgid "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
+msgstr "{0, select, calm {Astro の select は穏やかです。} excited {Astro の select は興奮しています。} other {Astro の select は不明です。}}"
+
+#. placeholder {0}: "excited"
+#: ReactFormatsIsland.tsx:27
+msgid "{0, select, calm {React select says calm.} excited {React select says excited.} other {React select says unknown.}}"
+msgstr "{0, select, calm {React の select は穏やかです。} excited {React の select は興奮しています。} other {React の select は不明です。}}"
+
+#. placeholder {0}: "excited"
+#: src/components/svelte/SvelteFormatsIsland.svelte:60
+#: src/components/svelte/SvelteFormatsIsland.svelte:36
+msgid "{0, select, calm {Svelte select says calm.} excited {Svelte select says excited.} other {Svelte select says unknown.}}"
+msgstr "{0, select, calm {Svelte の select は穏やかです。} excited {Svelte の select は興奮しています。} other {Svelte の select は不明です。}}"
+
+#. placeholder {0}: 2
+#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-expression:10
+msgid "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
+msgstr "{0, selectordinal, one {Astro は # 位でした。} two {Astro は # 位でした。} few {Astro は # 位でした。} other {Astro は # 位でした。}}"
+
+#. placeholder {0}: 2
+#: ReactFormatsIsland.tsx:35
+msgid "{0, selectordinal, one {React finished #st.} two {React finished #nd.} few {React finished #rd.} other {React finished #th.}}"
+msgstr "{0, selectordinal, one {React は # 位でした。} two {React は # 位でした。} few {React は # 位でした。} other {React は # 位でした。}}"
+
+#. placeholder {0}: 2
+#: src/components/svelte/SvelteFormatsIsland.svelte:67
+#: src/components/svelte/SvelteFormatsIsland.svelte:44
+msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
+msgstr "{0, selectordinal, one {Svelte は # 位でした。} two {Svelte は # 位でした。} few {Svelte は # 位でした。} other {Svelte は # 位でした。}}"
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:28
+msgid "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
+msgstr "{count, plural, one {# 件の Svelte 例} other {# 件の Svelte 例}}"
+
+#: ReactTransitionCounterIsland.tsx:55
+msgid "{count} React clicks"
+msgstr "{count} 回の React クリック"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:48
+msgid "{count} Svelte clicks"
+msgstr "{count} 回の Svelte クリック"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "1. Increment one or more counters in Svelte or React."
+msgstr "1. Svelte または React のカウンターを 1 つ以上増やしてください。"
+
+#: TransitionShowcase.astro?extract-expression:4
+msgid "2. Switch between English and Japanese in the header and watch the locale labels."
+msgstr "2. ヘッダーで日本語と英語を切り替えて、ロケールラベルの変化を確認してください。"
+
+#: TransitionShowcase.astro?extract-expression:4
+msgid "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
+msgstr "3. 対応するルートを開き、どのアイランドがカウンターを保持したか、どれがロケールとページプロパティを更新したか、どれが固定されたままかを比べてください。"
+
+#: AstroRichText.astro?extract-component:3
+msgid "Astro can preserve <0>strong emphasis</0> in translated output."
+msgstr "Astro は翻訳結果の中でも<0>強調表示</0>を保てます。"
+
+#: AstroFormats.astro?extract-expression:9
+msgid "Astro formats"
+msgstr "Astro フォーマット"
+
+#: AstroRichText.astro?extract-component:3
+msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
+msgstr "Astro は翻訳された文の中でも<0>設定リンク</0>を保てます。"
+
+#: server.astro?extract-expression:3
+msgid "Astro pages render request-scoped translations through locals."
+msgstr "Astro のページは locals 経由でリクエスト単位の翻訳を描画します。"
+
+#: AstroRichText.astro?extract-component:3
+msgid "Astro rich text"
+msgstr "Astro リッチテキスト"
+
+#: AstroRichText.astro?extract-component:3
+msgid "Astro rich text keeps component placeholders intact."
+msgstr "Astro のリッチテキストはコンポーネントのプレースホルダーをそのまま保ちます。"
+
+#: AstroFormats.astro?extract-expression:10
+msgid "Astro runs plural, select, and selectOrdinal macros in component code."
+msgstr "Astro はコンポーネントコードの中で plural、select、selectOrdinal マクロを実行します。"
+
+#: settings.astro?extract-expression:4
+msgid "Astro uses request-scoped locals."
+msgstr "Astro はリクエスト単位の locals を使います。"
+
+#: index.astro?extract-expression:3
+msgid "Check request-scoped Astro translations and shared layout text."
+msgstr "リクエスト単位の Astro 翻訳と共有レイアウト文言を確認します。"
+
+#: transitions.astro?extract-expression:3
+msgid "Client transition checks"
+msgstr "クライアント遷移の確認"
+
+#: index.astro?extract-expression:3
+msgid "Client transitions"
+msgstr "クライアント遷移"
+
+#: TransitionShowcase.astro?frontmatter:23
+msgid "ClientRouter can preserve island state while locale and page props change."
+msgstr "ClientRouter を使うと、ロケールとページプロパティが変わってもアイランドのステートを保持できます。"
+
+#: TransitionShowcase.astro?frontmatter:21
+msgid "ClientRouter enabled"
+msgstr "ClientRouter 有効"
+
+#: transitions.astro?extract-expression:3
+msgid "Compare locale updates and state persistence side by side."
+msgstr "ロケールの更新とステートの保持を並べて比較します。"
+
+#: index.astro?extract-expression:4
+msgid "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
+msgstr "永続化された Svelte アイランドと React アイランドが、ロケールとページプロパティの更新中もステートを保持するか比較します。"
+
+#: index.astro?extract-expression:3
+msgid "Confirm route params and locale cookies survive navigation."
+msgstr "ルートパラメータとロケールクッキーが遷移後も保持されることを確認します。"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Current demo: {pageLabel}"
+msgstr "現在のデモ: {pageLabel}"
+
+#: LanguageSwitcher.astro?extract-expression:3
+#: settings.astro?extract-expression:4
+msgid "Current locale: {localeLabel}"
+msgstr "現在のロケール: {localeLabel}"
+
+#: AppLayout.astro?extract-expression:3
+msgid "Current page: {currentPage}"
+msgstr "現在のページ: {currentPage}"
+
+#: [slug].astro?extract-expression:4
+msgid "Dynamic route checks"
+msgstr "動的ルートの確認"
+
+#: [slug].astro?extract-expression:5
+msgid "Dynamic routes can translate with params from Astro.url and route data."
+msgstr "動的ルートでも Astro.url とルートデータのパラメータを使って翻訳できます。"
+
+#: index.astro?extract-expression:3
+msgid "Dynamic routing"
+msgstr "動的ルーティング"
+
+#: islands.astro?extract-expression:4
+msgid "Each island creates its own runtime, but Astro middleware hands both the same locale."
+msgstr "各アイランドは独自のランタイムを作りますが、Astro ミドルウェアが同じロケールを両方に渡します。"
+
+#: index.astro?extract-expression:3
+msgid "Each page isolates one concern so regressions are easier to spot."
+msgstr "各ページは 1 つの関心事だけを切り出し、回帰を見つけやすくします。"
+
+#: LanguageSwitcher.astro?extract-expression:3
+msgid "English"
+msgstr "英語"
+
+#: index.astro?extract-expression:3
+msgid "Exercise plural, select, and selectOrdinal macros."
+msgstr "plural、select、selectOrdinal マクロを確認します。"
+
+#: formats.astro?extract-expression:6
+msgid "Format macro checks"
+msgstr "フォーマットマクロの確認"
+
+#: AppLayout.astro?frontmatter:30
+#: formats.astro?extract-expression:6
+msgid "Formats"
+msgstr "フォーマット"
+
+#: formats.astro?frontmatter:10
+msgid "Formats page"
+msgstr "フォーマットページ"
+
+#: index.astro?extract-expression:3
+msgid "Framework islands"
+msgstr "フレームワークのアイランド"
+
+#: TransitionShowcase.astro?frontmatter:21
+msgid "Full reload mode"
+msgstr "フルリロードモード"
+
+#: transitions.astro?extract-expression:4
+msgid "Full reload navigation resets every island before the locale can persist."
+msgstr "フルリロードの遷移では、ロケールが保たれる前にすべてのアイランドがリセットされます。"
+
+#: AppLayout.astro?frontmatter:26
+msgid "Home"
+msgstr "ホーム"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "How to use this demo"
+msgstr "このデモの使い方"
+
+#: ReactTransitionCounterIsland.tsx:52
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:45
+msgid "Increment"
+msgstr "増やす"
+
+#: islands.astro?extract-expression:3
+msgid "Island translation checks"
+msgstr "アイランド翻訳の確認"
+
+#: AppLayout.astro?frontmatter:28
+#: islands.astro?extract-expression:3
+msgid "Islands"
+msgstr "アイランド"
+
+#: islands.astro?frontmatter:9
+msgid "Islands page"
+msgstr "アイランドページ"
+
+#: LanguageSwitcher.astro?extract-expression:3
+msgid "Japanese"
+msgstr "日本語"
+
+#: settings.astro?extract-expression:4
+#: settings.astro?extract-expression:4
+msgid "Language settings"
+msgstr "言語設定"
+
+#: index.astro?extract-expression:3
+msgid "Lingui Astro multi-page playground"
+msgstr "Lingui Astro マルチページプレイグラウンド"
+
+#: AppLayout.astro?extract-expression:3
+msgid "Lingui for Astro"
+msgstr "Lingui for Astro"
+
+#: ReactFormatsIsland.tsx:45
+msgid "Lingui React does not seem to support functional macros for plural, select, and selectOrdinal."
+msgstr "Lingui React は plural、select、selectOrdinal の関数型マクロをサポートしていないようです。"
+
+#: ReactLinguiIsland.tsx:24
+msgid "Locale badge: {localeLabel}"
+msgstr "ロケールバッジ: {localeLabel}"
+
+#: index.astro?extract-expression:3
+msgid "Locale persistence"
+msgstr "ロケール永続化"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Locale prop: {locale}"
+msgstr "ロケールプロパティ: {locale}"
+
+#: index.astro?extract-expression:3
+msgid "Message formats"
+msgstr "メッセージフォーマット"
+
+#: a.astro?extract-expression:3
+#: b.astro?extract-expression:3
+msgid "No-router page A"
+msgstr "ルーターなしページ A"
+
+#: a.astro?extract-expression:3
+#: b.astro?extract-expression:3
+msgid "No-router page B"
+msgstr "ルーターなしページ B"
+
+#: [slug].astro?extract-expression:4
+msgid "Now viewing the slug {slug}."
+msgstr "現在表示中の slug は {slug} です。"
+
+#: index.astro?extract-expression:3
+msgid "One Astro app, several translation checkpoints"
+msgstr "1 つの Astro アプリで複数の翻訳チェックポイントを確認します"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Open {nextLabel}"
+msgstr "{nextLabel} を開く"
+
+#: transitions.astro?extract-expression:3
+msgid "Open no-router demo"
+msgstr "ルーターなしデモを開く"
+
+#: transitions.astro?extract-expression:4
+msgid "Open one pair without ClientRouter and one pair with ClientRouter. Each pair contains volatile, persisted, and persisted-props Svelte and React islands so you can compare whether counters survive while locale and page props still update."
+msgstr "ClientRouter なしの組とありの組を 1 つずつ開いてください。各組には volatile / persisted / persisted-props の Svelte アイランドと React アイランドがあり、ロケールとページプロパティが更新されてもカウンターが残るかを比較できます。"
+
+#: transitions.astro?extract-expression:3
+msgid "Open router demo"
+msgstr "ルーターありデモを開く"
+
+#: index.astro?extract-expression:3
+#: index.astro?frontmatter:9
+msgid "Overview"
+msgstr "概要"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Page label: {pageLabel}"
+msgstr "ページラベル: {pageLabel}"
+
+#: transitions.astro?extract-expression:4
+msgid "Persisted islands can keep state while still reflecting a new locale."
+msgstr "永続化されたアイランドは、新しいロケールを反映しつつ状態を保持できます。"
+
+#: ReactTransitionCounterIsland.tsx:30
+msgid "Persisted React island"
+msgstr "永続化された React アイランド"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:29
+msgid "Persisted Svelte island"
+msgstr "永続化された Svelte アイランド"
+
+#: ReactTransitionCounterIsland.tsx:31
+msgid "Persisted-props React island"
+msgstr "プロパティが永続化された React アイランド"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:30
+msgid "Persisted-props Svelte island"
+msgstr "プロパティが永続化された Svelte アイランド"
+
+#: formats.astro?extract-expression:6
+msgid "Plural and selection macros cover count, tone, and rank."
+msgstr "plural と selection マクロでカウント、トーン、順位を確認します。"
+
+#: ReactRichTextIsland.tsx:27
+msgid "React can preserve <0>strong emphasis</0> in translated output."
+msgstr "React は翻訳結果の中でも<0>強調表示</0>を保てます。"
+
+#: ReactLinguiIsland.tsx:18
+msgid "React components can translate Lingui descriptors inside Astro."
+msgstr "React のコンポーネントは Astro の中で Lingui ディスクリプタを翻訳できます。"
+
+#: ReactFormatsIsland.tsx:14
+msgid "React formats"
+msgstr "React フォーマット"
+
+#: ReactLinguiIsland.tsx:15
+msgid "React island"
+msgstr "React アイランド"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "React islands"
+msgstr "React アイランド"
+
+#: ReactRichTextIsland.tsx:18
+msgid "React keeps the <0>settings link</0> inside a translated sentence."
+msgstr "React は翻訳された文の中でも<0>設定リンク</0>を保てます。"
+
+#: ReactTransitionCounterIsland.tsx:45
+msgid "React props say {pageLabel} in {localeLabel}."
+msgstr "React のプロパティでは {pageLabel} / {localeLabel} が見えています。"
+
+#: settings.astro?extract-expression:4
+msgid "React reads Lingui through an I18nProvider."
+msgstr "React は I18nProvider 経由で Lingui を読み取ります。"
+
+#: ReactRichTextIsland.tsx:12
+msgid "React rich text"
+msgstr "React リッチテキスト"
+
+#: ReactRichTextIsland.tsx:15
+msgid "React rich text keeps component placeholders intact."
+msgstr "React のリッチテキストはコンポーネントプレースホルダーを保ちます。"
+
+#: ReactFormatsIsland.tsx:17
+msgid "React runs plural, select, and selectOrdinal macros in component code."
+msgstr "React はコンポーネントコードの中で plural、select、selectOrdinal マクロを実行します。"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Render stamp: {renderStamp}"
+msgstr "レンダースタンプ: {renderStamp}"
+
+#: index.astro?extract-expression:3
+msgid "Render Svelte and React islands with the same locale."
+msgstr "Svelte と React のアイランドを同じロケールで描画します。"
+
+#: settings.astro?extract-component:3
+msgid "Return to the <0>home page</0> when you are done."
+msgstr "終わったら<0>ホームページ</0>に戻ってください。"
+
+#: AppLayout.astro?frontmatter:29
+#: rich-text.astro?extract-expression:4
+msgid "Rich text"
+msgstr "リッチテキスト"
+
+#: index.astro?extract-expression:3
+msgid "Rich text messages"
+msgstr "リッチテキストメッセージ"
+
+#: rich-text.astro?frontmatter:10
+msgid "Rich text page"
+msgstr "リッチテキストページ"
+
+#: rich-text.astro?extract-expression:4
+msgid "Rich text translation checks"
+msgstr "リッチテキスト翻訳の確認"
+
+#: rich-text.astro?extract-expression:4
+msgid "Rich text translations keep links and emphasis intact."
+msgstr "リッチテキスト翻訳でもリンクと強調表示を保てます。"
+
+#: a.astro?extract-expression:3
+#: b.astro?extract-expression:3
+msgid "Router page A"
+msgstr "ルーターページ A"
+
+#: a.astro?extract-expression:3
+#: b.astro?extract-expression:3
+msgid "Router page B"
+msgstr "ルーターページ B"
+
+#: [slug].astro?extract-expression:4
+#: AppLayout.astro?frontmatter:31
+msgid "Routing"
+msgstr "ルーティング"
+
+#: [slug].astro?frontmatter:8
+msgid "Routing page"
+msgstr "ルーティングページ"
+
+#: AppLayout.astro?frontmatter:27
+#: server.astro?extract-expression:3
+msgid "Server"
+msgstr "サーバー"
+
+#: index.astro?extract-expression:3
+msgid "Server locale: {localeLabel}"
+msgstr "サーバーロケール: {localeLabel}"
+
+#: server.astro?frontmatter:9
+msgid "Server page"
+msgstr "サーバーページ"
+
+#: server.astro?extract-expression:3
+msgid "Server translation checks"
+msgstr "サーバー翻訳の確認"
+
+#: index.astro?extract-expression:3
+msgid "Server translations"
+msgstr "サーバー翻訳"
+
+#: AppLayout.astro?frontmatter:32
+#: settings.astro?extract-expression:4
+msgid "Settings"
+msgstr "設定"
+
+#: settings.astro?frontmatter:9
+msgid "Settings page"
+msgstr "設定ページ"
+
+#: settings.astro?extract-expression:4
+msgid "Svelte activates Lingui inside its island."
+msgstr "Svelte はアイランドの内部で Lingui を有効化します。"
+
+#: islands.astro?extract-expression:3
+msgid "Svelte and React islands read the same active locale."
+msgstr "Svelte と React のアイランドは同じアクティブなロケールを読み取ります。"
+
+#: src/components/svelte/SvelteRichTextIsland.svelte:28
+msgid "Svelte can preserve <0>strong emphasis</0> in translated output."
+msgstr "Svelte は翻訳結果の中でも<0>強調表示</0>を保てます。"
+
+#: src/components/svelte/SvelteFormatsIsland.svelte:23
+msgid "Svelte formats"
+msgstr "Svelte フォーマット"
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:19
+msgid "Svelte island"
+msgstr "Svelte アイランド"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Svelte islands"
+msgstr "Svelte アイランド"
+
+#: src/components/svelte/SvelteRichTextIsland.svelte:21
+msgid "Svelte keeps the <0>settings link</0> inside a translated sentence."
+msgstr "Svelte は翻訳された文の中でも<0>設定リンク</0>を保てます。"
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:21
+msgid "Svelte macros keep working inside Astro."
+msgstr "Svelte のマクロは Astro の中でもそのまま動きます。"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:41
+msgid "Svelte props say {pageLabel} in {localeLabel}."
+msgstr "Svelte のプロパティでは {pageLabel} / {localeLabel} が見えています。"
+
+#: src/components/svelte/SvelteRichTextIsland.svelte:15
+msgid "Svelte rich text"
+msgstr "Svelte リッチテキスト"
+
+#: src/components/svelte/SvelteRichTextIsland.svelte:18
+msgid "Svelte rich text keeps component placeholders intact."
+msgstr "Svelte リッチテキストはコンポーネントのプレースホルダーをそのまま保ちます。"
+
+#: src/components/svelte/SvelteFormatsIsland.svelte:26
+msgid "Svelte runs plural, select, and selectOrdinal macros in component code."
+msgstr "Svelte はコンポーネントコードの中で plural、select、selectOrdinal マクロを実行します。"
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:34
+msgid "Svelte sees locale {localeLabel}."
+msgstr "Svelte からはロケール {localeLabel} が見えます。"
+
+#: [slug].astro?extract-component:3
+msgid "Switch to the <0>second route</0> without dropping the locale."
+msgstr "ロケールを維持したまま<0>2 つ目のルート</0>へ移動します。"
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:23
+msgid "The active <0>Lingui context</0> is created inside the Svelte island."
+msgstr "有効な<0>Lingui コンテキスト</0>は Svelte アイランドの内部で作られます。"
+
+#: ReactLinguiIsland.tsx:21
+msgid "The active locale reaches React through a dedicated Lingui instance."
+msgstr "有効なロケールは専用の Lingui インスタンスを通じて React に渡されます。"
+
+#: formats.astro?extract-expression:7
+msgid "The cards below mirror the same macro families inside component code."
+msgstr "下のカードはコンポーネントコードの中の同じマクロファミリーを反映しています。"
+
+#: rich-text.astro?extract-expression:4
+msgid "The cards below render their own rich text messages for comparison."
+msgstr "下のカードは比較のためにそれぞれ独自のリッチテキストメッセージを描画します。"
+
+#: server.astro?extract-expression:4
+msgid "The current locale label is {localeLabel}, and it comes from the same request."
+msgstr "現在のロケールラベルは {localeLabel} で、同じリクエストから来ています。"
+
+#: server.astro?extract-expression:4
+msgid "The layout, page body, and locale badge all resolve from the request-bound Lingui instance."
+msgstr "レイアウト、ページ本体、ロケールバッジはすべてリクエストに紐づいた Lingui インスタンスから解決されます。"
+
+#: [slug].astro?extract-expression:5
+msgid "The locale cookie still applies here, so the translated page matches the previous request."
+msgstr "ここでもロケールクッキーが適用されるため、翻訳されたページは前のリクエストと一致します。"
+
+#: settings.astro?extract-expression:5
+msgid "The locale is stored in a cookie so the next request stays consistent."
+msgstr "ロケールはクッキーに保存されるため、次のリクエストでも一貫性が保たれます。"
+
+#: transitions.astro?extract-expression:4
+msgid "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
+msgstr "ページ本体が切り替わっても、ClientRouter は一致する永続化されたノードを遷移中もマウントしたまま保ちます。"
+
+#: server.astro?extract-expression:3
+msgid "This paragraph was translated directly inside a .astro page."
+msgstr "この段落は .astro ページの中で直接翻訳されています。"
+
+#: ReactTransitionCounterIsland.tsx:38
+msgid "This React island remounts whenever the route or locale changes."
+msgstr "この React アイランドはルートまたはロケールが変わるたびに再マウントされます。"
+
+#: ReactTransitionCounterIsland.tsx:40
+msgid "This React island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
+msgstr "この React アイランドは transition:persist と transition:persist-props を使うため、カウンターは残りますがロケールとページのプロパティは固定されたままです。"
+
+#: ReactTransitionCounterIsland.tsx:39
+msgid "This React island uses transition:persist, so its counter survives while locale and page props still update."
+msgstr "この React アイランドは transition:persist を使うため、カウンターは残りつつロケールとページのプロパティは更新されます。"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:35
+msgid "This Svelte island remounts whenever the route or locale changes."
+msgstr "この Svelte アイランドはルートまたはロケールが変わるたびに再マウントされます。"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:37
+msgid "This Svelte island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
+msgstr "この Svelte アイランドは transition:persist と transition:persist-props を使うため、カウンターは残りますがロケールとページのプロパティは固定されたままです。"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:36
+msgid "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
+msgstr "この Svelte アイランドは transition:persist を使うため、カウンターは残りつつロケールとページのプロパティは更新されます。"
+
+#: a.astro?extract-expression:3
+#: a.astro?frontmatter:8
+#: b.astro?extract-expression:3
+#: b.astro?frontmatter:8
+msgid "Transition demo with ClientRouter"
+msgstr "ClientRouter ありの遷移デモ"
+
+#: a.astro?extract-expression:3
+#: a.astro?frontmatter:8
+#: b.astro?extract-expression:3
+#: b.astro?frontmatter:8
+msgid "Transition demo without ClientRouter"
+msgstr "ClientRouter なしの遷移デモ"
+
+#: transitions.astro?extract-expression:4
+msgid "transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation."
+msgstr "transition:persist のマーカーはマークアップに残りますが、ブラウザが通常のドキュメント遷移を行うため効果はありません。"
+
+#: AppLayout.astro?frontmatter:33
+#: transitions.astro?extract-expression:3
+msgid "Transitions"
+msgstr "トランジション"
+
+#: transitions.astro?frontmatter:7
+msgid "Transitions page"
+msgstr "トランジションページ"
+
+#: index.astro?extract-expression:3
+msgid "Use cookies to keep the next request aligned."
+msgstr "クッキーを使って次のリクエストでもロケールを揃えます。"
+
+#: TransitionShowcase.astro?frontmatter:26
+msgid "Use the header language switcher and the paired route link below. The plain persisted islands should keep their counters while still updating to the new locale and page label, while persisted-props keeps both frozen."
+msgstr "ヘッダーの言語切り替えスイッチと下の対応するルートリンクを使ってください。通常の永続化されたアイランドは新しいロケールとページラベルに更新されつつカウンターを保持し、プロパティが永続化された場合は両方を固定したままにします。"
+
+#: TransitionShowcase.astro?frontmatter:27
+msgid "Use the header language switcher and the paired route link below. Without ClientRouter, every island remounts, so no state survives and every locale change recreates the islands."
+msgstr "ヘッダーの言語切り替えスイッチと下の対応するルートリンクを使ってください。ClientRouter がない場合、すべてのアイランドが再マウントされるため状態は残らず、ロケールを変えるたびにアイランドが作り直されます。"
+
+#: TransitionShowcase.astro?extract-expression:4
+msgid "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
+msgstr "永続化されたアイランドが状態を保持していても、ページ自体が切り替わったことをこのスタンプで確認できます。"
+
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+msgid "Verification routes"
+msgstr "検証ルート"
+
+#: index.astro?extract-expression:3
+msgid "Verify linked and emphasized translations across runtimes."
+msgstr "ランタイムをまたいだリンク付き / 強調された翻訳を確認します。"
+
+#: ReactTransitionCounterIsland.tsx:29
+msgid "Volatile React island"
+msgstr "揮発性の React アイランド"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:28
+msgid "Volatile Svelte island"
+msgstr "揮発性の Svelte アイランド"
+
+#: transitions.astro?extract-expression:3
+msgid "With ClientRouter"
+msgstr "ClientRouter あり"
+
+#: transitions.astro?extract-expression:3
+msgid "Without ClientRouter"
+msgstr "ClientRouter なし"
+
+#: TransitionShowcase.astro?frontmatter:24
+msgid "Without ClientRouter, every navigation reloads the document."
+msgstr "ClientRouter がない場合、遷移のたびにドキュメント全体が再読み込みされます。"

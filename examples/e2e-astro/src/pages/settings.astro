@@ -1,0 +1,47 @@
+---
+import { t, Trans } from "lingui-for-astro/macro";
+
+import AppLayout from "../layouts/AppLayout.astro";
+import { getLocaleLabel } from "../lib/i18n/runtime";
+
+const locale = Astro.locals.locale;
+const localeLabel = getLocaleLabel(locale);
+const currentPage = t`Settings page`;
+---
+
+<AppLayout
+  title={t`Language settings`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <section class="card border-base-300 bg-base-100 border shadow-xl">
+    <div class="card-body gap-4">
+      <p class="badge badge-primary badge-outline flex-none">
+        {t`Settings`}
+      </p>
+      <h1 class="text-3xl font-black tracking-tight">
+        {t`Language settings`}
+      </h1>
+      <p class="text-base-content/70">
+        {
+          t`The locale is stored in a cookie so the next request stays consistent.`
+        }
+      </p>
+      <p class="badge badge-secondary badge-lg flex-none">
+        {t`Current locale: ${localeLabel}`}
+      </p>
+      <p class="text-base-content/70">
+        <Trans>
+          Return to the{" "}<a class="link link-primary" href="/">home page</a>
+          {" "}when you are done.
+        </Trans>
+      </p>
+      <ul class="text-base-content/70 list-disc space-y-2 pl-5">
+        <li>{t`Astro uses request-scoped locals.`}</li>
+        <li>{t`Svelte activates Lingui inside its island.`}</li>
+        <li>{t`React reads Lingui through an I18nProvider.`}</li>
+      </ul>
+    </div>
+  </section>
+</AppLayout>

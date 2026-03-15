@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes:
+    light --default,
+    dim --prefersdark;
+}
+
+@layer base {
+  html {
+    min-height: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Inter", "IBM Plex Sans", system-ui, sans-serif;
+    background:
+      radial-gradient(
+        circle at top,
+        color-mix(in oklab, var(--color-primary) 14%, transparent),
+        transparent 32%
+      ),
+      linear-gradient(to bottom, var(--color-base-200), var(--color-base-100));
+    color: var(--color-base-content);
+  }
+
+  a {
+    color: inherit;
+  }
+}

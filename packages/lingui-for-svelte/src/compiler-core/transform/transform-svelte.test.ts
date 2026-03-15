@@ -55,9 +55,9 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       const heading =
@@ -71,7 +71,8 @@ describe("transformSvelte", () => {
       {
         id: "tfDRzk",
         message: "Save"
-      });</script>
+      });
+      __l4s_ctx.prime();</script>
 
       <h1>{$__l4s_translate(heading)}</h1>
       <p>{label}</p>"
@@ -97,9 +98,9 @@ describe("transformSvelte", () => {
     expect(result.code).not.toContain("_i18n._(");
     expect(result.code).toContain("$derived($__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       let name = $state("Ada");
@@ -111,7 +112,8 @@ describe("transformSvelte", () => {
         values: {
           name: name
         }
-      }));</script>
+      }));
+      __l4s_ctx.prime();</script>
 
       <p>{label}</p>"
     `);
@@ -132,9 +134,9 @@ describe("transformSvelte", () => {
 
     expect(result.code).toContain("$derived.by(() => $__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       let name = $state("Ada");
@@ -146,7 +148,8 @@ describe("transformSvelte", () => {
         values: {
           name: name
         }
-      }));</script>"
+      }));
+      __l4s_ctx.prime();</script>"
     `);
   });
 
@@ -170,9 +173,9 @@ describe("transformSvelte", () => {
       'return state === "idle" ? $__l4s_translate(',
     );
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       let state = $state("idle");
@@ -188,7 +191,8 @@ describe("transformSvelte", () => {
           id: "s/ereB",
           message: "active"
         });
-      }</script>"
+      }
+      __l4s_ctx.prime();</script>"
     `);
   });
 
@@ -213,9 +217,9 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("books: $__l4s_translate(");
     expect(result.code).toContain("pronoun: $__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       let count = $state(2);
@@ -239,7 +243,8 @@ describe("transformSvelte", () => {
             gender: gender
           }
         })
-      }));</script>"
+      }));
+      __l4s_ctx.prime();</script>"
     `);
   });
 
@@ -261,9 +266,9 @@ describe("transformSvelte", () => {
     );
     expect(result.code).not.toContain("$derived($__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       let state = $state("idle");
@@ -277,7 +282,8 @@ describe("transformSvelte", () => {
       {
         id: "s/ereB",
         message: "active"
-      }));</script>"
+      }));
+      __l4s_ctx.prime();</script>"
     `);
   });
 
@@ -301,9 +307,9 @@ describe("transformSvelte", () => {
     expect(result.code).not.toContain("state: $derived(");
     expect(result.code).not.toContain("books: $derived(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       let count = $state(2);
@@ -323,7 +329,8 @@ describe("transformSvelte", () => {
             count: count
           }
         })
-      });</script>"
+      });
+      __l4s_ctx.prime();</script>"
     `);
   });
 
@@ -344,9 +351,9 @@ describe("transformSvelte", () => {
       "const getStatusText = () => $__l4s_translate(",
     );
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       const getStatusText = () => $__l4s_translate(
@@ -354,7 +361,8 @@ describe("transformSvelte", () => {
       {
         id: "oBVc6R",
         message: "idle"
-      });</script>"
+      });
+      __l4s_ctx.prime();</script>"
     `);
   });
 
@@ -380,9 +388,9 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("_i18n._(");
     expect(result.code).toContain("$derived($__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       let name = $state("Ada");
@@ -403,7 +411,8 @@ describe("transformSvelte", () => {
         values: {
           name: name
         }
-      }));</script>
+      }));
+      __l4s_ctx.prime();</script>
 
       <p>{eager}</p>
       <p>{reactive}</p>"
@@ -428,12 +437,13 @@ describe("transformSvelte", () => {
     expect(result.code).not.toContain("_i18n._(");
     expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
-      let name = $state("Ada");</script>
+      let name = $state("Ada");
+      __l4s_ctx.prime();</script>
 
       <p>{$__l4s_translate(
       /*i18n*/
@@ -468,13 +478,14 @@ describe("transformSvelte", () => {
     expect(result.code).not.toContain("_i18n._(");
     expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
       let count = $state(2);
-      let gender = $state("female");</script>
+      let gender = $state("female");
+      __l4s_ctx.prime();</script>
 
       <p>{$__l4s_translate(
       /*i18n*/
@@ -803,12 +814,13 @@ describe("transformSvelte", () => {
     );
     expect(result.code).not.toContain("<L4sRuntimeTrans");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       import { i18n as _i18n } from "@lingui/core";
-      import Trans from "./Trans.svelte";</script>
+      import Trans from "./Trans.svelte";
+      __l4s_ctx.prime();</script>
 
       <p>{$__l4s_translate(
       /*i18n*/
@@ -833,14 +845,15 @@ describe("transformSvelte", () => {
       filename: "/virtual/App.svelte",
     });
 
-    expect(result.code).toContain("getLinguiContext");
+    expect(result.code).toContain("createLinguiAccessors");
     expect(result.code).toContain("$__l4s_translate");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script>import { getLinguiContext as getLinguiContext } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = getLinguiContext();
-      const __l4s_i18n = __l4s_ctx.i18n;
+      "<script>import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";</script>
+      import { i18n as _i18n } from "@lingui/core";
+      __l4s_ctx.prime();</script>
 
       <p>{$__l4s_translate(
       /*i18n*/
@@ -856,9 +869,9 @@ describe("transformSvelte", () => {
       <script lang="ts">
         import { t } from "lingui-for-svelte/macro";
 
-        const getLinguiContext = "occupied";
+        const createLinguiAccessors = "occupied";
         const __l4s_ctx = "occupied";
-        const __l4s_i18n = "occupied";
+        const __l4s_getI18n = "occupied";
         const __l4s_translate = "occupied";
       </script>
 
@@ -870,19 +883,20 @@ describe("transformSvelte", () => {
     });
 
     expect(result.code).toContain("const __l4s_ctx_1 =");
-    expect(result.code).toContain("const __l4s_i18n_1 =");
+    expect(result.code).toContain("const __l4s_getI18n_1 =");
     expect(result.code).toContain("const __l4s_translate_1 =");
     expect(result.code).toContain("$__l4s_translate_1(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { getLinguiContext as getLinguiContext_1 } from "lingui-for-svelte/runtime";
-      const __l4s_ctx_1 = getLinguiContext_1();
-      const __l4s_i18n_1 = __l4s_ctx_1.i18n;
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors_1 } from "lingui-for-svelte/runtime";
+      const __l4s_ctx_1 = createLinguiAccessors_1();
+      const __l4s_getI18n_1 = __l4s_ctx_1.getI18n;
       const __l4s_translate_1 = __l4s_ctx_1._;
       import { i18n as _i18n } from "@lingui/core";
-      const getLinguiContext = "occupied";
+      const createLinguiAccessors = "occupied";
       const __l4s_ctx = "occupied";
-      const __l4s_i18n = "occupied";
-      const __l4s_translate = "occupied";</script>
+      const __l4s_getI18n = "occupied";
+      const __l4s_translate = "occupied";
+      __l4s_ctx_1.prime();</script>
 
       <p>{$__l4s_translate_1(
       /*i18n*/
@@ -891,5 +905,33 @@ describe("transformSvelte", () => {
         message: "Hello"
       })}</p>"
     `);
+  });
+
+  it("primes lazy Lingui accessors after same-component initialization helpers", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          import { t } from "lingui-for-svelte/macro";
+          import { useLinguiLocale } from "./use-lingui-locale.svelte";
+
+          let { locale } = $props();
+
+          useLinguiLocale(() => locale);
+        </script>
+
+        <p>{$t\`Hello\`}</p>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).toContain(
+      'import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";',
+    );
+    expect(result.code).not.toContain("getLinguiContext()");
+    expect(result.code).toContain("const __l4s_ctx = createLinguiAccessors();");
+    expect(result.code).toContain("__l4s_ctx.prime();");
+    expect(result.code.indexOf("useLinguiLocale(() => locale);")).toBeLessThan(
+      result.code.indexOf("__l4s_ctx.prime();"),
+    );
   });
 });

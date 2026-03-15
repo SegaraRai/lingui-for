@@ -23,6 +23,31 @@ export type LinguiContext = {
   _: TranslationStore;
 };
 
+/**
+ * Lazy runtime accessors used by generated code inside the same component that initializes Lingui.
+ *
+ * The generated Svelte prelude can safely capture this object before user initialization runs and
+ * then call {@link LinguiAccessors.prime} at the end of the instance script to lock in the active
+ * context once setup code has finished.
+ */
+export type LinguiAccessors = {
+  /**
+   * Returns the active Lingui instance once component setup has installed it in context.
+   */
+  getI18n: () => I18n;
+  /**
+   * Reactive translation store used by generated code for locale-aware updates.
+   */
+  _: TranslationStore;
+  /**
+   * Resolves and memoizes the current context immediately.
+   *
+   * Generated code calls this at the end of the instance script so markup uses a stable context
+   * after user initialization helpers have run.
+   */
+  prime: () => LinguiContext;
+};
+
 function createI18nStore(instance: I18n): Readable<I18n> {
   return readable(instance, (set) => {
     const update = (): void => {
@@ -69,4 +94,29 @@ export function setLinguiContext(instance: I18n): LinguiContext {
  */
 export function getLinguiContext(): LinguiContext {
   return getContext<LinguiContext>(LINGUI_CONTEXT);
+}
+
+/**
+ * Creates lazy accessors for the current Lingui context.
+ *
+ * Unlike {@link getLinguiContext}, this helper does not read Svelte context immediately. Generated
+ * component code can therefore install these accessors before user initialization logic and only
+ * resolve the actual context once that setup is complete.
+ */
+export function createLinguiAccessors(): LinguiAccessors {
+  let cached: LinguiContext | null = null;
+
+  const resolve = (): LinguiContext => {
+    cached ??= getLinguiContext();
+    return cached;
+  };
+
+  const translate = ((message) => resolve()._(message)) as TranslationStore;
+  translate.subscribe = (run) => resolve()._.subscribe(run);
+
+  return {
+    getI18n: () => resolve().i18n,
+    _: translate,
+    prime: resolve,
+  };
 }

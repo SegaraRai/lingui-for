@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import { t } from "lingui-for-svelte/macro";
+
+  import { page } from "$app/state";
 </script>
 
 <nav

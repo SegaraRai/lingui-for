@@ -3,11 +3,11 @@ import MagicString from "magic-string";
 import { analyzeSvelte } from "../analysis/svelte-analysis.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
-  EXPORT_GET_LINGUI_CONTEXT,
+  EXPORT_CREATE_LINGUI_ACCESSORS,
   PACKAGE_RUNTIME,
   RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
   RUNTIME_BINDING_CONTEXT,
-  RUNTIME_BINDING_I18N,
+  RUNTIME_BINDING_GET_I18N,
   RUNTIME_BINDING_TRANSLATE,
 } from "../shared/constants.ts";
 import { createScriptFilename, stripQuery } from "../shared/paths.ts";
@@ -106,9 +106,9 @@ export function transformSvelte(
       split.componentReplacements.values(),
     ).join("\n");
     const needsLinguiContextBindings =
-      split.scriptCode.includes(runtimeBindings.i18n) ||
+      split.scriptCode.includes(runtimeBindings.getI18n) ||
       split.scriptCode.includes(runtimeBindings.translate) ||
-      expressionsCode.includes(runtimeBindings.i18n) ||
+      expressionsCode.includes(runtimeBindings.getI18n) ||
       expressionsCode.includes(runtimeBindings.translate);
     const needsTransComponentBinding = componentsCode.includes(
       runtimeBindings.transComponent,
@@ -185,9 +185,9 @@ function createRuntimeBindings(
   });
 
   return {
-    getLinguiContext: allocateName(EXPORT_GET_LINGUI_CONTEXT),
+    createLinguiAccessors: allocateName(EXPORT_CREATE_LINGUI_ACCESSORS),
     context: allocateName(RUNTIME_BINDING_CONTEXT),
-    i18n: allocateName(RUNTIME_BINDING_I18N),
+    getI18n: allocateName(RUNTIME_BINDING_GET_I18N),
     translate: allocateName(RUNTIME_BINDING_TRANSLATE),
     transComponent: allocateName(RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS),
   };
@@ -196,9 +196,9 @@ function createRuntimeBindings(
 function injectRuntimeBindings(
   code: string,
   runtimeBindings: {
-    getLinguiContext: string;
+    createLinguiAccessors: string;
     context: string;
-    i18n: string;
+    getI18n: string;
     translate: string;
     transComponent: string;
   },
@@ -206,14 +206,15 @@ function injectRuntimeBindings(
   includeTransComponent: boolean,
 ): string {
   const prelude: string[] = [];
+  const suffix: string[] = [];
 
   if (includeLinguiContext && includeTransComponent) {
     prelude.push(
-      `import { RuntimeTrans as ${runtimeBindings.transComponent}, getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${PACKAGE_RUNTIME}";`,
+      `import { RuntimeTrans as ${runtimeBindings.transComponent}, createLinguiAccessors as ${runtimeBindings.createLinguiAccessors} } from "${PACKAGE_RUNTIME}";`,
     );
   } else if (includeLinguiContext) {
     prelude.push(
-      `import { getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${PACKAGE_RUNTIME}";`,
+      `import { createLinguiAccessors as ${runtimeBindings.createLinguiAccessors} } from "${PACKAGE_RUNTIME}";`,
     );
   } else if (includeTransComponent) {
     prelude.push(
@@ -223,12 +224,23 @@ function injectRuntimeBindings(
 
   if (includeLinguiContext) {
     prelude.push(
-      `const ${runtimeBindings.context} = ${runtimeBindings.getLinguiContext}();`,
-      `const ${runtimeBindings.i18n} = ${runtimeBindings.context}.i18n;`,
+      `const ${runtimeBindings.context} = ${runtimeBindings.createLinguiAccessors}();`,
+      `const ${runtimeBindings.getI18n} = ${runtimeBindings.context}.getI18n;`,
       `const ${runtimeBindings.translate} = ${runtimeBindings.context}._;`,
     );
+    suffix.push(`${runtimeBindings.context}.prime();`);
   }
 
   const preludeCode = prelude.join("\n");
-  return code.trim().length === 0 ? preludeCode : `${preludeCode}\n${code}`;
+  const suffixCode = suffix.join("\n");
+
+  if (code.trim().length === 0) {
+    return suffixCode.length > 0
+      ? `${preludeCode}\n${suffixCode}`
+      : preludeCode;
+  }
+
+  return suffixCode.length > 0
+    ? `${preludeCode}\n${code}\n${suffixCode}`
+    : `${preludeCode}\n${code}`;
 }

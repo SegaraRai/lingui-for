@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { t } from "lingui-for-svelte/macro";
   import type { Snippet } from "svelte";
+
+  import { t } from "lingui-for-svelte/macro";
 
   import LanguageSwitcher from "$lib/app/LanguageSwitcher.svelte";
   import type { SupportedLocale } from "$lib/i18n/locale";

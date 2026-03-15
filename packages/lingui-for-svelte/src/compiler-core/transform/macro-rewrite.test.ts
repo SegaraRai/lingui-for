@@ -27,7 +27,7 @@ function runWithPlugin(
     plugins: [plugin],
   });
 
-  if (!result?.code) {
+  if (result?.code == null) {
     throw new Error("Failed to transform macro rewrite fixture");
   }
 
@@ -104,9 +104,9 @@ describe("createMacroPostprocessPlugin", () => {
         createRequest({
           translationMode: "svelte-context",
           runtimeBindings: {
-            getLinguiContext: "getLinguiContext",
+            createLinguiAccessors: "createLinguiAccessors",
             context: "__l4s_ctx",
-            i18n: "__l4s_i18n",
+            getI18n: "__l4s_getI18n",
             translate: "__l4s_translate",
           },
         }),
@@ -114,7 +114,7 @@ describe("createMacroPostprocessPlugin", () => {
     );
 
     expect(code).toMatchInlineSnapshot(`
-      "const eager = __l4s_i18n._({
+      "const eager = __l4s_getI18n()._({
         id: "demo.save",
         message: "Save"
       });
@@ -150,9 +150,9 @@ describe("createMacroPostprocessPlugin", () => {
         createRequest({
           translationMode: "svelte-context",
           runtimeBindings: {
-            getLinguiContext: "getLinguiContext",
+            createLinguiAccessors: "createLinguiAccessors",
             context: "__l4s_ctx",
-            i18n: "__l4s_i18n",
+            getI18n: "__l4s_getI18n",
             translate: "__l4s_translate",
           },
         }),

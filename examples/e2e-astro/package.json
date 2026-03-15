@@ -1,0 +1,45 @@
+{
+  "name": "e2e-astro",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "lingui:extract": "lingui extract --config lingui.config.ts --workers 1 --clean --overwrite",
+    "lingui:compile": "lingui compile --config lingui.config.ts --workers 1 && prettier --write src/lib/i18n/locales",
+    "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
+    "build": "pnpm run lingui:build && astro build",
+    "preview": "astro preview --port 4542",
+    "check:ts": "astro check",
+    "pretest": "pnpm run build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/node": "^10.0.1",
+    "@astrojs/react": "^5.0.0",
+    "@astrojs/svelte": "^8.0.0",
+    "@lingui/core": "^5.9.3",
+    "@lingui/react": "^5.9.3",
+    "astro": "^6.0.4",
+    "lingui-for-astro": "workspace:*",
+    "lingui-for-svelte": "workspace:*",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "svelte": "^5.53.12"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.7",
+    "@lingui/cli": "^5.9.3",
+    "@lingui/conf": "^5.9.3",
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "astro-strip-whitespace": "^0.2.1",
+    "daisyui": "^5.5.19",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  }
+}

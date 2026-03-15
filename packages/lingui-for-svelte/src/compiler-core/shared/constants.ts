@@ -70,15 +70,15 @@ export const REACTIVE_TRANSLATION_WRAPPER =
 export const RUNTIME_BINDING_CONTEXT = "__l4s_ctx";
 
 /**
- * Default local binding name for the stable `i18n` instance taken from Lingui context.
+ * Default local binding name for a getter that resolves the current `i18n` instance.
  *
  * This is used in transformed `.svelte` instance scripts when bare `t(...)`-style
- * translations need direct access to `i18n._(...)`.
+ * translations need access to `i18n._(...)` without eagerly reading Svelte context.
  *
  * This is only a default candidate. The emitted identifier may be renamed to avoid
  * collisions.
  */
-export const RUNTIME_BINDING_I18N = "__l4s_i18n";
+export const RUNTIME_BINDING_GET_I18N = "__l4s_getI18n";
 
 /**
  * Default local binding name for the reactive translator taken from Lingui context.
@@ -103,14 +103,14 @@ export const RUNTIME_BINDING_TRANSLATE = "__l4s_translate";
 export const RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS = "L4sRuntimeTrans";
 
 /**
- * Runtime export name used to read the current Lingui context inside transformed Svelte code.
+ * Runtime export name used to create Lingui accessors for transformed Svelte components.
  *
  * This is referenced when the transform injects imports from the runtime package and needs
  * to know which named export to import.
  *
  * This is a fixed runtime API name, not a generated value.
  */
-export const EXPORT_GET_LINGUI_CONTEXT = "getLinguiContext";
+export const EXPORT_CREATE_LINGUI_ACCESSORS = "createLinguiAccessors";
 
 /**
  * File extensions that are treated as transformable JavaScript/TypeScript sources.

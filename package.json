@@ -7,21 +7,28 @@
   ],
   "scripts": {
     "build": "pnpm run build:lib && pnpm run build:examples",
-    "build:lib": "pnpm --filter unplugin-svelte-import build && pnpm --filter lingui-for-svelte build",
-    "build:examples": "pnpm --filter e2e-svelte build",
+    "build:astro-analyzer:wasm": "cd crates/astro-analyzer && wasm-pack build --target web --release --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
+    "build:astro-analyzer:wasm-dev": "cd crates/astro-analyzer && wasm-pack build --target web --dev --no-opt --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
+    "build:lib": "pnpm --filter unplugin-svelte-import build && pnpm --filter lingui-for-svelte build && pnpm --filter lingui-for-astro build",
+    "build:examples": "pnpm --filter e2e-svelte build && pnpm --filter e2e-astro build",
     "check": "pnpm run check:ts && pnpm run check:svelte",
     "check:svelte": "pnpm --filter unplugin-svelte-import run check:ts && pnpm --filter lingui-for-svelte run check:svelte && pnpm --filter e2e-svelte run check:svelte",
-    "check:ts": "pnpm --filter unplugin-svelte-import run check:ts && pnpm --filter lingui-for-svelte run check:ts && pnpm --filter e2e-svelte run check:ts",
+    "check:ts": "pnpm --filter unplugin-svelte-import run check:ts && pnpm --filter lingui-for-svelte run check:ts && pnpm --filter lingui-for-astro run check:ts && pnpm --filter e2e-svelte run check:ts && pnpm --filter e2e-astro run check:ts",
     "dev:e2e-svelte": "pnpm --filter e2e-svelte dev",
+    "dev:e2e-astro": "pnpm --filter e2e-astro dev",
     "preview:e2e-svelte": "pnpm --filter e2e-svelte preview",
+    "preview:e2e-astro": "pnpm --filter e2e-astro preview",
     "format": "prettier --write .",
+    "test:rust": "cargo test -p astro-analyzer",
     "test": "vitest"
   },
   "devDependencies": {
     "prettier": "^3.8.1",
+    "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-svelte": "^3.5.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "wasm-pack": "^0.14.0"
   }
 }

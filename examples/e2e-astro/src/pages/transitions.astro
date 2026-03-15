@@ -1,0 +1,79 @@
+---
+import { t } from "lingui-for-astro/macro";
+
+import AppLayout from "../layouts/AppLayout.astro";
+
+const locale = Astro.locals.locale;
+const currentPage = t`Transitions page`;
+---
+
+<AppLayout
+  title={t`Client transition checks`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <section class="card border-base-300 bg-base-100 border shadow-xl">
+    <div class="card-body gap-4">
+      <p class="badge badge-primary badge-outline flex-none">
+        {t`Transitions`}
+      </p>
+      <h1 class="text-3xl font-black tracking-tight">
+        {t`Compare locale updates and state persistence side by side.`}
+      </h1>
+      <p class="text-base-content/70">
+        {
+          t`Open one pair without ClientRouter and one pair with ClientRouter. Each pair contains volatile, persisted, and persisted-props Svelte and React islands so you can compare whether counters survive while locale and page props still update.`
+        }
+      </p>
+    </div>
+  </section>
+
+  <div class="grid gap-4 lg:grid-cols-2">
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body gap-4">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`Without ClientRouter`}
+        </p>
+        <h2 class="card-title">
+          {
+            t`Full reload navigation resets every island before the locale can persist.`
+          }
+        </h2>
+        <p class="text-base-content/70">
+          {
+            t`transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation.`
+          }
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/transitions/no-router/a">
+            {t`Open no-router demo`}
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body gap-4">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`With ClientRouter`}
+        </p>
+        <h2 class="card-title">
+          {
+            t`Persisted islands can keep state while still reflecting a new locale.`
+          }
+        </h2>
+        <p class="text-base-content/70">
+          {
+            t`The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition.`
+          }
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/transitions/router/a">
+            {t`Open router demo`}
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</AppLayout>

@@ -1,0 +1,38 @@
+---
+import { t, Trans } from "lingui-for-astro/macro";
+
+import AppLayout from "../layouts/AppLayout.astro";
+import ReactRichTextIsland from "../components/react/ReactRichTextIsland.tsx";
+import SvelteRichTextIsland from "../components/svelte/SvelteRichTextIsland.svelte";
+import AstroRichText from "../components/astro/AstroRichText.astro";
+
+const locale = Astro.locals.locale;
+const currentPage = t`Rich text page`;
+---
+
+<AppLayout
+  title={t`Rich text translation checks`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <section class="card border-base-300 bg-base-100 border shadow-xl">
+    <div class="card-body gap-4">
+      <p class="badge badge-primary badge-outline flex-none">
+        {t`Rich text`}
+      </p>
+      <h1 class="text-3xl font-black tracking-tight">
+        {t`Rich text translations keep links and emphasis intact.`}
+      </h1>
+      <p class="text-base-content/70">
+        {t`The cards below render their own rich text messages for comparison.`}
+      </p>
+    </div>
+  </section>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <AstroRichText />
+    <SvelteRichTextIsland client:load locale={locale} />
+    <ReactRichTextIsland client:load locale={locale} />
+  </div>
+</AppLayout>

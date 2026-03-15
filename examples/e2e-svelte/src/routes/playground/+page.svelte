@@ -1,5 +1,6 @@
 <script lang="ts">
   import { t } from "lingui-for-svelte/macro";
+
   const sections = [
     {
       href: "/playground/basic",

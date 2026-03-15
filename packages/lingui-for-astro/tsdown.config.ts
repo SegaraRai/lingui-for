@@ -1,0 +1,22 @@
+import { defineConfig } from "tsdown";
+
+export default defineConfig({
+  clean: true,
+  dts: true,
+  tsconfig: "tsconfig.lib.json",
+  entry: {
+    "compiler-core/index": "src/compiler-core/index.ts",
+    "extractor/index": "src/extractor/index.ts",
+    "macro/index": "src/macro/index.ts",
+    "runtime/index": "src/runtime/index.ts",
+    "unplugin/index": "src/unplugin/index.ts",
+    "unplugin/types": "src/unplugin/types.ts",
+    "unplugin/bun": "src/unplugin/bun.ts",
+    "unplugin/esbuild": "src/unplugin/esbuild.ts",
+    "unplugin/rolldown": "src/unplugin/rolldown.ts",
+    "unplugin/rollup": "src/unplugin/rollup.ts",
+    "unplugin/rspack": "src/unplugin/rspack.ts",
+    "unplugin/vite": "src/unplugin/vite.ts",
+    "unplugin/webpack": "src/unplugin/webpack.ts",
+  },
+});

@@ -417,8 +417,9 @@ export function createMacroPostprocessPlugin(
           isRuntimeI18nCall(path.node, state.runtimeI18nLocals)
         ) {
           if (t.isMemberExpression(path.node.callee)) {
-            path.node.callee.object = t.identifier(
-              request.runtimeBindings.i18n,
+            path.node.callee.object = t.callExpression(
+              t.identifier(request.runtimeBindings.getI18n),
+              [],
             );
           }
         }

@@ -11,7 +11,7 @@
 </script>
 
 <span
-  class="badge border-0 font-bold"
+  class="badge flex-none border-0 font-bold"
   class:badge-warning={tone === "warm"}
   class:badge-info={tone === "cool"}
 >

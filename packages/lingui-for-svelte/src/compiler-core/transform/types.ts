@@ -77,9 +77,9 @@ export type ProgramTransformRequest = {
    */
   runtimeBindings?:
     | {
-        getLinguiContext: string;
+        createLinguiAccessors: string;
         context: string;
-        i18n: string;
+        getI18n: string;
         translate: string;
       }
     | undefined;

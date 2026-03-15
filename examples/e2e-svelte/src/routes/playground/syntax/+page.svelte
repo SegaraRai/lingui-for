@@ -18,7 +18,7 @@
 </script>
 
 {#snippet syntaxChip(text: string)}
-  <span class="badge badge-outline" title={$t`Snippet badge`}>
+  <span class="badge badge-outline flex-none" title={$t`Snippet badge`}>
     {$t`Snippet item: ${text}`}
   </span>
 {/snippet}

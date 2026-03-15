@@ -12,8 +12,10 @@ export type {
   Messages,
 } from "@lingui/core";
 export {
+  createLinguiAccessors,
   getLinguiContext,
   setLinguiContext,
+  type LinguiAccessors,
   type LinguiContext,
 } from "./core/context.ts";
 export type {

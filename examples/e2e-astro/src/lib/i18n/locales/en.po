@@ -1,0 +1,672 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-03-15 00:00+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: manual bootstrap\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: 3
+#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-expression:10
+msgid "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
+msgstr "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
+
+#. placeholder {0}: 3
+#: ReactFormatsIsland.tsx:20
+msgid "{0, plural, one {# React format sample} other {# React format samples}}"
+msgstr "{0, plural, one {# React format sample} other {# React format samples}}"
+
+#. placeholder {0}: 3
+#: src/components/svelte/SvelteFormatsIsland.svelte:54
+#: src/components/svelte/SvelteFormatsIsland.svelte:29
+msgid "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}"
+msgstr "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}"
+
+#. placeholder {0}: "excited"
+#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-expression:10
+msgid "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
+msgstr "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
+
+#. placeholder {0}: "excited"
+#: ReactFormatsIsland.tsx:27
+msgid "{0, select, calm {React select says calm.} excited {React select says excited.} other {React select says unknown.}}"
+msgstr "{0, select, calm {React select says calm.} excited {React select says excited.} other {React select says unknown.}}"
+
+#. placeholder {0}: "excited"
+#: src/components/svelte/SvelteFormatsIsland.svelte:60
+#: src/components/svelte/SvelteFormatsIsland.svelte:36
+msgid "{0, select, calm {Svelte select says calm.} excited {Svelte select says excited.} other {Svelte select says unknown.}}"
+msgstr "{0, select, calm {Svelte select says calm.} excited {Svelte select says excited.} other {Svelte select says unknown.}}"
+
+#. placeholder {0}: 2
+#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-expression:10
+msgid "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
+msgstr "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
+
+#. placeholder {0}: 2
+#: ReactFormatsIsland.tsx:35
+msgid "{0, selectordinal, one {React finished #st.} two {React finished #nd.} few {React finished #rd.} other {React finished #th.}}"
+msgstr "{0, selectordinal, one {React finished #st.} two {React finished #nd.} few {React finished #rd.} other {React finished #th.}}"
+
+#. placeholder {0}: 2
+#: src/components/svelte/SvelteFormatsIsland.svelte:67
+#: src/components/svelte/SvelteFormatsIsland.svelte:44
+msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
+msgstr "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:28
+msgid "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
+msgstr "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
+
+#: ReactTransitionCounterIsland.tsx:55
+msgid "{count} React clicks"
+msgstr "{count} React clicks"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:48
+msgid "{count} Svelte clicks"
+msgstr "{count} Svelte clicks"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "1. Increment one or more counters in Svelte or React."
+msgstr "1. Increment one or more counters in Svelte or React."
+
+#: TransitionShowcase.astro?extract-expression:4
+msgid "2. Switch between English and Japanese in the header and watch the locale labels."
+msgstr "2. Switch between English and Japanese in the header and watch the locale labels."
+
+#: TransitionShowcase.astro?extract-expression:4
+msgid "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
+msgstr "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
+
+#: AstroRichText.astro?extract-component:3
+msgid "Astro can preserve <0>strong emphasis</0> in translated output."
+msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
+
+#: AstroFormats.astro?extract-expression:9
+msgid "Astro formats"
+msgstr "Astro formats"
+
+#: AstroRichText.astro?extract-component:3
+msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
+msgstr "Astro keeps the <0>settings link</0> inside a translated sentence."
+
+#: server.astro?extract-expression:3
+msgid "Astro pages render request-scoped translations through locals."
+msgstr "Astro pages render request-scoped translations through locals."
+
+#: AstroRichText.astro?extract-component:3
+msgid "Astro rich text"
+msgstr "Astro rich text"
+
+#: AstroRichText.astro?extract-component:3
+msgid "Astro rich text keeps component placeholders intact."
+msgstr "Astro rich text keeps component placeholders intact."
+
+#: AstroFormats.astro?extract-expression:10
+msgid "Astro runs plural, select, and selectOrdinal macros in component code."
+msgstr "Astro runs plural, select, and selectOrdinal macros in component code."
+
+#: settings.astro?extract-expression:4
+msgid "Astro uses request-scoped locals."
+msgstr "Astro uses request-scoped locals."
+
+#: index.astro?extract-expression:3
+msgid "Check request-scoped Astro translations and shared layout text."
+msgstr "Check request-scoped Astro translations and shared layout text."
+
+#: transitions.astro?extract-expression:3
+msgid "Client transition checks"
+msgstr "Client transition checks"
+
+#: index.astro?extract-expression:3
+msgid "Client transitions"
+msgstr "Client transitions"
+
+#: TransitionShowcase.astro?frontmatter:23
+msgid "ClientRouter can preserve island state while locale and page props change."
+msgstr "ClientRouter can preserve island state while locale and page props change."
+
+#: TransitionShowcase.astro?frontmatter:21
+msgid "ClientRouter enabled"
+msgstr "ClientRouter enabled"
+
+#: transitions.astro?extract-expression:3
+msgid "Compare locale updates and state persistence side by side."
+msgstr "Compare locale updates and state persistence side by side."
+
+#: index.astro?extract-expression:4
+msgid "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
+msgstr "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
+
+#: index.astro?extract-expression:3
+msgid "Confirm route params and locale cookies survive navigation."
+msgstr "Confirm route params and locale cookies survive navigation."
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Current demo: {pageLabel}"
+msgstr "Current demo: {pageLabel}"
+
+#: LanguageSwitcher.astro?extract-expression:3
+#: settings.astro?extract-expression:4
+msgid "Current locale: {localeLabel}"
+msgstr "Current locale: {localeLabel}"
+
+#: AppLayout.astro?extract-expression:3
+msgid "Current page: {currentPage}"
+msgstr "Current page: {currentPage}"
+
+#: [slug].astro?extract-expression:4
+msgid "Dynamic route checks"
+msgstr "Dynamic route checks"
+
+#: [slug].astro?extract-expression:5
+msgid "Dynamic routes can translate with params from Astro.url and route data."
+msgstr "Dynamic routes can translate with params from Astro.url and route data."
+
+#: index.astro?extract-expression:3
+msgid "Dynamic routing"
+msgstr "Dynamic routing"
+
+#: islands.astro?extract-expression:4
+msgid "Each island creates its own runtime, but Astro middleware hands both the same locale."
+msgstr "Each island creates its own runtime, but Astro middleware hands both the same locale."
+
+#: index.astro?extract-expression:3
+msgid "Each page isolates one concern so regressions are easier to spot."
+msgstr "Each page isolates one concern so regressions are easier to spot."
+
+#: LanguageSwitcher.astro?extract-expression:3
+msgid "English"
+msgstr "English"
+
+#: index.astro?extract-expression:3
+msgid "Exercise plural, select, and selectOrdinal macros."
+msgstr "Exercise plural, select, and selectOrdinal macros."
+
+#: formats.astro?extract-expression:6
+msgid "Format macro checks"
+msgstr "Format macro checks"
+
+#: AppLayout.astro?frontmatter:30
+#: formats.astro?extract-expression:6
+msgid "Formats"
+msgstr "Formats"
+
+#: formats.astro?frontmatter:10
+msgid "Formats page"
+msgstr "Formats page"
+
+#: index.astro?extract-expression:3
+msgid "Framework islands"
+msgstr "Framework islands"
+
+#: TransitionShowcase.astro?frontmatter:21
+msgid "Full reload mode"
+msgstr "Full reload mode"
+
+#: transitions.astro?extract-expression:4
+msgid "Full reload navigation resets every island before the locale can persist."
+msgstr "Full reload navigation resets every island before the locale can persist."
+
+#: AppLayout.astro?frontmatter:26
+msgid "Home"
+msgstr "Home"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "How to use this demo"
+msgstr "How to use this demo"
+
+#: ReactTransitionCounterIsland.tsx:52
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:45
+msgid "Increment"
+msgstr "Increment"
+
+#: islands.astro?extract-expression:3
+msgid "Island translation checks"
+msgstr "Island translation checks"
+
+#: AppLayout.astro?frontmatter:28
+#: islands.astro?extract-expression:3
+msgid "Islands"
+msgstr "Islands"
+
+#: islands.astro?frontmatter:9
+msgid "Islands page"
+msgstr "Islands page"
+
+#: LanguageSwitcher.astro?extract-expression:3
+msgid "Japanese"
+msgstr "Japanese"
+
+#: settings.astro?extract-expression:4
+#: settings.astro?extract-expression:4
+msgid "Language settings"
+msgstr "Language settings"
+
+#: index.astro?extract-expression:3
+msgid "Lingui Astro multi-page playground"
+msgstr "Lingui Astro multi-page playground"
+
+#: AppLayout.astro?extract-expression:3
+msgid "Lingui for Astro"
+msgstr "Lingui for Astro"
+
+#: ReactFormatsIsland.tsx:45
+msgid "Lingui React does not seem to support functional macros for plural, select, and selectOrdinal."
+msgstr "Lingui React does not seem to support functional macros for plural, select, and selectOrdinal."
+
+#: ReactLinguiIsland.tsx:24
+msgid "Locale badge: {localeLabel}"
+msgstr "Locale badge: {localeLabel}"
+
+#: index.astro?extract-expression:3
+msgid "Locale persistence"
+msgstr "Locale persistence"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Locale prop: {locale}"
+msgstr "Locale prop: {locale}"
+
+#: index.astro?extract-expression:3
+msgid "Message formats"
+msgstr "Message formats"
+
+#: a.astro?extract-expression:3
+#: b.astro?extract-expression:3
+msgid "No-router page A"
+msgstr "No-router page A"
+
+#: a.astro?extract-expression:3
+#: b.astro?extract-expression:3
+msgid "No-router page B"
+msgstr "No-router page B"
+
+#: [slug].astro?extract-expression:4
+msgid "Now viewing the slug {slug}."
+msgstr "Now viewing the slug {slug}."
+
+#: index.astro?extract-expression:3
+msgid "One Astro app, several translation checkpoints"
+msgstr "One Astro app, several translation checkpoints"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Open {nextLabel}"
+msgstr "Open {nextLabel}"
+
+#: transitions.astro?extract-expression:3
+msgid "Open no-router demo"
+msgstr "Open no-router demo"
+
+#: transitions.astro?extract-expression:4
+msgid "Open one pair without ClientRouter and one pair with ClientRouter. Each pair contains volatile, persisted, and persisted-props Svelte and React islands so you can compare whether counters survive while locale and page props still update."
+msgstr "Open one pair without ClientRouter and one pair with ClientRouter. Each pair contains volatile, persisted, and persisted-props Svelte and React islands so you can compare whether counters survive while locale and page props still update."
+
+#: transitions.astro?extract-expression:3
+msgid "Open router demo"
+msgstr "Open router demo"
+
+#: index.astro?extract-expression:3
+#: index.astro?frontmatter:9
+msgid "Overview"
+msgstr "Overview"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Page label: {pageLabel}"
+msgstr "Page label: {pageLabel}"
+
+#: transitions.astro?extract-expression:4
+msgid "Persisted islands can keep state while still reflecting a new locale."
+msgstr "Persisted islands can keep state while still reflecting a new locale."
+
+#: ReactTransitionCounterIsland.tsx:30
+msgid "Persisted React island"
+msgstr "Persisted React island"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:29
+msgid "Persisted Svelte island"
+msgstr "Persisted Svelte island"
+
+#: ReactTransitionCounterIsland.tsx:31
+msgid "Persisted-props React island"
+msgstr "Persisted-props React island"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:30
+msgid "Persisted-props Svelte island"
+msgstr "Persisted-props Svelte island"
+
+#: formats.astro?extract-expression:6
+msgid "Plural and selection macros cover count, tone, and rank."
+msgstr "Plural and selection macros cover count, tone, and rank."
+
+#: ReactRichTextIsland.tsx:27
+msgid "React can preserve <0>strong emphasis</0> in translated output."
+msgstr "React can preserve <0>strong emphasis</0> in translated output."
+
+#: ReactLinguiIsland.tsx:18
+msgid "React components can translate Lingui descriptors inside Astro."
+msgstr "React components can translate Lingui descriptors inside Astro."
+
+#: ReactFormatsIsland.tsx:14
+msgid "React formats"
+msgstr "React formats"
+
+#: ReactLinguiIsland.tsx:15
+msgid "React island"
+msgstr "React island"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "React islands"
+msgstr "React islands"
+
+#: ReactRichTextIsland.tsx:18
+msgid "React keeps the <0>settings link</0> inside a translated sentence."
+msgstr "React keeps the <0>settings link</0> inside a translated sentence."
+
+#: ReactTransitionCounterIsland.tsx:45
+msgid "React props say {pageLabel} in {localeLabel}."
+msgstr "React props say {pageLabel} in {localeLabel}."
+
+#: settings.astro?extract-expression:4
+msgid "React reads Lingui through an I18nProvider."
+msgstr "React reads Lingui through an I18nProvider."
+
+#: ReactRichTextIsland.tsx:12
+msgid "React rich text"
+msgstr "React rich text"
+
+#: ReactRichTextIsland.tsx:15
+msgid "React rich text keeps component placeholders intact."
+msgstr "React rich text keeps component placeholders intact."
+
+#: ReactFormatsIsland.tsx:17
+msgid "React runs plural, select, and selectOrdinal macros in component code."
+msgstr "React runs plural, select, and selectOrdinal macros in component code."
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Render stamp: {renderStamp}"
+msgstr "Render stamp: {renderStamp}"
+
+#: index.astro?extract-expression:3
+msgid "Render Svelte and React islands with the same locale."
+msgstr "Render Svelte and React islands with the same locale."
+
+#: settings.astro?extract-component:3
+msgid "Return to the <0>home page</0> when you are done."
+msgstr "Return to the <0>home page</0> when you are done."
+
+#: AppLayout.astro?frontmatter:29
+#: rich-text.astro?extract-expression:4
+msgid "Rich text"
+msgstr "Rich text"
+
+#: index.astro?extract-expression:3
+msgid "Rich text messages"
+msgstr "Rich text messages"
+
+#: rich-text.astro?frontmatter:10
+msgid "Rich text page"
+msgstr "Rich text page"
+
+#: rich-text.astro?extract-expression:4
+msgid "Rich text translation checks"
+msgstr "Rich text translation checks"
+
+#: rich-text.astro?extract-expression:4
+msgid "Rich text translations keep links and emphasis intact."
+msgstr "Rich text translations keep links and emphasis intact."
+
+#: a.astro?extract-expression:3
+#: b.astro?extract-expression:3
+msgid "Router page A"
+msgstr "Router page A"
+
+#: a.astro?extract-expression:3
+#: b.astro?extract-expression:3
+msgid "Router page B"
+msgstr "Router page B"
+
+#: [slug].astro?extract-expression:4
+#: AppLayout.astro?frontmatter:31
+msgid "Routing"
+msgstr "Routing"
+
+#: [slug].astro?frontmatter:8
+msgid "Routing page"
+msgstr "Routing page"
+
+#: AppLayout.astro?frontmatter:27
+#: server.astro?extract-expression:3
+msgid "Server"
+msgstr "Server"
+
+#: index.astro?extract-expression:3
+msgid "Server locale: {localeLabel}"
+msgstr "Server locale: {localeLabel}"
+
+#: server.astro?frontmatter:9
+msgid "Server page"
+msgstr "Server page"
+
+#: server.astro?extract-expression:3
+msgid "Server translation checks"
+msgstr "Server translation checks"
+
+#: index.astro?extract-expression:3
+msgid "Server translations"
+msgstr "Server translations"
+
+#: AppLayout.astro?frontmatter:32
+#: settings.astro?extract-expression:4
+msgid "Settings"
+msgstr "Settings"
+
+#: settings.astro?frontmatter:9
+msgid "Settings page"
+msgstr "Settings page"
+
+#: settings.astro?extract-expression:4
+msgid "Svelte activates Lingui inside its island."
+msgstr "Svelte activates Lingui inside its island."
+
+#: islands.astro?extract-expression:3
+msgid "Svelte and React islands read the same active locale."
+msgstr "Svelte and React islands read the same active locale."
+
+#: src/components/svelte/SvelteRichTextIsland.svelte:28
+msgid "Svelte can preserve <0>strong emphasis</0> in translated output."
+msgstr "Svelte can preserve <0>strong emphasis</0> in translated output."
+
+#: src/components/svelte/SvelteFormatsIsland.svelte:23
+msgid "Svelte formats"
+msgstr "Svelte formats"
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:19
+msgid "Svelte island"
+msgstr "Svelte island"
+
+#: TransitionShowcase.astro?extract-expression:3
+msgid "Svelte islands"
+msgstr "Svelte islands"
+
+#: src/components/svelte/SvelteRichTextIsland.svelte:21
+msgid "Svelte keeps the <0>settings link</0> inside a translated sentence."
+msgstr "Svelte keeps the <0>settings link</0> inside a translated sentence."
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:21
+msgid "Svelte macros keep working inside Astro."
+msgstr "Svelte macros keep working inside Astro."
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:41
+msgid "Svelte props say {pageLabel} in {localeLabel}."
+msgstr "Svelte props say {pageLabel} in {localeLabel}."
+
+#: src/components/svelte/SvelteRichTextIsland.svelte:15
+msgid "Svelte rich text"
+msgstr "Svelte rich text"
+
+#: src/components/svelte/SvelteRichTextIsland.svelte:18
+msgid "Svelte rich text keeps component placeholders intact."
+msgstr "Svelte rich text keeps component placeholders intact."
+
+#: src/components/svelte/SvelteFormatsIsland.svelte:26
+msgid "Svelte runs plural, select, and selectOrdinal macros in component code."
+msgstr "Svelte runs plural, select, and selectOrdinal macros in component code."
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:34
+msgid "Svelte sees locale {localeLabel}."
+msgstr "Svelte sees locale {localeLabel}."
+
+#: [slug].astro?extract-component:3
+msgid "Switch to the <0>second route</0> without dropping the locale."
+msgstr "Switch to the <0>second route</0> without dropping the locale."
+
+#: src/components/svelte/SvelteLinguiIsland.svelte:23
+msgid "The active <0>Lingui context</0> is created inside the Svelte island."
+msgstr "The active <0>Lingui context</0> is created inside the Svelte island."
+
+#: ReactLinguiIsland.tsx:21
+msgid "The active locale reaches React through a dedicated Lingui instance."
+msgstr "The active locale reaches React through a dedicated Lingui instance."
+
+#: formats.astro?extract-expression:7
+msgid "The cards below mirror the same macro families inside component code."
+msgstr "The cards below mirror the same macro families inside component code."
+
+#: rich-text.astro?extract-expression:4
+msgid "The cards below render their own rich text messages for comparison."
+msgstr "The cards below render their own rich text messages for comparison."
+
+#: server.astro?extract-expression:4
+msgid "The current locale label is {localeLabel}, and it comes from the same request."
+msgstr "The current locale label is {localeLabel}, and it comes from the same request."
+
+#: server.astro?extract-expression:4
+msgid "The layout, page body, and locale badge all resolve from the request-bound Lingui instance."
+msgstr "The layout, page body, and locale badge all resolve from the request-bound Lingui instance."
+
+#: [slug].astro?extract-expression:5
+msgid "The locale cookie still applies here, so the translated page matches the previous request."
+msgstr "The locale cookie still applies here, so the translated page matches the previous request."
+
+#: settings.astro?extract-expression:5
+msgid "The locale is stored in a cookie so the next request stays consistent."
+msgstr "The locale is stored in a cookie so the next request stays consistent."
+
+#: transitions.astro?extract-expression:4
+msgid "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
+msgstr "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
+
+#: server.astro?extract-expression:3
+msgid "This paragraph was translated directly inside a .astro page."
+msgstr "This paragraph was translated directly inside a .astro page."
+
+#: ReactTransitionCounterIsland.tsx:38
+msgid "This React island remounts whenever the route or locale changes."
+msgstr "This React island remounts whenever the route or locale changes."
+
+#: ReactTransitionCounterIsland.tsx:40
+msgid "This React island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
+msgstr "This React island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
+
+#: ReactTransitionCounterIsland.tsx:39
+msgid "This React island uses transition:persist, so its counter survives while locale and page props still update."
+msgstr "This React island uses transition:persist, so its counter survives while locale and page props still update."
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:35
+msgid "This Svelte island remounts whenever the route or locale changes."
+msgstr "This Svelte island remounts whenever the route or locale changes."
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:37
+msgid "This Svelte island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
+msgstr "This Svelte island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:36
+msgid "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
+msgstr "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
+
+#: a.astro?extract-expression:3
+#: a.astro?frontmatter:8
+#: b.astro?extract-expression:3
+#: b.astro?frontmatter:8
+msgid "Transition demo with ClientRouter"
+msgstr "Transition demo with ClientRouter"
+
+#: a.astro?extract-expression:3
+#: a.astro?frontmatter:8
+#: b.astro?extract-expression:3
+#: b.astro?frontmatter:8
+msgid "Transition demo without ClientRouter"
+msgstr "Transition demo without ClientRouter"
+
+#: transitions.astro?extract-expression:4
+msgid "transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation."
+msgstr "transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation."
+
+#: AppLayout.astro?frontmatter:33
+#: transitions.astro?extract-expression:3
+msgid "Transitions"
+msgstr "Transitions"
+
+#: transitions.astro?frontmatter:7
+msgid "Transitions page"
+msgstr "Transitions page"
+
+#: index.astro?extract-expression:3
+msgid "Use cookies to keep the next request aligned."
+msgstr "Use cookies to keep the next request aligned."
+
+#: TransitionShowcase.astro?frontmatter:26
+msgid "Use the header language switcher and the paired route link below. The plain persisted islands should keep their counters while still updating to the new locale and page label, while persisted-props keeps both frozen."
+msgstr "Use the header language switcher and the paired route link below. The plain persisted islands should keep their counters while still updating to the new locale and page label, while persisted-props keeps both frozen."
+
+#: TransitionShowcase.astro?frontmatter:27
+msgid "Use the header language switcher and the paired route link below. Without ClientRouter, every island remounts, so no state survives and every locale change recreates the islands."
+msgstr "Use the header language switcher and the paired route link below. Without ClientRouter, every island remounts, so no state survives and every locale change recreates the islands."
+
+#: TransitionShowcase.astro?extract-expression:4
+msgid "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
+msgstr "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
+
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
+msgid "Verification routes"
+msgstr "Verification routes"
+
+#: index.astro?extract-expression:3
+msgid "Verify linked and emphasized translations across runtimes."
+msgstr "Verify linked and emphasized translations across runtimes."
+
+#: ReactTransitionCounterIsland.tsx:29
+msgid "Volatile React island"
+msgstr "Volatile React island"
+
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:28
+msgid "Volatile Svelte island"
+msgstr "Volatile Svelte island"
+
+#: transitions.astro?extract-expression:3
+msgid "With ClientRouter"
+msgstr "With ClientRouter"
+
+#: transitions.astro?extract-expression:3
+msgid "Without ClientRouter"
+msgstr "Without ClientRouter"
+
+#: TransitionShowcase.astro?frontmatter:24
+msgid "Without ClientRouter, every navigation reloads the document."
+msgstr "Without ClientRouter, every navigation reloads the document."

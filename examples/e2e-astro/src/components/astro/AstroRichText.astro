@@ -1,0 +1,26 @@
+---
+import { t, Trans } from "lingui-for-astro/macro";
+---
+
+<section class="card border-base-300 bg-base-100 border shadow-lg">
+  <div class="card-body">
+    <p class="badge badge-accent badge-outline flex-none">
+      <Trans>Astro rich text</Trans>
+    </p>
+    <h2 class="card-title">
+      <Trans>Astro rich text keeps component placeholders intact.</Trans>
+    </h2>
+    <p class="text-base-content/70">
+      <Trans>
+        Astro keeps the{" "}
+        <a class="link link-primary" href="/settings">settings link</a>{" "}
+        inside a translated sentence.
+      </Trans>
+    </p>
+    <p class="text-base-content/70">
+      <Trans>
+        Astro can preserve <strong>strong emphasis</strong> in translated output.
+      </Trans>
+    </p>
+  </div>
+</section>

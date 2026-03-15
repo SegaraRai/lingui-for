@@ -1,0 +1,40 @@
+---
+import { plural, select, selectOrdinal, t } from "lingui-for-astro/macro";
+
+import AppLayout from "../layouts/AppLayout.astro";
+import ReactFormatsIsland from "../components/react/ReactFormatsIsland";
+import SvelteFormatsIsland from "../components/svelte/SvelteFormatsIsland.svelte";
+import AstroFormats from "../components/astro/AstroFormats.astro";
+
+const locale = Astro.locals.locale;
+const currentPage = t`Formats page`;
+---
+
+<AppLayout
+  title={t`Format macro checks`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <section class="card border-base-300 bg-base-100 border shadow-xl">
+    <div class="card-body gap-4">
+      <p class="badge badge-primary badge-outline flex-none">
+        {t`Formats`}
+      </p>
+      <h1 class="text-3xl font-black tracking-tight">
+        {t`Plural and selection macros cover count, tone, and rank.`}
+      </h1>
+      <p class="text-base-content/70">
+        {
+          t`The cards below mirror the same macro families inside component code.`
+        }
+      </p>
+    </div>
+  </section>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <AstroFormats />
+    <SvelteFormatsIsland client:load locale={locale} />
+    <ReactFormatsIsland client:load locale={locale} />
+  </div>
+</AppLayout>

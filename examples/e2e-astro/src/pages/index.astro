@@ -1,0 +1,143 @@
+---
+import { t } from "lingui-for-astro/macro";
+
+import AppLayout from "../layouts/AppLayout.astro";
+import { getLocaleLabel } from "../lib/i18n/runtime";
+
+const locale = Astro.locals.locale;
+const localeLabel = getLocaleLabel(locale);
+const currentPage = t`Overview`;
+---
+
+<AppLayout
+  title={t`Lingui Astro multi-page playground`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <section
+    class="hero rounded-box border-base-300 bg-base-100 border shadow-xl"
+  >
+    <div class="hero-content justify-start px-6 py-10">
+      <div class="max-w-3xl space-y-4">
+        <p class="badge badge-primary badge-outline flex-none">
+          {t`Overview`}
+        </p>
+        <h1 class="text-4xl font-black tracking-tight sm:text-5xl">
+          {t`One Astro app, several translation checkpoints`}
+        </h1>
+        <p class="text-base-content/70">
+          {t`Each page isolates one concern so regressions are easier to spot.`}
+        </p>
+        <p class="badge badge-lg badge-secondary flex-none">
+          {t`Server locale: ${localeLabel}`}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`Verification routes`}
+        </p>
+        <h2 class="card-title">{t`Server translations`}</h2>
+        <p class="text-base-content/70">
+          {t`Check request-scoped Astro translations and shared layout text.`}
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/server">/server</a>
+        </div>
+      </div>
+    </section>
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`Verification routes`}
+        </p>
+        <h2 class="card-title">{t`Framework islands`}</h2>
+        <p class="text-base-content/70">
+          {t`Render Svelte and React islands with the same locale.`}
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/islands">/islands</a>
+        </div>
+      </div>
+    </section>
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`Verification routes`}
+        </p>
+        <h2 class="card-title">{t`Rich text messages`}</h2>
+        <p class="text-base-content/70">
+          {t`Verify linked and emphasized translations across runtimes.`}
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/rich-text">/rich-text</a>
+        </div>
+      </div>
+    </section>
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`Verification routes`}
+        </p>
+        <h2 class="card-title">{t`Message formats`}</h2>
+        <p class="text-base-content/70">
+          {t`Exercise plural, select, and selectOrdinal macros.`}
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/formats">/formats</a>
+        </div>
+      </div>
+    </section>
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`Verification routes`}
+        </p>
+        <h2 class="card-title">{t`Dynamic routing`}</h2>
+        <p class="text-base-content/70">
+          {t`Confirm route params and locale cookies survive navigation.`}
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/routing/alpha"
+            >/routing/alpha</a
+          >
+        </div>
+      </div>
+    </section>
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`Verification routes`}
+        </p>
+        <h2 class="card-title">{t`Locale persistence`}</h2>
+        <p class="text-base-content/70">
+          {t`Use cookies to keep the next request aligned.`}
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/settings">/settings</a>
+        </div>
+      </div>
+    </section>
+    <section class="card border-base-300 bg-base-100 border shadow-lg">
+      <div class="card-body">
+        <p class="badge badge-accent badge-outline flex-none">
+          {t`Verification routes`}
+        </p>
+        <h2 class="card-title">{t`Client transitions`}</h2>
+        <p class="text-base-content/70">
+          {
+            t`Compare whether persisted Svelte and React islands keep state while locale and page props still update.`
+          }
+        </p>
+        <div class="card-actions justify-end">
+          <a class="btn btn-primary btn-sm" href="/transitions">/transitions</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</AppLayout>

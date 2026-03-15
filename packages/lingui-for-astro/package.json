@@ -1,0 +1,129 @@
+{
+  "name": "lingui-for-astro",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/runtime/index.mjs",
+  "types": "./dist/runtime/index.d.mts",
+  "sideEffects": [
+    "**/*.astro"
+  ],
+  "scripts": {
+    "build": "tsdown --config tsdown.config.ts && node ./scripts/copy-runtime-assets.mjs",
+    "check:ts": "pnpm exec tsc -b --noEmit",
+    "test": "vitest run"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/runtime/index.d.mts",
+      "default": "./dist/runtime/index.mjs"
+    },
+    "./compiler-core": {
+      "types": "./dist/compiler-core/index.d.mts",
+      "default": "./dist/compiler-core/index.mjs"
+    },
+    "./extractor": {
+      "types": "./dist/extractor/index.d.mts",
+      "default": "./dist/extractor/index.mjs"
+    },
+    "./macro": {
+      "types": "./dist/macro/index.d.mts",
+      "default": "./dist/macro/index.mjs"
+    },
+    "./runtime": {
+      "types": "./dist/runtime/index.d.mts",
+      "default": "./dist/runtime/index.mjs"
+    },
+    "./runtime/RuntimeTrans.astro": "./dist/runtime/RuntimeTrans.astro",
+    "./unplugin": {
+      "types": "./dist/unplugin/index.d.mts",
+      "default": "./dist/unplugin/index.mjs"
+    },
+    "./unplugin/types": {
+      "types": "./dist/unplugin/types.d.mts",
+      "default": "./dist/unplugin/types.mjs"
+    },
+    "./unplugin/bun": {
+      "types": "./dist/unplugin/bun.d.mts",
+      "default": "./dist/unplugin/bun.mjs"
+    },
+    "./unplugin/esbuild": {
+      "types": "./dist/unplugin/esbuild.d.mts",
+      "default": "./dist/unplugin/esbuild.mjs"
+    },
+    "./unplugin/rolldown": {
+      "types": "./dist/unplugin/rolldown.d.mts",
+      "default": "./dist/unplugin/rolldown.mjs"
+    },
+    "./unplugin/rollup": {
+      "types": "./dist/unplugin/rollup.d.mts",
+      "default": "./dist/unplugin/rollup.mjs"
+    },
+    "./unplugin/rspack": {
+      "types": "./dist/unplugin/rspack.d.mts",
+      "default": "./dist/unplugin/rspack.mjs"
+    },
+    "./unplugin/vite": {
+      "types": "./dist/unplugin/vite.d.mts",
+      "default": "./dist/unplugin/vite.mjs"
+    },
+    "./unplugin/webpack": {
+      "types": "./dist/unplugin/webpack.d.mts",
+      "default": "./dist/unplugin/webpack.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/generator": "^7.29.1",
+    "@babel/traverse": "^7.29.0",
+    "@babel/types": "^7.29.0",
+    "@lingui/babel-plugin-lingui-macro": "^5.9.3",
+    "@lingui/cli": "^5.9.3",
+    "@lingui/conf": "^5.9.3",
+    "@lingui/core": "^5.9.3",
+    "astro-analyzer-wasm": "workspace:*",
+    "magic-string": "^0.30.21",
+    "unplugin": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__generator": "^7.27.0",
+    "@types/babel__traverse": "^7.28.0",
+    "@types/node": "^25.5.0",
+    "dedent": "^1.7.2",
+    "tsdown": "0.21.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@lingui/cli": "^5.0.0",
+    "@lingui/conf": "^5.0.0",
+    "@lingui/core": "^5.0.0",
+    "astro": "^5 || ^6",
+    "esbuild": "*",
+    "rolldown": "^1.0.0-0",
+    "rollup": "^3 || ^4",
+    "vite": ">=3",
+    "webpack": "^4 || ^5"
+  },
+  "peerDependenciesMeta": {
+    "esbuild": {
+      "optional": true
+    },
+    "rolldown": {
+      "optional": true
+    },
+    "rollup": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    }
+  }
+}

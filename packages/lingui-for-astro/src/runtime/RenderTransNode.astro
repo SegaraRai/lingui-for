@@ -1,0 +1,37 @@
+---
+import type { TransComponentMap, TransRenderNode } from "./index.mjs";
+
+import RenderTransNodes from "./RenderTransNodes.astro";
+
+const {
+  node,
+  components,
+}: {
+  node: TransRenderNode;
+  components: TransComponentMap;
+} = Astro.props;
+
+const descriptor =
+  typeof node === "string" ? null : (components[node.name] ?? null);
+const ElementTag = descriptor?.kind === "element" ? descriptor.tag : null;
+const ComponentTag =
+  descriptor?.kind === "component" ? descriptor.component : null;
+---
+
+{
+  typeof node === "string" ? (
+    node
+  ) : descriptor ? (
+    ElementTag ? (
+      <ElementTag {...(descriptor.props ?? {})}>
+        <RenderTransNodes nodes={node.children} components={components} />
+      </ElementTag>
+    ) : (
+      <ComponentTag {...(descriptor.props ?? {})}>
+        <RenderTransNodes nodes={node.children} components={components} />
+      </ComponentTag>
+    )
+  ) : (
+    <RenderTransNodes nodes={node.children} components={components} />
+  )
+}

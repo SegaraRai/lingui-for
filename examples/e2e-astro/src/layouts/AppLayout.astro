@@ -1,0 +1,97 @@
+---
+import { ClientRouter } from "astro:transitions";
+import { t } from "lingui-for-astro/macro";
+
+import type { SupportedLocale } from "../lib/i18n/locale";
+import LanguageSwitcher from "../components/LanguageSwitcher.astro";
+
+import "../styles/app.css";
+
+interface Props {
+  title: string;
+  locale: SupportedLocale;
+  pathname: string;
+  currentPage: string;
+  useClientRouter?: boolean;
+}
+
+const {
+  title,
+  locale,
+  pathname,
+  currentPage,
+  useClientRouter = false,
+} = Astro.props;
+const navItems = [
+  { href: "/", label: t`Home` },
+  { href: "/server", label: t`Server` },
+  { href: "/islands", label: t`Islands` },
+  { href: "/rich-text", label: t`Rich text` },
+  { href: "/formats", label: t`Formats` },
+  { href: "/routing/alpha", label: t`Routing` },
+  { href: "/settings", label: t`Settings` },
+  { href: "/transitions", label: t`Transitions` },
+].map((item) => ({
+  ...item,
+  active:
+    item.href === "/"
+      ? pathname === "/"
+      : pathname === item.href || pathname.startsWith(`${item.href}/`),
+}));
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {useClientRouter ? <ClientRouter /> : null}
+  </head>
+  <body class="min-h-screen">
+    <div
+      class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 lg:px-6"
+    >
+      <header
+        class="rounded-box border-base-300 bg-base-100/90 border p-4 shadow-xl backdrop-blur"
+      >
+        <div class="flex flex-col gap-4">
+          <div
+            class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between"
+          >
+            <div class="space-y-2">
+              <p class="badge badge-primary badge-outline flex-none">
+                {t`Lingui for Astro`}
+              </p>
+              <nav class="flex flex-wrap gap-2">
+                {
+                  navItems.map((item) => (
+                    <a
+                      href={item.href}
+                      class:list={[
+                        "btn btn-sm",
+                        item.active ? "btn-primary" : "btn-ghost",
+                      ]}
+                      aria-current={item.active ? "page" : undefined}
+                    >
+                      {item.label}
+                    </a>
+                  ))
+                }
+              </nav>
+            </div>
+            <LanguageSwitcher locale={locale} pathname={pathname} />
+          </div>
+          <div
+            class="alert border-info/20 bg-info/10 text-info-content border text-sm"
+          >
+            <span>{t`Current page: ${currentPage}`}</span>
+          </div>
+        </div>
+      </header>
+      <main class="grid gap-6">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>

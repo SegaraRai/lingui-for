@@ -1,10 +1,13 @@
+target
 node_modules
+
 dist
+
+.astro
 .svelte-kit
 .sveltekit-build
+.vitest-attachments
+__screenshots__
 
 *.log
 *.tsbuildinfo
-
-.vitest-attachments
-__screenshots__

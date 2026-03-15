@@ -72,7 +72,7 @@ export function transformProgram(
     sourceMaps: true,
   });
 
-  if (!result?.ast || !result.code) {
+  if (!result?.ast || result.code == null) {
     throw new Error(`Failed to transform ${request.filename}`);
   }
 

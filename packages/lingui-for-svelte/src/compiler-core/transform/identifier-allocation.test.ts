@@ -7,10 +7,10 @@ describe("createUniqueNameAllocator", () => {
   it("avoids collisions with existing top-level bindings", () => {
     const allocate = createUniqueNameAllocator(
       dedent`
-        import { getLinguiContext } from "lingui-for-svelte/runtime";
+        import { createLinguiAccessors } from "lingui-for-svelte/runtime";
 
         const __l4s_ctx = {};
-        const __l4s_i18n = {};
+        const __l4s_getI18n = {};
         function __l4s_translate() {}
       `,
       {
@@ -19,9 +19,9 @@ describe("createUniqueNameAllocator", () => {
       },
     );
 
-    expect(allocate("getLinguiContext")).toBe("getLinguiContext_1");
+    expect(allocate("createLinguiAccessors")).toBe("createLinguiAccessors_1");
     expect(allocate("__l4s_ctx")).toBe("__l4s_ctx_1");
-    expect(allocate("__l4s_i18n")).toBe("__l4s_i18n_1");
+    expect(allocate("__l4s_getI18n")).toBe("__l4s_getI18n_1");
     expect(allocate("__l4s_translate")).toBe("__l4s_translate_1");
   });
 

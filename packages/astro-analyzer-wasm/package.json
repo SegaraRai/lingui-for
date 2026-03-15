@@ -1,0 +1,19 @@
+{
+  "name": "astro-analyzer-wasm",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist/index_bg.wasm",
+    "dist/index_bg.wasm.d.ts",
+    "dist/index.js",
+    "dist/index.d.ts"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./wasm": "./dist/index_bg.wasm"
+  }
+}

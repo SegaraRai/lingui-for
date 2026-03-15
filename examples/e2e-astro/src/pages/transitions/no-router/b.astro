@@ -1,0 +1,25 @@
+---
+import { t } from "lingui-for-astro/macro";
+
+import TransitionShowcase from "../../../components/TransitionShowcase.astro";
+import AppLayout from "../../../layouts/AppLayout.astro";
+
+const locale = Astro.locals.locale;
+const currentPage = t`Transition demo without ClientRouter`;
+---
+
+<AppLayout
+  title={t`Transition demo without ClientRouter`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <TransitionShowcase
+    locale={locale}
+    clientRouter={false}
+    pageLabel={t`No-router page B`}
+    pageKey="b"
+    nextHref="/transitions/no-router/a"
+    nextLabel={t`No-router page A`}
+  />
+</AppLayout>

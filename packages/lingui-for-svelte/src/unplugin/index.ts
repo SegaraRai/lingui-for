@@ -22,6 +22,10 @@ export const unpluginFactory: UnpluginFactory<
   name: "lingui-for-svelte",
   enforce: "pre",
   transform(code, id) {
+    if (id.startsWith("\0")) {
+      return null;
+    }
+
     const filename = stripQuery(id);
     if (filename !== id) {
       return null;

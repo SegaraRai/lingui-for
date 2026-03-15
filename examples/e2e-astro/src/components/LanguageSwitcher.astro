@@ -1,0 +1,39 @@
+---
+import { t } from "lingui-for-astro/macro";
+
+import { getLocaleLabel } from "../lib/i18n/runtime";
+import type { SupportedLocale } from "../lib/i18n/locale";
+
+interface Props {
+  locale: SupportedLocale;
+  pathname: string;
+}
+
+const { locale, pathname } = Astro.props;
+
+const localeLabel = getLocaleLabel(locale);
+---
+
+<div class="flex flex-wrap items-center gap-2">
+  <a
+    class:list={[
+      "btn btn-sm",
+      locale === "en" ? "btn-secondary" : "btn-outline",
+    ]}
+    href={`${pathname}?lang=en`}
+  >
+    {t`English`}
+  </a>
+  <a
+    class:list={[
+      "btn btn-sm",
+      locale === "ja" ? "btn-secondary" : "btn-outline",
+    ]}
+    href={`${pathname}?lang=ja`}
+  >
+    {t`Japanese`}
+  </a>
+  <p class="badge badge-neutral badge-lg flex-none">
+    {t`Current locale: ${localeLabel}`}
+  </p>
+</div>

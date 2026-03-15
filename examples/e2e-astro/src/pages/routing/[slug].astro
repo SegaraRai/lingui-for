@@ -1,0 +1,46 @@
+---
+import { t, Trans } from "lingui-for-astro/macro";
+
+import AppLayout from "../../layouts/AppLayout.astro";
+
+const locale = Astro.locals.locale;
+const slug = Astro.params.slug ?? "unknown";
+const currentPage = t`Routing page`;
+const alternateSlug = slug === "alpha" ? "beta" : "alpha";
+---
+
+<AppLayout
+  title={t`Dynamic route checks`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <section class="card border-base-300 bg-base-100 border shadow-xl">
+    <div class="card-body gap-4">
+      <p class="badge badge-primary badge-outline flex-none">
+        {t`Routing`}
+      </p>
+      <h1 class="text-3xl font-black tracking-tight">
+        {
+          t`Dynamic routes can translate with params from Astro.url and route data.`
+        }
+      </h1>
+      <p class="text-base-content/70">
+        {t`Now viewing the slug ${slug}.`}
+      </p>
+      <p class="text-base-content/70">
+        {
+          t`The locale cookie still applies here, so the translated page matches the previous request.`
+        }
+      </p>
+      <p class="text-base-content/70">
+        <Trans>
+          Switch to the{" "}<a
+            class="link link-primary"
+            href={`/routing/${alternateSlug}`}>second route</a
+          >{" "}without dropping the locale.
+        </Trans>
+      </p>
+    </div>
+  </section>
+</AppLayout>

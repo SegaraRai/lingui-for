@@ -51,9 +51,9 @@ describe("transformProgram", () => {
         linguiConfig: normalizeLinguiConfig(),
         translationMode: "svelte-context",
         runtimeBindings: {
-          getLinguiContext: "getLinguiContext",
+          createLinguiAccessors: "createLinguiAccessors",
           context: "__l4s_ctx",
-          i18n: "__l4s_i18n",
+          getI18n: "__l4s_getI18n",
           translate: "__l4s_translate",
         },
       },

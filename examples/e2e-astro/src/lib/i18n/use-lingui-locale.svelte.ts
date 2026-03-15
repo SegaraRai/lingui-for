@@ -1,0 +1,17 @@
+import { untrack } from "svelte";
+
+import { setLinguiContext, type I18n } from "lingui-for-svelte/runtime";
+
+import type { SupportedLocale } from "./locale";
+import { createAppI18n, syncAppI18n } from "./runtime";
+
+export function useLinguiLocale(getLocale: () => SupportedLocale): I18n {
+  const i18n = createAppI18n(untrack(getLocale));
+  setLinguiContext(i18n);
+
+  $effect(() => {
+    syncAppI18n(i18n, getLocale());
+  });
+
+  return i18n;
+}

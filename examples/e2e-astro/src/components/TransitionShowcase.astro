@@ -1,0 +1,140 @@
+---
+import { t } from "lingui-for-astro/macro";
+
+import type { SupportedLocale } from "../lib/i18n/locale";
+import ReactTransitionCounterIsland from "./react/ReactTransitionCounterIsland.tsx";
+import SvelteTransitionCounterIsland from "./svelte/SvelteTransitionCounterIsland.svelte";
+
+interface Props {
+  locale: SupportedLocale;
+  clientRouter: boolean;
+  pageLabel: string;
+  pageKey: "a" | "b";
+  nextHref: string;
+  nextLabel: string;
+}
+
+const { locale, clientRouter, pageLabel, pageKey, nextHref, nextLabel } =
+  Astro.props;
+
+const renderStamp = `${pageKey}-${Math.random().toString(36).slice(2, 8)}`;
+const modeBadge = clientRouter ? t`ClientRouter enabled` : t`Full reload mode`;
+const modeHeading = clientRouter
+  ? t`ClientRouter can preserve island state while locale and page props change.`
+  : t`Without ClientRouter, every navigation reloads the document.`;
+const modeBody = clientRouter
+  ? t`Use the header language switcher and the paired route link below. The plain persisted islands should keep their counters while still updating to the new locale and page label, while persisted-props keeps both frozen.`
+  : t`Use the header language switcher and the paired route link below. Without ClientRouter, every island remounts, so no state survives and every locale change recreates the islands.`;
+---
+
+<section class="card border-base-300 bg-base-100 border shadow-xl">
+  <div class="card-body gap-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <p class="badge badge-primary badge-outline flex-none">{modeBadge}</p>
+      <p class="badge badge-secondary badge-outline flex-none">
+        {t`Current demo: ${pageLabel}`}
+      </p>
+    </div>
+    <h1 class="text-3xl font-black tracking-tight">{modeHeading}</h1>
+    <p class="text-base-content/70">{modeBody}</p>
+  </div>
+</section>
+
+<section class="card border-base-300 bg-base-100 border shadow-lg">
+  <div class="card-body gap-3">
+    <p class="badge badge-secondary badge-outline flex-none">
+      {t`How to use this demo`}
+    </p>
+    <p class="text-base-content/70">
+      {t`1. Increment one or more counters in Svelte or React.`}
+    </p>
+    <p class="text-base-content/70">
+      {
+        t`2. Switch between English and Japanese in the header and watch the locale labels.`
+      }
+    </p>
+    <p class="text-base-content/70">
+      {
+        t`3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen.`
+      }
+    </p>
+  </div>
+</section>
+
+<section class="grid gap-4">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="text-2xl font-black tracking-tight">{t`Svelte islands`}</h2>
+    <p class="badge badge-outline flex-none">{t`Page label: ${pageLabel}`}</p>
+  </div>
+  <div class="grid gap-4 xl:grid-cols-3">
+    <SvelteTransitionCounterIsland
+      client:load
+      locale={locale}
+      pageLabel={pageLabel}
+      mode="volatile"
+    />
+    <SvelteTransitionCounterIsland
+      client:load
+      locale={locale}
+      pageLabel={pageLabel}
+      mode="persisted"
+      transition:persist="astro-transition-persisted-svelte"
+    />
+    <SvelteTransitionCounterIsland
+      client:load
+      locale={locale}
+      pageLabel={pageLabel}
+      mode="persisted-props"
+      transition:persist="astro-transition-persisted-svelte-props"
+      transition:persist-props
+    />
+  </div>
+</section>
+
+<section class="grid gap-4">
+  <div class="flex items-center justify-between gap-3">
+    <h2 class="text-2xl font-black tracking-tight">{t`React islands`}</h2>
+    <p class="badge badge-outline flex-none">{t`Locale prop: ${locale}`}</p>
+  </div>
+  <div class="grid gap-4 xl:grid-cols-3">
+    <ReactTransitionCounterIsland
+      client:load
+      locale={locale}
+      pageLabel={pageLabel}
+      mode="volatile"
+    />
+    <ReactTransitionCounterIsland
+      client:load
+      locale={locale}
+      pageLabel={pageLabel}
+      mode="persisted"
+      transition:persist="astro-transition-persisted-react"
+    />
+    <ReactTransitionCounterIsland
+      client:load
+      locale={locale}
+      pageLabel={pageLabel}
+      mode="persisted-props"
+      transition:persist="astro-transition-persisted-react-props"
+      transition:persist-props
+    />
+  </div>
+</section>
+
+<section class="card border-base-300 bg-base-100 border shadow-lg">
+  <div class="card-body gap-4">
+    <p class="badge badge-neutral badge-outline flex-none">
+      {t`Render stamp: ${renderStamp}`}
+    </p>
+    <p class="text-base-content/70">
+      {
+        t`Use this stamp to confirm that the page itself changed even when a persisted island keeps its state.`
+      }
+    </p>
+    <div class="card-actions justify-end">
+      <a class="btn btn-primary btn-sm" href={nextHref}>
+        {t`Open ${nextLabel}`}
+      </a>
+    </div>
+  </div>
+</section>
