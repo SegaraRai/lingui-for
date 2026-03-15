@@ -10,7 +10,9 @@
     "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
     "build": "pnpm run lingui:build && astro build",
     "preview": "astro preview --port 4542",
-    "check:ts": "astro check",
+    "check": "pnpm run check:ts && pnpm run check:markup",
+    "check:ts": "tsc --noEmit",
+    "check:markup": "astro check",
     "pretest": "pnpm run build",
     "test": "vitest run"
   },

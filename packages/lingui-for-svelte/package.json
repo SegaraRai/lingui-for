@@ -10,8 +10,10 @@
   ],
   "scripts": {
     "build": "tsdown --config tsdown.config.ts",
-    "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
-    "check:ts": "tsc -b --noEmit"
+    "check": "pnpm run check:ts && pnpm run check:markup",
+    "check:ts": "tsc -b --noEmit",
+    "check:markup": "svelte-check",
+    "test": "vitest"
   },
   "files": [
     "dist"
@@ -99,7 +101,7 @@
     "svelte-check": "^4.4.5",
     "tsdown": "0.21.2",
     "typescript": "^5.9.3",
-    "unplugin-svelte-import": "workspace:*",
+    "unplugin-markup-import": "workspace:*",
     "vitest": "^4.1.0"
   },
   "peerDependencies": {

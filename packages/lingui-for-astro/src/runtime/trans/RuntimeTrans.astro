@@ -1,12 +1,12 @@
 ---
 import type { MessageDescriptor } from "@lingui/core";
 
+import { getLinguiContext } from "../core/context.ts";
 import {
   formatRichTextTranslation,
-  getLinguiContext,
-  translateRuntimeTrans,
   type TransComponentMap,
-} from "./index.mjs";
+} from "./rich-text.ts";
+import { translateRuntimeTrans } from "./trans-descriptor.ts";
 import RenderTransNodes from "./RenderTransNodes.astro";
 
 const {

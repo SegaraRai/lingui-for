@@ -8,7 +8,6 @@ import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
-  PACKAGE_RUNTIME_TRANS_COMPONENT,
   RUNTIME_BINDING_CONTEXT,
   RUNTIME_BINDING_GET_LINGUI_CONTEXT,
   RUNTIME_BINDING_I18N,
@@ -291,7 +290,7 @@ function buildFrontmatterPrelude(
 
   if (includeRuntimeTrans) {
     lines.push(
-      `import ${RUNTIME_BINDING_RUNTIME_TRANS} from "${PACKAGE_RUNTIME_TRANS_COMPONENT}";`,
+      `import { RuntimeTrans as ${RUNTIME_BINDING_RUNTIME_TRANS} } from "${PACKAGE_RUNTIME}";`,
     );
   }
 

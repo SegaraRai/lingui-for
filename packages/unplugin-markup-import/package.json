@@ -1,5 +1,5 @@
 {
-  "name": "unplugin-svelte-import",
+  "name": "unplugin-markup-import",
   "version": "0.0.0",
   "type": "module",
   "main": "./dist/index.mjs",
@@ -68,7 +68,6 @@
     "esbuild": "*",
     "rolldown": "^1.0.0-0",
     "rollup": "^3 || ^4",
-    "svelte": "^5.0.0",
     "vite": ">=3",
     "webpack": "^4 || ^5"
   },

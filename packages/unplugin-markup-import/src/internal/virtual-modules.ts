@@ -4,10 +4,10 @@ import {
   resolveRelativeSpecifier,
 } from "./path.ts";
 
-const VIRTUAL_PROXY_PREFIX = "\0unplugin-svelte-import:proxy:";
-const VIRTUAL_FACADE_PREFIX = "\0unplugin-svelte-import:facade:";
-const SCAN_QUERY = "?unplugin-svelte-import-scan";
-const PUBLIC_QUERY = "?unplugin-svelte-import-public";
+const VIRTUAL_PROXY_PREFIX = "\0unplugin-markup-import:proxy:";
+const VIRTUAL_FACADE_PREFIX = "\0unplugin-markup-import:facade:";
+const SCAN_QUERY = "?unplugin-markup-import-scan";
+const PUBLIC_QUERY = "?unplugin-markup-import-public";
 
 export function isScanRequest(id: string): boolean {
   return id.endsWith(SCAN_QUERY);
@@ -21,12 +21,15 @@ export function stripKnownQuery(value: string): string {
   return value.replace(SCAN_QUERY, "").replace(PUBLIC_QUERY, "");
 }
 
-export function shouldPreserveRelativeSvelteImport(
+export function shouldPreserveRelativeMarkupImport(
   specifier: string,
   importer: string | undefined,
+  extensions: readonly string[],
 ): boolean {
   return Boolean(
-    importer && specifier.startsWith(".") && specifier.endsWith(".svelte"),
+    importer &&
+      specifier.startsWith(".") &&
+      extensions.some((extension) => specifier.endsWith(extension)),
   );
 }
 

@@ -13,20 +13,20 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/routes/playground/components/+page.svelte:40
+#: src/routes/playground/components/+page.svelte:44
 msgid "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
 msgstr "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
 
-#: src/routes/playground/components/+page.svelte:54
+#: src/routes/playground/components/+page.svelte:58
 msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 msgstr "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 
-#: src/routes/playground/components/+page.svelte:47
+#: src/routes/playground/components/+page.svelte:51
 msgid "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
 msgstr "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
 
-#: src/routes/playground/+page.svelte:19
-#: src/routes/playground/syntax/+page.svelte:33
+#: src/routes/playground/+page.svelte:20
+#: src/routes/playground/syntax/+page.svelte:32
 msgid "$t across Svelte syntax positions"
 msgstr "$t across Svelte syntax positions"
 
@@ -34,7 +34,7 @@ msgstr "$t across Svelte syntax positions"
 msgid "$t and rune-backed state"
 msgstr "$t and rune-backed state"
 
-#: src/routes/playground/+page.svelte:13
+#: src/routes/playground/+page.svelte:14
 msgid "$t with rune-backed state from a .svelte.ts module"
 msgstr "$t with rune-backed state from a .svelte.ts module"
 
@@ -42,22 +42,22 @@ msgstr "$t with rune-backed state from a .svelte.ts module"
 msgid "Active"
 msgstr "Active"
 
-#: src/lib/app/PlaygroundNav.svelte:22
-#: src/routes/playground/+page.svelte:6
+#: src/lib/app/PlaygroundNav.svelte:23
+#: src/routes/playground/+page.svelte:7
 #: src/routes/playground/basic/+page.svelte:14
 msgid "Basic"
 msgstr "Basic"
 
-#: src/routes/playground/syntax/+page.svelte:66
+#: src/routes/playground/syntax/+page.svelte:65
 msgid "Bump revision"
 msgstr "Bump revision"
 
-#: src/routes/settings/+page.svelte:17
+#: src/routes/settings/+page.svelte:18
 msgid "Choose a language with the switcher in the header. The server stores your preference in a cookie so new routes keep the same locale."
 msgstr "Choose a language with the switcher in the header. The server stores your preference in a cookie so new routes keep the same locale."
 
-#: src/lib/app/PlaygroundNav.svelte:50
-#: src/routes/playground/+page.svelte:30
+#: src/lib/app/PlaygroundNav.svelte:51
+#: src/routes/playground/+page.svelte:31
 #: src/routes/playground/components/+page.svelte:11
 msgid "Components"
 msgstr "Components"
@@ -71,40 +71,40 @@ msgstr "Count"
 msgid "Count: {0}"
 msgstr "Count: {0}"
 
-#: src/routes/playground/+page.svelte:20
+#: src/routes/playground/+page.svelte:21
 msgid "Covers @const, attributes, snippets, keyed blocks, and other expression sites."
 msgstr "Covers @const, attributes, snippets, keyed blocks, and other expression sites."
 
-#: src/routes/playground/+page.svelte:32
+#: src/routes/playground/+page.svelte:33
 msgid "Covers ICU component syntax with interactive values."
 msgstr "Covers ICU component syntax with interactive values."
 
-#: src/routes/playground/+page.svelte:26
+#: src/routes/playground/+page.svelte:27
 msgid "Covers placeholder parsing and runtime rendering of translated rich text."
 msgstr "Covers placeholder parsing and runtime rendering of translated rich text."
 
-#: src/routes/playground/+page.svelte:8
+#: src/routes/playground/+page.svelte:9
 msgid "Covers t, msg, RuntimeTrans, and helper modules without explicit ids."
 msgstr "Covers t, msg, RuntimeTrans, and helper modules without explicit ids."
 
-#: src/routes/playground/+page.svelte:14
+#: src/routes/playground/+page.svelte:15
 msgid "Covers top-level reactive strings, callback contexts, and module-owned state."
 msgstr "Covers top-level reactive strings, callback contexts, and module-owned state."
 
-#: src/routes/settings/+page.svelte:21
+#: src/routes/settings/+page.svelte:24
 msgid "Current language"
 msgstr "Current language"
 
-#: src/routes/playground/reactive/+page.svelte:70
+#: src/routes/playground/reactive/+page.svelte:82
 msgid "Current status"
 msgstr "Current status"
 
 #: src/routes/playground/components/+page.svelte:24
-#: src/routes/playground/reactive/+page.svelte:56
+#: src/routes/playground/reactive/+page.svelte:60
 msgid "Decrease"
 msgstr "Decrease"
 
-#: src/routes/+page.svelte:58
+#: src/routes/+page.svelte:70
 msgid "Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants."
 msgstr "Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants."
 
@@ -120,7 +120,7 @@ msgstr "Descriptor from a .svelte.ts module."
 msgid "Descriptor from a plain TypeScript helper."
 msgstr "Descriptor from a plain TypeScript helper."
 
-#: src/routes/playground/+page.svelte:7
+#: src/routes/playground/+page.svelte:8
 msgid "Direct macro usage in Svelte and plain TypeScript"
 msgstr "Direct macro usage in Svelte and plain TypeScript"
 
@@ -128,21 +128,21 @@ msgstr "Direct macro usage in Svelte and plain TypeScript"
 msgid "Direct macros in components and plain modules"
 msgstr "Direct macros in components and plain modules"
 
-#: src/routes/+page.svelte:43
+#: src/routes/+page.svelte:49
 msgid "Direct usage"
 msgstr "Direct usage"
 
-#: src/routes/playground/+layout.svelte:18
+#: src/routes/playground/+layout.svelte:19
 msgid "Each route keeps one category of Lingui-for-Svelte behavior easy to inspect, extract, compile, and test."
 msgstr "Each route keeps one category of Lingui-for-Svelte behavior easy to inspect, extract, compile, and test."
 
-#: src/routes/playground/+page.svelte:25
+#: src/routes/playground/+page.svelte:26
 #: src/routes/playground/rich-text/+page.svelte:13
 msgid "Embedded elements and components inside Trans"
 msgstr "Embedded elements and components inside Trans"
 
 #: src/lib/app/LanguageSwitcher.svelte:25
-#: src/routes/settings/+page.svelte:6
+#: src/routes/settings/+page.svelte:7
 msgid "English"
 msgstr "English"
 
@@ -158,34 +158,34 @@ msgid "playground.ids.trans"
 msgstr "Explicit id from a Trans component."
 
 #. js-lingui-explicit-id
-#: src/routes/playground/ids/+page.svelte:30
+#: src/routes/playground/ids/+page.svelte:33
 msgid "playground.ids.call"
 msgstr "Explicit id from t({...})."
 
-#: src/lib/app/PlaygroundNav.svelte:57
-#: src/routes/playground/+page.svelte:36
+#: src/lib/app/PlaygroundNav.svelte:58
+#: src/routes/playground/+page.svelte:37
 #: src/routes/playground/ids/+page.svelte:14
 msgid "Explicit ids"
 msgstr "Explicit ids"
 
-#: src/routes/playground/syntax/+page.svelte:47
+#: src/routes/playground/syntax/+page.svelte:46
 msgid "Filter playground syntax examples"
 msgstr "Filter playground syntax examples"
 
-#: src/routes/playground/syntax/+page.svelte:89
+#: src/routes/playground/syntax/+page.svelte:88
 msgid "Filter text: (empty)"
 msgstr "Filter text: (empty)"
 
 #. placeholder {0}: syntaxState.query
-#: src/routes/playground/syntax/+page.svelte:87
+#: src/routes/playground/syntax/+page.svelte:86
 msgid "Filter text: {0}"
 msgstr "Filter text: {0}"
 
-#: src/routes/playground/+layout.svelte:15
+#: src/routes/playground/+layout.svelte:16
 msgid "Focused routes for library verification"
 msgstr "Focused routes for library verification"
 
-#: src/routes/playground/syntax/+page.svelte:63
+#: src/routes/playground/syntax/+page.svelte:62
 msgid "Force a keyed subtree refresh"
 msgstr "Force a keyed subtree refresh"
 
@@ -198,7 +198,7 @@ msgstr "Hello {0} from the reactive route."
 msgid "Hello {name} from the basic route."
 msgstr "Hello {name} from the basic route."
 
-#: src/lib/app/AppShell.svelte:25
+#: src/lib/app/AppShell.svelte:26
 msgid "Home"
 msgstr "Home"
 
@@ -214,34 +214,34 @@ msgstr "Idle"
 msgid "Immediate translation in markup."
 msgstr "Immediate translation in markup."
 
-#: src/routes/playground/components/+page.svelte:27
-#: src/routes/playground/reactive/+page.svelte:59
+#: src/routes/playground/components/+page.svelte:31
+#: src/routes/playground/reactive/+page.svelte:67
 msgid "Increase"
 msgstr "Increase"
 
 #: src/lib/app/LanguageSwitcher.svelte:27
-#: src/routes/settings/+page.svelte:6
+#: src/routes/settings/+page.svelte:7
 msgid "Japanese"
 msgstr "Japanese"
 
-#: src/routes/playground/+page.svelte:38
+#: src/routes/playground/+page.svelte:39
 msgid "Keeps explicit-id coverage available without turning the whole app into test code."
 msgstr "Keeps explicit-id coverage available without turning the whole app into test code."
 
-#: src/routes/playground/syntax/+page.svelte:109
+#: src/routes/playground/syntax/+page.svelte:110
 msgid "Keyed block example"
 msgstr "Keyed block example"
 
 #. placeholder {0}: syntaxState.revision
-#: src/routes/playground/syntax/+page.svelte:110
+#: src/routes/playground/syntax/+page.svelte:111
 msgid "Keyed subtree revision {0}"
 msgstr "Keyed subtree revision {0}"
 
-#: src/routes/settings/+page.svelte:15
+#: src/routes/settings/+page.svelte:16
 msgid "Language preference"
 msgstr "Language preference"
 
-#: src/routes/+page.svelte:56
+#: src/routes/+page.svelte:67
 msgid "Library-specific checks stay out of the main app flow"
 msgstr "Library-specific checks stay out of the main app flow"
 
@@ -249,11 +249,11 @@ msgstr "Library-specific checks stay out of the main app flow"
 msgid "Lingui in a small SvelteKit application"
 msgstr "Lingui in a small SvelteKit application"
 
-#: src/routes/+page.svelte:32
+#: src/routes/+page.svelte:34
 msgid "Locale session"
 msgstr "Locale session"
 
-#: src/routes/+page.svelte:45
+#: src/routes/+page.svelte:52
 msgid "Messages live next to the code that renders them"
 msgstr "Messages live next to the code that renders them"
 
@@ -266,25 +266,25 @@ msgstr "Name"
 msgid "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
 msgstr "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
 
-#: src/lib/app/PlaygroundNav.svelte:15
+#: src/lib/app/PlaygroundNav.svelte:16
 msgid "Overview"
 msgstr "Overview"
 
-#: src/routes/+page.svelte:47
+#: src/routes/+page.svelte:55
 msgid "Pages and components call Lingui macros directly instead of pulling copy from a central message file."
 msgstr "Pages and components call Lingui macros directly instead of pulling copy from a central message file."
 
-#: src/lib/app/AppShell.svelte:27
-#: src/routes/+page.svelte:54
-#: src/routes/playground/+layout.svelte:12
+#: src/lib/app/AppShell.svelte:28
+#: src/routes/+page.svelte:64
+#: src/routes/playground/+layout.svelte:13
 msgid "Playground"
 msgstr "Playground"
 
-#: src/lib/app/PlaygroundNav.svelte:8
+#: src/lib/app/PlaygroundNav.svelte:9
 msgid "Playground sections"
 msgstr "Playground sections"
 
-#: src/routes/playground/+page.svelte:31
+#: src/routes/playground/+page.svelte:32
 msgid "Plural, Select, and SelectOrdinal component macros"
 msgstr "Plural, Select, and SelectOrdinal component macros"
 
@@ -292,12 +292,12 @@ msgstr "Plural, Select, and SelectOrdinal component macros"
 msgid "Plural, Select, and SelectOrdinal keep branch-heavy messages readable inside markup."
 msgstr "Plural, Select, and SelectOrdinal keep branch-heavy messages readable inside markup."
 
-#: src/routes/settings/+page.svelte:13
+#: src/routes/settings/+page.svelte:14
 msgid "Preferences"
 msgstr "Preferences"
 
-#: src/lib/app/PlaygroundNav.svelte:29
-#: src/routes/playground/+page.svelte:12
+#: src/lib/app/PlaygroundNav.svelte:30
+#: src/routes/playground/+page.svelte:13
 #: src/routes/playground/reactive/+page.svelte:24
 msgid "Reactive"
 msgstr "Reactive"
@@ -310,13 +310,13 @@ msgstr "Read the <0>settings page</0>and look for the <1>cookie-backed locale</1
 msgid "Real app"
 msgstr "Real app"
 
-#: src/lib/app/PlaygroundNav.svelte:43
-#: src/routes/playground/+page.svelte:24
+#: src/lib/app/PlaygroundNav.svelte:44
+#: src/routes/playground/+page.svelte:25
 #: src/routes/playground/rich-text/+page.svelte:10
 msgid "Rich text"
 msgstr "Rich text"
 
-#: src/routes/playground/rich-text/+page.svelte:28
+#: src/routes/playground/rich-text/+page.svelte:30
 msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 msgstr "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 
@@ -325,31 +325,31 @@ msgstr "Rich text can keep <0>semantic emphasis</0> while still using Lingui's m
 msgid "Row {0}: {item}"
 msgstr "Row {0}: {item}"
 
-#: src/routes/playground/syntax/+page.svelte:41
+#: src/routes/playground/syntax/+page.svelte:40
 msgid "Search examples"
 msgstr "Search examples"
 
-#: src/lib/app/AppShell.svelte:26
+#: src/lib/app/AppShell.svelte:27
 msgid "Settings"
 msgstr "Settings"
 
-#: src/routes/playground/+page.svelte:37
+#: src/routes/playground/+page.svelte:38
 msgid "Small, isolated cases for ids, comments, and contexts"
 msgstr "Small, isolated cases for ids, comments, and contexts"
 
-#: src/routes/playground/syntax/+page.svelte:22
+#: src/routes/playground/syntax/+page.svelte:21
 msgid "Snippet badge"
 msgstr "Snippet badge"
 
-#: src/routes/playground/syntax/+page.svelte:23
+#: src/routes/playground/syntax/+page.svelte:22
 msgid "Snippet item: {text}"
 msgstr "Snippet item: {text}"
 
-#: src/routes/playground/syntax/+page.svelte:74
+#: src/routes/playground/syntax/+page.svelte:73
 msgid "Status summary: active"
 msgstr "Status summary: active"
 
-#: src/routes/playground/syntax/+page.svelte:73
+#: src/routes/playground/syntax/+page.svelte:72
 msgid "Status summary: idle"
 msgstr "Status summary: idle"
 
@@ -357,13 +357,13 @@ msgstr "Status summary: idle"
 msgid "Switch language"
 msgstr "Switch language"
 
-#: src/routes/+page.svelte:36
+#: src/routes/+page.svelte:40
 msgid "Switch languages from the header and the next route keeps the same locale."
 msgstr "Switch languages from the header and the next route keeps the same locale."
 
-#: src/lib/app/PlaygroundNav.svelte:36
-#: src/routes/playground/+page.svelte:18
-#: src/routes/playground/syntax/+page.svelte:30
+#: src/lib/app/PlaygroundNav.svelte:37
+#: src/routes/playground/+page.svelte:19
+#: src/routes/playground/syntax/+page.svelte:29
 msgid "Syntax"
 msgstr "Syntax"
 
@@ -371,7 +371,7 @@ msgstr "Syntax"
 msgid "Targeted id, comment, and context coverage"
 msgstr "Targeted id, comment, and context coverage"
 
-#: src/routes/settings/+page.svelte:26
+#: src/routes/settings/+page.svelte:29
 msgid "The application routes are intentionally small. Macro edge cases live under the playground instead of leaking into the main app."
 msgstr "The application routes are intentionally small. Macro edge cases live under the playground instead of leaking into the main app."
 
@@ -379,15 +379,15 @@ msgstr "The application routes are intentionally small. Macro edge cases live un
 msgid "The main app avoids explicit ids by default. This route keeps those variants available for extractor and compile tests."
 msgstr "The main app avoids explicit ids by default. This route keeps those variants available for extractor and compile tests."
 
-#: src/routes/+page.svelte:34
+#: src/routes/+page.svelte:37
 msgid "The server remembers your preferred language"
 msgstr "The server remembers your preferred language"
 
-#: src/routes/playground/syntax/+page.svelte:83
+#: src/routes/playground/syntax/+page.svelte:82
 msgid "The syntax playground is active."
 msgstr "The syntax playground is active."
 
-#: src/routes/playground/syntax/+page.svelte:81
+#: src/routes/playground/syntax/+page.svelte:80
 msgid "The syntax playground is idle."
 msgstr "The syntax playground is idle."
 
@@ -395,11 +395,11 @@ msgstr "The syntax playground is idle."
 msgid "This example keeps locale state in a real app shell and moves library verification into isolated playground routes."
 msgstr "This example keeps locale state in a real app shell and moves library verification into isolated playground routes."
 
-#: src/routes/playground/syntax/+page.svelte:46
+#: src/routes/playground/syntax/+page.svelte:45
 msgid "This placeholder comes from $t inside an attribute"
 msgstr "This placeholder comes from $t inside an attribute"
 
-#: src/routes/playground/syntax/+page.svelte:36
+#: src/routes/playground/syntax/+page.svelte:35
 msgid "This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte."
 msgstr "This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte."
 
@@ -415,22 +415,22 @@ msgstr "This route isolates reactive string macros and state that lives in a .sv
 msgid "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
 msgstr "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
 
-#: src/routes/playground/syntax/+page.svelte:58
+#: src/routes/playground/syntax/+page.svelte:57
 msgid "Toggle mode"
 msgstr "Toggle mode"
 
-#: src/routes/playground/components/+page.svelte:34
+#: src/routes/playground/components/+page.svelte:38
 msgid "Toggle role"
 msgstr "Toggle role"
 
-#: src/routes/playground/reactive/+page.svelte:62
+#: src/routes/playground/reactive/+page.svelte:74
 msgid "Toggle status"
 msgstr "Toggle status"
 
-#: src/routes/playground/syntax/+page.svelte:55
+#: src/routes/playground/syntax/+page.svelte:54
 msgid "Toggle the status branch"
 msgstr "Toggle the status branch"
 
-#: src/routes/playground/syntax/+page.svelte:45
+#: src/routes/playground/syntax/+page.svelte:44
 msgid "Type to filter syntax examples"
 msgstr "Type to filter syntax examples"

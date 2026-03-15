@@ -58,7 +58,7 @@ describe("transformAstro", () => {
     const code = compact(result.code);
 
     expect(code).toContain(
-      'import L4aRuntimeTrans from "lingui-for-astro/runtime/RuntimeTrans.astro";',
+      'import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";',
     );
     expect(code).toContain("<L4aRuntimeTrans {...{");
     expect(code).not.toContain("<LocalTrans");

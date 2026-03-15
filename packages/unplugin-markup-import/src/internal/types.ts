@@ -1,16 +1,17 @@
 import type { TSESTree } from "@typescript-eslint/typescript-estree";
 
-export type RewriteSvelteImportContext = {
+export type RewriteMarkupImportContext = {
   filename: string;
-  scriptKind: "instance" | "module";
+  scriptKind: "instance" | "module" | "frontmatter";
+  markupExtension: string;
 };
 
-export type RewriteSvelteImport = (
+export type RewriteMarkupImport = (
   specifier: string,
-  context: RewriteSvelteImportContext,
+  context: RewriteMarkupImportContext,
 ) => string | null | undefined;
 
-export type RewriteSvelteImportsResult = {
+export type RewriteMarkupImportsResult = {
   code: string;
   changed: boolean;
 };
@@ -18,7 +19,7 @@ export type RewriteSvelteImportsResult = {
 export type ScriptRange = {
   content: string;
   contentStart: number;
-  kind: "instance" | "module";
+  kind: "instance" | "module" | "frontmatter";
   lang: "js" | "ts";
 };
 
@@ -41,7 +42,7 @@ export type FacadeDeclaration = {
   sideEffectOnly: boolean;
 };
 
-export type SvelteFacadeModule = {
+export type MarkupFacadeModule = {
   relativePath: string;
   filename: string;
   assetFileName: string;
@@ -52,7 +53,7 @@ export type SvelteFacadeModule = {
   rewrittenCode: string;
 };
 
-export type StoredFacadeModule = SvelteFacadeModule & {
+export type StoredFacadeModule = MarkupFacadeModule & {
   facadeId: string | null;
 };
 

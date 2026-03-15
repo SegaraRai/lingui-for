@@ -6,8 +6,6 @@ export const PACKAGE_MACRO_ALIASES = [
   "@lingui/macro",
 ] as const;
 export const PACKAGE_RUNTIME = "lingui-for-astro/runtime";
-export const PACKAGE_RUNTIME_TRANS_COMPONENT =
-  "lingui-for-astro/runtime/RuntimeTrans.astro";
 
 export const SYNTHETIC_PREFIX_EXPRESSION = "__lingui_for_astro_expr_";
 export const SYNTHETIC_PREFIX_COMPONENT = "__lingui_for_astro_component_";

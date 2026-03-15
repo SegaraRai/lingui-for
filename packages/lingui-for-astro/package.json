@@ -8,9 +8,11 @@
     "**/*.astro"
   ],
   "scripts": {
-    "build": "tsdown --config tsdown.config.ts && node ./scripts/copy-runtime-assets.mjs",
-    "check:ts": "pnpm exec tsc -b --noEmit",
-    "test": "vitest run"
+    "build": "tsdown",
+    "check": "pnpm run check:ts && pnpm run check:markup",
+    "check:ts": "tsc -b --noEmit",
+    "check:markup": "astro check",
+    "test": "vitest"
   },
   "files": [
     "dist"
@@ -36,7 +38,7 @@
       "types": "./dist/runtime/index.d.mts",
       "default": "./dist/runtime/index.mjs"
     },
-    "./runtime/RuntimeTrans.astro": "./dist/runtime/RuntimeTrans.astro",
+    "./runtime/RuntimeTrans.astro": "./dist/runtime/trans/RuntimeTrans.astro",
     "./unplugin": {
       "types": "./dist/unplugin/index.d.mts",
       "default": "./dist/unplugin/index.mjs"
@@ -93,9 +95,11 @@
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "^25.5.0",
+    "astro": "^6.0.4",
     "dedent": "^1.7.2",
     "tsdown": "0.21.2",
     "typescript": "^5.9.3",
+    "unplugin-markup-import": "workspace:*",
     "vitest": "^4.1.0"
   },
   "peerDependencies": {

@@ -49,7 +49,7 @@ function isMacroImportName(
 }
 
 function parseFile(code: string): t.File | null {
-  let parsed: unknown;
+  let parsed: ReturnType<typeof parseSync>;
   try {
     parsed = parseSync(code, {
       ast: true,
@@ -65,7 +65,7 @@ function parseFile(code: string): t.File | null {
     return null;
   }
 
-  return t.isFile(parsed) ? parsed : null;
+  return parsed && t.isFile(parsed) ? parsed : null;
 }
 
 async function collectImportLocalsFromFile(

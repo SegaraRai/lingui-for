@@ -1,0 +1,32 @@
+---
+import type { TransComponentMap, TransRenderNode } from "./rich-text.ts";
+
+import RenderTransNodes from "./RenderTransNodes.astro";
+
+const {
+  node,
+  components,
+}: {
+  node: TransRenderNode;
+  components: TransComponentMap;
+} = Astro.props;
+
+const descriptor =
+  typeof node === "string" ? null : (components[node.name] ?? null);
+---
+
+{
+  typeof node === "string" ? (
+    node
+  ) : descriptor?.kind === "element" ? (
+    <descriptor.tag {...(descriptor.props ?? {})}>
+      <RenderTransNodes nodes={node.children} components={components} />
+    </descriptor.tag>
+  ) : descriptor?.kind === "component" ? (
+    <descriptor.component {...(descriptor.props ?? {})}>
+      <RenderTransNodes nodes={node.children} components={components} />
+    </descriptor.component>
+  ) : (
+    <RenderTransNodes nodes={node.children} components={components} />
+  )
+}

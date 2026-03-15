@@ -4,7 +4,6 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import type { SvelteImportPluginOptions } from "../types.ts";
 import {
   dirnamePath,
   joinPath,
@@ -13,10 +12,14 @@ import {
   resolveRelativeSpecifier,
 } from "./path.ts";
 import {
+  collectRelativeAstroImports,
+  createAstroFacadeModule,
+} from "./astro-module.ts";
+import {
   collectRelativeSvelteImports,
   createSvelteFacadeModule,
 } from "./svelte-module.ts";
-import type { StoredFacadeModule } from "./types.ts";
+import type { MarkupFacadeModule, StoredFacadeModule } from "./types.ts";
 import {
   createFacadeId,
   createProxyId,
@@ -27,25 +30,58 @@ import {
   parseFacadeSourceId,
   parseProxyId,
   resolveScanSourceId,
-  shouldPreserveRelativeSvelteImport,
+  shouldPreserveRelativeMarkupImport,
   stripKnownQuery,
 } from "./virtual-modules.ts";
+import type {
+  MarkupFramework,
+  MarkupImportPluginOptions,
+} from "../types.ts";
+
+type FrameworkHandler = {
+  extension: string;
+  createFacadeModule: (
+    source: string,
+    filename: string,
+    relativePath: string,
+  ) => MarkupFacadeModule;
+  collectRelativeImports: (
+    source: string,
+    filename: string,
+  ) => readonly string[];
+};
+
+const FRAMEWORK_HANDLERS: Record<MarkupFramework, FrameworkHandler> = {
+  astro: {
+    extension: ".astro",
+    createFacadeModule: createAstroFacadeModule,
+    collectRelativeImports: collectRelativeAstroImports,
+  },
+  svelte: {
+    extension: ".svelte",
+    createFacadeModule: createSvelteFacadeModule,
+    collectRelativeImports: collectRelativeSvelteImports,
+  },
+};
 
 /**
- * Creates the unplugin instance that keeps shipped `.svelte` files in the
- * output graph while routing their non-Svelte relative imports through emitted
- * facade modules.
+ * Creates the unplugin instance that keeps shipped markup files in the output
+ * graph while routing their non-markup relative imports through emitted facade
+ * modules.
  *
  * The factory works without manual runtime entries or temporary source files by
- * using virtual proxy modules plus emitted `.svelte` assets.
+ * using virtual proxy modules plus emitted markup assets.
  */
 export const unpluginFactory: UnpluginFactory<
-  SvelteImportPluginOptions | undefined
+  MarkupImportPluginOptions | undefined
 > = (options = {}) => {
   const projectRoot = normalizePath(options.rootDir ?? process.cwd());
   const sourceDir = normalizePath(
     options.sourceDir ?? joinPath(projectRoot, "src"),
   );
+  const frameworks = options.frameworks ?? ["svelte"];
+  const handlers = frameworks.map((framework) => FRAMEWORK_HANDLERS[framework]);
+  const handledExtensions = handlers.map((handler) => handler.extension);
   const modules = new Map<string, StoredFacadeModule>();
   const emittedAssets = new Set<string>();
   const emittedFacades = new Set<string>();
@@ -53,7 +89,7 @@ export const unpluginFactory: UnpluginFactory<
   const scanTargets = new Set<string>();
 
   return {
-    name: "unplugin-svelte-import",
+    name: "unplugin-markup-import",
     resolveId(source, importer) {
       const proxy = parseProxyId(source);
       if (proxy) {
@@ -82,7 +118,9 @@ export const unpluginFactory: UnpluginFactory<
         return resolvedId;
       }
 
-      if (!shouldPreserveRelativeSvelteImport(source, importer)) {
+      if (
+        !shouldPreserveRelativeMarkupImport(source, importer, handledExtensions)
+      ) {
         return null;
       }
 
@@ -117,8 +155,15 @@ export const unpluginFactory: UnpluginFactory<
         return null;
       }
 
+      const handler = handlers.find((candidate) =>
+        sourceId.endsWith(candidate.extension),
+      );
+      if (!handler) {
+        return null;
+      }
+
       const relativePath = relativePathFrom(sourceDir, sourceId);
-      const facadeModule = createSvelteFacadeModule(
+      const facadeModule = handler.createFacadeModule(
         code,
         sourceId,
         relativePath,
@@ -183,8 +228,9 @@ export const unpluginFactory: UnpluginFactory<
         emittedFacades.add(sourceId);
       }
 
-      const childSourceIds = collectRelativeSvelteImports(code, sourceId).map(
-        (specifier) =>
+      const childSourceIds = handler
+        .collectRelativeImports(code, sourceId)
+        .map((specifier) =>
           resolveRelativeSpecifier(dirnamePath(sourceId), specifier),
       );
 
@@ -196,7 +242,7 @@ export const unpluginFactory: UnpluginFactory<
   };
 };
 
-export const unplugin: UnpluginInstance<SvelteImportPluginOptions | undefined> =
+export const unplugin: UnpluginInstance<MarkupImportPluginOptions | undefined> =
   /* #__PURE__ */ createUnplugin(unpluginFactory);
 
 export default unplugin;

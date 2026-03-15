@@ -115,10 +115,10 @@ describe.sequential("e2e-astro application", () => {
     expect(richTextResponse.status).toBe(200);
     expect(richTextHtml).toContain("Rich text translation checks");
     expect(richTextHtml).toContain(
-      'Astro keeps the <a href="/settings">docs link</a> inside a translated sentence.',
+      'Astro keeps the <a class="link link-primary" href="/settings">settings link</a> inside a translated sentence.',
     );
     expect(richTextHtml).toContain(
-      'React keeps the <a href="/settings">settings link</a> inside a translated sentence.',
+      'React keeps the <a class="link link-primary" href="/settings">settings link</a> inside a translated sentence.',
     );
 
     expect(formatsResponse.status).toBe(200);

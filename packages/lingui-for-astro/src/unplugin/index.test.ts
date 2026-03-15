@@ -4,10 +4,15 @@ import { unpluginFactory } from "./index.ts";
 
 describe("lingui-for-astro unplugin", () => {
   it("moves the plugin ahead of Astro compilation in Vite", () => {
-    const plugin = unpluginFactory();
-    const configResolved = plugin.vite?.configResolved;
+    const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
+    const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
+    const configResolved = pluginInstance.vite?.configResolved;
+    const runConfigResolved =
+      typeof configResolved === "function"
+        ? configResolved
+        : configResolved?.handler;
 
-    expect(configResolved).toBeTypeOf("function");
+    expect(runConfigResolved).toBeTypeOf("function");
 
     const config = {
       plugins: [
@@ -18,7 +23,7 @@ describe("lingui-for-astro unplugin", () => {
       ],
     };
 
-    configResolved?.(config as never);
+    runConfigResolved?.call({} as never, config as never);
 
     expect(config.plugins.map((entry) => entry.name)).toEqual([
       "vite:pre-alias",

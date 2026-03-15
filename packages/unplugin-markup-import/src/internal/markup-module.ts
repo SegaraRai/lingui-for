@@ -1,6 +1,5 @@
 import { parse, type TSESTree } from "@typescript-eslint/typescript-estree";
 import MagicString from "magic-string";
-import { parse as parseSvelte } from "svelte/compiler";
 
 import { basenamePath, dirnamePath, resolveRelativeSpecifier } from "./path.ts";
 import type {
@@ -8,25 +7,23 @@ import type {
   FacadeDeclaration,
   ImportSpecifierNode,
   InputDeclaration,
-  RewriteSvelteImport,
-  RewriteSvelteImportsResult,
+  MarkupFacadeModule,
+  RewriteMarkupImport,
+  RewriteMarkupImportsResult,
   ScriptRange,
-  SvelteFacadeModule,
 } from "./types.ts";
 
-/**
- * Rewrites import and export specifiers inside `<script>` blocks of a Svelte
- * source file.
- *
- * This is a low-level helper that applies a caller-provided specifier mapping
- * without making any assumptions about bundler integration.
- */
-export function rewriteSvelteImports(
+export function rewriteMarkupImports(
   source: string,
   filename: string,
-  rewriteImport: RewriteSvelteImport,
-): RewriteSvelteImportsResult {
-  const scripts = collectScripts(source, filename);
+  markupExtension: string,
+  collectScriptRanges: (
+    source: string,
+    filename: string,
+  ) => readonly ScriptRange[],
+  rewriteImport: RewriteMarkupImport,
+): RewriteMarkupImportsResult {
+  const scripts = collectScriptRanges(source, filename);
   const string = new MagicString(source);
   let changed = false;
 
@@ -48,6 +45,7 @@ export function rewriteSvelteImports(
       const nextSpecifier = rewriteImport(sourceNode.value, {
         filename,
         scriptKind: script.kind,
+        markupExtension,
       });
 
       if (!nextSpecifier || nextSpecifier === sourceNode.value) {
@@ -74,33 +72,27 @@ export function rewriteSvelteImports(
   };
 }
 
-/**
- * Collects direct relative `.svelte` imports referenced from instance and
- * module `<script>` blocks.
- *
- * The returned specifiers are left as-written in the source so callers can
- * resolve them relative to the current file as needed.
- */
-export function collectRelativeSvelteImports(
+export function collectRelativeMarkupImports(
   source: string,
   filename: string,
+  markupExtension: string,
+  collectScriptRanges: (
+    source: string,
+    filename: string,
+  ) => readonly ScriptRange[],
 ): readonly string[] {
   const imports = new Set<string>();
 
-  for (const script of collectScripts(source, filename)) {
+  for (const script of collectScriptRanges(source, filename)) {
     const program = parseScript(script.content, script.lang);
 
     for (const statement of program.body) {
-      if (!isSupportedImportDeclaration(statement)) {
-        continue;
-      }
-
-      if (!statement.source) {
+      if (!isSupportedImportDeclaration(statement) || !statement.source) {
         continue;
       }
 
       const specifier = statement.source.value;
-      if (specifier.startsWith(".") && specifier.endsWith(".svelte")) {
+      if (specifier.startsWith(".") && specifier.endsWith(markupExtension)) {
         imports.add(specifier);
       }
     }
@@ -109,20 +101,17 @@ export function collectRelativeSvelteImports(
   return [...imports];
 }
 
-/**
- * Builds the rewritten emitted `.svelte` source plus its companion facade
- * modules for a single Svelte file.
- *
- * Relative non-Svelte imports are redirected to a generated
- * `*.svelte.imports.mjs` facade so the original `.svelte` file can be shipped
- * alongside bundled JavaScript output.
- */
-export function createSvelteFacadeModule(
+export function createMarkupFacadeModule(
   source: string,
   filename: string,
   relativePath: string,
-): SvelteFacadeModule {
-  const scripts = collectScripts(source, filename);
+  markupExtension: string,
+  collectScriptRanges: (
+    source: string,
+    filename: string,
+  ) => readonly ScriptRange[],
+): MarkupFacadeModule {
+  const scripts = collectScriptRanges(source, filename);
   const string = new MagicString(source);
   const facadeDeclarations: FacadeDeclaration[] = [];
   let changed = false;
@@ -132,22 +121,19 @@ export function createSvelteFacadeModule(
     const program = parseScript(script.content, script.lang);
 
     for (const statement of program.body) {
-      if (!isSupportedImportDeclaration(statement)) {
-        continue;
-      }
-
-      if (!statement.source) {
+      if (!isSupportedImportDeclaration(statement) || !statement.source) {
         continue;
       }
 
       const specifier = statement.source.value;
-      if (!shouldExternalizeSpecifier(specifier)) {
+      if (!shouldExternalizeSpecifier(specifier, markupExtension)) {
         continue;
       }
 
       const replacement = createFacadeImportReplacement(
         statement,
         relativePath,
+        markupExtension,
         bindingCounter,
       );
       bindingCounter = replacement.nextBindingCounter;
@@ -181,11 +167,14 @@ export function createSvelteFacadeModule(
     relativePath,
     filename,
     assetFileName: relativePath,
-    facadeFileName: relativePath.replace(/\.svelte$/, ".svelte.imports.mjs"),
+    facadeFileName: relativePath.replace(
+      new RegExp(`${escapeRegExp(markupExtension)}$`),
+      `${markupExtension}.imports.mjs`,
+    ),
     facadeCode: createFacadeModuleCode(facadeDeclarations, false),
     facadeDtsFileName: relativePath.replace(
-      /\.svelte$/,
-      ".svelte.imports.d.mts",
+      new RegExp(`${escapeRegExp(markupExtension)}$`),
+      `${markupExtension}.imports.d.mts`,
     ),
     facadeDtsCode: createFacadeModuleCode(facadeDeclarations, true),
     rewrittenCode: string.toString(),
@@ -195,6 +184,7 @@ export function createSvelteFacadeModule(
 function createFacadeImportReplacement(
   statement: InputDeclaration,
   relativePath: string,
+  markupExtension: string,
   bindingCounter: number,
 ): {
   code: string;
@@ -212,8 +202,8 @@ function createFacadeImportReplacement(
   }
 
   const facadeSpecifier = `./${basenamePath(relativePath).replace(
-    /\.svelte$/,
-    ".svelte.imports.mjs",
+    new RegExp(`${escapeRegExp(markupExtension)}$`),
+    `${markupExtension}.imports.mjs`,
   )}`;
 
   if (statement.specifiers.length === 0) {
@@ -226,7 +216,7 @@ function createFacadeImportReplacement(
   }
 
   const facadeSpecifiers = statement.specifiers.map((specifier) => {
-    const exportName = `__unplugin_svelte_import_${bindingCounter++}`;
+    const exportName = `__unplugin_markup_import_${bindingCounter++}`;
     return createFacadeBinding(
       specifier,
       statement.importKind === "type",
@@ -330,18 +320,21 @@ function createFacadeModuleCode(
 }
 
 function toFacadeSourceSpecifier(
-  sourceSvelteFilename: string,
+  sourceMarkupFilename: string,
   specifier: string,
 ): string {
   if (!specifier.startsWith(".")) {
     return specifier;
   }
 
-  return resolveRelativeSpecifier(dirnamePath(sourceSvelteFilename), specifier);
+  return resolveRelativeSpecifier(dirnamePath(sourceMarkupFilename), specifier);
 }
 
-function shouldExternalizeSpecifier(specifier: string): boolean {
-  return specifier.startsWith(".") && !specifier.endsWith(".svelte");
+function shouldExternalizeSpecifier(
+  specifier: string,
+  markupExtension: string,
+): boolean {
+  return specifier.startsWith(".") && !specifier.endsWith(markupExtension);
 }
 
 function isSupportedImportDeclaration(
@@ -354,42 +347,6 @@ function isSupportedImportDeclaration(
   );
 }
 
-function collectScripts(source: string, filename: string): ScriptRange[] {
-  const ast = parseSvelte(source, { filename });
-  const scripts: ScriptRange[] = [];
-
-  if (ast.instance) {
-    scripts.push(toScriptRange(source, ast.instance, "instance"));
-  }
-
-  if (ast.module) {
-    scripts.push(toScriptRange(source, ast.module, "module"));
-  }
-
-  return scripts;
-}
-
-function toScriptRange(
-  source: string,
-  script: NonNullable<ReturnType<typeof parseSvelte>["instance"]>,
-  kind: "instance" | "module",
-): ScriptRange {
-  const openEnd = source.indexOf(">", script.start) + 1;
-  const closeStart = script.end - "</script>".length;
-  const contentStart = openEnd + (source[openEnd] === "\n" ? 1 : 0);
-  const content = source.slice(contentStart, closeStart);
-  const openingTag = source.slice(script.start, openEnd);
-  const langMatch = /\blang\s*=\s*["']([^"']+)["']/.exec(openingTag);
-  const langValue = langMatch?.[1] ?? "";
-
-  return {
-    content,
-    contentStart,
-    kind,
-    lang: langValue === "ts" ? "ts" : "js",
-  };
-}
-
 function parseScript(code: string, lang: "js" | "ts"): TSESTree.Program {
   return parse(code, {
     comment: false,
@@ -399,4 +356,8 @@ function parseScript(code: string, lang: "js" | "ts"): TSESTree.Program {
     sourceType: "module",
     ...(lang === "ts" ? {} : { jsDocParsingMode: "none" }),
   });
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

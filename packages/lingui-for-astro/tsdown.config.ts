@@ -1,4 +1,5 @@
 import { defineConfig } from "tsdown";
+import markupImport from "unplugin-markup-import/rolldown";
 
 export default defineConfig({
   clean: true,
@@ -19,4 +20,5 @@ export default defineConfig({
     "unplugin/vite": "src/unplugin/vite.ts",
     "unplugin/webpack": "src/unplugin/webpack.ts",
   },
+  plugins: [markupImport({ frameworks: ["astro"] })],
 });

@@ -11,6 +11,7 @@ export type {
   MessageDescriptor,
   Messages,
 } from "@lingui/core";
+
 export {
   createLinguiAccessors,
   getLinguiContext,

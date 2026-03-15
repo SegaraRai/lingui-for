@@ -10,9 +10,9 @@
     "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
     "build": "pnpm run lingui:build && svelte-kit sync && vite build",
     "preview": "node .sveltekit-build/index.js",
-    "check": "pnpm run check:ts && pnpm run check:svelte",
-    "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
+    "check": "pnpm run check:ts && pnpm run check:markup",
     "check:ts": "tsc -p tsconfig.json --noEmit",
+    "check:markup": "svelte-check --tsconfig ./tsconfig.json",
     "test": "pnpm run test:e2e run && pnpm run test:browser run",
     "test:e2e": "vitest",
     "test:browser": "vitest --config vitest.browser.config.ts"
