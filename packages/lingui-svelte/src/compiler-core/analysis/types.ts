@@ -31,25 +31,33 @@ export type ScriptBlock = {
 
 /**
  * A markup expression from the template portion of a `.svelte` component that references macros.
- *
- * @property index Stable ordinal used to generate synthetic variable names.
- * @property source Original source slice for the expression.
  */
 export type MarkupExpression = RangeNode & {
+  /**
+   * Stable ordinal used to generate synthetic variable names.
+   */
   index: number;
+  /**
+   * Original source slice for the expression.
+   */
   source: string;
 };
 
 /**
  * A component macro occurrence such as `<Trans>` or `<Plural>` found in template markup.
- *
- * @property index Stable ordinal used to generate synthetic variable names.
- * @property name Original component tag name as written in source.
- * @property source Original source slice for the component invocation.
  */
 export type MacroComponent = RangeNode & {
+  /**
+   * Stable ordinal used to generate synthetic variable names.
+   */
   index: number;
+  /**
+   * Original component tag name as written in source.
+   */
   name: string;
+  /**
+   * Original source slice for the component invocation.
+   */
   source: string;
 };
 

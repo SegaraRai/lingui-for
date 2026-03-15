@@ -17,46 +17,64 @@ export type SourcePosition = {
 
 /**
  * One extraction-ready JS/TS unit produced from a source file.
- *
- * @property code Generated code that can be handed to Lingui's extractor.
- * @property map Optional source map back to the original source. `null` is used when no map is
- * needed or cannot be produced for the unit.
  */
 export type ExtractionUnit = {
+  /**
+   * Generated code that can be handed to Lingui's extractor.
+   */
   code: string;
+  /**
+   * Optional source map back to the original source. `null` is used when no map is
+   * needed or cannot be produced for the unit.
+   */
   map: RawSourceMap | null;
 };
 
 /**
  * Result of running the shared Babel/Lingui transform over a synthetic or direct program.
- *
- * @property code Final transformed code emitted by Babel.
- * @property ast Transformed Babel AST used by later lowering steps.
- * @property map Optional raw source map emitted by Babel.
  */
 export type ProgramTransform = {
+  /**
+   * Final transformed code emitted by Babel.
+   */
   code: string;
+  /**
+   * Transformed Babel AST used by later lowering steps.
+   */
   ast: BabelTypes.File;
+  /**
+   * Optional raw source map emitted by Babel.
+   */
   map: RawSourceMap | null;
 };
 
 /**
  * Input contract for the shared Babel/Lingui transform.
- *
- * @property filename Logical filename for parser behavior and diagnostics.
- * @property lang Parser mode used for Babel plugins.
- * @property linguiConfig Normalized Lingui configuration consumed by the Lingui macro plugin.
- * @property extract Whether the transform runs in extraction mode.
- * @property translationMode How string-producing macros should lower after Lingui processing.
- * @property runtimeBindings Optional Svelte runtime binding names injected into rewritten code.
- * @property inputSourceMap Optional upstream source map chained into the Babel transform.
  */
 export type ProgramTransformRequest = {
+  /**
+   * Logical filename for parser behavior and diagnostics.
+   */
   filename: string;
+  /**
+   * Parser mode used for Babel plugins.
+   */
   lang: ScriptLang;
+  /**
+   * Normalized Lingui configuration consumed by the Lingui macro plugin.
+   */
   linguiConfig: LinguiConfigNormalized;
+  /**
+   * Whether the transform runs in extraction mode.
+   */
   extract: boolean;
+  /**
+   * How string-producing macros should lower after Lingui processing.
+   */
   translationMode: "extract" | "raw" | "svelte-context";
+  /**
+   * Optional Svelte runtime binding names injected into rewritten code.
+   */
   runtimeBindings?:
     | {
         getLinguiContext: string;
@@ -65,16 +83,22 @@ export type ProgramTransformRequest = {
         translate: string;
       }
     | undefined;
+  /**
+   * Optional upstream source map chained into the Babel transform.
+   */
   inputSourceMap?: RawSourceMap;
 };
 
 /**
  * Result of rewriting a `.svelte` component source file.
- *
- * @property code Final rewritten Svelte source.
- * @property map MagicString-generated source map from the rewritten component back to the original.
  */
 export type SvelteTransformResult = {
+  /**
+   * Final rewritten Svelte source.
+   */
   code: string;
+  /**
+   * MagicString-generated source map from the rewritten component back to the original.
+   */
   map: ReturnType<MagicString["generateMap"]>;
 };

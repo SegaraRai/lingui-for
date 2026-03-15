@@ -18,12 +18,15 @@ export type ScriptKind = "instance" | "module";
 
 /**
  * Common options accepted by compiler-core transform and extraction entry points.
- *
- * @property filename Logical source filename used for parser behavior and generated source maps.
- * @property linguiConfig Optional partial Lingui configuration merged with package defaults before
- * transforming or extracting messages.
  */
 export type LinguiSvelteTransformOptions = {
+  /**
+   * Logical source filename used for parser behavior and generated source maps.
+   */
   filename: string;
+  /**
+   * Optional partial Lingui configuration merged with package defaults before
+   * transforming or extracting messages.
+   */
   linguiConfig?: Partial<LinguiConfig> | undefined;
 };

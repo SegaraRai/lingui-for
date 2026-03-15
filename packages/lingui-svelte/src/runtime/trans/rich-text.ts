@@ -1,30 +1,84 @@
 import type { Component } from "svelte";
 
+/**
+ * Description of one embeddable node that may appear in a translated rich-text message.
+ *
+ * Entries are keyed by the placeholder name used in the translated message, for example `"0"` or
+ * `"link"`.
+ */
 export type TransComponentDescriptor =
   | {
+      /**
+       * Renders the placeholder as a plain HTML element such as `strong` or `a`.
+       */
       kind: "element";
+      /**
+       * HTML tag name passed to `<svelte:element>`.
+       */
       tag: string;
+      /**
+       * Props/attributes applied to the rendered element.
+       */
       props?: Readonly<Record<string, unknown>>;
     }
   | {
+      /**
+       * Renders the placeholder as a Svelte component.
+       */
       kind: "component";
+      /**
+       * Component constructor used for the placeholder.
+       */
       component: Component<any>;
+      /**
+       * Props forwarded to the rendered component.
+       */
       props?: Readonly<Record<string, unknown>>;
     };
 
+/**
+ * Mapping from rich-text placeholder names to their runtime render descriptors.
+ */
 export type TransComponentMap = Readonly<
   Record<string, TransComponentDescriptor>
 >;
 
+/**
+ * Tree node produced by parsing a translated rich-text string.
+ *
+ * Nodes are either raw text segments or placeholder-backed component nodes with child content.
+ */
 export type TransRenderNode =
   | string
   | {
+      /**
+       * Discriminator for non-text render nodes.
+       */
       kind: "component";
+      /**
+       * Stable key used while rendering the parsed tree in Svelte.
+       */
       key: string;
+      /**
+       * Placeholder name that resolves into an entry in {@link TransComponentMap}.
+       */
       name: string;
+      /**
+       * Parsed children nested inside the placeholder.
+       */
       children: readonly TransRenderNode[];
     };
 
+/**
+ * Parses a translated rich-text message into renderable text/component nodes.
+ *
+ * @param value Translated string returned by Lingui, including placeholder tags such as `<0>`.
+ * @param components Runtime component map keyed by placeholder name.
+ * @returns A tree of text and component nodes that can be rendered by `RenderTransNodes.svelte`.
+ *
+ * Unknown placeholders are treated as transparent wrappers and malformed tags fall back to plain
+ * text so translation issues do not crash rendering.
+ */
 export function formatRichTextTranslation(
   value: string,
   components: TransComponentMap = {},

@@ -88,7 +88,7 @@ describe("createSvelteFacadeModule", () => {
       '  } from "./rich-text.ts";',
       "  import {",
       "    mergeRuntimeTransValues,",
-      "    toRuntimeTransDescriptor,",
+      "    translateRuntimeTrans,",
       '  } from "./trans-descriptor.ts";',
       "</script>",
     ].join("\n");
@@ -109,14 +109,14 @@ describe("createSvelteFacadeModule", () => {
         import { __unplugin_svelte_import_0 as getLinguiContext } from "./RuntimeTrans.svelte.imports.mjs";
         import RenderTransNodes from "./RenderTransNodes.svelte";
         import { __unplugin_svelte_import_1 as formatRichTextTranslation, type __unplugin_svelte_import_2 as TransComponentMap } from "./RuntimeTrans.svelte.imports.mjs";
-        import { __unplugin_svelte_import_3 as mergeRuntimeTransValues, __unplugin_svelte_import_4 as toRuntimeTransDescriptor } from "./RuntimeTrans.svelte.imports.mjs";
+        import { __unplugin_svelte_import_3 as mergeRuntimeTransValues, __unplugin_svelte_import_4 as translateRuntimeTrans } from "./RuntimeTrans.svelte.imports.mjs";
       </script>"
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
       "export { getLinguiContext as __unplugin_svelte_import_0 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/core/context.ts";
       export { formatRichTextTranslation as __unplugin_svelte_import_1 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/rich-text.ts";
       export { mergeRuntimeTransValues as __unplugin_svelte_import_3 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";
-      export { toRuntimeTransDescriptor as __unplugin_svelte_import_4 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";"
+      export { translateRuntimeTrans as __unplugin_svelte_import_4 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";"
     `);
     expect(result.facadeDtsFileName).toBe(
       "runtime/trans/RuntimeTrans.svelte.imports.d.mts",
@@ -126,7 +126,7 @@ describe("createSvelteFacadeModule", () => {
       export { formatRichTextTranslation as __unplugin_svelte_import_1 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/rich-text.ts";
       export type { TransComponentMap as __unplugin_svelte_import_2 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/rich-text.ts";
       export { mergeRuntimeTransValues as __unplugin_svelte_import_3 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";
-      export { toRuntimeTransDescriptor as __unplugin_svelte_import_4 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";"
+      export { translateRuntimeTrans as __unplugin_svelte_import_4 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";"
     `);
   });
 
