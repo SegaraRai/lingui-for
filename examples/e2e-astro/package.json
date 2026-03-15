@@ -31,7 +31,6 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.7",
-    "@babel/core": "^7.29.0",
     "@lingui/cli": "^5.9.3",
     "@lingui/conf": "^5.9.3",
     "@tailwindcss/vite": "^4.2.1",
@@ -39,11 +38,11 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro-strip-whitespace": "^0.2.1",
-    "babel-plugin-macros": "^3.1.0",
     "daisyui": "^5.5.19",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
+    "unplugin-lingui-macro": "workspace:*",
     "vite": "^7.3.1",
     "vitest": "^4.1.0"
   }

@@ -110,7 +110,7 @@ msgstr "Astro リッチテキスト"
 
 #: AstroRichText.astro?extract-component:3
 msgid "Astro rich text keeps component placeholders intact."
-msgstr "Astro のリッチテキストはコンポーネントのプレースホルダーをそのまま保ちます。"
+msgstr "Astro リッチテキストはコンポーネントのプレースホルダーをそのまま保ちます。"
 
 #: AstroFormats.astro?extract-expression:10
 msgid "Astro runs plural, select, and selectOrdinal macros in component code."
@@ -120,7 +120,7 @@ msgstr "Astro はコンポーネントコードの中で plural、select、selec
 msgid "Astro uses request-scoped locals."
 msgstr "Astro はリクエスト単位の locals を使います。"
 
-#: src/lib/i18n/shared-descriptors.ts:7
+#: src/lib/i18n/shared-descriptors.ts:5
 msgid "Astro, Svelte, and React all translate the same imported descriptor."
 msgstr "Astro、Svelte、React の 3 つとも同じ import 済みディスクリプタを翻訳します。"
 
@@ -269,7 +269,7 @@ msgstr "Lingui for Astro"
 msgid "Lingui React does not seem to support functional macros for plural, select, and selectOrdinal."
 msgstr "Lingui React は plural、select、selectOrdinal の関数マクロをサポートしていないようです。"
 
-#: src/components/react/ReactLinguiIsland.tsx:30
+#: src/components/react/ReactLinguiIsland.tsx:32
 msgid "Locale badge: {localeLabel}"
 msgstr "ロケールバッジ: {localeLabel}"
 
@@ -358,7 +358,7 @@ msgstr "React は翻訳結果の中でも<0>強調表示</0>を保てます。"
 
 #: src/components/react/ReactLinguiIsland.tsx:22
 msgid "React components can translate Lingui descriptors inside Astro."
-msgstr "React コンポーネントは Astro の中で Lingui の descriptor を翻訳できます。"
+msgstr "React コンポーネントは Astro の中で Lingui のディスクリプタを翻訳できます。"
 
 #: src/components/react/ReactFormatsIsland.tsx:14
 msgid "React formats"
@@ -478,7 +478,7 @@ msgstr "設定"
 msgid "Settings page"
 msgstr "設定ページ"
 
-#: src/lib/i18n/shared-descriptors.ts:4
+#: src/lib/i18n/shared-descriptors.ts:3
 msgid "Shared descriptor imported from plain TypeScript."
 msgstr "素の TypeScript から import した共有ディスクリプタです。"
 
@@ -536,11 +536,11 @@ msgstr "Svelte からはロケール {localeLabel} が見えます。"
 
 #: [slug].astro?extract-component:3
 msgid "Switch to the <0>second route</0> without dropping the locale."
-msgstr "ロケールを維持したまま<0>2 つ目のルート</0>へ移動します。"
+msgstr "ロケールを維持したまま <0>2 つ目のルート</0>へ移動します。"
 
 #: src/components/svelte/SvelteLinguiIsland.svelte:27
 msgid "The active <0>Lingui context</0> is created inside the Svelte island."
-msgstr "有効な<0>Lingui コンテキスト</0>は Svelte アイランドの内部で作られます。"
+msgstr "アクティブな <0>Lingui コンテキスト</0>は Svelte アイランドの内部で作られます。"
 
 #: src/components/react/ReactLinguiIsland.tsx:25
 msgid "The active locale reaches React through a dedicated Lingui instance."

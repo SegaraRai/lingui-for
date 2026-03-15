@@ -1,0 +1,97 @@
+{
+  "name": "unplugin-lingui-macro",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "check": "pnpm run check:ts",
+    "check:ts": "tsc -b --noEmit",
+    "test": "vitest"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
+    },
+    "./types": {
+      "types": "./dist/types.d.mts",
+      "default": "./dist/types.mjs"
+    },
+    "./bun": {
+      "types": "./dist/bun.d.mts",
+      "default": "./dist/bun.mjs"
+    },
+    "./esbuild": {
+      "types": "./dist/esbuild.d.mts",
+      "default": "./dist/esbuild.mjs"
+    },
+    "./rolldown": {
+      "types": "./dist/rolldown.d.mts",
+      "default": "./dist/rolldown.mjs"
+    },
+    "./rollup": {
+      "types": "./dist/rollup.d.mts",
+      "default": "./dist/rollup.mjs"
+    },
+    "./rspack": {
+      "types": "./dist/rspack.d.mts",
+      "default": "./dist/rspack.mjs"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.mts",
+      "default": "./dist/vite.mjs"
+    },
+    "./webpack": {
+      "types": "./dist/webpack.d.mts",
+      "default": "./dist/webpack.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "dependencies": {
+    "@babel/core": "^7.29.0",
+    "@lingui/babel-plugin-lingui-macro": "^5.9.3",
+    "oxc-parser": "^0.119.0",
+    "unplugin": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/babel__core": "^7.20.5",
+    "@lingui/conf": "^5.9.3",
+    "@types/node": "^25.5.0",
+    "tsdown": "0.21.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@lingui/conf": "^5.0.0",
+    "esbuild": "*",
+    "rolldown": "^1.0.0-0",
+    "rollup": "^3 || ^4",
+    "vite": ">=3",
+    "webpack": "^4 || ^5"
+  },
+  "peerDependenciesMeta": {
+    "@lingui/conf": {
+      "optional": true
+    },
+    "esbuild": {
+      "optional": true
+    },
+    "rolldown": {
+      "optional": true
+    },
+    "rollup": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    },
+    "webpack": {
+      "optional": true
+    }
+  }
+}

@@ -120,7 +120,7 @@ msgstr "Astro runs plural, select, and selectOrdinal macros in component code."
 msgid "Astro uses request-scoped locals."
 msgstr "Astro uses request-scoped locals."
 
-#: src/lib/i18n/shared-descriptors.ts:7
+#: src/lib/i18n/shared-descriptors.ts:5
 msgid "Astro, Svelte, and React all translate the same imported descriptor."
 msgstr "Astro, Svelte, and React all translate the same imported descriptor."
 
@@ -269,7 +269,7 @@ msgstr "Lingui for Astro"
 msgid "Lingui React does not seem to support functional macros for plural, select, and selectOrdinal."
 msgstr "Lingui React does not seem to support functional macros for plural, select, and selectOrdinal."
 
-#: src/components/react/ReactLinguiIsland.tsx:30
+#: src/components/react/ReactLinguiIsland.tsx:32
 msgid "Locale badge: {localeLabel}"
 msgstr "Locale badge: {localeLabel}"
 
@@ -478,7 +478,7 @@ msgstr "Settings"
 msgid "Settings page"
 msgstr "Settings page"
 
-#: src/lib/i18n/shared-descriptors.ts:4
+#: src/lib/i18n/shared-descriptors.ts:3
 msgid "Shared descriptor imported from plain TypeScript."
 msgstr "Shared descriptor imported from plain TypeScript."
 

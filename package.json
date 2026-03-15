@@ -9,7 +9,7 @@
     "build": "pnpm run build:lib && pnpm run build:examples",
     "build:astro-analyzer:wasm": "cd crates/astro-analyzer && wasm-pack build --target web --release --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
     "build:astro-analyzer:wasm-dev": "cd crates/astro-analyzer && wasm-pack build --target web --dev --no-opt --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
-    "build:lib": "pnpm --filter unplugin-markup-import build && pnpm --filter lingui-for-svelte build && pnpm --filter lingui-for-astro build",
+    "build:lib": "pnpm --filter unplugin-lingui-macro build && pnpm --filter unplugin-markup-import build && pnpm --filter lingui-for-svelte build && pnpm --filter lingui-for-astro build",
     "build:examples": "pnpm --filter e2e-svelte build && pnpm --filter e2e-astro build",
     "check": "pnpm run check:ts && pnpm run check:markup",
     "check:ts": "pnpm -r run check:ts",
