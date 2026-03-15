@@ -12,14 +12,10 @@ export type {
   FrontmatterBlock,
   TextPoint,
 } from "./analysis/types.ts";
-export {
-  normalizeJavaScriptLinguiConfig,
-  normalizeLinguiConfig,
-} from "./shared/config.ts";
-export { isTransformableScript, stripQuery } from "./shared/paths.ts";
+export { normalizeLinguiConfig } from "./shared/config.ts";
+export { stripQuery } from "./shared/paths.ts";
 export type { LinguiAstroTransformOptions } from "./shared/types.ts";
 export {
   createAstroExtractionUnits,
   transformAstro,
 } from "./transform/transform-astro.ts";
-export { transformJavaScriptMacros } from "./transform/transform-javascript.ts";

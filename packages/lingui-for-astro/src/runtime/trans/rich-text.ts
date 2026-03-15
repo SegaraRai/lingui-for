@@ -166,7 +166,7 @@ function matchOpeningTag(
   }
 
   return {
-    name: match[1],
+    name: match[1]!,
     end: start + match[0].length,
   };
 }
@@ -184,7 +184,7 @@ function matchClosingTag(
   }
 
   return {
-    name: match[1],
+    name: match[1]!,
     end: start + match[0].length,
   };
 }
@@ -202,7 +202,7 @@ function matchSelfClosingTag(
   }
 
   return {
-    name: match[1],
+    name: match[1]!,
     end: start + match[0].length,
   };
 }

@@ -59,14 +59,13 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       const heading =
       /*i18n*/
       {
         id: "demo.heading",
         message: "Hello"
       };
-      const label = _i18n._(
+      const label = __l4s_getI18n()._(
       /*i18n*/
       {
         id: "tfDRzk",
@@ -102,7 +101,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let name = $state("Ada");
       const label = $derived($__l4s_translate(
       /*i18n*/
@@ -138,7 +136,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let name = $state("Ada");
       const label = $derived.by(() => $__l4s_translate(
       /*i18n*/
@@ -177,7 +174,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let state = $state("idle");
       function getStatusText() {
         return state === "idle" ? $__l4s_translate(
@@ -221,7 +217,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let count = $state(2);
       let gender = $state("female");
       const status = $derived.by(() => ({
@@ -270,7 +265,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let state = $state("idle");
       const label = $derived(state === "idle" ? $__l4s_translate(
       /*i18n*/
@@ -311,7 +305,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let count = $state(2);
       const labels = $derived({
         state: $__l4s_translate(
@@ -355,7 +348,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       const getStatusText = () => $__l4s_translate(
       /*i18n*/
       {
@@ -385,16 +377,15 @@ describe("transformSvelte", () => {
     });
 
     expect(result.code).toContain("/*i18n*/");
-    expect(result.code).toContain("_i18n._(");
+    expect(result.code).toContain("__l4s_getI18n()._(");
     expect(result.code).toContain("$derived($__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let name = $state("Ada");
-      const eager = _i18n._(
+      const eager = __l4s_getI18n()._(
       /*i18n*/
       {
         id: "hhBkx1",
@@ -441,7 +432,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let name = $state("Ada");
       __l4s_ctx.prime();</script>
 
@@ -482,7 +472,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       let count = $state(2);
       let gender = $state("female");
       __l4s_ctx.prime();</script>
@@ -777,8 +766,11 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("return translate`Inner`;");
     expect(result.code).not.toContain('message: "Inner"');
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { i18n as _i18n } from "@lingui/core";
-      const outer = _i18n._(
+      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+      const __l4s_ctx = createLinguiAccessors();
+      const __l4s_getI18n = __l4s_ctx.getI18n;
+      const __l4s_translate = __l4s_ctx._;
+      const outer = __l4s_getI18n()._(
       /*i18n*/
       {
         id: "wVGQ6j",
@@ -787,7 +779,8 @@ describe("transformSvelte", () => {
       function render() {
         const translate = notMacro;
         return translate\`Inner\`;
-      }</script>
+      }
+      __l4s_ctx.prime();</script>
 
       <p>{outer}</p>"
     `);
@@ -818,7 +811,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       import Trans from "./Trans.svelte";
       __l4s_ctx.prime();</script>
 
@@ -852,7 +844,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
-      import { i18n as _i18n } from "@lingui/core";
       __l4s_ctx.prime();</script>
 
       <p>{$__l4s_translate(
@@ -891,7 +882,6 @@ describe("transformSvelte", () => {
       const __l4s_ctx_1 = createLinguiAccessors_1();
       const __l4s_getI18n_1 = __l4s_ctx_1.getI18n;
       const __l4s_translate_1 = __l4s_ctx_1._;
-      import { i18n as _i18n } from "@lingui/core";
       const createLinguiAccessors = "occupied";
       const __l4s_ctx = "occupied";
       const __l4s_getI18n = "occupied";

@@ -1,7 +1,3 @@
-import { msg } from "lingui-for-svelte/macro";
-
-export const reactiveDescriptor = msg`Descriptor from a .svelte.ts module.`;
-
 export const reactiveState = $state({
   name: "SvelteKit",
   count: 2,

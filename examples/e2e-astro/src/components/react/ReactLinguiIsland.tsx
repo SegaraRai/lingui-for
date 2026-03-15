@@ -3,6 +3,10 @@ import { useLingui } from "@lingui/react/macro";
 
 import type { SupportedLocale } from "../../lib/i18n/locale";
 import { createAppI18n, getLocaleLabel } from "../../lib/i18n/runtime";
+import {
+  sharedImportedDescriptor,
+  sharedImportedDetailDescriptor,
+} from "../../lib/i18n/shared-descriptors";
 
 function ReactLinguiPanel({ locale }: { readonly locale: SupportedLocale }) {
   const { t } = useLingui();
@@ -19,6 +23,10 @@ function ReactLinguiPanel({ locale }: { readonly locale: SupportedLocale }) {
         </h2>
         <p className="text-base-content/70">
           {t`The active locale reaches React through a dedicated Lingui instance.`}
+        </p>
+        <p className="text-base-content/70">{t(sharedImportedDescriptor)}</p>
+        <p className="text-base-content/70">
+          {t(sharedImportedDetailDescriptor)}
         </p>
         <p className="badge badge-secondary badge-lg flex-none">
           {t`Locale badge: ${localeLabel}`}

@@ -3,6 +3,10 @@
 
   import type { SupportedLocale } from "../../lib/i18n/locale";
   import { getLocaleLabel } from "../../lib/i18n/runtime";
+  import {
+    sharedImportedDescriptor,
+    sharedImportedDetailDescriptor,
+  } from "../../lib/i18n/shared-descriptors";
   import { useLinguiLocale } from "../../lib/i18n/use-lingui-locale.svelte";
 
   let { locale }: { locale: SupportedLocale } = $props();
@@ -31,6 +35,8 @@
         other: "# localized Svelte examples",
       })}
     </p>
+    <p class="text-base-content/70">{$t(sharedImportedDescriptor)}</p>
+    <p class="text-base-content/70">{t(sharedImportedDetailDescriptor)}</p>
     <p class="badge badge-secondary badge-lg flex-none">
       {$t`Svelte sees locale ${localeLabel}.`}
     </p>

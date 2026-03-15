@@ -5,8 +5,8 @@
     {
       href: "/playground/basic",
       eyebrow: $t`Basic`,
-      title: $t`Direct macro usage in Svelte and plain TypeScript`,
-      body: $t`Covers t, msg, RuntimeTrans, and helper modules without explicit ids.`,
+      title: $t`Direct macro usage in Svelte components`,
+      body: $t`Covers t, msg, and RuntimeTrans without explicit ids.`,
     },
     {
       href: "/playground/reactive",

@@ -2,7 +2,10 @@
   import { RuntimeTrans } from "lingui-for-svelte";
   import { msg, t } from "lingui-for-svelte/macro";
 
-  import { plainModuleDescriptor } from "$lib/playground/basic";
+  import {
+    importedDescriptor,
+    importedSecondaryDescriptor,
+  } from "../../../lib/playground/imported-descriptors";
 
   let name = $state("Svelte");
   const localDescriptor = msg`Descriptor created in a route component.`;
@@ -14,7 +17,7 @@
       {$t`Basic`}
     </p>
     <h1 class="text-4xl font-black md:text-5xl">
-      {$t`Direct macros in components and plain modules`}
+      {$t`Direct macros in Svelte components`}
     </h1>
     <p class="text-base-content/80">
       {$t`This route keeps the common Lingui flow simple: write messages next to the code that renders them.`}
@@ -29,7 +32,8 @@
       <p>{$t`Immediate translation in markup.`}</p>
       <p>{$t`Hello ${name} from the basic route.`}</p>
       <p><RuntimeTrans message={localDescriptor} /></p>
-      <p><RuntimeTrans message={plainModuleDescriptor} /></p>
+      <p>{$t(importedDescriptor)}</p>
+      <p>{t(importedSecondaryDescriptor)}</p>
     </div>
   </div>
 </section>

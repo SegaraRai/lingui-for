@@ -27,11 +27,12 @@ function createInitialState(): MacroRewriteState {
 
 function collectRuntimeI18nLocals(program: t.Program): Set<string> {
   const locals = new Set<string>();
+  const runtimeSources = new Set([PACKAGE_RUNTIME, "@lingui/core"]);
 
   program.body.forEach((statement) => {
     if (
       !t.isImportDeclaration(statement) ||
-      statement.source.value !== PACKAGE_RUNTIME
+      !runtimeSources.has(statement.source.value)
     ) {
       return;
     }
@@ -163,16 +164,34 @@ function ensureRuntimeTImport(program: t.Program, localName: string): void {
   program.body.splice(firstImportIndex, 0, importDeclaration);
 }
 
-function isRuntimeI18nCall(
-  node: t.CallExpression,
-  runtimeI18nLocals: ReadonlySet<string>,
-): boolean {
+function isRuntimeI18nCall(path: NodePath<t.CallExpression>): boolean {
+  const callee = path.get("callee");
+  if (!callee.isMemberExpression() || callee.node.computed) {
+    return false;
+  }
+
+  const object = callee.get("object");
+  const property = callee.get("property");
+  if (!object.isIdentifier() || !property.isIdentifier({ name: "_" })) {
+    return false;
+  }
+
+  const binding = object.scope.getBinding(object.node.name);
+  if (!binding?.path.isImportSpecifier()) {
+    return false;
+  }
+
+  const importSpecifier = binding.path.node;
+  if (
+    !t.isIdentifier(importSpecifier.imported, { name: "i18n" }) ||
+    !binding.path.parentPath.isImportDeclaration()
+  ) {
+    return false;
+  }
+
   return (
-    t.isMemberExpression(node.callee) &&
-    !node.callee.computed &&
-    t.isIdentifier(node.callee.object) &&
-    runtimeI18nLocals.has(node.callee.object.name) &&
-    t.isIdentifier(node.callee.property, { name: "_" })
+    binding.path.parentPath.node.source.value === PACKAGE_RUNTIME ||
+    binding.path.parentPath.node.source.value === "@lingui/core"
   );
 }
 
@@ -282,10 +301,12 @@ function removeRuntimeI18nImports(
     return;
   }
 
+  const runtimeSources = new Set([PACKAGE_RUNTIME, "@lingui/core"]);
+
   program.body = program.body.flatMap((statement) => {
     if (
       !t.isImportDeclaration(statement) ||
-      statement.source.value !== PACKAGE_RUNTIME
+      !runtimeSources.has(statement.source.value)
     ) {
       return [statement];
     }
@@ -387,11 +408,9 @@ export function createMacroPostprocessPlugin(
     },
     visitor: {
       Program: {
-        enter(path, state) {
-          state.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
-        },
         exit(path, state) {
           if (request.translationMode === "svelte-context") {
+            state.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
             removeRuntimeI18nImports(path.node, state.runtimeI18nLocals);
             if (request.runtimeBindings) {
               wrapTopLevelReactiveInitializers(
@@ -414,7 +433,7 @@ export function createMacroPostprocessPlugin(
         if (
           request.translationMode === "svelte-context" &&
           request.runtimeBindings &&
-          isRuntimeI18nCall(path.node, state.runtimeI18nLocals)
+          isRuntimeI18nCall(path)
         ) {
           if (t.isMemberExpression(path.node.callee)) {
             path.node.callee.object = t.callExpression(

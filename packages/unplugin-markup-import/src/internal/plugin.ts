@@ -4,6 +4,11 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
+import type { MarkupFramework, MarkupImportPluginOptions } from "../types.ts";
+import {
+  collectRelativeAstroImports,
+  createAstroFacadeModule,
+} from "./astro-module.ts";
 import {
   dirnamePath,
   joinPath,
@@ -11,10 +16,6 @@ import {
   relativePathFrom,
   resolveRelativeSpecifier,
 } from "./path.ts";
-import {
-  collectRelativeAstroImports,
-  createAstroFacadeModule,
-} from "./astro-module.ts";
 import {
   collectRelativeSvelteImports,
   createSvelteFacadeModule,
@@ -33,10 +34,6 @@ import {
   shouldPreserveRelativeMarkupImport,
   stripKnownQuery,
 } from "./virtual-modules.ts";
-import type {
-  MarkupFramework,
-  MarkupImportPluginOptions,
-} from "../types.ts";
 
 type FrameworkHandler = {
   extension: string;
@@ -232,7 +229,7 @@ export const unpluginFactory: UnpluginFactory<
         .collectRelativeImports(code, sourceId)
         .map((specifier) =>
           resolveRelativeSpecifier(dirnamePath(sourceId), specifier),
-      );
+        );
 
       return {
         code: createScanModuleCode(childSourceIds),

@@ -100,6 +100,13 @@ describe.sequential("e2e-astro application", () => {
     expect(islandsHtml).toContain(
       "Svelte and React islands read the same active locale.",
     );
+    expect(
+      islandsHtml.split("Shared descriptor imported from plain TypeScript.")
+        .length - 1,
+    ).toBe(3);
+    expect(islandsHtml).toContain(
+      "Astro, Svelte, and React all translate the same imported descriptor.",
+    );
     expect(islandsHtml).toContain("Svelte macros keep working inside Astro.");
     expect(islandsHtml).toContain(
       "React components can translate Lingui descriptors inside Astro.",
@@ -174,6 +181,20 @@ describe.sequential("e2e-astro application", () => {
     expect(settingsHtml).toContain(
       "React は I18nProvider 経由で Lingui を読み取ります。",
     );
+
+    const islandsJaResponse = await fetch(`${origin}/islands`, {
+      headers: {
+        Cookie: cookie ?? "",
+      },
+    });
+    const islandsJaHtml = await islandsJaResponse.text();
+
+    expect(islandsJaResponse.status).toBe(200);
+    expect(
+      islandsJaHtml.split(
+        "素の TypeScript から import した共有ディスクリプタです。",
+      ).length - 1,
+    ).toBe(3);
   });
 
   it("renders transition routes with and without ClientRouter", async () => {

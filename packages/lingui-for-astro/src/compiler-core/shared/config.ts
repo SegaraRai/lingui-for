@@ -1,9 +1,5 @@
 import type { ParserOptions } from "@babel/core";
-import {
-  makeConfig,
-  type LinguiConfig,
-  type LinguiConfigNormalized,
-} from "@lingui/conf";
+import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 
@@ -33,14 +29,6 @@ function createBaseLinguiConfig(
   };
 }
 
-export function normalizeJavaScriptLinguiConfig(
-  config?: Partial<LinguiConfig>,
-): LinguiConfigNormalized {
-  return makeConfig(createBaseLinguiConfig(config), {
-    skipValidation: true,
-  });
-}
-
 export function normalizeLinguiConfig(
   config?: Partial<LinguiConfig>,
 ): LinguiConfigNormalized {
@@ -51,17 +39,14 @@ export function normalizeLinguiConfig(
       ? config.runtimeConfigModule
       : {};
 
-  return makeConfig(
-    {
-      ...createBaseLinguiConfig(config),
-      runtimeConfigModule: {
-        i18n: ["@lingui/core", "i18n"] as const,
-        Trans: [PACKAGE_RUNTIME, "RuntimeTrans"] as const,
-        ...runtimeConfigModule,
-      },
+  return {
+    ...createBaseLinguiConfig(config),
+    runtimeConfigModule: {
+      i18n: ["@lingui/core", "i18n"] as const,
+      Trans: [PACKAGE_RUNTIME, "RuntimeTrans"] as const,
+      ...runtimeConfigModule,
     },
-    { skipValidation: true },
-  );
+  } as LinguiConfigNormalized;
 }
 
 export function getParserPlugins(): NonNullable<ParserOptions["plugins"]> {

@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { RuntimeTrans } from "lingui-for-svelte";
   import { t } from "lingui-for-svelte/macro";
 
   import {
     decrementReactiveCount,
     incrementReactiveCount,
-    reactiveDescriptor,
     reactiveState,
     setReactiveName,
     toggleReactiveStatus,
@@ -82,7 +80,6 @@
         {$t`Current status`}:
         <strong class="font-semibold">{derivedStatus}</strong>
       </p>
-      <p><RuntimeTrans message={reactiveDescriptor} /></p>
     </div>
   </div>
 </section>

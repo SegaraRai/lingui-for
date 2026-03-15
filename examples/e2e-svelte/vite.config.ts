@@ -3,9 +3,15 @@ import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
 
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+import linguiCoreMacroVite from "./lingui-core-macro-vite";
 
 export default defineConfig(async () => {
   return {
-    plugins: [linguiForSvelte(), sveltekit(), tailwindcss()],
+    plugins: [
+      linguiCoreMacroVite(),
+      linguiForSvelte(),
+      sveltekit(),
+      tailwindcss(),
+    ],
   };
 });

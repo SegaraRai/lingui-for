@@ -1,10 +1,4 @@
 export const PACKAGE_MACRO = "lingui-for-astro/macro";
-export const PACKAGE_MACRO_ALIASES = [
-  PACKAGE_MACRO,
-  "@lingui/core/macro",
-  "@lingui/react/macro",
-  "@lingui/macro",
-] as const;
 export const PACKAGE_RUNTIME = "lingui-for-astro/runtime";
 
 export const SYNTHETIC_PREFIX_EXPRESSION = "__lingui_for_astro_expr_";

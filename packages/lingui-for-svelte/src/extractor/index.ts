@@ -4,12 +4,9 @@ import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
 import {
   createExtractionUnits,
-  isTransformableScript,
   normalizeLinguiConfig,
-  transformJavaScriptMacros,
   type LinguiSvelteTransformOptions,
 } from "../compiler-core/index.ts";
-import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";
 
 function getParserPlugins(
   ctx: ExtractorCtx,
@@ -89,65 +86,5 @@ export const svelteExtractor: ExtractorType = {
     });
 
     await runExtractionUnits(filename, units, onMessageExtracted, extractorCtx);
-  },
-};
-
-/**
- * Lingui extractor implementation for JS/TS-family files handled by the compiler core.
- *
- * When the source imports the lingui-for-svelte macro package, the file is first transformed in
- * extraction mode so custom runtime semantics are normalized before Lingui extracts messages.
- * Otherwise the original source is forwarded directly to Lingui's Babel-based extractor.
- */
-export const jstsExtractor: ExtractorType = {
-  match(filename) {
-    return isTransformableScript(filename);
-  },
-  async extract(filename, source, onMessageExtracted, ctx) {
-    const extractorCtx = createExtractorContext(ctx, {
-      filename,
-      linguiConfig: ctx?.linguiConfig,
-    });
-
-    if (source.includes(PACKAGE_MACRO)) {
-      const transformed = transformJavaScriptMacros(
-        source,
-        {
-          filename,
-          linguiConfig: extractorCtx.linguiConfig,
-        },
-        true,
-      );
-
-      if (transformed) {
-        await extractFromFileWithBabel(
-          filename,
-          transformed.code,
-          onMessageExtracted,
-          transformed.map
-            ? {
-                ...extractorCtx,
-                sourceMaps: transformed.map,
-              }
-            : extractorCtx,
-          {
-            plugins: getParserPlugins(extractorCtx),
-          },
-          true,
-        );
-        return;
-      }
-    }
-
-    await extractFromFileWithBabel(
-      filename,
-      source,
-      onMessageExtracted,
-      extractorCtx,
-      {
-        plugins: getParserPlugins(extractorCtx),
-      },
-      true,
-    );
   },
 };

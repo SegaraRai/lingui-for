@@ -1,9 +1,5 @@
 import type { ParserOptions } from "@babel/core";
-import {
-  makeConfig,
-  type LinguiConfig,
-  type LinguiConfigNormalized,
-} from "@lingui/conf";
+import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 import type { ScriptLang } from "./types.ts";
@@ -32,31 +28,28 @@ export function normalizeLinguiConfig(
       ? config.runtimeConfigModule
       : {};
 
-  return makeConfig(
-    {
-      ...config,
-      macro: {
-        corePackage: uniqueStrings([
-          PACKAGE_MACRO,
-          "@lingui/macro",
-          "@lingui/core/macro",
-          ...(config?.macro?.corePackage ?? []),
-        ]),
-        jsxPackage: uniqueStrings([
-          PACKAGE_MACRO,
-          "@lingui/macro",
-          "@lingui/react/macro",
-          ...(config?.macro?.jsxPackage ?? []),
-        ]),
-      },
-      runtimeConfigModule: {
-        i18n: ["@lingui/core", "i18n"] as const,
-        Trans: [PACKAGE_RUNTIME, "RuntimeTrans"] as const,
-        ...runtimeConfigModule,
-      },
+  return {
+    ...config,
+    macro: {
+      corePackage: uniqueStrings([
+        PACKAGE_MACRO,
+        "@lingui/macro",
+        "@lingui/core/macro",
+        ...(config?.macro?.corePackage ?? []),
+      ]),
+      jsxPackage: uniqueStrings([
+        PACKAGE_MACRO,
+        "@lingui/macro",
+        "@lingui/react/macro",
+        ...(config?.macro?.jsxPackage ?? []),
+      ]),
     },
-    { skipValidation: true },
-  );
+    runtimeConfigModule: {
+      i18n: ["@lingui/core", "i18n"] as const,
+      Trans: [PACKAGE_RUNTIME, "RuntimeTrans"] as const,
+      ...runtimeConfigModule,
+    },
+  } as LinguiConfigNormalized;
 }
 
 /**

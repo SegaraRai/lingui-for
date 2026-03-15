@@ -1,7 +1,7 @@
-import { defineConfig } from "@lingui/conf";
-import { jstsExtractor, svelteExtractor } from "lingui-for-svelte/extractor";
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
 
-export default defineConfig({
+export default {
   locales: ["en", "ja"],
   sourceLocale: "en",
   fallbackLocales: {
@@ -15,5 +15,5 @@ export default defineConfig({
       exclude: ["src/lib/i18n/locales/**"],
     },
   ],
-  extractors: [svelteExtractor, jstsExtractor],
-});
+  extractors: [svelteExtractor, babelExtractor],
+};

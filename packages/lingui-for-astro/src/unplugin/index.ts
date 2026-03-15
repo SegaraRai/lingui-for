@@ -4,14 +4,13 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import {
-  isTransformableScript,
-  stripQuery,
-  transformAstro,
-  transformJavaScriptMacros,
-} from "../compiler-core/index.ts";
 import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";
 import type { LinguiAstroPluginOptions } from "./types.ts";
+
+function stripQuery(id: string): string {
+  const queryIndex = id.indexOf("?");
+  return queryIndex === -1 ? id : id.slice(0, queryIndex);
+}
 
 function reorderBeforeMatcher<
   T extends {
@@ -43,7 +42,7 @@ function reorderBeforeMatcher<
   }
 
   const [plugin] = plugins.splice(currentIndex, 1);
-  plugins.splice(targetIndex, 0, plugin);
+  plugins.splice(targetIndex, 0, plugin!);
 }
 
 export const unpluginFactory: UnpluginFactory<
@@ -66,26 +65,12 @@ export const unpluginFactory: UnpluginFactory<
         return null;
       }
 
+      const { transformAstro } =
+        await import("../compiler-core/transform/transform-astro.ts");
       const transformed = await transformAstro(code, {
         filename,
         linguiConfig: options?.linguiConfig,
       });
-
-      return {
-        code: transformed.code,
-        map: transformed.map,
-      };
-    }
-
-    if (isTransformableScript(filename)) {
-      const transformed = transformJavaScriptMacros(code, {
-        filename,
-        linguiConfig: options?.linguiConfig,
-      });
-
-      if (!transformed) {
-        return null;
-      }
 
       return {
         code: transformed.code,

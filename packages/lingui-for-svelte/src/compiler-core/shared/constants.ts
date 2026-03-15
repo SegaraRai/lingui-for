@@ -111,23 +111,3 @@ export const RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS = "L4sRuntimeTrans";
  * This is a fixed runtime API name, not a generated value.
  */
 export const EXPORT_CREATE_LINGUI_ACCESSORS = "createLinguiAccessors";
-
-/**
- * File extensions that are treated as transformable JavaScript/TypeScript sources.
- *
- * This is used by path-level helpers and higher-level plugins/extractors to decide whether
- * a file should be passed through the JS/TS macro transform pipeline.
- *
- * This is a fixed allowlist of extensions. It is not generated per-file, though the set
- * may evolve as the library's supported source formats change.
- */
-export const JS_TS_EXTENSIONS = [
-  ".js",
-  ".jsx",
-  ".mjs",
-  ".cjs",
-  ".ts",
-  ".tsx",
-  ".mts",
-  ".cts",
-] as const;

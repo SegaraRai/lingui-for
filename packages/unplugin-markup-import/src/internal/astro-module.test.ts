@@ -48,7 +48,10 @@ describe("collectRelativeAstroImports", () => {
     ].join("\n");
 
     expect(
-      collectRelativeAstroImports(source, "/virtual/runtime/RenderTransNodes.astro"),
+      collectRelativeAstroImports(
+        source,
+        "/virtual/runtime/RenderTransNodes.astro",
+      ),
     ).toEqual(["./RuntimeTrans.astro", "./RenderTransNode.astro"]);
   });
 });
@@ -73,7 +76,9 @@ describe("createAstroFacadeModule", () => {
     );
 
     expect(result.assetFileName).toBe("runtime/RuntimeTrans.astro");
-    expect(result.facadeFileName).toBe("runtime/RuntimeTrans.astro.imports.mjs");
+    expect(result.facadeFileName).toBe(
+      "runtime/RuntimeTrans.astro.imports.mjs",
+    );
     expect(result.rewrittenCode).toMatchInlineSnapshot(`
       "---
       import type { MessageDescriptor } from "@lingui/core";

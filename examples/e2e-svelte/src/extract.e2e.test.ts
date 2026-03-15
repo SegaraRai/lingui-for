@@ -11,6 +11,10 @@ describe("lingui extract and compile outputs", () => {
     expect(enPo).toContain("Lingui in a small SvelteKit application");
     expect(enPo).toContain("Immediate translation in markup.");
     expect(enPo).toContain("Hello {name} from the basic route.");
+    expect(enPo).toContain("Descriptor imported from plain TypeScript.");
+    expect(enPo).toContain(
+      "A plain TypeScript module can define Lingui descriptors for Svelte.",
+    );
     expect(enPo).toContain("$t across Svelte syntax positions");
     expect(enPo).toContain(
       "This placeholder comes from $t inside an attribute",
@@ -27,8 +31,9 @@ describe("lingui extract and compile outputs", () => {
     const jaCatalog = await readFile(resolve(localeDir, "ja.ts"), "utf8");
 
     expect(jaCatalog).toContain("小さな SvelteKit アプリで使う Lingui");
+    expect(jaCatalog).toContain("Svelte コンポーネントで直接マクロを使う");
     expect(jaCatalog).toContain(
-      "通常の TypeScript ヘルパーからのディスクリプタ。",
+      "素の TypeScript から import したディスクリプタです。",
     );
     expect(jaCatalog).toContain("Svelte 構文の各所で使う $t");
     expect(jaCatalog).toContain("キー付きサブツリーのリビジョン");

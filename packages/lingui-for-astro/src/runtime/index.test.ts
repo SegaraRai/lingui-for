@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  getLinguiContext,
-  setLinguiContext,
-} from "./core/context.ts";
+import { getLinguiContext, setLinguiContext } from "./core/context.ts";
 import { formatRichTextTranslation } from "./trans/rich-text.ts";
 import {
   mergeRuntimeTransValues,

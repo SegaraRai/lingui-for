@@ -4,6 +4,10 @@ import { t } from "lingui-for-astro/macro";
 import AppLayout from "../layouts/AppLayout.astro";
 import ReactLinguiIsland from "../components/react/ReactLinguiIsland.tsx";
 import SvelteLinguiIsland from "../components/svelte/SvelteLinguiIsland.svelte";
+import {
+  sharedImportedDescriptor,
+  sharedImportedDetailDescriptor,
+} from "../lib/i18n/shared-descriptors";
 
 const locale = Astro.locals.locale;
 const currentPage = t`Islands page`;
@@ -28,6 +32,8 @@ const currentPage = t`Islands page`;
           t`Each island creates its own runtime, but Astro middleware hands both the same locale.`
         }
       </p>
+      <p class="text-base-content/70">{t(sharedImportedDescriptor)}</p>
+      <p class="text-base-content/70">{t(sharedImportedDetailDescriptor)}</p>
     </div>
   </section>
 

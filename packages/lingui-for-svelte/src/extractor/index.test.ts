@@ -3,7 +3,7 @@ import dedent from "dedent";
 import { describe, expect, it } from "vitest";
 
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
-import { jstsExtractor, svelteExtractor } from "./index.ts";
+import { svelteExtractor } from "./index.ts";
 
 function createExtractorContext(): { linguiConfig: LinguiConfigNormalized } {
   return {
@@ -296,97 +296,5 @@ describe("svelteExtractor", () => {
           message.message === "{count, selectordinal, one {#st} other {#th}}",
       ),
     ).toBe(true);
-  });
-});
-
-describe("jstsExtractor", () => {
-  it("extracts tagged template literals from plain TypeScript sources", async () => {
-    const source = dedent`
-      import { msg, t } from "lingui-for-svelte/macro";
-      const count = 2;
-      const name = "Ada";
-      export const descriptor = msg\`Tagged descriptor from TypeScript\`;
-      export const label = t\`Tagged label from TypeScript\`;
-      export const greeting = msg\`Hello \${name}\`;
-      export const summary = msg({ message: "{count, plural, one {# task for {name}} other {# tasks for {name}}}" });
-    `;
-
-    const messages = await collectMessages((onMessageExtracted) =>
-      Promise.resolve(
-        jstsExtractor.extract(
-          "/virtual/messages.ts",
-          source,
-          onMessageExtracted,
-          createExtractorContext(),
-        ),
-      ),
-    );
-
-    expect(
-      messages.some(
-        (message) => message.message === "Tagged descriptor from TypeScript",
-      ),
-    ).toBe(true);
-    expect(
-      messages.some(
-        (message) => message.message === "Tagged label from TypeScript",
-      ),
-    ).toBe(true);
-    expect(messages.some((message) => message.message === "Hello {name}")).toBe(
-      true,
-    );
-    expect(
-      messages.some(
-        (message) =>
-          message.message ===
-          "{count, plural, one {# task for {name}} other {# tasks for {name}}}",
-      ),
-    ).toBe(true);
-  });
-
-  it("does not extract same-name macro imports from non-macro modules", async () => {
-    const source = dedent`
-      import { t } from "./macro";
-      export const label = t\`Ignored\`;
-    `;
-
-    const messages = await collectMessages((onMessageExtracted) =>
-      Promise.resolve(
-        jstsExtractor.extract(
-          "/virtual/messages.ts",
-          source,
-          onMessageExtracted,
-          createExtractorContext(),
-        ),
-      ),
-    );
-
-    expect(messages).toEqual([]);
-  });
-
-  it("does not extract shadowed macro aliases in plain TypeScript", async () => {
-    const source = dedent`
-      import { t as translate } from "lingui-for-svelte/macro";
-      export const label = translate\`Outer\`;
-
-      export function render() {
-        const translate = notMacro;
-        return translate\`Inner\`;
-      }
-    `;
-
-    const messages = await collectMessages((onMessageExtracted) =>
-      Promise.resolve(
-        jstsExtractor.extract(
-          "/virtual/messages.ts",
-          source,
-          onMessageExtracted,
-          createExtractorContext(),
-        ),
-      ),
-    );
-
-    expect(messages.some((message) => message.message === "Outer")).toBe(true);
-    expect(messages.some((message) => message.message === "Inner")).toBe(false);
   });
 });

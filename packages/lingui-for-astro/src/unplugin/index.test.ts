@@ -6,6 +6,10 @@ describe("lingui-for-astro unplugin", () => {
   it("moves the plugin ahead of Astro compilation in Vite", () => {
     const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
+    if (!pluginInstance) {
+      throw new Error("Plugin instance is undefined");
+    }
+
     const configResolved = pluginInstance.vite?.configResolved;
     const runConfigResolved =
       typeof configResolved === "function"

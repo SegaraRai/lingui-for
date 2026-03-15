@@ -28,8 +28,8 @@ export function shouldPreserveRelativeMarkupImport(
 ): boolean {
   return Boolean(
     importer &&
-      specifier.startsWith(".") &&
-      extensions.some((extension) => specifier.endsWith(extension)),
+    specifier.startsWith(".") &&
+    extensions.some((extension) => specifier.endsWith(extension)),
   );
 }
 

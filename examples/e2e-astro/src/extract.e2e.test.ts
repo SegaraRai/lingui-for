@@ -16,6 +16,10 @@ describe("lingui extract and compile outputs", () => {
     expect(enPo).toContain("Dynamic route checks");
     expect(enPo).toContain("Client transition checks");
     expect(enPo).toContain("Current page: {currentPage}");
+    expect(enPo).toContain("Shared descriptor imported from plain TypeScript.");
+    expect(enPo).toContain(
+      "Astro, Svelte, and React all translate the same imported descriptor.",
+    );
     expect(enPo).toContain(
       "React rich text keeps component placeholders intact.",
     );
@@ -33,10 +37,13 @@ describe("lingui extract and compile outputs", () => {
     expect(jaCatalog).toContain("サーバー翻訳の確認");
     expect(jaCatalog).toContain("動的ルートの確認");
     expect(jaCatalog).toContain("クライアント遷移の確認");
+    expect(jaCatalog).toContain(
+      "素の TypeScript から import した共有ディスクリプタです。",
+    );
     expect(jaCatalog).toContain("現在のページ: ");
     expect(jaCatalog).toContain("現在表示中の slug は ");
     expect(jaCatalog).toContain(
-      "React のリッチテキストはコンポーネントプレースホルダーを保ちます。",
+      "React リッチテキストはコンポーネントのプレースホルダーをそのまま保ちます。",
     );
     expect(jaCatalog).toContain(
       "Svelte はコンポーネントコードの中で plural、select、selectOrdinal マクロを実行します。",

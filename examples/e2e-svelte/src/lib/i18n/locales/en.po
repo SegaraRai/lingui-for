@@ -30,7 +30,7 @@ msgstr "{role, select, female {She approves the locale switch.} other {They appr
 msgid "$t across Svelte syntax positions"
 msgstr "$t across Svelte syntax positions"
 
-#: src/routes/playground/reactive/+page.svelte:27
+#: src/routes/playground/reactive/+page.svelte:25
 msgid "$t and rune-backed state"
 msgstr "$t and rune-backed state"
 
@@ -38,13 +38,17 @@ msgstr "$t and rune-backed state"
 msgid "$t with rune-backed state from a .svelte.ts module"
 msgstr "$t with rune-backed state from a .svelte.ts module"
 
-#: src/routes/playground/reactive/+page.svelte:17
+#: src/lib/playground/imported-descriptors.ts:6
+msgid "A plain TypeScript module can define Lingui descriptors for Svelte."
+msgstr "A plain TypeScript module can define Lingui descriptors for Svelte."
+
+#: src/routes/playground/reactive/+page.svelte:15
 msgid "Active"
 msgstr "Active"
 
 #: src/lib/app/PlaygroundNav.svelte:23
 #: src/routes/playground/+page.svelte:7
-#: src/routes/playground/basic/+page.svelte:14
+#: src/routes/playground/basic/+page.svelte:17
 msgid "Basic"
 msgstr "Basic"
 
@@ -62,12 +66,12 @@ msgstr "Choose a language with the switcher in the header. The server stores you
 msgid "Components"
 msgstr "Components"
 
-#: src/routes/playground/reactive/+page.svelte:44
+#: src/routes/playground/reactive/+page.svelte:42
 msgid "Count"
 msgstr "Count"
 
 #. placeholder {0}: reactiveState.count
-#: src/routes/playground/reactive/+page.svelte:15
+#: src/routes/playground/reactive/+page.svelte:13
 msgid "Count: {0}"
 msgstr "Count: {0}"
 
@@ -84,8 +88,8 @@ msgid "Covers placeholder parsing and runtime rendering of translated rich text.
 msgstr "Covers placeholder parsing and runtime rendering of translated rich text."
 
 #: src/routes/playground/+page.svelte:9
-msgid "Covers t, msg, RuntimeTrans, and helper modules without explicit ids."
-msgstr "Covers t, msg, RuntimeTrans, and helper modules without explicit ids."
+msgid "Covers t, msg, and RuntimeTrans without explicit ids."
+msgstr "Covers t, msg, and RuntimeTrans without explicit ids."
 
 #: src/routes/playground/+page.svelte:15
 msgid "Covers top-level reactive strings, callback contexts, and module-owned state."
@@ -95,12 +99,12 @@ msgstr "Covers top-level reactive strings, callback contexts, and module-owned s
 msgid "Current language"
 msgstr "Current language"
 
-#: src/routes/playground/reactive/+page.svelte:82
+#: src/routes/playground/reactive/+page.svelte:80
 msgid "Current status"
 msgstr "Current status"
 
 #: src/routes/playground/components/+page.svelte:24
-#: src/routes/playground/reactive/+page.svelte:60
+#: src/routes/playground/reactive/+page.svelte:58
 msgid "Decrease"
 msgstr "Decrease"
 
@@ -108,25 +112,21 @@ msgstr "Decrease"
 msgid "Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants."
 msgstr "Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants."
 
-#: src/routes/playground/basic/+page.svelte:8
+#: src/routes/playground/basic/+page.svelte:11
 msgid "Descriptor created in a route component."
 msgstr "Descriptor created in a route component."
 
-#: reactive-state.svelte.ts:3
-msgid "Descriptor from a .svelte.ts module."
-msgstr "Descriptor from a .svelte.ts module."
-
-#: basic.ts:3
-msgid "Descriptor from a plain TypeScript helper."
-msgstr "Descriptor from a plain TypeScript helper."
+#: src/lib/playground/imported-descriptors.ts:3
+msgid "Descriptor imported from plain TypeScript."
+msgstr "Descriptor imported from plain TypeScript."
 
 #: src/routes/playground/+page.svelte:8
-msgid "Direct macro usage in Svelte and plain TypeScript"
-msgstr "Direct macro usage in Svelte and plain TypeScript"
+msgid "Direct macro usage in Svelte components"
+msgstr "Direct macro usage in Svelte components"
 
-#: src/routes/playground/basic/+page.svelte:17
-msgid "Direct macros in components and plain modules"
-msgstr "Direct macros in components and plain modules"
+#: src/routes/playground/basic/+page.svelte:20
+msgid "Direct macros in Svelte components"
+msgstr "Direct macros in Svelte components"
 
 #: src/routes/+page.svelte:49
 msgid "Direct usage"
@@ -190,11 +190,11 @@ msgid "Force a keyed subtree refresh"
 msgstr "Force a keyed subtree refresh"
 
 #. placeholder {0}: reactiveState.name
-#: src/routes/playground/reactive/+page.svelte:14
+#: src/routes/playground/reactive/+page.svelte:12
 msgid "Hello {0} from the reactive route."
 msgstr "Hello {0} from the reactive route."
 
-#: src/routes/playground/basic/+page.svelte:30
+#: src/routes/playground/basic/+page.svelte:33
 msgid "Hello {name} from the basic route."
 msgstr "Hello {name} from the basic route."
 
@@ -206,16 +206,16 @@ msgstr "Home"
 msgid "ICU component macros"
 msgstr "ICU component macros"
 
-#: src/routes/playground/reactive/+page.svelte:17
+#: src/routes/playground/reactive/+page.svelte:15
 msgid "Idle"
 msgstr "Idle"
 
-#: src/routes/playground/basic/+page.svelte:29
+#: src/routes/playground/basic/+page.svelte:32
 msgid "Immediate translation in markup."
 msgstr "Immediate translation in markup."
 
 #: src/routes/playground/components/+page.svelte:31
-#: src/routes/playground/reactive/+page.svelte:67
+#: src/routes/playground/reactive/+page.svelte:65
 msgid "Increase"
 msgstr "Increase"
 
@@ -257,8 +257,8 @@ msgstr "Locale session"
 msgid "Messages live next to the code that renders them"
 msgstr "Messages live next to the code that renders them"
 
-#: src/routes/playground/basic/+page.svelte:24
-#: src/routes/playground/reactive/+page.svelte:35
+#: src/routes/playground/basic/+page.svelte:27
+#: src/routes/playground/reactive/+page.svelte:33
 msgid "Name"
 msgstr "Name"
 
@@ -298,7 +298,7 @@ msgstr "Preferences"
 
 #: src/lib/app/PlaygroundNav.svelte:30
 #: src/routes/playground/+page.svelte:13
-#: src/routes/playground/reactive/+page.svelte:24
+#: src/routes/playground/reactive/+page.svelte:22
 msgid "Reactive"
 msgstr "Reactive"
 
@@ -407,11 +407,11 @@ msgstr "This route exercises @const, attributes, snippets, keyed blocks, and oth
 msgid "This route focuses on translated markup with both native elements and Svelte components."
 msgstr "This route focuses on translated markup with both native elements and Svelte components."
 
-#: src/routes/playground/reactive/+page.svelte:30
+#: src/routes/playground/reactive/+page.svelte:28
 msgid "This route isolates reactive string macros and state that lives in a .svelte.ts module."
 msgstr "This route isolates reactive string macros and state that lives in a .svelte.ts module."
 
-#: src/routes/playground/basic/+page.svelte:20
+#: src/routes/playground/basic/+page.svelte:23
 msgid "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
 msgstr "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
 
@@ -423,7 +423,7 @@ msgstr "Toggle mode"
 msgid "Toggle role"
 msgstr "Toggle role"
 
-#: src/routes/playground/reactive/+page.svelte:74
+#: src/routes/playground/reactive/+page.svelte:72
 msgid "Toggle status"
 msgstr "Toggle status"
 

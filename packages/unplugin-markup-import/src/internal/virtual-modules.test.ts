@@ -68,11 +68,10 @@ describe("shouldPreserveRelativeMarkupImport", () => {
       ),
     ).toBe(false);
     expect(
-      shouldPreserveRelativeMarkupImport(
-        "./RuntimeTrans.svelte",
-        undefined,
-        [".astro", ".svelte"],
-      ),
+      shouldPreserveRelativeMarkupImport("./RuntimeTrans.svelte", undefined, [
+        ".astro",
+        ".svelte",
+      ]),
     ).toBe(false);
   });
 });

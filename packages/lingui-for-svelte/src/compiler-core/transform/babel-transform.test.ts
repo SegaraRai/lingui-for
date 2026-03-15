@@ -62,8 +62,7 @@ describe("transformProgram", () => {
     expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
-      "import { i18n as _i18n } from "@lingui/core";
-      const __lingui_for_svelte_expr_0 = $__l4s_translate(
+      "const __lingui_for_svelte_expr_0 = $__l4s_translate(
       /*i18n*/
       {
         id: "OVaF9k",

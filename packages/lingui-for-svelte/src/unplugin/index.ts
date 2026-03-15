@@ -4,11 +4,7 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import {
-  isTransformableScript,
-  transformJavaScriptMacros,
-  transformSvelte,
-} from "../compiler-core/index.ts";
+import { transformSvelte } from "../compiler-core/index.ts";
 import type { LinguiSveltePluginOptions } from "./types.ts";
 
 function stripQuery(id: string): string {
@@ -36,22 +32,6 @@ export const unpluginFactory: UnpluginFactory<
         filename,
         linguiConfig: options?.linguiConfig,
       });
-
-      return {
-        code: transformed.code,
-        map: transformed.map,
-      };
-    }
-
-    if (isTransformableScript(filename)) {
-      const transformed = transformJavaScriptMacros(code, {
-        filename,
-        linguiConfig: options?.linguiConfig,
-      });
-
-      if (!transformed) {
-        return null;
-      }
 
       return {
         code: transformed.code,

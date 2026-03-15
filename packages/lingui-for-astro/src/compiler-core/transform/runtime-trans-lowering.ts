@@ -27,6 +27,7 @@ export function lowerSyntheticComponentDeclaration(
 
     const [declaration] = statement.declarations;
     if (
+      !declaration ||
       !t.isIdentifier(declaration.id) ||
       !declaration.id.name.startsWith(SYNTHETIC_PREFIX_COMPONENT) ||
       !declaration.init ||
