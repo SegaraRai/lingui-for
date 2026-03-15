@@ -1,7 +1,7 @@
 import { parseSync, type NodePath } from "@babel/core";
-import traverse from "@babel/traverse";
 import * as t from "@babel/types";
 
+import { getBabelTraverse } from "./babel-traverse.ts";
 import { getParserPlugins } from "./config.ts";
 import { PACKAGE_MACRO } from "./constants.ts";
 import type { ScriptLang } from "./types.ts";
@@ -80,6 +80,7 @@ function collectImportLocalsFromFile(
   importedNames: readonly MacroImportName[],
 ): Set<string> {
   const locals = new Set<string>();
+  const traverse = getBabelTraverse();
 
   traverse(file, {
     ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
@@ -257,6 +258,7 @@ export function expressionUsesMacroBinding(
   }
 
   let usesMacroBinding = false;
+  const traverse = getBabelTraverse();
 
   traverse(file, {
     CallExpression(path: NodePath<t.CallExpression>) {
