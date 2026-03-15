@@ -10,11 +10,11 @@ describe("proxy modules", () => {
   it("creates a proxy that scans the source file and re-exports the public svelte specifier", () => {
     expect(
       createProxyModuleCode(
-        "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/RuntimeTrans.svelte",
+        "C:/Workspace/lingui-for-svelte/src/runtime/trans/RuntimeTrans.svelte",
         "./trans/RuntimeTrans.svelte",
       ),
     ).toMatchInlineSnapshot(`
-      "import "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/RuntimeTrans.svelte?unplugin-svelte-import-scan";
+      "import "C:/Workspace/lingui-for-svelte/src/runtime/trans/RuntimeTrans.svelte?unplugin-svelte-import-scan";
       export { default } from "./trans/RuntimeTrans.svelte?unplugin-svelte-import-public";"
     `);
   });
@@ -22,10 +22,10 @@ describe("proxy modules", () => {
   it("creates scan modules that recurse into nested svelte dependencies", () => {
     expect(
       createScanModuleCode([
-        "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/RenderTransNodes.svelte",
+        "C:/Workspace/lingui-for-svelte/src/runtime/trans/RenderTransNodes.svelte",
       ]),
     ).toMatchInlineSnapshot(`
-      "import "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/RenderTransNodes.svelte?unplugin-svelte-import-scan";"
+      "import "C:/Workspace/lingui-for-svelte/src/runtime/trans/RenderTransNodes.svelte?unplugin-svelte-import-scan";"
     `);
     expect(createScanModuleCode([])).toBe("export {};");
   });

@@ -95,7 +95,7 @@ describe("createSvelteFacadeModule", () => {
 
     const result = createSvelteFacadeModule(
       source,
-      "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/RuntimeTrans.svelte",
+      "C:/Workspace/lingui-for-svelte/src/runtime/trans/RuntimeTrans.svelte",
       "runtime/trans/RuntimeTrans.svelte",
     );
 
@@ -113,20 +113,20 @@ describe("createSvelteFacadeModule", () => {
       </script>"
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
-      "export { getLinguiContext as __unplugin_svelte_import_0 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/core/context.ts";
-      export { formatRichTextTranslation as __unplugin_svelte_import_1 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/rich-text.ts";
-      export { mergeRuntimeTransValues as __unplugin_svelte_import_3 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";
-      export { translateRuntimeTrans as __unplugin_svelte_import_4 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";"
+      "export { getLinguiContext as __unplugin_svelte_import_0 } from "C:/Workspace/lingui-for-svelte/src/runtime/core/context.ts";
+      export { formatRichTextTranslation as __unplugin_svelte_import_1 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/rich-text.ts";
+      export { mergeRuntimeTransValues as __unplugin_svelte_import_3 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/trans-descriptor.ts";
+      export { translateRuntimeTrans as __unplugin_svelte_import_4 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/trans-descriptor.ts";"
     `);
     expect(result.facadeDtsFileName).toBe(
       "runtime/trans/RuntimeTrans.svelte.imports.d.mts",
     );
     expect(result.facadeDtsCode).toMatchInlineSnapshot(`
-      "export { getLinguiContext as __unplugin_svelte_import_0 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/core/context.ts";
-      export { formatRichTextTranslation as __unplugin_svelte_import_1 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/rich-text.ts";
-      export type { TransComponentMap as __unplugin_svelte_import_2 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/rich-text.ts";
-      export { mergeRuntimeTransValues as __unplugin_svelte_import_3 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";
-      export { translateRuntimeTrans as __unplugin_svelte_import_4 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/trans-descriptor.ts";"
+      "export { getLinguiContext as __unplugin_svelte_import_0 } from "C:/Workspace/lingui-for-svelte/src/runtime/core/context.ts";
+      export { formatRichTextTranslation as __unplugin_svelte_import_1 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/rich-text.ts";
+      export type { TransComponentMap as __unplugin_svelte_import_2 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/rich-text.ts";
+      export { mergeRuntimeTransValues as __unplugin_svelte_import_3 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/trans-descriptor.ts";
+      export { translateRuntimeTrans as __unplugin_svelte_import_4 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/trans-descriptor.ts";"
     `);
   });
 
@@ -157,7 +157,7 @@ describe("createSvelteFacadeModule", () => {
 
     const result = createSvelteFacadeModule(
       source,
-      "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/RenderTransNodes.svelte",
+      "C:/Workspace/lingui-for-svelte/src/runtime/trans/RenderTransNodes.svelte",
       "runtime/trans/RenderTransNodes.svelte",
     );
 
@@ -168,8 +168,8 @@ describe("createSvelteFacadeModule", () => {
     `);
     expect(result.facadeCode).toBe("export {};");
     expect(result.facadeDtsCode).toMatchInlineSnapshot(`
-      "export type { TransComponentMap as __unplugin_svelte_import_0 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/rich-text.ts";
-      export type { TransRenderNode as __unplugin_svelte_import_1 } from "C:/Workspace/lingui-svelte/packages/lingui-svelte/src/runtime/trans/rich-text.ts";"
+      "export type { TransComponentMap as __unplugin_svelte_import_0 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/rich-text.ts";
+      export type { TransRenderNode as __unplugin_svelte_import_1 } from "C:/Workspace/lingui-for-svelte/src/runtime/trans/rich-text.ts";"
     `);
   });
 });
