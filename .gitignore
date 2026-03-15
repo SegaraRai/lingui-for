@@ -6,4 +6,5 @@ dist
 *.log
 *.tsbuildinfo
 
-js-lingui
+.vitest-attachments
+__screenshots__

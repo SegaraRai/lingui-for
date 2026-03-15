@@ -6,5 +6,14 @@ declare module "vitest/browser" {
       bodyText: string;
       errors: string[];
     }>;
+    switchLocaleFromHeader: (
+      pathname: string,
+      localeCode: string,
+    ) => Promise<{
+      bodyText: string;
+      currentUrl: string;
+      htmlLang: string | null;
+      errors: string[];
+    }>;
   }
 }

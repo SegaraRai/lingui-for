@@ -1,0 +1,34 @@
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
+
+const localeDir = resolve(
+  import.meta.dirname,
+  "lib",
+  "i18n",
+  "locales",
+);
+
+describe("lingui extract and compile outputs", () => {
+  it("contains route-local messages in the extracted source catalog", async () => {
+    const enPo = await readFile(resolve(localeDir, "en.po"), "utf8");
+
+    expect(enPo).toContain("Lingui in a small SvelteKit application");
+    expect(enPo).toContain("Immediate translation in markup.");
+    expect(enPo).toContain("Hello {name} from the basic route.");
+    expect(enPo).toContain("Embedded elements and components inside Trans");
+    expect(enPo).toContain("Explicit id from a plain descriptor.");
+    expect(enPo).toContain('msgid "playground.ids.trans"');
+    expect(enPo).toContain('msgid "playground.ids.call"');
+    expect(enPo).toContain('msgid "playground.ids.descriptor"');
+  });
+
+  it("contains japanese translations in the compiled catalog", async () => {
+    const jaCatalog = await readFile(resolve(localeDir, "ja.ts"), "utf8");
+
+    expect(jaCatalog).toContain("小さな SvelteKit アプリで使う Lingui");
+    expect(jaCatalog).toContain("通常の TypeScript ヘルパーからのディスクリプタ。");
+    expect(jaCatalog).toContain("クッキーで保持されるロケール");
+    expect(jaCatalog).toContain("Trans コンポーネントからの明示的な id。");
+  });
+});

@@ -13,183 +13,326 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#. js-lingui-explicit-id
-#: messages.ts:107
-msgid "kit.playground.eyebrow"
-msgstr ".svelte.ts state"
+#: src/routes/playground/components/+page.svelte:40
+msgid "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
+msgstr "{count, plural, one {コンポーネントタスクは # 件待機中です} other {コンポーネントタスクは # 件待機中です}}"
 
-#. placeholder {0}: playgroundState.count
-#: src/routes/playground/+page.svelte:81
-msgid "{0, plural, one {# component task is queued} other {# component tasks are queued}}"
-msgstr "{0, plural, one {component task は # 件待機中です} other {component task は # 件待機中です}}"
+#: src/routes/playground/components/+page.svelte:54
+msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
+msgstr "{count, selectordinal, one {第 # リリース候補} two {第 # リリース候補} few {第 # リリース候補} other {第 # リリース候補}}"
 
-#. placeholder {0}: playgroundState.count
-#: src/routes/playground/+page.svelte:95
-msgid "{0, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
-msgstr "{0, selectordinal, one {第 # リリース候補} two {第 # リリース候補} few {第 # リリース候補} other {第 # リリース候補}}"
+#: src/routes/playground/components/+page.svelte:47
+msgid "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
+msgstr "{role, select, female {彼女はロケール切り替えを承認しました。} other {彼らはロケール切り替えを承認しました。}}"
 
-#. js-lingui-explicit-id
-#: messages.ts:149
-msgid "kit.playground.summary"
-msgstr "{count, plural, one {{name} の待機中アクション # 件} other {{name} の待機中アクション # 件}}"
+#: src/routes/playground/reactive/+page.svelte:27
+msgid "$t and rune-backed state"
+msgstr "$t とルーンベースのステート"
 
-#: src/routes/playground/+page.svelte:88
-msgid "{reviewerRole, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
-msgstr "{reviewerRole, select, female {彼女がロケール切り替えを承認しました。} other {ロケール切り替えを承認しました。}}"
+#: src/routes/playground/+page.svelte:13
+msgid "$t with rune-backed state from a .svelte.ts module"
+msgstr ".svelte.ts モジュールのルーンベースのステートと $t"
 
-#. js-lingui-explicit-id
-#: messages.ts:62
-msgid "kit.card.route.title"
-msgstr "+page.ts が message descriptor を返す"
+#: src/routes/playground/reactive/+page.svelte:17
+msgid "Active"
+msgstr "アクティブ"
 
-#. js-lingui-explicit-id
-#: messages.ts:141
-msgid "kit.playground.increment"
-msgstr "追加"
+#: src/lib/app/PlaygroundNav.svelte:22
+#: src/routes/playground/+page.svelte:6
+#: src/routes/playground/basic/+page.svelte:14
+msgid "Basic"
+msgstr "基本"
 
-#. js-lingui-explicit-id
-#: src/routes/+page.svelte:19
-msgid "kit.home.rich-copy"
-msgstr "<0>プレイグラウンド</0>に移動して、<1>埋め込み要素</1>とロケールに応じたランタイム更新を確認してください。"
+#: src/routes/settings/+page.svelte:17
+msgid "Choose a language with the switcher in the header. The server stores your preference in a cookie so new routes keep the same locale."
+msgstr "ヘッダーの切り替えで言語を選べます。サーバーがクッキーに設定を保存するので、別のルートに移動しても同じロケールが維持されます。"
 
-#. js-lingui-explicit-id
-#: messages.ts:74
-msgid "kit.card.component.eyebrow"
+#: src/lib/app/PlaygroundNav.svelte:43
+#: src/routes/playground/+page.svelte:24
+#: src/routes/playground/components/+page.svelte:11
+msgid "Components"
 msgstr "コンポーネント"
 
-#. js-lingui-explicit-id
-#: messages.ts:82
-msgid "kit.card.component.body"
-msgstr "コンポーネントは descriptor を受け取り、extractor ロジックを重複させずに runtime だけ呼びます。"
+#: src/routes/playground/reactive/+page.svelte:44
+msgid "Count"
+msgstr "カウント"
 
-#. js-lingui-explicit-id
-#: messages.ts:133
-msgid "kit.playground.field.count"
-msgstr "件数"
+#. placeholder {0}: reactiveState.count
+#: src/routes/playground/reactive/+page.svelte:15
+msgid "Count: {0}"
+msgstr "件数: {0}"
 
-#. js-lingui-explicit-id
-#. placeholder {0}: playgroundState.name
-#: src/routes/playground/+page.svelte:32
-msgid "kit.playground.rich-copy"
-msgstr "<0>name</0> と <1>count</1> を編集して、<2>{0}</2> が Lingui 経由で再レンダーされる様子を確認してください。"
+#: src/routes/playground/+page.svelte:26
+msgid "Covers ICU component syntax with interactive values."
+msgstr "インタラクティブな値を使う ICU コンポーネント構文を確認します。"
 
-#. js-lingui-explicit-id
-#: messages.ts:29
-msgid "kit.locale.en"
+#: src/routes/playground/+page.svelte:20
+msgid "Covers placeholder parsing and runtime rendering of translated rich text."
+msgstr "プレースホルダーの解析と、翻訳済みリッチテキストのランタイム描画を確認します。"
+
+#: src/routes/playground/+page.svelte:8
+msgid "Covers t, msg, RuntimeTrans, and helper modules without explicit ids."
+msgstr "明示的な id を付けない t、msg、RuntimeTrans とヘルパーモジュールを確認します。"
+
+#: src/routes/playground/+page.svelte:14
+msgid "Covers top-level reactive strings, callback contexts, and module-owned state."
+msgstr "トップレベルのリアクティブ文字列、コールバック文脈、モジュールが持つステートを確認します。"
+
+#: src/routes/settings/+page.svelte:21
+msgid "Current language"
+msgstr "現在の言語"
+
+#: src/routes/playground/reactive/+page.svelte:70
+msgid "Current status"
+msgstr "現在の状態"
+
+#: src/routes/playground/components/+page.svelte:24
+#: src/routes/playground/reactive/+page.svelte:56
+msgid "Decrease"
+msgstr "減らす"
+
+#: src/routes/+page.svelte:58
+msgid "Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants."
+msgstr "専用のプレイグラウンドルートがリアクティブマクロ、リッチテキスト、ICU コンポーネント、明示的 id のバリアントを確認します。"
+
+#: src/routes/playground/basic/+page.svelte:8
+msgid "Descriptor created in a route component."
+msgstr "ルートコンポーネントで作成したディスクリプタ。"
+
+#: reactive-state.svelte.ts:3
+msgid "Descriptor from a .svelte.ts module."
+msgstr ".svelte.ts モジュールからのディスクリプタ。"
+
+#: basic.ts:3
+msgid "Descriptor from a plain TypeScript helper."
+msgstr "通常の TypeScript ヘルパーからのディスクリプタ。"
+
+#: src/routes/playground/+page.svelte:7
+msgid "Direct macro usage in Svelte and plain TypeScript"
+msgstr "Svelte と通常の TypeScript で直接マクロを使う"
+
+#: src/routes/playground/basic/+page.svelte:17
+msgid "Direct macros in components and plain modules"
+msgstr "コンポーネントと通常のモジュールで直接マクロを使う"
+
+#: src/routes/+page.svelte:43
+msgid "Direct usage"
+msgstr "直接利用"
+
+#: src/routes/playground/+layout.svelte:18
+msgid "Each route keeps one category of Lingui-for-Svelte behavior easy to inspect, extract, compile, and test."
+msgstr "各ルートは Lingui for Svelte の 1 つの挙動に絞り、インスペクト、抽出、コンパイル、テストをしやすくしています。"
+
+#: src/routes/playground/+page.svelte:19
+#: src/routes/playground/rich-text/+page.svelte:13
+msgid "Embedded elements and components inside Trans"
+msgstr "Trans 内の埋め込み要素とコンポーネント"
+
+#: src/lib/app/LanguageSwitcher.svelte:25
+#: src/routes/settings/+page.svelte:6
+msgid "English"
 msgstr "英語"
 
 #. js-lingui-explicit-id
-#: messages.ts:137
-msgid "kit.playground.greeting"
-msgstr "{name} さん、こんにちは！"
+#: src/routes/playground/ids/+page.svelte:5
+msgid "playground.ids.descriptor"
+msgstr "ディスクリプタからの明示的な id。"
+
+#. Used by the ids playground route
+#. js-lingui-explicit-id
+#: src/routes/playground/ids/+page.svelte:25
+msgid "playground.ids.trans"
+msgstr "Trans コンポーネントからの明示的な id。"
 
 #. js-lingui-explicit-id
-#: messages.ts:18
-msgid "kit.nav.home"
+#: src/routes/playground/ids/+page.svelte:30
+msgid "playground.ids.call"
+msgstr "t({...}) からの明示的な id。"
+
+#: src/lib/app/PlaygroundNav.svelte:50
+#: src/routes/playground/+page.svelte:30
+#: src/routes/playground/ids/+page.svelte:14
+msgid "Explicit ids"
+msgstr "明示的な id"
+
+#: src/routes/playground/+layout.svelte:15
+msgid "Focused routes for library verification"
+msgstr "ライブラリ検証に絞った route"
+
+#. placeholder {0}: reactiveState.name
+#: src/routes/playground/reactive/+page.svelte:14
+msgid "Hello {0} from the reactive route."
+msgstr "リアクティブルートからこんにちは、{0}。"
+
+#: src/routes/playground/basic/+page.svelte:30
+msgid "Hello {name} from the basic route."
+msgstr "ベーシックルートからこんにちは、{name}。"
+
+#: src/lib/app/AppShell.svelte:25
+msgid "Home"
 msgstr "ホーム"
 
-#. js-lingui-explicit-id
-#: messages.ts:33
-msgid "kit.locale.ja"
+#: src/routes/playground/components/+page.svelte:13
+msgid "ICU component macros"
+msgstr "ICU コンポーネントマクロ"
+
+#: src/routes/playground/reactive/+page.svelte:17
+msgid "Idle"
+msgstr "アイドル"
+
+#: src/routes/playground/basic/+page.svelte:29
+msgid "Immediate translation in markup."
+msgstr "マークアップ内でそのまま翻訳する例。"
+
+#: src/routes/playground/components/+page.svelte:27
+#: src/routes/playground/reactive/+page.svelte:59
+msgid "Increase"
+msgstr "増やす"
+
+#: src/lib/app/LanguageSwitcher.svelte:27
+#: src/routes/settings/+page.svelte:6
+msgid "Japanese"
 msgstr "日本語"
 
-#. js-lingui-explicit-id
-#: messages.ts:44
-msgid "kit.home.title"
-msgstr "ルート、コンポーネント、素のモジュールで Lingui macro を使う"
+#: src/routes/playground/+page.svelte:32
+msgid "Keeps explicit-id coverage available without turning the whole app into test code."
+msgstr "アプリ全体をテストコード化せずに、明示的 id の確認だけを残します。"
 
-#. js-lingui-explicit-id
-#: messages.ts:11
-msgid "kit.app.title"
-msgstr "lingui-for-svelte の SvelteKit サンプル"
+#: src/routes/settings/+page.svelte:15
+msgid "Language preference"
+msgstr "言語設定"
 
-#. js-lingui-explicit-id
-#: messages.ts:129
-msgid "kit.playground.field.name"
+#: src/routes/+page.svelte:56
+msgid "Library-specific checks stay out of the main app flow"
+msgstr "ライブラリ固有の確認はメインのアプリ導線から分離する"
+
+#: src/routes/+page.svelte:12
+msgid "Lingui in a small SvelteKit application"
+msgstr "小さな SvelteKit アプリで使う Lingui"
+
+#: src/routes/+page.svelte:32
+msgid "Locale session"
+msgstr "ロケールセッション"
+
+#: src/routes/+page.svelte:45
+msgid "Messages live next to the code that renders them"
+msgstr "メッセージは描画するコードの近くに置く"
+
+#: src/routes/playground/basic/+page.svelte:24
+#: src/routes/playground/reactive/+page.svelte:35
+msgid "Name"
 msgstr "名前"
 
-#. js-lingui-explicit-id
-#: messages.ts:125
-msgid "kit.playground.routeLink"
-msgstr "プレイグラウンドへ移動"
+#: src/routes/+page.svelte:18
+msgid "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
+msgstr "<0>設定</0>で言語を変えるか、<1>プレイグラウンド</1>でマクロ固有の確認を行ってください。"
 
-#. js-lingui-explicit-id
-#: messages.ts:94
-msgid "kit.card.module.title"
-msgstr "通常の TypeScript で共有 copy を定義できる"
+#: src/lib/app/PlaygroundNav.svelte:15
+msgid "Overview"
+msgstr "概要"
 
-#. js-lingui-explicit-id
-#: messages.ts:23
-msgid "kit.nav.playground"
+#: src/routes/+page.svelte:47
+msgid "Pages and components call Lingui macros directly instead of pulling copy from a central message file."
+msgstr "ページやコンポーネントは中央のメッセージファイルを経由せず、Lingui マクロを直接使います。"
+
+#: src/lib/app/AppShell.svelte:27
+#: src/routes/+page.svelte:54
+#: src/routes/playground/+layout.svelte:12
+msgid "Playground"
 msgstr "プレイグラウンド"
 
-#. js-lingui-explicit-id
-#: messages.ts:90
-msgid "kit.card.module.eyebrow"
-msgstr "Raw .ts"
+#: src/lib/app/PlaygroundNav.svelte:8
+msgid "Playground sections"
+msgstr "プレイグラウンドのセクション"
 
-#. js-lingui-explicit-id
-#: messages.ts:111
-msgid "kit.playground.title"
-msgstr ".svelte.ts モジュールの reactive state"
+#: src/routes/playground/+page.svelte:25
+msgid "Plural, Select, and SelectOrdinal component macros"
+msgstr "Plural、Select、SelectOrdinal のコンポーネントマクロ"
 
-#. js-lingui-explicit-id
-#: messages.ts:98
-msgid "kit.card.module.body"
-msgstr "通常モジュールが descriptor と補助データを export し、route と component がそれを再利用します。"
+#: src/routes/playground/components/+page.svelte:15
+msgid "Plural, Select, and SelectOrdinal keep branch-heavy messages readable inside markup."
+msgstr "Plural、Select、SelectOrdinal を使うと、分岐の多いメッセージもマークアップ内で読みやすく保てます。"
 
-#. js-lingui-explicit-id
-#: messages.ts:145
-msgid "kit.playground.decrement"
-msgstr "減らす"
+#: src/routes/settings/+page.svelte:13
+msgid "Preferences"
+msgstr "設定"
 
-#. js-lingui-explicit-id
-#: messages.ts:78
-msgid "kit.card.component.title"
-msgstr "再利用コンポーネントは薄いまま保てる"
+#: src/lib/app/PlaygroundNav.svelte:29
+#: src/routes/playground/+page.svelte:12
+#: src/routes/playground/reactive/+page.svelte:24
+msgid "Reactive"
+msgstr "リアクティブ"
 
-#. js-lingui-explicit-id
-#: messages.ts:58
-msgid "kit.card.route.eyebrow"
-msgstr "Route load"
+#: src/routes/playground/rich-text/+page.svelte:21
+msgid "Read the <0>settings page</0>and look for the <1>cookie-backed locale</1> behavior."
+msgstr "<0>設定ページ</0> を開いて、<1>クッキーで保持されるロケール</1>の挙動を確認してください。"
 
-#. js-lingui-explicit-id
-#: messages.ts:40
-msgid "kit.home.eyebrow"
-msgstr "SvelteKit ルート"
+#: src/routes/+page.svelte:9
+msgid "Real app"
+msgstr "実アプリ"
 
-#: session.svelte.ts:39
-msgid "Tagged template descriptor from .svelte.ts state."
-msgstr ".svelte.ts state からのタグ付きテンプレート descriptor。"
+#: src/lib/app/PlaygroundNav.svelte:36
+#: src/routes/playground/+page.svelte:18
+#: src/routes/playground/rich-text/+page.svelte:10
+msgid "Rich text"
+msgstr "リッチテキスト"
 
-#: messages.ts:16
-msgid "Tagged template descriptor from raw TypeScript."
-msgstr "通常の TypeScript からのタグ付きテンプレート descriptor。"
+#: src/routes/playground/rich-text/+page.svelte:28
+msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
+msgstr "リッチテキストでも<0>意味のある強調</0>を保ったまま、Lingui のメッセージ抽出フローを使えます。"
 
-#: src/routes/playground/+page.svelte:104
-msgid "Tagged template literal from markup expression."
-msgstr "markup expression からのタグ付きテンプレート literal。"
+#: src/lib/app/AppShell.svelte:26
+msgid "Settings"
+msgstr "設定"
 
-#: src/routes/playground/+page.svelte:20
-msgid "Tagged template literal from route script."
-msgstr "route script からのタグ付きテンプレート literal。"
+#: src/routes/playground/+page.svelte:31
+msgid "Small, isolated cases for ids, comments, and contexts"
+msgstr "id、コメント、コンテキストを小さく切り出したケース"
 
-#. js-lingui-explicit-id
-#: messages.ts:66
-msgid "kit.card.route.body"
-msgstr "lingui-for-svelte/macro が作った descriptor を route から返し、ページ側で runtime に流しています。"
+#: src/lib/app/LanguageSwitcher.svelte:16
+msgid "Switch language"
+msgstr "言語を切り替える"
 
-#. js-lingui-explicit-id
-#: messages.ts:120
-msgid "kit.playground.helper"
-msgstr "上の summary は component ではなく .svelte.ts ファイルから作っています。"
+#: src/routes/+page.svelte:36
+msgid "Switch languages from the header and the next route keeps the same locale."
+msgstr "ヘッダーから言語を切り替えると、次のルートでも同じロケールが保たれます。"
 
-#. js-lingui-explicit-id
-#: messages.ts:48
-msgid "kit.home.body"
-msgstr "このページは load 関数、コンポーネント props、通常の TypeScript、.svelte.ts の状態管理を混ぜています。"
+#: src/routes/playground/ids/+page.svelte:17
+msgid "Targeted id, comment, and context coverage"
+msgstr "id、コメント、コンテキストの確認に絞る"
 
-#. js-lingui-explicit-id
-#: messages.ts:115
-msgid "kit.playground.body"
-msgstr "このルートは rune ベースのモジュールで client state を保持し、その summary を Lingui 経由で翻訳します。"
+#: src/routes/settings/+page.svelte:26
+msgid "The application routes are intentionally small. Macro edge cases live under the playground instead of leaking into the main app."
+msgstr "アプリ側のルートは意図的に小さく保っています。マクロのエッジケースはメインのアプリには混ぜず、プレイグラウンド以下に分離しています。"
+
+#: src/routes/playground/ids/+page.svelte:20
+msgid "The main app avoids explicit ids by default. This route keeps those variants available for extractor and compile tests."
+msgstr "メインのアプリでは通常、明示的な id を使いません。このルートでは抽出とコンパイルのテスト向けにそのバリアントだけを残しています。"
+
+#: src/routes/+page.svelte:34
+msgid "The server remembers your preferred language"
+msgstr "サーバーが選択した言語を記憶する"
+
+#: src/routes/+page.svelte:15
+msgid "This example keeps locale state in a real app shell and moves library verification into isolated playground routes."
+msgstr "この例ではロケールステートを実際のアプリシェルに置き、ライブラリの確認は切り出したプレイグラウンドルートで行います。"
+
+#: src/routes/playground/rich-text/+page.svelte:16
+msgid "This route focuses on translated markup with both native elements and Svelte components."
+msgstr "このルートでは、ネイティブ要素と Svelte コンポーネントの両方を含む翻訳済みマークアップに絞って確認します。"
+
+#: src/routes/playground/reactive/+page.svelte:30
+msgid "This route isolates reactive string macros and state that lives in a .svelte.ts module."
+msgstr "このルートでは、リアクティブな文字列マクロと .svelte.ts モジュールにある状態を切り分けて確認します。"
+
+#: src/routes/playground/basic/+page.svelte:20
+msgid "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
+msgstr "このルートでは、メッセージを描画コードの近くに書くという Lingui の基本的な流れをシンプルに保っています。"
+
+#: src/routes/playground/components/+page.svelte:34
+msgid "Toggle role"
+msgstr "役割を切り替える"
+
+#: src/routes/playground/reactive/+page.svelte:62
+msgid "Toggle status"
+msgstr "状態を切り替える"

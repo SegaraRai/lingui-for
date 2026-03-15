@@ -1,63 +1,62 @@
 <script lang="ts">
-  import { page } from "$app/state";
   import { t, Trans } from "lingui-for-svelte/macro";
-  import RouteCard from "$lib/components/RouteCard.svelte";
-
-  let { data } = $props();
-
-  function withCurrentLocale(pathname: string): string {
-    const query = new URLSearchParams(page.url.searchParams);
-    return query.size > 0 ? `${pathname}?${query.toString()}` : pathname;
-  }
 </script>
 
-<section class="hero">
-  <p class="eyebrow">{$t(data.hero.eyebrow)}</p>
-  <h1>{$t(data.hero.title)}</h1>
-  <p class="body">{$t(data.hero.body)}</p>
-  <p class="body rich-copy">
-    <Trans id="kit.home.rich-copy">
-      Browse the <a href={withCurrentLocale("/playground")}>playground</a> to
-      see <strong>embedded elements</strong> and locale-aware runtime updates.
-    </Trans>
-  </p>
+<section class="hero rounded-box border border-base-300 bg-base-100 shadow-xl">
+  <div class="hero-content items-start px-6 py-10 md:px-10">
+    <div class="space-y-5">
+      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
+        {$t`Real app`}
+      </p>
+      <h1 class="text-5xl font-black leading-tight md:text-7xl">
+        {$t`Lingui in a small SvelteKit application`}
+      </h1>
+      <p class="text-lg text-base-content/80 md:text-xl">
+        {$t`This example keeps locale state in a real app shell and moves library verification into isolated playground routes.`}
+      </p>
+      <p class="text-base text-base-content/80 md:text-lg">
+        <Trans>
+          Open <a href="/settings" class="link link-primary">Settings</a> to
+          change your language or visit the <strong>playground</strong> for
+          macro-specific checks.
+        </Trans>
+      </p>
+    </div>
+  </div>
+ </section>
+
+<section class="grid gap-4 lg:grid-cols-3">
+  <article class="card border border-base-300 bg-base-100 shadow-md">
+    <div class="card-body gap-3">
+      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">
+        {$t`Locale session`}
+      </p>
+      <h2 class="card-title text-2xl">{$t`The server remembers your preferred language`}</h2>
+      <p class="text-base-content/75">
+        {$t`Switch languages from the header and the next route keeps the same locale.`}
+      </p>
+    </div>
+  </article>
+  <article class="card border border-base-300 bg-base-100 shadow-md">
+    <div class="card-body gap-3">
+      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">
+        {$t`Direct usage`}
+      </p>
+      <h2 class="card-title text-2xl">{$t`Messages live next to the code that renders them`}</h2>
+      <p class="text-base-content/75">
+        {$t`Pages and components call Lingui macros directly instead of pulling copy from a central message file.`}
+      </p>
+    </div>
+  </article>
+  <article class="card border border-base-300 bg-base-100 shadow-md">
+    <div class="card-body gap-3">
+      <p class="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">
+        {$t`Playground`}
+      </p>
+      <h2 class="card-title text-2xl">{$t`Library-specific checks stay out of the main app flow`}</h2>
+      <p class="text-base-content/75">
+        {$t`Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants.`}
+      </p>
+    </div>
+  </article>
 </section>
-
-<section class="grid">
-  {#each data.cards as card}
-    <RouteCard {...card} />
-  {/each}
-</section>
-
-<style>
-  .hero {
-    padding: 1rem 0 2rem;
-  }
-
-  .eyebrow {
-    margin: 0;
-    font-size: 0.9rem;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    color: #8a5d2f;
-  }
-
-  h1 {
-    max-width: 12ch;
-    margin: 0.5rem 0 1rem;
-    font-size: clamp(3rem, 9vw, 5.5rem);
-    line-height: 0.95;
-  }
-
-  .body {
-    max-width: 54rem;
-    font-size: 1.15rem;
-    color: #5a4634;
-  }
-
-  .grid {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  }
-</style>

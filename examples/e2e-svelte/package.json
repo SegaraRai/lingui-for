@@ -10,7 +10,7 @@
     "lingui:compile": "lingui compile --config lingui.config.ts --workers 1 && prettier --write src/lib/i18n/locales",
     "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
     "build": "pnpm run lingui:build && svelte-kit sync && vite build",
-    "preview": "node build",
+    "preview": "node .sveltekit-build/index.js",
     "check": "pnpm run check:ts && pnpm run check:svelte",
     "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
     "check:ts": "tsc -p tsconfig.json --noEmit"
@@ -26,10 +26,13 @@
     "@sveltejs/adapter-node": "^5.5.4",
     "@sveltejs/kit": "^2.55.0",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@tailwindcss/vite": "^4.2.1",
     "@types/node": "^25.5.0",
     "@vitest/browser-playwright": "^4.1.0",
+    "daisyui": "^5.5.19",
     "playwright": "^1.58.2",
     "svelte-check": "^4.4.5",
+    "tailwindcss": "^4.2.1",
     "typescript": "^5.9.3",
     "vite": "^8.0.0",
     "vitest": "^4.1.0"

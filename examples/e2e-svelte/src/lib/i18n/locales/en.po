@@ -13,183 +13,326 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#. js-lingui-explicit-id
-#: messages.ts:107
-msgid "kit.playground.eyebrow"
-msgstr ".svelte.ts state"
+#: src/routes/playground/components/+page.svelte:40
+msgid "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
+msgstr "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
 
-#. placeholder {0}: playgroundState.count
-#: src/routes/playground/+page.svelte:81
-msgid "{0, plural, one {# component task is queued} other {# component tasks are queued}}"
-msgstr "{0, plural, one {# component task is queued} other {# component tasks are queued}}"
+#: src/routes/playground/components/+page.svelte:54
+msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
+msgstr "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 
-#. placeholder {0}: playgroundState.count
-#: src/routes/playground/+page.svelte:95
-msgid "{0, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
-msgstr "{0, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
+#: src/routes/playground/components/+page.svelte:47
+msgid "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
+msgstr "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
 
-#. js-lingui-explicit-id
-#: messages.ts:149
-msgid "kit.playground.summary"
-msgstr "{count, plural, one {# queued action for {name}} other {# queued actions for {name}}}"
+#: src/routes/playground/reactive/+page.svelte:27
+msgid "$t and rune-backed state"
+msgstr "$t and rune-backed state"
 
-#: src/routes/playground/+page.svelte:88
-msgid "{reviewerRole, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
-msgstr "{reviewerRole, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
+#: src/routes/playground/+page.svelte:13
+msgid "$t with rune-backed state from a .svelte.ts module"
+msgstr "$t with rune-backed state from a .svelte.ts module"
 
-#. js-lingui-explicit-id
-#: messages.ts:62
-msgid "kit.card.route.title"
-msgstr "+page.ts returns message descriptors"
+#: src/routes/playground/reactive/+page.svelte:17
+msgid "Active"
+msgstr "Active"
 
-#. js-lingui-explicit-id
-#: messages.ts:141
-msgid "kit.playground.increment"
-msgstr "Add"
+#: src/lib/app/PlaygroundNav.svelte:22
+#: src/routes/playground/+page.svelte:6
+#: src/routes/playground/basic/+page.svelte:14
+msgid "Basic"
+msgstr "Basic"
 
-#. js-lingui-explicit-id
-#: src/routes/+page.svelte:19
-msgid "kit.home.rich-copy"
-msgstr "Browse the <0>playground</0> to see <1>embedded elements</1> and locale-aware runtime updates."
+#: src/routes/settings/+page.svelte:17
+msgid "Choose a language with the switcher in the header. The server stores your preference in a cookie so new routes keep the same locale."
+msgstr "Choose a language with the switcher in the header. The server stores your preference in a cookie so new routes keep the same locale."
 
-#. js-lingui-explicit-id
-#: messages.ts:74
-msgid "kit.card.component.eyebrow"
-msgstr "Component"
+#: src/lib/app/PlaygroundNav.svelte:43
+#: src/routes/playground/+page.svelte:24
+#: src/routes/playground/components/+page.svelte:11
+msgid "Components"
+msgstr "Components"
 
-#. js-lingui-explicit-id
-#: messages.ts:82
-msgid "kit.card.component.body"
-msgstr "Components receive descriptors and call the runtime without duplicating extractor logic."
-
-#. js-lingui-explicit-id
-#: messages.ts:133
-msgid "kit.playground.field.count"
+#: src/routes/playground/reactive/+page.svelte:44
+msgid "Count"
 msgstr "Count"
 
-#. js-lingui-explicit-id
-#. placeholder {0}: playgroundState.name
-#: src/routes/playground/+page.svelte:32
-msgid "kit.playground.rich-copy"
-msgstr "Edit the <0>name</0> and <1>count</1> fields to watch <2>{0}</2> re-render through Lingui."
+#. placeholder {0}: reactiveState.count
+#: src/routes/playground/reactive/+page.svelte:15
+msgid "Count: {0}"
+msgstr "Count: {0}"
 
-#. js-lingui-explicit-id
-#: messages.ts:29
-msgid "kit.locale.en"
+#: src/routes/playground/+page.svelte:26
+msgid "Covers ICU component syntax with interactive values."
+msgstr "Covers ICU component syntax with interactive values."
+
+#: src/routes/playground/+page.svelte:20
+msgid "Covers placeholder parsing and runtime rendering of translated rich text."
+msgstr "Covers placeholder parsing and runtime rendering of translated rich text."
+
+#: src/routes/playground/+page.svelte:8
+msgid "Covers t, msg, RuntimeTrans, and helper modules without explicit ids."
+msgstr "Covers t, msg, RuntimeTrans, and helper modules without explicit ids."
+
+#: src/routes/playground/+page.svelte:14
+msgid "Covers top-level reactive strings, callback contexts, and module-owned state."
+msgstr "Covers top-level reactive strings, callback contexts, and module-owned state."
+
+#: src/routes/settings/+page.svelte:21
+msgid "Current language"
+msgstr "Current language"
+
+#: src/routes/playground/reactive/+page.svelte:70
+msgid "Current status"
+msgstr "Current status"
+
+#: src/routes/playground/components/+page.svelte:24
+#: src/routes/playground/reactive/+page.svelte:56
+msgid "Decrease"
+msgstr "Decrease"
+
+#: src/routes/+page.svelte:58
+msgid "Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants."
+msgstr "Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants."
+
+#: src/routes/playground/basic/+page.svelte:8
+msgid "Descriptor created in a route component."
+msgstr "Descriptor created in a route component."
+
+#: reactive-state.svelte.ts:3
+msgid "Descriptor from a .svelte.ts module."
+msgstr "Descriptor from a .svelte.ts module."
+
+#: basic.ts:3
+msgid "Descriptor from a plain TypeScript helper."
+msgstr "Descriptor from a plain TypeScript helper."
+
+#: src/routes/playground/+page.svelte:7
+msgid "Direct macro usage in Svelte and plain TypeScript"
+msgstr "Direct macro usage in Svelte and plain TypeScript"
+
+#: src/routes/playground/basic/+page.svelte:17
+msgid "Direct macros in components and plain modules"
+msgstr "Direct macros in components and plain modules"
+
+#: src/routes/+page.svelte:43
+msgid "Direct usage"
+msgstr "Direct usage"
+
+#: src/routes/playground/+layout.svelte:18
+msgid "Each route keeps one category of Lingui-for-Svelte behavior easy to inspect, extract, compile, and test."
+msgstr "Each route keeps one category of Lingui-for-Svelte behavior easy to inspect, extract, compile, and test."
+
+#: src/routes/playground/+page.svelte:19
+#: src/routes/playground/rich-text/+page.svelte:13
+msgid "Embedded elements and components inside Trans"
+msgstr "Embedded elements and components inside Trans"
+
+#: src/lib/app/LanguageSwitcher.svelte:25
+#: src/routes/settings/+page.svelte:6
+msgid "English"
 msgstr "English"
 
 #. js-lingui-explicit-id
-#: messages.ts:137
-msgid "kit.playground.greeting"
-msgstr "Hello {name}!"
+#: src/routes/playground/ids/+page.svelte:5
+msgid "playground.ids.descriptor"
+msgstr "Explicit id from a plain descriptor."
+
+#. Used by the ids playground route
+#. js-lingui-explicit-id
+#: src/routes/playground/ids/+page.svelte:25
+msgid "playground.ids.trans"
+msgstr "Explicit id from a Trans component."
 
 #. js-lingui-explicit-id
-#: messages.ts:18
-msgid "kit.nav.home"
+#: src/routes/playground/ids/+page.svelte:30
+msgid "playground.ids.call"
+msgstr "Explicit id from t({...})."
+
+#: src/lib/app/PlaygroundNav.svelte:50
+#: src/routes/playground/+page.svelte:30
+#: src/routes/playground/ids/+page.svelte:14
+msgid "Explicit ids"
+msgstr "Explicit ids"
+
+#: src/routes/playground/+layout.svelte:15
+msgid "Focused routes for library verification"
+msgstr "Focused routes for library verification"
+
+#. placeholder {0}: reactiveState.name
+#: src/routes/playground/reactive/+page.svelte:14
+msgid "Hello {0} from the reactive route."
+msgstr "Hello {0} from the reactive route."
+
+#: src/routes/playground/basic/+page.svelte:30
+msgid "Hello {name} from the basic route."
+msgstr "Hello {name} from the basic route."
+
+#: src/lib/app/AppShell.svelte:25
+msgid "Home"
 msgstr "Home"
 
-#. js-lingui-explicit-id
-#: messages.ts:33
-msgid "kit.locale.ja"
+#: src/routes/playground/components/+page.svelte:13
+msgid "ICU component macros"
+msgstr "ICU component macros"
+
+#: src/routes/playground/reactive/+page.svelte:17
+msgid "Idle"
+msgstr "Idle"
+
+#: src/routes/playground/basic/+page.svelte:29
+msgid "Immediate translation in markup."
+msgstr "Immediate translation in markup."
+
+#: src/routes/playground/components/+page.svelte:27
+#: src/routes/playground/reactive/+page.svelte:59
+msgid "Increase"
+msgstr "Increase"
+
+#: src/lib/app/LanguageSwitcher.svelte:27
+#: src/routes/settings/+page.svelte:6
+msgid "Japanese"
 msgstr "Japanese"
 
-#. js-lingui-explicit-id
-#: messages.ts:44
-msgid "kit.home.title"
-msgstr "Lingui macros inside routes, components, and plain modules"
+#: src/routes/playground/+page.svelte:32
+msgid "Keeps explicit-id coverage available without turning the whole app into test code."
+msgstr "Keeps explicit-id coverage available without turning the whole app into test code."
 
-#. js-lingui-explicit-id
-#: messages.ts:11
-msgid "kit.app.title"
-msgstr "lingui-for-svelte SvelteKit example"
+#: src/routes/settings/+page.svelte:15
+msgid "Language preference"
+msgstr "Language preference"
 
-#. js-lingui-explicit-id
-#: messages.ts:129
-msgid "kit.playground.field.name"
+#: src/routes/+page.svelte:56
+msgid "Library-specific checks stay out of the main app flow"
+msgstr "Library-specific checks stay out of the main app flow"
+
+#: src/routes/+page.svelte:12
+msgid "Lingui in a small SvelteKit application"
+msgstr "Lingui in a small SvelteKit application"
+
+#: src/routes/+page.svelte:32
+msgid "Locale session"
+msgstr "Locale session"
+
+#: src/routes/+page.svelte:45
+msgid "Messages live next to the code that renders them"
+msgstr "Messages live next to the code that renders them"
+
+#: src/routes/playground/basic/+page.svelte:24
+#: src/routes/playground/reactive/+page.svelte:35
+msgid "Name"
 msgstr "Name"
 
-#. js-lingui-explicit-id
-#: messages.ts:125
-msgid "kit.playground.routeLink"
-msgstr "Open the playground route"
+#: src/routes/+page.svelte:18
+msgid "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
+msgstr "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
 
-#. js-lingui-explicit-id
-#: messages.ts:94
-msgid "kit.card.module.title"
-msgstr "Plain TypeScript can define shared copy"
+#: src/lib/app/PlaygroundNav.svelte:15
+msgid "Overview"
+msgstr "Overview"
 
-#. js-lingui-explicit-id
-#: messages.ts:23
-msgid "kit.nav.playground"
+#: src/routes/+page.svelte:47
+msgid "Pages and components call Lingui macros directly instead of pulling copy from a central message file."
+msgstr "Pages and components call Lingui macros directly instead of pulling copy from a central message file."
+
+#: src/lib/app/AppShell.svelte:27
+#: src/routes/+page.svelte:54
+#: src/routes/playground/+layout.svelte:12
+msgid "Playground"
 msgstr "Playground"
 
-#. js-lingui-explicit-id
-#: messages.ts:90
-msgid "kit.card.module.eyebrow"
-msgstr "Raw .ts"
+#: src/lib/app/PlaygroundNav.svelte:8
+msgid "Playground sections"
+msgstr "Playground sections"
 
-#. js-lingui-explicit-id
-#: messages.ts:111
-msgid "kit.playground.title"
-msgstr "Reactive state from a .svelte.ts module"
+#: src/routes/playground/+page.svelte:25
+msgid "Plural, Select, and SelectOrdinal component macros"
+msgstr "Plural, Select, and SelectOrdinal component macros"
 
-#. js-lingui-explicit-id
-#: messages.ts:98
-msgid "kit.card.module.body"
-msgstr "Regular modules export descriptors and helper metadata for routes and components."
+#: src/routes/playground/components/+page.svelte:15
+msgid "Plural, Select, and SelectOrdinal keep branch-heavy messages readable inside markup."
+msgstr "Plural, Select, and SelectOrdinal keep branch-heavy messages readable inside markup."
 
-#. js-lingui-explicit-id
-#: messages.ts:145
-msgid "kit.playground.decrement"
-msgstr "Remove"
+#: src/routes/settings/+page.svelte:13
+msgid "Preferences"
+msgstr "Preferences"
 
-#. js-lingui-explicit-id
-#: messages.ts:78
-msgid "kit.card.component.title"
-msgstr "Reusable Svelte components stay thin"
+#: src/lib/app/PlaygroundNav.svelte:29
+#: src/routes/playground/+page.svelte:12
+#: src/routes/playground/reactive/+page.svelte:24
+msgid "Reactive"
+msgstr "Reactive"
 
-#. js-lingui-explicit-id
-#: messages.ts:58
-msgid "kit.card.route.eyebrow"
-msgstr "Route load"
+#: src/routes/playground/rich-text/+page.svelte:21
+msgid "Read the <0>settings page</0>and look for the <1>cookie-backed locale</1> behavior."
+msgstr "Read the <0>settings page</0>and look for the <1>cookie-backed locale</1> behavior."
 
-#. js-lingui-explicit-id
-#: messages.ts:40
-msgid "kit.home.eyebrow"
-msgstr "SvelteKit route"
+#: src/routes/+page.svelte:9
+msgid "Real app"
+msgstr "Real app"
 
-#: session.svelte.ts:39
-msgid "Tagged template descriptor from .svelte.ts state."
-msgstr "Tagged template descriptor from .svelte.ts state."
+#: src/lib/app/PlaygroundNav.svelte:36
+#: src/routes/playground/+page.svelte:18
+#: src/routes/playground/rich-text/+page.svelte:10
+msgid "Rich text"
+msgstr "Rich text"
 
-#: messages.ts:16
-msgid "Tagged template descriptor from raw TypeScript."
-msgstr "Tagged template descriptor from raw TypeScript."
+#: src/routes/playground/rich-text/+page.svelte:28
+msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
+msgstr "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 
-#: src/routes/playground/+page.svelte:104
-msgid "Tagged template literal from markup expression."
-msgstr "Tagged template literal from markup expression."
+#: src/lib/app/AppShell.svelte:26
+msgid "Settings"
+msgstr "Settings"
 
-#: src/routes/playground/+page.svelte:20
-msgid "Tagged template literal from route script."
-msgstr "Tagged template literal from route script."
+#: src/routes/playground/+page.svelte:31
+msgid "Small, isolated cases for ids, comments, and contexts"
+msgstr "Small, isolated cases for ids, comments, and contexts"
 
-#. js-lingui-explicit-id
-#: messages.ts:66
-msgid "kit.card.route.body"
-msgstr "The route serializes descriptors produced by lingui-for-svelte/macro and the page renders them with the runtime."
+#: src/lib/app/LanguageSwitcher.svelte:16
+msgid "Switch language"
+msgstr "Switch language"
 
-#. js-lingui-explicit-id
-#: messages.ts:120
-msgid "kit.playground.helper"
-msgstr "The summary above comes from a .svelte.ts file, not directly from the component."
+#: src/routes/+page.svelte:36
+msgid "Switch languages from the header and the next route keeps the same locale."
+msgstr "Switch languages from the header and the next route keeps the same locale."
 
-#. js-lingui-explicit-id
-#: messages.ts:48
-msgid "kit.home.body"
-msgstr "This page mixes load functions, component props, raw TypeScript, and .svelte.ts state."
+#: src/routes/playground/ids/+page.svelte:17
+msgid "Targeted id, comment, and context coverage"
+msgstr "Targeted id, comment, and context coverage"
 
-#. js-lingui-explicit-id
-#: messages.ts:115
-msgid "kit.playground.body"
-msgstr "This route uses a rune-backed module to hold client state and translate summaries through Lingui."
+#: src/routes/settings/+page.svelte:26
+msgid "The application routes are intentionally small. Macro edge cases live under the playground instead of leaking into the main app."
+msgstr "The application routes are intentionally small. Macro edge cases live under the playground instead of leaking into the main app."
+
+#: src/routes/playground/ids/+page.svelte:20
+msgid "The main app avoids explicit ids by default. This route keeps those variants available for extractor and compile tests."
+msgstr "The main app avoids explicit ids by default. This route keeps those variants available for extractor and compile tests."
+
+#: src/routes/+page.svelte:34
+msgid "The server remembers your preferred language"
+msgstr "The server remembers your preferred language"
+
+#: src/routes/+page.svelte:15
+msgid "This example keeps locale state in a real app shell and moves library verification into isolated playground routes."
+msgstr "This example keeps locale state in a real app shell and moves library verification into isolated playground routes."
+
+#: src/routes/playground/rich-text/+page.svelte:16
+msgid "This route focuses on translated markup with both native elements and Svelte components."
+msgstr "This route focuses on translated markup with both native elements and Svelte components."
+
+#: src/routes/playground/reactive/+page.svelte:30
+msgid "This route isolates reactive string macros and state that lives in a .svelte.ts module."
+msgstr "This route isolates reactive string macros and state that lives in a .svelte.ts module."
+
+#: src/routes/playground/basic/+page.svelte:20
+msgid "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
+msgstr "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
+
+#: src/routes/playground/components/+page.svelte:34
+msgid "Toggle role"
+msgstr "Toggle role"
+
+#: src/routes/playground/reactive/+page.svelte:62
+msgid "Toggle status"
+msgstr "Toggle status"

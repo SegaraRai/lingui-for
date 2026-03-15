@@ -7,8 +7,6 @@ import { defineProject } from "vitest/config";
 
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 
-const devPort = 41732;
-const devOrigin = `http://127.0.0.1:${devPort}`;
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
 async function waitForServer(url: string, output: () => string): Promise<void> {
@@ -31,6 +29,7 @@ async function waitForServer(url: string, output: () => string): Promise<void> {
 }
 
 async function startDevServer(): Promise<{
+  origin: string;
   server: { close: () => Promise<void> };
 }> {
   const { createServer } = await import("vite");
@@ -38,14 +37,21 @@ async function startDevServer(): Promise<{
     configFile: resolve(projectRoot, "vite.config.ts"),
     server: {
       host: "127.0.0.1",
-      port: devPort,
+      port: 0,
     },
   });
 
   await viteServer.listen();
-  await waitForServer(`${devOrigin}/playground?lang=en`, () => "");
+  const origin = viteServer.resolvedUrls?.local[0]?.replace(/\/$/, "");
+
+  if (!origin) {
+    throw new Error("Failed to resolve the Vite dev server origin.");
+  }
+
+  await waitForServer(`${origin}/playground?lang=en`, () => "");
 
   return {
+    origin,
     server: {
       async close() {
         await viteServer.close();
@@ -69,7 +75,7 @@ export default defineProject({
           { context }: { context: BrowserContext },
           pathname: string,
         ) {
-          const { server } = await startDevServer();
+          const { origin, server } = await startDevServer();
 
           try {
             const probePage = await context.newPage();
@@ -85,7 +91,7 @@ export default defineProject({
               errors.push(String(error));
             });
 
-            const targetUrl = new URL(pathname, devOrigin).toString();
+            const targetUrl = new URL(pathname, origin).toString();
             await probePage.goto(targetUrl, { waitUntil: "networkidle" });
             await probePage.waitForTimeout(250);
 
@@ -95,6 +101,50 @@ export default defineProject({
             await probePage.close();
 
             return { bodyText, errors };
+          } finally {
+            await server.close();
+          }
+        },
+        async switchLocaleFromHeader(
+          { context }: { context: BrowserContext },
+          pathname: string,
+          localeCode: string,
+        ) {
+          const { origin, server } = await startDevServer();
+
+          try {
+            const probePage = await context.newPage();
+            const errors: string[] = [];
+
+            probePage.on("console", (message: ConsoleMessage) => {
+              if (message.type() === "error") {
+                errors.push(message.text());
+              }
+            });
+
+            probePage.on("pageerror", (error: unknown) => {
+              errors.push(String(error));
+            });
+
+            const targetUrl = new URL(pathname, origin).toString();
+            await probePage.goto(targetUrl, { waitUntil: "networkidle" });
+            await probePage
+              .locator(`a[href*="lang=${localeCode}"]`)
+              .first()
+              .click();
+            await probePage.waitForURL(
+              (url) => url.searchParams.get("lang") === localeCode,
+            );
+            await probePage.waitForTimeout(250);
+
+            const bodyText =
+              (await probePage.locator("body").textContent()) ?? "";
+            const currentUrl = probePage.url();
+            const htmlLang = await probePage.locator("html").getAttribute("lang");
+
+            await probePage.close();
+
+            return { bodyText, currentUrl, htmlLang, errors };
           } finally {
             await server.close();
           }

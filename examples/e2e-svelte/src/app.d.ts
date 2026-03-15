@@ -1,5 +1,9 @@
 declare global {
-  namespace App {}
+  namespace App {
+    interface Locals {
+      locale: import("$lib/i18n/locale").SupportedLocale;
+    }
+  }
 }
 
 export {};

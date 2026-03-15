@@ -8,6 +8,13 @@ const exampleDir = resolve(currentDir, "..");
 const port = 41731;
 const origin = `http://127.0.0.1:${port}`;
 
+type LocaleCode = "en" | "ja";
+
+type PlaygroundRouteExpectation = {
+  path: string;
+  expectations: Record<LocaleCode, string[]>;
+};
+
 let server: ChildProcessWithoutNullStreams | undefined;
 let serverOutput = "";
 
@@ -50,86 +57,141 @@ describe.sequential("e2e-svelte application", () => {
       serverOutput += chunk.toString();
     });
 
-    await waitForServer(`${origin}/playground?lang=en`);
+    await waitForServer(`${origin}/`);
   }, 30_000);
 
   afterAll(() => {
     server?.kill();
   });
 
-  it("renders compiled english catalogs on the playground route", async () => {
-    const response = await fetch(`${origin}/playground?lang=en`);
-    const html = await response.text();
-
-    expect(response.status).toBe(200);
-    expect(html).toContain("Playground");
-    expect(html).toContain("Tagged template literal from route script.");
-    expect(html).toContain("Tagged template literal from markup expression.");
-    expect(html).toContain("Tagged template descriptor from raw TypeScript.");
-    expect(html).toContain("Tagged template descriptor from .svelte.ts state.");
-    expect(html).toContain("Hello SvelteKit!");
-    expect(html).toContain("2 queued actions for SvelteKit");
-    expect(html).toContain("2 component tasks are queued");
-    expect(html).toContain("They approve the locale switch.");
-    expect(html).toContain("2nd release candidate");
-    expect(html).toContain("<code>");
-    expect(html).toContain("name");
-    expect(html).toContain("count");
-    expect(html).toContain("<strong>");
-    expect(html).toContain("re-render through Lingui.");
-  });
-
-  it("renders compiled english catalogs with rich text on the home route", async () => {
+  it("renders the main app home route in english", async () => {
     const response = await fetch(`${origin}/?lang=en`);
     const html = await response.text();
 
     expect(response.status).toBe(200);
-    expect(html).toContain(
-      "Lingui macros inside routes, components, and plain modules",
-    );
-    expect(html).toContain('href="/playground?lang=en"');
-    expect(html).toContain("embedded elements");
-    expect(html).toContain("locale-aware runtime updates.");
+    expect(html).toContain('<html lang="en">');
+    expect(html).toContain("Lingui in a small SvelteKit application");
+    expect(html).toContain("The server remembers your preferred language");
+    expect(html).toContain("Messages live next to the code that renders them");
+    expect(html).toContain('href="/settings"');
+    expect(html).toContain("playground");
   });
 
-  it("renders compiled japanese catalogs on the playground route", async () => {
-    const response = await fetch(`${origin}/playground?lang=ja`);
+  it("renders the main app settings route in japanese", async () => {
+    const response = await fetch(`${origin}/settings?lang=ja`);
     const html = await response.text();
 
     expect(response.status).toBe(200);
-    expect(html).toContain("プレイグラウンド");
-    expect(html).toContain("route script からのタグ付きテンプレート literal。");
-    expect(html).toContain(
-      "markup expression からのタグ付きテンプレート literal。",
-    );
-    expect(html).toContain(
-      "通常の TypeScript からのタグ付きテンプレート descriptor。",
-    );
-    expect(html).toContain(
-      ".svelte.ts state からのタグ付きテンプレート descriptor。",
-    );
-    expect(html).toContain("SvelteKit さん、こんにちは！");
-    expect(html).toContain("SvelteKit の待機中アクション 2 件");
-    expect(html).toContain("component task は 2 件待機中です");
-    expect(html).toContain("ロケール切り替えを承認しました。");
-    expect(html).toContain("第 2 リリース候補");
-    expect(html).toContain(
-      "Lingui 経由で再レンダーされる様子を確認してください。",
-    );
+    expect(html).toContain('<html lang="ja">');
+    expect(html).toContain("言語設定");
+    expect(html).toContain("現在の言語");
+    expect(html).toContain("日本語");
+    expect(html).toContain("ヘッダーの切り替え");
   });
 
-  it("renders compiled japanese catalogs with rich text on the home route", async () => {
-    const response = await fetch(`${origin}/?lang=ja`);
-    const html = await response.text();
+  const playgroundRoutes: PlaygroundRouteExpectation[] = [
+    {
+      path: "/playground/basic",
+      expectations: {
+        en: [
+          "Direct macros in components and plain modules",
+          "Immediate translation in markup.",
+          "Hello Svelte from the basic route.",
+          "Descriptor from a plain TypeScript helper.",
+        ],
+        ja: [
+          "コンポーネントと通常のモジュールで直接マクロを使う",
+          "マークアップ内でそのまま翻訳する例。",
+          "ベーシックルートからこんにちは、Svelte。",
+          "通常の TypeScript ヘルパーからのディスクリプタ。",
+        ],
+      },
+    },
+    {
+      path: "/playground/reactive",
+      expectations: {
+        en: [
+          "$t and rune-backed state",
+          "Hello SvelteKit from the reactive route.",
+          "Count: 2",
+          "Descriptor from a .svelte.ts module.",
+        ],
+        ja: [
+          "$t とルーンベースのステート",
+          "リアクティブルートからこんにちは、SvelteKit。",
+          "件数: 2",
+          ".svelte.ts モジュールからのディスクリプタ。",
+        ],
+      },
+    },
+    {
+      path: "/playground/rich-text",
+      expectations: {
+        en: [
+          "Embedded elements and components inside Trans",
+          'href="/settings"',
+          "cookie-backed locale",
+          "semantic emphasis",
+        ],
+        ja: [
+          "Trans 内の埋め込み要素とコンポーネント",
+          'href="/settings"',
+          "クッキーで保持されるロケール",
+          "意味のある強調",
+        ],
+      },
+    },
+    {
+      path: "/playground/components",
+      expectations: {
+        en: [
+          "ICU component macros",
+          "2 component tasks are queued",
+          "They approve the locale switch.",
+          "2nd release candidate",
+        ],
+        ja: [
+          "ICU コンポーネントマクロ",
+          "コンポーネントタスクは 2 件待機中です",
+          "彼らはロケール切り替えを承認しました。",
+          "第 2 リリース候補",
+        ],
+      },
+    },
+    {
+      path: "/playground/ids",
+      expectations: {
+        en: [
+          "Targeted id, comment, and context coverage",
+          "Explicit id from a Trans component.",
+          "Explicit id from t({...}).",
+          "Explicit id from a plain descriptor.",
+        ],
+        ja: [
+          "id、コメント、コンテキストの確認に絞る",
+          "Trans コンポーネントからの明示的な id。",
+          "t({...}) からの明示的な id。",
+          "ディスクリプタからの明示的な id。",
+        ],
+      },
+    },
+  ];
 
-    expect(response.status).toBe(200);
-    expect(html).toContain(
-      "ルート、コンポーネント、素のモジュールで Lingui macro を使う",
-    );
-    expect(html).toContain('href="/playground?lang=ja"');
-    expect(html).toContain("埋め込み要素");
-    expect(html).toContain(
-      "ロケールに応じたランタイム更新を確認してください。",
-    );
-  });
+  for (const playgroundRoute of playgroundRoutes) {
+    for (const locale of ["en", "ja"] as const) {
+      it(`renders ${playgroundRoute.path} in ${locale}`, async () => {
+        const response = await fetch(
+          `${origin}${playgroundRoute.path}?lang=${locale}`,
+        );
+        const html = await response.text();
+
+        expect(response.status).toBe(200);
+        expect(html).toContain(`<html lang="${locale}">`);
+
+        for (const expectedText of playgroundRoute.expectations[locale]) {
+          expect(html).toContain(expectedText);
+        }
+      });
+    }
+  }
 });

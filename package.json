@@ -13,6 +13,7 @@
     "check:svelte": "pnpm --filter unplugin-svelte-import run check:ts && pnpm --filter lingui-for-svelte run check:svelte && pnpm --filter e2e-svelte run check:svelte",
     "check:ts": "pnpm --filter unplugin-svelte-import run check:ts && pnpm --filter lingui-for-svelte run check:ts && pnpm --filter e2e-svelte run check:ts",
     "dev:e2e-svelte": "pnpm --filter e2e-svelte dev",
+    "preview:e2e-svelte": "pnpm --filter e2e-svelte preview",
     "format": "prettier --write .",
     "test": "vitest"
   },
