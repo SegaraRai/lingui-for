@@ -20,6 +20,17 @@ import { buildCombinedProgram } from "./synthetic-program.ts";
 import type { SvelteTransformResult } from "./types.ts";
 
 /**
+ * Runtime bindings injected into transformed Svelte code when the transform detects they are needed.
+ */
+type RuntimeBindingsForInjection = {
+  createLinguiAccessors: string;
+  context: string;
+  getI18n: string;
+  translate: string;
+  transComponent: string;
+};
+
+/**
  * Transforms a `.svelte` file into rewritten Svelte source and source map.
  *
  * @param source Original Svelte component source.
@@ -178,7 +189,7 @@ function createRuntimeBindings(
   filename: string,
   instanceCode: string,
   lang: "js" | "ts",
-) {
+): RuntimeBindingsForInjection {
   const allocateName = createUniqueNameAllocator(instanceCode, {
     filename: createScriptFilename(filename, "instance", lang),
     lang,
@@ -195,13 +206,7 @@ function createRuntimeBindings(
 
 function injectRuntimeBindings(
   code: string,
-  runtimeBindings: {
-    createLinguiAccessors: string;
-    context: string;
-    getI18n: string;
-    translate: string;
-    transComponent: string;
-  },
+  runtimeBindings: RuntimeBindingsForInjection,
   includeLinguiContext: boolean,
   includeTransComponent: boolean,
 ): string {

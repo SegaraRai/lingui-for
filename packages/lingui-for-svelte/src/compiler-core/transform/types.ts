@@ -49,6 +49,16 @@ export type ProgramTransform = {
 };
 
 /**
+ * Runtime bindings injected into transformed Svelte code when the transform detects they are needed.
+ */
+export type RuntimeBindingsForTransform = {
+  createLinguiAccessors: string;
+  context: string;
+  getI18n: string;
+  translate: string;
+};
+
+/**
  * Input contract for the shared Babel/Lingui transform.
  */
 export type ProgramTransformRequest = {
@@ -75,14 +85,7 @@ export type ProgramTransformRequest = {
   /**
    * Optional Svelte runtime binding names injected into rewritten code.
    */
-  runtimeBindings?:
-    | {
-        createLinguiAccessors: string;
-        context: string;
-        getI18n: string;
-        translate: string;
-      }
-    | undefined;
+  runtimeBindings?: RuntimeBindingsForTransform | undefined;
   /**
    * Optional upstream source map chained into the Babel transform.
    */
