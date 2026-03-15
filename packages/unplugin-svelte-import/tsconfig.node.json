@@ -4,21 +4,14 @@
     "target": "es2024",
     "module": "esnext",
     "moduleResolution": "Bundler",
-    "lib": [
-      "ES2024"
-    ],
+    "lib": ["ES2024"],
     "strict": true,
     "emitDeclarationOnly": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
-  "include": [
-    "tsdown.config.ts",
-    "vitest.config.ts"
-  ]
+  "include": ["tsdown.config.ts", "vitest.config.ts"]
 }
