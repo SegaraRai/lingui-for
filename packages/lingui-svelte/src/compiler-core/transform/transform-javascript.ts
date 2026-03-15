@@ -1,6 +1,7 @@
 import type { RawSourceMap } from "source-map";
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
+import { MACRO_PACKAGE } from "../shared/constants.ts";
 import { stripQuery } from "../shared/paths.ts";
 import type {
   LinguiSvelteTransformOptions,
@@ -13,7 +14,8 @@ export function transformJavaScriptMacros(
   options: LinguiSvelteTransformOptions,
   extract = false,
 ): { code: string; map: RawSourceMap | null } | null {
-  if (!code.includes("lingui-for-svelte/macro")) {
+  if (!code.includes(MACRO_PACKAGE)) {
+    // does not seem to contain macros, skip transformation to save time
     return null;
   }
 

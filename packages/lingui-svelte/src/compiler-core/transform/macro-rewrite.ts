@@ -176,18 +176,102 @@ function isRuntimeI18nCall(
   );
 }
 
-function isInsideSyntheticExpression(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-): boolean {
-  const declarator = path.findParent((ancestor) =>
-    ancestor.isVariableDeclarator(),
-  );
-
+function isDerivedCall(node: t.Expression): boolean {
   return (
-    declarator?.isVariableDeclarator() === true &&
-    t.isIdentifier(declarator.node.id) &&
-    declarator.node.id.name.startsWith(SYNTHETIC_EXPRESSION_PREFIX)
+    t.isCallExpression(node) &&
+    t.isIdentifier(node.callee, { name: "$derived" })
   );
+}
+
+function isReactiveTranslatorCall(
+  node: t.CallExpression,
+  translateBinding: string,
+): boolean {
+  return t.isIdentifier(node.callee, { name: `$${translateBinding}` });
+}
+
+function isTopLevelVariableDeclarator(
+  path: NodePath<t.VariableDeclarator>,
+): boolean {
+  const variableDeclaration = path.parentPath;
+  if (!variableDeclaration.isVariableDeclaration()) {
+    return false;
+  }
+
+  const statement = variableDeclaration.parentPath;
+  return (
+    statement.isProgram() ||
+    (statement.isExportNamedDeclaration() &&
+      statement.parentPath?.isProgram() === true)
+  );
+}
+
+function initializerContainsReactiveTranslation(
+  init: NodePath<t.Expression>,
+  translateBinding: string,
+): boolean {
+  if (
+    init.isCallExpression() &&
+    isReactiveTranslatorCall(init.node, translateBinding)
+  ) {
+    return true;
+  }
+
+  if (init.isFunctionExpression() || init.isArrowFunctionExpression()) {
+    return false;
+  }
+
+  let containsReactiveTranslation = false;
+
+  init.traverse({
+    Function(path) {
+      path.skip();
+    },
+    CallExpression(path) {
+      if (isReactiveTranslatorCall(path.node, translateBinding)) {
+        containsReactiveTranslation = true;
+        path.stop();
+      }
+    },
+  });
+
+  return containsReactiveTranslation;
+}
+
+function wrapTopLevelReactiveInitializers(
+  programPath: NodePath<t.Program>,
+  translateBinding: string,
+): void {
+  programPath.traverse({
+    Function(path) {
+      path.skip();
+    },
+    VariableDeclarator(path) {
+      if (!isTopLevelVariableDeclarator(path)) {
+        return;
+      }
+
+      if (
+        t.isIdentifier(path.node.id) &&
+        path.node.id.name.startsWith(SYNTHETIC_EXPRESSION_PREFIX)
+      ) {
+        return;
+      }
+
+      const init = path.get("init");
+      if (!init.node || !init.isExpression() || isDerivedCall(init.node)) {
+        return;
+      }
+
+      if (!initializerContainsReactiveTranslation(init, translateBinding)) {
+        return;
+      }
+
+      init.replaceWith(
+        t.callExpression(t.identifier("$derived"), [t.cloneNode(init.node)]),
+      );
+    },
+  });
 }
 
 function removeRuntimeI18nImports(
@@ -289,6 +373,12 @@ export function createMacroPostprocessPlugin(
         exit(path, state) {
           if (request.translationMode === "svelte-context") {
             removeRuntimeI18nImports(path.node, state.runtimeI18nLocals);
+            if (request.runtimeBindings) {
+              wrapTopLevelReactiveInitializers(
+                path,
+                request.runtimeBindings.translate,
+              );
+            }
           }
 
           if (request.translationMode === "extract") {
@@ -350,11 +440,7 @@ export function createMacroPostprocessPlugin(
             [t.cloneNode(descriptor)],
           );
 
-          path.replaceWith(
-            isInsideSyntheticExpression(path)
-              ? reactiveCall
-              : t.callExpression(t.identifier("$derived"), [reactiveCall]),
-          );
+          path.replaceWith(reactiveCall);
           return;
         }
 

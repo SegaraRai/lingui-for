@@ -8,4 +8,4 @@ export {
   createExtractionUnits,
   transformJavaScriptMacros,
   transformSvelte,
-} from "./transform.ts";
+} from "./transform/index.ts";

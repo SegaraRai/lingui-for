@@ -19,4 +19,14 @@ export default defineConfig({
   inputOptions: {
     external: [/\.svelte$/],
   },
+  copy: [
+    {
+      from: "src/runtime/trans/RenderTransNodes.svelte",
+      to: "dist/runtime/trans/",
+    },
+    {
+      from: "src/runtime/trans/RuntimeTrans.svelte",
+      to: "dist/runtime/trans/",
+    },
+  ],
 });

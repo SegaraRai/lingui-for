@@ -9,7 +9,7 @@
     "**/*.svelte"
   ],
   "scripts": {
-    "build": "tsdown --config tsdown.config.ts && node ./scripts/copy-trans.mjs",
+    "build": "tsdown --config tsdown.config.ts",
     "check:svelte": "svelte-check --tsconfig ./tsconfig.json",
     "check:ts": "tsc -p tsconfig.json --noEmit"
   },

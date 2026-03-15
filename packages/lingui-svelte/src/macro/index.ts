@@ -48,12 +48,11 @@ export const Plural = null as unknown as Component<{
   other: string;
 }>;
 
-export const Select = null as unknown as Component<
-  {
-    value: string;
-    other: string;
-  } & Record<string, string>
->;
+export const Select = null as unknown as Component<{
+  value: string;
+  other: string;
+  [key: `_${string}`]: string;
+}>;
 
 export const SelectOrdinal = null as unknown as Component<{
   value: number;
