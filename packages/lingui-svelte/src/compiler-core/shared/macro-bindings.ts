@@ -78,17 +78,19 @@ function collectImportLocalsFromFile(
         return;
       }
 
-      path.node.specifiers.forEach((specifier: t.ImportDeclaration["specifiers"][number]) => {
-        if (
-          !t.isImportSpecifier(specifier) ||
-          !t.isIdentifier(specifier.imported) ||
-          !importedNames.includes(specifier.imported.name as MacroImportName)
-        ) {
-          return;
-        }
+      path.node.specifiers.forEach(
+        (specifier: t.ImportDeclaration["specifiers"][number]) => {
+          if (
+            !t.isImportSpecifier(specifier) ||
+            !t.isIdentifier(specifier.imported) ||
+            !importedNames.includes(specifier.imported.name as MacroImportName)
+          ) {
+            return;
+          }
 
-        locals.add(specifier.local.name);
-      });
+          locals.add(specifier.local.name);
+        },
+      );
     },
   });
 
@@ -175,7 +177,10 @@ function pathUsesMacroBinding(
   }
 
   if (
-    isMacroImportBinding(callee.scope.getBinding(callee.node.name), bindings.all)
+    isMacroImportBinding(
+      callee.scope.getBinding(callee.node.name),
+      bindings.all,
+    )
   ) {
     return true;
   }
