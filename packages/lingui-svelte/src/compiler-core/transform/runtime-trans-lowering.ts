@@ -2,9 +2,9 @@ import { generate } from "@babel/generator";
 import * as t from "@babel/types";
 
 import {
-  RUNTIME_PACKAGE,
-  SYNTHETIC_COMPONENT_PREFIX,
-  SYNTHETIC_EXPRESSION_PREFIX,
+  PACKAGE_RUNTIME,
+  SYNTHETIC_PREFIX_COMPONENT,
+  SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
 import type { ProgramTransform } from "../shared/types.ts";
 
@@ -43,9 +43,9 @@ export function splitSyntheticDeclarations(
       return;
     }
 
-    if (declaration.id.name.startsWith(SYNTHETIC_EXPRESSION_PREFIX)) {
+    if (declaration.id.name.startsWith(SYNTHETIC_PREFIX_EXPRESSION)) {
       const index = Number(
-        declaration.id.name.slice(SYNTHETIC_EXPRESSION_PREFIX.length),
+        declaration.id.name.slice(SYNTHETIC_PREFIX_EXPRESSION.length),
       );
 
       if (Number.isFinite(index) && declaration.init) {
@@ -57,9 +57,9 @@ export function splitSyntheticDeclarations(
       }
     }
 
-    if (declaration.id.name.startsWith(SYNTHETIC_COMPONENT_PREFIX)) {
+    if (declaration.id.name.startsWith(SYNTHETIC_PREFIX_COMPONENT)) {
       const index = Number(
-        declaration.id.name.slice(SYNTHETIC_COMPONENT_PREFIX.length),
+        declaration.id.name.slice(SYNTHETIC_PREFIX_COMPONENT.length),
       );
 
       if (
@@ -395,7 +395,7 @@ function removeRuntimeTransImports(
   return statements.flatMap((statement) => {
     if (
       !t.isImportDeclaration(statement) ||
-      statement.source.value !== RUNTIME_PACKAGE
+      statement.source.value !== PACKAGE_RUNTIME
     ) {
       return [statement];
     }

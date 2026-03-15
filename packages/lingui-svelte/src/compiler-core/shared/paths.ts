@@ -17,6 +17,16 @@ export function isTransformableScript(id: string): boolean {
   return hasExtension(stripQuery(id), JS_TS_EXTENSIONS);
 }
 
+export function getScriptLangFromFilename(id: string): ScriptLang {
+  const filename = stripQuery(id);
+  return filename.endsWith(".ts") ||
+    filename.endsWith(".tsx") ||
+    filename.endsWith(".mts") ||
+    filename.endsWith(".cts")
+    ? "ts"
+    : "js";
+}
+
 export function createScriptFilename(
   filename: string,
   kind: ScriptKind,

@@ -1,4 +1,4 @@
-import { transformSync, type PluginItem } from "@babel/core";
+import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import type { RawSourceMap } from "source-map";
 
@@ -50,7 +50,7 @@ export function transformProgram(
     },
     plugins: [
       [
-        linguiMacroPlugin as unknown as PluginItem,
+        linguiMacroPlugin,
         {
           extract: request.extract,
           linguiConfig: request.linguiConfig,

@@ -1,6 +1,5 @@
 import { parse, type AST } from "svelte/compiler";
 
-import { EXPRESSION_KEYS } from "../shared/constants.ts";
 import {
   expressionUsesMacroBinding,
   parseMacroBindings,
@@ -15,18 +14,37 @@ import type {
   SvelteAnalysis,
 } from "../shared/types.ts";
 
-type UnknownRecord = Record<string, unknown>;
-
-function isRecord(value: unknown): value is UnknownRecord {
-  return typeof value === "object" && value !== null;
-}
+type TemplateNode = AST.Fragment["nodes"][number];
+type ElementLike =
+  | AST.Component
+  | AST.TitleElement
+  | AST.SlotElement
+  | AST.RegularElement
+  | AST.SvelteBody
+  | AST.SvelteComponent
+  | AST.SvelteDocument
+  | AST.SvelteElement
+  | AST.SvelteFragment
+  | AST.SvelteBoundary
+  | AST.SvelteHead
+  | AST.SvelteOptionsRaw
+  | AST.SvelteSelf
+  | AST.SvelteWindow;
+type ElementAttribute = AST.Component["attributes"][number];
 
 function hasRange(value: unknown): value is RangeNode {
   return (
-    isRecord(value) &&
+    typeof value === "object" &&
+    value !== null &&
+    "start" in value &&
     typeof value.start === "number" &&
+    "end" in value &&
     typeof value.end === "number"
   );
+}
+
+function toRangeNodes(...values: unknown[]): RangeNode[] {
+  return values.filter(hasRange);
 }
 
 function getLang(script: AST.Script | null): ScriptLang {
@@ -68,6 +86,84 @@ function toScriptBlock(
   };
 }
 
+function collectAttributeValueExpressions(
+  value: AST.Attribute["value"] | AST.StyleDirective["value"],
+): RangeNode[] {
+  if (value === true) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((part) =>
+      part.type === "ExpressionTag" ? toRangeNodes(part.expression) : [],
+    );
+  }
+
+  return value.type === "ExpressionTag" ? toRangeNodes(value.expression) : [];
+}
+
+function getExpressionCandidates(
+  node: TemplateNode | ElementAttribute,
+): RangeNode[] {
+  switch (node.type) {
+    case "ExpressionTag":
+    case "HtmlTag":
+    case "RenderTag":
+    case "AttachTag":
+    case "SpreadAttribute":
+    case "AwaitBlock":
+    case "KeyBlock":
+    case "SnippetBlock":
+      return toRangeNodes(node.expression);
+
+    case "SvelteComponent":
+      return toRangeNodes(node.expression);
+
+    case "SvelteElement":
+      return toRangeNodes(node.tag);
+
+    case "EachBlock":
+      return toRangeNodes(node.expression, node.key);
+
+    case "IfBlock":
+      return toRangeNodes(node.test);
+
+    case "ConstTag":
+      return toRangeNodes(node.declaration.declarations[0].init);
+
+    case "AnimateDirective":
+    case "BindDirective":
+    case "ClassDirective":
+    case "OnDirective":
+    case "TransitionDirective":
+    case "UseDirective":
+      return toRangeNodes(node.expression);
+
+    case "StyleDirective":
+    case "Attribute":
+      return collectAttributeValueExpressions(node.value);
+
+    default:
+      return [];
+  }
+}
+
+function visitAttributes(
+  attributes: ElementAttribute[],
+  visitAttribute: (attribute: ElementAttribute) => void,
+): void {
+  attributes.forEach(visitAttribute);
+}
+
+function visitElementChildren(
+  element: ElementLike,
+  visitNode: (node: TemplateNode) => void,
+  visitAttribute: (attribute: ElementAttribute) => void,
+): void {
+  visitAttributes(element.attributes, visitAttribute);
+  element.fragment.nodes.forEach(visitNode);
+}
+
 function collectExpressions(
   source: string,
   fragment: AST.Fragment,
@@ -81,32 +177,35 @@ function collectExpressions(
   const expressions: MarkupExpression[] = [];
   const components: MacroComponent[] = [];
 
-  const visit = (node: unknown): void => {
-    if (!node) {
-      return;
-    }
-
-    if (Array.isArray(node)) {
-      node.forEach(visit);
-      return;
-    }
-
-    if (!isRecord(node)) {
-      return;
-    }
-
-    if (node.type === "Fragment" && Array.isArray(node.nodes)) {
-      visit(node.nodes);
-      return;
-    }
+  const addExpression = (candidate: RangeNode): void => {
+    const identity = `${candidate.start}:${candidate.end}`;
 
     if (
-      node.type === "Component" &&
-      typeof node.name === "string" &&
-      componentBindings.has(node.name) &&
-      typeof node.start === "number" &&
-      typeof node.end === "number"
+      seen.has(identity) ||
+      !expressionSourceUsesMacro(source.slice(candidate.start, candidate.end))
     ) {
+      return;
+    }
+
+    seen.add(identity);
+    expressions.push({
+      index: expressions.length,
+      start: candidate.start,
+      end: candidate.end,
+      source: source.slice(candidate.start, candidate.end),
+    });
+  };
+
+  const visitAttribute = (attribute: ElementAttribute): void => {
+    getExpressionCandidates(attribute).forEach(addExpression);
+
+    if (attribute.type === "AttachTag") {
+      return;
+    }
+  };
+
+  const visitNode = (node: TemplateNode): void => {
+    if (node.type === "Component" && componentBindings.has(node.name)) {
       components.push({
         index: components.length,
         name: node.name,
@@ -117,34 +216,54 @@ function collectExpressions(
       return;
     }
 
-    Object.entries(node).forEach(([key, value]) => {
-      if (key === "instance" || key === "module" || key === "content") {
+    getExpressionCandidates(node).forEach(addExpression);
+
+    switch (node.type) {
+      case "Component":
+      case "TitleElement":
+      case "SlotElement":
+      case "RegularElement":
+      case "SvelteBody":
+      case "SvelteComponent":
+      case "SvelteDocument":
+      case "SvelteElement":
+      case "SvelteFragment":
+      case "SvelteBoundary":
+      case "SvelteHead":
+      case "SvelteOptions":
+      case "SvelteSelf":
+      case "SvelteWindow":
+        visitElementChildren(node, visitNode, visitAttribute);
         return;
-      }
 
-      if (EXPRESSION_KEYS.has(key) && hasRange(value)) {
-        const identity = `${value.start}:${value.end}`;
-
-        if (
-          !seen.has(identity) &&
-          expressionSourceUsesMacro(source.slice(value.start, value.end))
-        ) {
-          seen.add(identity);
-          expressions.push({
-            index: expressions.length,
-            start: value.start,
-            end: value.end,
-            source: source.slice(value.start, value.end),
-          });
-        }
+      case "IfBlock":
+        node.consequent.nodes.forEach(visitNode);
+        node.alternate?.nodes.forEach(visitNode);
         return;
-      }
 
-      visit(value);
-    });
+      case "EachBlock":
+        node.body.nodes.forEach(visitNode);
+        node.fallback?.nodes.forEach(visitNode);
+        return;
+
+      case "AwaitBlock":
+        node.pending?.nodes.forEach(visitNode);
+        node.then?.nodes.forEach(visitNode);
+        node.catch?.nodes.forEach(visitNode);
+        return;
+
+      case "KeyBlock":
+        node.fragment.nodes.forEach(visitNode);
+        return;
+
+      case "SnippetBlock":
+        node.body.nodes.forEach(visitNode);
+        return;
+    }
   };
 
-  visit(fragment);
+  fragment.nodes.forEach(visitNode);
+
   return {
     expressions,
     components,

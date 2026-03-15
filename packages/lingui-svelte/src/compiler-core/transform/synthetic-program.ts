@@ -1,8 +1,8 @@
 import { SourceMapGenerator, type RawSourceMap } from "source-map";
 
 import {
-  SYNTHETIC_COMPONENT_PREFIX,
-  SYNTHETIC_EXPRESSION_PREFIX,
+  SYNTHETIC_PREFIX_COMPONENT,
+  SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
 import {
   addLineMappings,
@@ -49,7 +49,7 @@ export function buildCombinedProgram(
 
   expressions.forEach((expression) => {
     const generatedLine = code.split("\n").length;
-    const name = `${SYNTHETIC_EXPRESSION_PREFIX}${expression.index}`;
+    const name = `${SYNTHETIC_PREFIX_EXPRESSION}${expression.index}`;
 
     code += `const ${name} = (\n`;
     generator.addMapping({
@@ -73,7 +73,7 @@ export function buildCombinedProgram(
 
   components.forEach((component) => {
     const generatedLine = code.split("\n").length;
-    const name = `${SYNTHETIC_COMPONENT_PREFIX}${component.index}`;
+    const name = `${SYNTHETIC_PREFIX_COMPONENT}${component.index}`;
 
     code += `const ${name} = (\n`;
     generator.addMapping({

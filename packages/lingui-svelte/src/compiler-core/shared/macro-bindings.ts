@@ -3,7 +3,7 @@ import traverse from "@babel/traverse";
 import * as t from "@babel/types";
 
 import { getParserPlugins } from "./config.ts";
-import { MACRO_PACKAGE } from "./constants.ts";
+import { PACKAGE_MACRO } from "./constants.ts";
 import type { ScriptLang } from "./types.ts";
 
 type MacroImportName =
@@ -43,6 +43,13 @@ const ALL_MACRO_IMPORTS = [
   ...REACTIVE_STRING_IMPORTS,
 ] as const satisfies readonly MacroImportName[];
 
+function isMacroImportName(
+  value: string,
+  importedNames: readonly MacroImportName[],
+): value is MacroImportName {
+  return importedNames.includes(value as MacroImportName);
+}
+
 function createEmptyBindings(): MacroBindings {
   return {
     all: new Set<string>(),
@@ -74,7 +81,7 @@ function collectImportLocalsFromFile(
 
   traverse(file, {
     ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
-      if (path.node.source.value !== MACRO_PACKAGE) {
+      if (path.node.source.value !== PACKAGE_MACRO) {
         return;
       }
 
@@ -83,7 +90,7 @@ function collectImportLocalsFromFile(
           if (
             !t.isImportSpecifier(specifier) ||
             !t.isIdentifier(specifier.imported) ||
-            !importedNames.includes(specifier.imported.name as MacroImportName)
+            !isMacroImportName(specifier.imported.name, importedNames)
           ) {
             return;
           }
@@ -126,7 +133,7 @@ function createSyntheticExpressionFile(
   bindings: MacroBindings,
 ): t.File | null {
   const syntheticImports = [...bindings.all]
-    .map((localName) => `import { ${localName} } from "${MACRO_PACKAGE}";`)
+    .map((localName) => `import { ${localName} } from "${PACKAGE_MACRO}";`)
     .join("\n");
 
   return parseFile(
@@ -143,14 +150,14 @@ function isMacroImportBinding(
     return false;
   }
 
-  if (!binding?.path.isImportSpecifier()) {
+  if (!binding.path.isImportSpecifier()) {
     return false;
   }
 
   const importDeclaration = binding.path.parentPath;
   return (
     importDeclaration?.isImportDeclaration() === true &&
-    importDeclaration.node.source.value === MACRO_PACKAGE
+    importDeclaration.node.source.value === PACKAGE_MACRO
   );
 }
 

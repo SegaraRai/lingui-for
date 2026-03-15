@@ -3,12 +3,12 @@ import MagicString from "magic-string";
 import { analyzeSvelte } from "../analysis/svelte-analysis.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
-  DEFAULT_CONTEXT_BINDING,
-  DEFAULT_I18N_BINDING,
-  DEFAULT_RUNTIME_TRANS_COMPONENT_BINDING,
-  DEFAULT_TRANSLATOR_BINDING,
-  GET_LINGUI_CONTEXT_EXPORT,
-  RUNTIME_PACKAGE,
+  EXPORT_GET_LINGUI_CONTEXT,
+  PACKAGE_RUNTIME,
+  RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
+  RUNTIME_BINDING_CONTEXT,
+  RUNTIME_BINDING_I18N,
+  RUNTIME_BINDING_TRANSLATE,
 } from "../shared/constants.ts";
 import { createUniqueNameAllocator } from "../shared/identifier-allocation.ts";
 import { createScriptFilename, stripQuery } from "../shared/paths.ts";
@@ -175,11 +175,11 @@ function createRuntimeBindings(
   });
 
   return {
-    getLinguiContext: allocateName(GET_LINGUI_CONTEXT_EXPORT),
-    context: allocateName(DEFAULT_CONTEXT_BINDING),
-    i18n: allocateName(DEFAULT_I18N_BINDING),
-    translate: allocateName(DEFAULT_TRANSLATOR_BINDING),
-    transComponent: allocateName(DEFAULT_RUNTIME_TRANS_COMPONENT_BINDING),
+    getLinguiContext: allocateName(EXPORT_GET_LINGUI_CONTEXT),
+    context: allocateName(RUNTIME_BINDING_CONTEXT),
+    i18n: allocateName(RUNTIME_BINDING_I18N),
+    translate: allocateName(RUNTIME_BINDING_TRANSLATE),
+    transComponent: allocateName(RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS),
   };
 }
 
@@ -199,15 +199,15 @@ function injectRuntimeBindings(
 
   if (includeLinguiContext && includeTransComponent) {
     prelude.push(
-      `import { RuntimeTrans as ${runtimeBindings.transComponent}, getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${RUNTIME_PACKAGE}";`,
+      `import { RuntimeTrans as ${runtimeBindings.transComponent}, getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${PACKAGE_RUNTIME}";`,
     );
   } else if (includeLinguiContext) {
     prelude.push(
-      `import { getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${RUNTIME_PACKAGE}";`,
+      `import { getLinguiContext as ${runtimeBindings.getLinguiContext} } from "${PACKAGE_RUNTIME}";`,
     );
   } else if (includeTransComponent) {
     prelude.push(
-      `import { RuntimeTrans as ${runtimeBindings.transComponent} } from "${RUNTIME_PACKAGE}";`,
+      `import { RuntimeTrans as ${runtimeBindings.transComponent} } from "${PACKAGE_RUNTIME}";`,
     );
   }
 

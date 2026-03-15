@@ -62,4 +62,47 @@ describe("analyzeSvelte", () => {
     expect(analysis.expressions).toHaveLength(0);
     expect(analysis.components).toHaveLength(0);
   });
+
+  it("extracts block, attribute, and special-tag expressions explicitly by node type", () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+        const condition = true;
+        const count = 1;
+        const loader = () => Promise.resolve("ok");
+        const renderSnippet = () => null;
+      </script>
+
+      <div class:active={t\`active\` === "active"} style:color={t\`red\`}></div>
+      {#if t\`visible\`}
+        <p>{t\`shown\`}</p>
+      {/if}
+      {#each items as item, index (t\`key-\${index}\`)}
+        <span>{item}</span>
+      {/each}
+      {#await loader() then value}
+        <p>{value}</p>
+      {/await}
+      {#key t\`keyed\`}
+        <p>content</p>
+      {/key}
+      {@html t\`<strong>html</strong>\`}
+      {@render renderSnippet(t\`snippet\`)}
+    `;
+
+    const analysis = analyzeSvelte(source, "ExplicitExpressions.svelte");
+
+    expect(analysis.expressions.map((expression) => expression.source)).toEqual(
+      [
+        't`active` === "active"',
+        "t`red`",
+        "t`visible`",
+        "t`shown`",
+        "t`key-${index}`",
+        "t`keyed`",
+        "t`<strong>html</strong>`",
+        "renderSnippet(t`snippet`)",
+      ],
+    );
+  });
 });

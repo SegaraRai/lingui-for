@@ -5,7 +5,7 @@ import {
   type LinguiConfigNormalized,
 } from "@lingui/conf";
 
-import { MACRO_PACKAGE, RUNTIME_PACKAGE } from "./constants.ts";
+import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 import type { ScriptLang } from "./types.ts";
 
 function uniqueStrings(values: readonly string[]): string[] {
@@ -27,13 +27,13 @@ export function normalizeLinguiConfig(
       ...config,
       macro: {
         corePackage: uniqueStrings([
-          MACRO_PACKAGE,
+          PACKAGE_MACRO,
           "@lingui/macro",
           "@lingui/core/macro",
           ...(config?.macro?.corePackage ?? []),
         ]),
         jsxPackage: uniqueStrings([
-          MACRO_PACKAGE,
+          PACKAGE_MACRO,
           "@lingui/macro",
           "@lingui/react/macro",
           ...(config?.macro?.jsxPackage ?? []),
@@ -41,7 +41,7 @@ export function normalizeLinguiConfig(
       },
       runtimeConfigModule: {
         i18n: ["@lingui/core", "i18n"] as const,
-        Trans: [RUNTIME_PACKAGE, "RuntimeTrans"] as const,
+        Trans: [PACKAGE_RUNTIME, "RuntimeTrans"] as const,
         ...runtimeConfigModule,
       },
     },

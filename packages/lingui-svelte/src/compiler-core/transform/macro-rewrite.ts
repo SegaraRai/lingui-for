@@ -2,9 +2,9 @@ import type { NodePath, PluginObj } from "@babel/core";
 import * as t from "@babel/types";
 
 import {
+  PACKAGE_RUNTIME,
   REACTIVE_TRANSLATION_WRAPPER,
-  RUNTIME_PACKAGE,
-  SYNTHETIC_EXPRESSION_PREFIX,
+  SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
 import { collectMacroImportLocals } from "../shared/macro-bindings.ts";
 import type { ProgramTransformRequest } from "../shared/types.ts";
@@ -31,7 +31,7 @@ function collectRuntimeI18nLocals(program: t.Program): Set<string> {
   program.body.forEach((statement) => {
     if (
       !t.isImportDeclaration(statement) ||
-      statement.source.value !== RUNTIME_PACKAGE
+      statement.source.value !== PACKAGE_RUNTIME
     ) {
       return;
     }
@@ -123,7 +123,7 @@ function ensureRuntimeTImport(program: t.Program, localName: string): void {
   const runtimeImport = program.body.find(
     (statement): statement is t.ImportDeclaration =>
       t.isImportDeclaration(statement) &&
-      statement.source.value === RUNTIME_PACKAGE,
+      statement.source.value === PACKAGE_RUNTIME,
   );
 
   const specifier = t.importSpecifier(
@@ -152,7 +152,7 @@ function ensureRuntimeTImport(program: t.Program, localName: string): void {
 
   const importDeclaration = t.importDeclaration(
     [specifier],
-    t.stringLiteral(RUNTIME_PACKAGE),
+    t.stringLiteral(PACKAGE_RUNTIME),
   );
 
   if (firstImportIndex === -1) {
@@ -253,7 +253,7 @@ function wrapTopLevelReactiveInitializers(
 
       if (
         t.isIdentifier(path.node.id) &&
-        path.node.id.name.startsWith(SYNTHETIC_EXPRESSION_PREFIX)
+        path.node.id.name.startsWith(SYNTHETIC_PREFIX_EXPRESSION)
       ) {
         return;
       }
@@ -285,7 +285,7 @@ function removeRuntimeI18nImports(
   program.body = program.body.flatMap((statement) => {
     if (
       !t.isImportDeclaration(statement) ||
-      statement.source.value !== RUNTIME_PACKAGE
+      statement.source.value !== PACKAGE_RUNTIME
     ) {
       return [statement];
     }

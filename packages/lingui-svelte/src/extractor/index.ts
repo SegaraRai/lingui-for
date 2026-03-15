@@ -9,8 +9,7 @@ import {
   transformJavaScriptMacros,
   type LinguiSvelteTransformOptions,
 } from "../compiler-core/index.ts";
-
-const MACRO_PACKAGE = "lingui-for-svelte/macro";
+import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";
 
 function getParserPlugins(
   ctx: ExtractorCtx,
@@ -96,7 +95,7 @@ export const jstsExtractor: ExtractorType = {
       linguiConfig: ctx?.linguiConfig,
     });
 
-    if (source.includes(MACRO_PACKAGE)) {
+    if (source.includes(PACKAGE_MACRO)) {
       const transformed = transformJavaScriptMacros(
         source,
         {
