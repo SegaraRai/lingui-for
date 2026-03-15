@@ -8,6 +8,7 @@
     "strict": true,
     "emitDeclarationOnly": true,
     "skipLibCheck": true,
+    "exactOptionalPropertyTypes": true,
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,

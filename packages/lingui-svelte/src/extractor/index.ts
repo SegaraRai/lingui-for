@@ -13,10 +13,9 @@ import {
 const MACRO_PACKAGE = "lingui-for-svelte/macro";
 
 function getParserPlugins(
-  filename: string,
-  ctx?: ExtractorCtx,
-): ParserOptions["plugins"] {
-  const parserOptions = ctx?.linguiConfig.extractorParserOptions;
+  ctx: ExtractorCtx,
+): NonNullable<ParserOptions["plugins"]> {
+  const parserOptions = ctx.linguiConfig.extractorParserOptions;
 
   return [
     "importAttributes",
@@ -49,7 +48,7 @@ async function runExtractionUnits(
           }
         : ctx,
       {
-        plugins: getParserPlugins(filename, ctx),
+        plugins: getParserPlugins(ctx),
       },
       true,
     );
@@ -119,7 +118,7 @@ export const jstsExtractor: ExtractorType = {
               }
             : extractorCtx,
           {
-            plugins: getParserPlugins(filename, extractorCtx),
+            plugins: getParserPlugins(extractorCtx),
           },
           true,
         );
@@ -133,7 +132,7 @@ export const jstsExtractor: ExtractorType = {
       onMessageExtracted,
       extractorCtx,
       {
-        plugins: getParserPlugins(filename, extractorCtx),
+        plugins: getParserPlugins(extractorCtx),
       },
       true,
     );

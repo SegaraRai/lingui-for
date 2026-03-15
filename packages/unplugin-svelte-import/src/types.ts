@@ -11,12 +11,12 @@ export interface SvelteImportPluginOptions {
    *
    * Defaults to `process.cwd()`.
    */
-  rootDir?: string;
+  rootDir?: string | undefined;
 
   /**
    * Source directory that contains the `.svelte` files to scan and rewrite.
    *
    * Defaults to `<rootDir>/src`.
    */
-  sourceDir?: string;
+  sourceDir?: string | undefined;
 }

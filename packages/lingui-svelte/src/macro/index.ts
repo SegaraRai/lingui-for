@@ -31,20 +31,20 @@ export const selectOrdinal = createReactiveMacro(
 );
 
 export const Trans = null as unknown as Component<{
-  id?: string;
-  comment?: string;
-  context?: string;
-  children?: Snippet;
+  id?: string | undefined;
+  comment?: string | undefined;
+  context?: string | undefined;
+  children?: Snippet | undefined;
 }>;
 
 export const Plural = null as unknown as Component<{
   value: number;
-  offset?: number;
-  zero?: string;
-  one?: string;
-  two?: string;
-  few?: string;
-  many?: string;
+  offset?: number | undefined;
+  zero?: string | undefined;
+  one?: string | undefined;
+  two?: string | undefined;
+  few?: string | undefined;
+  many?: string | undefined;
   other: string;
 }>;
 
@@ -56,12 +56,12 @@ export const Select = null as unknown as Component<{
 
 export const SelectOrdinal = null as unknown as Component<{
   value: number;
-  offset?: number;
-  zero?: string;
-  one?: string;
-  two?: string;
-  few?: string;
-  many?: string;
+  offset?: number | undefined;
+  zero?: string | undefined;
+  one?: string | undefined;
+  two?: string | undefined;
+  few?: string | undefined;
+  many?: string | undefined;
   other: string;
 }>;
 

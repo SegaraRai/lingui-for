@@ -22,10 +22,10 @@ export type {
 } from "./trans/rich-text.ts";
 
 type RuntimeTransType = Component<{
-  id?: string;
-  message: MessageDescriptor | string;
-  values?: Readonly<Record<string, unknown>>;
-  components?: TransComponentMap;
+  id?: string | undefined;
+  message?: MessageDescriptor | string | undefined;
+  values?: Readonly<Record<string, unknown>> | undefined;
+  components?: TransComponentMap | undefined;
 }>;
 
 export const RuntimeTrans =

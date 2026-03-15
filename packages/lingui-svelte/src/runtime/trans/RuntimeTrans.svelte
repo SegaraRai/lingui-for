@@ -7,10 +7,7 @@
     formatRichTextTranslation,
     type TransComponentMap,
   } from "./rich-text.ts";
-  import {
-    mergeRuntimeTransValues,
-    toRuntimeTransDescriptor,
-  } from "./trans-descriptor.ts";
+  import { translateRuntimeTrans } from "./trans-descriptor.ts";
 
   let {
     id,
@@ -18,19 +15,18 @@
     values = {},
     components,
   }: {
-    id?: string;
-    message: MessageDescriptor | string;
-    values?: Readonly<Record<string, unknown>>;
-    components?: TransComponentMap;
+    id?: string | undefined;
+    message?: MessageDescriptor | string | undefined;
+    values?: Readonly<Record<string, unknown>> | undefined;
+    components?: TransComponentMap | undefined;
   } = $props();
 
-  const { _ } = getLinguiContext();
+  const { i18n, _ } = getLinguiContext();
 
-  const descriptor = $derived.by(
-    (): MessageDescriptor => toRuntimeTransDescriptor(message, id),
-  );
-
-  const translated = $derived($_(mergeRuntimeTransValues(descriptor, values)));
+  const translated = $derived.by(() => {
+    $_;
+    return translateRuntimeTrans(i18n, message, values, id);
+  });
 
   const richTextNodes = $derived(
     components ? formatRichTextTranslation(translated, components) : [],

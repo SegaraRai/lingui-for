@@ -6,7 +6,7 @@
     children,
   }: {
     href: string;
-    children?: Snippet;
+    children?: Snippet | undefined;
   } = $props();
 </script>
 

@@ -153,7 +153,7 @@ function collectExpressions(
 
 export function analyzeSvelte(
   source: string,
-  filename?: string,
+  filename: string,
 ): SvelteAnalysis {
   const ast = parse(source, { filename, modern: true });
   const instance = toScriptBlock(ast.instance, "instance", source);

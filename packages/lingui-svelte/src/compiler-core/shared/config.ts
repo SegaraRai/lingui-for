@@ -49,13 +49,15 @@ export function normalizeLinguiConfig(
   );
 }
 
-export function getParserPlugins(lang: ScriptLang): ParserOptions["plugins"] {
+export function getParserPlugins(
+  lang: ScriptLang,
+): NonNullable<ParserOptions["plugins"]> {
   return [
     "importAttributes",
     "explicitResourceManagement",
     "decoratorAutoAccessors",
     "deferredImportEvaluation",
-    ...(lang === "ts" ? ["typescript"] : []),
+    ...(lang === "ts" ? (["typescript"] as const) : []),
     "jsx",
-  ] as NonNullable<ParserOptions["plugins"]>;
+  ];
 }

@@ -115,4 +115,27 @@ describe("RuntimeTrans SSR", () => {
       "Fallback <em>copy</em> for Ada.",
     );
   });
+
+  it("renders id-only runtime Trans calls after build-style lowering", () => {
+    const i18n = setupI18n({
+      locale: "ja",
+      messages: {
+        ja: {
+          "demo.component-only-id": "ビルド後の {count} 件",
+        },
+      },
+    });
+
+    const result = render(RuntimeTransHarness, {
+      props: {
+        getI18n: () => i18n,
+        id: "demo.component-only-id",
+        values: {
+          count: 2,
+        },
+      },
+    });
+
+    expect(normalizeSsrBody(result.body)).toBe("ビルド後の 2 件");
+  });
 });

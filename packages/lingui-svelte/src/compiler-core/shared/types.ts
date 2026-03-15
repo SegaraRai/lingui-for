@@ -19,7 +19,7 @@ export type RangeNode = {
 
 export type LinguiSvelteTransformOptions = {
   filename: string;
-  linguiConfig?: Partial<LinguiConfig>;
+  linguiConfig?: Partial<LinguiConfig> | undefined;
 };
 
 export type ExtractionUnit = {
@@ -68,12 +68,14 @@ export type ProgramTransformRequest = {
   linguiConfig: LinguiConfigNormalized;
   extract: boolean;
   translationMode: "extract" | "raw" | "svelte-context";
-  runtimeBindings?: {
-    getLinguiContext: string;
-    context: string;
-    i18n: string;
-    translate: string;
-  };
+  runtimeBindings?:
+    | {
+        getLinguiContext: string;
+        context: string;
+        i18n: string;
+        translate: string;
+      }
+    | undefined;
   inputSourceMap?: RawSourceMap;
 };
 
