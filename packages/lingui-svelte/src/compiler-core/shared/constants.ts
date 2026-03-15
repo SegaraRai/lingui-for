@@ -1,9 +1,9 @@
 export const MACRO_PACKAGE = "lingui-for-svelte/macro";
 export const RUNTIME_PACKAGE = "lingui-for-svelte/runtime";
-export const SYNTHETIC_EXPRESSION_PREFIX = "__lingui_svelte_expr_";
-export const SYNTHETIC_COMPONENT_PREFIX = "__lingui_svelte_component_";
+export const SYNTHETIC_EXPRESSION_PREFIX = "__lingui_for_svelte_expr_";
+export const SYNTHETIC_COMPONENT_PREFIX = "__lingui_for_svelte_component_";
 export const REACTIVE_TRANSLATION_WRAPPER =
-  "__lingui_svelte_reactive_translation__";
+  "__lingui_for_svelte_reactive_translation__";
 export const DEFAULT_CONTEXT_BINDING = "__l4s_ctx";
 export const DEFAULT_I18N_BINDING = "__l4s_i18n";
 export const DEFAULT_TRANSLATOR_BINDING = "__l4s_translate";

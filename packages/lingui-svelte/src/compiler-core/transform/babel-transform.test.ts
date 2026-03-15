@@ -42,7 +42,7 @@ describe("transformProgram", () => {
       dedent`
         import { t } from "lingui-for-svelte/macro";
 
-        const __lingui_svelte_expr_0 = $t\`Hello \${name}\`;
+        const __lingui_for_svelte_expr_0 = $t\`Hello \${name}\`;
       `,
       {
         extract: false,
@@ -63,7 +63,7 @@ describe("transformProgram", () => {
     expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
-      const __lingui_svelte_expr_0 = $__l4s_translate(
+      const __lingui_for_svelte_expr_0 = $__l4s_translate(
       /*i18n*/
       {
         id: "OVaF9k",
@@ -80,7 +80,7 @@ describe("transformProgram", () => {
       dedent`
         import { t } from "lingui-for-svelte/macro";
 
-        const __lingui_svelte_expr_0 = $t({ id: "demo.save", message: "Save" });
+        const __lingui_for_svelte_expr_0 = $t({ id: "demo.save", message: "Save" });
       `,
       {
         extract: true,
@@ -95,7 +95,7 @@ describe("transformProgram", () => {
     expect(result.code).toContain("_i18n._(");
     expect(result.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
-      const __lingui_svelte_expr_0 = _i18n._(
+      const __lingui_for_svelte_expr_0 = _i18n._(
       /*i18n*/
       {
         id: "demo.save",

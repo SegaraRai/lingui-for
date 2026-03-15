@@ -22,7 +22,7 @@ describe("createExtractionUnits", () => {
     expect(units[0]?.code).toContain("_i18n._(");
     expect(units[0]?.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
-      const __lingui_svelte_expr_0 = _i18n._(
+      const __lingui_for_svelte_expr_0 = _i18n._(
       /*i18n*/
       {
         id: "demo.save",
@@ -62,7 +62,7 @@ describe("createExtractionUnits", () => {
     expect(units[0]?.code).toContain("_i18n._(");
     expect(units[0]?.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
-      const __lingui_svelte_expr_0 = _i18n._(
+      const __lingui_for_svelte_expr_0 = _i18n._(
       /*i18n*/
       {
         id: "T592ov",
@@ -91,7 +91,7 @@ describe("createExtractionUnits", () => {
     expect(units[0]?.code).toMatchInlineSnapshot(`
       "import { RuntimeTrans as _Trans } from "lingui-for-svelte/runtime";
       let name = "Ada";
-      const __lingui_svelte_component_0 = <_Trans {...
+      const __lingui_for_svelte_component_0 = <_Trans {...
       /*i18n*/
       {
         id: "demo.docs",
@@ -129,7 +129,7 @@ describe("createExtractionUnits", () => {
       "import { RuntimeTrans as _Trans } from "lingui-for-svelte/runtime";
       import DocLink from "./DocLink.svelte";
       let name = "Ada";
-      const __lingui_svelte_component_0 = <_Trans {...
+      const __lingui_for_svelte_component_0 = <_Trans {...
       /*i18n*/
       {
         id: "N+nKUg",
@@ -173,7 +173,7 @@ describe("createExtractionUnits", () => {
       "import { RuntimeTrans as _Trans } from "lingui-for-svelte/runtime";
       let count = 2;
       let gender = "female";
-      const __lingui_svelte_component_0 = <_Trans {...
+      const __lingui_for_svelte_component_0 = <_Trans {...
       /*i18n*/
       {
         id: "V/M0Vc",
@@ -182,7 +182,7 @@ describe("createExtractionUnits", () => {
           count: count
         }
       }} />;
-      const __lingui_svelte_component_1 = <_Trans {...
+      const __lingui_for_svelte_component_1 = <_Trans {...
       /*i18n*/
       {
         id: "BGY2VE",
@@ -191,7 +191,7 @@ describe("createExtractionUnits", () => {
           gender: gender
         }
       }} />;
-      const __lingui_svelte_component_2 = <_Trans {...
+      const __lingui_for_svelte_component_2 = <_Trans {...
       /*i18n*/
       {
         id: "0ALwK4",

@@ -61,8 +61,8 @@ describe("createMacroPreprocessPlugin", () => {
 
     expect(code).toMatchInlineSnapshot(`
       "import { t as translate, plural } from "lingui-for-svelte/macro";
-      const label = __lingui_svelte_reactive_translation__(translate\`Hello \${name}\`, "translate");
-      const books = __lingui_svelte_reactive_translation__(plural(count, {
+      const label = __lingui_for_svelte_reactive_translation__(translate\`Hello \${name}\`, "translate");
+      const books = __lingui_for_svelte_reactive_translation__(plural(count, {
         one: "# Book",
         other: "# Books"
       }), "plural");"
@@ -90,12 +90,12 @@ describe("createMacroPostprocessPlugin", () => {
           message: "Save"
         });
 
-        const label = __lingui_svelte_reactive_translation__(runtimeI18n._({
+        const label = __lingui_for_svelte_reactive_translation__(runtimeI18n._({
           id: "demo.heading",
           message: "Hello"
         }), "t");
 
-        const __lingui_svelte_expr_0 = __lingui_svelte_reactive_translation__(runtimeI18n._({
+        const __lingui_for_svelte_expr_0 = __lingui_for_svelte_reactive_translation__(runtimeI18n._({
           id: "demo.inline",
           message: "Inline"
         }), "t");
@@ -122,7 +122,7 @@ describe("createMacroPostprocessPlugin", () => {
         id: "demo.heading",
         message: "Hello"
       }));
-      const __lingui_svelte_expr_0 = $__l4s_translate({
+      const __lingui_for_svelte_expr_0 = $__l4s_translate({
         id: "demo.inline",
         message: "Inline"
       });"
@@ -135,13 +135,13 @@ describe("createMacroPostprocessPlugin", () => {
         import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
 
         const label = {
-          idle: __lingui_svelte_reactive_translation__(runtimeI18n._({
+          idle: __lingui_for_svelte_reactive_translation__(runtimeI18n._({
             id: "idle",
             message: "idle"
           }), "t")
         };
 
-        const getStatusText = () => __lingui_svelte_reactive_translation__(runtimeI18n._({
+        const getStatusText = () => __lingui_for_svelte_reactive_translation__(runtimeI18n._({
           id: "active",
           message: "active"
         }), "t");
@@ -178,7 +178,7 @@ describe("createMacroPostprocessPlugin", () => {
       dedent`
         import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
 
-        const label = __lingui_svelte_reactive_translation__(runtimeI18n._({
+        const label = __lingui_for_svelte_reactive_translation__(runtimeI18n._({
           id: "demo.heading",
           message: "Hello"
         }), "t");

@@ -81,6 +81,9 @@ importers:
       '@babel/generator':
         specifier: ^7.29.1
         version: 7.29.1
+      '@babel/traverse':
+        specifier: ^7.29.0
+        version: 7.29.0
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
@@ -136,6 +139,9 @@ importers:
       '@types/babel__generator':
         specifier: ^7.27.0
         version: 7.27.0
+      '@types/babel__traverse':
+        specifier: ^7.28.0
+        version: 7.28.0
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0

@@ -57,4 +57,49 @@ describe("macro-bindings", () => {
     expect(expressionUsesMacroBinding("t`Hello`", "ts", bindings)).toBe(false);
     expect(expressionUsesMacroBinding("$t`Hello`", "ts", bindings)).toBe(false);
   });
+
+  it("does not treat shadowed imported locals as macro bindings", () => {
+    const bindings = parseMacroBindings(
+      'import { t as translate } from "lingui-for-svelte/macro";',
+      "ts",
+    );
+
+    expect(
+      expressionUsesMacroBinding(
+        "(() => { const translate = notMacro; return translate`Hello`; })()",
+        "ts",
+        bindings,
+      ),
+    ).toBe(false);
+  });
+
+  it("does not treat shadowed reactive locals as macro bindings", () => {
+    const bindings = parseMacroBindings(
+      'import { t as translate } from "lingui-for-svelte/macro";',
+      "ts",
+    );
+
+    expect(
+      expressionUsesMacroBinding(
+        "(() => { const $translate = custom; return $translate`Hello`; })()",
+        "ts",
+        bindings,
+      ),
+    ).toBe(false);
+  });
+
+  it("detects reactive aliases inside nested scopes when the base import is intact", () => {
+    const bindings = parseMacroBindings(
+      'import { t as translate } from "lingui-for-svelte/macro";',
+      "ts",
+    );
+
+    expect(
+      expressionUsesMacroBinding(
+        "(() => () => $translate`Hello`)()",
+        "ts",
+        bindings,
+      ),
+    ).toBe(true);
+  });
 });

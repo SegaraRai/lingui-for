@@ -36,11 +36,11 @@ describe("splitSyntheticDeclarations", () => {
       import { helper } from "./helper.ts";
 
       const keep = helper();
-      const __lingui_svelte_expr_0 = $__l4s_translate({
+      const __lingui_for_svelte_expr_0 = $__l4s_translate({
         id: "demo.heading",
         message: "Hello"
       });
-      const __lingui_svelte_component_0 = <LocalRuntimeTrans {...{
+      const __lingui_for_svelte_component_0 = <LocalRuntimeTrans {...{
         id: "demo.docs",
         message: "Read the <0>docs</0>.",
         components: {

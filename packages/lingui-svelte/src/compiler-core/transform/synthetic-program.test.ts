@@ -75,10 +75,10 @@ describe("buildCombinedProgram", () => {
       "  import { t, Trans } from "lingui-for-svelte/macro";
 
         const name = "Ada";
-      const __lingui_svelte_expr_0 = (
+      const __lingui_for_svelte_expr_0 = (
       $t\`Hello \${name}\`
       );
-      const __lingui_svelte_component_0 = (
+      const __lingui_for_svelte_component_0 = (
       <Trans id="demo.docs">Read the docs.</Trans>
       );
       "
