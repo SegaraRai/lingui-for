@@ -1,6 +1,10 @@
 import type { Handle } from "@sveltejs/kit";
 
-import { LOCALE_COOKIE, isSupportedLocale, resolveLocale } from "$lib/i18n/locale";
+import {
+  LOCALE_COOKIE,
+  isSupportedLocale,
+  resolveLocale,
+} from "$lib/i18n/locale";
 
 export const handle: Handle = async ({ event, resolve }) => {
   const requestedLocale = event.url.searchParams.get("lang");
@@ -22,6 +26,9 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return resolve(event, {
     transformPageChunk: ({ html }) =>
-      html.replace(/<html lang="[^"]*">/, `<html lang="${event.locals.locale}">`),
+      html.replace(
+        /<html lang="[^"]*">/,
+        `<html lang="${event.locals.locale}">`,
+      ),
   });
 };

@@ -7,16 +7,18 @@
   );
 </script>
 
-<section class="card border border-base-300 bg-base-100 shadow-xl">
+<section class="card border-base-300 bg-base-100 border shadow-xl">
   <div class="card-body gap-5">
-    <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
+    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
       {$t`Preferences`}
     </p>
     <h1 class="text-4xl font-black md:text-6xl">{$t`Language preference`}</h1>
     <p class="text-base-content/80 md:text-lg">
       {$t`Choose a language with the switcher in the header. The server stores your preference in a cookie so new routes keep the same locale.`}
     </p>
-    <div class="stats stats-vertical border border-base-300 bg-base-200 md:stats-horizontal">
+    <div
+      class="stats stats-vertical border-base-300 bg-base-200 md:stats-horizontal border"
+    >
       <div class="stat">
         <div class="stat-title">{$t`Current language`}</div>
         <div class="stat-value text-primary">{currentLocaleLabel}</div>

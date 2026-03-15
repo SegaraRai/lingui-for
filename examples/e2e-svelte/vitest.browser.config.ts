@@ -140,7 +140,9 @@ export default defineProject({
             const bodyText =
               (await probePage.locator("body").textContent()) ?? "";
             const currentUrl = probePage.url();
-            const htmlLang = await probePage.locator("html").getAttribute("lang");
+            const htmlLang = await probePage
+              .locator("html")
+              .getAttribute("lang");
 
             await probePage.close();
 

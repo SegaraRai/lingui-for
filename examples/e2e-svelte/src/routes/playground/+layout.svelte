@@ -6,9 +6,9 @@
 </script>
 
 <section class="space-y-6">
-  <header class="card border border-base-300 bg-base-100 shadow-lg">
+  <header class="card border-base-300 bg-base-100 border shadow-lg">
     <div class="card-body gap-4">
-      <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
+      <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
         {$t`Playground`}
       </p>
       <h1 class="text-4xl font-black md:text-6xl">

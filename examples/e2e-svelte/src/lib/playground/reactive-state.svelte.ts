@@ -17,8 +17,7 @@ export function decrementReactiveCount(): void {
 }
 
 export function toggleReactiveStatus(): void {
-  reactiveState.status =
-    reactiveState.status === "idle" ? "active" : "idle";
+  reactiveState.status = reactiveState.status === "idle" ? "active" : "idle";
 }
 
 export function setReactiveName(name: string): void {

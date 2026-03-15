@@ -4,9 +4,9 @@
   import InlineBadge from "$lib/playground/InlineBadge.svelte";
 </script>
 
-<section class="card border border-base-300 bg-base-100 shadow-lg">
+<section class="card border-base-300 bg-base-100 border shadow-lg">
   <div class="card-body gap-5">
-    <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
+    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
       {$t`Rich text`}
     </p>
     <h1 class="text-4xl font-black md:text-5xl">
@@ -19,7 +19,9 @@
     <div class="space-y-4 text-lg">
       <p>
         <Trans>
-          Read the <a class="link link-primary" href="/settings">settings page</a>
+          Read the <a class="link link-primary" href="/settings"
+            >settings page</a
+          >
           and look for the{" "}
           <InlineBadge tone="warm">cookie-backed locale</InlineBadge> behavior.
         </Trans>

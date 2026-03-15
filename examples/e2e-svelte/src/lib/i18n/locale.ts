@@ -26,7 +26,10 @@ export function resolveLocale(
     return cookieLocale;
   }
 
-  if (typeof acceptLanguage === "string" && acceptLanguage.toLowerCase().includes("ja")) {
+  if (
+    typeof acceptLanguage === "string" &&
+    acceptLanguage.toLowerCase().includes("ja")
+  ) {
     return "ja";
   }
 

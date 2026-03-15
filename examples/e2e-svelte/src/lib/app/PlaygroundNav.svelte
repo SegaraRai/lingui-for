@@ -4,7 +4,7 @@
 </script>
 
 <nav
-  class="tabs tabs-boxed flex w-full flex-wrap gap-2 bg-base-200/70 p-2"
+  class="tabs tabs-boxed bg-base-200/70 flex w-full flex-wrap gap-2 p-2"
   aria-label={$t`Playground sections`}
 >
   <a
@@ -27,6 +27,13 @@
     class:tab-active={page.url.pathname === "/playground/reactive"}
   >
     {$t`Reactive`}
+  </a>
+  <a
+    href="/playground/syntax"
+    class="tab"
+    class:tab-active={page.url.pathname === "/playground/syntax"}
+  >
+    {$t`Syntax`}
   </a>
   <a
     href="/playground/rich-text"

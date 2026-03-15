@@ -125,6 +125,25 @@ describe.sequential("e2e-svelte application", () => {
       },
     },
     {
+      path: "/playground/syntax",
+      expectations: {
+        en: [
+          "$t across Svelte syntax positions",
+          "Status summary: idle",
+          "Filter text: (empty)",
+          "Row 1: placeholder",
+          "Keyed subtree revision 1",
+        ],
+        ja: [
+          "Svelte 構文の各所で使う $t",
+          "状態サマリー: アイドル",
+          "フィルタ文字列: （未入力）",
+          "行 1: placeholder",
+          "キー付きサブツリーのリビジョン 1",
+        ],
+      },
+    },
+    {
       path: "/playground/rich-text",
       expectations: {
         en: [

@@ -18,9 +18,9 @@
   );
 </script>
 
-<section class="card border border-base-300 bg-base-100 shadow-lg">
+<section class="card border-base-300 bg-base-100 border shadow-lg">
   <div class="card-body gap-5">
-    <p class="text-sm font-semibold uppercase tracking-[0.3em] text-primary">
+    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
       {$t`Reactive`}
     </p>
     <h1 class="text-4xl font-black md:text-5xl">
@@ -52,13 +52,25 @@
     </div>
 
     <div class="flex flex-wrap gap-3">
-      <button class="btn btn-outline btn-primary" onclick={decrementReactiveCount} type="button">
+      <button
+        class="btn btn-outline btn-primary"
+        onclick={decrementReactiveCount}
+        type="button"
+      >
         {$t`Decrease`}
       </button>
-      <button class="btn btn-primary" onclick={incrementReactiveCount} type="button">
+      <button
+        class="btn btn-primary"
+        onclick={incrementReactiveCount}
+        type="button"
+      >
         {$t`Increase`}
       </button>
-      <button class="btn btn-secondary" onclick={toggleReactiveStatus} type="button">
+      <button
+        class="btn btn-secondary"
+        onclick={toggleReactiveStatus}
+        type="button"
+      >
         {$t`Toggle status`}
       </button>
     </div>
@@ -67,7 +79,8 @@
       <p>{topLevelGreeting}</p>
       <p>{topLevelCount}</p>
       <p>
-        {$t`Current status`}: <strong class="font-semibold">{derivedStatus}</strong>
+        {$t`Current status`}:
+        <strong class="font-semibold">{derivedStatus}</strong>
       </p>
       <p><RuntimeTrans message={reactiveDescriptor} /></p>
     </div>

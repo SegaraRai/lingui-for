@@ -16,8 +16,7 @@
     margin: 0;
     width: 100%;
     min-height: 100%;
-    font-family:
-      "Inter", "IBM Plex Sans", system-ui, sans-serif;
+    font-family: "Inter", "IBM Plex Sans", system-ui, sans-serif;
     background-color: var(--color-base-100);
     color: var(--color-base-content);
     overflow-wrap: anywhere;

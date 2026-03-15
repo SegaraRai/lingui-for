@@ -14,6 +14,12 @@
       body: $t`Covers top-level reactive strings, callback contexts, and module-owned state.`,
     },
     {
+      href: "/playground/syntax",
+      eyebrow: $t`Syntax`,
+      title: $t`$t across Svelte syntax positions`,
+      body: $t`Covers @const, attributes, snippets, keyed blocks, and other expression sites.`,
+    },
+    {
       href: "/playground/rich-text",
       eyebrow: $t`Rich text`,
       title: $t`Embedded elements and components inside Trans`,
@@ -38,11 +44,13 @@
   <div class="contents">
     {#each sections as section}
       <a
-        class="card border border-base-300 bg-base-100 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+        class="card border-base-300 bg-base-100 border shadow-md transition hover:-translate-y-1 hover:shadow-xl"
         href={section.href}
       >
         <div class="card-body gap-3">
-          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">
+          <p
+            class="text-secondary text-xs font-semibold tracking-[0.25em] uppercase"
+          >
             {section.eyebrow}
           </p>
           <h2 class="card-title text-2xl">{section.title}</h2>
