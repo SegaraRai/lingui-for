@@ -7,7 +7,7 @@ import {
   SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
 import { collectMacroImportLocals } from "../shared/macro-bindings.ts";
-import type { ProgramTransformRequest } from "../shared/types.ts";
+import type { ProgramTransformRequest } from "./types.ts";
 
 type MacroRewriteState = {
   runtimeTImports: Set<string>;
@@ -303,6 +303,16 @@ function removeRuntimeI18nImports(
   });
 }
 
+/**
+ * Creates the Babel preprocessing plugin that marks reactive Lingui calls before the official
+ * Lingui macro transform runs.
+ *
+ * @returns A Babel plugin object operating on the current program.
+ *
+ * The plugin collects imported reactive string macro locals such as `t`, `plural`, `select`,
+ * and `selectOrdinal`, then rewrites `$t(...)` / `$t\`...\`` and friends into a temporary
+ * wrapper call so the following Lingui pass can preserve enough information for postprocessing.
+ */
 export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
   return {
     name: "lingui-for-svelte-macro-preprocess",
@@ -357,6 +367,16 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
   };
 }
 
+/**
+ * Creates the Babel postprocessing plugin that adapts Lingui's output to this project's target mode.
+ *
+ * @param request Transform request describing extraction/raw/Svelte-context mode and runtime bindings.
+ * @returns A Babel plugin object operating on the transformed program.
+ *
+ * Depending on `request.translationMode`, this plugin unwraps the temporary reactive wrapper,
+ * rewrites translations into extraction-safe, raw, or Svelte-context forms, adjusts runtime
+ * imports, and wraps eligible top-level reactive initializers for Svelte output.
+ */
 export function createMacroPostprocessPlugin(
   request: ProgramTransformRequest,
 ): PluginObj<MacroRewriteState> {

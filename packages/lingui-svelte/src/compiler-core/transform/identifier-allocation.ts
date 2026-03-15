@@ -1,7 +1,7 @@
 import { transformSync, type PluginObj } from "@babel/core";
 
-import { getParserPlugins } from "./config.ts";
-import type { ScriptLang } from "./types.ts";
+import { getParserPlugins } from "../shared/config.ts";
+import type { ScriptLang } from "../shared/types.ts";
 
 function collectTopLevelBindings(
   code: string,
@@ -46,8 +46,29 @@ function collectTopLevelBindings(
   return bindings;
 }
 
+/**
+ * Function type that allocates a collision-free identifier from a preferred hint.
+ *
+ * @param hint Preferred identifier base.
+ * @returns A unique identifier that does not collide with already reserved top-level bindings.
+ *
+ * Allocators of this type are used when the transform injects hidden runtime bindings into a
+ * script and must avoid clobbering names chosen by the user.
+ */
 export type UniqueNameAllocator = (hint: string) => string;
 
+/**
+ * Creates an allocator for unique top-level identifiers within a given source file.
+ *
+ * @param code Source text whose existing top-level bindings should be treated as reserved.
+ * @param options.filename Filename used while parsing the source with Babel.
+ * @param options.lang Parser mode used for Babel (`"js"` or `"ts"`).
+ * @returns A {@link UniqueNameAllocator} that appends numeric suffixes when necessary.
+ *
+ * The allocator first parses the provided source and records every top-level binding. Later
+ * calls reserve new names against that same set so injected runtime identifiers remain stable
+ * and collision-free within a single transform pass.
+ */
 export function createUniqueNameAllocator(
   code: string,
   options: {

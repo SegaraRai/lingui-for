@@ -2,8 +2,8 @@ import { transformSync } from "@babel/core";
 import dedent from "dedent";
 import { describe, expect, it } from "vitest";
 
-import type { ProgramTransform } from "../shared/types.ts";
 import { splitSyntheticDeclarations } from "./runtime-trans-lowering.ts";
+import type { ProgramTransform } from "./types.ts";
 
 function parseProgram(code: string): ProgramTransform {
   const result = transformSync(code, {

@@ -10,17 +10,27 @@ import {
   RUNTIME_BINDING_I18N,
   RUNTIME_BINDING_TRANSLATE,
 } from "../shared/constants.ts";
-import { createUniqueNameAllocator } from "../shared/identifier-allocation.ts";
 import { createScriptFilename, stripQuery } from "../shared/paths.ts";
-import { buildDirectProgramMap } from "../shared/source-map.ts";
-import type {
-  LinguiSvelteTransformOptions,
-  SvelteTransformResult,
-} from "../shared/types.ts";
+import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
+import { createUniqueNameAllocator } from "./identifier-allocation.ts";
 import { splitSyntheticDeclarations } from "./runtime-trans-lowering.ts";
+import { buildDirectProgramMap } from "./source-map.ts";
 import { buildCombinedProgram } from "./synthetic-program.ts";
+import type { SvelteTransformResult } from "./types.ts";
 
+/**
+ * Transforms a `.svelte` file into rewritten Svelte source and source map.
+ *
+ * @param source Original Svelte component source.
+ * @param options Filename and optional Lingui config.
+ * @returns A {@link SvelteTransformResult} containing transformed Svelte code and a source map.
+ *
+ * This is the main Svelte entry point for the compiler core. It transforms the module script
+ * independently, lifts instance/template content into a synthetic program, runs the Babel/Lingui
+ * transform in Svelte-context mode, lowers synthetic declarations back into Svelte source, and
+ * injects hidden runtime bindings only when the rewritten output actually needs them.
+ */
 export function transformSvelte(
   source: string,
   options: LinguiSvelteTransformOptions,

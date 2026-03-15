@@ -6,6 +6,19 @@ import { getScriptLangFromFilename, stripQuery } from "../shared/paths.ts";
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
 
+/**
+ * Transforms a plain JS/TS-family module that imports lingui-for-svelte macros.
+ *
+ * @param code Source code for a JS/TS-family file.
+ * @param options Filename and optional Lingui config.
+ * @param extract Whether the transform is being run for extraction instead of emitted code.
+ * @returns Transformed code plus source map, or `null` when the file does not appear to import
+ * the macro package at all.
+ *
+ * This is the JS/TS entry point used by both the unplugin and the extractor. It performs a
+ * cheap package-name check to skip irrelevant files, determines parser language from the
+ * filename, and then delegates to the shared Babel/Lingui transform.
+ */
 export function transformJavaScriptMacros(
   code: string,
   options: LinguiSvelteTransformOptions,

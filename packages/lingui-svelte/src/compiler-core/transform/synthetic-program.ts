@@ -1,19 +1,30 @@
 import { SourceMapGenerator, type RawSourceMap } from "source-map";
 
-import {
-  SYNTHETIC_PREFIX_COMPONENT,
-  SYNTHETIC_PREFIX_EXPRESSION,
-} from "../shared/constants.ts";
-import {
-  addLineMappings,
-  createOffsetToPosition,
-} from "../shared/source-map.ts";
 import type {
   MacroComponent,
   MarkupExpression,
   ScriptBlock,
-} from "../shared/types.ts";
+} from "../analysis/types.ts";
+import {
+  SYNTHETIC_PREFIX_COMPONENT,
+  SYNTHETIC_PREFIX_EXPRESSION,
+} from "../shared/constants.ts";
+import { addLineMappings, createOffsetToPosition } from "./source-map.ts";
 
+/**
+ * Builds a temporary JS/TS module that represents the transformable parts of a `.svelte` file.
+ *
+ * @param source Original Svelte source text.
+ * @param filename Logical filename used for the generated source map.
+ * @param script Instance script block, if one exists.
+ * @param expressions Template expressions that should be transformed as macros.
+ * @param components Template component macros that should be transformed.
+ * @returns Synthetic module source code plus a source map back to the original `.svelte` file.
+ *
+ * The returned module is a Babel/Lingui-friendly view of the Svelte component: instance script
+ * content is copied in directly, while relevant markup expressions and component macros are
+ * materialized as synthetic variable declarations with stable prefixes and source-map mappings.
+ */
 export function buildCombinedProgram(
   source: string,
   filename: string,

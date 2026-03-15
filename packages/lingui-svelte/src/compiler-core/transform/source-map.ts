@@ -2,6 +2,15 @@ import { SourceMapGenerator, type RawSourceMap } from "source-map";
 
 import type { SourcePosition } from "./types.ts";
 
+/**
+ * Creates a converter from character offsets within a source string to 1-based source-map positions.
+ *
+ * @param source Full original source text.
+ * @returns A function that maps a zero-based character offset to a source-map line/column pair.
+ *
+ * The returned mapper is used while synthesizing JS/TS snippets from `.svelte` sources so emitted
+ * mappings can point back to the correct original location.
+ */
 export function createOffsetToPosition(
   source: string,
 ): (offset: number) => SourcePosition {
@@ -30,6 +39,20 @@ export function createOffsetToPosition(
   };
 }
 
+/**
+ * Adds one mapping per generated line for a copied snippet.
+ *
+ * @param generator Source-map generator receiving the mappings.
+ * @param filename Logical original filename recorded in the map.
+ * @param generatedStartLine 1-based line number where the snippet starts in generated output.
+ * @param snippet Generated snippet text whose lines should be mapped.
+ * @param originalStartOffset Zero-based offset in the original source where the snippet starts.
+ * @param toPosition Offset-to-position converter for the original source.
+ * @returns The number of generated lines represented by the snippet.
+ *
+ * This helper is used by both direct-program and synthetic-program mapping code to keep line mapping
+ * logic consistent across transform stages.
+ */
 export function addLineMappings(
   generator: SourceMapGenerator,
   filename: string,
@@ -57,6 +80,18 @@ export function addLineMappings(
   return lineOffsets.length;
 }
 
+/**
+ * Builds a simple source map for a snippet copied directly from the original source.
+ *
+ * @param source Full original source text.
+ * @param filename Logical filename to embed in the source map.
+ * @param originalStart Zero-based source offset where the snippet begins.
+ * @param snippet Generated snippet copied from the original source.
+ * @returns A raw source map whose generated file is the provided filename.
+ *
+ * This is used when a script block can be transformed independently without first building a larger
+ * synthetic program.
+ */
 export function buildDirectProgramMap(
   source: string,
   filename: string,

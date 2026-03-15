@@ -67,6 +67,13 @@ function createExtractorContext(
   };
 }
 
+/**
+ * Lingui extractor implementation for `.svelte` files.
+ *
+ * The extractor accepts Svelte source, converts it into one or more extraction units via the
+ * compiler core, and forwards each unit to Lingui's Babel-based extractor together with the
+ * corresponding source map. Messages are emitted through Lingui's `onMessageExtracted` callback.
+ */
 export const svelteExtractor: ExtractorType = {
   match(filename) {
     return filename.endsWith(".svelte");
@@ -85,6 +92,13 @@ export const svelteExtractor: ExtractorType = {
   },
 };
 
+/**
+ * Lingui extractor implementation for JS/TS-family files handled by the compiler core.
+ *
+ * When the source imports the lingui-for-svelte macro package, the file is first transformed in
+ * extraction mode so custom runtime semantics are normalized before Lingui extracts messages.
+ * Otherwise the original source is forwarded directly to Lingui's Babel-based extractor.
+ */
 export const jstsExtractor: ExtractorType = {
   match(filename) {
     return isTransformableScript(filename);

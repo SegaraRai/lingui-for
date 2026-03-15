@@ -6,7 +6,7 @@ import {
   SYNTHETIC_PREFIX_COMPONENT,
   SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
-import type { ProgramTransform } from "../shared/types.ts";
+import type { ProgramTransform } from "./types.ts";
 
 const GENERATE_OPTIONS = {
   comments: true,
@@ -14,6 +14,21 @@ const GENERATE_OPTIONS = {
   retainLines: false,
 } as const;
 
+/**
+ * Splits a transformed synthetic program into retained script code and replacement fragments.
+ *
+ * @param transformed Result of transforming a synthetic JS/TS program.
+ * @param runtimeTransComponentName Local Svelte component name used when lowering runtime
+ * `RuntimeTrans` JSX back into Svelte markup.
+ * @returns An object containing:
+ * - `scriptCode`: remaining non-synthetic statements
+ * - `expressionReplacements`: JS expressions keyed by synthetic expression index
+ * - `componentReplacements`: Svelte markup keyed by synthetic component index
+ *
+ * Synthetic declarations are recognized by prefix. Expression declarations are lowered back to
+ * inline JS expressions, while component declarations are converted from runtime `RuntimeTrans`
+ * JSX into Svelte markup and their temporary imports are cleaned up.
+ */
 export function splitSyntheticDeclarations(
   transformed: ProgramTransform,
   runtimeTransComponentName = "L4sRuntimeTrans",

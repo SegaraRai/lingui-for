@@ -4,17 +4,15 @@ import {
   expressionUsesMacroBinding,
   parseMacroBindings,
 } from "../shared/macro-bindings.ts";
+import type { ScriptKind, ScriptLang } from "../shared/types.ts";
 import type {
   MacroComponent,
   MarkupExpression,
   RangeNode,
   ScriptBlock,
-  ScriptKind,
-  ScriptLang,
   SvelteAnalysis,
-} from "../shared/types.ts";
+} from "./types.ts";
 
-type TemplateNode = AST.Fragment["nodes"][number];
 type ElementLike =
   | AST.Component
   | AST.TitleElement
@@ -30,7 +28,10 @@ type ElementLike =
   | AST.SvelteOptionsRaw
   | AST.SvelteSelf
   | AST.SvelteWindow;
+
 type ElementAttribute = AST.Component["attributes"][number];
+
+type TemplateNode = AST.Fragment["nodes"][number];
 
 function hasRange(value: unknown): value is RangeNode {
   return (
@@ -270,6 +271,19 @@ function collectExpressions(
   };
 }
 
+/**
+ * Parses a Svelte component and extracts the script/template fragments needed by the macro pipeline.
+ *
+ * @param source Full `.svelte` source text.
+ * @param filename Logical filename used for Svelte parsing and downstream source maps.
+ * @returns A {@link SvelteAnalysis} containing the module script, instance script, template
+ * expressions that reference macro bindings, and component macro nodes.
+ *
+ * This is the entry point for Svelte-side analysis before synthetic-program construction.
+ * It parses the modern Svelte AST, infers the language used for expression probing, collects
+ * imported macro bindings from the instance script, and then walks the template AST to keep
+ * only expression sites and components that are actually relevant to lingui-for-svelte.
+ */
 export function analyzeSvelte(
   source: string,
   filename: string,

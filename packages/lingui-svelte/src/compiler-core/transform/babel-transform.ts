@@ -3,15 +3,25 @@ import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import type { RawSourceMap } from "source-map";
 
 import { getParserPlugins } from "../shared/config.ts";
-import type {
-  ProgramTransform,
-  ProgramTransformRequest,
-} from "../shared/types.ts";
 import {
   createMacroPostprocessPlugin,
   createMacroPreprocessPlugin,
 } from "./macro-rewrite.ts";
+import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
 
+/**
+ * Runs the full Babel-based transform pipeline for one JS/TS program.
+ *
+ * @param code Program source text to transform.
+ * @param request Transform configuration describing filename, parser mode, Lingui config,
+ * extraction mode, translation mode, runtime bindings, and optional input source map.
+ * @returns A {@link ProgramTransform} containing transformed code, transformed AST, and source map.
+ *
+ * The pipeline has three stages:
+ * 1. preprocess custom reactive syntax such as `$t`
+ * 2. run the official Lingui Babel macro plugin
+ * 3. postprocess Lingui's output into this project's raw, extract, or Svelte-context form
+ */
 export function transformProgram(
   code: string,
   request: ProgramTransformRequest,

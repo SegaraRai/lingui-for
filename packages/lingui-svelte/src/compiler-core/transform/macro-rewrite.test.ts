@@ -3,11 +3,11 @@ import dedent from "dedent";
 import { describe, expect, it } from "vitest";
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
-import type { ProgramTransformRequest } from "../shared/types.ts";
 import {
   createMacroPostprocessPlugin,
   createMacroPreprocessPlugin,
 } from "./macro-rewrite.ts";
+import type { ProgramTransformRequest } from "./types.ts";
 
 function runWithPlugin(
   code: string,

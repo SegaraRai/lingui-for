@@ -5,7 +5,7 @@ import type {
   MacroComponent,
   MarkupExpression,
   ScriptBlock,
-} from "../shared/types.ts";
+} from "../analysis/types.ts";
 import { buildCombinedProgram } from "./synthetic-program.ts";
 
 describe("buildCombinedProgram", () => {
