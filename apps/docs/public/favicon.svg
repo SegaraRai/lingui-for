@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <mask id="cutout">
+      <path
+        d="M50 10 C20 10 10 30 10 50 C10 65 18 75 28 82 L22 95 L38 88 C42 89 46 90 50 90 C80 90 90 70 90 50 C90 30 80 10 50 10 Z"
+        fill="white" />
+      <g transform="translate(-3 1)">
+        <path d="M35 30 V66 H48" fill="none" stroke="black" stroke-width="8" stroke-linecap="round"
+          stroke-linejoin="round" />
+        <path d="M75 30 C68 30 64 34 64 42 V66 M56 46 H74" fill="none" stroke="black" stroke-width="8"
+          stroke-linecap="round" stroke-linejoin="round" />
+      </g>
+    </mask>
+  </defs>
+  <rect width="100" height="100" fill="#E11341" mask="url(#cutout)" />
+</svg>

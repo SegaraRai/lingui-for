@@ -1,0 +1,60 @@
+---
+title: t
+description: Translate a message into a string.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+`t` is Lingui's primary string-producing macro. It translates a message at the call site and returns
+the resulting string.
+
+Use `t` when you want a translated label, heading, or piece of inline text and you do not need
+embedded markup. For rich text with links or emphasis, use the [`Trans`](/macros/trans-component) Component Macro instead.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+
+  let name = $state("Lingui");
+</script>
+
+<p>{$t`Hello ${name}`}</p>
+```
+
+In `.svelte` files, `t` also supports the reactive `$t` form.
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { t } from "lingui-for-astro/macro";
+
+const name = "Lingui";
+---
+
+<p>{t`Hello ${name}`}</p>
+```
+
+In `.astro`, `t` is request-bound and non-reactive.
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { t } from "@lingui/core/macro";
+
+const label = t`Hello ${name}`;
+```
+
+  </TabItem>
+</Tabs>
+
+## When `t` is a good fit
+
+- you want a translated string immediately
+- the message is naturally authored as text or a string template
+- rich text structure is not the main concern

@@ -1,0 +1,27 @@
+---
+title: Add a Locale
+description: A workflow for extending an app from one source locale to another locale.
+---
+
+## Typical workflow
+
+1. Add the locale code to `lingui.config.js` or `lingui.config.ts`.
+2. Run message extraction.
+3. Fill in the new catalog entries.
+4. Compile the catalogs.
+5. Update the app's locale resolution and catalog loading.
+6. Verify one page in the new locale end to end.
+
+## What changes and what does not
+
+Usually these parts change:
+
+- `lingui.config.js` or `lingui.config.ts`
+- locale catalogs
+- locale loading code
+- locale selection UI or routing
+
+These parts usually do **not** change:
+
+- existing macro call sites
+- framework transform configuration

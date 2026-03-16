@@ -1,0 +1,34 @@
+---
+title: Extract, Compile, and Verify
+description: How to think about the translation pipeline from source code to rendered output.
+---
+
+## Treat the pipeline as three separate stages
+
+1. **Extract**
+   - message descriptors are found and written to catalogs
+2. **Compile**
+   - catalogs are prepared for runtime use
+3. **Verify**
+   - the app renders the expected translated output
+
+Debugging is much easier when these are treated separately.
+
+## Which tools are responsible for what
+
+- `lingui-for-svelte` and `lingui-for-astro`
+  - framework syntax support and framework-specific extractors
+- `unplugin-lingui-macro`
+  - plain JS and TS Lingui macro transform
+- Lingui CLI
+  - extraction and catalog compilation
+
+## Recommended habit
+
+After adding a new syntax pattern, verify all three:
+
+- it builds
+- it extracts
+- it renders correctly
+
+Do not assume that a successful build automatically means extraction is correct.

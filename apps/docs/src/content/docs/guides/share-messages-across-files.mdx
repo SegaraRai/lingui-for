@@ -1,0 +1,42 @@
+---
+title: Share Messages Across Files
+description: Share message descriptors across Astro, Svelte, React, and plain JavaScript or TypeScript.
+---
+
+## Use plain JavaScript or TypeScript for shared descriptors
+
+When a message needs to be reused across multiple renderers, define the descriptor in plain
+JavaScript or TypeScript with official Lingui core macros.
+
+```ts title="src/lib/messages.ts"
+import { msg } from "@lingui/core/macro";
+
+export const welcome = msg`Welcome back`;
+export const settingsLabel = msg`Open settings`;
+```
+
+Then translate it from the renderer-specific file:
+
+```svelte title="Svelte"
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+  import { welcome } from "../lib/messages";
+</script>
+
+<p>{$t(welcome)}</p>
+```
+
+```astro title="Astro"
+---
+import { t } from "lingui-for-astro/macro";
+import { welcome } from "../lib/messages";
+---
+
+<p>{t(welcome)}</p>
+```
+
+## Why this works well
+
+- The shared file follows official Lingui Core semantics.
+- Framework-specific packages only handle framework syntax.
+- The same descriptor can be consumed from Astro, Svelte, and React.

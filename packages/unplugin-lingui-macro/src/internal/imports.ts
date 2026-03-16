@@ -105,21 +105,16 @@ function parseStaticImports(code: string, filename: string): StaticImport[] {
   }
 }
 
-export function hasLinguiMacroImport(
+export function hasImport(
   code: string,
   filename: string,
   packageNames: readonly string[],
 ): boolean {
-  if (!code.includes("import")) {
-    return false;
-  }
-
-  if (packageNames.length === 0) {
+  if (packageNames.length === 0 || !code.includes("import")) {
     return false;
   }
 
   const packageNameSet = new Set(packageNames);
-
   for (const parsedImport of parseStaticImports(code, filename)) {
     if (packageNameSet.has(parsedImport.moduleRequest.value)) {
       return true;

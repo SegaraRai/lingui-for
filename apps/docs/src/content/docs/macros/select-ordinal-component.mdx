@@ -1,0 +1,59 @@
+---
+title: SelectOrdinal
+description: Component form of ICU ordinal-select translation.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+`SelectOrdinal` is the Component Macro counterpart to the core [`selectOrdinal`](/macros/select-ordinal) macro.
+
+It is useful when ordinal cases belong directly in template markup and the component form is easier
+to maintain than a function call.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { SelectOrdinal } from "lingui-for-svelte/macro";
+
+  let place = $state(1);
+</script>
+
+<SelectOrdinal value={place} one="#st" two="#nd" few="#rd" other="#th" />
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { SelectOrdinal } from "lingui-for-astro/macro";
+
+const place = 1;
+---
+
+<SelectOrdinal value={place} one="#st" two="#nd" few="#rd" other="#th" />
+```
+
+  </TabItem>
+  <TabItem icon="seti:react" label="Official Lingui">
+
+```tsx
+import { SelectOrdinal } from "@lingui/react/macro";
+
+function Component() {
+  return (
+    <SelectOrdinal value={place} one="#st" two="#nd" few="#rd" other="#th" />
+  );
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## When `SelectOrdinal` is a good fit
+
+- ordinal branches belong naturally in template markup
+- the component form is clearer than `selectOrdinal(...)`
+- you want authoring symmetry with `Plural` and `Select`

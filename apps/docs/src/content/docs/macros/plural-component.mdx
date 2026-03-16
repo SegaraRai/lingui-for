@@ -1,0 +1,60 @@
+---
+title: Plural
+description: Component form of ICU plural translation.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+`Plural` is the Component Macro counterpart to the core [`plural`](/macros/plural) macro.
+
+It represents the same ICU plural logic, but authored as component props in markup. This is useful
+when the surrounding file is already template-heavy and the component form is easier to scan than a
+function call.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { Plural } from "lingui-for-svelte/macro";
+
+  let count = $state(3);
+</script>
+
+<Plural value={count} one="# file" other="# files" />
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { Plural } from "lingui-for-astro/macro";
+
+const count = 3;
+---
+
+<Plural value={count} one="# file" other="# files" />
+```
+
+  </TabItem>
+  <TabItem icon="seti:react" label="Official Lingui">
+
+```tsx
+import { Plural } from "@lingui/react/macro";
+
+function Component() {
+  return (
+    <Plural value={count} one="# file" other="# files" />
+  );
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## When `Plural` is a good fit
+
+- you are already writing markup and want the plural branches inline there
+- the component form is clearer to read than `plural(...)`
+- you want the same plural semantics as the core macro

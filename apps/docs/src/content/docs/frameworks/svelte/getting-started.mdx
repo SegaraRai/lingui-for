@@ -1,0 +1,110 @@
+---
+title: "Svelte: Getting Started"
+description: Install and configure lingui-for-svelte in a Svelte or SvelteKit app.
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+## Install the packages
+
+<Tabs syncKey="package-manager">
+	<TabItem label="pnpm">
+
+```sh
+pnpm add @lingui/core lingui-for-svelte
+pnpm add -D @lingui/cli @lingui/macro unplugin-lingui-macro
+```
+
+    </TabItem>
+    <TabItem label="npm">
+
+```sh
+npm add @lingui/core lingui-for-svelte
+npm add -D @lingui/cli @lingui/macro unplugin-lingui-macro
+```
+
+    </TabItem>
+    <TabItem label="yarn">
+
+```sh
+yarn add @lingui/core lingui-for-svelte
+yarn add -D @lingui/cli @lingui/macro unplugin-lingui-macro
+```
+
+    </TabItem>
+
+</Tabs>
+
+<Aside>
+
+`unplugin-lingui-macro` is only needed if you use Lingui macros in plain JavaScript or TypeScript
+files. If you only use macros in `.svelte` files, you can skip installing this package and adding
+its Vite plugin in the next section.
+
+</Aside>
+
+## Configure Vite
+
+```ts title="vite.config.ts"
+import linguiMacro from "unplugin-lingui-macro/vite";
+import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [linguiMacro(), linguiForSvelte(), sveltekit()],
+});
+```
+
+## Configure Lingui
+
+```ts title="lingui.config.ts"
+import { formatter } from "@lingui/format-po";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default {
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  format: formatter(),
+  extractors: [svelteExtractor],
+};
+```
+
+## Initialize Lingui
+
+Call `setLinguiContext` near the root of the component tree, such as a layout, before any translated
+component renders.
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+
+  const { children } = $props();
+
+  // Load a compiled catalog and pass it here.
+  const i18n = setupI18n({ locale: "en", messages: {} });
+  setLinguiContext(i18n);
+</script>
+
+{@render children()}
+```
+
+## Use macros in `.svelte`
+
+```svelte title="src/routes/+page.svelte"
+<script lang="ts">
+  import { Trans, t } from "lingui-for-svelte/macro";
+
+  let count = $state(1);
+</script>
+
+<h1>{$t`Hello from Svelte`}</h1><p><Trans>{count} item selected</Trans></p>
+```
+
+## Next pages
+
+- Read [Svelte caveats](/frameworks/svelte/caveats) before depending on same-component context
+  initialization patterns.
+- Use the [macro reference](/macros/core-macros) when you need exact authoring rules.

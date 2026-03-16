@@ -7,7 +7,7 @@ import {
 } from "unplugin";
 
 import type { LinguiMacroPluginOptions } from "../types.ts";
-import { hasLinguiMacroImport } from "./imports.ts";
+import { hasImport } from "./imports.ts";
 
 const SCRIPT_RE = /\.[^?]*\.[cm]?[jt]sx?$|\.[cm]?[jt]sx?$/;
 
@@ -145,7 +145,7 @@ export const unpluginFactory: UnpluginFactory<
       filename.includes("/node_modules/") ||
       filename.includes("\\node_modules\\") ||
       !SCRIPT_RE.test(filename) ||
-      !hasLinguiMacroImport(code, filename, getMacroPackages(linguiConfig))
+      !hasImport(code, filename, getMacroPackages(linguiConfig))
     ) {
       return null;
     }

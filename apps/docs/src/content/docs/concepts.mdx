@@ -1,0 +1,65 @@
+---
+title: Concepts
+description: The design goals and boundaries behind lingui-for.
+---
+
+## Core goals
+
+lingui-for is not trying to create a new i18n model. It is trying to preserve Lingui's model in
+frameworks that are not covered by the official packages.
+
+The priorities are ordered:
+
+1. **Match official Lingui behavior whenever possible.**
+2. **Expose macros in the framework's own syntax instead of asking users to drop to low-level
+   runtime APIs.**
+3. **Preserve extractor and compile workflows so existing Lingui knowledge still applies.**
+
+## What "macro-first" means
+
+A user should be able to write the authoring forms they already expect from Lingui:
+
+- `t`
+- `msg`
+- `defineMessage`
+- `plural`
+- `select`
+- `selectOrdinal`
+- `Trans`
+- `Plural`
+- `Select`
+- `SelectOrdinal`
+
+The framework integration should compile those forms away. Low-level runtime helpers exist, but they
+are compilation targets, not the primary authoring surface.
+
+## What "official-first" means
+
+lingui-for tries to preserve:
+
+- official message descriptor shapes
+- official extraction and compile flows
+- official semantics for eager vs. deferred translation
+- official runtime packages where they already exist
+
+That is why plain JavaScript and TypeScript macro support (`unplugin-lingui-macro`) is handled
+separately from framework syntax support.
+
+## Framework boundaries
+
+Framework support is not identical across every renderer.
+
+- **Svelte** supports reactive macro ergonomics because the framework has a reactivity model that can
+  host them naturally.
+- **Astro** is request-scoped and mostly non-reactive, so the integration focuses on request-bound
+  translation and server-safe rich text.
+- **MDX in Astro** is supported as an Astro extension, not as a generic cross-runtime MDX package.
+
+That asymmetry is intentional. Parity means equivalent value to the user, not necessarily identical
+runtime architecture.
+
+## How to read these docs
+
+- If you are integrating one framework, start in **Frameworks**.
+- If you are deciding between authoring patterns, jump to **Macros**.
+- If you need shared descriptor or extraction guidance, use **Guides**.

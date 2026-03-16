@@ -1,0 +1,60 @@
+---
+title: plural
+description: Build or translate ICU plural messages.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+`plural` is the Core Macro for ICU plural messages. There is also a Component Macro form of the same logic, [`Plural`](/macros/plural-component).
+
+Use it when the main problem is choosing text from plural categories. It can be used directly to
+produce a translated string or nested inside `t`, `msg`, or `defineMessage` when that reads better.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { plural, t } from "lingui-for-svelte/macro";
+
+  let count = $state(2);
+</script>
+
+<p>{$plural(count, { one: "# item", other: "# items" })}</p>
+<p>
+  {$t({
+    message: plural(count, { one: "# pending task", other: "# pending tasks" }),
+  })}
+</p>
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { plural } from "lingui-for-astro/macro";
+
+const count = 2;
+---
+
+<p>{plural(count, { one: "# item", other: "# items" })}</p>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { plural } from "@lingui/core/macro";
+
+const label = plural(count, { one: "# item", other: "# items" });
+```
+
+  </TabItem>
+</Tabs>
+
+## When `plural` is a good fit
+
+- the message depends on a numeric count
+- you want official ICU plural behavior
+- the function form reads naturally in the current file

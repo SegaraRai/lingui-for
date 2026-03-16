@@ -1,0 +1,46 @@
+---
+title: "Astro: Using Islands"
+description: How Astro pages, Svelte islands, and React islands should divide responsibility.
+---
+
+## One Astro page can host multiple Lingui integrations
+
+An Astro app often contains three different authoring surfaces at once:
+
+- `.astro` pages and layouts
+- Svelte islands
+- React islands
+
+They should not all use the same package.
+
+## Recommended split
+
+- Use `lingui-for-astro` for `.astro` files and Astro-hosted MDX.
+- Use `lingui-for-svelte` inside Svelte islands.
+- Use official Lingui packages inside React islands.
+
+This split matches how each renderer actually executes.
+
+## Why the split matters
+
+Astro pages are request-bound and mostly server-rendered. Svelte and React islands keep their own
+component runtime and hydration model. Trying to force one runtime API across all three makes the
+authoring model worse, not better.
+
+## Shared pieces
+
+The pieces that _can_ be shared safely are:
+
+- catalogs
+- locale selection logic
+- plain TypeScript message descriptors
+
+The translation call site should still use the package that matches the current renderer.
+
+## Practical pattern
+
+1. Resolve the active locale at the Astro app boundary.
+2. Load the correct catalogs for the request.
+3. Render `.astro` with `lingui-for-astro`.
+4. Pass locale or translated data into islands as props.
+5. Inside each island, use the Lingui integration that belongs to that framework.

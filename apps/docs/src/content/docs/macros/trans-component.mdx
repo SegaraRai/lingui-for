@@ -1,0 +1,58 @@
+---
+title: Trans
+description: Translate rich text content with embedded markup.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+`Trans` is the general-purpose Component Macro for translated markup content.
+
+Use `Trans` when a translator needs to preserve links, emphasis, or other embedded structure. It can
+also be used for non-rich-text messages, but its clearest advantage shows up when the message is
+naturally authored as markup.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { Trans } from "lingui-for-svelte/macro";
+</script>
+
+<Trans>Read the <a href="/docs">documentation</a>.</Trans>
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { Trans } from "lingui-for-astro/macro";
+---
+
+<Trans>Read the <a href="/docs">documentation</a>.</Trans>
+```
+
+  </TabItem>
+  <TabItem icon="seti:react" label="Official Lingui">
+
+```tsx
+import { Trans } from "@lingui/react/macro";
+
+function Component() {
+  return (
+    <Trans>
+      Read the <a href="/docs">documentation</a>.
+    </Trans>
+  );
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## When `Trans` is a good fit
+
+- the translation includes links or emphasis
+- the structure matters to translators
+- the message reads more naturally as markup than as a string template

@@ -2,22 +2,26 @@
   "name": "lingui-for-workspace",
   "private": true,
   "workspaces": [
+    "apps/*",
     "examples/*",
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm run build:lib && pnpm run build:examples",
+    "build": "pnpm run build:lib && pnpm run build:examples && pnpm run build:apps",
     "build:astro-analyzer:wasm": "cd crates/astro-analyzer && wasm-pack build --target web --release --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
     "build:astro-analyzer:wasm-dev": "cd crates/astro-analyzer && wasm-pack build --target web --dev --no-opt --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
     "build:lib": "pnpm --filter unplugin-lingui-macro build && pnpm --filter unplugin-markup-import build && pnpm --filter lingui-for-svelte build && pnpm --filter lingui-for-astro build",
     "build:examples": "pnpm --filter e2e-svelte build && pnpm --filter e2e-astro build",
+    "build:apps": "pnpm --filter docs build",
     "check": "pnpm run check:ts && pnpm run check:markup",
     "check:ts": "pnpm -r run check:ts",
     "check:markup": "pnpm -r run check:markup",
     "dev:e2e-svelte": "pnpm --filter e2e-svelte dev",
     "dev:e2e-astro": "pnpm --filter e2e-astro dev",
+    "dev:docs": "pnpm --filter docs dev",
     "preview:e2e-svelte": "pnpm --filter e2e-svelte preview",
     "preview:e2e-astro": "pnpm --filter e2e-astro preview",
+    "preview:docs": "pnpm --filter docs preview",
     "format": "prettier --write .",
     "test:rust": "cargo test -p astro-analyzer",
     "test": "vitest"

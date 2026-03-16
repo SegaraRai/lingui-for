@@ -1,0 +1,28 @@
+---
+title: Install and First Translation
+description: A practical workflow for getting the first translated message onto the page.
+---
+
+## The shortest path
+
+1. Install Lingui plus the framework package.
+2. Add `unplugin-lingui-macro` if the app uses Lingui macros in plain `.ts`, `.js`, `.tsx`, or
+   `.jsx`.
+3. Add the framework integration or plugin.
+4. Add the framework extractor to `lingui.config.js` or `lingui.config.ts`.
+5. Put a single `t` or `Trans` call on the page.
+6. Run extraction and compile once before expanding the message set.
+
+## Choose the right authoring surface first
+
+- In `.svelte`, start with `lingui-for-svelte/macro`.
+- In `.astro`, start with `lingui-for-astro/macro`.
+- In plain JavaScript or TypeScript, start with `@lingui/core/macro` and `unplugin-lingui-macro`.
+
+## First message checklist
+
+- The macro compiled away during build.
+- The message was extracted into the catalog.
+- The translated output appears in the target locale.
+
+If one of those three fails, debug that stage before adding more pages.

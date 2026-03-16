@@ -1,0 +1,50 @@
+---
+title: "Astro: MDX"
+description: Enable MDX support and understand the current MDX authoring model.
+---
+
+## Enable MDX in the integration
+
+```ts title="astro.config.ts"
+import mdx from "@astrojs/mdx";
+import { defineConfig } from "astro/config";
+import linguiForAstro from "lingui-for-astro/integration";
+
+export default defineConfig({
+  integrations: [mdx(), linguiForAstro({ mdx: true })],
+});
+```
+
+If you enable MDX in the integration, also include `mdxExtractor` in Lingui's extractor list.
+
+```ts title="lingui.config.ts"
+import { astroExtractor, mdxExtractor } from "lingui-for-astro/extractor";
+
+export default {
+  /* ... */
+  extractors: [astroExtractor, mdxExtractor],
+};
+```
+
+## What MDX support is for
+
+The MDX path is designed for Astro-hosted MDX content:
+
+- standalone `.mdx` pages
+- content collections rendered through Astro
+- markdown-first content with occasional macro expressions and rich text
+
+## Recommended authoring style
+
+- Prefer markdown structure first.
+- Use `{t\`...\`}` for inline text in headings, lists, and paragraphs.
+- Use `<Trans>` when you need rich text placeholders.
+
+```mdx
+# {t`Localized heading`}
+
+- {t`Bullet items can be translated inline.`}
+- <Trans>
+    Use <strong>rich text</strong> when structure matters.
+  </Trans>
+```

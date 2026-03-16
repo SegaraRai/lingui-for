@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { hasLinguiMacroImport } from "./imports.ts";
+import { hasImport } from "./imports.ts";
 
-describe("hasLinguiMacroImport", () => {
+describe("hasImport", () => {
   const packageNames = ["@lingui/core/macro", "@lingui/react/macro"];
 
   it("detects macros in TSX files", () => {
@@ -14,9 +14,7 @@ describe("hasLinguiMacroImport", () => {
       "}",
     ].join("\n");
 
-    expect(hasLinguiMacroImport(code, "/virtual/Demo.tsx", packageNames)).toBe(
-      true,
-    );
+    expect(hasImport(code, "/virtual/Demo.tsx", packageNames)).toBe(true);
   });
 
   it("supports custom macro package names", () => {
@@ -26,9 +24,9 @@ describe("hasLinguiMacroImport", () => {
       "export const descriptor = msg`Hello from a custom macro package.`;",
     ].join("\n");
 
-    expect(
-      hasLinguiMacroImport(code, "/virtual/custom.ts", ["@acme/lingui-core"]),
-    ).toBe(true);
+    expect(hasImport(code, "/virtual/custom.ts", ["@acme/lingui-core"])).toBe(
+      true,
+    );
   });
 
   it("falls back to the import block when later syntax is unsupported", () => {
@@ -39,14 +37,14 @@ describe("hasLinguiMacroImport", () => {
       "export const descriptor = msg`Hello from Flow.`;",
     ].join("\n");
 
-    expect(
-      hasLinguiMacroImport(code, "/virtual/flow.js", ["@lingui/core/macro"]),
-    ).toBe(true);
+    expect(hasImport(code, "/virtual/flow.js", ["@lingui/core/macro"])).toBe(
+      true,
+    );
   });
 
   it("returns false when no Lingui macro import exists", () => {
     expect(
-      hasLinguiMacroImport(
+      hasImport(
         'export const value = "plain";',
         "/virtual/plain.ts",
         packageNames,
@@ -56,7 +54,7 @@ describe("hasLinguiMacroImport", () => {
 
   it("ignores string literals that only mention a macro package", () => {
     expect(
-      hasLinguiMacroImport(
+      hasImport(
         'export const note = "import { msg } from \\"@lingui/core/macro\\"";',
         "/virtual/string-literal.ts",
         packageNames,

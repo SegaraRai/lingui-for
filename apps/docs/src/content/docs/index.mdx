@@ -1,0 +1,52 @@
+---
+title: lingui-for
+description: Macro-first, official-first Lingui support for frameworks beyond the official integrations.
+template: splash
+hero:
+  tagline: Community-maintained Lingui support for frameworks and languages with their own syntax.
+  actions:
+    - text: Start with Svelte
+      link: /frameworks/svelte/getting-started
+      icon: right-arrow
+    - text: Start with Astro
+      link: /frameworks/astro/getting-started
+      icon: right-arrow
+    - text: Read the concepts
+      link: /concepts
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## What lingui-for is trying to do
+
+lingui-for exists to close the gap between Lingui's official macro model and frameworks that have
+their own authoring syntax.
+
+The project is built around two constraints:
+
+- **Macro-first**: users should write `t`, `msg`, `Trans`, `Plural`, and friends directly in the
+  framework's natural syntax.
+- **Official-first**: behavior should match official Lingui Core and React semantics as closely as
+  possible instead of inventing a parallel translation model.
+
+## Documentation map
+
+<CardGrid stagger>
+  <Card title="Concepts" icon="open-book">
+    Start here if you want the design constraints, goals, and framework support
+    boundaries before diving into setup.
+  </Card>
+  <Card title="Framework Guides" icon="seti:config">
+    Each supported framework gets its own installation and caveats pages, with
+    framework-specific runtime notes.
+  </Card>
+  <Card title="Macro Reference" icon="seti:html">
+    Each macro has its own page. Core macros and Component Macros are documented
+    separately, with framework-specific examples split into synchronized tabs.
+  </Card>
+  <Card title="Guides" icon="pencil">
+    Workflow-oriented guides explain how to install, add locales, share
+    descriptors, and verify the extraction pipeline.
+  </Card>
+</CardGrid>

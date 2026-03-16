@@ -1,0 +1,31 @@
+---
+title: Core Macros
+description: String and descriptor macros that follow Lingui Core semantics.
+---
+
+Core macros are the JavaScript-side Lingui macros.
+
+They cover two jobs:
+
+- produce translated strings immediately
+- define message descriptors for later translation
+
+In official Lingui, these are `t`, `msg`, `defineMessage`, `plural`, `select`, and
+`selectOrdinal`. lingui-for keeps those semantics and adapts them to framework syntax where
+necessary.
+
+## When to start here
+
+Start with a core macro when:
+
+- the result you need is a string or descriptor
+- you are not authoring rich text with embedded markup
+- you want behavior that matches official Lingui Core as directly as possible
+
+## Pages in this section
+
+- [`t`](/macros/t)
+- [`msg and defineMessage`](/macros/msg-and-define-message)
+- [`plural`](/macros/plural)
+- [`select`](/macros/select)
+- [`selectOrdinal`](/macros/select-ordinal)

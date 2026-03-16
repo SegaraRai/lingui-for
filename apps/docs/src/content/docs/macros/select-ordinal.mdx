@@ -1,0 +1,76 @@
+---
+title: selectOrdinal
+description: Build or translate ICU ordinal-select messages.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+`selectOrdinal` is the Core Macro for ICU ordinal-selection messages. There is also a Component Macro form of the same logic, [`SelectOrdinal`](/macros/select-ordinal-component).
+
+Use it when the message depends on ordinal categories like `1st`, `2nd`, or `3rd`. It is the
+ordinal counterpart to `plural`.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { selectOrdinal } from "lingui-for-svelte/macro";
+
+  let place = $state(2);
+</script>
+
+<p>
+  {$selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })}
+</p>
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { selectOrdinal } from "lingui-for-astro/macro";
+
+const place = 2;
+---
+
+<p>
+  {
+    selectOrdinal(place, {
+      one: "#st",
+      two: "#nd",
+      few: "#rd",
+      other: "#th",
+    })
+  }
+</p>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { selectOrdinal } from "@lingui/core/macro";
+
+const label = selectOrdinal(place, {
+  one: "#st",
+  two: "#nd",
+  few: "#rd",
+  other: "#th",
+});
+```
+
+  </TabItem>
+</Tabs>
+
+## When `selectOrdinal` is a good fit
+
+- the output depends on ordinal categories
+- the function form is easier to read than component props in the current file
+- you want descriptor semantics consistent with official Lingui Core

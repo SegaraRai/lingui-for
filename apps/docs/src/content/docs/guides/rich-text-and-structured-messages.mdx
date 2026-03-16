@@ -1,0 +1,30 @@
+---
+title: Rich Text and Structured Messages
+description: Choose between plain strings, rich text, and component-form ICU macros.
+---
+
+## Start with the structure of the message
+
+Ask what the translation needs to preserve:
+
+- plain text only
+- variables in a string
+- embedded links or emphasis
+- plural or select branches that read more naturally in markup
+
+## A practical rule of thumb
+
+- Use `t` for plain strings and most string-producing cases.
+- Use `Trans` when inline markup or structured rich text matters.
+- Use `Plural`, `Select`, and `SelectOrdinal` when the component form is clearer in markup than the
+  function form.
+
+This is guidance, not a hard prohibition. The goal is readable authoring that still matches Lingui's
+official semantics.
+
+## Renderer differences still matter
+
+- In Svelte, rich text can participate in the framework's reactive model.
+- In Astro, rich text is request-bound and server-oriented.
+- In Astro-hosted MDX, prefer markdown-first authoring and add macros only where structure requires
+  them.

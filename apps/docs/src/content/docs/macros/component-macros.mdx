@@ -1,0 +1,27 @@
+---
+title: Component Macros
+description: Markup-oriented macros for rich text and component-style ICU authoring.
+---
+
+Component macros are the markup-oriented half of the Lingui macro family.
+
+In official Lingui React docs, `Trans` is the general-purpose component for static messages,
+messages with variables, and messages with inline markup. `Plural`, `Select`, and `SelectOrdinal`
+are component-form convenience macros that map to the corresponding core macros.
+
+lingui-for keeps that mental model even in frameworks that are not JSX-based.
+
+## When to start here
+
+Start with a component macro when:
+
+- you are writing in template or markup syntax
+- rich text or embedded structure matters
+- the component form reads more naturally than a function call in that framework
+
+## Pages in this section
+
+- [`Trans`](/macros/trans-component)
+- [`Plural`](/macros/plural-component)
+- [`Select`](/macros/select-component)
+- [`SelectOrdinal`](/macros/select-ordinal-component)

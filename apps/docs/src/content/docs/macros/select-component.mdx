@@ -1,0 +1,57 @@
+---
+title: Select
+description: Component form of ICU select translation.
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+`Select` is the Component Macro counterpart to the core [`select`](/macros/select) macro.
+
+It expresses the same case-based ICU selection logic, but in a way that can read more naturally in a
+markup file than a nested function call.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { Select } from "lingui-for-svelte/macro";
+
+  let tone = $state("casual");
+</script>
+
+<Select value={tone} _formal="Welcome" _casual="Hi" other="Hello" />
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { Select } from "lingui-for-astro/macro";
+
+const tone = "casual";
+---
+
+<Select value={tone} _formal="Welcome" _casual="Hi" other="Hello" />
+```
+
+  </TabItem>
+  <TabItem icon="seti:react" label="Official Lingui">
+
+```tsx
+import { Select } from "@lingui/react/macro";
+
+function Component() {
+  return <Select value={tone} _formal="Welcome" _casual="Hi" other="Hello" />;
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## When `Select` is a good fit
+
+- your file is already markup-oriented
+- the select branches are easier to read as component props
+- you want the component form without changing the underlying Lingui semantics

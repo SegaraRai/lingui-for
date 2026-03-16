@@ -1,0 +1,88 @@
+---
+title: msg and defineMessage
+description: Define message descriptors for later translation.
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+`msg` and `defineMessage` define message descriptors without translating them immediately.
+`msg` is an alias for `defineMessage`; they are functionally identical.
+
+They are the right tools when the message needs to be stored, exported, reused across files, or
+translated later by a different renderer or runtime boundary.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { defineMessage, msg, t } from "lingui-for-svelte/macro";
+
+  const welcome = msg`Welcome back`;
+
+  const submitLabel = defineMessage({
+    id: "form.submit",
+    message: "Submit",
+  });
+</script>
+
+<p>{$t(welcome)}</p>
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { defineMessage, msg, t } from "lingui-for-astro/macro";
+
+const welcome = msg`Welcome back`;
+
+const submitLabel = defineMessage({
+  id: "form.submit",
+  message: "Submit",
+});
+---
+
+<p>{t(welcome)}</p>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { defineMessage, msg, t } from "@lingui/core/macro";
+
+const welcome = msg`Welcome back`;
+
+const submitLabel = defineMessage({
+  id: "form.submit",
+  message: "Submit",
+});
+
+const label = t(welcome);
+```
+
+  </TabItem>
+</Tabs>
+
+<Aside type="tip">
+
+Descriptors can also be defined and exported from a separate file. To use them in plain JavaScript
+or TypeScript:
+
+- Import macros from `@lingui/core/macro`.
+- Transform with `unplugin-lingui-macro`.
+
+</Aside>
+
+## When they are a good fit
+
+- the translation should happen later, not at definition time
+- the same descriptor will be reused across files or renderers
+- you want plain TypeScript or JavaScript to stay close to official Lingui Core patterns
+
+## Recommended rule
+
+For plain `.js` and `.ts` files, prefer the official `@lingui/core/macro` package. Framework-specific
+packages are for framework syntax, not for generic descriptor authoring.
