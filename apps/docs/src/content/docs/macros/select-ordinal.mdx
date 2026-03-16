@@ -7,19 +7,21 @@ import { TabItem, Tabs } from "@astrojs/starlight/components";
 
 `selectOrdinal` is the Core Macro for ICU ordinal-selection messages. There is also a Component Macro form of the same logic, [`SelectOrdinal`](/macros/select-ordinal-component).
 
-Use it when the message depends on ordinal categories like `1st`, `2nd`, or `3rd`. It is the
-ordinal counterpart to `plural`.
+Use it when the message depends on ordinal categories like `1st`, `2nd`, or `3rd`. It can be used
+directly to produce a translated string, or embedded inside a `` t`...` `` template literal when
+the ordinal belongs to a larger message.
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">
 
 ```svelte
 <script lang="ts">
-  import { selectOrdinal } from "lingui-for-svelte/macro";
+  import { selectOrdinal, t } from "lingui-for-svelte/macro";
 
   let place = $state(2);
 </script>
 
+<!-- Standalone: produces the ordinal string directly. -->
 <p>
   {$selectOrdinal(place, {
     one: "#st",
@@ -28,18 +30,32 @@ ordinal counterpart to `plural`.
     other: "#th",
   })}
 </p>
+
+<!-- Embedded: selectOrdinal is part of a larger translated unit. -->
+<p>
+  {$t`Ranked ${selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })}`}
+</p>
 ```
+
+In `.svelte` files, `selectOrdinal` used standalone takes the reactive `$selectOrdinal` form.
+When nested inside `` $t`...` ``, use `selectOrdinal` without the `$` prefix.
 
   </TabItem>
   <TabItem icon="astro" label="Astro">
 
 ```astro
 ---
-import { selectOrdinal } from "lingui-for-astro/macro";
+import { selectOrdinal, t } from "lingui-for-astro/macro";
 
 const place = 2;
 ---
 
+<!-- Standalone: produces the ordinal string directly. -->
 <p>
   {
     selectOrdinal(place, {
@@ -50,20 +66,41 @@ const place = 2;
     })
   }
 </p>
+
+<!-- Embedded: selectOrdinal is part of a larger translated unit. -->
+<p>
+  {
+    t`Ranked ${selectOrdinal(place, {
+      one: "#st",
+      two: "#nd",
+      few: "#rd",
+      other: "#th",
+    })}`
+  }
+</p>
 ```
 
   </TabItem>
   <TabItem icon="seti:javascript" label="Official Lingui">
 
 ```ts
-import { selectOrdinal } from "@lingui/core/macro";
+import { selectOrdinal, t } from "@lingui/core/macro";
 
-const label = selectOrdinal(place, {
+// Standalone
+const label: string = selectOrdinal(place, {
   one: "#st",
   two: "#nd",
   few: "#rd",
   other: "#th",
 });
+
+// Embedded
+const message: string = t`Ranked ${selectOrdinal(place, {
+  one: "#st",
+  two: "#nd",
+  few: "#rd",
+  other: "#th",
+})}`;
 ```
 
   </TabItem>

@@ -8,7 +8,8 @@ import { TabItem, Tabs } from "@astrojs/starlight/components";
 `plural` is the Core Macro for ICU plural messages. There is also a Component Macro form of the same logic, [`Plural`](/macros/plural-component).
 
 Use it when the main problem is choosing text from plural categories. It can be used directly to
-produce a translated string or nested inside `t`, `msg`, or `defineMessage` when that reads better.
+produce a translated string, or embedded inside a `` t`...` `` template literal when the plural
+belongs to a larger message.
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">
@@ -20,34 +21,74 @@ produce a translated string or nested inside `t`, `msg`, or `defineMessage` when
   let count = $state(2);
 </script>
 
-<p>{$plural(count, { one: "# item", other: "# items" })}</p>
+<!-- Standalone: produces the plural string directly. -->
 <p>
-  {$t({
-    message: plural(count, { one: "# pending task", other: "# pending tasks" }),
+  {$plural(count, {
+    one: "# item",
+    other: "# items",
   })}
 </p>
+
+<!-- Embedded: plural is part of a larger translated unit. -->
+<p>
+  {$t`Cart: ${plural(count, {
+    one: "# item",
+    other: "# items",
+  })}`}
+</p>
 ```
+
+In `.svelte` files, `plural` used standalone takes the reactive `$plural` form.
+When nested inside `` $t`...` ``, use `plural` without the `$` prefix.
 
   </TabItem>
   <TabItem icon="astro" label="Astro">
 
 ```astro
 ---
-import { plural } from "lingui-for-astro/macro";
+import { plural, t } from "lingui-for-astro/macro";
 
 const count = 2;
 ---
 
-<p>{plural(count, { one: "# item", other: "# items" })}</p>
+<!-- Standalone: produces the plural string directly. -->
+<p>
+  {
+    plural(count, {
+      one: "# item",
+      other: "# items",
+    })
+  }
+</p>
+
+<!-- Embedded: plural is part of a larger translated unit. -->
+<p>
+  {
+    t`Cart: ${plural(count, {
+      one: "# item",
+      other: "# items",
+    })}`
+  }
+</p>
 ```
 
   </TabItem>
   <TabItem icon="seti:javascript" label="Official Lingui">
 
 ```ts
-import { plural } from "@lingui/core/macro";
+import { plural, t } from "@lingui/core/macro";
 
-const label = plural(count, { one: "# item", other: "# items" });
+// Standalone
+const label: string = plural(count, {
+  one: "# item",
+  other: "# items",
+});
+
+// Embedded
+const message: string = t`Cart: ${plural(count, {
+  one: "# item",
+  other: "# items",
+})}`;
 ```
 
   </TabItem>

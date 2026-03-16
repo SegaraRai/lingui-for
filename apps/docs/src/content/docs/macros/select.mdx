@@ -8,18 +8,20 @@ import { TabItem, Tabs } from "@astrojs/starlight/components";
 `select` is the Core Macro for ICU select messages. There is also a Component Macro form of the same logic, [`Select`](/macros/select-component).
 
 Use it when a message changes based on a named case such as tone, role, status, or grammatical
-category. Like other Core Macros, it can stand alone or be nested into another descriptor.
+category. It can be used directly to produce a translated string, or embedded inside a
+`` t`...` `` template literal when the select belongs to a larger message.
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">
 
 ```svelte
 <script lang="ts">
-  import { select } from "lingui-for-svelte/macro";
+  import { select, t } from "lingui-for-svelte/macro";
 
   let tone = $state("formal");
 </script>
 
+<!-- Standalone: produces the select string directly. -->
 <p>
   {$select(tone, {
     formal: "Welcome",
@@ -27,18 +29,31 @@ category. Like other Core Macros, it can stand alone or be nested into another d
     other: "Hello",
   })}
 </p>
+
+<!-- Embedded: select is part of a larger translated unit. -->
+<p>
+  {$t`Greeting: ${select(tone, {
+    formal: "Welcome",
+    casual: "Hi",
+    other: "Hello",
+  })}`}
+</p>
 ```
+
+In `.svelte` files, `select` used standalone takes the reactive `$select` form.
+When nested inside `` $t`...` ``, use `select` without the `$` prefix.
 
   </TabItem>
   <TabItem icon="astro" label="Astro">
 
 ```astro
 ---
-import { select } from "lingui-for-astro/macro";
+import { select, t } from "lingui-for-astro/macro";
 
 const tone = "formal";
 ---
 
+<!-- Standalone: produces the select string directly. -->
 <p>
   {
     select(tone, {
@@ -48,19 +63,38 @@ const tone = "formal";
     })
   }
 </p>
+
+<!-- Embedded: select is part of a larger translated unit. -->
+<p>
+  {
+    t`Greeting: ${select(tone, {
+      formal: "Welcome",
+      casual: "Hi",
+      other: "Hello",
+    })}`
+  }
+</p>
 ```
 
   </TabItem>
   <TabItem icon="seti:javascript" label="Official Lingui">
 
 ```ts
-import { select } from "@lingui/core/macro";
+import { select, t } from "@lingui/core/macro";
 
-const label = select(tone, {
+// Standalone
+const label: string = select(tone, {
   formal: "Welcome",
   casual: "Hi",
   other: "Hello",
 });
+
+// Embedded
+const message: string = t`Greeting: ${select(tone, {
+  formal: "Welcome",
+  casual: "Hi",
+  other: "Hello",
+})}`;
 ```
 
   </TabItem>
