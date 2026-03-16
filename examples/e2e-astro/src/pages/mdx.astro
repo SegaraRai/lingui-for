@@ -1,0 +1,20 @@
+---
+import { t } from "lingui-for-astro/macro";
+import { getLinguiContext } from "lingui-for-astro/runtime";
+
+import MdxShowcase from "../components/mdx/MdxShowcase.mdx";
+import AppLayout from "../layouts/AppLayout.astro";
+
+const locale = Astro.locals.locale;
+const currentPage = t`MDX`;
+const lingui = getLinguiContext(Astro);
+---
+
+<AppLayout
+  title={t`MDX translation checks`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <MdxShowcase __lingui={lingui} />
+</AppLayout>

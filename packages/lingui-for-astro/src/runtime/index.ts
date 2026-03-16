@@ -13,10 +13,12 @@ export type {
 
 export {
   getLinguiContext,
+  getMdxLinguiContext,
   LINGUI_ASTRO_CONTEXT,
   setLinguiContext,
   type AstroLike,
   type LinguiContext,
+  type MdxPropsLike,
 } from "./core/context.ts";
 export {
   formatRichTextTranslation,

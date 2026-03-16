@@ -10,6 +10,10 @@ export interface AstroLike {
   locals: object;
 }
 
+export interface MdxPropsLike {
+  __lingui?: LinguiContext;
+}
+
 export function setLinguiContext(
   locals: object,
   instance: I18n,
@@ -31,4 +35,16 @@ export function getLinguiContext(astro: AstroLike): LinguiContext {
   }
 
   return context as LinguiContext;
+}
+
+export function getMdxLinguiContext(props: MdxPropsLike): LinguiContext {
+  const context = props.__lingui;
+
+  if (!context || typeof context !== "object" || !("i18n" in context)) {
+    throw new Error(
+      "lingui-for-astro MDX runtime context is missing. Pass __lingui={getLinguiContext(Astro)} when rendering translated MDX content.",
+    );
+  }
+
+  return context;
 }

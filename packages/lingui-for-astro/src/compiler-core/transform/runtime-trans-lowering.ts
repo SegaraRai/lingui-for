@@ -13,9 +13,23 @@ const GENERATE_OPTIONS = {
   retainLines: false,
 } as const;
 
+const COMPACT_GENERATE_OPTIONS = {
+  comments: false,
+  compact: true,
+  jsescOption: { minimal: true },
+  retainLines: false,
+} as const;
+
+function getGenerateOptions(compact: boolean) {
+  return compact ? COMPACT_GENERATE_OPTIONS : GENERATE_OPTIONS;
+}
+
 export function lowerSyntheticComponentDeclaration(
   transformed: ProgramTransform,
   runtimeTransComponentName: string,
+  options: {
+    compact?: boolean;
+  } = {},
 ): string {
   for (const statement of transformed.ast.program.body) {
     if (
@@ -39,6 +53,7 @@ export function lowerSyntheticComponentDeclaration(
     return convertRuntimeTransJsxToAstro(
       declaration.init,
       runtimeTransComponentName,
+      options.compact ?? false,
     );
   }
 
@@ -48,19 +63,21 @@ export function lowerSyntheticComponentDeclaration(
 function convertRuntimeTransJsxToAstro(
   node: t.JSXElement,
   runtimeTransComponentName: string,
+  compact: boolean,
 ): string {
   const opening = node.openingElement;
   const attributes = opening.attributes
-    .map(convertRuntimeTransAttribute)
+    .map((attribute) => convertRuntimeTransAttribute(attribute, compact))
     .join("");
   return `<${runtimeTransComponentName}${attributes} />`;
 }
 
 function convertRuntimeTransAttribute(
   attribute: t.JSXAttribute | t.JSXSpreadAttribute,
+  compact: boolean,
 ): string {
   if (t.isJSXSpreadAttribute(attribute)) {
-    return ` {...${generate(convertRuntimeTransSpreadArgument(attribute.argument), GENERATE_OPTIONS).code}}`;
+    return ` {...${generate(convertRuntimeTransSpreadArgument(attribute.argument), getGenerateOptions(compact)).code}}`;
   }
 
   if (!t.isJSXIdentifier(attribute.name)) {
@@ -76,7 +93,7 @@ function convertRuntimeTransAttribute(
   }
 
   const expression = convertRuntimeTransAttributeValue(name, attribute.value);
-  return ` ${name}={${generate(expression, GENERATE_OPTIONS).code}}`;
+  return ` ${name}={${generate(expression, getGenerateOptions(compact)).code}}`;
 }
 
 function convertRuntimeTransSpreadArgument(

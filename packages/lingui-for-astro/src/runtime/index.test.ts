@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { getLinguiContext, setLinguiContext } from "./core/context.ts";
+import {
+  getLinguiContext,
+  getMdxLinguiContext,
+  setLinguiContext,
+} from "./core/context.ts";
 import { formatRichTextTranslation } from "./trans/rich-text.ts";
 import {
   mergeRuntimeTransValues,
@@ -15,6 +19,12 @@ describe("lingui-for-astro runtime helpers", () => {
     setLinguiContext(locals, i18n);
 
     expect(getLinguiContext({ locals }).i18n).toBe(i18n);
+  });
+
+  it("reads the request-scoped Lingui context from MDX props", () => {
+    const context = { i18n: { _: () => "translated" } as never };
+
+    expect(getMdxLinguiContext({ __lingui: context }).i18n).toBe(context.i18n);
   });
 
   it("merges runtime values on top of descriptor values", () => {

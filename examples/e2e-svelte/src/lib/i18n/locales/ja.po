@@ -38,7 +38,7 @@ msgstr "$t とルーンベースのステート"
 msgid "$t with rune-backed state from a .svelte.ts module"
 msgstr ".svelte.ts モジュールのルーンベースのステートと $t"
 
-#: src/lib/playground/imported-descriptors.ts:6
+#: src/lib/playground/imported-descriptors.ts:5
 msgid "A plain TypeScript module can define Lingui descriptors for Svelte."
 msgstr "素の TypeScript モジュールでも Svelte 向けの Lingui ディスクリプタを定義できます。"
 

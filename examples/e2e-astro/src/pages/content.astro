@@ -1,0 +1,39 @@
+---
+import { getCollection, render } from "astro:content";
+import { t } from "lingui-for-astro/macro";
+import { getLinguiContext } from "lingui-for-astro/runtime";
+
+import AppLayout from "../layouts/AppLayout.astro";
+
+const locale = Astro.locals.locale;
+const currentPage = t`Collections`;
+const lingui = getLinguiContext(Astro);
+const entries = await getCollection("guides");
+const entry =
+  entries.find((candidate) => candidate.id.includes("astro-mdx")) ?? entries[0];
+
+if (!entry) {
+  throw new Error("Expected at least one guide entry to exist.");
+}
+
+const { Content } = await render(entry);
+---
+
+<AppLayout
+  title={t`Content collection checks`}
+  locale={locale}
+  pathname={Astro.url.pathname}
+  currentPage={currentPage}
+>
+  <section class="card border-base-300 bg-base-100 border shadow-lg">
+    <div class="card-body gap-4">
+      <p class="badge badge-accent badge-outline flex-none">
+        {t`Collections`}
+      </p>
+      <h1 class="card-title text-3xl">{entry.data.title}</h1>
+      <p class="text-base-content/70">{entry.data.summary}</p>
+    </div>
+  </section>
+
+  <Content __lingui={lingui} />
+</AppLayout>

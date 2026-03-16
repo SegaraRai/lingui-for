@@ -73,6 +73,8 @@ describe.sequential("e2e-astro application", () => {
     expect(html).toContain("Current page: Overview");
     expect(html).toContain('href="/server"');
     expect(html).toContain('href="/islands"');
+    expect(html).toContain('href="/mdx"');
+    expect(html).toContain('href="/content"');
     expect(html).toContain('href="/rich-text"');
     expect(html).toContain('href="/formats"');
     expect(html).toContain('href="/routing/alpha"');
@@ -80,11 +82,15 @@ describe.sequential("e2e-astro application", () => {
     expect(html).toContain('href="/transitions"');
   });
 
-  it("renders the server and islands routes in english", async () => {
+  it("renders the server, islands, mdx, and content routes in english", async () => {
     const serverResponse = await fetch(`${origin}/server?lang=en`);
     const serverHtml = await serverResponse.text();
     const islandsResponse = await fetch(`${origin}/islands?lang=en`);
     const islandsHtml = await islandsResponse.text();
+    const mdxResponse = await fetch(`${origin}/mdx?lang=en`);
+    const mdxHtml = await mdxResponse.text();
+    const contentResponse = await fetch(`${origin}/content?lang=en`);
+    const contentHtml = await contentResponse.text();
 
     expect(serverResponse.status).toBe(200);
     expect(serverHtml).toContain("Server translation checks");
@@ -110,6 +116,60 @@ describe.sequential("e2e-astro application", () => {
     expect(islandsHtml).toContain("Svelte macros keep working inside Astro.");
     expect(islandsHtml).toContain(
       "React components can translate Lingui descriptors inside Astro.",
+    );
+
+    expect(mdxResponse.status).toBe(200);
+    expect(mdxHtml).toContain("MDX translation checks");
+    expect(mdxHtml).toContain(
+      "MDX content files compile Lingui macros after Astro&#39;s MDX pipeline.",
+    );
+    expect(mdxHtml).toContain("MDX module descriptors stay extractable.");
+    expect(mdxHtml).toContain(
+      "MDX also renders imported descriptors and eager translations inside component content.",
+    );
+    expect(mdxHtml).toContain("2 MDX root format samples");
+    expect(mdxHtml).toContain(
+      'Nested <a href="/docs">MDX link</a> content keeps rich text.',
+    );
+    expect(mdxHtml).toContain("MDX nested select says excited.");
+    expect(mdxHtml).toContain("MDX nested ordinal says 2nd.");
+    expect(mdxHtml).toContain('title="MDX attribute tooltip"');
+    expect(mdxHtml).toContain('aria-label="MDX attribute label"');
+    expect(mdxHtml).toContain(
+      '<a title="MDX attribute tooltip" aria-label="MDX attribute label" href="/settings">MDX attribute macro link</a>',
+    );
+    expect(mdxHtml).toContain(
+      'The MDX page keeps the <a href="/settings">settings link</a> inside translated output.',
+    );
+    expect(mdxHtml).toContain(
+      "MDX rich text can preserve <strong>strong emphasis</strong> too.",
+    );
+
+    expect(contentResponse.status).toBe(200);
+    expect(contentHtml).toContain("Content collection checks");
+    expect(contentHtml).toContain("Astro content collection entry");
+    expect(contentHtml).toContain(
+      "Content collections can render MDX entries through entry.render().",
+    );
+    expect(contentHtml).toContain("<ul>");
+    expect(contentHtml).toContain(
+      "Shared descriptor imported from plain TypeScript.",
+    );
+    expect(contentHtml).toContain(
+      "Astro, Svelte, and React all translate the same imported descriptor.",
+    );
+    expect(contentHtml).toContain(
+      "Collection-level MDX descriptors stay extractable.",
+    );
+    expect(contentHtml).toContain("<aside>");
+    expect(contentHtml).toContain(
+      "HTML tags can render translated MDX expressions too.",
+    );
+    expect(contentHtml).toContain(
+      'The collection entry keeps the <a href="/settings">settings link</a> in translated output.',
+    );
+    expect(contentHtml).toContain(
+      "Collection rich text can preserve <strong>strong emphasis</strong> too.",
     );
   });
 

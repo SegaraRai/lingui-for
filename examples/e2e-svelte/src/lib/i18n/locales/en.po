@@ -38,7 +38,7 @@ msgstr "$t and rune-backed state"
 msgid "$t with rune-backed state from a .svelte.ts module"
 msgstr "$t with rune-backed state from a .svelte.ts module"
 
-#: src/lib/playground/imported-descriptors.ts:6
+#: src/lib/playground/imported-descriptors.ts:5
 msgid "A plain TypeScript module can define Lingui descriptors for Svelte."
 msgstr "A plain TypeScript module can define Lingui descriptors for Svelte."
 

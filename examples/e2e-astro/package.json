@@ -17,6 +17,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@astrojs/mdx": "^5.0.0",
     "@astrojs/node": "^10.0.1",
     "@astrojs/react": "^5.0.0",
     "@astrojs/svelte": "^8.0.0",

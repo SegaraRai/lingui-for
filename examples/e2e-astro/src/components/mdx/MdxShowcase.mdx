@@ -1,0 +1,80 @@
+import {
+  msg,
+  Plural,
+  Select,
+  SelectOrdinal,
+  t,
+  Trans,
+} from "lingui-for-astro/macro";
+
+import {
+  sharedImportedDescriptor,
+  sharedImportedDetailDescriptor,
+} from "../../lib/i18n/shared-descriptors.ts";
+
+export const mdxModuleDescriptor = msg`MDX module descriptors stay extractable.`;
+
+<section class="card border-base-300 bg-base-100 border shadow-lg">
+  <div class="card-body gap-4">
+    <p class="badge badge-accent badge-outline flex-none">{t`MDX route`}</p>
+    <h1 class="card-title text-3xl">{t`MDX translation checks`}</h1>
+    <p class="text-base-content/70">
+      {t`MDX content files compile Lingui macros after Astro's MDX pipeline.`}
+    </p>
+    <p>{t(sharedImportedDescriptor)}</p>
+    <p>{t(sharedImportedDetailDescriptor)}</p>
+    <p>{t(mdxModuleDescriptor)}</p>
+    <p>
+      {t`MDX also renders imported descriptors and eager translations inside component content.`}
+    </p>
+    <Plural
+      value={2}
+      one="# MDX root format sample"
+      other="# MDX root format samples"
+    />
+    <ul class="list-disc pl-6">
+      <li>
+        <Trans>
+          Nested <a href="/docs">MDX link</a> content keeps rich text.
+        </Trans>
+      </li>
+      <li>
+        <Select
+          value="excited"
+          _calm="MDX nested select says calm."
+          _excited="MDX nested select says excited."
+          other="MDX nested select says unknown."
+        />
+      </li>
+    </ul>
+    <aside>
+      <SelectOrdinal
+        value={2}
+        one="MDX nested ordinal says #st."
+        two="MDX nested ordinal says #nd."
+        few="MDX nested ordinal says #rd."
+        other="MDX nested ordinal says #th."
+      />
+    </aside>
+    <p>
+      <a
+        title={t`MDX attribute tooltip`}
+        aria-label={t`MDX attribute label`}
+        href="/settings"
+      >
+        {t`MDX attribute macro link`}
+      </a>
+    </p>
+    <p>
+      <Trans>
+        The MDX page keeps the [settings link](/settings) inside translated
+        output.
+      </Trans>
+    </p>
+    <p>
+      <Trans>
+        MDX rich text can preserve <strong>strong emphasis</strong> too.
+      </Trans>
+    </p>
+  </div>
+</section>

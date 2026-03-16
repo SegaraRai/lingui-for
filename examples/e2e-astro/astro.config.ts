@@ -1,9 +1,11 @@
+import mdx from "@astrojs/mdx";
 import node from "@astrojs/node";
 import react from "@astrojs/react";
 import svelte from "@astrojs/svelte";
 import tailwindcss from "@tailwindcss/vite";
 import stripWhitespace from "astro-strip-whitespace";
 import { defineConfig } from "astro/config";
+import type { PluginOption } from "vite";
 
 import linguiForAstro from "lingui-for-astro/integration";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
@@ -14,8 +16,12 @@ export default defineConfig({
   adapter: node({
     mode: "standalone",
   }),
-  integrations: [react(), svelte(), stripWhitespace(), linguiForAstro()],
+  integrations: [react(), svelte(), mdx(), stripWhitespace(), linguiForAstro()],
   vite: {
-    plugins: [linguiMacro(), linguiForSvelte(), tailwindcss()],
+    plugins: [
+      linguiMacro() as unknown as PluginOption,
+      linguiForSvelte() as unknown as PluginOption,
+      tailwindcss(),
+    ],
   },
 });

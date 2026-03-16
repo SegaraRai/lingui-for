@@ -19,6 +19,11 @@ msgstr ""
 msgid "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
 msgstr "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
 
+#. placeholder {0}: 2
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "{0, plural, one {# MDX root format sample} other {# MDX root format samples}}"
+msgstr "{0, plural, one {# MDX root format sample} other {# MDX root format samples}}"
+
 #. placeholder {0}: 3
 #: src/components/react/ReactFormatsIsland.tsx:20
 msgid "{0, plural, one {# React format sample} other {# React format samples}}"
@@ -37,6 +42,11 @@ msgid "{0, select, calm {Astro select says calm.} excited {Astro select says exc
 msgstr "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
 
 #. placeholder {0}: "excited"
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "{0, select, calm {MDX nested select says calm.} excited {MDX nested select says excited.} other {MDX nested select says unknown.}}"
+msgstr "{0, select, calm {MDX nested select says calm.} excited {MDX nested select says excited.} other {MDX nested select says unknown.}}"
+
+#. placeholder {0}: "excited"
 #: src/components/react/ReactFormatsIsland.tsx:27
 msgid "{0, select, calm {React select says calm.} excited {React select says excited.} other {React select says unknown.}}"
 msgstr "{0, select, calm {React select says calm.} excited {React select says excited.} other {React select says unknown.}}"
@@ -52,6 +62,11 @@ msgstr "{0, select, calm {Svelte select says calm.} excited {Svelte select says 
 #: AstroFormats.astro?extract-expression:10
 msgid "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
 msgstr "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
+
+#. placeholder {0}: 2
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "{0, selectordinal, one {MDX nested ordinal says #st.} two {MDX nested ordinal says #nd.} few {MDX nested ordinal says #rd.} other {MDX nested ordinal says #th.}}"
+msgstr "{0, selectordinal, one {MDX nested ordinal says #st.} two {MDX nested ordinal says #nd.} few {MDX nested ordinal says #rd.} other {MDX nested ordinal says #th.}}"
 
 #. placeholder {0}: 2
 #: src/components/react/ReactFormatsIsland.tsx:35
@@ -144,6 +159,20 @@ msgstr "ClientRouter can preserve island state while locale and page props chang
 msgid "ClientRouter enabled"
 msgstr "ClientRouter enabled"
 
+#: src/data/guides/astro-mdx.mdx:4
+msgid "Collection rich text can preserve <0>strong emphasis</0> too."
+msgstr "Collection rich text can preserve <0>strong emphasis</0> too."
+
+#: src/data/guides/astro-mdx.mdx:4
+msgid "Collection-level MDX descriptors stay extractable."
+msgstr "Collection-level MDX descriptors stay extractable."
+
+#: AppLayout.astro?frontmatter:30
+#: content.astro?extract-expression:3
+#: content.astro?frontmatter:9
+msgid "Collections"
+msgstr "Collections"
+
 #: transitions.astro?extract-expression:3
 msgid "Compare locale updates and state persistence side by side."
 msgstr "Compare locale updates and state persistence side by side."
@@ -153,8 +182,28 @@ msgid "Compare whether persisted Svelte and React islands keep state while local
 msgstr "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
 
 #: index.astro?extract-expression:3
+msgid "Compile imported MDX content through the same Lingui runtime."
+msgstr "Compile imported MDX content through the same Lingui runtime."
+
+#: index.astro?extract-expression:3
 msgid "Confirm route params and locale cookies survive navigation."
 msgstr "Confirm route params and locale cookies survive navigation."
+
+#: content.astro?extract-expression:3
+msgid "Content collection checks"
+msgstr "Content collection checks"
+
+#: src/data/guides/astro-mdx.mdx:4
+msgid "Content collection rendering"
+msgstr "Content collection rendering"
+
+#: index.astro?extract-expression:3
+msgid "Content collections"
+msgstr "Content collections"
+
+#: src/data/guides/astro-mdx.mdx:4
+msgid "Content collections can render MDX entries through entry.render()."
+msgstr "Content collections can render MDX entries through entry.render()."
 
 #: TransitionShowcase.astro?extract-expression:3
 msgid "Current demo: {pageLabel}"
@@ -201,7 +250,7 @@ msgstr "Exercise plural, select, and selectOrdinal macros."
 msgid "Format macro checks"
 msgstr "Format macro checks"
 
-#: AppLayout.astro?frontmatter:30
+#: AppLayout.astro?frontmatter:32
 #: formats.astro?extract-expression:3
 msgid "Formats"
 msgstr "Formats"
@@ -229,6 +278,10 @@ msgstr "Home"
 #: TransitionShowcase.astro?extract-expression:3
 msgid "How to use this demo"
 msgstr "How to use this demo"
+
+#: src/data/guides/astro-mdx.mdx:4
+msgid "HTML tags can render translated MDX expressions too."
+msgstr "HTML tags can render translated MDX expressions too."
 
 #: src/components/react/ReactTransitionCounterIsland.tsx:52
 #: src/components/svelte/SvelteTransitionCounterIsland.svelte:45
@@ -281,9 +334,59 @@ msgstr "Locale persistence"
 msgid "Locale prop: {locale}"
 msgstr "Locale prop: {locale}"
 
+#: AppLayout.astro?frontmatter:29
+#: mdx.astro?frontmatter:9
+msgid "MDX"
+msgstr "MDX"
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX also renders imported descriptors and eager translations inside component content."
+msgstr "MDX also renders imported descriptors and eager translations inside component content."
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX attribute label"
+msgstr "MDX attribute label"
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX attribute macro link"
+msgstr "MDX attribute macro link"
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX attribute tooltip"
+msgstr "MDX attribute tooltip"
+
+#: index.astro?extract-expression:3
+msgid "MDX content"
+msgstr "MDX content"
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX content files compile Lingui macros after Astro's MDX pipeline."
+msgstr "MDX content files compile Lingui macros after Astro's MDX pipeline."
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX module descriptors stay extractable."
+msgstr "MDX module descriptors stay extractable."
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX rich text can preserve <0>strong emphasis</0> too."
+msgstr "MDX rich text can preserve <0>strong emphasis</0> too."
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX route"
+msgstr "MDX route"
+
+#: mdx.astro?extract-expression:3
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "MDX translation checks"
+msgstr "MDX translation checks"
+
 #: index.astro?extract-expression:3
 msgid "Message formats"
 msgstr "Message formats"
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "Nested <0>MDX link</0> content keeps rich text."
+msgstr "Nested <0>MDX link</0> content keeps rich text."
 
 #: a.astro?extract-expression:3
 #: b.astro?extract-expression:3
@@ -396,6 +499,10 @@ msgstr "React rich text keeps component placeholders intact."
 msgid "React runs plural, select, and selectOrdinal macros in component code."
 msgstr "React runs plural, select, and selectOrdinal macros in component code."
 
+#: index.astro?extract-expression:3
+msgid "Render MDX entries through Astro's content collections."
+msgstr "Render MDX entries through Astro's content collections."
+
 #: TransitionShowcase.astro?extract-expression:3
 msgid "Render stamp: {renderStamp}"
 msgstr "Render stamp: {renderStamp}"
@@ -408,7 +515,7 @@ msgstr "Render Svelte and React islands with the same locale."
 msgid "Return to the <0>home page</0> when you are done."
 msgstr "Return to the <0>home page</0> when you are done."
 
-#: AppLayout.astro?frontmatter:29
+#: AppLayout.astro?frontmatter:31
 #: rich-text.astro?extract-expression:3
 msgid "Rich text"
 msgstr "Rich text"
@@ -440,7 +547,7 @@ msgid "Router page B"
 msgstr "Router page B"
 
 #: [slug].astro?extract-expression:4
-#: AppLayout.astro?frontmatter:31
+#: AppLayout.astro?frontmatter:33
 msgid "Routing"
 msgstr "Routing"
 
@@ -469,7 +576,7 @@ msgstr "Server translation checks"
 msgid "Server translations"
 msgstr "Server translations"
 
-#: AppLayout.astro?frontmatter:32
+#: AppLayout.astro?frontmatter:34
 #: settings.astro?extract-expression:4
 msgid "Settings"
 msgstr "Settings"
@@ -554,6 +661,10 @@ msgstr "The cards below mirror the same macro families inside component code."
 msgid "The cards below render their own rich text messages for comparison."
 msgstr "The cards below render their own rich text messages for comparison."
 
+#: src/data/guides/astro-mdx.mdx:4
+msgid "The collection entry keeps the <0>settings link</0> in translated output."
+msgstr "The collection entry keeps the <0>settings link</0> in translated output."
+
 #: server.astro?extract-expression:4
 msgid "The current locale label is {localeLabel}, and it comes from the same request."
 msgstr "The current locale label is {localeLabel}, and it comes from the same request."
@@ -569,6 +680,10 @@ msgstr "The locale cookie still applies here, so the translated page matches the
 #: settings.astro?extract-expression:5
 msgid "The locale is stored in a cookie so the next request stays consistent."
 msgstr "The locale is stored in a cookie so the next request stays consistent."
+
+#: src/components/mdx/MdxShowcase.mdx:4
+msgid "The MDX page keeps the <0>settings link</0> inside translated output."
+msgstr "The MDX page keeps the <0>settings link</0> inside translated output."
 
 #: transitions.astro?extract-expression:4
 msgid "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
@@ -620,7 +735,7 @@ msgstr "Transition demo without ClientRouter"
 msgid "transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation."
 msgstr "transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation."
 
-#: AppLayout.astro?frontmatter:33
+#: AppLayout.astro?frontmatter:35
 #: transitions.astro?extract-expression:3
 msgid "Transitions"
 msgstr "Transitions"
@@ -645,6 +760,8 @@ msgstr "Use the header language switcher and the paired route link below. Withou
 msgid "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
 msgstr "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
 
+#: index.astro?extract-expression:3
+#: index.astro?extract-expression:3
 #: index.astro?extract-expression:3
 #: index.astro?extract-expression:3
 #: index.astro?extract-expression:3
