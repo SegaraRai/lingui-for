@@ -29,12 +29,36 @@ import {
   stripRuntimeTransImports,
 } from "./runtime-trans-lowering.ts";
 
+/**
+ * Result returned by {@link transformAstro}.
+ */
 export interface AstroTransformResult {
+  /**
+   * Transformed `.astro` source.
+   */
   code: string;
+  /**
+   * Source map for the transformed file, or `null` when none is generated.
+   */
   map: RawSourceMapLike | null;
+  /**
+   * Source analysis reused by callers that need structural metadata.
+   */
   analysis: AstroAnalysis;
 }
 
+/**
+ * Transforms one `.astro` source file in place for runtime use.
+ *
+ * @param source Original `.astro` source.
+ * @param options Transform options including filename and optional Lingui config.
+ * @returns Rewritten source, source map, and the structural analysis used during the transform.
+ *
+ * This is the main Astro entry point for runtime compilation. It analyzes frontmatter and template
+ * expressions, rewrites function macros against the request-scoped `i18n` binding, lowers
+ * component macros to `RuntimeTrans`, and injects only the frontmatter prelude actually needed by
+ * the rewritten file.
+ */
 export async function transformAstro(
   source: string,
   options: LinguiAstroTransformOptions,
@@ -110,6 +134,17 @@ export async function transformAstro(
   };
 }
 
+/**
+ * Builds extraction-only Babel units for one `.astro` file.
+ *
+ * @param source Original `.astro` source.
+ * @param options Extraction options including filename and optional Lingui config.
+ * @returns Babel-extractable code units corresponding to frontmatter, expressions, and component
+ * macros that contain Lingui messages.
+ *
+ * This powers the `.astro` extractor by reusing the same analysis and synthetic-program strategy
+ * as the runtime transform while switching Lingui into extraction mode.
+ */
 export async function createAstroExtractionUnits(
   source: string,
   options: LinguiAstroTransformOptions,

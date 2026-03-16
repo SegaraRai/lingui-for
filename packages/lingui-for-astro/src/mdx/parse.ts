@@ -24,6 +24,9 @@ type MdxNodeBase = {
   position?: MdxPosition | null;
 };
 
+/**
+ * Expression-valued MDX JSX attribute such as `title={t\`...\`}`.
+ */
 export type MdxJsxAttributeValueExpression = {
   type: "mdxJsxAttributeValueExpression";
   value: string;
@@ -40,31 +43,49 @@ export type MdxJsxAttributeValueExpression = {
   };
 };
 
+/**
+ * MDX JSX attribute extracted from an inline or block JSX element.
+ */
 export type MdxJsxAttribute = {
   type: "mdxJsxAttribute";
   name: string;
   value?: string | MdxJsxAttributeValueExpression | null;
 };
 
+/**
+ * Plain text child node in MDX content.
+ */
 export type MdxTextNode = MdxNodeBase & {
   type: "text";
   value: string;
 };
 
+/**
+ * Inline code child node in MDX content.
+ */
 export type MdxInlineCodeNode = MdxNodeBase & {
   type: "inlineCode";
   value: string;
 };
 
+/**
+ * Hard line-break child node in MDX content.
+ */
 export type MdxBreakNode = MdxNodeBase & {
   type: "break";
 };
 
+/**
+ * Paragraph child node in MDX content.
+ */
 export type MdxParagraphNode = MdxNodeBase & {
   type: "paragraph";
   children: MdxChildNode[];
 };
 
+/**
+ * Link child node in MDX content.
+ */
 export type MdxLinkNode = MdxNodeBase & {
   type: "link";
   url: string;
@@ -72,21 +93,33 @@ export type MdxLinkNode = MdxNodeBase & {
   children: MdxChildNode[];
 };
 
+/**
+ * Emphasis or strong child node in MDX content.
+ */
 export type MdxEmphasisNode = MdxNodeBase & {
   type: "emphasis" | "strong";
   children: MdxChildNode[];
 };
 
+/**
+ * Top-level MDX ESM block.
+ */
 export type MdxEsmNode = MdxNodeBase & {
   type: "mdxjsEsm";
   value: string;
 };
 
+/**
+ * Inline or flow expression node in MDX content.
+ */
 export type MdxExpressionNode = MdxNodeBase & {
   type: "mdxTextExpression" | "mdxFlowExpression";
   value: string;
 };
 
+/**
+ * Inline or flow JSX element node in MDX content.
+ */
 export type MdxJsxElementNode = MdxNodeBase & {
   type: "mdxJsxTextElement" | "mdxJsxFlowElement";
   name: string | null;
@@ -96,6 +129,9 @@ export type MdxJsxElementNode = MdxNodeBase & {
 
 type PositionedNode = MdxEsmNode | MdxExpressionNode | MdxJsxElementNode;
 
+/**
+ * Child node supported by the MDX `<Trans>` serialization pipeline.
+ */
 export type MdxChildNode =
   | MdxTextNode
   | MdxInlineCodeNode
@@ -106,27 +142,83 @@ export type MdxChildNode =
   | MdxExpressionNode
   | MdxJsxElementNode;
 
+/**
+ * Byte-based half-open range within the original MDX source.
+ */
 export type MdxRange = {
+  /**
+   * Inclusive start offset.
+   */
   start: number;
+  /**
+   * Exclusive end offset.
+   */
   end: number;
 };
 
+/**
+ * Parsed MDX document plus the Lingui-relevant nodes extracted from it.
+ */
 export interface ParsedMdxDocument {
+  /**
+   * Full mdast root returned by the parser.
+   */
   root: Root;
+  /**
+   * Top-level ESM blocks found in the document.
+   */
   esmNodes: MdxEsmNode[];
+  /**
+   * Expression nodes that reference imported Lingui macros.
+   */
   expressionNodes: MdxExpressionNode[];
+  /**
+   * Attribute expressions that reference imported Lingui macros.
+   */
   attributeExpressionNodes: MdxAttributeExpressionNode[];
+  /**
+   * JSX element nodes that correspond to imported component macros such as `Trans`.
+   */
   componentNodes: MdxJsxElementNode[];
+  /**
+   * Macro import summary extracted from the document's ESM blocks.
+   */
   macroBindings: MacroBindings;
 }
 
+/**
+ * Attribute expression site that matched a Lingui macro binding.
+ */
 export interface MdxAttributeExpressionNode {
+  /**
+   * JSX element that owns the attribute.
+   */
   parent: MdxJsxElementNode;
+  /**
+   * Original MDX attribute node.
+   */
   attribute: MdxJsxAttribute;
+  /**
+   * Expression-valued attribute payload.
+   */
   expression: MdxJsxAttributeValueExpression;
+  /**
+   * Source range of the inner JavaScript expression.
+   */
   range: MdxRange;
 }
 
+/**
+ * Parses an MDX document and extracts the nodes relevant to Lingui transforms.
+ *
+ * @param source Original MDX source without frontmatter.
+ * @returns The parsed root plus Lingui-relevant ESM blocks, expressions, attribute expressions,
+ * component macro nodes, and macro import bindings.
+ *
+ * This is the source-level MDX analysis entry point used by both runtime transforms and
+ * extraction. It intentionally tracks only the node kinds currently supported by the Lingui MDX
+ * pipeline.
+ */
 export async function parseMdxDocument(
   source: string,
 ): Promise<ParsedMdxDocument> {
@@ -195,6 +287,12 @@ export async function parseMdxDocument(
   };
 }
 
+/**
+ * Reads the byte range for a positioned MDX node.
+ *
+ * @param node Positioned ESM, expression, or JSX node.
+ * @returns The node's half-open source range.
+ */
 export function getMdxNodeRange(node: PositionedNode): MdxRange {
   const start = node.position?.start.offset;
   const end = node.position?.end.offset;

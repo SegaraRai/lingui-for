@@ -11,9 +11,9 @@ import type { ProgramTransformRequest } from "./types.ts";
 
 type MacroRewriteState = {
   runtimeTImports: Set<string>;
-  tLocals: Set<string>;
-  reactiveStringLocals: Set<string>;
-  runtimeI18nLocals: Set<string>;
+  tLocals: ReadonlySet<string>;
+  reactiveStringLocals: ReadonlySet<string>;
+  runtimeI18nLocals: ReadonlySet<string>;
 };
 
 function createInitialState(): MacroRewriteState {

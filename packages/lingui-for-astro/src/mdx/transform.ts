@@ -40,6 +40,18 @@ const INLINE_GENERATE_OPTIONS = {
   retainLines: false,
 } as const;
 
+/**
+ * Transforms one `.mdx` source file for runtime use.
+ *
+ * @param source Original MDX source.
+ * @param options Transform options including filename and optional Lingui config.
+ * @returns Rewritten MDX source and a `null` source map.
+ *
+ * The transform operates on source-level MDX analysis rather than compiled output. It rewrites
+ * expression macros against the request-scoped Astro context, lowers component macros to
+ * `RuntimeTrans`, preserves frontmatter, and injects only the imports required by the rewritten
+ * document.
+ */
 export async function transformMdxSource(
   source: string,
   options: LinguiAstroTransformOptions,
@@ -131,6 +143,17 @@ export async function transformMdxSource(
   };
 }
 
+/**
+ * Builds extraction-only Babel units for one `.mdx` file.
+ *
+ * @param source Original MDX source.
+ * @param options Extraction options including filename and optional Lingui config.
+ * @returns Babel-extractable code units corresponding to MDX ESM blocks, expression macros,
+ * attribute macros, and component macros that contain Lingui messages.
+ *
+ * This reuses the same source-level MDX analysis as the runtime transform while switching Lingui
+ * into extraction mode.
+ */
 export async function createMdxExtractionUnits(
   source: string,
   options: LinguiAstroTransformOptions,

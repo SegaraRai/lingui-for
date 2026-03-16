@@ -85,6 +85,17 @@ function createAstroContextPostprocessPlugin(
   };
 }
 
+/**
+ * Runs the Babel-based Lingui transform pipeline for one Astro-related JS/TS program.
+ *
+ * @param code Program source text to transform.
+ * @param request Transform configuration describing filename, extraction mode, Lingui config,
+ * translation mode, and optional runtime binding rewrites.
+ * @returns A {@link ProgramTransform} containing transformed code, AST, and source map.
+ *
+ * The pipeline runs the official Lingui macro transform first and then rewrites `@lingui/core`
+ * runtime calls into Astro request-context bindings when `translationMode` requires it.
+ */
 export function transformProgram(
   code: string,
   request: ProgramTransformRequest,

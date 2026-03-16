@@ -16,7 +16,7 @@ if (!entry) {
   throw new Error("Expected at least one guide entry to exist.");
 }
 
-const { Content } = await render(entry);
+const { Content: RenderedContent } = await render(entry);
 ---
 
 <AppLayout
@@ -35,5 +35,5 @@ const { Content } = await render(entry);
     </div>
   </section>
 
-  <Content __lingui={lingui} />
+  <RenderedContent __lingui={lingui} />
 </AppLayout>

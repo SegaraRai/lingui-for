@@ -17,10 +17,25 @@ type MacroImportName =
   | "selectOrdinal"
   | "t";
 
+/**
+ * Summary of imported lingui-for-astro macro bindings in a source file.
+ */
 export type MacroBindings = {
-  all: Set<string>;
-  components: Set<string>;
+  /**
+   * All locally bound Lingui macro identifiers imported in the current file.
+   */
+  all: ReadonlySet<string>;
+  /**
+   * Local identifiers bound to component macros such as `Trans` and `Plural`.
+   */
+  components: ReadonlySet<string>;
+  /**
+   * Mapping from local identifier to imported macro name for every detected macro import.
+   */
   allImports: ReadonlyMap<string, MacroImportName>;
+  /**
+   * Mapping from local identifier to imported macro name for component macros only.
+   */
   componentImports: ReadonlyMap<string, MacroImportName>;
 };
 
@@ -98,6 +113,16 @@ async function collectImportLocalsFromFile(
   return locals;
 }
 
+/**
+ * Parses a JS/TS module and summarizes its imported lingui-for-astro macro bindings.
+ *
+ * @param code Module source text to inspect.
+ * @returns A `MacroBindings` summary containing all imported macros and the subset of component
+ * macros.
+ *
+ * This is the first-stage import analysis used by Astro and MDX transforms before probing
+ * individual expressions or component nodes.
+ */
 export async function parseMacroBindings(code: string): Promise<MacroBindings> {
   const file = parseFile(code);
   if (!file) {
@@ -187,6 +212,18 @@ function pathUsesMacroBinding(
   );
 }
 
+/**
+ * Checks whether an isolated expression references any imported lingui-for-astro macro binding.
+ *
+ * @param source Source text for a single expression.
+ * @param bindings Macro import summary collected from the surrounding module.
+ * @returns `true` if the expression contains a call or tagged template that resolves to one of
+ * the imported macro bindings.
+ *
+ * The function synthesizes a temporary module that re-imports the known macro locals, parses it
+ * with Babel, and traverses the resulting AST using scope-aware binding resolution. This avoids
+ * false positives from shadowed locals or plain name matching.
+ */
 export async function expressionUsesMacroBinding(
   source: string,
   bindings: MacroBindings,

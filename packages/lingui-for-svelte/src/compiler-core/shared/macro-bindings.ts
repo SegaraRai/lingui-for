@@ -19,9 +19,9 @@ type MacroImportName =
   | "t";
 
 type MacroBindings = {
-  all: Set<string>;
-  components: Set<string>;
-  reactiveStrings: Set<string>;
+  all: ReadonlySet<string>;
+  components: ReadonlySet<string>;
+  reactiveStrings: ReadonlySet<string>;
 };
 
 const REACTIVE_STRING_IMPORTS = [
@@ -78,7 +78,7 @@ function parseFile(code: string, lang: ScriptLang): t.File | null {
 function collectImportLocalsFromFile(
   file: t.File,
   importedNames: readonly MacroImportName[],
-): Set<string> {
+): ReadonlySet<string> {
   const locals = new Set<string>();
   const traverse = getBabelTraverse();
 
@@ -120,7 +120,7 @@ function collectImportLocalsFromFile(
 export function collectMacroImportLocals(
   program: t.Program,
   importedNames: readonly MacroImportName[],
-): Set<string> {
+): ReadonlySet<string> {
   return collectImportLocalsFromFile(t.file(program), importedNames);
 }
 
