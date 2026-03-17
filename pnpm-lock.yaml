@@ -35,12 +35,22 @@ importers:
       '@astrojs/starlight':
         specifier: ^0.38.1
         version: 0.38.1(astro@6.0.4(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.59.0)(terser@5.46.0)(typescript@5.9.3)(yaml@2.8.2))
+      '@lingui/core':
+        specifier: ^5.9.3
+        version: 5.9.3(@lingui/babel-plugin-lingui-macro@5.9.3(babel-plugin-macros@3.1.0)(typescript@5.9.3))(babel-plugin-macros@3.1.0)
       astro:
         specifier: ^6.0.1
         version: 6.0.4(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.59.0)(terser@5.46.0)(typescript@5.9.3)(yaml@2.8.2)
       sharp:
         specifier: ^0.34.2
         version: 0.34.5
+    devDependencies:
+      '@lingui/cli':
+        specifier: ^5.9.3
+        version: 5.9.3(babel-plugin-macros@3.1.0)(typescript@5.9.3)
+      lingui-for-svelte:
+        specifier: workspace:*
+        version: link:../../packages/lingui-for-svelte
 
   examples/e2e-astro:
     dependencies:

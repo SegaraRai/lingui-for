@@ -4,17 +4,24 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "lingui:extract": "lingui extract --clean --overwrite",
+    "lingui:compile": "lingui compile && prettier --write src/i18n/locales",
+    "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "pnpm run check:ts",
     "check:ts": "astro check",
-    "check:markup": "prettier --check \"src/**/*.{md,mdx,astro}\"",
     "astro": "astro"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.38.1",
+    "@lingui/core": "^5.9.3",
     "astro": "^6.0.1",
     "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "@lingui/cli": "^5.9.3",
+    "lingui-for-svelte": "workspace:*"
   }
 }
