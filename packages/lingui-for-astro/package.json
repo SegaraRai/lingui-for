@@ -38,46 +38,6 @@
       "types": "./dist/integration/index.d.mts",
       "default": "./dist/integration/index.mjs"
     },
-    "./mdx/extractor": {
-      "types": "./dist/mdx/extractor.d.mts",
-      "default": "./dist/mdx/extractor.mjs"
-    },
-    "./mdx/unplugin": {
-      "types": "./dist/mdx/unplugin/index.d.mts",
-      "default": "./dist/mdx/unplugin/index.mjs"
-    },
-    "./mdx/unplugin/types": {
-      "types": "./dist/mdx/unplugin/types.d.mts",
-      "default": "./dist/mdx/unplugin/types.mjs"
-    },
-    "./mdx/unplugin/bun": {
-      "types": "./dist/mdx/unplugin/bun.d.mts",
-      "default": "./dist/mdx/unplugin/bun.mjs"
-    },
-    "./mdx/unplugin/esbuild": {
-      "types": "./dist/mdx/unplugin/esbuild.d.mts",
-      "default": "./dist/mdx/unplugin/esbuild.mjs"
-    },
-    "./mdx/unplugin/rolldown": {
-      "types": "./dist/mdx/unplugin/rolldown.d.mts",
-      "default": "./dist/mdx/unplugin/rolldown.mjs"
-    },
-    "./mdx/unplugin/rollup": {
-      "types": "./dist/mdx/unplugin/rollup.d.mts",
-      "default": "./dist/mdx/unplugin/rollup.mjs"
-    },
-    "./mdx/unplugin/rspack": {
-      "types": "./dist/mdx/unplugin/rspack.d.mts",
-      "default": "./dist/mdx/unplugin/rspack.mjs"
-    },
-    "./mdx/unplugin/vite": {
-      "types": "./dist/mdx/unplugin/vite.d.mts",
-      "default": "./dist/mdx/unplugin/vite.mjs"
-    },
-    "./mdx/unplugin/webpack": {
-      "types": "./dist/mdx/unplugin/webpack.d.mts",
-      "default": "./dist/mdx/unplugin/webpack.mjs"
-    },
     "./unplugin": {
       "types": "./dist/unplugin/index.d.mts",
       "default": "./dist/unplugin/index.mjs"
@@ -127,14 +87,9 @@
     "@lingui/core": "^5.9.3",
     "astro-analyzer-wasm": "workspace:*",
     "magic-string": "^0.30.21",
-    "remark-mdx": "^3.1.1",
-    "remark-parse": "^11.0.0",
-    "unified": "^11.0.5",
-    "unplugin": "^3.0.0",
-    "unist-util-visit-parents": "^6.0.2"
+    "unplugin": "^3.0.0"
   },
   "devDependencies": {
-    "@types/mdast": "^4.0.4",
     "@types/babel__core": "^7.20.5",
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",

@@ -1,7 +1,6 @@
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 
-import linguiForAstro from "lingui-for-astro/integration";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 
 export default defineConfig({
@@ -59,10 +58,6 @@ export default defineConfig({
             {
               label: "Using Islands",
               slug: "frameworks/astro/using-islands",
-            },
-            {
-              label: "MDX",
-              slug: "frameworks/astro/mdx",
             },
             {
               label: "Caveats",
@@ -145,9 +140,6 @@ export default defineConfig({
           ],
         },
       ],
-    }),
-    linguiForAstro({
-      mdx: true,
     }),
   ],
   vite: {

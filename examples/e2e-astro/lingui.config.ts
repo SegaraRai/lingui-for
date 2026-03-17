@@ -1,6 +1,6 @@
 import babelExtractor from "@lingui/cli/api/extractors/babel";
 
-import { astroExtractor, mdxExtractor } from "lingui-for-astro/extractor";
+import { astroExtractor } from "lingui-for-astro/extractor";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default {
@@ -17,5 +17,5 @@ export default {
       exclude: ["src/lib/i18n/locales/**"],
     },
   ],
-  extractors: [astroExtractor, mdxExtractor, svelteExtractor, babelExtractor],
+  extractors: [astroExtractor, svelteExtractor, babelExtractor],
 };

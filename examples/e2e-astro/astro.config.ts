@@ -1,4 +1,3 @@
-import mdx from "@astrojs/mdx";
 import node from "@astrojs/node";
 import react from "@astrojs/react";
 import svelte from "@astrojs/svelte";
@@ -16,7 +15,7 @@ export default defineConfig({
   adapter: node({
     mode: "standalone",
   }),
-  integrations: [react(), svelte(), mdx(), stripWhitespace(), linguiForAstro()],
+  integrations: [react(), svelte(), stripWhitespace(), linguiForAstro()],
   vite: {
     plugins: [
       linguiMacro() as unknown as PluginOption,

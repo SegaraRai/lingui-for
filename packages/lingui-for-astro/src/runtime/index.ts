@@ -13,12 +13,10 @@ export type {
 
 export {
   getLinguiContext,
-  getMdxLinguiContext,
   LINGUI_ASTRO_CONTEXT,
   setLinguiContext,
   type AstroLike,
   type LinguiContext,
-  type MdxPropsLike,
 } from "./core/context.ts";
 export {
   formatRichTextTranslation,
@@ -57,7 +55,7 @@ interface RuntimeTransProps {
 }
 
 /**
- * Low-level runtime translation component used by compiled Astro and MDX output.
+ * Low-level runtime translation component used by compiled Astro output.
  *
  * Most applications should not render this directly. Prefer the macro authoring API and treat
  * `RuntimeTrans` as an implementation detail of the compiled output.

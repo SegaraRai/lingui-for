@@ -60,7 +60,7 @@ export function normalizeLinguiConfig(
 }
 
 /**
- * Returns the Babel parser plugins required by Astro and MDX transforms.
+ * Returns the Babel parser plugins required by Astro transforms.
  *
  * @returns The parser plugin list used for Lingui-related Babel parsing in this package.
  */

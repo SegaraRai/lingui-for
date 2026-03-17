@@ -120,8 +120,8 @@ async function collectImportLocalsFromFile(
  * @returns A `MacroBindings` summary containing all imported macros and the subset of component
  * macros.
  *
- * This is the first-stage import analysis used by Astro and MDX transforms before probing
- * individual expressions or component nodes.
+ * This is the first-stage import analysis used by Astro transforms before probing individual
+ * expressions or component nodes.
  */
 export async function parseMacroBindings(code: string): Promise<MacroBindings> {
   const file = parseFile(code);
