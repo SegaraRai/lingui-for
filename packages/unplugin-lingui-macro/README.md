@@ -1,8 +1,11 @@
 # unplugin-lingui-macro
 
+[![npm](https://img.shields.io/npm/v/unplugin-lingui-macro)](https://www.npmjs.com/package/unplugin-lingui-macro)
+[![Documentation](https://img.shields.io/badge/docs-lingui--for.roundtrip.dev-blue)](https://lingui-for.roundtrip.dev/guides/install-and-first-translation)
+
 Bundler plugin for compiling Lingui macros in plain JavaScript and TypeScript modules.
 
-Documentation: <https://lingui-for.roundtrip.dev/guides/install-and-first-translation>
+**Requirements:** `@lingui/core` `^5.0.0`, Node.js 18+
 
 This package is useful when your app uses Lingui macros outside framework-owned files such as `.svelte` or `.astro`.
 
@@ -56,6 +59,8 @@ By default it supports Lingui macro imports from:
 - `@lingui/macro`
 - `@lingui/react/macro`
 
+These are used only to detect whether a file needs transformation. `@lingui/react/macro` is included so that React projects importing from that path are handled correctly in plain `.js` and `.ts` files alongside React islands.
+
 Framework packages such as `lingui-for-svelte` and `lingui-for-astro` can also pass their own macro package names through `linguiConfig`.
 
 ## Options
@@ -78,7 +83,7 @@ export default {
 
 Supported option shape:
 
-- `linguiConfig`: partial Lingui config forwarded to the Lingui Babel macro plugin
+- `linguiConfig`: partial Lingui config forwarded to the Lingui Babel macro plugin. See the [Lingui configuration reference](https://lingui.dev/ref/conf) for available fields.
 
 ## Entrypoints
 
@@ -100,5 +105,7 @@ Supported option shape:
 
 ## Repository References
 
-- Docs references: [`apps/docs/src/content/docs/guides/install-and-first-translation.mdx`](../../apps/docs/src/content/docs/guides/install-and-first-translation.mdx)
+These links point to paths inside the source repository and are only useful when browsing the repo directly.
+
+- Docs source: [`apps/docs/src/content/docs/guides/install-and-first-translation.mdx`](../../apps/docs/src/content/docs/guides/install-and-first-translation.mdx)
 - Used by: [`packages/lingui-for-svelte`](../lingui-for-svelte) and [`packages/lingui-for-astro`](../lingui-for-astro)

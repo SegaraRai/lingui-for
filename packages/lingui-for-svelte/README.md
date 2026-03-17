@@ -1,6 +1,7 @@
 # lingui-for-svelte
 
-Documentation: <https://lingui-for.roundtrip.dev/frameworks/svelte/getting-started>
+[![npm](https://img.shields.io/npm/v/lingui-for-svelte)](https://www.npmjs.com/package/lingui-for-svelte)
+[![Documentation](https://img.shields.io/badge/docs-lingui--for.roundtrip.dev-blue)](https://lingui-for.roundtrip.dev/frameworks/svelte/getting-started)
 
 Macro-first Lingui integration for Svelte 5.
 
@@ -10,6 +11,8 @@ It provides:
 - a Lingui extractor for `.svelte`
 - runtime helpers for installing Lingui context in the component tree
 - unplugin entrypoints for Vite and other bundlers
+
+**Requirements:** Svelte `^5.0.0`, `@lingui/core` `^5.0.0`, Node.js 18+
 
 ## Install
 
@@ -61,18 +64,19 @@ export default {
 };
 ```
 
-Initialize Lingui near the root of the component tree:
+Initialize Lingui near the root of the component tree. After running `lingui compile`, import the compiled message catalogs:
 
 ```svelte
 <script lang="ts">
   import { setupI18n } from "@lingui/core";
   import { setLinguiContext } from "lingui-for-svelte";
+  import { messages as enMessages } from "$lib/i18n/locales/en.js";
 
   const { children } = $props();
 
   const i18n = setupI18n({
     locale: "en",
-    messages: {},
+    messages: enMessages,
   });
 
   setLinguiContext(i18n);
@@ -106,10 +110,12 @@ Use macros in Svelte components:
 
 - The primary authoring API is `lingui-for-svelte/macro`. Runtime helpers exist mainly as the compilation target.
 - Initialize Lingui context before translated markup runs. In practice, a root layout is the safest place.
-- Reactive forms such as `$t(...)` are Svelte-specific.
+- `$t` is a reactive store-like form specific to Svelte — it re-evaluates when the active locale changes. It is not a Svelte 5 rune despite the `$` prefix.
 - Plain `.js`, `.ts`, `.svelte.js`, and `.svelte.ts` macro support comes from `unplugin-lingui-macro`, not from the Svelte transform itself.
 
 ## Repository References
+
+These links point to paths inside the source repository and are only useful when browsing the repo directly.
 
 - Docs source: [`apps/docs/src/content/docs/frameworks/svelte/getting-started.mdx`](../../apps/docs/src/content/docs/frameworks/svelte/getting-started.mdx)
 - Verification app: [`examples/e2e-svelte`](../../examples/e2e-svelte)
