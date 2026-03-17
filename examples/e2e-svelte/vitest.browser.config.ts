@@ -1,11 +1,8 @@
-import { sveltekit } from "@sveltejs/kit/vite";
 import { playwright } from "@vitest/browser-playwright";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { BrowserContext, ConsoleMessage } from "playwright";
 import { defineProject } from "vitest/config";
-
-import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -32,36 +29,49 @@ async function startDevServer(): Promise<{
   origin: string;
   server: { close: () => Promise<void> };
 }> {
+  // SvelteKit expects to be run from the project root, so change the working directory before starting the Vite server.
+  const previousCwd = process.cwd();
+  process.chdir(projectRoot);
+
   const { createServer } = await import("vite");
-  const viteServer = await createServer({
-    configFile: resolve(projectRoot, "vite.config.ts"),
-    server: {
-      host: "127.0.0.1",
-      port: 0,
-    },
-  });
-
-  await viteServer.listen();
-  const origin = viteServer.resolvedUrls?.local[0]?.replace(/\/$/, "");
-
-  if (!origin) {
-    throw new Error("Failed to resolve the Vite dev server origin.");
-  }
-
-  await waitForServer(`${origin}/playground?lang=en`, () => "");
-
-  return {
-    origin,
-    server: {
-      async close() {
-        await viteServer.close();
+  try {
+    const viteServer = await createServer({
+      configFile: resolve(projectRoot, "vite.config.ts"),
+      server: {
+        host: "127.0.0.1",
+        port: 0,
       },
-    },
-  };
+    });
+
+    await viteServer.listen();
+    const origin = viteServer.resolvedUrls?.local[0]?.replace(/\/$/, "");
+
+    if (!origin) {
+      throw new Error("Failed to resolve the Vite dev server origin.");
+    }
+
+    await waitForServer(`${origin}/playground?lang=en`, () => "");
+
+    return {
+      origin,
+      server: {
+        async close() {
+          try {
+            await viteServer.close();
+          } finally {
+            process.chdir(previousCwd);
+          }
+        },
+      },
+    };
+  } catch (error) {
+    process.chdir(previousCwd);
+    throw error;
+  }
 }
 
 export default defineProject({
-  plugins: [linguiForSvelte(), sveltekit()],
+  root: projectRoot,
   test: {
     name: "e2e-svelte-browser",
     include: ["src/**/*.browser.test.ts"],
