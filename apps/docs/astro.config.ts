@@ -5,6 +5,7 @@ import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 
 export default defineConfig({
   output: "static",
+  site: "https://lingui-for.roundtrip.dev",
   trailingSlash: "never",
   build: {
     format: "preserve",
