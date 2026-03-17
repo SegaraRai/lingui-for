@@ -1,4 +1,3 @@
-import { AsyncLocalStorage } from "node:async_hooks";
 import type { I18n } from "@lingui/core";
 
 /**
@@ -42,8 +41,6 @@ export interface MdxPropsLike {
   __lingui?: LinguiContext;
 }
 
-const linguiContextStorage = new AsyncLocalStorage<LinguiContext>();
-
 /**
  * Stores the active Lingui context on the current Astro request.
  *
@@ -63,24 +60,6 @@ export function setLinguiContext(
 }
 
 /**
- * Runs work inside a request-scoped Lingui runtime context.
- *
- * @param context Runtime context to expose for the duration of the callback.
- * @param callback Work to execute with the provided context in scope.
- * @returns The callback result.
- *
- * This is primarily useful in Node-based Astro environments so translated MDX content can resolve
- * the current Lingui instance even when props forwarding is not available. Applications should
- * still prefer the explicit `__lingui` prop bridge for MDX when they control the render call site.
- */
-export function runWithLinguiContext<T>(
-  context: LinguiContext,
-  callback: () => T,
-): T {
-  return linguiContextStorage.run(context, callback);
-}
-
-/**
  * Reads the Lingui runtime context from `Astro.locals`.
  *
  * @param astro Astro-like object exposing the request `locals`.
@@ -94,18 +73,13 @@ export function getLinguiContext(astro: AstroLike): LinguiContext {
     LINGUI_ASTRO_CONTEXT
   ];
 
-  if (context && typeof context === "object" && "i18n" in context) {
-    return context as LinguiContext;
+  if (!context || typeof context !== "object" || !("i18n" in context)) {
+    throw new Error(
+      "lingui-for-astro runtime context is missing. Set it in middleware or page setup before rendering translated Astro content.",
+    );
   }
 
-  const fallbackContext = linguiContextStorage.getStore();
-  if (fallbackContext) {
-    return fallbackContext;
-  }
-
-  throw new Error(
-    "lingui-for-astro runtime context is missing. Set it in middleware or page setup before rendering translated Astro content.",
-  );
+  return context as LinguiContext;
 }
 
 /**
@@ -120,16 +94,11 @@ export function getLinguiContext(astro: AstroLike): LinguiContext {
 export function getMdxLinguiContext(props: MdxPropsLike): LinguiContext {
   const context = props.__lingui;
 
-  if (context && typeof context === "object" && "i18n" in context) {
-    return context;
+  if (!context || typeof context !== "object" || !("i18n" in context)) {
+    throw new Error(
+      "lingui-for-astro MDX runtime context is missing. Pass __lingui={getLinguiContext(Astro)} when rendering translated MDX content.",
+    );
   }
 
-  const fallbackContext = linguiContextStorage.getStore();
-  if (fallbackContext) {
-    return fallbackContext;
-  }
-
-  throw new Error(
-    "lingui-for-astro MDX runtime context is missing. Pass __lingui={getLinguiContext(Astro)} when rendering translated MDX content, or run rendering inside runWithLinguiContext(...) in Node-based environments.",
-  );
+  return context;
 }

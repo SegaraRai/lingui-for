@@ -73,22 +73,19 @@ export default {
 
 ## Initialize Lingui
 
-Call `setLinguiContext` from middleware before any page renders. In Node-based Astro environments,
-wrapping `next()` with `runWithLinguiContext(...)` also gives translated MDX a request-scoped
-fallback when an explicit `__lingui` prop bridge is not available.
+Call `setLinguiContext` from middleware before any page renders. This is where you load the
+compiled catalog for the current request.
 
 ```ts title="src/middleware.ts"
 import { defineMiddleware } from "astro:middleware";
 import { setupI18n } from "@lingui/core";
-import {
-  runWithLinguiContext,
-  setLinguiContext,
-} from "lingui-for-astro/runtime";
+import { setLinguiContext } from "lingui-for-astro";
 
 export const onRequest = defineMiddleware((context, next) => {
+  // Load a compiled catalog and pass it here.
   const i18n = setupI18n({ locale: "en", messages: {} });
-  const lingui = setLinguiContext(context.locals, i18n);
-  return runWithLinguiContext(lingui, () => next());
+  setLinguiContext(context.locals, i18n);
+  return next();
 });
 ```
 
