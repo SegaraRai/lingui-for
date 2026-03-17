@@ -203,6 +203,63 @@ describe("transformMdxSource", () => {
     );
   });
 
+  it("supports heading and list nodes inside Trans", async () => {
+    const source = dedent`
+      import { Trans } from "lingui-for-astro/macro";
+
+      <Trans>
+        ## Section title
+
+        - First bullet
+        - Second bullet
+      </Trans>
+    `;
+
+    const result = await transformMdxSource(source, {
+      filename: "/virtual/TransBlocks.mdx",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain('<L4aMdxRuntimeTrans {...{id:"');
+    expect(code).toContain('message:"<0>Section title</0><1><2>First bullet</2><3>Second bullet</3></1>"');
+    expect(code).toContain('kind:"element"');
+    expect(code).toContain('tag:"h2"');
+    expect(code).toContain('tag:"ul"');
+    expect(code).toContain('tag:"li"');
+  });
+
+  it("supports blockquote, code blocks, and thematic breaks inside Trans", async () => {
+    const source = dedent`
+      import { Trans } from "lingui-for-astro/macro";
+
+      <Trans>
+        > Quoted paragraph
+
+        \`\`\`ts
+        console.log("hello");
+        \`\`\`
+
+        ***
+      </Trans>
+    `;
+
+    const result = await transformMdxSource(source, {
+      filename: "/virtual/TransBlockNodes.mdx",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain('<L4aMdxRuntimeTrans {...{id:"');
+    expect(code).toContain(
+      'message:"<0>Quoted paragraph</0><1><2>console.log(\\"hello\\");',
+    );
+    expect(code).toContain('<3/>"');
+    expect(code).toContain('tag:"blockquote"');
+    expect(code).toContain('tag:"pre"');
+    expect(code).toContain('tag:"code"');
+    expect(code).toContain('class:"language-ts"');
+    expect(code).toContain('tag:"hr"');
+  });
+
   it("rejects top-level translating macros in MDX ESM", async () => {
     const source = dedent`
       import { t } from "lingui-for-astro/macro";

@@ -102,6 +102,58 @@ export type MdxEmphasisNode = MdxNodeBase & {
 };
 
 /**
+ * Blockquote child node in MDX content.
+ */
+export type MdxBlockquoteNode = MdxNodeBase & {
+  type: "blockquote";
+  children: MdxChildNode[];
+};
+
+/**
+ * Fenced or indented code block child node in MDX content.
+ */
+export type MdxCodeNode = MdxNodeBase & {
+  type: "code";
+  value: string;
+  lang?: string | null;
+  meta?: string | null;
+};
+
+/**
+ * Heading child node in MDX content.
+ */
+export type MdxHeadingNode = MdxNodeBase & {
+  type: "heading";
+  depth: 1 | 2 | 3 | 4 | 5 | 6;
+  children: MdxChildNode[];
+};
+
+/**
+ * List item child node in MDX content.
+ */
+export type MdxListItemNode = MdxNodeBase & {
+  type: "listItem";
+  children: MdxChildNode[];
+};
+
+/**
+ * Ordered or unordered list child node in MDX content.
+ */
+export type MdxListNode = MdxNodeBase & {
+  type: "list";
+  ordered?: boolean | null;
+  start?: number | null;
+  children: MdxListItemNode[];
+};
+
+/**
+ * Horizontal rule child node in MDX content.
+ */
+export type MdxThematicBreakNode = MdxNodeBase & {
+  type: "thematicBreak";
+};
+
+/**
  * Top-level MDX ESM block.
  */
 export type MdxEsmNode = MdxNodeBase & {
@@ -139,6 +191,12 @@ export type MdxChildNode =
   | MdxParagraphNode
   | MdxLinkNode
   | MdxEmphasisNode
+  | MdxBlockquoteNode
+  | MdxCodeNode
+  | MdxHeadingNode
+  | MdxListNode
+  | MdxListItemNode
+  | MdxThematicBreakNode
   | MdxExpressionNode
   | MdxJsxElementNode;
 

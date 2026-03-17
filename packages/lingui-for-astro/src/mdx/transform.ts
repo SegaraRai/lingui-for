@@ -489,6 +489,29 @@ async function serializeMdxChild(
       return `<em>${await serializeMdxChildren(node.children, macroBindings, options)}</em>`;
     case "strong":
       return `<strong>${await serializeMdxChildren(node.children, macroBindings, options)}</strong>`;
+    case "blockquote":
+      return `<blockquote>${await serializeMdxChildren(node.children, macroBindings, options)}</blockquote>`;
+    case "code": {
+      const className =
+        typeof node.lang === "string" && node.lang.length > 0
+          ? ` class=${JSON.stringify(`language-${node.lang}`)}`
+          : "";
+      return `<pre><code${className}>${escapeHtmlText(node.value)}</code></pre>`;
+    }
+    case "heading":
+      return `<h${node.depth}>${await serializeMdxChildren(node.children, macroBindings, options)}</h${node.depth}>`;
+    case "list": {
+      const tag = node.ordered ? "ol" : "ul";
+      const start =
+        node.ordered && typeof node.start === "number" && node.start !== 1
+          ? ` start={${node.start}}`
+          : "";
+      return `<${tag}${start}>${await serializeMdxChildren(node.children, macroBindings, options)}</${tag}>`;
+    }
+    case "listItem":
+      return `<li>${await serializeMdxChildren(node.children, macroBindings, options)}</li>`;
+    case "thematicBreak":
+      return "<hr />";
     case "mdxTextExpression":
     case "mdxFlowExpression":
       return `{${node.value}}`;
