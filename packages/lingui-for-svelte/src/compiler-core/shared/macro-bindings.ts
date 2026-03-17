@@ -162,7 +162,7 @@ function createSyntheticExpressionFile(
     .join("\n");
 
   return parseFile(
-    `${syntheticImports}\nconst __lingui_for_svelte_expr__ = (\n${source}\n);`,
+    `${syntheticImports}\nconst __expr = (\n${source}\n);`,
     lang,
   );
 }

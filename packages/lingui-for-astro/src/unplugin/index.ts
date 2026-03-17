@@ -4,8 +4,10 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import { transformAstro } from "../compiler-core/index.ts";
-import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";
+import {
+  mayContainLinguiMacroImport,
+  transformAstro,
+} from "../compiler-core/index.ts";
 import type { LinguiAstroPluginOptions } from "./types.ts";
 
 function stripQuery(id: string): string {
@@ -62,7 +64,7 @@ export const unpluginFactory: UnpluginFactory<
     }
 
     if (filename.endsWith(".astro")) {
-      if (!code.includes(PACKAGE_MACRO)) {
+      if (!mayContainLinguiMacroImport(code)) {
         return null;
       }
 

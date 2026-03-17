@@ -4,7 +4,10 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import { transformSvelte } from "../compiler-core/index.ts";
+import {
+  mayContainLinguiMacroImport,
+  transformSvelte,
+} from "../compiler-core/index.ts";
 import type { LinguiSveltePluginOptions } from "./types.ts";
 
 function stripQuery(id: string): string {
@@ -28,6 +31,10 @@ export const unpluginFactory: UnpluginFactory<
     }
 
     if (filename.endsWith(".svelte")) {
+      if (!mayContainLinguiMacroImport(code)) {
+        return null;
+      }
+
       const transformed = transformSvelte(code, {
         filename,
         linguiConfig: options?.linguiConfig,
