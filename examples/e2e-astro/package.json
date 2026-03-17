@@ -17,12 +17,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@astrojs/node": "^10.0.1",
+    "@astrojs/node": "^10.0.2",
     "@astrojs/react": "^5.0.0",
-    "@astrojs/svelte": "^8.0.0",
+    "@astrojs/svelte": "^8.0.1",
     "@lingui/core": "^5.9.3",
     "@lingui/react": "^5.9.3",
-    "astro": "^6.0.4",
+    "astro": "^6.0.5",
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
     "react": "^19.2.4",

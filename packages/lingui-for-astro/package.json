@@ -94,7 +94,7 @@
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "^25.5.0",
-    "astro": "^6.0.4",
+    "astro": "^6.0.5",
     "dedent": "^1.7.2",
     "tsdown": "0.21.2",
     "typescript": "^5.9.3",

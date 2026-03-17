@@ -17,8 +17,8 @@
   "dependencies": {
     "@astrojs/starlight": "^0.38.1",
     "@lingui/core": "^5.9.3",
-    "astro": "^6.0.1",
-    "sharp": "^0.34.2"
+    "astro": "^6.0.5",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@lingui/cli": "^5.9.3",

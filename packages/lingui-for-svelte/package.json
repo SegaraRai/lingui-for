@@ -85,7 +85,7 @@
     "@babel/traverse": "^7.29.0",
     "@babel/types": "^7.29.0",
     "@lingui/babel-plugin-lingui-macro": "^5.9.3",
-    "@typescript-eslint/typescript-estree": "^8.57.0",
+    "@typescript-eslint/typescript-estree": "^8.57.1",
     "estree-walker-ts": "^1.1.0",
     "magic-string": "^0.30.21",
     "source-map": "^0.7.6",
