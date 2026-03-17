@@ -4,6 +4,7 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
+import { transformAstro } from "../compiler-core/index.ts";
 import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";
 import type { LinguiAstroPluginOptions } from "./types.ts";
 
@@ -65,9 +66,7 @@ export const unpluginFactory: UnpluginFactory<
         return null;
       }
 
-      const { transformAstro } =
-        await import("../compiler-core/transform/transform-astro.ts");
-      const transformed = await transformAstro(code, {
+      const transformed = transformAstro(code, {
         filename,
         linguiConfig: options?.linguiConfig,
       });

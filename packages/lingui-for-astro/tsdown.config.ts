@@ -21,4 +21,12 @@ export default defineConfig({
     "unplugin/webpack": "src/unplugin/webpack.ts",
   },
   plugins: [markupImport({ frameworks: ["astro"] })],
+  inputOptions: {
+    moduleTypes: {
+      ".wasm": "asset",
+    },
+  },
+  attw: {
+    profile: "esm-only",
+  },
 });

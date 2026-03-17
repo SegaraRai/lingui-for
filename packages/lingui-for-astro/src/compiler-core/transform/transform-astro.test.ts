@@ -11,7 +11,7 @@ function compact(value: string): string {
 }
 
 describe("transformAstro", () => {
-  it("rewrites frontmatter and template expressions through request-scoped i18n", async () => {
+  it("rewrites frontmatter and template expressions through request-scoped i18n", () => {
     const source = dedent`
       ---
       import { t } from "lingui-for-astro/macro";
@@ -24,7 +24,7 @@ describe("transformAstro", () => {
       <span>{label}</span>
     `;
 
-    const result = await transformAstro(source, {
+    const result = transformAstro(source, {
       filename: "/virtual/Page.astro",
     });
     const code = compact(result.code);
@@ -41,7 +41,7 @@ describe("transformAstro", () => {
     expect(code).toContain('message: "Hello {name}"');
   });
 
-  it("lowers component macros to the RuntimeTrans Astro component", async () => {
+  it("lowers component macros to the RuntimeTrans Astro component", () => {
     const source = dedent`
       ---
       import { Trans as LocalTrans } from "lingui-for-astro/macro";
@@ -52,7 +52,7 @@ describe("transformAstro", () => {
       <LocalTrans id="demo.docs">Read the <a href="/docs">docs</a>, {name}.</LocalTrans>
     `;
 
-    const result = await transformAstro(source, {
+    const result = transformAstro(source, {
       filename: "/virtual/Page.astro",
     });
     const code = compact(result.code);
@@ -68,7 +68,7 @@ describe("transformAstro", () => {
     expect(code).toContain('href: "/docs"');
   });
 
-  it("leaves same-name non-macro components untouched", async () => {
+  it("leaves same-name non-macro components untouched", () => {
     const source = dedent`
       ---
       import Trans from "./Trans.astro";
@@ -77,7 +77,7 @@ describe("transformAstro", () => {
       <Trans id="demo.docs">Read the docs.</Trans>
     `;
 
-    const result = await transformAstro(source, {
+    const result = transformAstro(source, {
       filename: "/virtual/Page.astro",
     });
 
@@ -86,7 +86,7 @@ describe("transformAstro", () => {
 });
 
 describe("createAstroExtractionUnits", () => {
-  it("extracts imported alias template expressions", async () => {
+  it("extracts imported alias template expressions", () => {
     const source = dedent`
       ---
       import { t as translate } from "lingui-for-astro/macro";
@@ -95,7 +95,7 @@ describe("createAstroExtractionUnits", () => {
       <button>{translate\`Extract me\`}</button>
     `;
 
-    const units = await createAstroExtractionUnits(source, {
+    const units = createAstroExtractionUnits(source, {
       filename: "/virtual/Page.astro",
     });
 
@@ -115,7 +115,7 @@ describe("createAstroExtractionUnits", () => {
       <Trans>Read the <a href="/docs">docs</a>, {name}.</Trans>
     `;
 
-    const units = await createAstroExtractionUnits(source, {
+    const units = createAstroExtractionUnits(source, {
       filename: "/virtual/Page.astro",
     });
 
@@ -142,7 +142,7 @@ describe("createAstroExtractionUnits", () => {
       </p>
     `;
 
-    const units = await createAstroExtractionUnits(source, {
+    const units = createAstroExtractionUnits(source, {
       filename: "/virtual/Page.astro",
     });
 

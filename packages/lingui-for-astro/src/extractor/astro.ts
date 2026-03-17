@@ -48,7 +48,7 @@ export const astroExtractor: ExtractorType = {
   },
   async extract(filename, source, onMessageExtracted, ctx) {
     const extractorCtx = createExtractorContext(ctx);
-    const units = await createAstroExtractionUnits(source, {
+    const units = createAstroExtractionUnits(source, {
       filename,
       linguiConfig: extractorCtx.linguiConfig,
     });

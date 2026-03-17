@@ -59,15 +59,15 @@ export interface AstroTransformResult {
  * component macros to `RuntimeTrans`, and injects only the frontmatter prelude actually needed by
  * the rewritten file.
  */
-export async function transformAstro(
+export function transformAstro(
   source: string,
   options: LinguiAstroTransformOptions,
-): Promise<AstroTransformResult> {
-  const { analysis } = await analyzeAstro(source);
+): AstroTransformResult {
+  const { analysis } = analyzeAstro(source);
   const string = new MagicString(source);
   const frontmatterContent = getFrontmatterContent(source, analysis);
-  const macroBindings = await parseMacroBindings(frontmatterContent);
-  const filteredExpressions = await filterExpressions(
+  const macroBindings = parseMacroBindings(frontmatterContent);
+  const filteredExpressions = filterExpressions(
     source,
     analysis.expressions,
     macroBindings,
@@ -145,13 +145,13 @@ export async function transformAstro(
  * This powers the `.astro` extractor by reusing the same analysis and synthetic-program strategy
  * as the runtime transform while switching Lingui into extraction mode.
  */
-export async function createAstroExtractionUnits(
+export function createAstroExtractionUnits(
   source: string,
   options: LinguiAstroTransformOptions,
-): Promise<{ code: string; map: RawSourceMapLike | null }[]> {
-  const { analysis } = await analyzeAstro(source);
+): { code: string; map: RawSourceMapLike | null }[] {
+  const { analysis } = analyzeAstro(source);
   const frontmatterContent = getFrontmatterContent(source, analysis);
-  const macroBindings = await parseMacroBindings(frontmatterContent);
+  const macroBindings = parseMacroBindings(frontmatterContent);
   const units: { code: string; map: RawSourceMapLike | null }[] = [];
 
   if (frontmatterContent.includes(PACKAGE_MACRO)) {
@@ -170,7 +170,7 @@ export async function createAstroExtractionUnits(
     }
   }
 
-  const filteredExpressions = await filterExpressions(
+  const filteredExpressions = filterExpressions(
     source,
     analysis.expressions,
     macroBindings,
@@ -220,11 +220,11 @@ function getFrontmatterContent(
   );
 }
 
-async function filterExpressions(
+function filterExpressions(
   source: string,
   expressions: AstroExpression[],
   macroBindings: MacroBindings,
-): Promise<AstroExpression[]> {
+): AstroExpression[] {
   const results: AstroExpression[] = [];
 
   for (const expression of expressions) {
@@ -232,7 +232,7 @@ async function filterExpressions(
       expression.innerRange.start,
       expression.innerRange.end,
     );
-    if (await expressionUsesMacroBinding(expressionSource, macroBindings)) {
+    if (expressionUsesMacroBinding(expressionSource, macroBindings)) {
       results.push(expression);
     }
   }

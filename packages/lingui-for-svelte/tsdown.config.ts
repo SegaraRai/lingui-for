@@ -21,4 +21,7 @@ export default defineConfig({
     "unplugin/webpack": "src/unplugin/webpack.ts",
   },
   plugins: [markupImport()],
+  attw: {
+    profile: "esm-only",
+  },
 });

@@ -15,4 +15,7 @@ export default defineConfig({
     vite: "src/vite.ts",
     webpack: "src/webpack.ts",
   },
+  attw: {
+    profile: "esm-only",
+  },
 });

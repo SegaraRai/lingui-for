@@ -55,12 +55,13 @@
   "dependencies": {
     "@babel/core": "^7.29.0",
     "@lingui/babel-plugin-lingui-macro": "^5.9.3",
-    "oxc-parser": "^0.119.0",
+    "oxc-parser": "^0.120.0",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {
-    "@types/babel__core": "^7.20.5",
+    "@arethetypeswrong/core": "^0.18.2",
     "@lingui/conf": "^5.9.3",
+    "@types/babel__core": "^7.20.5",
     "@types/node": "^25.5.0",
     "tsdown": "0.21.2",
     "typescript": "^5.9.3",

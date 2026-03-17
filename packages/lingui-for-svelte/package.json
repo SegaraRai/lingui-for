@@ -92,6 +92,7 @@
     "unplugin": "^3.0.0"
   },
   "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.2",
     "@lingui/cli": "^5.9.3",
     "@lingui/conf": "^5.9.3",
     "@lingui/core": "^5.9.3",

@@ -8,8 +8,8 @@
   ],
   "scripts": {
     "build": "pnpm run build:lib && pnpm run build:examples && pnpm run build:apps",
-    "build:astro-analyzer:wasm": "cd crates/astro-analyzer && wasm-pack build --target web --release --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
-    "build:astro-analyzer:wasm-dev": "cd crates/astro-analyzer && wasm-pack build --target web --dev --no-opt --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
+    "build:wasm": "cd crates/astro-analyzer && wasm-pack build --target web --release --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
+    "build:wasm-dev": "cd crates/astro-analyzer && wasm-pack build --target web --dev --no-opt --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
     "build:lib": "pnpm --filter unplugin-lingui-macro build && pnpm --filter unplugin-markup-import build && pnpm --filter lingui-for-svelte build && pnpm --filter lingui-for-astro build",
     "build:examples": "pnpm --filter e2e-svelte build && pnpm --filter e2e-astro build",
     "build:apps": "pnpm --filter docs build",

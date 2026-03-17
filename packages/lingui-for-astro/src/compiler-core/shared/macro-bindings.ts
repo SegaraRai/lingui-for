@@ -83,12 +83,12 @@ function parseFile(code: string): t.File | null {
   return parsed && t.isFile(parsed) ? parsed : null;
 }
 
-async function collectImportLocalsFromFile(
+function collectImportLocalsFromFile(
   file: t.File,
   importedNames: readonly MacroImportName[],
-): Promise<Map<string, MacroImportName>> {
+): Map<string, MacroImportName> {
   const locals = new Map<string, MacroImportName>();
-  const traverse = await getBabelTraverse();
+  const traverse = getBabelTraverse();
 
   traverse(file, {
     ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
@@ -123,7 +123,7 @@ async function collectImportLocalsFromFile(
  * This is the first-stage import analysis used by Astro transforms before probing individual
  * expressions or component nodes.
  */
-export async function parseMacroBindings(code: string): Promise<MacroBindings> {
+export function parseMacroBindings(code: string): MacroBindings {
   const file = parseFile(code);
   if (!file) {
     return {
@@ -134,11 +134,8 @@ export async function parseMacroBindings(code: string): Promise<MacroBindings> {
     };
   }
 
-  const allImports = await collectImportLocalsFromFile(file, ALL_MACRO_IMPORTS);
-  const componentImports = await collectImportLocalsFromFile(
-    file,
-    COMPONENT_IMPORTS,
-  );
+  const allImports = collectImportLocalsFromFile(file, ALL_MACRO_IMPORTS);
+  const componentImports = collectImportLocalsFromFile(file, COMPONENT_IMPORTS);
 
   return {
     all: new Set(allImports.keys()),
@@ -224,10 +221,10 @@ function pathUsesMacroBinding(
  * with Babel, and traverses the resulting AST using scope-aware binding resolution. This avoids
  * false positives from shadowed locals or plain name matching.
  */
-export async function expressionUsesMacroBinding(
+export function expressionUsesMacroBinding(
   source: string,
   bindings: MacroBindings,
-): Promise<boolean> {
+): boolean {
   if (bindings.all.size === 0) {
     return false;
   }
@@ -238,7 +235,7 @@ export async function expressionUsesMacroBinding(
   }
 
   let usesMacroBinding = false;
-  const traverse = await getBabelTraverse();
+  const traverse = getBabelTraverse();
 
   traverse(file, {
     CallExpression(path: NodePath<t.CallExpression>) {
