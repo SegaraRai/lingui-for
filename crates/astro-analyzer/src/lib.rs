@@ -16,9 +16,8 @@ pub use analyze::{
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(js_name = "analyzeAstro")]
-pub fn wasm_analyze_astro(source: String) -> Result<JsValue, JsValue> {
+pub fn wasm_analyze_astro(source: String) -> Result<AstroAnalysis, JsValue> {
     console_error_panic_hook::set_once();
 
-    let analysis = analyze_astro(&source).map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&analysis).map_err(|error| JsValue::from_str(&error.to_string()))
+    analyze_astro(&source).map_err(|error| JsValue::from_str(&error.to_string()))
 }

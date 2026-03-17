@@ -21,7 +21,6 @@
   "exports": {
     ".": {
       "types": "./dist/runtime/index.d.mts",
-      "svelte": "./dist/runtime/index.mjs",
       "default": "./dist/runtime/index.mjs"
     },
     "./extractor": {
@@ -34,12 +33,7 @@
     },
     "./runtime": {
       "types": "./dist/runtime/index.d.mts",
-      "svelte": "./dist/runtime/index.mjs",
       "default": "./dist/runtime/index.mjs"
-    },
-    "./integration": {
-      "types": "./dist/integration/index.d.mts",
-      "default": "./dist/integration/index.mjs"
     },
     "./unplugin": {
       "types": "./dist/unplugin/index.d.mts",

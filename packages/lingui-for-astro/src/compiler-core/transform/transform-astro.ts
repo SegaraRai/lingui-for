@@ -2,8 +2,12 @@ import { generate } from "@babel/generator";
 import * as t from "@babel/types";
 import MagicString from "magic-string";
 
-import { analyzeAstro } from "../analysis/astro-analysis.ts";
-import type { AstroAnalysis, AstroExpression } from "../analysis/types.ts";
+import {
+  analyzeAstro,
+  initWasmOnce,
+  type AstroAnalysis,
+  type AstroExpression,
+} from "#astro-analyzer-wasm";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
   PACKAGE_MACRO,
@@ -63,7 +67,9 @@ export function transformAstro(
   source: string,
   options: LinguiAstroTransformOptions,
 ): AstroTransformResult {
-  const { analysis } = analyzeAstro(source);
+  initWasmOnce();
+
+  const analysis = analyzeAstro(source);
   const string = new MagicString(source);
   const frontmatterContent = getFrontmatterContent(source, analysis);
   const macroBindings = parseMacroBindings(frontmatterContent);
@@ -149,7 +155,9 @@ export function createAstroExtractionUnits(
   source: string,
   options: LinguiAstroTransformOptions,
 ): { code: string; map: RawSourceMapLike | null }[] {
-  const { analysis } = analyzeAstro(source);
+  initWasmOnce();
+
+  const analysis = analyzeAstro(source);
   const frontmatterContent = getFrontmatterContent(source, analysis);
   const macroBindings = parseMacroBindings(frontmatterContent);
   const units: { code: string; map: RawSourceMapLike | null }[] = [];

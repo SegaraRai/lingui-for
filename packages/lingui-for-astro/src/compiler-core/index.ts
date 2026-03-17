@@ -1,17 +1,3 @@
-export {
-  analyzeAstro,
-  type AnalyzeAstroResult,
-} from "./analysis/astro-analysis.ts";
-export type {
-  AstroAnalysis,
-  AstroComponentCandidate,
-  AstroExpression,
-  AstroExpressionKind,
-  AstroTagKind,
-  ByteRange,
-  FrontmatterBlock,
-  TextPoint,
-} from "./analysis/types.ts";
 export { normalizeLinguiConfig } from "./shared/config.ts";
 export { stripQuery } from "./shared/paths.ts";
 export type { LinguiAstroTransformOptions } from "./shared/types.ts";

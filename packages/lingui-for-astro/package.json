@@ -17,6 +17,9 @@
   "files": [
     "dist"
   ],
+  "imports": {
+    "#astro-analyzer-wasm": "./src/compiler-core/analysis/wasm.ts"
+  },
   "exports": {
     ".": {
       "types": "./dist/runtime/index.d.mts",

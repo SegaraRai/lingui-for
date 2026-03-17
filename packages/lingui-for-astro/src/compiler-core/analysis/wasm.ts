@@ -1,6 +1,7 @@
+import { readFileSync } from "node:fs";
+
 import { initSync, type InitOutput } from "astro-analyzer-wasm";
 import wasmPath from "astro-analyzer-wasm/wasm";
-import { readFileSync } from "node:fs";
 
 export * from "astro-analyzer-wasm";
 

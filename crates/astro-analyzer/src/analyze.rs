@@ -9,7 +9,8 @@ pub enum AstroAnalyzerError {
     ParseFailed,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, tsify::Tsify)]
+#[tsify(into_wasm_abi)]
 #[serde(rename_all = "camelCase")]
 pub struct ByteRange {
     pub start: usize,
@@ -25,7 +26,8 @@ impl ByteRange {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, tsify::Tsify)]
+#[tsify(into_wasm_abi)]
 #[serde(rename_all = "camelCase")]
 pub struct TextPoint {
     pub row: usize,
@@ -41,7 +43,8 @@ impl From<tree_sitter::Point> for TextPoint {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, tsify::Tsify)]
+#[tsify(into_wasm_abi)]
 #[serde(rename_all = "camelCase")]
 pub struct FrontmatterBlock {
     pub range: ByteRange,
@@ -50,7 +53,8 @@ pub struct FrontmatterBlock {
     pub end: TextPoint,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, tsify::Tsify)]
+#[tsify(into_wasm_abi)]
 #[serde(rename_all = "camelCase")]
 pub enum AstroExpressionKind {
     HtmlInterpolation,
@@ -58,7 +62,8 @@ pub enum AstroExpressionKind {
     AttributeBacktickString,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, tsify::Tsify)]
+#[tsify(into_wasm_abi)]
 #[serde(rename_all = "camelCase")]
 pub struct AstroExpression {
     pub kind: AstroExpressionKind,
@@ -68,14 +73,16 @@ pub struct AstroExpression {
     pub end: TextPoint,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, tsify::Tsify)]
+#[tsify(into_wasm_abi)]
 #[serde(rename_all = "camelCase")]
 pub enum AstroTagKind {
     Normal,
     SelfClosing,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, tsify::Tsify)]
+#[tsify(into_wasm_abi)]
 #[serde(rename_all = "camelCase")]
 pub struct AstroComponentCandidate {
     pub tag_name: String,
@@ -87,7 +94,8 @@ pub struct AstroComponentCandidate {
     pub end: TextPoint,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, tsify::Tsify)]
+#[tsify(into_wasm_abi)]
 #[serde(rename_all = "camelCase")]
 pub struct AstroAnalysis {
     pub frontmatter: Option<FrontmatterBlock>,

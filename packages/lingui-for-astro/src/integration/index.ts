@@ -1,7 +1,7 @@
 import type { AstroIntegration } from "astro";
 
-import type { LinguiAstroPluginOptions } from "../unplugin/types";
-import viteLinguiForAstro from "../unplugin/vite";
+import type { LinguiAstroPluginOptions } from "../unplugin/types.ts";
+import viteLinguiForAstro from "../unplugin/vite.ts";
 
 /**
  * Options for the Astro integration entrypoint.
