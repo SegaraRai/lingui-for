@@ -1,11 +1,37 @@
 {
   "name": "unplugin-lingui-macro",
   "version": "0.0.0",
+  "description": "Bundler plugin for compiling Lingui macros in plain JavaScript and TypeScript modules.",
+  "license": "MIT",
+  "author": "SegaraRai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SegaraRai/lingui-for.git",
+    "directory": "packages/unplugin-lingui-macro"
+  },
+  "homepage": "https://lingui-for.roundtrip.dev/guides/install-and-first-translation",
+  "bugs": {
+    "url": "https://github.com/SegaraRai/lingui-for/issues"
+  },
+  "keywords": [
+    "unplugin",
+    "vite",
+    "rolldown",
+    "rollup",
+    "webpack",
+    "rspack",
+    "esbuild",
+    "lingui",
+    "i18n"
+  ],
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsdown",

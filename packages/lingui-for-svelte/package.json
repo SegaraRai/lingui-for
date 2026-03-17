@@ -1,12 +1,43 @@
 {
   "name": "lingui-for-svelte",
   "version": "0.0.0",
+  "description": "Macro-first Lingui integration for Svelte 5.",
+  "license": "MIT",
+  "author": "SegaraRai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SegaraRai/lingui-for.git",
+    "directory": "packages/lingui-for-svelte"
+  },
+  "homepage": "https://lingui-for.roundtrip.dev/frameworks/svelte/getting-started",
+  "bugs": {
+    "url": "https://github.com/SegaraRai/lingui-for/issues"
+  },
+  "keywords": [
+    "unplugin",
+    "vite",
+    "rolldown",
+    "rollup",
+    "webpack",
+    "rspack",
+    "esbuild",
+    "lingui",
+    "svelte",
+    "i18n"
+  ],
   "type": "module",
+  "sideEffects": [
+    "**/*.svelte",
+    "./runtime",
+    "./dist/runtime/index.mjs"
+  ],
   "main": "./dist/runtime/index.mjs",
   "svelte": "./dist/runtime/index.mjs",
   "types": "./dist/runtime/index.d.mts",
-  "sideEffects": [
-    "**/*.svelte"
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsdown --config tsdown.config.ts",
@@ -15,9 +46,6 @@
     "check:markup": "svelte-check",
     "test": "vitest"
   },
-  "files": [
-    "dist"
-  ],
   "exports": {
     ".": {
       "types": "./dist/runtime/index.d.mts",

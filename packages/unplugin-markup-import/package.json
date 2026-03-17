@@ -1,11 +1,26 @@
 {
   "name": "unplugin-markup-import",
   "version": "0.0.0",
+  "description": "Unplugin for including .svelte and .astro files in bundler output with correct import graph resolution.",
+  "license": "MIT",
+  "author": "SegaraRai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SegaraRai/lingui-for.git",
+    "directory": "packages/unplugin-markup-import"
+  },
+  "homepage": "https://github.com/SegaraRai/lingui-for/tree/main/packages/unplugin-markup-import#readme",
+  "bugs": {
+    "url": "https://github.com/SegaraRai/lingui-for/issues"
+  },
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsdown",

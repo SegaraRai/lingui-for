@@ -1,11 +1,42 @@
 {
   "name": "lingui-for-astro",
   "version": "0.0.0",
+  "description": "Macro-first Lingui integration for Astro.",
+  "license": "MIT",
+  "author": "SegaraRai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SegaraRai/lingui-for.git",
+    "directory": "packages/lingui-for-astro"
+  },
+  "homepage": "https://lingui-for.roundtrip.dev/frameworks/astro/getting-started",
+  "bugs": {
+    "url": "https://github.com/SegaraRai/lingui-for/issues"
+  },
+  "keywords": [
+    "unplugin",
+    "vite",
+    "rolldown",
+    "rollup",
+    "webpack",
+    "rspack",
+    "esbuild",
+    "lingui",
+    "astro",
+    "i18n"
+  ],
   "type": "module",
+  "sideEffects": [
+    "**/*.astro",
+    "./runtime",
+    "./dist/runtime/index.mjs"
+  ],
   "main": "./dist/runtime/index.mjs",
   "types": "./dist/runtime/index.d.mts",
-  "sideEffects": [
-    "**/*.astro"
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsdown",
@@ -14,9 +45,6 @@
     "check:markup": "astro check",
     "test": "vitest"
   },
-  "files": [
-    "dist"
-  ],
   "imports": {
     "#astro-analyzer-wasm": "./src/compiler-core/analysis/wasm.ts"
   },
