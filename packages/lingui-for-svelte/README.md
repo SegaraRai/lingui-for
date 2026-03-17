@@ -1,0 +1,115 @@
+# lingui-for-svelte
+
+Documentation: <https://lingui-for.roundtrip.dev/frameworks/svelte/getting-started>
+
+Macro-first Lingui integration for Svelte 5.
+
+It provides:
+
+- a Svelte-aware macro transform for `.svelte` files
+- a Lingui extractor for `.svelte`
+- runtime helpers for installing Lingui context in the component tree
+- unplugin entrypoints for Vite and other bundlers
+
+## Install
+
+```sh
+pnpm add @lingui/core lingui-for-svelte
+pnpm add -D @lingui/cli
+```
+
+If you also use Lingui macros in plain `.js` or `.ts` files, add `unplugin-lingui-macro` too:
+
+```sh
+pnpm add -D unplugin-lingui-macro
+```
+
+## Quick Start
+
+Configure Vite:
+
+```ts
+import { sveltekit } from "@sveltejs/kit/vite";
+import { defineConfig } from "vite";
+import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+import linguiMacro from "unplugin-lingui-macro/vite";
+
+export default defineConfig({
+  plugins: [linguiMacro(), linguiForSvelte(), sveltekit()],
+});
+```
+
+If you only use macros in `.svelte` files, you can remove `unplugin-lingui-macro`.
+
+Configure Lingui extraction:
+
+```ts
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default {
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [
+    {
+      path: "src/lib/i18n/locales/{locale}",
+      include: ["src"],
+      exclude: ["src/lib/i18n/locales/**"],
+    },
+  ],
+  extractors: [svelteExtractor, babelExtractor],
+};
+```
+
+Initialize Lingui near the root of the component tree:
+
+```svelte
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+
+  const { children } = $props();
+
+  const i18n = setupI18n({
+    locale: "en",
+    messages: {},
+  });
+
+  setLinguiContext(i18n);
+</script>
+
+{@render children?.()}
+```
+
+Use macros in Svelte components:
+
+```svelte
+<script lang="ts">
+  import { t, Trans } from "lingui-for-svelte/macro";
+
+  let count = $state(1);
+</script>
+
+<h1>{$t`Hello from Svelte`}</h1>
+
+<p><Trans>{count} item selected</Trans></p>
+```
+
+## Entrypoints
+
+- `lingui-for-svelte`: runtime exports such as `setLinguiContext` and `RuntimeTrans`
+- `lingui-for-svelte/macro`: authoring macros such as `t`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, and `defineMessage`
+- `lingui-for-svelte/extractor`: `svelteExtractor` for Lingui CLI extraction
+- `lingui-for-svelte/unplugin/*`: bundler plugins for Vite, Rollup, Webpack, esbuild, Rolldown, Rspack, and Bun
+
+## Notes
+
+- The primary authoring API is `lingui-for-svelte/macro`. Runtime helpers exist mainly as the compilation target.
+- Initialize Lingui context before translated markup runs. In practice, a root layout is the safest place.
+- Reactive forms such as `$t(...)` are Svelte-specific.
+- Plain `.js`, `.ts`, `.svelte.js`, and `.svelte.ts` macro support comes from `unplugin-lingui-macro`, not from the Svelte transform itself.
+
+## Repository References
+
+- Docs source: [`apps/docs/src/content/docs/frameworks/svelte/getting-started.mdx`](../../apps/docs/src/content/docs/frameworks/svelte/getting-started.mdx)
+- Verification app: [`examples/e2e-svelte`](../../examples/e2e-svelte)

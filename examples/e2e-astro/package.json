@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "lingui:extract": "lingui extract --config lingui.config.ts --workers 1 --clean --overwrite",
-    "lingui:compile": "lingui compile --config lingui.config.ts --workers 1 && prettier --write src/lib/i18n/locales",
+    "lingui:extract": "lingui extract --clean --overwrite",
+    "lingui:compile": "lingui compile && prettier --write src/lib/i18n/locales",
     "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
     "build": "pnpm run lingui:build && astro build",
     "preview": "astro preview --port 4542",

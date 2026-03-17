@@ -315,6 +315,7 @@ dependencies = [
 [[package]]
 name = "tree-sitter-astro"
 version = "0.0.1"
+source = "git+https://github.com/SegaraRai/tree-sitter-astro.git#08c9f6a962e630aa881aee7842aaa1276e9eb047"
 dependencies = [
  "cc",
  "tree-sitter-language",

@@ -7,7 +7,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "pnpm run build:lib && pnpm run build:examples && pnpm run build:apps",
+    "build": "pnpm run build:wasm && pnpm run build:lib && pnpm run build:examples && pnpm run build:apps",
     "build:wasm": "cd crates/astro-analyzer && wasm-pack build --target web --release --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
     "build:wasm-dev": "cd crates/astro-analyzer && wasm-pack build --target web --dev --no-opt --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
     "build:lib": "pnpm --filter unplugin-lingui-macro build && pnpm --filter unplugin-markup-import build && pnpm --filter lingui-for-svelte build && pnpm --filter lingui-for-astro build",

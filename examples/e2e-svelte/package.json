@@ -5,14 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "lingui:extract": "lingui extract --config lingui.config.ts --workers 1 --clean --overwrite",
-    "lingui:compile": "lingui compile --config lingui.config.ts --workers 1 && prettier --write src/lib/i18n/locales",
+    "lingui:extract": "lingui extract --clean --overwrite",
+    "lingui:compile": "lingui compile && prettier --write src/lib/i18n/locales",
     "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
     "build": "pnpm run lingui:build && svelte-kit sync && vite build",
     "preview": "node .sveltekit-build/index.js",
     "check": "pnpm run check:ts && pnpm run check:markup",
-    "check:ts": "tsc -p tsconfig.json --noEmit",
-    "check:markup": "svelte-check --tsconfig ./tsconfig.json",
+    "check:ts": "tsc --noEmit",
+    "check:markup": "svelte-check",
     "test": "pnpm run test:e2e run && pnpm run test:browser run",
     "test:e2e": "vitest",
     "test:browser": "vitest --config vitest.browser.config.ts"
