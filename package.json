@@ -24,9 +24,12 @@
     "preview:docs": "pnpm --filter docs preview",
     "format": "prettier --write .",
     "test:rust": "cargo test -p astro-analyzer",
-    "test": "vitest"
+    "test": "vitest",
+    "changeset": "changeset",
+    "release": "pnpm run build && pnpm publish -r --access public --provenance"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-organize-imports": "^4.3.0",
