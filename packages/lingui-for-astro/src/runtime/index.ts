@@ -15,6 +15,7 @@ export {
   getLinguiContext,
   getMdxLinguiContext,
   LINGUI_ASTRO_CONTEXT,
+  runWithLinguiContext,
   setLinguiContext,
   type AstroLike,
   type LinguiContext,
