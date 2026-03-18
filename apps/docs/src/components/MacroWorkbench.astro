@@ -1,0 +1,502 @@
+---
+import type { MacroWorkbenchResolvedDefinition } from "../lib/macro-workbench.ts";
+import { ensureWorkbenchLinguiContext } from "../lib/workbench-i18n.ts";
+
+import MacroWorkbenchCodeArtifact from "./MacroWorkbenchCodeArtifact.astro";
+import MacroWorkbenchControlField from "./MacroWorkbenchControlField.astro";
+import MacroWorkbenchPreviewIsland from "./MacroWorkbenchPreviewIsland.svelte";
+import WorkbenchTabBar from "./WorkbenchTabBar.astro";
+
+type Props = {
+  workbench: MacroWorkbenchResolvedDefinition;
+};
+
+const { workbench } = Astro.props as Props;
+
+ensureWorkbenchLinguiContext(Astro.locals);
+
+const sourceCatalogCodes = workbench.locale.options.filter(
+  (option) => workbench.source.catalogs[option.code],
+);
+const resultCompiledCodes = workbench.locale.options.filter(
+  (option) => workbench.result.compiledCatalogs[option.code],
+);
+const initialSourceTab =
+  workbench.initialView.source === "catalog" && sourceCatalogCodes.length > 0
+    ? "catalog"
+    : "demo";
+const initialResultTab =
+  workbench.initialView.result === "compiledCatalog" &&
+  resultCompiledCodes.length > 0
+    ? "compiledCatalog"
+    : workbench.initialView.result === "transformed"
+      ? "transformed"
+      : "preview";
+const initialPreviewProps = {
+  ...workbench.initialValues,
+  ...workbench.result.preview.initialProps,
+};
+const sourceTabs = [
+  {
+    label: workbench.source.demo.filename ?? "Demo.svelte",
+    selected: initialSourceTab === "demo",
+    value: "demo",
+  },
+  ...(sourceCatalogCodes.length > 0
+    ? [
+        {
+          label: "Catalog",
+          selected: initialSourceTab === "catalog",
+          value: "catalog",
+        },
+      ]
+    : []),
+];
+const resultTabs = [
+  {
+    label: "Preview",
+    selected: initialResultTab === "preview",
+    value: "preview",
+  },
+  {
+    label: "Transformed Svelte",
+    selected: initialResultTab === "transformed",
+    value: "transformed",
+  },
+  ...(resultCompiledCodes.length > 0
+    ? [
+        {
+          label: "Compiled Catalog",
+          selected: initialResultTab === "compiledCatalog",
+          value: "compiledCatalog",
+        },
+      ]
+    : []),
+];
+---
+
+<div
+  class="twp"
+  data-workbench
+  data-locale={workbench.locale.initial}
+  data-result-tab={initialResultTab}
+  data-source-tab={initialSourceTab}
+  data-workbench-id={workbench.id}
+>
+  <div
+    class="not-content my-6 overflow-hidden border border-(--demo-border) bg-(--demo-background)"
+  >
+    <div class="grid gap-0 lg:grid-cols-2">
+      <section
+        class="grid grid-rows-[auto_1fr] border-b border-(--demo-border) lg:border-r lg:border-b-0"
+      >
+        <header
+          class="overflow-hidden border-b border-(--demo-border) bg-(--demo-toolbar-background)"
+        >
+          <div class="px-4 pt-3">
+            <div
+              class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-toolbar-text) uppercase"
+            >
+              Source
+            </div>
+          </div>
+          <WorkbenchTabBar
+            ariaLabel="Source tabs"
+            group="source"
+            tabs={sourceTabs}
+          />
+        </header>
+
+        <div
+          class="grid max-h-68 grid-rows-1 bg-(--sl-color-black) lg:max-h-100"
+        >
+          <div
+            role="tabpanel"
+            data-panel-group="source"
+            data-panel-value="demo"
+            class="contents"
+            hidden={initialSourceTab !== "demo"}
+          >
+            <MacroWorkbenchCodeArtifact artifact={workbench.source.demo} />
+          </div>
+
+          <div
+            role="tabpanel"
+            data-panel-group="source"
+            data-panel-value="catalog"
+            class="contents"
+            hidden={initialSourceTab !== "catalog"}
+          >
+            {
+              sourceCatalogCodes.map((option) => (
+                <div
+                  data-locale-panel="source-catalog"
+                  data-locale-value={option.code}
+                  class="contents"
+                  hidden={option.code !== workbench.locale.initial}
+                >
+                  <MacroWorkbenchCodeArtifact
+                    artifact={workbench.source.catalogs[option.code]!}
+                  />
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+
+      <section class="grid grid-rows-[auto_1fr]">
+        <header
+          class="overflow-hidden border-b border-(--demo-border) bg-(--demo-toolbar-background)"
+        >
+          <div class="px-4 pt-3">
+            <div
+              class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-toolbar-text) uppercase"
+            >
+              Result
+            </div>
+          </div>
+          <WorkbenchTabBar
+            ariaLabel="Result tabs"
+            group="result"
+            tabs={resultTabs}
+          />
+        </header>
+
+        <div
+          class="grid h-64 grid-rows-1 bg-(--demo-result-background) lg:h-96"
+        >
+          <div
+            role="tabpanel"
+            data-panel-group="result"
+            data-panel-value="preview"
+            class="contents"
+            hidden={initialResultTab !== "preview"}
+          >
+            <div class="overflow-auto p-6">
+              <MacroWorkbenchPreviewIsland
+                client:load
+                componentModule={workbench.result.preview.componentModule}
+                initialValues={initialPreviewProps}
+                workbenchId={workbench.id}
+              />
+            </div>
+          </div>
+
+          <div
+            role="tabpanel"
+            data-panel-group="result"
+            data-panel-value="transformed"
+            class="contents"
+            hidden={initialResultTab !== "transformed"}
+          >
+            <MacroWorkbenchCodeArtifact
+              artifact={workbench.result.transformed}
+            />
+          </div>
+
+          <div
+            role="tabpanel"
+            data-panel-group="result"
+            data-panel-value="compiledCatalog"
+            class="contents"
+            hidden={initialResultTab !== "compiledCatalog"}
+          >
+            {
+              resultCompiledCodes.map((option) => (
+                <div
+                  data-locale-panel="result-compiled"
+                  data-locale-value={option.code}
+                  class="contents"
+                  hidden={option.code !== workbench.locale.initial}
+                >
+                  <MacroWorkbenchCodeArtifact
+                    artifact={workbench.result.compiledCatalogs[option.code]!}
+                  />
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div
+      class="overflow-x-auto border-t border-(--demo-control-border) bg-(--demo-control-background) px-4"
+    >
+      <div class="flex min-w-max items-center justify-between gap-8 py-3">
+        <div class="flex items-center gap-3">
+          <div
+            class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-control-text) uppercase"
+          >
+            Locale
+          </div>
+          <div
+            class="inline-flex overflow-hidden rounded-lg border border-(--demo-control-border)"
+          >
+            {
+              workbench.locale.options.map((option) => (
+                <button
+                  type="button"
+                  aria-pressed={option.code === workbench.locale.initial}
+                  data-locale-button
+                  data-locale-code={option.code}
+                  class="border-r border-(--demo-control-border) px-3 py-1.5 text-sm transition-colors last:border-r-0 aria-pressed:bg-(--demo-control-active-background) aria-pressed:text-(--demo-control-active-text) aria-[pressed=false]:text-(--demo-control-text)"
+                >
+                  {option.label}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          {
+            workbench.controls.map((control) => (
+              <MacroWorkbenchControlField control={control} />
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const syncWorkbenchGroup = (
+    workbench: HTMLElement,
+    group: string,
+    nextValue: string,
+  ) => {
+    const tabs = workbench.querySelectorAll<HTMLElement>(
+      `[data-tab-group="${group}"]`,
+    );
+    const panels = workbench.querySelectorAll<HTMLElement>(
+      `[data-panel-group="${group}"]`,
+    );
+
+    tabs.forEach((tab) => {
+      const isActive = tab.dataset.tabValue === nextValue;
+      tab.ariaSelected = isActive ? "true" : "false";
+      tab.tabIndex = isActive ? 0 : -1;
+
+      if (isActive) {
+        queueMicrotask(() => {
+          tab.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+            inline: "nearest",
+          });
+        });
+      }
+    });
+
+    panels.forEach((panel) => {
+      panel.hidden = panel.dataset.panelValue !== nextValue;
+    });
+
+    workbench.dataset[`${group}Tab`] = nextValue;
+  };
+
+  const syncLocaleButtons = (workbench: HTMLElement, nextLocale: string) => {
+    workbench
+      .querySelectorAll<HTMLElement>("[data-locale-button]")
+      .forEach((button) => {
+        button.ariaPressed =
+          button.dataset.localeCode === nextLocale ? "true" : "false";
+      });
+
+    workbench.dataset.locale = nextLocale;
+  };
+
+  const syncLocalePanels = (workbench: HTMLElement, nextLocale: string) => {
+    workbench
+      .querySelectorAll<HTMLElement>("[data-locale-panel]")
+      .forEach((panel) => {
+        panel.hidden = panel.dataset.localeValue !== nextLocale;
+      });
+  };
+
+  const readWorkbenchValues = (workbench: HTMLElement) => {
+    const values: Record<string, unknown> = {};
+
+    values.locale = workbench.dataset.locale ?? "en";
+
+    workbench
+      .querySelectorAll<HTMLElement>("[data-control-id]")
+      .forEach((control) => {
+        const id = control.dataset.controlId;
+        const type = control.dataset.controlType;
+
+        if (!id || !type) {
+          return;
+        }
+
+        if (type === "text") {
+          values[id] = (control as HTMLInputElement).value;
+          return;
+        }
+
+        if (type === "number") {
+          const nextValue = Number((control as HTMLInputElement).value);
+          values[id] = Number.isNaN(nextValue) ? 0 : nextValue;
+          return;
+        }
+
+        if (type === "select") {
+          values[id] = (control as HTMLSelectElement).value;
+          return;
+        }
+
+        if (type === "boolean") {
+          values[id] = control.dataset.active === "1";
+        }
+      });
+
+    return values;
+  };
+
+  const emitWorkbenchUpdate = (workbench: HTMLElement) => {
+    const workbenchId = workbench.dataset.workbenchId;
+
+    if (!workbenchId) {
+      return;
+    }
+
+    window.dispatchEvent(
+      new CustomEvent("macro-workbench:update", {
+        detail: {
+          values: readWorkbenchValues(workbench),
+          workbenchId,
+        },
+      }),
+    );
+  };
+
+  const initWorkbench = (workbench: HTMLElement) => {
+    if (workbench.dataset.initialized === "1") {
+      return;
+    }
+
+    workbench.dataset.initialized = "1";
+    syncWorkbenchGroup(
+      workbench,
+      "source",
+      workbench.dataset.sourceTab ?? "demo",
+    );
+    syncWorkbenchGroup(
+      workbench,
+      "result",
+      workbench.dataset.resultTab ?? "preview",
+    );
+    syncLocaleButtons(workbench, workbench.dataset.locale ?? "en");
+    syncLocalePanels(workbench, workbench.dataset.locale ?? "en");
+
+    workbench.addEventListener("click", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const tabButton = target.closest("[data-tab-group]");
+
+      if (tabButton instanceof HTMLElement) {
+        const group = tabButton.dataset.tabGroup;
+        const nextValue = tabButton.dataset.tabValue;
+        if (!group || !nextValue) {
+          return;
+        }
+
+        syncWorkbenchGroup(workbench, group, nextValue);
+        return;
+      }
+
+      const localeButton = target.closest("[data-locale-button]");
+
+      if (localeButton instanceof HTMLElement) {
+        const nextLocale = localeButton.dataset.localeCode;
+        if (!nextLocale) {
+          return;
+        }
+
+        syncLocaleButtons(workbench, nextLocale);
+        syncLocalePanels(workbench, nextLocale);
+        emitWorkbenchUpdate(workbench);
+        return;
+      }
+
+      const booleanButton = target.closest('[data-control-type="boolean"]');
+
+      if (booleanButton instanceof HTMLElement) {
+        const isActive = booleanButton.dataset.active === "1";
+        booleanButton.dataset.active = isActive ? "0" : "1";
+        booleanButton.setAttribute("aria-pressed", isActive ? "false" : "true");
+        booleanButton.textContent = isActive ? "Off" : "On";
+        emitWorkbenchUpdate(workbench);
+      }
+    });
+
+    workbench.addEventListener("input", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      if (
+        target.matches('[data-control-type="text"]') ||
+        target.matches('[data-control-type="number"]')
+      ) {
+        emitWorkbenchUpdate(workbench);
+      }
+    });
+
+    workbench.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      if (target.matches('[data-control-type="select"]')) {
+        emitWorkbenchUpdate(workbench);
+      }
+    });
+
+    emitWorkbenchUpdate(workbench);
+  };
+
+  document.querySelectorAll("[data-workbench]").forEach((workbench) => {
+    if (workbench instanceof HTMLElement) {
+      initWorkbench(workbench);
+    }
+  });
+</script>
+
+<style>
+  .twp {
+    --demo-background: var(--sl-color-black);
+    --demo-border: var(--sl-color-gray-5);
+
+    --demo-toolbar-text: var(--sl-color-gray-2);
+    --demo-toolbar-background: var(--sl-color-bg-sidebar);
+
+    --demo-tab-text-default: var(--sl-color-text);
+    --demo-tab-text-hover: var(--sl-color-text);
+    --demo-tab-text-active: var(--sl-color-white);
+    --demo-tab-border-default: var(--sl-color-gray-5);
+    --demo-tab-border-hover: var(--sl-color-gray-5);
+    --demo-tab-border-active: var(--sl-color-text-accent);
+
+    --demo-result-background: var(--sl-color-black);
+    --demo-preview-text: var(--sl-color-text);
+
+    --demo-control-text: var(--sl-color-gray-2);
+    --demo-control-background: var(--sl-color-bg-sidebar);
+    --demo-control-border: var(--sl-color-gray-5);
+    --demo-control-active-background: var(--sl-color-accent-low);
+    --demo-control-active-text: var(--sl-color-white);
+  }
+</style>

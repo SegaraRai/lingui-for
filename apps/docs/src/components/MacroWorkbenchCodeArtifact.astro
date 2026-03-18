@@ -1,0 +1,16 @@
+---
+import { Code } from "astro/components";
+import githubDark from "shiki/themes/github-dark.mjs";
+
+import type { MacroWorkbenchCodeArtifact } from "../lib/macro-workbench.ts";
+
+type Props = {
+  artifact: MacroWorkbenchCodeArtifact;
+};
+
+const { artifact } = Astro.props as Props;
+---
+
+<div class="contents [&>pre]:p-2">
+  <Code code={artifact.code} lang={artifact.lang} theme={githubDark} wrap />
+</div>

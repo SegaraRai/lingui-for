@@ -5,11 +5,16 @@ description: Build or translate ICU ordinal-select messages.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import selectOrdinalWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select-ordinal";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `selectOrdinal` is the Core Macro for ICU ordinal-selection messages. There is also a Component Macro form of the same logic, [`SelectOrdinal`](/macros/select-ordinal-component).
 
 Use it when the message depends on ordinal categories like `1st`, `2nd`, or `3rd`. It can be used
 directly to produce a translated string, or embedded inside a `` t`...` `` template literal when
 the ordinal belongs to a larger message.
+
+<MacroWorkbench workbench={selectOrdinalWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">

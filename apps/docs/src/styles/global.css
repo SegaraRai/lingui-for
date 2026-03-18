@@ -1,0 +1,18 @@
+@layer base, starlight, theme, components, utilities;
+
+@import "@astrojs/starlight-tailwind";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@layer base {
+  /* Apply Tailwind's preflight styles only within the .twp class */
+  .twp {
+    display: contents;
+
+    overflow-wrap: anywhere;
+    word-break: normal;
+    line-break: strict;
+
+    @import "tailwindcss/preflight.css";
+  }
+}

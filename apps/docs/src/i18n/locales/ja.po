@@ -1,0 +1,95 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-03-18 00:47+0900\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: ja\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: src/demos/macros/plural-component/Demo.svelte:19
+msgid "{count, plural, one {# file} other {# files}}"
+msgstr "{count, plural, other {#個のファイル}}"
+
+#: src/demos/macros/plural/Demo.svelte:19
+msgid "{count, plural, one {# item} other {# items}}"
+msgstr "{count, plural, other {#個}}"
+
+#: src/demos/macros/select-ordinal-component/Demo.svelte:19
+#: src/demos/macros/select-ordinal/Demo.svelte:19
+msgid "{place, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}"
+msgstr "{place, selectordinal, other {#番目}}"
+
+#: src/demos/macros/select-component/Demo.svelte:19
+#: src/demos/macros/select/Demo.svelte:19
+msgid "{tone, select, formal {Welcome} casual {Hi} other {Hello}}"
+msgstr "{tone, select, formal {こんにちは。} casual {やあ！} other {どうも。}}"
+
+#: src/demos/macros/select-component/workbench.ts:20
+#: src/demos/macros/select/workbench.ts:21
+msgid "Casual"
+msgstr "カジュアル"
+
+#: src/demos/macros/plural-component/workbench.ts:13
+#: src/demos/macros/plural/workbench.ts:14
+msgid "Count"
+msgstr "件数"
+
+#: src/demos/macros/msg-and-define-message/workbench.ts:15
+#: src/demos/macros/t/workbench.ts:15
+#: src/demos/macros/trans-component/workbench.ts:14
+msgid "Enter a name"
+msgstr "名前を入力してください"
+
+#: src/demos/macros/select-component/workbench.ts:16
+#: src/demos/macros/select/workbench.ts:17
+msgid "Formal"
+msgstr "フォーマル"
+
+#: src/demos/macros/t/Demo.svelte:19
+msgid "Hello {name}"
+msgstr "こんにちは、{name}"
+
+#: src/demos/macros/t/Demo.svelte:19
+msgid "Hi there!"
+msgstr "やあ！"
+
+#: src/demos/macros/msg-and-define-message/workbench.ts:14
+#: src/demos/macros/t/workbench.ts:14
+#: src/demos/macros/trans-component/workbench.ts:13
+msgid "Name"
+msgstr "名前"
+
+#: src/demos/macros/select-component/workbench.ts:24
+#: src/demos/macros/select/workbench.ts:25
+msgid "Other"
+msgstr "その他"
+
+#: src/demos/macros/select-ordinal-component/workbench.ts:13
+#: src/demos/macros/select-ordinal/workbench.ts:14
+msgid "Place"
+msgstr "順位"
+
+#: src/demos/macros/trans-component/Demo.svelte:19
+msgid "Say hello to <0>{name}</0>."
+msgstr "<0>{name}</0>に挨拶しましょう。"
+
+#. js-lingui-explicit-id
+#: src/demos/macros/msg-and-define-message/Demo.svelte:17
+msgid "form.submit"
+msgstr "送信"
+
+#: src/demos/macros/select-component/workbench.ts:13
+#: src/demos/macros/select/workbench.ts:14
+msgid "Tone"
+msgstr "トーン"
+
+#: src/demos/macros/msg-and-define-message/Demo.svelte:21
+msgid "Welcome back, {name}"
+msgstr "お帰りなさい、{name}"

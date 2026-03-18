@@ -5,10 +5,15 @@ description: Component form of ICU ordinal-select translation.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import selectOrdinalComponentWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select-ordinal-component";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `SelectOrdinal` is the Component Macro counterpart to the core [`selectOrdinal`](/macros/select-ordinal) macro.
 
 It is useful when ordinal cases belong directly in template markup and the component form is easier
 to maintain than a function call.
+
+<MacroWorkbench workbench={selectOrdinalComponentWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">

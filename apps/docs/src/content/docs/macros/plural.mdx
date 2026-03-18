@@ -5,11 +5,16 @@ description: Build or translate ICU plural messages.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import pluralWorkbench from "virtual:macro-workbench?demo=src/demos/macros/plural";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `plural` is the Core Macro for ICU plural messages. There is also a Component Macro form of the same logic, [`Plural`](/macros/plural-component).
 
 Use it when the main problem is choosing text from plural categories. It can be used directly to
 produce a translated string, or embedded inside a `` t`...` `` template literal when the plural
 belongs to a larger message.
+
+<MacroWorkbench workbench={pluralWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">

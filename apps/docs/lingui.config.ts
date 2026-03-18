@@ -1,3 +1,5 @@
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default {
@@ -14,5 +16,5 @@ export default {
       exclude: ["src/i18n/locales/**"],
     },
   ],
-  extractors: [svelteExtractor],
+  extractors: [svelteExtractor, babelExtractor],
 };

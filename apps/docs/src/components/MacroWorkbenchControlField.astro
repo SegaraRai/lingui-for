@@ -1,0 +1,74 @@
+---
+import { t } from "lingui-for-astro/macro";
+
+import type { MacroWorkbenchControl } from "../lib/macro-workbench.ts";
+
+type Props = {
+  control: MacroWorkbenchControl;
+};
+
+const { control } = Astro.props as Props;
+---
+
+<div class="flex items-center gap-3">
+  <div
+    class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-control-text) uppercase"
+  >
+    {t(control.label)}
+  </div>
+
+  {
+    control.type === "text" ? (
+      <input
+        data-control-id={control.id}
+        data-control-type="text"
+        value={control.initial}
+        placeholder={control.placeholder ? t(control.placeholder) : undefined}
+        class:list={[
+          "h-9 rounded-lg border border-(--demo-control-border) bg-(--demo-control-background) px-3 text-sm text-(--demo-control-text)",
+          control.width === "lg"
+            ? "w-56"
+            : control.width === "sm"
+              ? "w-28"
+              : "w-40",
+        ]}
+      />
+    ) : control.type === "number" ? (
+      <input
+        data-control-id={control.id}
+        data-control-type="number"
+        type="number"
+        value={String(control.initial)}
+        min={control.min}
+        max={control.max}
+        step={control.step}
+        class="h-9 w-24 rounded-lg border border-(--demo-control-border) bg-(--demo-control-background) px-3 text-sm text-(--demo-control-text)"
+      />
+    ) : control.type === "boolean" ? (
+      <button
+        type="button"
+        data-control-id={control.id}
+        data-control-type="boolean"
+        data-active={control.initial ? "1" : "0"}
+        aria-pressed={control.initial ? "true" : "false"}
+        class:list={[
+          "rounded-lg border border-(--demo-control-border) px-3 py-1.5 text-sm transition-colors",
+          "data-[active=0]:text-(--demo-control-text) data-[active=1]:bg-(--demo-control-active-background) data-[active=1]:text-(--demo-control-active-text)",
+        ]}
+      >
+        {control.initial ? "On" : "Off"}
+      </button>
+    ) : (
+      <select
+        data-control-id={control.id}
+        data-control-type="select"
+        value={control.initial}
+        class="h-9 rounded-lg border border-(--demo-control-border) bg-(--demo-control-background) px-3 text-sm text-(--demo-control-text)"
+      >
+        {control.options.map((option) => (
+          <option value={option.value}>{t(option.label)}</option>
+        ))}
+      </select>
+    )
+  }
+</div>

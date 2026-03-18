@@ -1,7 +1,18 @@
+import { fileURLToPath } from "node:url";
+
 import starlight from "@astrojs/starlight";
+import svelte from "@astrojs/svelte";
+import tailwindcss from "@tailwindcss/vite";
+import stripWhitespace from "astro-strip-whitespace";
 import { defineConfig } from "astro/config";
 
+import linguiForAstro from "lingui-for-astro/integration";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+import linguiMacro from "unplugin-lingui-macro/vite";
+
+import { macroWorkbenchPlugin } from "./plugins/macro-workbench.ts";
+
+const projectRoot = fileURLToPath(new URL("./", import.meta.url));
 
 export default defineConfig({
   output: "static",
@@ -11,10 +22,13 @@ export default defineConfig({
     format: "preserve",
   },
   integrations: [
+    linguiForAstro(),
+    svelte(),
     starlight({
       title: "lingui-for",
       description:
         "Macro-first, official-first Lingui support for frameworks and languages beyond the official integrations.",
+      customCss: ["./src/styles/global.css"],
       social: [
         {
           icon: "github",
@@ -145,6 +159,10 @@ export default defineConfig({
   ],
   vite: {
     plugins: [
+      linguiMacro(),
+      macroWorkbenchPlugin({ projectRoot }),
+      tailwindcss(),
+      stripWhitespace(),
       // TODO: remove type assertion once Astro uses Vite 8
       linguiForSvelte() as any,
     ],

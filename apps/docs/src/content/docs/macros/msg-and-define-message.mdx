@@ -5,11 +5,16 @@ description: Define message descriptors for later translation.
 
 import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
 
+import msgAndDefineMessageWorkbench from "virtual:macro-workbench?demo=src/demos/macros/msg-and-define-message";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `msg` and `defineMessage` define message descriptors without translating them immediately.
 `msg` is an alias for `defineMessage`; they are functionally identical.
 
 They are the right tools when the message needs to be stored, exported, reused across files, or
 translated later by a different renderer or runtime boundary.
+
+<MacroWorkbench workbench={msgAndDefineMessageWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">

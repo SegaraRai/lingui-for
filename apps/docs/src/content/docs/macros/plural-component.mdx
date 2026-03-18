@@ -5,11 +5,16 @@ description: Component form of ICU plural translation.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import pluralComponentWorkbench from "virtual:macro-workbench?demo=src/demos/macros/plural-component";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `Plural` is the Component Macro counterpart to the core [`plural`](/macros/plural) macro.
 
 It represents the same ICU plural logic, but authored as component props in markup. This is useful
 when the surrounding file is already template-heavy and the component form is easier to scan than a
 function call.
+
+<MacroWorkbench workbench={pluralComponentWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">

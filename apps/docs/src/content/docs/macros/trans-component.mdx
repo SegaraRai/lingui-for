@@ -5,11 +5,16 @@ description: Translate rich text content with embedded markup.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import transWorkbench from "virtual:macro-workbench?demo=src/demos/macros/trans-component";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `Trans` is the general-purpose Component Macro for translated markup content.
 
 Use `Trans` when a translator needs to preserve links, emphasis, or other embedded structure. It can
 also be used for non-rich-text messages, but its clearest advantage shows up when the message is
 naturally authored as markup.
+
+<MacroWorkbench workbench={transWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">

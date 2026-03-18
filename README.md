@@ -16,7 +16,7 @@ In Svelte, that means translations fit naturally into the framework's reactive m
 ```svelte
 <!-- Svelte -->
 <script>
-  import { t, Trans } from "lingui-for-svelte/macro";
+  import { t, Plural } from "lingui-for-svelte/macro";
 
   let count = $state(1);
 </script>
@@ -24,7 +24,7 @@ In Svelte, that means translations fit naturally into the framework's reactive m
 <h1>{$t`Hello from Svelte`}</h1>
 
 <p>
-  <Trans>{count} item selected</Trans>
+  <Plural value={count} one="# item selected" other="# items selected" />
 </p>
 ```
 

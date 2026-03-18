@@ -5,10 +5,15 @@ description: Component form of ICU select translation.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import selectComponentWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select-component";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `Select` is the Component Macro counterpart to the core [`select`](/macros/select) macro.
 
 It expresses the same case-based ICU selection logic, but in a way that can read more naturally in a
 markup file than a nested function call.
+
+<MacroWorkbench workbench={selectComponentWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">

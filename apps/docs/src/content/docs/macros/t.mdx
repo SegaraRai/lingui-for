@@ -5,11 +5,16 @@ description: Translate a message into a string.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import tWorkbench from "virtual:macro-workbench?demo=src/demos/macros/t";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `t` is Lingui's primary string-producing macro. It translates a message at the call site and returns
 the resulting string.
 
 Use `t` when you want a translated label, heading, or piece of inline text and you do not need
 embedded markup. For rich text with links or emphasis, use the [`Trans`](/macros/trans-component) Component Macro instead.
+
+<MacroWorkbench workbench={tWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">
@@ -47,7 +52,10 @@ In `.astro`, `t` is request-bound and non-reactive.
 ```ts
 import { t } from "@lingui/core/macro";
 
+const name = "Lingui";
+
 const label = t`Hello ${name}`;
+// -> "Hello Lingui" or the equivalent in the active locale
 ```
 
   </TabItem>

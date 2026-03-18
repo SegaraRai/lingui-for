@@ -5,11 +5,16 @@ description: Build or translate ICU select messages.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import selectWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select";
+import MacroWorkbench from "../../../components/MacroWorkbench.astro";
+
 `select` is the Core Macro for ICU select messages. There is also a Component Macro form of the same logic, [`Select`](/macros/select-component).
 
 Use it when a message changes based on a named case such as tone, role, status, or grammatical
 category. It can be used directly to produce a translated string, or embedded inside a
 `` t`...` `` template literal when the select belongs to a larger message.
+
+<MacroWorkbench workbench={selectWorkbench} />
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">

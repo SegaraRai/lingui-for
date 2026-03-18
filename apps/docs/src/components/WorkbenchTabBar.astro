@@ -1,0 +1,88 @@
+---
+type TabItem = {
+  label: string;
+  selected: boolean;
+  value: string;
+};
+
+type Props = {
+  ariaLabel: string;
+  group: string;
+  tabs: readonly TabItem[];
+};
+
+const { ariaLabel, group, tabs } = Astro.props;
+---
+
+<div class="w-full overflow-x-auto">
+  <div
+    class="relative flex min-w-max after:absolute after:inset-[auto_0_0_0] after:-z-1 after:border-b-2 after:border-(--demo-tab-border-default)"
+    role="tablist"
+    aria-label={ariaLabel}
+    data-tab-bar
+  >
+    {
+      tabs.map((tab) => (
+        <button
+          type="button"
+          role="tab"
+          tabindex={tab.selected ? 0 : -1}
+          aria-selected={tab.selected}
+          data-tab-group={group}
+          data-tab-value={tab.value}
+          class="border-b-2 border-transparent px-4 py-3 text-sm whitespace-nowrap text-(--demo-tab-text-default) transition-colors aria-selected:border-(--demo-tab-border-active) aria-selected:font-bold aria-selected:text-(--demo-tab-text-active) aria-[selected=false]:enabled:hover:border-(--demo-tab-border-hover) aria-[selected=false]:enabled:hover:text-(--demo-tab-text-hover)"
+        >
+          {tab.label}
+        </button>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  const tabBars = document.querySelectorAll<HTMLElement>("[data-tab-bar]");
+  for (const tabBar of tabBars) {
+    tabBar.addEventListener("keydown", (event) => {
+      const target = event.target;
+      if (
+        !(target instanceof HTMLElement) ||
+        target.getAttribute("role") !== "tab"
+      ) {
+        return;
+      }
+
+      const tabs = Array.from(
+        tabBar.querySelectorAll<HTMLElement>(
+          `[role="tab"][data-tab-group="${target.dataset.tabGroup}"]`,
+        ),
+      );
+      const currentIndex = tabs.indexOf(target);
+      if (currentIndex === -1) {
+        return;
+      }
+
+      let newIndex: number | null = null;
+      switch (event.key) {
+        case "ArrowRight":
+          newIndex = (currentIndex + 1) % tabs.length;
+          break;
+        case "ArrowLeft":
+          newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          break;
+        case "Home":
+          newIndex = 0;
+          break;
+        case "End":
+          newIndex = tabs.length - 1;
+          break;
+      }
+
+      if (newIndex !== null) {
+        event.preventDefault();
+
+        tabs[newIndex].focus();
+        tabs[newIndex].click();
+      }
+    });
+  }
+</script>
