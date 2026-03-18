@@ -39,6 +39,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
       - name: Build Wasm Package
         run: pnpm run build:wasm
 
