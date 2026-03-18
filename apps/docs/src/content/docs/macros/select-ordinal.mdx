@@ -14,6 +14,9 @@ Use it when the message depends on ordinal categories like `1st`, `2nd`, or `3rd
 directly to produce a translated string, or embedded inside a `` t`...` `` template literal when
 the ordinal belongs to a larger message.
 
+For the framework-agnostic Lingui semantics, see the
+[official `selectOrdinal` reference](https://lingui.dev/ref/macro#selectordinal).
+
 <MacroWorkbench workbench={selectOrdinalWorkbench} />
 
 ## Usage
@@ -51,6 +54,8 @@ the ordinal belongs to a larger message.
 
 In `.svelte` files, `selectOrdinal` used standalone takes the reactive `$selectOrdinal` form.
 When nested inside `` $t`...` ``, use `selectOrdinal` without the `$` prefix.
+
+See [Reactive Macros](/frameworks/svelte/reactive-macros) for the full explanation.
 
   </TabItem>
   <TabItem icon="astro" label="Astro">

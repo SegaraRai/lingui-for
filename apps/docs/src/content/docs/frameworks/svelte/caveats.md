@@ -5,32 +5,24 @@ description: Svelte-specific behavior and limitations to keep in mind.
 
 ## Reactive macros are Svelte-specific
 
-`lingui-for-svelte` exposes reactive ergonomics like `$t(...)` because Svelte has a native store and
-reactivity model that can support them.
+`$t`, `$plural`, `$select`, and `$selectOrdinal` exist because Svelte has a store and reactivity
+model that can host them naturally. Other frameworks do not have these forms.
 
-## Ensure Lingui context is initialized before translation runs
+See [Reactive Macros](/frameworks/svelte/reactive-macros) for the full explanation.
 
-The runtime uses deferred accessors so that same-component setup is possible, but translation still
-needs a valid Lingui context by the time compiled markup runs. Initialize early in the component's
-top-level script.
+## i18n context must be set before translation runs
 
-```svelte
-<script lang="ts">
-  import { setupI18n } from "@lingui/core";
-  import { setLinguiContext } from "lingui-for-svelte";
+`$t` and other reactive macros resolve the i18n instance lazily, but the context must still be
+available by the time compiled markup executes. Initialize with `setLinguiContext` at the top of
+the component's script block, not inside a callback or effect.
 
-  // This must run before any $t or Trans in this component's markup.
-  const i18n = setupI18n({ locale: "en", messages: {} });
-  setLinguiContext(i18n);
-</script>
-```
-
-In practice, prefer initializing once in a layout component rather than in individual pages.
+See [i18n Context](/frameworks/svelte/i18n-context) for initialization patterns including
+same-component setup and Svelte islands.
 
 ## Runtime helpers are not the primary API
 
-The runtime layer exists to support compiled macros. Prefer `lingui-for-svelte/macro` unless you are
-working on the integration itself.
+The runtime layer exists to support compiled macros. Prefer `lingui-for-svelte/macro` unless you
+are working on the integration itself.
 
 ## Plain `.js`, `.ts`, `.svelte.js`, and `.svelte.ts`
 

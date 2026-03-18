@@ -14,6 +14,9 @@ the resulting string.
 Use `t` when you want a translated label, heading, or piece of inline text and you do not need
 embedded markup. For rich text with links or emphasis, use the [`Trans`](/macros/trans-component) Component Macro instead.
 
+For the framework-agnostic Lingui semantics, see the
+[official `t` reference](https://lingui.dev/ref/macro#t).
+
 <MacroWorkbench workbench={tWorkbench} />
 
 ## Usage
@@ -31,7 +34,11 @@ embedded markup. For rich text with links or emphasis, use the [`Trans`](/macros
 <p>{$t`Hello ${name}`}</p>
 ```
 
-In `.svelte` files, `t` also supports the reactive `$t` form.
+In `.svelte` files, the reactive form is `$t`
+`$t` re-evaluates automatically when the active locale changes.
+
+See [Reactive Macros](/frameworks/svelte/reactive-macros) for how this works and the
+standalone vs. embedded `$` rule.
 
   </TabItem>
   <TabItem icon="astro" label="Astro">

@@ -1,0 +1,142 @@
+---
+title: "Svelte: i18n Context"
+description: How the Lingui i18n instance is initialized and shared across a Svelte component tree.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+`lingui-for-svelte` uses Svelte's built-in component context API to pass the active `i18n` instance
+through the component tree without props.
+
+If you only need one rule, use `setLinguiContext` once near the root of the tree before translated
+markup renders.
+
+For the full `I18n` instance API, including `loadAndActivate`, `activate`, `load`, and `_`, see
+the [official @lingui/core reference](https://lingui.dev/ref/core#i18n).
+
+## Initialize in the root layout
+
+In a SvelteKit app, the root layout is the default place to install context. All pages and child
+components inherit it automatically.
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { catalog } from "$lib/i18n/catalog";
+
+  let { data, children } = $props();
+
+  const i18n = setupI18n({
+    locale: data.locale,
+    messages: catalog,
+  });
+  setLinguiContext(i18n);
+</script>
+
+{@render children()}
+```
+
+<Aside>
+
+`catalog` here is a locale-keyed object (`{ en: ..., ja: ... }`) from a shared setup file. See
+[Load Compiled Catalogs](/guides/load-compiled-catalogs) for how to create it and for alternative
+loading strategies.
+
+</Aside>
+
+Internally, `setLinguiContext` wraps Svelte's `setContext`. Every descendant component in the same
+tree can read the active `i18n` instance without prop drilling.
+
+Avoid calling `setLinguiContext` in deeply nested components unless you need an isolated subtree
+with a different locale or catalog.
+
+## Same-component initialization
+
+This is supported. A component can install context and use `$t` or other reactive macros in the
+same file.
+
+The reason it works is that the compiler inserts a deferred accessor (`createLinguiAccessors`).
+Context is resolved lazily, so it is ready by the time compiled markup runs.
+
+```svelte
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+  import { catalog } from "$lib/i18n/catalog";
+
+  const i18n = setupI18n({
+    locale: "en",
+    messages: catalog,
+  });
+  setLinguiContext(i18n);
+</script>
+
+<p>{$t`Hello`}</p>
+```
+
+## Svelte islands inside Astro
+
+A Svelte island is a separate component tree. It does not share context with the surrounding Astro
+page. Each island must call `setLinguiContext` itself.
+
+```svelte title="src/components/MyIsland.svelte"
+<script lang="ts">
+  import { untrack } from "svelte";
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+  import { catalog } from "$lib/i18n/catalog";
+
+  const { locale = "en" } = $props();
+
+  // Islands run in isolation. Initialize their own context.
+  const i18n = setupI18n({
+    locale: untrack(() => locale),
+    messages: catalog,
+  });
+  setLinguiContext(i18n);
+</script>
+
+<p>{$t`Hello from an island`}</p>
+```
+
+<Aside>
+
+Pass `locale` from the Astro page as a prop so the island uses the same locale as the surrounding
+page. See [Astro: Using Islands](/frameworks/astro/using-islands) for the broader pattern.
+
+</Aside>
+
+## Switching locale
+
+`setLinguiContext` installs the instance once. To switch locale later, call `activate` or
+`loadAndActivate` on that same instance. Reactive macros pick up the change automatically.
+
+```svelte
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+  import { catalog, type SupportedLocale } from "$lib/i18n/catalog";
+
+  const i18n = setupI18n({
+    locale: "en",
+    messages: catalog,
+  });
+  setLinguiContext(i18n);
+
+  function switchLocale(next: SupportedLocale) {
+    i18n.activate(next);
+    // All $t, $plural, etc. in this tree re-render automatically.
+  }
+</script>
+```
+
+See [Reactive Macros](/frameworks/svelte/reactive-macros) for how `activate`
+and `loadAndActivate` trigger re-rendering of macros like `$t` and `$plural`.
+
+For how to resolve the initial locale from URL params, cookies, and browser headers, and how to
+pass it into the layout, see
+[Locale Resolution](/frameworks/svelte/locale-resolution).

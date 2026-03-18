@@ -72,18 +72,19 @@ Initialize Lingui in middleware before pages render. After running `lingui compi
 import { defineMiddleware } from "astro:middleware";
 import { setupI18n } from "@lingui/core";
 import { setLinguiContext } from "lingui-for-astro";
-import { messages as enMessages } from "./lib/i18n/locales/en.js";
+import { catalog } from "./lib/i18n/catalog";
 
 export const onRequest = defineMiddleware((context, next) => {
-  const i18n = setupI18n({
-    locale: "en",
-    messages: enMessages,
-  });
-
+  const locale = resolveLocale(context); // your locale resolution logic
+  const i18n = setupI18n({ locale, messages: catalog });
   setLinguiContext(context.locals, i18n);
   return next();
 });
 ```
+
+> [!INFO]
+> `catalog` is a locale-keyed object (`{ en: ..., ja: ... }`).
+> See [Load Compiled Catalogs](https://lingui-for.roundtrip.dev/guides/load-compiled-catalogs) for how to structure the catalog file and choose a loading strategy.
 
 Use macros in `.astro` files:
 

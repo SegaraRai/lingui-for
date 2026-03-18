@@ -1,0 +1,116 @@
+---
+title: "Astro: Request Context"
+description: How the Lingui i18n instance is attached to Astro.locals and accessed in .astro files.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+Astro defaults to static output, so the setup pattern depends on which mode you choose.
+
+- In `static` output, initialize Lingui in each page's frontmatter or through a shared helper
+  called from frontmatter.
+- In `server` and `hybrid` output, initialize Lingui once in middleware for each request.
+
+`lingui-for-astro` uses `Astro.locals` as the context carrier in both cases. The difference is only
+where you populate it.
+
+<Aside>
+
+Use the static pattern unless you actually need request-aware locale resolution from cookies,
+headers, auth, or other per-request data.
+
+</Aside>
+
+## Static output
+
+Static output is the default Astro mode. Pages are rendered at build time, not per request.
+
+For static pages, initialize Lingui at the top of each page's frontmatter, or through a shared
+helper called from frontmatter.
+
+```astro title="src/pages/index.astro"
+---
+import { setupI18n } from "@lingui/core";
+import { setLinguiContext } from "lingui-for-astro";
+import { t } from "lingui-for-astro/macro";
+import { catalog } from "../lib/i18n/catalog";
+
+const locale = "en"; // or derive from Astro.params, config, etc.
+const i18n = setupI18n({ locale, messages: catalog });
+setLinguiContext(Astro.locals, i18n);
+---
+
+<h1>{t`Hello`}</h1>
+```
+
+## Server and hybrid output
+
+If you opt into `server` or `hybrid` output, middleware becomes the standard place to call
+`setLinguiContext`.
+
+```ts title="src/middleware.ts"
+import { defineMiddleware } from "astro:middleware";
+import { setupI18n } from "@lingui/core";
+import { setLinguiContext } from "lingui-for-astro";
+import { catalog } from "./lib/i18n/catalog";
+
+export const onRequest = defineMiddleware((context, next) => {
+  const locale = resolveLocale(context); // your locale resolution logic
+  const i18n = setupI18n({ locale, messages: catalog });
+  setLinguiContext(context.locals, i18n);
+  return next();
+});
+```
+
+Everything rendered in that request can then read the same `i18n` instance. No extra props or
+manual context plumbing are needed.
+
+## How `.astro` macros use the context
+
+In `.astro` files, the macro transform reads the Lingui instance from `Astro.locals`
+automatically. You write macros normally.
+
+```astro
+---
+import { t, Trans } from "lingui-for-astro/macro";
+---
+
+<h1>{t`Hello`}</h1>
+<p><Trans>Welcome to the site.</Trans></p>
+```
+
+For normal `.astro` templates, this is all you need.
+
+## Accessing the instance in frontmatter helpers
+
+If you need the `I18n` instance in a plain TypeScript helper called from frontmatter, pass
+`Astro.locals` explicitly.
+
+```ts title="src/lib/buildPageMeta.ts"
+import { getLinguiContext } from "lingui-for-astro";
+import type { AstroLocals } from "lingui-for-astro";
+
+export function buildPageMeta(locals: AstroLocals) {
+  const { i18n } = getLinguiContext(locals);
+  return {
+    title: i18n._({ id: "page.title", message: "My Site" }),
+  };
+}
+```
+
+```astro
+---
+import { buildPageMeta } from "../lib/buildPageMeta";
+
+const meta = buildPageMeta(Astro.locals);
+---
+
+<title>{meta.title}</title>
+```
+
+<Aside>
+
+For static sites with many pages, move the frontmatter setup into a shared helper. That keeps the
+initialization pattern consistent without repeating the whole block in every page.
+
+</Aside>

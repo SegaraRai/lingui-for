@@ -23,9 +23,10 @@ This split matches how each renderer actually executes.
 
 ## Why the split matters
 
-Astro pages are request-bound and mostly server-rendered. Svelte and React islands keep their own
-component runtime and hydration model. Trying to force one runtime API across all three makes the
-authoring model worse, not better.
+Astro pages usually render to static HTML, or become request-bound only when you opt into
+`server` or `hybrid` output. Svelte and React islands keep their own component runtime and
+hydration model. Trying to force one runtime API across all three makes the authoring model worse,
+not better.
 
 ## Shared pieces
 
@@ -40,7 +41,7 @@ The translation call site should still use the package that matches the current 
 ## Practical pattern
 
 1. Resolve the active locale at the Astro app boundary.
-2. Load the correct catalogs for the request.
+2. Load the correct catalogs for the page render.
 3. Render `.astro` with `lingui-for-astro`.
 4. Pass locale or translated data into islands as props.
 5. Inside each island, use the Lingui integration that belongs to that framework.

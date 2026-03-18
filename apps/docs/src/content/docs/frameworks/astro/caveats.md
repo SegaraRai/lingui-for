@@ -3,11 +3,15 @@ title: "Astro: Caveats"
 description: Astro-specific boundaries and tradeoffs.
 ---
 
-## Astro is request-scoped
+## Astro is not a reactive component runtime
 
-Astro does not have a built-in component reactivity model for server-rendered `.astro` files.
-`lingui-for-astro` focuses on request-bound translation rather than reactive translation stores.
-Initialize Lingui context in middleware and it will be available for the duration of that request.
+Astro does not have a built-in component reactivity model for `.astro` files.
+`lingui-for-astro` therefore focuses on build-time or request-time translation, not reactive
+translation stores.
+
+In `static` output, initialize Lingui in page frontmatter.
+In `server` and `hybrid` output, initialize it in middleware so it is available for the duration of
+that request.
 
 ## Runtime helpers are not the primary API
 

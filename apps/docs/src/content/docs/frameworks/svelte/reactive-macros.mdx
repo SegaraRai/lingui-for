@@ -1,0 +1,128 @@
+---
+title: "Svelte: Reactive Macros"
+description: How $t, $plural, $select, and $selectOrdinal work in Svelte components.
+---
+
+`lingui-for-svelte` provides reactive forms of the Lingui core macros.
+
+TL;DR: Add `$` when the macro is the outermost reactive expression; use the bare form when nesting inside another Lingui macro (`` $t`...` ``, `msg`).
+
+| Reactive form    | Core macro      |
+| ---------------- | --------------- |
+| `$t`             | `t`             |
+| `$plural`        | `plural`        |
+| `$select`        | `select`        |
+| `$selectOrdinal` | `selectOrdinal` |
+
+## Standalone vs. embedded
+
+The `$` prefix is for the standalone reactive form.
+
+**Standalone:** the macro is the full expression. Use the `$` prefix.
+
+```svelte
+<p>{$t`Hello ${name}`}</p>
+<p>{$plural(count, { one: "# item", other: "# items" })}</p>
+<p>{$select(tone, { formal: "Welcome", casual: "Hi", other: "Hello" })}</p>
+```
+
+**Embedded inside `` $t`...` ``:** the outer call already provides the reactive subscription. Use
+the bare form for the inner macro.
+
+```svelte
+<p>{$t`Cart: ${plural(count, { one: "# item", other: "# items" })}`}</p>
+<p>
+  {$t`Greeting: ${select(tone, { formal: "Welcome", casual: "Hi", other: "Hello" })}`}
+</p>
+```
+
+Using `$plural` inside `` $t`...` `` is not needed. The outer `$t` already re-evaluates the whole
+expression.
+
+## Reactive values in script
+
+There is no implicit `$derived` wrapping for script variables. If you want a reactive translated
+value in script, write the rune yourself.
+
+```svelte
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+
+  let name = $state("Lingui");
+
+  const greeting = $derived($t`Hello ${name}`);
+</script>
+```
+
+That keeps the rule simple: Lingui provides the reactive macro form, and you choose where to use a
+Svelte rune around it.
+
+## How they work
+
+```svelte
+<!-- What you write -->
+<p>{$t`Hello ${name}`}</p>
+
+<!-- What the compiler produces -->
+<p>
+  {$__l4s_translate({ id: "...", message: "Hello {name}", values: { name } })}
+</p>
+```
+
+`__l4s_translate` is a Svelte store (`Readable<Translate>`). It subscribes to Lingui's internal
+`"change"` event. When `i18n.activate(locale)` fires that event, every `$t` expression in the tree
+re-evaluates and Svelte re-renders the affected parts.
+
+The `$` in `$__l4s_translate` is standard Svelte store auto-subscribe syntax. It uses the same
+mechanism as `$myStore` in any Svelte component.
+
+## The `$` prefix is not a Svelte 5 rune
+
+Despite the `$` prefix, these are _not_ Svelte 5 runes (`$state`, `$derived`, etc.). The
+implementation uses classic Svelte stores (`readable`, `derived`) and works in both rune-mode and
+non-rune-mode components without any configuration.
+
+The `$` in user-written `$t` is a naming convention that tells the lingui-for-svelte macro
+transform to emit a reactive store subscription. After compilation it becomes Svelte's own
+`$storeName` auto-subscribe syntax.
+
+## Locale switch example
+
+```svelte
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+
+  import { messages as enMessages } from "$lib/i18n/locales/en.js";
+  import { messages as jaMessages } from "$lib/i18n/locales/ja.js";
+
+  let locale = $state<"en" | "ja">("en");
+
+  const i18n = setupI18n({
+    locale: "en",
+    messages: {
+      en: enMessages,
+      ja: jaMessages,
+    },
+  });
+  setLinguiContext(i18n);
+
+  function toggle() {
+    const next = locale === "en" ? "ja" : "en";
+    i18n.activate(next);
+    locale = next;
+  }
+</script>
+
+<button onclick={toggle}>{$t`Switch language`}</button>
+
+<p>{$t`Hello`}</p>
+```
+
+After `i18n.activate` returns, all `$t`, `$plural`, `$select`, and `$selectOrdinal`
+expressions in the tree re-render synchronously.
+
+Next, read [i18n Context](/frameworks/svelte/i18n-context) for how the active Lingui instance is
+installed in the component tree. Then use the [macro reference](/macros/core-macros) when you want the exact
+authoring rules for each macro.

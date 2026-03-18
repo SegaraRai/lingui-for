@@ -1,0 +1,212 @@
+---
+title: "Svelte: Locale Resolution"
+description: How to resolve, persist, and apply the active locale in a SvelteKit app.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+In a SvelteKit app, locale resolution happens on the server. The resolved locale flows through
+`locals` to the layout, which activates it in the Lingui instance and reactivates whenever the
+user navigates.
+
+The full flow looks like this:
+
+1. Resolve the locale in `hooks.server.ts`.
+2. Store it in `event.locals`.
+3. Return it from the root layout load function.
+4. Initialize Lingui in the root layout.
+5. Re-activate on client-side navigation when the locale changes.
+
+## Resolve the locale on the server
+
+`hooks.server.ts` is the right place to read available locale signals and pick one. A typical
+priority order is:
+
+1. URL query parameter (explicit override, e.g. `?lang=ja`)
+2. Cookie (remembered from a previous session)
+3. `Accept-Language` request header (browser preference)
+4. Fallback to the source locale
+
+The server chooses one locale for the request, stores it in `event.locals`, and passes that value
+through the rest of the app.
+
+```ts title="src/lib/i18n/locale.ts"
+import { catalog, type SupportedLocale } from "./catalog";
+
+export const LOCALE_COOKIE = "locale";
+
+const supportedLocaleSet: ReadonlySet<unknown> = new Set(Object.keys(catalog));
+
+export function isSupportedLocale(value: unknown): value is SupportedLocale {
+  return supportedLocaleSet.has(value);
+}
+
+export function resolveLocale(
+  urlParam: string | null,
+  cookie: string | undefined,
+  acceptLanguage: string | null,
+): SupportedLocale {
+  if (isSupportedLocale(urlParam)) return urlParam;
+  if (isSupportedLocale(cookie)) return cookie;
+  // For production use, replace this with a proper locale negotiation library to
+  // parse the Accept-Language header and select the best-matching supported locale.
+  if (acceptLanguage?.toLowerCase().includes("ja")) return "ja";
+  return "en";
+}
+```
+
+<Aside>
+
+`catalog` is a locale-keyed object exported from a shared setup file. See
+[Load Compiled Catalogs](/guides/load-compiled-catalogs) for how to create that file and choose
+between bundling all locales upfront or loading them on demand.
+
+</Aside>
+
+```ts title="src/hooks.server.ts"
+import type { Handle } from "@sveltejs/kit";
+import {
+  LOCALE_COOKIE,
+  isSupportedLocale,
+  resolveLocale,
+} from "$lib/i18n/locale";
+
+export const handle: Handle = async ({ event, resolve }) => {
+  const urlParam = event.url.searchParams.get("lang");
+  const cookie = event.cookies.get(LOCALE_COOKIE);
+  const acceptLanguage = event.request.headers.get("accept-language");
+
+  event.locals.locale = resolveLocale(urlParam, cookie, acceptLanguage);
+
+  // Persist an explicit URL override to the cookie.
+  if (isSupportedLocale(urlParam)) {
+    event.cookies.set(LOCALE_COOKIE, urlParam, {
+      path: "/",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  }
+
+  // Keep the HTML lang attribute in sync for SEO and assistive technology.
+  return resolve(event, {
+    transformPageChunk: ({ html }) =>
+      html.replace(
+        /<html lang="[^"]*">/,
+        `<html lang="${event.locals.locale}">`,
+      ),
+  });
+};
+```
+
+Register `locals.locale` in the app types:
+
+```ts title="src/app.d.ts"
+import type { SupportedLocale } from "$lib/i18n/locale";
+
+declare global {
+  namespace App {
+    interface Locals {
+      locale: SupportedLocale;
+    }
+  }
+}
+```
+
+## Pass locale to the layout via a load function
+
+A root layout server load function makes the resolved locale available as page data.
+
+Reading the `lang` query parameter here is a small but important trick. It forces SvelteKit to
+re-run this load function when a navigation changes only the locale parameter.
+
+```ts title="src/routes/+layout.server.ts"
+import type { LayoutServerLoad } from "./$types";
+
+export const load: LayoutServerLoad = ({ locals, url }) => {
+  // Touch lang so SvelteKit reruns this load on locale-only navigations.
+  url.searchParams.get("lang");
+
+  return { locale: locals.locale };
+};
+```
+
+## Initialize Lingui in the layout
+
+The root layout creates the Lingui instance, installs it with `setLinguiContext`, and uses the
+resolved locale for the initial render.
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { catalog, type SupportedLocale } from "$lib/i18n/catalog";
+
+  let { data, children } = $props();
+
+  const i18n = setupI18n({ locale: data.locale, messages: catalog });
+  setLinguiContext(i18n);
+
+  function ensureLocale(locale: SupportedLocale): void {
+    if (i18n.locale !== locale) {
+      i18n.activate(locale);
+    }
+  }
+
+  ensureLocale(data.locale);
+
+  $effect(() => {
+    ensureLocale(data.locale);
+    document.documentElement.lang = data.locale;
+  });
+</script>
+
+{@render children()}
+```
+
+<Aside>
+
+`catalog` passes all locales to `setupI18n` upfront, so `activate()` is enough. No `load()` call is
+needed. If you prefer lazy loading, see [Load Compiled Catalogs](/guides/load-compiled-catalogs).
+
+</Aside>
+
+## Keep locale in sync during navigation
+
+Client-side navigation can change `data.locale` without recreating the layout component. The
+`$effect` in the previous example handles that case by re-activating Lingui whenever the layout
+data changes.
+
+That gives you one simple model:
+
+- the server decides the locale for each request
+- the layout activates that locale on first render
+- the layout re-activates when client-side navigation changes it
+
+## Switching locale from the UI
+
+To let the user switch locale explicitly, navigate to the same page with `?lang=` set. The server
+hook picks up the parameter, updates the cookie, and the layout re-activates.
+
+```svelte title="src/lib/LanguageSwitcher.svelte"
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
+  import type { SupportedLocale } from "$lib/i18n/locale";
+
+  function switchLocale(next: SupportedLocale): void {
+    const url = new URL(page.url);
+    url.searchParams.set("lang", next);
+    goto(url.toString());
+  }
+</script>
+
+<button onclick={() => switchLocale("ja")} type="button">{$t`Japanese`}</button>
+<button onclick={() => switchLocale("en")} type="button">{$t`English`}</button>
+```
+
+## Hydration
+
+SvelteKit serializes the layout's `data` and replays it on the client during hydration. Because the
+layout uses `data.locale`, which comes from the server, the client always starts with the same
+locale the server used. No extra synchronization is needed.

@@ -14,6 +14,9 @@ Use it when a message changes based on a named case such as tone, role, status, 
 category. It can be used directly to produce a translated string, or embedded inside a
 `` t`...` `` template literal when the select belongs to a larger message.
 
+For the framework-agnostic Lingui semantics, see the
+[official `select` reference](https://lingui.dev/ref/macro#select).
+
 <MacroWorkbench workbench={selectWorkbench} />
 
 ## Usage
@@ -49,6 +52,8 @@ category. It can be used directly to produce a translated string, or embedded in
 
 In `.svelte` files, `select` used standalone takes the reactive `$select` form.
 When nested inside `` $t`...` ``, use `select` without the `$` prefix.
+
+See [Reactive Macros](/frameworks/svelte/reactive-macros) for the full explanation.
 
   </TabItem>
   <TabItem icon="astro" label="Astro">

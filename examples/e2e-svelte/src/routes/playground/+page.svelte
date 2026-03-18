@@ -38,6 +38,24 @@
       title: $t`Small, isolated cases for ids, comments, and contexts`,
       body: $t`Keeps explicit-id coverage available without turning the whole app into test code.`,
     },
+    {
+      href: "/playground/init-preloaded",
+      eyebrow: $t`Init: Preloaded`,
+      title: $t`All locales loaded at init, activate() only`,
+      body: $t`setupI18n with a full messages map. Switching locales calls activate() without a preceding load().`,
+    },
+    {
+      href: "/playground/init-lazy",
+      eyebrow: $t`Init: Lazy`,
+      title: $t`Empty init, load each locale on demand`,
+      body: $t`setupI18n() with no arguments. loadAndActivate() loads and switches one locale at a time.`,
+    },
+    {
+      href: "/playground/init-isolated",
+      eyebrow: $t`Init: Isolated`,
+      title: $t`Child component with its own fixed i18n context`,
+      body: $t`A nested component calls setLinguiContext with an independent instance. Its subtree ignores the parent locale.`,
+    },
   ];
 </script>
 

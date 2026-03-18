@@ -80,16 +80,24 @@ component renders.
 <script lang="ts">
   import { setupI18n } from "@lingui/core";
   import { setLinguiContext } from "lingui-for-svelte";
+  import { catalog } from "$lib/i18n/catalog";
 
   const { children } = $props();
 
-  // Load a compiled catalog and pass it here.
-  const i18n = setupI18n({ locale: "en", messages: {} });
+  const i18n = setupI18n({ locale: "en", messages: catalog });
   setLinguiContext(i18n);
 </script>
 
 {@render children()}
 ```
+
+<Aside>
+
+`catalog` is a locale-keyed object exported from a shared setup file. See
+[Load Compiled Catalogs](/guides/load-compiled-catalogs) for how to create that file and choose
+between bundling all locales upfront or loading them on demand.
+
+</Aside>
 
 ## Use macros in `.svelte`
 
@@ -105,6 +113,11 @@ component renders.
 
 ## Next pages
 
-- Read [Svelte caveats](/frameworks/svelte/caveats) before depending on same-component context
-  initialization patterns.
-- Use the [macro reference](/macros/core-macros) when you need exact authoring rules.
+- Read [i18n Context](/frameworks/svelte/i18n-context) for initialization patterns, island setup,
+  and locale switching.
+- Read [Reactive Macros](/frameworks/svelte/reactive-macros) to understand how `$t` and friends
+  work and when to use the `$` prefix.
+- Read [Locale Resolution](/frameworks/svelte/locale-resolution) for how to resolve the initial
+  locale from URL params, cookies, and browser headers in SvelteKit.
+- Read [Svelte caveats](/frameworks/svelte/caveats) for edge cases and limitations.
+- Use the [macro reference](/macros/core-macros) when you need precise authoring rules.

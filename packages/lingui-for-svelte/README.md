@@ -70,20 +70,22 @@ Initialize Lingui near the root of the component tree. After running `lingui com
 <script lang="ts">
   import { setupI18n } from "@lingui/core";
   import { setLinguiContext } from "lingui-for-svelte";
-  import { messages as enMessages } from "$lib/i18n/locales/en.js";
+  import { catalog } from "$lib/i18n/catalog";
 
-  const { children } = $props();
+  const { data, children } = $props();
 
-  const i18n = setupI18n({
-    locale: "en",
-    messages: enMessages,
-  });
-
+  const i18n = setupI18n({ locale: data.locale, messages: catalog });
   setLinguiContext(i18n);
 </script>
 
 {@render children?.()}
 ```
+
+> [!INFO]
+> `catalog` is a locale-keyed object (`{ en: ..., ja: ... }`). `data.locale` is the active locale resolved server-side and passed down via SvelteKit's layout data.
+>
+> See [Load Compiled Catalogs](https://lingui-for.roundtrip.dev/guides/load-compiled-catalogs) for how to structure the catalog file and choose a loading strategy.
+> See [Locale Resolution](https://lingui-for.roundtrip.dev/frameworks/svelte/locale-resolution) for how to resolve the locale from URL params, cookies, and browser headers.
 
 Use macros in Svelte components:
 

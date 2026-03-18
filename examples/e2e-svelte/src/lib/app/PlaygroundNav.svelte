@@ -57,4 +57,25 @@
   >
     {$t`Explicit ids`}
   </a>
+  <a
+    href="/playground/init-preloaded"
+    class="tab"
+    class:tab-active={page.url.pathname === "/playground/init-preloaded"}
+  >
+    {$t`Init: Preloaded`}
+  </a>
+  <a
+    href="/playground/init-lazy"
+    class="tab"
+    class:tab-active={page.url.pathname === "/playground/init-lazy"}
+  >
+    {$t`Init: Lazy`}
+  </a>
+  <a
+    href="/playground/init-isolated"
+    class="tab"
+    class:tab-active={page.url.pathname === "/playground/init-isolated"}
+  >
+    {$t`Init: Isolated`}
+  </a>
 </nav>

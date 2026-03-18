@@ -17,6 +17,11 @@ msgstr ""
 msgid "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
 msgstr "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
 
+#: src/routes/playground/init-lazy/+page.svelte:66
+#: src/routes/playground/init-preloaded/+page.svelte:67
+msgid "{count, plural, one {# item in the list.} other {# items in the list.}}"
+msgstr "{count, plural, one {# item in the list.} other {# items in the list.}}"
+
 #: src/routes/playground/components/+page.svelte:58
 msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 msgstr "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
@@ -38,6 +43,14 @@ msgstr "$t and rune-backed state"
 msgid "$t with rune-backed state from a .svelte.ts module"
 msgstr "$t with rune-backed state from a .svelte.ts module"
 
+#: src/routes/playground/init-isolated/+page.svelte:16
+msgid "A child component can call setLinguiContext with its own i18n instance. Its subtree uses that context instead of the parent's."
+msgstr "A child component can call setLinguiContext with its own i18n instance. Its subtree uses that context instead of the parent's."
+
+#: src/routes/playground/+page.svelte:57
+msgid "A nested component calls setLinguiContext with an independent instance. Its subtree ignores the parent locale."
+msgstr "A nested component calls setLinguiContext with an independent instance. Its subtree ignores the parent locale."
+
 #: src/lib/playground/imported-descriptors.ts:5
 msgid "A plain TypeScript module can define Lingui descriptors for Svelte."
 msgstr "A plain TypeScript module can define Lingui descriptors for Svelte."
@@ -45,6 +58,14 @@ msgstr "A plain TypeScript module can define Lingui descriptors for Svelte."
 #: src/routes/playground/reactive/+page.svelte:17
 msgid "Active"
 msgstr "Active"
+
+#: src/routes/playground/+page.svelte:44
+msgid "All locales loaded at init, activate() only"
+msgstr "All locales loaded at init, activate() only"
+
+#: src/routes/playground/init-preloaded/+page.svelte:31
+msgid "All locales preloaded at init"
+msgstr "All locales preloaded at init"
 
 #: src/lib/app/PlaygroundNav.svelte:23
 #: src/routes/playground/+page.svelte:7
@@ -55,6 +76,10 @@ msgstr "Basic"
 #: src/routes/playground/syntax/+page.svelte:65
 msgid "Bump revision"
 msgstr "Bump revision"
+
+#: src/routes/playground/+page.svelte:56
+msgid "Child component with its own fixed i18n context"
+msgstr "Child component with its own fixed i18n context"
 
 #: src/routes/settings/+page.svelte:18
 msgid "Choose a language with the switcher in the header. The server stores your preference in a cookie so new routes keep the same locale."
@@ -141,6 +166,10 @@ msgstr "Each route keeps one category of Lingui-for-Svelte behavior easy to insp
 msgid "Embedded elements and components inside Trans"
 msgstr "Embedded elements and components inside Trans"
 
+#: src/routes/playground/+page.svelte:50
+msgid "Empty init, load each locale on demand"
+msgstr "Empty init, load each locale on demand"
+
 #: src/lib/app/LanguageSwitcher.svelte:25
 #: src/routes/settings/+page.svelte:7
 msgid "English"
@@ -198,6 +227,18 @@ msgstr "Hello {0} from the reactive route."
 msgid "Hello {name} from the basic route."
 msgstr "Hello {name} from the basic route."
 
+#: src/routes/playground/init-isolated/IsolatedWidget.svelte:24
+msgid "Hello from the isolated widget."
+msgstr "Hello from the isolated widget."
+
+#: src/routes/playground/init-lazy/+page.svelte:64
+msgid "Hello from the lazy init pattern."
+msgstr "Hello from the lazy init pattern."
+
+#: src/routes/playground/init-preloaded/+page.svelte:65
+msgid "Hello from the preloaded init pattern."
+msgstr "Hello from the preloaded init pattern."
+
 #: src/lib/app/AppShell.svelte:26
 msgid "Home"
 msgstr "Home"
@@ -218,6 +259,32 @@ msgstr "Immediate translation in markup."
 #: src/routes/playground/reactive/+page.svelte:67
 msgid "Increase"
 msgstr "Increase"
+
+#: src/lib/app/PlaygroundNav.svelte:79
+#: src/routes/playground/+page.svelte:55
+#: src/routes/playground/init-isolated/+page.svelte:10
+msgid "Init: Isolated"
+msgstr "Init: Isolated"
+
+#: src/lib/app/PlaygroundNav.svelte:72
+#: src/routes/playground/+page.svelte:49
+#: src/routes/playground/init-lazy/+page.svelte:27
+msgid "Init: Lazy"
+msgstr "Init: Lazy"
+
+#: src/lib/app/PlaygroundNav.svelte:65
+#: src/routes/playground/+page.svelte:43
+#: src/routes/playground/init-preloaded/+page.svelte:28
+msgid "Init: Preloaded"
+msgstr "Init: Preloaded"
+
+#: src/routes/playground/init-isolated/+page.svelte:13
+msgid "Isolated sub-context"
+msgstr "Isolated sub-context"
+
+#: src/routes/playground/init-isolated/IsolatedWidget.svelte:21
+msgid "Isolated widget (always English)"
+msgstr "Isolated widget (always English)"
 
 #: src/lib/app/LanguageSwitcher.svelte:27
 #: src/routes/settings/+page.svelte:7
@@ -248,6 +315,10 @@ msgstr "Library-specific checks stay out of the main app flow"
 #: src/routes/+page.svelte:12
 msgid "Lingui in a small SvelteKit application"
 msgstr "Lingui in a small SvelteKit application"
+
+#: src/routes/playground/init-lazy/+page.svelte:30
+msgid "Locale loaded on demand"
+msgstr "Locale loaded on demand"
 
 #: src/routes/+page.svelte:34
 msgid "Locale session"
@@ -333,6 +404,14 @@ msgstr "Search examples"
 msgid "Settings"
 msgstr "Settings"
 
+#: src/routes/playground/+page.svelte:45
+msgid "setupI18n with a full messages map. Switching locales calls activate() without a preceding load()."
+msgstr "setupI18n with a full messages map. Switching locales calls activate() without a preceding load()."
+
+#: src/routes/playground/+page.svelte:51
+msgid "setupI18n() with no arguments. loadAndActivate() loads and switches one locale at a time."
+msgstr "setupI18n() with no arguments. loadAndActivate() loads and switches one locale at a time."
+
 #: src/routes/playground/+page.svelte:38
 msgid "Small, isolated cases for ids, comments, and contexts"
 msgstr "Small, isolated cases for ids, comments, and contexts"
@@ -360,6 +439,10 @@ msgstr "Switch language"
 #: src/routes/+page.svelte:40
 msgid "Switch languages from the header and the next route keeps the same locale."
 msgstr "Switch languages from the header and the next route keeps the same locale."
+
+#: src/routes/playground/init-isolated/+page.svelte:19
+msgid "Switch the app locale using the header. The isolated widget below stays in English."
+msgstr "Switch the app locale using the header. The isolated widget below stays in English."
 
 #: src/lib/app/PlaygroundNav.svelte:37
 #: src/routes/playground/+page.svelte:19
@@ -391,9 +474,21 @@ msgstr "The syntax playground is active."
 msgid "The syntax playground is idle."
 msgstr "The syntax playground is idle."
 
+#: src/routes/playground/init-preloaded/+page.svelte:34
+msgid "This component calls setupI18n with all locale messages upfront. Switching only requires activate() - no load() call."
+msgstr "This component calls setupI18n with all locale messages upfront. Switching only requires activate() - no load() call."
+
+#: src/routes/playground/init-lazy/+page.svelte:33
+msgid "This component starts with an empty setupI18n() and calls loadAndActivate on each switch. Only one locale is in memory at a time."
+msgstr "This component starts with an empty setupI18n() and calls loadAndActivate on each switch. Only one locale is in memory at a time."
+
 #: src/routes/+page.svelte:15
 msgid "This example keeps locale state in a real app shell and moves library verification into isolated playground routes."
 msgstr "This example keeps locale state in a real app shell and moves library verification into isolated playground routes."
+
+#: src/routes/playground/init-isolated/+page.svelte:23
+msgid "This line follows the app locale."
+msgstr "This line follows the app locale."
 
 #: src/routes/playground/syntax/+page.svelte:45
 msgid "This placeholder comes from $t inside an attribute"
@@ -414,6 +509,20 @@ msgstr "This route isolates reactive string macros and state that lives in a .sv
 #: src/routes/playground/basic/+page.svelte:23
 msgid "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
 msgstr "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
+
+#: src/routes/playground/init-isolated/IsolatedWidget.svelte:23
+msgid "This widget has its own context and ignores the app locale."
+msgstr "This widget has its own context and ignores the app locale."
+
+#: src/routes/playground/init-lazy/+page.svelte:36
+#: src/routes/playground/init-preloaded/+page.svelte:37
+msgid "This widget has its own i18n context, independent of the app locale."
+msgstr "This widget has its own i18n context, independent of the app locale."
+
+#: src/routes/playground/init-lazy/+page.svelte:41
+#: src/routes/playground/init-preloaded/+page.svelte:42
+msgid "Toggle locale"
+msgstr "Toggle locale"
 
 #: src/routes/playground/syntax/+page.svelte:57
 msgid "Toggle mode"

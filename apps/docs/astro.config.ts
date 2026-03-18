@@ -58,6 +58,18 @@ export default defineConfig({
               slug: "frameworks/svelte/getting-started",
             },
             {
+              label: "i18n Context",
+              slug: "frameworks/svelte/i18n-context",
+            },
+            {
+              label: "Reactive Macros",
+              slug: "frameworks/svelte/reactive-macros",
+            },
+            {
+              label: "Locale Resolution",
+              slug: "frameworks/svelte/locale-resolution",
+            },
+            {
               label: "Caveats",
               slug: "frameworks/svelte/caveats",
             },
@@ -69,6 +81,10 @@ export default defineConfig({
             {
               label: "Getting Started",
               slug: "frameworks/astro/getting-started",
+            },
+            {
+              label: "Request Context",
+              slug: "frameworks/astro/request-context",
             },
             {
               label: "Using Islands",
@@ -139,6 +155,10 @@ export default defineConfig({
             {
               label: "Add a Locale",
               slug: "guides/add-a-locale",
+            },
+            {
+              label: "Load Compiled Catalogs",
+              slug: "guides/load-compiled-catalogs",
             },
             {
               label: "Extract, Compile, and Verify",
