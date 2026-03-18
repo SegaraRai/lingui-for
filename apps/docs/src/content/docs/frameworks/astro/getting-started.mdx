@@ -12,7 +12,7 @@ import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
 
 ```sh
 pnpm add @lingui/core lingui-for-astro
-pnpm add -D @lingui/cli unplugin-lingui-macro
+pnpm add -D @lingui/cli @lingui/conf unplugin-lingui-macro
 ```
 
     </TabItem>
@@ -20,7 +20,7 @@ pnpm add -D @lingui/cli unplugin-lingui-macro
 
 ```sh
 npm add @lingui/core lingui-for-astro
-npm add -D @lingui/cli unplugin-lingui-macro
+npm add -D @lingui/cli @lingui/conf unplugin-lingui-macro
 ```
 
     </TabItem>
@@ -28,7 +28,7 @@ npm add -D @lingui/cli unplugin-lingui-macro
 
 ```sh
 yarn add @lingui/core lingui-for-astro
-yarn add -D @lingui/cli unplugin-lingui-macro
+yarn add -D @lingui/cli @lingui/conf unplugin-lingui-macro
 ```
 
     </TabItem>
@@ -69,14 +69,15 @@ Astro defaults to static output. The middleware example below is the request-awa
 ## Configure Lingui
 
 ```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
 import { astroExtractor } from "lingui-for-astro/extractor";
 
-export default {
+export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
   extractors: [astroExtractor],
-};
+});
 ```
 
 ## Initialize Lingui for your output mode

@@ -1,9 +1,10 @@
 import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { defineConfig } from "@lingui/conf";
 
 import { astroExtractor } from "lingui-for-astro/extractor";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
-export default {
+export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   fallbackLocales: {
@@ -18,4 +19,4 @@ export default {
     },
   ],
   extractors: [astroExtractor, svelteExtractor, babelExtractor],
-};
+});

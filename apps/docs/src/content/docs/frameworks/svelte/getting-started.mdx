@@ -12,7 +12,7 @@ import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
 
 ```sh
 pnpm add @lingui/core lingui-for-svelte
-pnpm add -D @lingui/cli unplugin-lingui-macro
+pnpm add -D @lingui/cli @lingui/conf unplugin-lingui-macro
 ```
 
     </TabItem>
@@ -20,7 +20,7 @@ pnpm add -D @lingui/cli unplugin-lingui-macro
 
 ```sh
 npm add @lingui/core lingui-for-svelte
-npm add -D @lingui/cli unplugin-lingui-macro
+npm add -D @lingui/cli @lingui/conf unplugin-lingui-macro
 ```
 
     </TabItem>
@@ -28,7 +28,7 @@ npm add -D @lingui/cli unplugin-lingui-macro
 
 ```sh
 yarn add @lingui/core lingui-for-svelte
-yarn add -D @lingui/cli unplugin-lingui-macro
+yarn add -D @lingui/cli @lingui/conf unplugin-lingui-macro
 ```
 
     </TabItem>
@@ -46,10 +46,10 @@ its Vite plugin in the next section.
 ## Configure Vite
 
 ```ts title="vite.config.ts"
-import linguiMacro from "unplugin-lingui-macro/vite";
-import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
-import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vite";
+import { sveltekit } from "@sveltejs/kit/vite";
+import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+import linguiMacro from "unplugin-lingui-macro/vite";
 
 export default defineConfig({
   plugins: [linguiMacro(), linguiForSvelte(), sveltekit()],
@@ -59,16 +59,15 @@ export default defineConfig({
 ## Configure Lingui
 
 ```ts title="lingui.config.ts"
-import { formatter } from "@lingui/format-po";
+import { defineConfig } from "@lingui/conf";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
-export default {
+export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
-  format: formatter(),
   extractors: [svelteExtractor],
-};
+});
 ```
 
 ## Initialize Lingui
@@ -108,8 +107,13 @@ between bundling all locales upfront or loading them on demand.
   let count = $state(1);
 </script>
 
-<h1>{$t`Hello from Svelte`}</h1><p><Trans>{count} item selected</Trans></p>
+<h1>{$t`Hello from Svelte`}</h1>
+
+<p><Trans>{count} item selected</Trans></p>
 ```
+
+In Svelte, the reactive form is available as `$t`. When the locale changes, this expression will automatically re-evaluate.
+See [Reactive Macros](/frameworks/svelte/reactive-macros) for when to use the `$` prefix and how it works under the hood.
 
 ## Next pages
 
