@@ -1,6 +1,6 @@
 {
   "name": "unplugin-lingui-macro",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bundler plugin for compiling Lingui macros in plain JavaScript and TypeScript modules.",
   "license": "MIT",
   "author": "SegaraRai",
