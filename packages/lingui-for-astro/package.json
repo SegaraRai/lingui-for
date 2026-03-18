@@ -1,6 +1,6 @@
 {
   "name": "lingui-for-astro",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Macro-first Lingui integration for Astro.",
   "license": "MIT",
   "author": "SegaraRai",
