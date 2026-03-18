@@ -281,17 +281,51 @@ function pickCatalogEntries<T>(
 }
 
 function readCompiledCatalog(source: string): Record<string, unknown> {
-  const match = source.match(/JSON\.parse\(\s*([\s\S]*?)\s*\)\s*as Messages;/);
-
+  const match =
+    /JSON\.parse\(\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")\s*,?\s*\)\s*as Messages;/.exec(
+      source,
+    );
   if (!match) {
     throw new Error("Could not locate compiled catalog payload.");
   }
 
-  const literal = match[1].replace(/,\s*$/, "").trim();
-  const jsonString = Function(`"use strict"; return (${literal});`)();
+  const literal = match[1];
+  const jsonString: unknown = literal.startsWith('"')
+    ? JSON.parse(literal)
+    : literal
+        .slice(1, -1)
+        .replace(
+          /\\(u[0-9a-fA-F]{4}|x[0-9a-fA-F]{2}|[0-7]{1,3}|[\s\S])/g,
+          (_, seq: string): string => {
+            if (seq.startsWith("u") || seq.startsWith("x")) {
+              return String.fromCharCode(parseInt(seq.slice(1), 16));
+            }
+            if (seq.length > 1) {
+              return String.fromCharCode(parseInt(seq, 8)); // octal
+            }
+            switch (seq) {
+              case "n":
+                return "\n";
+              case "r":
+                return "\r";
+              case "t":
+                return "\t";
+              case "b":
+                return "\b";
+              case "f":
+                return "\f";
+              case "v":
+                return "\v";
+              case "0":
+                return "\0";
+              default:
+                return seq; // \', \\, \", etc.
+            }
+          },
+        );
 
   if (typeof jsonString !== "string") {
-    throw new Error("Compiled catalog payload was not a string literal.");
+    throw new TypeError("Compiled catalog payload was not a string literal.");
   }
 
   return JSON.parse(jsonString) as Record<string, unknown>;
@@ -299,7 +333,8 @@ function readCompiledCatalog(source: string): Record<string, unknown> {
 
 function serializeCompiledCatalog(catalog: Record<string, unknown>): string {
   return [
-    '/*eslint-disable*/ import type { Messages } from "@lingui/core";',
+    "/*eslint-disable*/",
+    'import type { Messages } from "@lingui/core";',
     "export const messages = JSON.parse(",
     `  ${JSON.stringify(JSON.stringify(catalog))},`,
     ") as Messages;",
@@ -350,11 +385,11 @@ function extractSnippet(source: string): string {
 
 function stripCutBlocks(source: string): string {
   return source
-    .replace(
+    .replaceAll(
       /[ \t]*\/\*\s*docs-cut:start\s*\*\/[\s\S]*?\/\*\s*docs-cut:end\s*\*\/\n/g,
       "",
     )
-    .replace(
+    .replaceAll(
       /[ \t]*<!--\s*docs-cut:start\s*-->[\s\S]*?<!--\s*docs-cut:end\s*-->\n/g,
       "",
     );
@@ -364,7 +399,7 @@ function dedentSnippet(source: string): string {
   const lines = source.split(/\r?\n/);
   const indents = lines
     .filter((line) => line.trim().length > 0)
-    .map((line) => line.match(/^\s*/)?.[0].length ?? 0);
+    .map((line) => /^\s*/.exec(line)?.[0].length ?? 0);
   const minimumIndent = indents.length > 0 ? Math.min(...indents) : 0;
 
   return lines
