@@ -18,7 +18,7 @@ It provides:
 
 ```sh
 pnpm add @lingui/core lingui-for-astro
-pnpm add -D @lingui/cli
+pnpm add -D @lingui/cli @lingui/conf
 ```
 
 If you also use Lingui macros in plain `.js` or `.ts` files, add `unplugin-lingui-macro` too:
@@ -50,9 +50,10 @@ Configure Lingui extraction:
 
 ```ts
 import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { defineConfig } from "@lingui/conf";
 import { astroExtractor } from "lingui-for-astro/extractor";
 
-export default {
+export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   catalogs: [
@@ -63,7 +64,7 @@ export default {
     },
   ],
   extractors: [astroExtractor, babelExtractor],
-};
+});
 ```
 
 Initialize Lingui in middleware before pages render. After running `lingui compile`, import the compiled message catalogs:
