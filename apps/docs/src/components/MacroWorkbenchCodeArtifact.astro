@@ -1,16 +1,26 @@
 ---
 import { Code } from "astro/components";
-import githubDark from "shiki/themes/github-dark.mjs";
 
+import { resultCodeThemes, sourceCodeThemes } from "../lib/code-themes.ts";
 import type { MacroWorkbenchCodeArtifact } from "../lib/macro-workbench.ts";
+
+import "../styles/demo-code.css";
 
 type Props = {
   artifact: MacroWorkbenchCodeArtifact;
+  surface?: "result" | "source";
 };
 
-const { artifact } = Astro.props as Props;
+const { artifact, surface = "source" } = Astro.props as Props;
+const themes = surface === "result" ? resultCodeThemes : sourceCodeThemes;
 ---
 
-<div class="contents [&>pre]:p-2">
-  <Code code={artifact.code} lang={artifact.lang} theme={githubDark} wrap />
+<div class="demo-code-block contents [&>pre]:p-2">
+  <Code
+    code={artifact.code}
+    lang={artifact.lang}
+    themes={themes}
+    defaultColor="light"
+    wrap
+  />
 </div>

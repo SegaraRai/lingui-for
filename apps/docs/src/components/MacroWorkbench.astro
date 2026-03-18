@@ -108,7 +108,7 @@ const resultTabs = [
         </header>
 
         <div
-          class="grid max-h-68 grid-rows-1 bg-(--sl-color-black) lg:max-h-100"
+          class="grid max-h-68 grid-rows-1 bg-(--demo-code-surface) lg:max-h-100"
         >
           <div
             role="tabpanel"
@@ -117,7 +117,10 @@ const resultTabs = [
             class="contents"
             hidden={initialSourceTab !== "demo"}
           >
-            <MacroWorkbenchCodeArtifact artifact={workbench.source.demo} />
+            <MacroWorkbenchCodeArtifact
+              artifact={workbench.source.demo}
+              surface="source"
+            />
           </div>
 
           <div
@@ -137,6 +140,7 @@ const resultTabs = [
                 >
                   <MacroWorkbenchCodeArtifact
                     artifact={workbench.source.catalogs[option.code]!}
+                    surface="source"
                   />
                 </div>
               ))
@@ -192,6 +196,7 @@ const resultTabs = [
           >
             <MacroWorkbenchCodeArtifact
               artifact={workbench.result.transformed}
+              surface="result"
             />
           </div>
 
@@ -212,6 +217,7 @@ const resultTabs = [
                 >
                   <MacroWorkbenchCodeArtifact
                     artifact={workbench.result.compiledCatalogs[option.code]!}
+                    surface="result"
                   />
                 </div>
               ))
@@ -479,6 +485,7 @@ const resultTabs = [
   .twp {
     --demo-background: var(--sl-color-black);
     --demo-border: var(--sl-color-gray-5);
+    --demo-code-surface: var(--sl-color-black);
 
     --demo-toolbar-text: var(--sl-color-gray-2);
     --demo-toolbar-background: var(--sl-color-bg-sidebar);

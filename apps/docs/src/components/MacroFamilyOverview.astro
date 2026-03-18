@@ -1,8 +1,10 @@
 ---
 import { Code } from "astro/components";
-import githubDark from "shiki/themes/github-dark.mjs";
 
+import { sourceCodeThemes } from "../lib/code-themes.ts";
 import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
+
+import "../styles/demo-code.css";
 
 type Props = {
   items: readonly MacroFamilyOverviewItem[];
@@ -90,11 +92,12 @@ const initialIndex = 0;
                       Snippet
                     </div>
                   </div>
-                  <div class="min-h-0 flex-1 [&>pre]:m-0 [&>pre]:h-full [&>pre]:p-2">
+                  <div class="demo-code-block min-h-0 flex-1 [&>pre]:m-0 [&>pre]:h-full [&>pre]:p-2">
                     <Code
                       code={item.snippet}
                       lang={item.snippetLang}
-                      theme={githubDark}
+                      themes={sourceCodeThemes}
+                      defaultColor="light"
                       wrap
                     />
                   </div>
