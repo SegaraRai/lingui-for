@@ -4,7 +4,7 @@
 
 ## Status / confirmed findings
 
-- このファイルは **lingui-for の現行 user-facing API 仕様書ではありません**。現行の公開仕様を確認したい場合は、`apps/docs/src/content/docs/` 配下のドキュメントと各 package README を正として扱ってください。
+- このファイルは **lingui-for の現行 user-facing API 仕様書ではありません**。現行の公開仕様を確認したい場合は、[`apps/docs/src/content/docs/`](./apps/docs/src/content/docs/) 配下のドキュメントと各 package README を正として扱ってください。
 - 以前の参照元には開発者ローカル環境の絶対パスが残っていましたが、この repository では検証不能で誤解を招くため、upstream の repo 内パス表記へ置き換えました。
 - この inventory は upstream Lingui React / core の公開面を列挙しているため、そのまま読むと lingui-for に存在しない API (`useLingui` など) や React 固有の lowering まで「あるもの」に見えます。**比較用メモであって、実装済み機能一覧ではありません。**
 - 調査時に「無思考で存在していそう」に見えたコードのうち、少なくとも以下は意図を確認しました。
