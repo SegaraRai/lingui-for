@@ -43,6 +43,10 @@ const { ariaLabel, group, tabs } = Astro.props;
   const tabBars = document.querySelectorAll<HTMLElement>("[data-tab-bar]");
   for (const tabBar of tabBars) {
     tabBar.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
       const target = event.target;
       if (
         !(target instanceof HTMLElement) ||

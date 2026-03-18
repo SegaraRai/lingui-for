@@ -22,9 +22,9 @@
 </script>
 
 <p class="mb-2">
-  {t(welcome)}
+  {$t(welcome)}
 </p>
 
 <button type="button" class="rounded bg-blue-500 px-4 py-2 text-white">
-  {t(submitLabel)}
+  {$t(submitLabel)}
 </button>

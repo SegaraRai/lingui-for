@@ -1,0 +1,227 @@
+---
+import { Code } from "astro/components";
+import githubDark from "shiki/themes/github-dark.mjs";
+
+import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
+
+type Props = {
+  items: readonly MacroFamilyOverviewItem[];
+  title: string;
+};
+
+const { items, title } = Astro.props as Props;
+
+const initialIndex = 0;
+---
+
+<div class="twp">
+  <div
+    class="not-content my-6 overflow-hidden border border-(--sl-color-gray-5) bg-(--sl-color-black)"
+    data-family-overview
+  >
+    <div class="border-b border-(--sl-color-gray-5) px-4 py-3">
+      <div
+        class="text-[0.7rem] font-medium tracking-[0.08em] text-(--sl-color-gray-2) uppercase"
+      >
+        {title}
+      </div>
+    </div>
+
+    <div class="grid gap-0 lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <aside
+        class="overflow-hidden border-b border-(--sl-color-gray-5) bg-(--sl-color-bg-sidebar) lg:border-r lg:border-b-0"
+      >
+        <div class="overflow-x-auto lg:overflow-visible">
+          <div class="flex min-w-max flex-row lg:min-w-0 lg:flex-col">
+            {
+              items.map((item, index) => (
+                <button
+                  type="button"
+                  class="border-r border-b border-(--sl-color-gray-5) px-4 py-3 text-left transition-colors last:border-r-0 aria-pressed:bg-(--sl-color-accent-low) aria-pressed:text-(--sl-color-white) lg:border-r-0 lg:last:border-b-0"
+                  tabindex={index === initialIndex ? 0 : -1}
+                  aria-pressed={index === initialIndex ? "true" : "false"}
+                  data-family-tab
+                  data-value={item.value}
+                >
+                  <div class="text-sm font-semibold">{item.label}</div>
+                  <div class="mt-1 max-w-52 text-xs leading-5 text-(--sl-color-gray-2)">
+                    {item.description}
+                  </div>
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      </aside>
+
+      <section class="grid min-h-80 grid-rows-[auto_minmax(0,1fr)_auto]">
+        {
+          items.map((item, index) => (
+            <article
+              class="col-start-1 row-span-3 row-start-1 grid grid-rows-subgrid aria-hidden:pointer-events-none aria-hidden:invisible"
+              data-family-panel
+              data-value={item.value}
+              aria-hidden={index === initialIndex ? "false" : "true"}
+            >
+              <div class="border-b border-(--sl-color-gray-5) px-5 py-4">
+                <div class="text-base font-semibold text-(--sl-color-white)">
+                  {item.label}
+                </div>
+                <div class="mt-1 text-sm leading-6 text-(--sl-color-gray-2)">
+                  {item.description}
+                </div>
+              </div>
+
+              <div class="grid h-full grid-rows-[1fr_auto] gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+                <div class="flex h-full flex-col border-b border-(--sl-color-gray-5) lg:border-r lg:border-b-0">
+                  <div class="border-b border-(--sl-color-gray-5) px-5 py-3">
+                    <div class="text-[0.7rem] font-medium tracking-[0.08em] text-(--sl-color-gray-2) uppercase">
+                      Preview
+                    </div>
+                  </div>
+                  <div class="flex-1 p-5 text-base leading-7 text-(--sl-color-white)">
+                    {item.preview}
+                  </div>
+                </div>
+
+                <div class="flex h-full min-h-0 flex-col bg-(--sl-color-black)">
+                  <div class="border-b border-(--sl-color-gray-5) px-5 py-3">
+                    <div class="text-[0.7rem] font-medium tracking-[0.08em] text-(--sl-color-gray-2) uppercase">
+                      Snippet
+                    </div>
+                  </div>
+                  <div class="min-h-0 flex-1 [&>pre]:m-0 [&>pre]:h-full [&>pre]:p-2">
+                    <Code
+                      code={item.snippet}
+                      lang={item.snippetLang}
+                      theme={githubDark}
+                      wrap
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div class="border-t border-(--sl-color-gray-5) bg-(--sl-color-bg-sidebar) px-5 py-3">
+                <a
+                  class="text-sm font-medium text-(--sl-color-text-accent) hover:underline"
+                  href={item.href}
+                >
+                  See full demo
+                </a>
+              </div>
+            </article>
+          ))
+        }
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+  const initMacroFamilyOverview = (root: HTMLElement) => {
+    if (root.dataset.initialized === "1") {
+      return;
+    }
+
+    root.dataset.initialized = "1";
+
+    root.addEventListener("click", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const button = target.closest("[data-family-tab]");
+      if (!(button instanceof HTMLElement)) {
+        return;
+      }
+
+      const nextValue = button.dataset.value;
+      if (!nextValue) {
+        return;
+      }
+
+      root.querySelectorAll<HTMLElement>("[data-family-tab]").forEach((tab) => {
+        const isActive = tab.dataset.value === nextValue;
+        tab.ariaPressed = isActive ? "true" : "false";
+        tab.tabIndex = isActive ? 0 : -1;
+
+        if (isActive) {
+          queueMicrotask(() => {
+            tab.scrollIntoView({
+              block: "nearest",
+              inline: "nearest",
+              behavior: "smooth",
+            });
+          });
+        }
+      });
+
+      root
+        .querySelectorAll<HTMLElement>("[data-family-panel]")
+        .forEach((panel) => {
+          const isActive = panel.dataset.value === nextValue;
+          panel.ariaHidden = isActive ? "false" : "true";
+        });
+    });
+
+    root.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented) {
+        return;
+      }
+
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const button = target.closest("[data-family-tab]");
+      if (!(button instanceof HTMLElement)) {
+        return;
+      }
+
+      const tabs = Array.from(
+        root.querySelectorAll<HTMLElement>("[data-family-tab]"),
+      );
+      const currentIndex = tabs.indexOf(button);
+      if (currentIndex === -1) {
+        return;
+      }
+
+      let newIndex: number | null = null;
+      switch (event.key) {
+        case "ArrowDown":
+        case "ArrowRight":
+          newIndex = (currentIndex + 1) % tabs.length;
+          break;
+        case "ArrowUp":
+        case "ArrowLeft":
+          newIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+          break;
+        case "Home":
+          newIndex = 0;
+          break;
+        case "End":
+          newIndex = tabs.length - 1;
+          break;
+      }
+
+      if (newIndex !== null) {
+        event.preventDefault();
+
+        tabs[newIndex].focus();
+        tabs[newIndex].click();
+      }
+    });
+  };
+
+  document.querySelectorAll("[data-family-overview]").forEach((root) => {
+    if (root instanceof HTMLElement) {
+      initMacroFamilyOverview(root);
+    }
+  });
+</script>

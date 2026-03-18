@@ -1,0 +1,79 @@
+---
+import MacroFamilyOverview from "./MacroFamilyOverview.astro";
+
+import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
+
+const items = [
+  {
+    value: "t",
+    label: "t",
+    description: "Translate a message immediately and return a string.",
+    preview: "Hello Lingui",
+    snippet: String.raw`<p>{
+  $t\`Hello \${name}\`
+}</p>`,
+    snippetLang: "svelte",
+    href: "/macros/t",
+  },
+  {
+    value: "msg",
+    label: "msg / defineMessage",
+    description: "Define a descriptor now and translate it later.",
+    preview: "Welcome back, Lingui",
+    snippet: String.raw`<script lang="ts">
+  let welcome = $derived(msg\`Welcome back, \${name}\`);
+</script>
+
+<p>{$t(welcome)}</p>`,
+    snippetLang: "svelte",
+    href: "/macros/msg-and-define-message",
+  },
+  {
+    value: "plural",
+    label: "plural",
+    description: "Pick text from plural categories based on a numeric count.",
+    preview: "3 items",
+    snippet: String.raw`<p>{
+  $plural(count, {
+    one: "# item",
+    other: "# items",
+  })
+}</p>`,
+    snippetLang: "svelte",
+    href: "/macros/plural",
+  },
+  {
+    value: "select",
+    label: "select",
+    description: "Switch text by a named case such as tone or status.",
+    preview: "Welcome",
+    snippet: String.raw`<p>{
+  $select(tone, {
+    formal: "Welcome",
+    casual: "Hi",
+    other: "Hello",
+  })
+}</p>`,
+    snippetLang: "svelte",
+    href: "/macros/select",
+  },
+  {
+    value: "select-ordinal",
+    label: "selectOrdinal",
+    description: "Choose ordinal text such as 1st, 2nd, or 3rd.",
+    preview: "2nd",
+    snippet: String.raw`<p>{
+  $selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })
+}</p>`,
+    snippetLang: "svelte",
+    href: "/macros/select-ordinal",
+  },
+] satisfies readonly MacroFamilyOverviewItem[];
+---
+
+<MacroFamilyOverview title="Core Macro Overview" items={items} />
