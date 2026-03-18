@@ -90,9 +90,7 @@ const resultTabs = [
       <section
         class="grid grid-rows-[auto_1fr] border-b border-(--demo-border) lg:border-r lg:border-b-0"
       >
-        <header
-          class="overflow-hidden border-b border-(--demo-border) bg-(--demo-toolbar-background)"
-        >
+        <header class="overflow-hidden bg-(--demo-toolbar-background)">
           <div class="px-4 pt-3">
             <div
               class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-toolbar-text) uppercase"
@@ -150,9 +148,7 @@ const resultTabs = [
       </section>
 
       <section class="grid grid-rows-[auto_1fr]">
-        <header
-          class="overflow-hidden border-b border-(--demo-border) bg-(--demo-toolbar-background)"
-        >
+        <header class="overflow-hidden bg-(--demo-toolbar-background)">
           <div class="px-4 pt-3">
             <div
               class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-toolbar-text) uppercase"
@@ -238,7 +234,7 @@ const resultTabs = [
             Locale
           </div>
           <div
-            class="inline-flex overflow-hidden rounded-lg border border-(--demo-control-border)"
+            class="inline-flex overflow-hidden rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) text-sm text-(--demo-control-field-text)"
           >
             {
               workbench.locale.options.map((option) => (
@@ -247,7 +243,7 @@ const resultTabs = [
                   aria-pressed={option.code === workbench.locale.initial}
                   data-locale-button
                   data-locale-code={option.code}
-                  class="border-r border-(--demo-control-border) px-3 py-1.5 text-sm transition-colors last:border-r-0 aria-pressed:bg-(--demo-control-active-background) aria-pressed:text-(--demo-control-active-text) aria-[pressed=false]:text-(--demo-control-text)"
+                  class="border-r border-(--demo-control-field-border) px-3 py-1.5 transition-colors last:border-r-0 aria-pressed:bg-(--demo-control-active-background) aria-pressed:font-medium aria-pressed:text-(--demo-control-active-text)"
                 >
                   {option.label}
                 </button>
@@ -505,5 +501,9 @@ const resultTabs = [
     --demo-control-border: var(--sl-color-gray-5);
     --demo-control-active-background: var(--sl-color-accent-low);
     --demo-control-active-text: var(--sl-color-white);
+
+    --demo-control-field-text: var(--sl-color-gray-2);
+    --demo-control-field-background: var(--sl-color-black);
+    --demo-control-field-border: var(--sl-color-gray-4);
   }
 </style>

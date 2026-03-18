@@ -25,12 +25,12 @@ const { control } = Astro.props as Props;
         value={control.initial}
         placeholder={control.placeholder ? t(control.placeholder) : undefined}
         class:list={[
-          "h-9 rounded-lg border border-(--demo-control-border) bg-(--demo-control-background) px-3 text-sm text-(--demo-control-text)",
-          control.width === "lg"
-            ? "w-56"
-            : control.width === "sm"
-              ? "w-28"
-              : "w-40",
+          "h-9 rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) px-3 text-sm text-(--demo-control-field-text)",
+          {
+            sm: "w-28",
+            md: "w-40",
+            lg: "w-56",
+          }[control.width ?? "md"],
         ]}
       />
     ) : control.type === "number" ? (
@@ -42,19 +42,15 @@ const { control } = Astro.props as Props;
         min={control.min}
         max={control.max}
         step={control.step}
-        class="h-9 w-24 rounded-lg border border-(--demo-control-border) bg-(--demo-control-background) px-3 text-sm text-(--demo-control-text)"
+        class="h-9 w-24 rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) px-3 text-sm text-(--demo-control-field-text)"
       />
     ) : control.type === "boolean" ? (
       <button
         type="button"
+        aria-pressed={control.initial ? "true" : "false"}
         data-control-id={control.id}
         data-control-type="boolean"
-        data-active={control.initial ? "1" : "0"}
-        aria-pressed={control.initial ? "true" : "false"}
-        class:list={[
-          "rounded-lg border border-(--demo-control-border) px-3 py-1.5 text-sm transition-colors",
-          "data-[active=0]:text-(--demo-control-text) data-[active=1]:bg-(--demo-control-active-background) data-[active=1]:text-(--demo-control-active-text)",
-        ]}
+        class="rounded-lg border border-(--demo-control-field-border) px-3 py-1.5 text-sm transition-colors aria-pressed:bg-(--demo-control-field-active-background) aria-pressed:text-(--demo-control-field-active-text) aria-[pressed=false]:text-(--demo-control-field-text)"
       >
         {control.initial ? "On" : "Off"}
       </button>
@@ -63,7 +59,7 @@ const { control } = Astro.props as Props;
         data-control-id={control.id}
         data-control-type="select"
         value={control.initial}
-        class="h-9 rounded-lg border border-(--demo-control-border) bg-(--demo-control-background) px-3 text-sm text-(--demo-control-text)"
+        class="h-9 rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) px-3 text-sm text-(--demo-control-field-text)"
       >
         {control.options.map((option) => (
           <option value={option.value}>{t(option.label)}</option>

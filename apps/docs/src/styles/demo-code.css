@@ -1,5 +1,12 @@
 .demo-code-block .astro-code {
-  margin: 0;
+  margin: 0 !important;
+  padding-block: var(--ec-codePadBlk) !important;
+  padding-inline: var(--ec-codePadInl) !important;
+
+  font-family: var(--ec-codeFontFml) !important;
+  font-size: var(--ec-codeFontSize) !important;
+  font-weight: var(--ec-codeFontWg) !important;
+  line-height: var(--ec-codeLineHt) !important;
 }
 
 :root[data-theme="dark"] .demo-code-block .astro-code {

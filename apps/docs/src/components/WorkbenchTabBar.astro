@@ -16,7 +16,7 @@ const { ariaLabel, group, tabs } = Astro.props;
 
 <div class="w-full overflow-x-auto">
   <div
-    class="relative flex min-w-max after:absolute after:inset-[auto_0_0_0] after:-z-1 after:border-b-2 after:border-(--demo-tab-border-default)"
+    class="relative flex min-w-max after:absolute after:inset-[auto_0_0_0] after:border-b-2 after:border-(--demo-tab-border-default)"
     role="tablist"
     aria-label={ariaLabel}
     data-tab-bar
@@ -30,7 +30,7 @@ const { ariaLabel, group, tabs } = Astro.props;
           aria-selected={tab.selected}
           data-tab-group={group}
           data-tab-value={tab.value}
-          class="border-b-2 border-transparent px-4 py-3 text-sm whitespace-nowrap text-(--demo-tab-text-default) transition-colors aria-selected:border-(--demo-tab-border-active) aria-selected:font-bold aria-selected:text-(--demo-tab-text-active) aria-[selected=false]:enabled:hover:border-(--demo-tab-border-hover) aria-[selected=false]:enabled:hover:text-(--demo-tab-text-hover)"
+          class="relative px-4 py-3 text-sm whitespace-nowrap text-(--demo-tab-text-default) transition-colors after:absolute after:inset-[auto_0_0_0] after:z-1 after:border-b-2 after:border-transparent aria-selected:font-medium aria-selected:text-(--demo-tab-text-active) aria-selected:after:border-(--demo-tab-border-active) aria-[selected=false]:enabled:hover:text-(--demo-tab-text-hover) aria-[selected=false]:enabled:hover:after:border-(--demo-tab-border-hover)"
         >
           {tab.label}
         </button>
