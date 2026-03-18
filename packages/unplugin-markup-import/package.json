@@ -1,6 +1,6 @@
 {
   "name": "unplugin-markup-import",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unplugin for including .svelte and .astro files in bundler output with correct import graph resolution.",
   "license": "MIT",
   "author": "SegaraRai",
