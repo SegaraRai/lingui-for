@@ -1,12 +1,25 @@
-# Lingui React Macro Inventory
+# Internal Lingui React Macro Inventory
 
-このファイルは、Lingui 公式の React 向け user-facing macro API を、Svelte 版設計の比較材料として整理したものです。対象は `@lingui/core/macro` と `@lingui/react/macro` の公開面です。
+このファイルは、Lingui 公式の React 向け user-facing macro API を、Svelte / Astro 版設計の比較材料として整理した**内部メモ**です。対象は `@lingui/core/macro` と `@lingui/react/macro` の公開面です。
 
-参照元:
+## Status / confirmed findings
 
-- [js-lingui/website/docs/ref/macro.mdx](/F:/Projects/lingui-svelte/js-lingui/website/docs/ref/macro.mdx)
-- [js-lingui/packages/react/macro/index.d.ts](/F:/Projects/lingui-svelte/js-lingui/packages/react/macro/index.d.ts)
-- [js-lingui/packages/macro/index.d.ts](/F:/Projects/lingui-svelte/js-lingui/packages/macro/index.d.ts)
+- このファイルは **lingui-for の現行 user-facing API 仕様書ではありません**。現行の公開仕様を確認したい場合は、`apps/docs/src/content/docs/` 配下のドキュメントと各 package README を正として扱ってください。
+- 以前の参照元には開発者ローカル環境の絶対パスが残っていましたが、この repository では検証不能で誤解を招くため、upstream の repo 内パス表記へ置き換えました。
+- この inventory は upstream Lingui React / core の公開面を列挙しているため、そのまま読むと lingui-for に存在しない API (`useLingui` など) や React 固有の lowering まで「あるもの」に見えます。**比較用メモであって、実装済み機能一覧ではありません。**
+- 調査時に「無思考で存在していそう」に見えたコードのうち、少なくとも以下は意図を確認しました。
+  - `packages/lingui-for-svelte/src/macro/index.ts`
+  - `packages/lingui-for-astro/src/macro/index.ts`
+    - `null as unknown as ...` の export は、macro-only component の authoring-time 型定義であり、runtime 実装の置き忘れではありません。コンパイル時に置換されます。
+  - `packages/lingui-for-astro/src/integration/index.ts`
+  - `packages/lingui-for-svelte/src/unplugin/index.ts`
+    - `as any` / type assertion は見た目は怪しいものの、周辺コメントと使用箇所から、現時点では upstream toolchain 互換のための暫定 workaround と判断できます。
+
+参照元 (upstream repo 内パス):
+
+- `js-lingui/website/docs/ref/macro.mdx`
+- `js-lingui/packages/react/macro/index.d.ts`
+- `js-lingui/packages/macro/index.d.ts`
 
 ## Summary Table
 

@@ -61,3 +61,4 @@ Useful commands from the workspace root:
 - Public package usage and API details should live in each package README.
 - The example apps exist to catch regressions in extraction, compilation, and runtime behavior.
 - The docs app is the primary place for user-facing guides and framework documentation.
+- `./macros.md` is an internal historical comparison against upstream Lingui React/core macros. It is not the authoritative source for the current lingui-for API surface.
