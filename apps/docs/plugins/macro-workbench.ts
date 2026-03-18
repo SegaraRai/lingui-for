@@ -1,7 +1,9 @@
 import {
   makeConfig,
+  type CatalogFormatter,
   type CatalogType,
   type ExtractedMessage,
+  type MessageOrigin,
 } from "@lingui/conf";
 import { formatter as createPoFormatter } from "@lingui/format-po";
 import { existsSync } from "node:fs";
@@ -67,6 +69,7 @@ export function macroWorkbenchPlugin({
       const demoFile = resolve(demoDir, "Demo.svelte");
       const workbenchFile = resolve(demoDir, "workbench.ts");
       const source = await readFile(demoFile, "utf8");
+      const demoOriginPath = normalizePath(relative(projectRoot, demoFile));
       const messages = await collectMessages(
         demoFile,
         source,
@@ -82,6 +85,7 @@ export function macroWorkbenchPlugin({
       );
       const poCatalogs = await buildPoCatalogArtifacts(
         projectRoot,
+        demoOriginPath,
         ids,
         localeCodes,
         poFormatter,
@@ -157,7 +161,9 @@ async function collectMessages(
   return dedupeMessages(extracted);
 }
 
-function dedupeMessages(messages: ExtractedMessage[]): ExtractedMessage[] {
+function dedupeMessages(
+  messages: readonly ExtractedMessage[],
+): ExtractedMessage[] {
   const byId = new Map<string, ExtractedMessage>();
 
   for (const message of messages) {
@@ -171,9 +177,10 @@ function dedupeMessages(messages: ExtractedMessage[]): ExtractedMessage[] {
 
 async function buildPoCatalogArtifacts(
   projectRoot: string,
-  ids: string[],
+  demoOriginPath: string,
+  ids: readonly string[],
   localeCodes: readonly MacroWorkbenchLocaleCode[],
-  poFormatter: ReturnType<typeof createPoFormatter>,
+  poFormatter: CatalogFormatter,
 ): Promise<
   Record<
     MacroWorkbenchLocaleCode,
@@ -197,7 +204,11 @@ async function buildPoCatalogArtifacts(
           sourceLocale: "en",
         },
       )) as CatalogType;
-      const filteredCatalog = pickCatalogEntries(poCatalog, ids);
+      const filteredCatalog = pickPoCatalogEntries(
+        poCatalog,
+        ids,
+        demoOriginPath,
+      );
       const po = stripPoHeader(
         await poFormatter.serialize(filteredCatalog, {
           existing: null,
@@ -226,7 +237,7 @@ async function buildPoCatalogArtifacts(
 
 async function buildCompiledCatalogArtifacts(
   projectRoot: string,
-  ids: string[],
+  ids: readonly string[],
   localeCodes: readonly MacroWorkbenchLocaleCode[],
 ): Promise<
   Record<
@@ -265,8 +276,8 @@ async function buildCompiledCatalogArtifacts(
 }
 
 function pickCatalogEntries<T>(
-  catalog: Record<string, T>,
-  ids: string[],
+  catalog: Readonly<Record<string, T>>,
+  ids: readonly string[],
 ): Record<string, T> {
   const subset: Record<string, T> = {};
 
@@ -278,6 +289,41 @@ function pickCatalogEntries<T>(
   }
 
   return subset;
+}
+
+function pickPoCatalogEntries(
+  catalog: CatalogType,
+  ids: readonly string[],
+  demoOriginPath: string,
+): CatalogType {
+  const subset = pickCatalogEntries(catalog, ids);
+
+  return Object.fromEntries(
+    Object.entries(subset).map(([id, entry]) => [
+      id,
+      {
+        ...entry,
+        origin: filterCatalogOrigins(entry.origin, demoOriginPath),
+      },
+    ]),
+  ) as CatalogType;
+}
+
+function filterCatalogOrigins(
+  origins: readonly MessageOrigin[] | undefined,
+  demoOriginPath: string,
+): MessageOrigin[] {
+  if (!origins) {
+    return [];
+  }
+
+  return origins.filter(([filename]) => {
+    if (!filename.startsWith("src/")) {
+      return true;
+    }
+
+    return filename === demoOriginPath;
+  });
 }
 
 function readCompiledCatalog(source: string): Record<string, unknown> {
@@ -331,7 +377,9 @@ function readCompiledCatalog(source: string): Record<string, unknown> {
   return JSON.parse(jsonString) as Record<string, unknown>;
 }
 
-function serializeCompiledCatalog(catalog: Record<string, unknown>): string {
+function serializeCompiledCatalog(
+  catalog: Readonly<Record<string, unknown>>,
+): string {
   return [
     "/*eslint-disable*/",
     'import type { Messages } from "@lingui/core";',
