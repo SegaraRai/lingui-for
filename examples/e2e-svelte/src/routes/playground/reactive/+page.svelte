@@ -9,8 +9,10 @@
     toggleReactiveStatus,
   } from "$lib/playground/reactive-state.svelte";
 
-  const topLevelGreeting = $t`Hello ${reactiveState.name} from the reactive route.`;
-  const topLevelCount = $t`Count: ${reactiveState.count}`;
+  const topLevelGreeting = $derived(
+    $t`Hello ${reactiveState.name} from the reactive route.`,
+  );
+  const topLevelCount = $derived($t`Count: ${reactiveState.count}`);
   const derivedStatus = $derived.by(() =>
     reactiveState.status === "idle" ? $t`Idle` : $t`Active`,
   );

@@ -78,7 +78,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("auto-derives $t inside script initializers", () => {
+  it("keeps $t inside script initializers as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -95,14 +95,15 @@ describe("transformSvelte", () => {
 
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).not.toContain("_i18n._(");
-    expect(result.code).toContain("$derived($__l4s_translate(");
+    expect(result.code).toContain("const label = $__l4s_translate(");
+    expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       let name = $state("Ada");
-      const label = $derived($__l4s_translate(
+      const label = $__l4s_translate(
       /*i18n*/
       {
         id: "OVaF9k",
@@ -110,7 +111,7 @@ describe("transformSvelte", () => {
         values: {
           name: name
         }
-      }));
+      });
       __l4s_ctx.prime();</script>
 
       <p>{label}</p>"
@@ -243,7 +244,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("wraps top-level ternary initializers containing reactive translations once", () => {
+  it("keeps top-level ternary initializers containing reactive translations as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -257,16 +258,16 @@ describe("transformSvelte", () => {
     );
 
     expect(result.code).toContain(
-      'const label = $derived(state === "idle" ? $__l4s_translate(',
+      'const label = state === "idle" ? $__l4s_translate(',
     );
-    expect(result.code).not.toContain("$derived($__l4s_translate(");
+    expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       let state = $state("idle");
-      const label = $derived(state === "idle" ? $__l4s_translate(
+      const label = state === "idle" ? $__l4s_translate(
       /*i18n*/
       {
         id: "oBVc6R",
@@ -276,12 +277,12 @@ describe("transformSvelte", () => {
       {
         id: "s/ereB",
         message: "active"
-      }));
+      });
       __l4s_ctx.prime();</script>"
     `);
   });
 
-  it("wraps top-level object initializers containing reactive translations once", () => {
+  it("keeps top-level object initializers containing reactive translations as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -297,16 +298,15 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
-    expect(result.code).toContain("const labels = $derived({");
-    expect(result.code).not.toContain("state: $derived(");
-    expect(result.code).not.toContain("books: $derived(");
+    expect(result.code).toContain("const labels = {");
+    expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
       const __l4s_ctx = createLinguiAccessors();
       const __l4s_getI18n = __l4s_ctx.getI18n;
       const __l4s_translate = __l4s_ctx._;
       let count = $state(2);
-      const labels = $derived({
+      const labels = {
         state: $__l4s_translate(
         /*i18n*/
         {
@@ -322,12 +322,12 @@ describe("transformSvelte", () => {
             count: count
           }
         })
-      });
+      };
       __l4s_ctx.prime();</script>"
     `);
   });
 
-  it("does not auto-wrap top-level function initializers that return reactive translations", () => {
+  it("keeps top-level function initializers that return reactive translations as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -358,7 +358,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("auto-derives $t in script while leaving bare t eager", () => {
+  it("keeps $t in script direct while leaving bare t eager", () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "lingui-for-svelte/macro";
@@ -378,7 +378,8 @@ describe("transformSvelte", () => {
 
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).toContain("__l4s_getI18n()._(");
-    expect(result.code).toContain("$derived($__l4s_translate(");
+    expect(result.code).toContain("const reactive = $__l4s_translate(");
+    expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
       "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
       const __l4s_ctx = createLinguiAccessors();
@@ -394,7 +395,7 @@ describe("transformSvelte", () => {
           name: name
         }
       });
-      const reactive = $derived($__l4s_translate(
+      const reactive = $__l4s_translate(
       /*i18n*/
       {
         id: "ZKsO3J",
@@ -402,7 +403,7 @@ describe("transformSvelte", () => {
         values: {
           name: name
         }
-      }));
+      });
       __l4s_ctx.prime();</script>
 
       <p>{eager}</p>

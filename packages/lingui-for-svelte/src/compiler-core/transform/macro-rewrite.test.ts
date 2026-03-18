@@ -118,10 +118,10 @@ describe("createMacroPostprocessPlugin", () => {
         id: "demo.save",
         message: "Save"
       });
-      const label = $derived($__l4s_translate({
+      const label = $__l4s_translate({
         id: "demo.heading",
         message: "Hello"
-      }));
+      });
       const __lingui_for_svelte_expr_0 = $__l4s_translate({
         id: "demo.inline",
         message: "Inline"
@@ -129,7 +129,7 @@ describe("createMacroPostprocessPlugin", () => {
     `);
   });
 
-  it("wraps only top-level variable initializers after lowering reactive wrappers", () => {
+  it("keeps top-level variable initializers as direct translator reads after lowering reactive wrappers", () => {
     const code = runWithPlugin(
       dedent`
         import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
@@ -160,12 +160,12 @@ describe("createMacroPostprocessPlugin", () => {
     );
 
     expect(code).toMatchInlineSnapshot(`
-      "const label = $derived({
+      "const label = {
         idle: $__l4s_translate({
           id: "idle",
           message: "idle"
         })
-      });
+      };
       const getStatusText = () => $__l4s_translate({
         id: "active",
         message: "active"

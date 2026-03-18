@@ -26,7 +26,8 @@ function createReactiveMacro<TMacro extends (...args: never[]) => unknown>(
  * Translates a message into a string.
  *
  * In `.svelte` files this export also behaves like a readable store, which allows `$t(...)` and
- * `$t\`...\`` to participate in Svelte reactivity after the macro is compiled.
+ * `` $t`...` `` to participate in Svelte reactivity in markup and inside user-authored runes
+ * after the macro is compiled.
  */
 export const t = createReactiveMacro(linguiT, "t");
 
@@ -34,7 +35,7 @@ export const t = createReactiveMacro(linguiT, "t");
  * Builds or translates an ICU plural message.
  *
  * Use `plural(...)` inside `t(...)`/`msg(...)` for nested ICU messages, or use `$plural(...)` in a
- * component to reactively produce the translated string form.
+ * component markup or inside a user-authored rune to reactively produce the translated string form.
  */
 export const plural = createReactiveMacro(linguiPlural, "plural");
 
@@ -42,7 +43,7 @@ export const plural = createReactiveMacro(linguiPlural, "plural");
  * Builds or translates an ICU select message.
  *
  * Use `select(...)` inside `t(...)`/`msg(...)` for nested ICU messages, or use `$select(...)` in a
- * component to reactively produce the translated string form.
+ * component markup or inside a user-authored rune to reactively produce the translated string form.
  */
 export const select = createReactiveMacro(linguiSelect, "select");
 
@@ -50,7 +51,8 @@ export const select = createReactiveMacro(linguiSelect, "select");
  * Builds or translates an ICU ordinal-select message.
  *
  * Use `selectOrdinal(...)` inside `t(...)`/`msg(...)` for nested ICU messages, or use
- * `$selectOrdinal(...)` in a component to reactively produce the translated string form.
+ * `$selectOrdinal(...)` in component markup or inside a user-authored rune to reactively produce
+ * the translated string form.
  */
 export const selectOrdinal = createReactiveMacro(
   linguiSelectOrdinal,

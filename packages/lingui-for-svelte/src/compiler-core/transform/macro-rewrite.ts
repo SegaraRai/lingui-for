@@ -4,7 +4,6 @@ import * as t from "@babel/types";
 import {
   PACKAGE_RUNTIME,
   REACTIVE_TRANSLATION_WRAPPER,
-  SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
 import { collectMacroImportLocals } from "../shared/macro-bindings.ts";
 import type { ProgramTransformRequest } from "./types.ts";
@@ -195,102 +194,11 @@ function isRuntimeI18nCall(path: NodePath<t.CallExpression>): boolean {
   );
 }
 
-function isDerivedCall(node: t.Expression): boolean {
-  return (
-    t.isCallExpression(node) &&
-    t.isIdentifier(node.callee, { name: "$derived" })
-  );
-}
-
 function isReactiveTranslatorCall(
   node: t.CallExpression,
   translateBinding: string,
 ): boolean {
   return t.isIdentifier(node.callee, { name: `$${translateBinding}` });
-}
-
-function isTopLevelVariableDeclarator(
-  path: NodePath<t.VariableDeclarator>,
-): boolean {
-  const variableDeclaration = path.parentPath;
-  if (!variableDeclaration.isVariableDeclaration()) {
-    return false;
-  }
-
-  const statement = variableDeclaration.parentPath;
-  return (
-    statement.isProgram() ||
-    (statement.isExportNamedDeclaration() &&
-      statement.parentPath?.isProgram() === true)
-  );
-}
-
-function initializerContainsReactiveTranslation(
-  init: NodePath<t.Expression>,
-  translateBinding: string,
-): boolean {
-  if (
-    init.isCallExpression() &&
-    isReactiveTranslatorCall(init.node, translateBinding)
-  ) {
-    return true;
-  }
-
-  if (init.isFunctionExpression() || init.isArrowFunctionExpression()) {
-    return false;
-  }
-
-  let containsReactiveTranslation = false;
-
-  init.traverse({
-    Function(path) {
-      path.skip();
-    },
-    CallExpression(path) {
-      if (isReactiveTranslatorCall(path.node, translateBinding)) {
-        containsReactiveTranslation = true;
-        path.stop();
-      }
-    },
-  });
-
-  return containsReactiveTranslation;
-}
-
-function wrapTopLevelReactiveInitializers(
-  programPath: NodePath<t.Program>,
-  translateBinding: string,
-): void {
-  programPath.traverse({
-    Function(path) {
-      path.skip();
-    },
-    VariableDeclarator(path) {
-      if (!isTopLevelVariableDeclarator(path)) {
-        return;
-      }
-
-      if (
-        t.isIdentifier(path.node.id) &&
-        path.node.id.name.startsWith(SYNTHETIC_PREFIX_EXPRESSION)
-      ) {
-        return;
-      }
-
-      const init = path.get("init");
-      if (!init.node || !init.isExpression() || isDerivedCall(init.node)) {
-        return;
-      }
-
-      if (!initializerContainsReactiveTranslation(init, translateBinding)) {
-        return;
-      }
-
-      init.replaceWith(
-        t.callExpression(t.identifier("$derived"), [t.cloneNode(init.node)]),
-      );
-    },
-  });
 }
 
 function removeRuntimeI18nImports(
@@ -395,8 +303,8 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
  * @returns A Babel plugin object operating on the transformed program.
  *
  * Depending on `request.translationMode`, this plugin unwraps the temporary reactive wrapper,
- * rewrites translations into extraction-safe, raw, or Svelte-context forms, adjusts runtime
- * imports, and wraps eligible top-level reactive initializers for Svelte output.
+ * rewrites translations into extraction-safe, raw, or Svelte-context forms, and adjusts runtime
+ * imports.
  */
 export function createMacroPostprocessPlugin(
   request: ProgramTransformRequest,
@@ -412,12 +320,6 @@ export function createMacroPostprocessPlugin(
           if (request.translationMode === "svelte-context") {
             state.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
             removeRuntimeI18nImports(path.node, state.runtimeI18nLocals);
-            if (request.runtimeBindings) {
-              wrapTopLevelReactiveInitializers(
-                path,
-                request.runtimeBindings.translate,
-              );
-            }
           }
 
           if (request.translationMode === "extract") {
