@@ -50,10 +50,9 @@ function normalizeRuntimeConfigModule(
     };
   }
 
-  const runtimeConfig =
-    runtimeConfigModule && !Array.isArray(runtimeConfigModule)
-      ? (runtimeConfigModule as RuntimeConfigRecord)
-      : ({} satisfies RuntimeConfigRecord);
+  const runtimeConfig = runtimeConfigModule
+    ? (runtimeConfigModule as RuntimeConfigRecord)
+    : ({} satisfies RuntimeConfigRecord);
 
   return {
     i18n: runtimeConfig.i18n
