@@ -160,5 +160,5 @@ export const SelectOrdinal = null as unknown as (
 ) => unknown;
 
 console.warn(
-  "lingui-for-astro/macro is not meant to be used at runtime. If you see this warning, it means that the macro was not compiled correctly. Please ensure that your build setup is configured to compile lingui-for-astro/macro using the appropriate Babel plugin.",
+  "lingui-for-astro/macro is not meant to be used at runtime. If you see this warning, it means that the macro was not compiled correctly. For .astro files, ensure that lingui-for-astro/integration is added to your Astro configuration. For plain .js/.ts files, ensure that unplugin-lingui-macro is configured in your build setup.",
 );
