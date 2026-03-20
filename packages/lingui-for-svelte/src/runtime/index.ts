@@ -1,17 +1,13 @@
 import type { MessageDescriptor } from "@lingui/core";
 import type { Component } from "svelte";
 
-import RuntimeTransComponent from "./trans/RuntimeTrans.svelte";
-import type { TransComponentMap } from "./trans/rich-text.ts";
+import RuntimeTransComponent from "./components/RuntimeTrans.svelte";
+import type { TransComponentMap } from "./components/rich-text.ts";
 
 export type {
-  I18n,
-  Locale,
-  Locales,
-  MessageDescriptor,
-  Messages,
-} from "@lingui/core";
-
+  TransComponentDescriptor,
+  TransComponentMap,
+} from "./components/rich-text.ts";
 export {
   createLinguiAccessors,
   getLinguiContext,
@@ -19,10 +15,6 @@ export {
   type LinguiAccessors,
   type LinguiContext,
 } from "./core/context.ts";
-export type {
-  TransComponentDescriptor,
-  TransComponentMap,
-} from "./trans/rich-text.ts";
 
 /**
  * Props accepted by the runtime `<RuntimeTrans>` component.

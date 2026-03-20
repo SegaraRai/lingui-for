@@ -28,6 +28,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "type": "module",
@@ -36,14 +37,14 @@
     "./runtime",
     "./dist/runtime/index.mjs"
   ],
-  "main": "./dist/runtime/index.mjs",
-  "types": "./dist/runtime/index.d.mts",
-  "svelte": "./dist/runtime/index.mjs",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "svelte": "./dist/index.mjs",
   "exports": {
     ".": {
-      "types": "./dist/runtime/index.d.mts",
-      "svelte": "./dist/runtime/index.mjs",
-      "default": "./dist/runtime/index.mjs"
+      "types": "./dist/index.d.mts",
+      "svelte": "./dist/index.mjs",
+      "default": "./dist/index.mjs"
     },
     "./extractor": {
       "types": "./dist/extractor/index.d.mts",
