@@ -93,7 +93,13 @@ export function setLinguiContext(instance: I18n): LinguiContext {
  * Generated runtime code calls this to obtain the current `i18n` instance and reactive translator.
  */
 export function getLinguiContext(): LinguiContext {
-  return getContext<LinguiContext>(LINGUI_CONTEXT);
+  const context = getContext<LinguiContext>(LINGUI_CONTEXT);
+  if (!context) {
+    throw new Error(
+      "Lingui context not found. Make sure to call setLinguiContext() at the root of your component tree.",
+    );
+  }
+  return context;
 }
 
 /**
