@@ -1,3 +1,5 @@
+import type { Component } from "svelte";
+
 export type TransComponentDescriptor =
   | {
       kind: "element";
@@ -6,7 +8,7 @@ export type TransComponentDescriptor =
     }
   | {
       kind: "component";
-      component: () => unknown;
+      component: Component<any>;
       props?: Readonly<Record<string, unknown>>;
     };
 

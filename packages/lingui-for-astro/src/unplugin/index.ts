@@ -4,9 +4,10 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
+import { stripQuery } from "lingui-for-shared/compiler";
+
 import {
   mayContainLinguiMacroImport,
-  stripQuery,
   transformAstro,
 } from "../compiler-core/index.ts";
 import type { LinguiAstroPluginOptions } from "./types.ts";

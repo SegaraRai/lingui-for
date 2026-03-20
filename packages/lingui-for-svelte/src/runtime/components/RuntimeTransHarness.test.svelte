@@ -3,7 +3,7 @@
   import { untrack } from "svelte";
 
   import { setLinguiContext } from "../core/context.ts";
-  import type { TransComponentMap } from "./rich-text.ts";
+  import type { TransComponentMap } from "./types.ts";
   import RuntimeTrans from "./RuntimeTrans.svelte";
 
   let {

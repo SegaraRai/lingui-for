@@ -1,3 +1,5 @@
+import { mayContainLinguiMacroImport as mayContainMacroImport } from "lingui-for-shared/compiler";
+
 import { PACKAGE_MACRO } from "./constants.ts";
 
 /**
@@ -5,5 +7,5 @@ import { PACKAGE_MACRO } from "./constants.ts";
  * macro package is clearly absent.
  */
 export function mayContainLinguiMacroImport(source: string): boolean {
-  return source.includes(PACKAGE_MACRO);
+  return mayContainMacroImport(source, PACKAGE_MACRO);
 }

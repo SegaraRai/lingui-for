@@ -9,11 +9,10 @@ export type {
   Messages,
 } from "@lingui/core";
 
-export {
-  formatRichTextTranslation,
-  type TransComponentDescriptor,
-  type TransComponentMap,
-  type TransRenderNode,
+export type {
+  TransComponentDescriptor,
+  TransComponentMap,
+  TransRenderNode,
 } from "./components/rich-text.ts";
 export {
   getLinguiContext,

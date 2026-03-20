@@ -1,18 +1,6 @@
-import type { ScriptKind, ScriptLang } from "./types.ts";
+import { stripQuery } from "lingui-for-shared/compiler";
 
-/**
- * Removes a query suffix from an import id or filename-like string.
- *
- * @param id Raw module id, which may include a query such as `?raw` or `?worker`.
- * @returns The same id without its query portion.
- *
- * This is used before extension checks and synthetic filename generation so Vite/Rollup-style
- * query parameters do not affect compiler-core decisions.
- */
-export function stripQuery(id: string): string {
-  const queryIndex = id.indexOf("?");
-  return queryIndex === -1 ? id : id.slice(0, queryIndex);
-}
+import type { ScriptKind, ScriptLang } from "./types.ts";
 
 /**
  * Creates a synthetic filename for extracted or transformed script content from a `.svelte` file.

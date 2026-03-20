@@ -1,12 +1,12 @@
 import type { Component } from "svelte";
 
 import RuntimeTransComponent from "./components/RuntimeTrans.svelte";
-import type { TransComponentMap } from "./components/rich-text.ts";
+import type { TransComponentMap } from "./components/types.ts";
 
 export type {
   TransComponentDescriptor,
   TransComponentMap,
-} from "./components/rich-text.ts";
+} from "./components/types.ts";
 export {
   createLinguiAccessors,
   getLinguiContext,

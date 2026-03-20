@@ -1,5 +1,7 @@
 import MagicString from "magic-string";
 
+import { stripQuery } from "lingui-for-shared/compiler";
+
 import { analyzeSvelte } from "../analysis/svelte-analysis.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
@@ -10,7 +12,7 @@ import {
   RUNTIME_BINDING_GET_I18N,
   RUNTIME_BINDING_TRANSLATE,
 } from "../shared/constants.ts";
-import { createScriptFilename, stripQuery } from "../shared/paths.ts";
+import { createScriptFilename } from "../shared/paths.ts";
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
 import { createUniqueNameAllocator } from "./identifier-allocation.ts";

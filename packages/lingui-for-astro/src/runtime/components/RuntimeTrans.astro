@@ -1,9 +1,7 @@
 ---
 import { getLinguiContext } from "../core/context.ts";
-import {
-  formatRichTextTranslation,
-  type TransComponentMap,
-} from "./rich-text.ts";
+import type { TransComponentMap } from "./rich-text.ts";
+import { formatRichTextTranslation } from "lingui-for-shared/runtime";
 import RenderTransNodes from "./RenderTransNodes.astro";
 
 interface Props {

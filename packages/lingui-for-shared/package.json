@@ -1,0 +1,31 @@
+{
+  "name": "lingui-for-shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal shared helpers for lingui-for packages.",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    "./compiler": {
+      "types": "./dist/compiler/index.d.mts",
+      "default": "./dist/compiler/index.mjs"
+    },
+    "./runtime": {
+      "types": "./dist/runtime/index.d.mts",
+      "default": "./dist/runtime/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/core": "^0.18.2",
+    "@types/node": "^25.5.0",
+    "typescript": "^5.9.3",
+    "vite-plus": "catalog:"
+  }
+}

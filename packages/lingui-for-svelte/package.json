@@ -121,6 +121,7 @@
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "^25.5.0",
     "dedent": "^1.7.2",
+    "lingui-for-shared": "workspace:*",
     "svelte": "^5.54.0",
     "svelte-check": "^4.4.5",
     "typescript": "^5.9.3",

@@ -122,6 +122,7 @@
     "astro": "^6.0.7",
     "astro-analyzer-wasm": "workspace:*",
     "dedent": "^1.7.2",
+    "lingui-for-shared": "workspace:*",
     "typescript": "^5.9.3",
     "unplugin-markup-import": "workspace:*",
     "vite-plus": "catalog:"

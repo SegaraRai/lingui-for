@@ -1,6 +1,6 @@
 <script lang="ts">
   import RenderTransNodes from "./RenderTransNodes.svelte";
-  import type { TransComponentMap, TransRenderNode } from "./rich-text.ts";
+  import type { TransComponentMap, TransRenderNode } from "./types.ts";
 
   let {
     nodes,

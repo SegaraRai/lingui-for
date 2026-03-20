@@ -1,10 +1,9 @@
 <script lang="ts">
+  import { formatRichTextTranslation } from "lingui-for-shared/runtime";
+
   import { getLinguiContext } from "../core/context.ts";
   import RenderTransNodes from "./RenderTransNodes.svelte";
-  import {
-    formatRichTextTranslation,
-    type TransComponentMap,
-  } from "./rich-text.ts";
+  import type { TransComponentMap } from "./types.ts";
 
   let {
     id,

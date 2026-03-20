@@ -6,6 +6,8 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
+import { stripQuery } from "lingui-for-shared/compiler";
+
 import type { LinguiMacroPluginOptions } from "../types.ts";
 import { hasImport } from "./imports.ts";
 
@@ -25,11 +27,6 @@ type BabelParserPlugin =
   | "typescript"
   | "decorators-legacy"
   | ["flow", { all: boolean }];
-
-function stripQuery(id: string): string {
-  const queryIndex = id.indexOf("?");
-  return queryIndex === -1 ? id : id.slice(0, queryIndex);
-}
 
 function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values)];
