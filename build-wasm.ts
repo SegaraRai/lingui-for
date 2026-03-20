@@ -46,6 +46,7 @@ function buildWasm(rootDir: string, crateDir: string, isDebug: boolean): void {
     {
       cwd: crateDir,
       stdio: "inherit",
+      shell: true,
     },
   );
 
