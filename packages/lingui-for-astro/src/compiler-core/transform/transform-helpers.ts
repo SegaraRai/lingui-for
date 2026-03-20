@@ -1,9 +1,9 @@
-import { transformSync } from "@babel/core";
+import { transformSync, type NodePath } from "@babel/core";
 import { generate } from "@babel/generator";
-import traverseModule, { type NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
 import MagicString from "magic-string";
 
+import { getBabelTraverse } from "../shared/babel-traverse.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
   PACKAGE_MACRO,
@@ -23,16 +23,6 @@ import {
   lowerSyntheticComponentDeclaration,
   stripRuntimeTransImports,
 } from "./runtime-trans-lowering.ts";
-
-const traverse = (
-  typeof traverseModule === "function"
-    ? traverseModule
-    : (
-        traverseModule as unknown as {
-          default: typeof import("@babel/traverse").default;
-        }
-      ).default
-) as typeof import("@babel/traverse").default;
 
 export function transformFrontmatter(
   source: string,
@@ -211,6 +201,8 @@ function rewriteNestedComponentMacroExpressions(
   const offset = prefix.length;
   const replacements: Array<{ start: number; end: number; code: string }> = [];
 
+  const traverse = getBabelTraverse();
+
   traverse(parsed.ast, {
     JSXAttribute(path: NodePath<t.JSXAttribute>) {
       const value = path.node.value;
@@ -247,7 +239,7 @@ function rewriteNestedComponentMacroExpressions(
   });
 
   replacements
-    .sort((left, right) => right.start - left.start)
+    .toSorted((left, right) => right.start - left.start)
     .forEach(({ start, end, code }) => {
       string.overwrite(start, end, code);
     });
