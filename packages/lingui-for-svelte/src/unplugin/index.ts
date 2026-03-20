@@ -6,14 +6,10 @@ import {
 
 import {
   mayContainLinguiMacroImport,
+  stripQuery,
   transformSvelte,
 } from "../compiler-core/index.ts";
 import type { LinguiSveltePluginOptions } from "./types.ts";
-
-function stripQuery(id: string): string {
-  const queryIndex = id.indexOf("?");
-  return queryIndex === -1 ? id : id.slice(0, queryIndex);
-}
 
 export const unpluginFactory: UnpluginFactory<
   LinguiSveltePluginOptions | undefined
@@ -47,9 +43,6 @@ export const unpluginFactory: UnpluginFactory<
     }
 
     return null;
-  },
-  vite: {
-    enforce: "pre",
   },
 });
 

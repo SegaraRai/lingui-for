@@ -62,4 +62,4 @@ interface RuntimeTransProps {
  */
 export const RuntimeTrans = RuntimeTransComponent as (
   props: RuntimeTransProps,
-) => unknown satisfies (props: RuntimeTransProps) => any;
+) => unknown;

@@ -6,14 +6,10 @@ import {
 
 import {
   mayContainLinguiMacroImport,
+  stripQuery,
   transformAstro,
 } from "../compiler-core/index.ts";
 import type { LinguiAstroPluginOptions } from "./types.ts";
-
-function stripQuery(id: string): string {
-  const queryIndex = id.indexOf("?");
-  return queryIndex === -1 ? id : id.slice(0, queryIndex);
-}
 
 function reorderBeforeMatcher<
   T extends {
@@ -82,7 +78,6 @@ export const unpluginFactory: UnpluginFactory<
     return null;
   },
   vite: {
-    enforce: "pre",
     configResolved(config) {
       reorderBeforeMatcher(
         config.plugins as (typeof config.plugins)[number][],
