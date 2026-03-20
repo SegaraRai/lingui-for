@@ -48,7 +48,7 @@ jobs:
 
       - run: vp run build:wasm
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wasm-package
           path: packages/astro-analyzer-wasm/dist/
@@ -70,7 +70,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wasm-package
           path: packages/astro-analyzer-wasm/dist

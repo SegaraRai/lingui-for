@@ -46,7 +46,7 @@ jobs:
 
       - run: vp run build:wasm
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: wasm-package
           path: packages/astro-analyzer-wasm/dist/
@@ -67,7 +67,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: wasm-package
           path: packages/astro-analyzer-wasm/dist
@@ -84,3 +84,16 @@ jobs:
       - run: vp run check
 
       - run: vp run test
+
+  spelling:
+    name: Spell Check with Typos
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Actions Repository
+        uses: actions/checkout@v6
+
+      - name: Spell Check Repo
+        uses: crate-ci/typos@v1.44.0
