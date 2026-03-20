@@ -29,7 +29,7 @@ describe("svelteExtractor", () => {
       <script lang="ts">
         import { msg, t } from "lingui-for-svelte/macro";
         const descriptor = msg\`Tagged descriptor from Svelte\`;
-        const eager = t\`Tagged eager from Svelte\`;
+        const eager = t.eager\`Tagged eager from Svelte\`;
         const name = "Ada";
       </script>
 
@@ -165,7 +165,7 @@ describe("svelteExtractor", () => {
       <script lang="ts">
         import { t as translate } from "lingui-for-svelte/macro";
 
-        const outer = translate\`Outer\`;
+        const outer = translate.eager\`Outer\`;
 
         function render() {
           const translate = notMacro;

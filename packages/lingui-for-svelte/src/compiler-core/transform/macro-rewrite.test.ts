@@ -56,7 +56,7 @@ describe("createMacroPreprocessPlugin", () => {
         const label = $translate\`Hello \${name}\`;
         const books = $plural(count, { one: "# Book", other: "# Books" });
       `,
-      createMacroPreprocessPlugin(),
+      createMacroPreprocessPlugin(createRequest()),
     );
 
     expect(code).toMatchInlineSnapshot(`
@@ -72,10 +72,47 @@ describe("createMacroPreprocessPlugin", () => {
   it("does not rewrite $-prefixed calls without a Lingui macro import", () => {
     const code = runWithPlugin(
       "const label = $t`Hello ${name}`;",
-      createMacroPreprocessPlugin(),
+      createMacroPreprocessPlugin(createRequest()),
     );
 
     expect(code).toBe("const label = $t`Hello ${name}`;");
+  });
+
+  it("wraps explicit eager direct translations", () => {
+    const code = runWithPlugin(
+      dedent`
+        import { t } from "lingui-for-svelte/macro";
+
+        const label = t.eager\`Hello \${name}\`;
+      `,
+      createMacroPreprocessPlugin(
+        createRequest({
+          translationMode: "svelte-context",
+        }),
+      ),
+    );
+
+    expect(code).toMatchInlineSnapshot(`
+      "import { t } from "lingui-for-svelte/macro";
+      const label = __lingui_for_svelte_eager_translation__(t\`Hello \${name}\`);"
+    `);
+  });
+
+  it("rejects bare direct t calls in strict Svelte mode", () => {
+    expect(() =>
+      runWithPlugin(
+        dedent`
+          import { t } from "lingui-for-svelte/macro";
+
+          const label = t\`Hello\`;
+        `,
+        createMacroPreprocessPlugin(
+          createRequest({
+            translationMode: "svelte-context",
+          }),
+        ),
+      ),
+    ).toThrow(/Bare `t` in `.svelte` files is not allowed/);
   });
 });
 
@@ -194,6 +231,37 @@ describe("createMacroPostprocessPlugin", () => {
     expect(code).toMatchInlineSnapshot(`
       "import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
       const label = runtimeI18n._({
+        id: "demo.heading",
+        message: "Hello"
+      });"
+    `);
+  });
+
+  it("unwraps eager wrappers to direct translator calls", () => {
+    const code = runWithPlugin(
+      dedent`
+        import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
+
+        const label = __lingui_for_svelte_eager_translation__(runtimeI18n._({
+          id: "demo.heading",
+          message: "Hello"
+        }));
+      `,
+      createMacroPostprocessPlugin(
+        createRequest({
+          translationMode: "svelte-context",
+          runtimeBindings: {
+            createLinguiAccessors: "createLinguiAccessors",
+            context: "__l4s_ctx",
+            getI18n: "__l4s_getI18n",
+            translate: "__l4s_translate",
+          },
+        }),
+      ),
+    );
+
+    expect(code).toMatchInlineSnapshot(`
+      "const label = __l4s_getI18n()._({
         id: "demo.heading",
         message: "Hello"
       });"

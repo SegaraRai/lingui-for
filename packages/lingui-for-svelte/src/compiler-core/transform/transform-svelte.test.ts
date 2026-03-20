@@ -35,13 +35,13 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("rewrites bare t in script and $t in markup through separate runtime paths", () => {
+  it("rewrites eager t in script and $t in markup through separate runtime paths", () => {
     const source = dedent`
       <script lang="ts">
         import { msg, t } from "lingui-for-svelte/macro";
 
         const heading = msg({ id: "demo.heading", message: "Hello" });
-        const label = t({ message: "Save" });
+        const label = t.eager({ message: "Save" });
       </script>
 
       <h1>{$t(heading)}</h1>
@@ -374,13 +374,13 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps $t in script direct while leaving bare t eager", () => {
+  it("keeps $t in script direct while letting t.eager stay eager", () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "lingui-for-svelte/macro";
 
         let name = $state("Ada");
-        const eager = t\`Tagged eager in script for \${name}\`;
+        const eager = t.eager\`Tagged eager in script for \${name}\`;
         const reactive = $t\`Tagged reactive in script for \${name}\`;
       </script>
 
@@ -427,6 +427,25 @@ describe("transformSvelte", () => {
     	<p>{eager}</p>
     	<p>{reactive}</p>"
     `);
+  });
+
+  it("rejects bare direct t in Svelte scripts", () => {
+    expect(() =>
+      transformSvelte(
+        dedent`
+          <script lang="ts">
+            import { t } from "lingui-for-svelte/macro";
+
+            const label = t\`Hello\`;
+          </script>
+
+          <p>{label}</p>
+        `,
+        {
+          filename: "/virtual/App.svelte",
+        },
+      ),
+    ).toThrow(/Bare `t` in `.svelte` files is not allowed/);
   });
 
   it("rewrites $t markup expressions to runtime reactive translations", () => {
@@ -791,7 +810,7 @@ describe("transformSvelte", () => {
         <script lang="ts">
           import { t as translate } from "lingui-for-svelte/macro";
 
-          const outer = translate\`Outer\`;
+          const outer = translate.eager\`Outer\`;
 
           function render() {
             const translate = notMacro;

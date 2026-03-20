@@ -36,7 +36,9 @@
       })}
     </p>
     <p class="text-base-content/70">{$t(sharedImportedDescriptor)}</p>
-    <p class="text-base-content/70">{t(sharedImportedDetailDescriptor)}</p>
+    <p class="text-base-content/70">
+      {t.eager(sharedImportedDetailDescriptor)}
+    </p>
     <p class="badge badge-secondary badge-lg flex-none">
       {$t`Svelte sees locale ${localeLabel}.`}
     </p>

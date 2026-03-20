@@ -187,43 +187,68 @@ function pathUsesMacroBinding(
   path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
   bindings: MacroBindings,
 ): boolean {
-  let callee: NodePath<t.Identifier> | null = null;
+  let macroBinding: NodePath<t.Identifier> | null = null;
+  let reactiveAlias: NodePath<t.Identifier> | null = null;
 
   if (path.isCallExpression()) {
     const nextCallee = path.get("callee");
     if (nextCallee.isIdentifier()) {
-      callee = nextCallee;
+      macroBinding = nextCallee;
+      reactiveAlias = nextCallee;
+    } else if (
+      nextCallee.isMemberExpression() &&
+      !nextCallee.node.computed &&
+      nextCallee.get("property").isIdentifier({ name: "eager" })
+    ) {
+      const object = nextCallee.get("object");
+      if (object.isIdentifier()) {
+        macroBinding = object;
+      }
     }
   } else if (path.isTaggedTemplateExpression()) {
     const nextTag = path.get("tag");
     if (nextTag.isIdentifier()) {
-      callee = nextTag;
+      macroBinding = nextTag;
+      reactiveAlias = nextTag;
+    } else if (
+      nextTag.isMemberExpression() &&
+      !nextTag.node.computed &&
+      nextTag.get("property").isIdentifier({ name: "eager" })
+    ) {
+      const object = nextTag.get("object");
+      if (object.isIdentifier()) {
+        macroBinding = object;
+      }
     }
   }
 
-  if (!callee) {
+  if (!macroBinding) {
     return false;
   }
 
   if (
     isMacroImportBinding(
-      callee.scope.getBinding(callee.node.name),
+      macroBinding.scope.getBinding(macroBinding.node.name),
       bindings.all,
     )
   ) {
     return true;
   }
 
-  const localName = callee.node.name;
+  if (!reactiveAlias) {
+    return false;
+  }
+
+  const localName = reactiveAlias.node.name;
   if (
     !localName.startsWith("$") ||
     !bindings.reactiveStrings.has(localName.slice(1)) ||
-    callee.scope.hasBinding(localName)
+    reactiveAlias.scope.hasBinding(localName)
   ) {
     return false;
   }
 
-  const baseBinding = callee.scope.getBinding(localName.slice(1));
+  const baseBinding = reactiveAlias.scope.getBinding(localName.slice(1));
   return isMacroImportBinding(baseBinding, bindings.reactiveStrings);
 }
 

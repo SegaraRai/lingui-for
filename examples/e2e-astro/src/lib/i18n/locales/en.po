@@ -530,7 +530,7 @@ msgstr "Svelte rich text keeps component placeholders intact."
 msgid "Svelte runs plural, select, and selectOrdinal macros in component code."
 msgstr "Svelte runs plural, select, and selectOrdinal macros in component code."
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:41
+#: src/components/svelte/SvelteLinguiIsland.svelte:43
 msgid "Svelte sees locale {localeLabel}."
 msgstr "Svelte sees locale {localeLabel}."
 

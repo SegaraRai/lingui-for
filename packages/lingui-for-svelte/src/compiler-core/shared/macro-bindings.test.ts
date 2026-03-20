@@ -40,8 +40,18 @@ describe("macro-bindings", () => {
       true,
     );
     expect(
+      expressionUsesMacroBinding("translate.eager`Hello`", "ts", bindings),
+    ).toBe(true);
+    expect(
       expressionUsesMacroBinding(
         '$choosePlural(count, { one: "#", other: "##" })',
+        "ts",
+        bindings,
+      ),
+    ).toBe(true);
+    expect(
+      expressionUsesMacroBinding(
+        'choosePlural.eager(count, { one: "#", other: "##" })',
         "ts",
         bindings,
       ),

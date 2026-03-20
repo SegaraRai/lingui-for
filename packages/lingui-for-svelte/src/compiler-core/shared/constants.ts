@@ -59,6 +59,16 @@ export const REACTIVE_TRANSLATION_WRAPPER =
   "__lingui_for_svelte_reactive_translation__";
 
 /**
+ * Temporary wrapper function name inserted around explicit eager translations such as
+ * `t.eager(...)` and `plural.eager(...)`.
+ *
+ * This is only an internal Babel-phase marker used so the transform can preserve intentional
+ * non-reactive translations while still rejecting bare direct macro calls inside `.svelte` files.
+ */
+export const EAGER_TRANSLATION_WRAPPER =
+  "__lingui_for_svelte_eager_translation__";
+
+/**
  * Default local binding name for the object returned by `getLinguiContext()`.
  *
  * This is used when the Svelte transform injects hidden runtime bindings into a component
@@ -72,8 +82,8 @@ export const RUNTIME_BINDING_CONTEXT = "__l4s_ctx";
 /**
  * Default local binding name for a getter that resolves the current `i18n` instance.
  *
- * This is used in transformed `.svelte` instance scripts when bare `t(...)`-style
- * translations need access to `i18n._(...)` without eagerly reading Svelte context.
+ * This is used in transformed `.svelte` instance scripts when explicit eager translations need
+ * access to `i18n._(...)` without eagerly reading Svelte context.
  *
  * This is only a default candidate. The emitted identifier may be renamed to avoid
  * collisions.

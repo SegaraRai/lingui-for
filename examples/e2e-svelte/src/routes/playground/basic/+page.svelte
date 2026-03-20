@@ -33,7 +33,7 @@
       <p>{$t`Hello ${name} from the basic route.`}</p>
       <p><RuntimeTrans descriptor={localDescriptor} /></p>
       <p>{$t(importedDescriptor)}</p>
-      <p>{t(importedSecondaryDescriptor)}</p>
+      <p>{$t(importedSecondaryDescriptor)}</p>
     </div>
   </div>
 </section>

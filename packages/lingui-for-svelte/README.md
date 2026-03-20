@@ -122,7 +122,7 @@ Use macros in Svelte components:
 ## Entrypoints
 
 - `lingui-for-svelte`: runtime exports such as `setLinguiContext` and `RuntimeTrans`
-- `lingui-for-svelte/macro`: authoring macros such as `t`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, and `defineMessage`
+- `lingui-for-svelte/macro`: authoring macros such as `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, and `defineMessage`
 - `lingui-for-svelte/extractor`: `svelteExtractor` for Lingui CLI extraction
 - `lingui-for-svelte/unplugin/*`: bundler plugins for Vite, Rollup, Webpack, esbuild, Rolldown, Rspack, and Bun
 
@@ -131,6 +131,7 @@ Use macros in Svelte components:
 - The primary authoring API is `lingui-for-svelte/macro`. Runtime helpers exist mainly as the compilation target.
 - Initialize Lingui context before translated markup runs. In practice, a root layout is the safest place.
 - `$t` is a reactive store-like form specific to Svelte — it re-evaluates when the active locale changes. It is not a Svelte 5 rune despite the `$` prefix.
+- Bare `t(...)` / `` t`...` `` are not allowed in `.svelte` files. Use `$t(...)` / `` $t`...` `` for reactive UI text, or `t.eager(...)` / `` t.eager`...` `` when you explicitly need a non-reactive snapshot.
 - Plain `.js`, `.ts`, `.svelte.js`, and `.svelte.ts` macro support comes from `unplugin-lingui-macro`, not from the Svelte transform itself.
 
 ## Repository References
