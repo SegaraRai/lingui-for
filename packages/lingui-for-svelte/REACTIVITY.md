@@ -6,13 +6,15 @@ reactive model.
 The runtime has three main pieces:
 
 - `setLinguiContext` / `getLinguiContext` in `src/runtime/core/context.ts`
+- `createI18nStore` in `src/runtime/core/context.ts`
 - `createTranslationStore` in `src/runtime/core/translation-store.ts`
 - compiler-injected accessors created by `createLinguiAccessors`
 
 At a high level:
 
 - application code installs an `I18n` instance into Svelte context
-- the runtime wraps that instance in a callable Svelte store
+- the runtime builds one shared Svelte store for Lingui change notifications
+- the runtime wraps that shared store in a callable translation store
 - compiled code reads translations either imperatively or reactively
 - Lingui `"change"` events propagate back through the store and trigger updates
 
@@ -26,12 +28,14 @@ flowchart TD
     A[Application / layout component] --> B["setLinguiContext(i18n)"]
     B --> C["createLinguiContext(i18n)"]
     C --> D[i18n: raw Lingui instance]
-    C --> E[_: TranslationStore]
-    E --> F[createTranslationStore]
-    F --> G[callable translate function]
-    F --> H[readable store subscription API]
-    B --> I[setContext LINGUI_CONTEXT]
-    I --> J[Descendant components can call getLinguiContext]
+    C --> E["i18nStore: Readable<I18n>"]
+    E --> F[createI18nStore]
+    C --> G[_: TranslationStore]
+    G --> H[createTranslationStore]
+    H --> I[callable translate function]
+    H --> J[shared readable translator store]
+    B --> K[setContext LINGUI_CONTEXT]
+    K --> L[Descendant components can call getLinguiContext]
 ```
 
 ## 2. What the Translation Store Actually Is
@@ -41,7 +45,8 @@ flowchart TD
 - a callable translator: `translate(descriptor)`
 - a Svelte readable store: `translate.subscribe(...)`
 
-Direct calls and subscriptions take different paths.
+Direct calls and subscriptions still take different paths, but both now sit on
+top of a single shared source store.
 
 ```mermaid
 flowchart TD
@@ -49,39 +54,53 @@ flowchart TD
     A --> B[Direct call path]
     A --> C[Subscription path]
 
-    B --> D[getRawI18n]
+    B --> D[stable i18n reference]
     D --> E["i18n._(...args)"]
 
-    C --> F[derived getStore]
-    F --> G[Readable I18n store]
-    G --> H["bindTranslate(instance)"]
+    C --> F[shared translatorStore]
+    F --> G["derived(i18nStore, bindTranslate)"]
+    G --> H[shared i18nStore]
     H --> I[subscriber receives fresh translator fn]
 ```
+
+The important consequence is that `TranslationStore.subscribe(...)` no longer
+creates a fresh `readable` + `derived` chain for every subscriber. Subscribers
+share one translator store per Lingui context.
 
 ## 3. How Lingui Change Events Reach Svelte
 
 The reactive path exists because `createI18nStore(instance)` subscribes to
-Lingui's `"change"` event and re-emits the same instance through a Svelte
-`readable` store.
+Lingui's `"change"` event and re-emits the same instance through one shared
+Svelte `readable` store. `createTranslationStore(...)` then derives translator
+functions from that shared source.
 
 ```mermaid
 sequenceDiagram
     participant App as App code
     participant I18n as Lingui I18n
     participant Ctx as Lingui context
-    participant Store as TranslationStore
+    participant I18nStore as shared i18nStore
+    participant Store as shared TranslationStore
     participant Svelte as Svelte subscriber
 
     App->>Ctx: setLinguiContext(i18n)
-    Ctx->>Store: createTranslationStore(...)
+    Ctx->>I18nStore: createI18nStore(instance)
+    Ctx->>Store: createTranslationStore(i18nStore, instance)
     Svelte->>Store: subscribe(run)
-    Store->>I18n: createI18nStore(instance)
-    I18n-->>Store: on("change", update)
+    Store->>I18nStore: subscribe
+    I18nStore->>I18n: on("change", update)
     App->>I18n: load / activate locale
-    I18n-->>Store: "change"
+    I18n-->>I18nStore: "change"
+    I18nStore-->>Store: emit same instance
     Store-->>Svelte: emit rebound translate fn
     Svelte-->>Svelte: recompute $translate(...)
 ```
+
+This means the reactive fan-out now looks like:
+
+- one Lingui `"change"` listener per active context store subscription set
+- one shared derived translator store per context
+- many Svelte subscribers hanging off that shared translator store
 
 ## 4. Why `createLinguiAccessors` Exists
 
@@ -168,7 +187,8 @@ If you want the shortest possible mental model, it is this:
 
 - Lingui owns translation state
 - Svelte context makes that state reachable
-- `TranslationStore` turns Lingui change events into Svelte reactivity
+- one shared `i18nStore` bridges Lingui events into Svelte
+- `TranslationStore` is a callable facade over that shared reactive source
 - compiler output chooses whether a translation should be imperative or
   reactive
 - `RuntimeTrans` is just another consumer of the same reactive translator

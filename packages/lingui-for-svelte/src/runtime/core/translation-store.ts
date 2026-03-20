@@ -24,22 +24,24 @@ function bindTranslate(instance: I18n): Translate {
 /**
  * Creates a callable readable store that always translates using the latest `i18n` instance.
  *
- * @param getStore Returns a store that emits whenever the active `i18n` instance should trigger
- * reactive updates.
- * @param getRawI18n Returns the current `i18n` instance for direct function-style calls.
+ * @param i18nStore Store that emits whenever the active `i18n` instance should trigger reactive
+ * updates.
+ * @param i18n Stable Lingui instance used for direct function-style calls.
  * @returns A store/function hybrid used by runtime translation helpers and generated code.
  *
  * The returned object is the runtime basis for `$t(...)`-style reactivity inside compiled Svelte
  * components.
  */
 export function createTranslationStore(
-  getStore: () => Readable<I18n>,
-  getRawI18n: () => I18n,
+  i18nStore: Readable<I18n>,
+  i18n: I18n,
 ): TranslationStore {
+  const translatorStore = derived(i18nStore, (instance) =>
+    bindTranslate(instance),
+  );
   const store = ((...args: Parameters<Translate>) =>
-    getRawI18n()._(...args)) as TranslationStore;
-  store.subscribe = (run) =>
-    derived(getStore(), (instance) => bindTranslate(instance)).subscribe(run);
+    i18n._(...args)) as TranslationStore;
+  store.subscribe = translatorStore.subscribe;
 
   return store;
 }

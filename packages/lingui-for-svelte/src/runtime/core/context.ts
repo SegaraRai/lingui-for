@@ -63,12 +63,11 @@ function createI18nStore(instance: I18n): Readable<I18n> {
 }
 
 function createLinguiContext(instance: I18n): LinguiContext {
+  const i18nStore = createI18nStore(instance);
+
   return {
     i18n: instance,
-    _: createTranslationStore(
-      () => createI18nStore(instance),
-      () => instance,
-    ),
+    _: createTranslationStore(i18nStore, instance),
   };
 }
 
