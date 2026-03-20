@@ -1,0 +1,6 @@
+[files]
+extend-exclude = ["**/locales/*.ts"]
+
+[default]
+# "#nd"
+extend-ignore-words-re = ["^nd$"]
