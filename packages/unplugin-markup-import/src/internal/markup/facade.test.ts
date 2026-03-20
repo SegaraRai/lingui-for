@@ -90,11 +90,12 @@ describe("createMarkupFacadeModule", () => {
       import { runtime } from "@scope/runtime";"
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
-      "import "/virtual/runtime/polyfill.ts";
-      export { default as __unplugin_markup_import_0 } from "/virtual/runtime/default.ts";
-      export * as __unplugin_markup_import_1 from "/virtual/runtime/namespace.ts";
-      export { helper as __unplugin_markup_import_2 } from "/virtual/runtime/helpers.ts";
-      export type { HelperOptions as __unplugin_markup_import_3 } from "/virtual/runtime/helpers.ts";"
+    	"import "/virtual/runtime/polyfill.ts";
+    	export { default as __unplugin_markup_import_0 } from "/virtual/runtime/default.ts";
+    	export * as __unplugin_markup_import_1 from "/virtual/runtime/namespace.ts";
+    	export { helper as __unplugin_markup_import_2 } from "/virtual/runtime/helpers.ts";
+    	export type { HelperOptions as __unplugin_markup_import_3 } from "/virtual/runtime/helpers.ts";
+    	"
     `);
   });
 });

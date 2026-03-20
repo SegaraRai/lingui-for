@@ -349,16 +349,16 @@ function createFacadeModuleCode(
   const lines = declarations
     .flatMap((declaration) => {
       if (declaration.sideEffectOnly) {
-        return [`import "${declaration.source}";`];
+        return [`import "${declaration.source}";\n`];
       }
 
       return declaration.specifiers.flatMap((specifier) => {
         if (specifier.kind === "default") {
-          return `export { default as ${specifier.exportName} } from "${declaration.source}";`;
+          return `export { default as ${specifier.exportName} } from "${declaration.source}";\n`;
         }
 
         if (specifier.kind === "namespace") {
-          return `export * as ${specifier.exportName} from "${declaration.source}";`;
+          return `export * as ${specifier.exportName} from "${declaration.source}";\n`;
         }
 
         if (specifier.typeOnly && !includeTypeOnly) {
@@ -366,16 +366,16 @@ function createFacadeModuleCode(
         }
 
         const prefix = specifier.typeOnly ? "export type" : "export";
-        return `${prefix} { ${specifier.importedName} as ${specifier.exportName} } from "${declaration.source}";`;
+        return `${prefix} { ${specifier.importedName} as ${specifier.exportName} } from "${declaration.source}";\n`;
       });
     })
-    .join("\n");
+    .join("");
 
   if (includeTypeOnly || lines.length > 0) {
     return lines;
   }
 
-  return "export {};";
+  return "export {};\n";
 }
 
 function toFacadeSourceSpecifier(

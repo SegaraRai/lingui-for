@@ -111,7 +111,8 @@ describe("createSvelteFacadeModule", () => {
     expect(result.facadeCode).toMatchInlineSnapshot(`
     	"export { getLinguiContext as __unplugin_markup_import_0 } from "/virtual/runtime/core/context.ts";
     	export { formatRichTextTranslation as __unplugin_markup_import_1 } from "/virtual/runtime/trans/rich-text.ts";
-    	export type { TransComponentMap as __unplugin_markup_import_2 } from "/virtual/runtime/trans/rich-text.ts";"
+    	export type { TransComponentMap as __unplugin_markup_import_2 } from "/virtual/runtime/trans/rich-text.ts";
+    	"
     `);
   });
 
@@ -130,7 +131,7 @@ describe("createSvelteFacadeModule", () => {
     );
 
     expect(result.facadeCode).toBe(
-      'export { getLinguiContext as __unplugin_markup_import_0 } from "TEMP:/virtual/runtime/core/context.ts";',
+      'export { getLinguiContext as __unplugin_markup_import_0 } from "TEMP:/virtual/runtime/core/context.ts";\n',
     );
   });
 
@@ -171,7 +172,8 @@ describe("createSvelteFacadeModule", () => {
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
     	"export type { TransComponentMap as __unplugin_markup_import_0 } from "/virtual/runtime/trans/rich-text.ts";
-    	export type { TransRenderNode as __unplugin_markup_import_1 } from "/virtual/runtime/trans/rich-text.ts";"
+    	export type { TransRenderNode as __unplugin_markup_import_1 } from "/virtual/runtime/trans/rich-text.ts";
+    	"
     `);
   });
 });

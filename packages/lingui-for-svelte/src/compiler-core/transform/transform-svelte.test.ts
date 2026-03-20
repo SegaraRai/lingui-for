@@ -55,26 +55,28 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      const heading =
-      /*i18n*/
-      {
-        id: "demo.heading",
-        message: "Hello"
-      };
-      const label = __l4s_getI18n()._(
-      /*i18n*/
-      {
-        id: "tfDRzk",
-        message: "Save"
-      });
-      __l4s_ctx.prime();</script>
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
 
-      <h1>{$__l4s_translate(heading)}</h1>
-      <p>{label}</p>"
+    	const heading =
+    	/*i18n*/
+    	{
+    	  id: "demo.heading",
+    	  message: "Hello"
+    	};
+    	const label = __l4s_getI18n()._(
+    	/*i18n*/
+    	{
+    	  id: "tfDRzk",
+    	  message: "Save"
+    	});
+    	__l4s_ctx.prime();
+    	</script>
+
+    	<h1>{$__l4s_translate(heading)}</h1>
+    	<p>{label}</p>"
     `);
   });
 
@@ -98,23 +100,25 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("const label = $__l4s_translate(");
     expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let name = $state("Ada");
-      const label = $__l4s_translate(
-      /*i18n*/
-      {
-        id: "OVaF9k",
-        message: "Hello {name}",
-        values: {
-          name: name
-        }
-      });
-      __l4s_ctx.prime();</script>
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
 
-      <p>{label}</p>"
+    	let name = $state("Ada");
+    	const label = $__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "OVaF9k",
+    	  message: "Hello {name}",
+    	  values: {
+    	    name: name
+    	  }
+    	});
+    	__l4s_ctx.prime();
+    	</script>
+
+    	<p>{label}</p>"
     `);
   });
 
@@ -133,21 +137,23 @@ describe("transformSvelte", () => {
 
     expect(result.code).toContain("$derived.by(() => $__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let name = $state("Ada");
-      const label = $derived.by(() => $__l4s_translate(
-      /*i18n*/
-      {
-        id: "OVaF9k",
-        message: "Hello {name}",
-        values: {
-          name: name
-        }
-      }));
-      __l4s_ctx.prime();</script>"
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
+
+    	let name = $state("Ada");
+    	const label = $derived.by(() => $__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "OVaF9k",
+    	  message: "Hello {name}",
+    	  values: {
+    	    name: name
+    	  }
+    	}));
+    	__l4s_ctx.prime();
+    	</script>"
     `);
   });
 
@@ -171,25 +177,27 @@ describe("transformSvelte", () => {
       'return state === "idle" ? $__l4s_translate(',
     );
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let state = $state("idle");
-      function getStatusText() {
-        return state === "idle" ? $__l4s_translate(
-        /*i18n*/
-        {
-          id: "oBVc6R",
-          message: "idle"
-        }) : $__l4s_translate(
-        /*i18n*/
-        {
-          id: "s/ereB",
-          message: "active"
-        });
-      }
-      __l4s_ctx.prime();</script>"
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
+
+    	let state = $state("idle");
+    	function getStatusText() {
+    	  return state === "idle" ? $__l4s_translate(
+    	  /*i18n*/
+    	  {
+    	    id: "oBVc6R",
+    	    message: "idle"
+    	  }) : $__l4s_translate(
+    	  /*i18n*/
+    	  {
+    	    id: "s/ereB",
+    	    message: "active"
+    	  });
+    	}
+    	__l4s_ctx.prime();
+    	</script>"
     `);
   });
 
@@ -214,33 +222,35 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("books: $__l4s_translate(");
     expect(result.code).toContain("pronoun: $__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let count = $state(2);
-      let gender = $state("female");
-      const status = $derived.by(() => ({
-        books: $__l4s_translate(
-        /*i18n*/
-        {
-          id: "V/M0Vc",
-          message: "{count, plural, one {# Book} other {# Books}}",
-          values: {
-            count: count
-          }
-        }),
-        pronoun: $__l4s_translate(
-        /*i18n*/
-        {
-          id: "BGY2VE",
-          message: "{gender, select, female {she} other {they}}",
-          values: {
-            gender: gender
-          }
-        })
-      }));
-      __l4s_ctx.prime();</script>"
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
+
+    	let count = $state(2);
+    	let gender = $state("female");
+    	const status = $derived.by(() => ({
+    	  books: $__l4s_translate(
+    	  /*i18n*/
+    	  {
+    	    id: "V/M0Vc",
+    	    message: "{count, plural, one {# Book} other {# Books}}",
+    	    values: {
+    	      count: count
+    	    }
+    	  }),
+    	  pronoun: $__l4s_translate(
+    	  /*i18n*/
+    	  {
+    	    id: "BGY2VE",
+    	    message: "{gender, select, female {she} other {they}}",
+    	    values: {
+    	      gender: gender
+    	    }
+    	  })
+    	}));
+    	__l4s_ctx.prime();
+    	</script>"
     `);
   });
 
@@ -262,23 +272,25 @@ describe("transformSvelte", () => {
     );
     expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let state = $state("idle");
-      const label = state === "idle" ? $__l4s_translate(
-      /*i18n*/
-      {
-        id: "oBVc6R",
-        message: "idle"
-      }) : $__l4s_translate(
-      /*i18n*/
-      {
-        id: "s/ereB",
-        message: "active"
-      });
-      __l4s_ctx.prime();</script>"
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
+
+    	let state = $state("idle");
+    	const label = state === "idle" ? $__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "oBVc6R",
+    	  message: "idle"
+    	}) : $__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "s/ereB",
+    	  message: "active"
+    	});
+    	__l4s_ctx.prime();
+    	</script>"
     `);
   });
 
@@ -301,29 +313,31 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("const labels = {");
     expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let count = $state(2);
-      const labels = {
-        state: $__l4s_translate(
-        /*i18n*/
-        {
-          id: "oBVc6R",
-          message: "idle"
-        }),
-        books: $__l4s_translate(
-        /*i18n*/
-        {
-          id: "V/M0Vc",
-          message: "{count, plural, one {# Book} other {# Books}}",
-          values: {
-            count: count
-          }
-        })
-      };
-      __l4s_ctx.prime();</script>"
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
+
+    	let count = $state(2);
+    	const labels = {
+    	  state: $__l4s_translate(
+    	  /*i18n*/
+    	  {
+    	    id: "oBVc6R",
+    	    message: "idle"
+    	  }),
+    	  books: $__l4s_translate(
+    	  /*i18n*/
+    	  {
+    	    id: "V/M0Vc",
+    	    message: "{count, plural, one {# Book} other {# Books}}",
+    	    values: {
+    	      count: count
+    	    }
+    	  })
+    	};
+    	__l4s_ctx.prime();
+    	</script>"
     `);
   });
 
@@ -344,17 +358,19 @@ describe("transformSvelte", () => {
       "const getStatusText = () => $__l4s_translate(",
     );
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      const getStatusText = () => $__l4s_translate(
-      /*i18n*/
-      {
-        id: "oBVc6R",
-        message: "idle"
-      });
-      __l4s_ctx.prime();</script>"
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
+
+    	const getStatusText = () => $__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "oBVc6R",
+    	  message: "idle"
+    	});
+    	__l4s_ctx.prime();
+    	</script>"
     `);
   });
 
@@ -381,33 +397,35 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("const reactive = $__l4s_translate(");
     expect(result.code).not.toContain("$derived(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let name = $state("Ada");
-      const eager = __l4s_getI18n()._(
-      /*i18n*/
-      {
-        id: "hhBkx1",
-        message: "Tagged eager in script for {name}",
-        values: {
-          name: name
-        }
-      });
-      const reactive = $__l4s_translate(
-      /*i18n*/
-      {
-        id: "ZKsO3J",
-        message: "Tagged reactive in script for {name}",
-        values: {
-          name: name
-        }
-      });
-      __l4s_ctx.prime();</script>
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
 
-      <p>{eager}</p>
-      <p>{reactive}</p>"
+    	let name = $state("Ada");
+    	const eager = __l4s_getI18n()._(
+    	/*i18n*/
+    	{
+    	  id: "hhBkx1",
+    	  message: "Tagged eager in script for {name}",
+    	  values: {
+    	    name: name
+    	  }
+    	});
+    	const reactive = $__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "ZKsO3J",
+    	  message: "Tagged reactive in script for {name}",
+    	  values: {
+    	    name: name
+    	  }
+    	});
+    	__l4s_ctx.prime();
+    	</script>
+
+    	<p>{eager}</p>
+    	<p>{reactive}</p>"
     `);
   });
 
@@ -429,22 +447,24 @@ describe("transformSvelte", () => {
     expect(result.code).not.toContain("_i18n._(");
     expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let name = $state("Ada");
-      __l4s_ctx.prime();</script>
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
 
-      <p>{$__l4s_translate(
-      /*i18n*/
-      {
-        id: "OVaF9k",
-        message: "Hello {name}",
-        values: {
-          name: name
-        }
-      })}</p>"
+    	let name = $state("Ada");
+    	__l4s_ctx.prime();
+    	</script>
+
+    	<p>{$__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "OVaF9k",
+    	  message: "Hello {name}",
+    	  values: {
+    	    name: name
+    	  }
+    	})}</p>"
     `);
   });
 
@@ -469,41 +489,43 @@ describe("transformSvelte", () => {
     expect(result.code).not.toContain("_i18n._(");
     expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      let count = $state(2);
-      let gender = $state("female");
-      __l4s_ctx.prime();</script>
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
 
-      <p>{$__l4s_translate(
-      /*i18n*/
-      {
-        id: "V/M0Vc",
-        message: "{count, plural, one {# Book} other {# Books}}",
-        values: {
-          count: count
-        }
-      })}</p>
-      <p>{$__l4s_translate(
-      /*i18n*/
-      {
-        id: "BGY2VE",
-        message: "{gender, select, female {she} other {they}}",
-        values: {
-          gender: gender
-        }
-      })}</p>
-      <p>{$__l4s_translate(
-      /*i18n*/
-      {
-        id: "0ALwK4",
-        message: "{count, selectordinal, one {#st} other {#th}}",
-        values: {
-          count: count
-        }
-      })}</p>"
+    	let count = $state(2);
+    	let gender = $state("female");
+    	__l4s_ctx.prime();
+    	</script>
+
+    	<p>{$__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "V/M0Vc",
+    	  message: "{count, plural, one {# Book} other {# Books}}",
+    	  values: {
+    	    count: count
+    	  }
+    	})}</p>
+    	<p>{$__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "BGY2VE",
+    	  message: "{gender, select, female {she} other {they}}",
+    	  values: {
+    	    gender: gender
+    	  }
+    	})}</p>
+    	<p>{$__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "0ALwK4",
+    	  message: "{count, selectordinal, one {#st} other {#th}}",
+    	  values: {
+    	    count: count
+    	  }
+    	})}</p>"
     `);
   });
 
@@ -524,25 +546,27 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("<L4sRuntimeTrans");
     expect(result.code).not.toContain("<Trans");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-      let name = $state("Ada");</script>
+    	"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
 
-      <L4sRuntimeTrans {...{
-        id: "demo.docs",
-        message: "Read the <0>docs</0>, {name}.",
-        values: {
-          name: name
-        },
-        components: {
-          0: {
-            kind: "element",
-            tag: "a",
-            props: {
-              href: "/docs"
-            }
-          }
-        }
-      }} />"
+    	let name = $state("Ada");
+    	</script>
+
+    	<L4sRuntimeTrans {...{
+    	  id: "demo.docs",
+    	  message: "Read the <0>docs</0>, {name}.",
+    	  values: {
+    	    name: name
+    	  },
+    	  components: {
+    	    0: {
+    	      kind: "element",
+    	      tag: "a",
+    	      props: {
+    	        href: "/docs"
+    	      }
+    	    }
+    	  }
+    	}} />"
     `);
   });
 
@@ -564,31 +588,33 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("<L4sRuntimeTrans");
     expect(result.code).not.toContain("<Trans");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-      import DocLink from "./DocLink.svelte";
-      let name = $state("Ada");</script>
+    	"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
 
-      <L4sRuntimeTrans {...{
-        id: "N+nKUg",
-        message: "Read <0><1>{name}</1></0> carefully.",
-        values: {
-          name: name
-        },
-        components: {
-          0: {
-            kind: "element",
-            tag: "strong",
-            props: {}
-          },
-          1: {
-            kind: "component",
-            component: DocLink,
-            props: {
-              href: "/docs"
-            }
-          }
-        }
-      }} />"
+    	import DocLink from "./DocLink.svelte";
+    	let name = $state("Ada");
+    	</script>
+
+    	<L4sRuntimeTrans {...{
+    	  id: "N+nKUg",
+    	  message: "Read <0><1>{name}</1></0> carefully.",
+    	  values: {
+    	    name: name
+    	  },
+    	  components: {
+    	    0: {
+    	      kind: "element",
+    	      tag: "strong",
+    	      props: {}
+    	    },
+    	    1: {
+    	      kind: "component",
+    	      component: DocLink,
+    	      props: {
+    	        href: "/docs"
+    	      }
+    	    }
+    	  }
+    	}} />"
     `);
   });
 
@@ -607,21 +633,22 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("<L4sRuntimeTrans");
     expect(result.code).not.toContain("<Trans");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";</script>
+    	"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+    	</script>
 
-      <L4sRuntimeTrans {...{
-        id: "demo.docs",
-        message: "Read the <0>docs</0>.",
-        components: {
-          0: {
-            kind: "element",
-            tag: "a",
-            props: {
-              href: "/docs"
-            }
-          }
-        }
-      }} />"
+    	<L4sRuntimeTrans {...{
+    	  id: "demo.docs",
+    	  message: "Read the <0>docs</0>.",
+    	  components: {
+    	    0: {
+    	      kind: "element",
+    	      tag: "a",
+    	      props: {
+    	        href: "/docs"
+    	      }
+    	    }
+    	  }
+    	}} />"
     `);
   });
 
@@ -648,31 +675,33 @@ describe("transformSvelte", () => {
 
     expect(result.code).toContain("<L4sRuntimeTrans");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-      let count = $state(2);
-      let gender = $state("female");</script>
+    	"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
 
-      <L4sRuntimeTrans {...{
-        id: "V/M0Vc",
-        message: "{count, plural, one {# Book} other {# Books}}",
-        values: {
-          count: count
-        }
-      }} />
-      <L4sRuntimeTrans {...{
-        id: "BGY2VE",
-        message: "{gender, select, female {she} other {they}}",
-        values: {
-          gender: gender
-        }
-      }} />
-      <L4sRuntimeTrans {...{
-        id: "0ALwK4",
-        message: "{count, selectordinal, one {#st} other {#th}}",
-        values: {
-          count: count
-        }
-      }} />"
+    	let count = $state(2);
+    	let gender = $state("female");
+    	</script>
+
+    	<L4sRuntimeTrans {...{
+    	  id: "V/M0Vc",
+    	  message: "{count, plural, one {# Book} other {# Books}}",
+    	  values: {
+    	    count: count
+    	  }
+    	}} />
+    	<L4sRuntimeTrans {...{
+    	  id: "BGY2VE",
+    	  message: "{gender, select, female {she} other {they}}",
+    	  values: {
+    	    gender: gender
+    	  }
+    	}} />
+    	<L4sRuntimeTrans {...{
+    	  id: "0ALwK4",
+    	  message: "{count, selectordinal, one {#st} other {#th}}",
+    	  values: {
+    	    count: count
+    	  }
+    	}} />"
     `);
   });
 
@@ -767,23 +796,25 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("return translate`Inner`;");
     expect(result.code).not.toContain('message: "Inner"');
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      const outer = __l4s_getI18n()._(
-      /*i18n*/
-      {
-        id: "wVGQ6j",
-        message: "Outer"
-      });
-      function render() {
-        const translate = notMacro;
-        return translate\`Inner\`;
-      }
-      __l4s_ctx.prime();</script>
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
 
-      <p>{outer}</p>"
+    	const outer = __l4s_getI18n()._(
+    	/*i18n*/
+    	{
+    	  id: "wVGQ6j",
+    	  message: "Outer"
+    	});
+    	function render() {
+    	  const translate = notMacro;
+    	  return translate\`Inner\`;
+    	}
+    	__l4s_ctx.prime();
+    	</script>
+
+    	<p>{outer}</p>"
     `);
   });
 
@@ -808,20 +839,22 @@ describe("transformSvelte", () => {
     );
     expect(result.code).not.toContain("<L4sRuntimeTrans");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      import Trans from "./Trans.svelte";
-      __l4s_ctx.prime();</script>
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
 
-      <p>{$__l4s_translate(
-      /*i18n*/
-      {
-        id: "UmW678",
-        message: "Reactive greeting"
-      })}</p>
-      <Trans id="demo.docs">Read the docs.</Trans>"
+    	import Trans from "./Trans.svelte";
+    	__l4s_ctx.prime();
+    	</script>
+
+    	<p>{$__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "UmW678",
+    	  message: "Reactive greeting"
+    	})}</p>
+    	<Trans id="demo.docs">Read the docs.</Trans>"
     `);
   });
 
@@ -841,18 +874,19 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("createLinguiAccessors");
     expect(result.code).toContain("$__l4s_translate");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script>import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
-      const __l4s_ctx = createLinguiAccessors();
-      const __l4s_getI18n = __l4s_ctx.getI18n;
-      const __l4s_translate = __l4s_ctx._;
-      __l4s_ctx.prime();</script>
+    	"<script>import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx = createLinguiAccessors();
+    	const __l4s_getI18n = __l4s_ctx.getI18n;
+    	const __l4s_translate = __l4s_ctx._;
+    	__l4s_ctx.prime();
+    	</script>
 
-      <p>{$__l4s_translate(
-      /*i18n*/
-      {
-        id: "PVyl3J",
-        message: "Hello from markup-only component"
-      })}</p>"
+    	<p>{$__l4s_translate(
+    	/*i18n*/
+    	{
+    	  id: "PVyl3J",
+    	  message: "Hello from markup-only component"
+    	})}</p>"
     `);
   });
 
@@ -879,22 +913,24 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("const __l4s_translate_1 =");
     expect(result.code).toContain("$__l4s_translate_1(");
     expect(result.code).toMatchInlineSnapshot(`
-      "<script lang="ts">import { createLinguiAccessors as createLinguiAccessors_1 } from "lingui-for-svelte/runtime";
-      const __l4s_ctx_1 = createLinguiAccessors_1();
-      const __l4s_getI18n_1 = __l4s_ctx_1.getI18n;
-      const __l4s_translate_1 = __l4s_ctx_1._;
-      const createLinguiAccessors = "occupied";
-      const __l4s_ctx = "occupied";
-      const __l4s_getI18n = "occupied";
-      const __l4s_translate = "occupied";
-      __l4s_ctx_1.prime();</script>
+    	"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors_1 } from "lingui-for-svelte/runtime";
+    	const __l4s_ctx_1 = createLinguiAccessors_1();
+    	const __l4s_getI18n_1 = __l4s_ctx_1.getI18n;
+    	const __l4s_translate_1 = __l4s_ctx_1._;
 
-      <p>{$__l4s_translate_1(
-      /*i18n*/
-      {
-        id: "uzTaYi",
-        message: "Hello"
-      })}</p>"
+    	const createLinguiAccessors = "occupied";
+    	const __l4s_ctx = "occupied";
+    	const __l4s_getI18n = "occupied";
+    	const __l4s_translate = "occupied";
+    	__l4s_ctx_1.prime();
+    	</script>
+
+    	<p>{$__l4s_translate_1(
+    	/*i18n*/
+    	{
+    	  id: "uzTaYi",
+    	  message: "Hello"
+    	})}</p>"
     `);
   });
 

@@ -91,8 +91,9 @@ describe("createAstroFacadeModule", () => {
       <RenderTransNodes />"
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
-      "export { getLinguiContext as __unplugin_markup_import_0 } from "/virtual/runtime/index.ts";
-      export { translateRuntimeTrans as __unplugin_markup_import_1 } from "/virtual/runtime/helpers.ts";"
+    	"export { getLinguiContext as __unplugin_markup_import_0 } from "/virtual/runtime/index.ts";
+    	export { translateRuntimeTrans as __unplugin_markup_import_1 } from "/virtual/runtime/helpers.ts";
+    	"
     `);
   });
 });

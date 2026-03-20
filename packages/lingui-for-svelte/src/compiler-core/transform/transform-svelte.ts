@@ -215,37 +215,33 @@ function injectRuntimeBindings(
 
   if (includeLinguiContext && includeTransComponent) {
     prelude.push(
-      `import { RuntimeTrans as ${runtimeBindings.transComponent}, createLinguiAccessors as ${runtimeBindings.createLinguiAccessors} } from "${PACKAGE_RUNTIME}";`,
+      `import { RuntimeTrans as ${runtimeBindings.transComponent}, createLinguiAccessors as ${runtimeBindings.createLinguiAccessors} } from "${PACKAGE_RUNTIME}";\n`,
     );
   } else if (includeLinguiContext) {
     prelude.push(
-      `import { createLinguiAccessors as ${runtimeBindings.createLinguiAccessors} } from "${PACKAGE_RUNTIME}";`,
+      `import { createLinguiAccessors as ${runtimeBindings.createLinguiAccessors} } from "${PACKAGE_RUNTIME}";\n`,
     );
   } else if (includeTransComponent) {
     prelude.push(
-      `import { RuntimeTrans as ${runtimeBindings.transComponent} } from "${PACKAGE_RUNTIME}";`,
+      `import { RuntimeTrans as ${runtimeBindings.transComponent} } from "${PACKAGE_RUNTIME}";\n`,
     );
   }
 
   if (includeLinguiContext) {
     prelude.push(
-      `const ${runtimeBindings.context} = ${runtimeBindings.createLinguiAccessors}();`,
-      `const ${runtimeBindings.getI18n} = ${runtimeBindings.context}.getI18n;`,
-      `const ${runtimeBindings.translate} = ${runtimeBindings.context}._;`,
+      `const ${runtimeBindings.context} = ${runtimeBindings.createLinguiAccessors}();\n`,
+      `const ${runtimeBindings.getI18n} = ${runtimeBindings.context}.getI18n;\n`,
+      `const ${runtimeBindings.translate} = ${runtimeBindings.context}._;\n`,
     );
-    suffix.push(`${runtimeBindings.context}.prime();`);
+    suffix.push(`${runtimeBindings.context}.prime();\n`);
   }
 
-  const preludeCode = prelude.join("\n");
-  const suffixCode = suffix.join("\n");
+  const preludeCode = prelude.join("");
+  const suffixCode = suffix.join("");
 
   if (code.trim().length === 0) {
-    return suffixCode.length > 0
-      ? `${preludeCode}\n${suffixCode}`
-      : preludeCode;
+    return `${preludeCode}${suffixCode}`;
   }
 
-  return suffixCode.length > 0
-    ? `${preludeCode}\n${code}\n${suffixCode}`
-    : `${preludeCode}\n${code}`;
+  return `${preludeCode}\n${code}\n${suffixCode}`;
 }
