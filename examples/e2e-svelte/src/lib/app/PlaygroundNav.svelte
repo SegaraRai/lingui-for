@@ -30,6 +30,13 @@
     {$t`Reactive`}
   </a>
   <a
+    href="/playground/reactivity"
+    class="tab"
+    class:tab-active={page.url.pathname === "/playground/reactivity"}
+  >
+    {$t`Reactivity`}
+  </a>
+  <a
     href="/playground/syntax"
     class="tab"
     class:tab-active={page.url.pathname === "/playground/syntax"}

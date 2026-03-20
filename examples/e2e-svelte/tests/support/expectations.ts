@@ -78,6 +78,25 @@ export const playgroundRouteExpectations: readonly PlaygroundRouteExpectation[] 
       },
     },
     {
+      path: "/playground/reactivity",
+      expectations: {
+        en: [
+          "$t script and template reactivity",
+          "Current demo value",
+          "Alpha",
+          "Script direct static reactivity.",
+          "Template static reactivity.",
+        ],
+        ja: [
+          "$t の script と template のリアクティビティ",
+          "現在のデモ値",
+          "Alpha",
+          "スクリプトの直接固定リアクティビティ。",
+          "テンプレートの固定リアクティビティ。",
+        ],
+      },
+    },
+    {
       path: "/playground/syntax",
       expectations: {
         en: [
@@ -187,6 +206,17 @@ export const browserRouteExpectations: readonly BrowserRouteExpectation[] = [
     path: "/playground/rich-text?lang=ja",
     locale: "ja",
     expectedBody: ["クッキーで保持されるロケール", "意味のある強調"],
+  },
+  {
+    path: "/playground/reactivity?lang=ja",
+    locale: "ja",
+    expectedBody: [
+      "$t の script と template のリアクティビティ",
+      "現在のデモ値",
+      "Alpha",
+      "スクリプトの直接固定リアクティビティ。",
+      "テンプレートの固定リアクティビティ。",
+    ],
   },
   {
     path: "/playground/syntax?lang=ja",

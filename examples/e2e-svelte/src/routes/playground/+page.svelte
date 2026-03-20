@@ -15,6 +15,12 @@
       body: $t`Covers top-level reactive strings, callback contexts, and module-owned state.`,
     },
     {
+      href: "/playground/reactivity",
+      eyebrow: $t`Reactivity`,
+      title: $t`$t follows locale changes and reactive values`,
+      body: $t`Covers direct and descriptor-based translations in script and template expressions.`,
+    },
+    {
       href: "/playground/syntax",
       eyebrow: $t`Syntax`,
       title: $t`$t across Svelte syntax positions`,

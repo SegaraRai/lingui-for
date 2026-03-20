@@ -29,6 +29,9 @@ describe("lingui extract and compile outputs", () => {
     expect(enPo).toContain("Keyed subtree revision {0}");
     expect(enPo).toContain("Embedded elements and components inside Trans");
     expect(enPo).toContain("Explicit id from a plain descriptor.");
+    expect(enPo).toContain("$t script and template reactivity");
+    expect(enPo).toContain("Script descriptor static reactivity.");
+    expect(enPo).toContain("Template indirect value: {0}");
     expect(enPo).toContain('msgid "playground.ids.trans"');
     expect(enPo).toContain('msgid "playground.ids.call"');
     expect(enPo).toContain('msgid "playground.ids.descriptor"');
@@ -46,5 +49,10 @@ describe("lingui extract and compile outputs", () => {
     expect(jaCatalog).toContain("キー付きサブツリーのリビジョン");
     expect(jaCatalog).toContain("クッキーで保持されるロケール");
     expect(jaCatalog).toContain("Trans コンポーネントからの明示的な id。");
+    expect(jaCatalog).toContain("$t の script と template のリアクティビティ");
+    expect(jaCatalog).toContain(
+      "スクリプトのディスクリプタ固定リアクティビティ。",
+    );
+    expect(jaCatalog).toContain("テンプレートの間接値: ");
   });
 });
