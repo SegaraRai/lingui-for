@@ -10,6 +10,7 @@
 
 - `vp run build`: build the package
 - `vp run test`: run tests with Vitest
+  - Our codebase requires building packages before running tests. Run `vp run build` before `vp run test` to ensure tests run correctly.
 - `vp run format`: format code
 - `vp run check`: run type checks and other static checks
 
