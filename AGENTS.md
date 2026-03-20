@@ -6,6 +6,11 @@
 - Use Vite+ (`vp`) instead of `pnpm` for all commands.
 - DO NOT invoke `vp` or `pnpm` from test code.
 
+## Writing Tests
+
+When writing tests, the most important thing is the accuracy of the test code. It’s not about having all tests pass.
+If you believe a test case is correct, don’t modify it; instead, **mark it as `test.fails`** so that you can review it later to determine whether the test or the implementation is incorrect.
+
 ## Common Commands
 
 - `vp run build`: build the package
