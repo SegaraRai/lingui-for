@@ -64,6 +64,9 @@ jobs:
 
     timeout-minutes: 30
 
+    env:
+      LINGUI_WASM_PREBUILT: "1"
+
     steps:
       - uses: actions/checkout@v6
 

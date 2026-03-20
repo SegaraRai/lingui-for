@@ -44,15 +44,8 @@ export default defineConfig({
       },
       "build:wasm": {
         cache: true,
-        command:
-          "wasm-pack build --target web --release --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
-        cwd: "crates/astro-analyzer",
-      },
-      "build:wasm-dev": {
-        cache: true,
-        command:
-          "wasm-pack build --target web  --dev --no-opt --out-dir ../../packages/astro-analyzer-wasm/dist --out-name index",
-        cwd: "crates/astro-analyzer",
+        command: "node ./build-wasm.ts",
+        env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
       },
       check: {
         command: "vp run -r check",
