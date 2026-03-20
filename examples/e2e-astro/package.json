@@ -4,16 +4,16 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "lingui:extract": "lingui extract --clean --overwrite",
-    "lingui:compile": "lingui compile && vp fmt src/lib/i18n/locales",
-    "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
-    "build": "pnpm run lingui:build && astro build",
-    "preview": "astro preview --port 4542",
-    "check": "pnpm run check:ts && pnpm run check:markup",
-    "check:ts": "tsc --noEmit",
-    "check:markup": "astro check",
-    "pretest": "pnpm run build",
-    "test": "vp test run"
+    "lingui:extract": "vp exec lingui extract --clean --overwrite",
+    "lingui:compile": "vp exec lingui compile && vp fmt src/lib/i18n/locales",
+    "lingui:build": "vp run lingui:extract && vp run lingui:compile",
+    "build": "vp run lingui:build && vp exec astro build",
+    "preview": "vp exec astro preview --port 4542",
+    "check": "vp run check:ts && vp run check:markup",
+    "check:ts": "vp check && vp exec tsc --noEmit",
+    "check:markup": "vp exec astro check",
+    "pretest": "vp run build",
+    "test": "vp test"
   },
   "dependencies": {
     "@astrojs/node": "^10.0.3",

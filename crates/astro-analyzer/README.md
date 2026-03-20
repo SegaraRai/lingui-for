@@ -26,8 +26,8 @@ From the workspace root:
 
 ```sh
 cargo test -p astro-analyzer
-pnpm run build:wasm
-pnpm run build:wasm-dev
+vp run build:wasm
+vp run build:wasm-dev
 ```
 
 From this directory:

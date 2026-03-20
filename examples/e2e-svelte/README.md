@@ -31,22 +31,22 @@ This project is not a product example to maintain as polished documentation. It 
 From this directory:
 
 ```sh
-pnpm install
-pnpm run dev
-pnpm run build
-pnpm run test
+vp install
+vp run dev
+vp run build
+vp run test
 ```
 
 Useful scripts:
 
-- `pnpm run lingui:extract`: extract messages
-- `pnpm run lingui:compile`: compile catalogs
-- `pnpm run lingui:build`: run extract and compile
-- `pnpm run build`: rebuild catalogs and build the SvelteKit app
-- `pnpm run preview`: run the built app
-- `pnpm run check`: run TypeScript and Svelte checks
-- `pnpm run test:e2e run`: run SSR/e2e-style Vitest checks
-- `pnpm run test:browser run`: run browser hydration tests
+- `vp run lingui:extract`: extract messages
+- `vp run lingui:compile`: compile catalogs
+- `vp run lingui:build`: run extract and compile
+- `vp run build`: rebuild catalogs and build the SvelteKit app
+- `vp run preview`: run the built app
+- `vp run check`: run TypeScript and Svelte checks
+- `vp run test:e2e run`: run SSR/e2e-style Vitest checks
+- `vp run test:browser run`: run browser hydration tests
 
 ## Related Packages
 

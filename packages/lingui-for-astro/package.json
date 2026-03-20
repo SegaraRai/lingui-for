@@ -102,9 +102,9 @@
   },
   "scripts": {
     "build": "vp pack",
-    "check": "pnpm run check:ts && pnpm run check:markup",
-    "check:ts": "tsc -b --noEmit",
-    "check:markup": "astro check",
+    "check": "vp run check:ts && vp run check:markup",
+    "check:ts": "vp check && vp exec tsc -b --noEmit",
+    "check:markup": "vp exec astro check",
     "test": "vp test"
   },
   "dependencies": {

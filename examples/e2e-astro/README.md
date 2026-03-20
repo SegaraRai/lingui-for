@@ -33,20 +33,20 @@ This project exists to validate `lingui-for-astro` in a realistic Astro app with
 From this directory:
 
 ```sh
-pnpm run dev
-pnpm run build
-pnpm run test
+vp run dev
+vp run build
+vp run test
 ```
 
 Useful scripts:
 
-- `pnpm run lingui:extract`: extract messages
-- `pnpm run lingui:compile`: compile catalogs
-- `pnpm run lingui:build`: run extract and compile
-- `pnpm run build`: rebuild catalogs and build the Astro app
-- `pnpm run preview`: preview the built app
-- `pnpm run check`: run TypeScript and Astro checks
-- `pnpm run test`: build first, then run the Vitest suite
+- `vp run lingui:extract`: extract messages
+- `vp run lingui:compile`: compile catalogs
+- `vp run lingui:build`: run extract and compile
+- `vp run build`: rebuild catalogs and build the Astro app
+- `vp run preview`: preview the built app
+- `vp run check`: run TypeScript and Astro checks
+- `vp run test`: build first, then run the Vitest suite
 
 ## Related Packages
 

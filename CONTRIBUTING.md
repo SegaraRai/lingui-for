@@ -3,21 +3,21 @@
 ## Getting Started
 
 ```sh
-pnpm install
-pnpm run build
-pnpm run test
+vp install
+vp run build
+vp run test
 ```
 
 Useful commands from the workspace root:
 
-- `pnpm run build`: Build libraries, examples, and docs.
-- `pnpm run check`: Run TypeScript and markup checks across the workspace.
-- `pnpm run test`: Run the Vitest suite.
-- `pnpm run dev:docs`: Start the docs app.
-- `pnpm run dev:e2e-svelte`: Start the Svelte verification app.
-- `pnpm run dev:e2e-astro`: Start the Astro verification app.
-- `pnpm run build:wasm`: Rebuild the Astro analyzer Wasm package in release mode.
-- `pnpm run build:wasm-dev`: Rebuild the Astro analyzer Wasm package in dev mode.
+- `vp run build`: Build libraries, examples, and docs.
+- `vp run check`: Run TypeScript and markup checks across the workspace.
+- `vp run test`: Run the Vitest suite.
+- `vp run dev:docs`: Start the docs app.
+- `vp run dev:e2e-svelte`: Start the Svelte verification app.
+- `vp run dev:e2e-astro`: Start the Astro verification app.
+- `vp run build:wasm`: Rebuild the Astro analyzer Wasm package in release mode.
+- `vp run build:wasm-dev`: Rebuild the Astro analyzer Wasm package in dev mode.
 
 ## Workspace Apps
 
@@ -34,7 +34,7 @@ Useful commands from the workspace root:
 ## Requirements
 
 - Node.js
-- pnpm
+- Vite+
 - Rust for rebuilding `astro-analyzer-wasm`
 
 ## Repository Layout

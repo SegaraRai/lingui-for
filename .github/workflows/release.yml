@@ -37,21 +37,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: "10"
-
-      - uses: actions/setup-node@v4
+      - uses: voidzero-dev/setup-vp@v1
         with:
           node-version: "24"
-          cache: pnpm
+          cache: true
 
-      - run: pnpm install --frozen-lockfile
+      - run: vp install
 
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
-          version: pnpm run changeset version
-          publish: pnpm run release
+          version: vp run changeset version
+          publish: vp run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

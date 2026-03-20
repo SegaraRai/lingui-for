@@ -1,8 +1,9 @@
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { BrowserContext, ConsoleMessage } from "playwright";
+import type { ConsoleMessage } from "playwright";
 import { defineProject } from "vite-plus";
 import { playwright } from "vite-plus/test/browser-playwright";
+import type { BrowserCommand } from "vite-plus/test/node";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
@@ -70,6 +71,79 @@ async function startDevServer(): Promise<{
   }
 }
 
+const captureHydrationErrors: BrowserCommand<[pathname: string]> = async (
+  { context },
+  pathname,
+) => {
+  const { origin, server } = await startDevServer();
+
+  try {
+    const probePage = await context.newPage();
+    const errors: string[] = [];
+
+    probePage.on("console", (message: ConsoleMessage) => {
+      if (message.type() === "error") {
+        errors.push(message.text());
+      }
+    });
+
+    probePage.on("pageerror", (error: unknown) => {
+      errors.push(String(error));
+    });
+
+    const targetUrl = new URL(pathname, origin).toString();
+    await probePage.goto(targetUrl, { waitUntil: "networkidle" });
+    await probePage.waitForTimeout(250);
+
+    const bodyText = (await probePage.locator("body").textContent()) ?? "";
+
+    await probePage.close();
+
+    return { bodyText, errors };
+  } finally {
+    await server.close();
+  }
+};
+
+const switchLocaleFromHeader: BrowserCommand<
+  [pathname: string, localeCode: string]
+> = async ({ context }, pathname, localeCode) => {
+  const { origin, server } = await startDevServer();
+
+  try {
+    const probePage = await context.newPage();
+    const errors: string[] = [];
+
+    probePage.on("console", (message: ConsoleMessage) => {
+      if (message.type() === "error") {
+        errors.push(message.text());
+      }
+    });
+
+    probePage.on("pageerror", (error: unknown) => {
+      errors.push(String(error));
+    });
+
+    const targetUrl = new URL(pathname, origin).toString();
+    await probePage.goto(targetUrl, { waitUntil: "networkidle" });
+    await probePage.locator(`a[href*="lang=${localeCode}"]`).first().click();
+    await probePage.waitForURL(
+      (url) => url.searchParams.get("lang") === localeCode,
+    );
+    await probePage.waitForTimeout(250);
+
+    const bodyText = (await probePage.locator("body").textContent()) ?? "";
+    const currentUrl = probePage.url();
+    const htmlLang = await probePage.locator("html").getAttribute("lang");
+
+    await probePage.close();
+
+    return { bodyText, currentUrl, htmlLang, errors };
+  } finally {
+    await server.close();
+  }
+};
+
 export default defineProject({
   root: projectRoot,
   test: {
@@ -81,86 +155,8 @@ export default defineProject({
       provider: playwright(),
       instances: [{ browser: "chromium" }],
       commands: {
-        async captureHydrationErrors(
-          { context }: { context: BrowserContext },
-          pathname: string,
-        ) {
-          const { origin, server } = await startDevServer();
-
-          try {
-            const probePage = await context.newPage();
-            const errors: string[] = [];
-
-            probePage.on("console", (message: ConsoleMessage) => {
-              if (message.type() === "error") {
-                errors.push(message.text());
-              }
-            });
-
-            probePage.on("pageerror", (error: unknown) => {
-              errors.push(String(error));
-            });
-
-            const targetUrl = new URL(pathname, origin).toString();
-            await probePage.goto(targetUrl, { waitUntil: "networkidle" });
-            await probePage.waitForTimeout(250);
-
-            const bodyText =
-              (await probePage.locator("body").textContent()) ?? "";
-
-            await probePage.close();
-
-            return { bodyText, errors };
-          } finally {
-            await server.close();
-          }
-        },
-        async switchLocaleFromHeader(
-          { context }: { context: BrowserContext },
-          pathname: string,
-          localeCode: string,
-        ) {
-          const { origin, server } = await startDevServer();
-
-          try {
-            const probePage = await context.newPage();
-            const errors: string[] = [];
-
-            probePage.on("console", (message: ConsoleMessage) => {
-              if (message.type() === "error") {
-                errors.push(message.text());
-              }
-            });
-
-            probePage.on("pageerror", (error: unknown) => {
-              errors.push(String(error));
-            });
-
-            const targetUrl = new URL(pathname, origin).toString();
-            await probePage.goto(targetUrl, { waitUntil: "networkidle" });
-            await probePage
-              .locator(`a[href*="lang=${localeCode}"]`)
-              .first()
-              .click();
-            await probePage.waitForURL(
-              (url) => url.searchParams.get("lang") === localeCode,
-            );
-            await probePage.waitForTimeout(250);
-
-            const bodyText =
-              (await probePage.locator("body").textContent()) ?? "";
-            const currentUrl = probePage.url();
-            const htmlLang = await probePage
-              .locator("html")
-              .getAttribute("lang");
-
-            await probePage.close();
-
-            return { bodyText, currentUrl, htmlLang, errors };
-          } finally {
-            await server.close();
-          }
-        },
+        captureHydrationErrors,
+        switchLocaleFromHeader,
       },
     },
   },

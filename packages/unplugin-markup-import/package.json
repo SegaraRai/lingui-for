@@ -63,8 +63,8 @@
   },
   "scripts": {
     "build": "vp pack",
-    "check": "pnpm run check:ts",
-    "check:ts": "tsc -b --noEmit",
+    "check": "vp run check:ts",
+    "check:ts": "vp check && vp exec tsc -b --noEmit",
     "test": "vp test"
   },
   "dependencies": {

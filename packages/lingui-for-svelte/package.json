@@ -98,10 +98,10 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "vp pack --config tsdown.config.ts",
-    "check": "pnpm run check:ts && pnpm run check:markup",
-    "check:ts": "tsc -b --noEmit",
-    "check:markup": "svelte-check",
+    "build": "vp pack",
+    "check": "vp run check:ts && vp run check:markup",
+    "check:ts": "vp check && vp exec tsc -b --noEmit",
+    "check:markup": "vp exec svelte-check",
     "test": "vp test"
   },
   "dependencies": {

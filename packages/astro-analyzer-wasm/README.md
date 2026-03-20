@@ -10,8 +10,8 @@ Internal workspace package for the built WebAssembly bundle of `astro-analyzer`.
 
 From the repo root:
 
-- `pnpm build:wasm`
-- `pnpm build:wasm-dev`
+- `vp run build:wasm`
+- `vp run build:wasm-dev`
 
 These commands run `wasm-pack` for `crates/astro-analyzer` and write the generated JS wrapper,
 TypeScript declarations, and `.wasm` binary into this package's `dist/` directory.

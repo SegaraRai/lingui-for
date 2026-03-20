@@ -18,14 +18,31 @@ It provides:
 ## Install
 
 ```sh
+vp add -D unplugin-lingui-macro
+
+# or run one of:
+npm install -D unplugin-lingui-macro
 pnpm add -D unplugin-lingui-macro
+yarn add -D unplugin-lingui-macro
 ```
 
 You will usually also want Lingui itself:
 
 ```sh
+vp add @lingui/core
+vp add -D @lingui/cli
+
+# or
+npm install @lingui/core
+npm install -D @lingui/cli
+
+# or
 pnpm add @lingui/core
 pnpm add -D @lingui/cli
+
+# or
+yarn add @lingui/core
+yarn add -D @lingui/cli
 ```
 
 ## Quick Start

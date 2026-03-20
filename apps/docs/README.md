@@ -20,17 +20,17 @@ Most authored content lives under [`src/content`](./src/content).
 From this directory:
 
 ```sh
-pnpm run dev
-pnpm run build
-pnpm run check
+vp run dev
+vp run build
+vp run check
 ```
 
 Useful scripts:
 
-- `pnpm run dev`: start the local docs site
-- `pnpm run build`: build the static site
-- `pnpm run preview`: preview the built site
-- `pnpm run lingui:extract`: extract Lingui messages from docs source
-- `pnpm run lingui:compile`: compile catalogs
-- `pnpm run lingui:build`: run extract and compile
-- `pnpm run check`: run Astro type/content checks
+- `vp run dev`: start the local docs site
+- `vp run build`: build the static site
+- `vp run preview`: preview the built site
+- `vp run lingui:extract`: extract Lingui messages from docs source
+- `vp run lingui:compile`: compile catalogs
+- `vp run lingui:build`: run extract and compile
+- `vp run check`: run Astro type/content checks

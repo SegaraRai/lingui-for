@@ -24,7 +24,12 @@ Current framework handling:
 ## Install
 
 ```sh
+vp add -D unplugin-markup-import
+
+# or run one of:
+npm install -D unplugin-markup-import
 pnpm add -D unplugin-markup-import
+yarn add -D unplugin-markup-import
 ```
 
 ## Minimal Usage

@@ -17,14 +17,31 @@ It provides:
 ## Install
 
 ```sh
+vp add @lingui/core lingui-for-svelte
+vp add -D @lingui/cli @lingui/conf
+
+# or
+npm install @lingui/core lingui-for-svelte
+npm install -D @lingui/cli @lingui/conf
+
+# or
 pnpm add @lingui/core lingui-for-svelte
 pnpm add -D @lingui/cli @lingui/conf
+
+# or
+yarn add @lingui/core lingui-for-svelte
+yarn add -D @lingui/cli @lingui/conf
 ```
 
 If you also use Lingui macros in plain `.js` or `.ts` files, add `unplugin-lingui-macro` too:
 
 ```sh
+vp add -D unplugin-lingui-macro
+
+# or run one of:
+npm install -D unplugin-lingui-macro
 pnpm add -D unplugin-lingui-macro
+yarn add -D unplugin-lingui-macro
 ```
 
 ## Quick Start
