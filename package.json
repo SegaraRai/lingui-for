@@ -29,7 +29,7 @@
     "release": "pnpm run build && pnpm publish -r --access public --provenance"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.8",
+    "@changesets/cli": "^2.30.0",
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "prettier-plugin-astro": "^0.14.1",

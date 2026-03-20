@@ -125,7 +125,7 @@
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "^25.5.0",
-    "astro": "^6.0.5",
+    "astro": "^6.0.7",
     "astro-analyzer-wasm": "workspace:*",
     "dedent": "^1.7.2",
     "tsdown": "0.21.2",
