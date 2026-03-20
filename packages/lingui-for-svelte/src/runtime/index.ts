@@ -14,7 +14,6 @@ export {
   type LinguiAccessors,
   type LinguiContext,
 } from "./core/context.ts";
-export { translateRuntimeTrans } from "./components/trans-descriptor.ts";
 
 /**
  * Props accepted by the runtime `<RuntimeTrans>` component.

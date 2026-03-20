@@ -3,16 +3,12 @@ import type { TransComponentMap, TransRenderNode } from "./rich-text.ts";
 
 import RenderTransNodes from "./RenderTransNodes.astro";
 
-const {
-  node,
-  components,
-}: {
+interface Props {
   node: TransRenderNode;
   components: TransComponentMap;
-} = Astro.props as {
-  node: TransRenderNode;
-  components: TransComponentMap;
-};
+}
+
+const { node, components } = Astro.props;
 
 const descriptor =
   typeof node === "string" ? null : (components[node.name] ?? null);

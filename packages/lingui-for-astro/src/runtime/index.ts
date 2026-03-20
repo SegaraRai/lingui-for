@@ -15,7 +15,6 @@ export {
   type TransComponentMap,
   type TransRenderNode,
 } from "./components/rich-text.ts";
-export { translateRuntimeTrans } from "./components/trans-descriptor.ts";
 export {
   getLinguiContext,
   LINGUI_ASTRO_CONTEXT,

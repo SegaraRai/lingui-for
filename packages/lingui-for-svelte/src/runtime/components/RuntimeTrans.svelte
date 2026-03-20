@@ -5,7 +5,6 @@
     formatRichTextTranslation,
     type TransComponentMap,
   } from "./rich-text.ts";
-  import { translateRuntimeTrans } from "./trans-descriptor.ts";
 
   let {
     id,
@@ -21,7 +20,10 @@
 
   const { _ } = getLinguiContext();
 
-  const translated = $derived(translateRuntimeTrans($_, id, message, values));
+  const translated = $derived.by(() => {
+    const options = message != null ? { message } : {};
+    return $_(id, values, options);
+  });
 
   const richTextNodes = $derived(
     components ? formatRichTextTranslation(translated, components) : [],

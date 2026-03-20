@@ -4,23 +4,20 @@ import {
   formatRichTextTranslation,
   type TransComponentMap,
 } from "./rich-text.ts";
-import { translateRuntimeTrans } from "./trans-descriptor.ts";
 import RenderTransNodes from "./RenderTransNodes.astro";
 
-const {
-  id,
-  message,
-  values = {},
-  components,
-} = Astro.props as {
+interface Props {
   id: string;
   message?: string | undefined;
   values?: Readonly<Record<string, unknown>> | undefined;
   components?: TransComponentMap | undefined;
-};
+}
+
+const { id, message, values = {}, components } = Astro.props;
+const options = message != null ? { message } : {};
 
 const { i18n } = getLinguiContext(Astro);
-const translated = translateRuntimeTrans(i18n, id, message, values);
+const translated = i18n._(id, values, options);
 const nodes = components
   ? formatRichTextTranslation(translated, components)
   : [];

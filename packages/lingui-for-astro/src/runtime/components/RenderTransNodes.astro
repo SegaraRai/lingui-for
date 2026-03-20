@@ -3,16 +3,12 @@ import type { TransComponentMap, TransRenderNode } from "./rich-text.ts";
 
 import RenderTransNode from "./RenderTransNode.astro";
 
-const {
-  nodes,
-  components,
-}: {
+interface Props {
   nodes: readonly TransRenderNode[];
   components: TransComponentMap;
-} = Astro.props as {
-  nodes: readonly TransRenderNode[];
-  components: TransComponentMap;
-};
+}
+
+const { nodes, components } = Astro.props;
 ---
 
 {nodes.map((node) => <RenderTransNode node={node} components={components} />)}

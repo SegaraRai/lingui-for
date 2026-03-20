@@ -685,7 +685,7 @@ msgstr "Transitions page"
 msgid "Use cookies to keep the next request aligned."
 msgstr "Use cookies to keep the next request aligned."
 
-#: stress.astro?extract-expression:8
+#: stress.astro?extract-expression:9
 msgid "Use query params to drive exact-number branches and nested macro output."
 msgstr "Use query params to drive exact-number branches and nested macro output."
 
