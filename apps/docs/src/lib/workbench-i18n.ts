@@ -1,6 +1,6 @@
 import { setupI18n } from "@lingui/core";
 
-import { setLinguiContext } from "lingui-for-astro/runtime";
+import { setLinguiContext } from "lingui-for-astro";
 
 import { messages as enMessages } from "../i18n/locales/en.ts";
 

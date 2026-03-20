@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { setLinguiContext } from "lingui-for-svelte/runtime";
+  import { setLinguiContext } from "lingui-for-svelte";
 
   import AppShell from "$lib/app/AppShell.svelte";
   import { appI18n, ensureLocale } from "$lib/i18n/session.svelte";

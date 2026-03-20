@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 
-import { setLinguiContext } from "lingui-for-astro/runtime";
+import { setLinguiContext } from "lingui-for-astro";
 
 import {
   LOCALE_COOKIE,

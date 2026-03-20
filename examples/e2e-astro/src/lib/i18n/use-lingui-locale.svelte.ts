@@ -1,7 +1,7 @@
 import type { I18n } from "@lingui/core";
 import { untrack } from "svelte";
 
-import { setLinguiContext } from "lingui-for-svelte/runtime";
+import { setLinguiContext } from "lingui-for-svelte";
 
 import type { SupportedLocale } from "./locale";
 import { createAppI18n, syncAppI18n } from "./runtime";
