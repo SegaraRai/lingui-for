@@ -1,7 +1,7 @@
 import type { MessageDescriptor } from "@lingui/core";
 
-import RuntimeTransComponent from "./trans/RuntimeTrans.astro";
-import type { TransComponentMap } from "./trans/rich-text.ts";
+import RuntimeTransComponent from "./components/RuntimeTrans.astro";
+import type { TransComponentMap } from "./components/rich-text.ts";
 
 export type {
   I18n,
@@ -12,22 +12,22 @@ export type {
 } from "@lingui/core";
 
 export {
+  formatRichTextTranslation,
+  type TransComponentDescriptor,
+  type TransComponentMap,
+  type TransRenderNode,
+} from "./components/rich-text.ts";
+export {
+  mergeRuntimeTransValues,
+  translateRuntimeTrans,
+} from "./components/trans-descriptor.ts";
+export {
   getLinguiContext,
   LINGUI_ASTRO_CONTEXT,
   setLinguiContext,
   type AstroLike,
   type LinguiContext,
 } from "./core/context.ts";
-export {
-  formatRichTextTranslation,
-  type TransComponentDescriptor,
-  type TransComponentMap,
-  type TransRenderNode,
-} from "./trans/rich-text.ts";
-export {
-  mergeRuntimeTransValues,
-  translateRuntimeTrans,
-} from "./trans/trans-descriptor.ts";
 
 /**
  * Props accepted by the runtime `<RuntimeTrans>` component.

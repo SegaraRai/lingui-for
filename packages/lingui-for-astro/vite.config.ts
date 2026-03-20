@@ -8,6 +8,7 @@ export default defineConfig({
     dts: true,
     tsconfig: "tsconfig.lib.json",
     entry: {
+      index: "src/index.ts",
       "extractor/index": "src/extractor/index.ts",
       "macro/index": "src/macro/index.ts",
       "runtime/index": "src/runtime/index.ts",

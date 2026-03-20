@@ -13,6 +13,8 @@ export {
  *
  * The component is compiled away and replaced with runtime translation code, so these props only
  * exist at authoring time.
+ *
+ * @see https://lingui-for.roundtrip.dev/macros/trans-component#astro
  */
 export interface TransProps {
   /**
@@ -38,11 +40,15 @@ export interface TransProps {
  *
  * Write translated markup as children, for example `<Trans>Hello <strong>{name}</strong></Trans>`.
  * The component does not run at runtime; it is replaced during compilation.
+ *
+ * @see https://lingui-for.roundtrip.dev/macros/trans-component#astro
  */
 export const Trans = null as unknown as (props: TransProps) => unknown;
 
 /**
  * Props accepted by the macro-only `<Plural>` component.
+ *
+ * @see https://lingui-for.roundtrip.dev/macros/plural-component#astro
  */
 export interface PluralProps {
   /**
@@ -77,17 +83,25 @@ export interface PluralProps {
    * Fallback message used for any value not matched by a more specific plural category.
    */
   other: string;
+  /**
+   * Exact match plural cases, written as props prefixed with `_`, for example `_0="No items"`, `_1="One item"`, etc.
+   */
+  [key: `_${number}`]: string;
 }
 
 /**
  * Macro-only ICU plural component.
  *
  * Use this when plural branches read more naturally in markup than in a function call.
+ *
+ * @see https://lingui-for.roundtrip.dev/macros/plural-component#astro
  */
 export const Plural = null as unknown as (props: PluralProps) => unknown;
 
 /**
  * Props accepted by the macro-only `<Select>` component.
+ *
+ * @see https://lingui-for.roundtrip.dev/macros/select-component#astro
  */
 export interface SelectProps {
   /**
@@ -108,11 +122,15 @@ export interface SelectProps {
  * Macro-only ICU select component.
  *
  * Provide named cases as props prefixed with `_`, plus an `other` fallback.
+ *
+ * @see https://lingui-for.roundtrip.dev/macros/select-component#astro
  */
 export const Select = null as unknown as (props: SelectProps) => unknown;
 
 /**
  * Props accepted by the macro-only `<SelectOrdinal>` component.
+ *
+ * @see https://lingui-for.roundtrip.dev/macros/select-ordinal-component#astro
  */
 export interface SelectOrdinalProps {
   /**
@@ -147,6 +165,10 @@ export interface SelectOrdinalProps {
    * Fallback message used for any value not matched by a more specific ordinal category.
    */
   other: string;
+  /**
+   * Exact match ordinal cases, written as props prefixed with `_`, for example `_1="First"`, `_2="Second"`, etc.
+   */
+  [key: `_${number}`]: string;
 }
 
 /**
@@ -154,6 +176,8 @@ export interface SelectOrdinalProps {
  *
  * This is the component form of `selectOrdinal(...)`, useful when ordinal branches are easier to
  * express as markup props.
+ *
+ * @see https://lingui-for.roundtrip.dev/macros/select-ordinal-component#astro
  */
 export const SelectOrdinal = null as unknown as (
   props: SelectOrdinalProps,

@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { getLinguiContext, setLinguiContext } from "./core/context.ts";
-import { formatRichTextTranslation } from "./trans/rich-text.ts";
+import { formatRichTextTranslation } from "./components/rich-text.ts";
 import {
   mergeRuntimeTransValues,
   translateRuntimeTrans,
-} from "./trans/trans-descriptor.ts";
+} from "./components/trans-descriptor.ts";
+import { getLinguiContext, setLinguiContext } from "./core/context.ts";
 
 describe("lingui-for-astro runtime helpers", () => {
   it("stores and reads the request-scoped Lingui context from Astro.locals", () => {
