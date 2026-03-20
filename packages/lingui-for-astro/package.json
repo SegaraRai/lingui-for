@@ -100,13 +100,6 @@
     },
     "./package.json": "./package.json"
   },
-  "scripts": {
-    "build": "vp pack",
-    "check": "vp run check:ts && vp run check:markup",
-    "check:ts": "vp exec tsc -b --noEmit",
-    "check:markup": "vp exec astro check",
-    "test": "vp test"
-  },
   "dependencies": {
     "@babel/core": "^7.29.0",
     "@babel/generator": "^7.29.1",

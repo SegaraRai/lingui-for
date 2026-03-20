@@ -30,4 +30,25 @@ export default defineConfig({
       profile: "esm-only",
     },
   },
+  run: {
+    tasks: {
+      build: {
+        command: "vp pack",
+        dependsOn: ["check"],
+      },
+      check: {
+        command: "vp check && vp run check:extra",
+        cache: false,
+      },
+      "check:extra": {
+        command: "svelte-check",
+        cache: false,
+      },
+      test: {
+        command: "vp test",
+        dependsOn: ["build"],
+        cache: false,
+      },
+    },
+  },
 });

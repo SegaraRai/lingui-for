@@ -31,23 +31,23 @@ msgstr "{place, selectordinal, other {#番目}}"
 msgid "{tone, select, formal {Welcome} casual {Hi} other {Hello}}"
 msgstr "{tone, select, formal {こんにちは。} casual {やあ！} other {どうも。}}"
 
-#: src/demos/macros/select-component/workbench.ts:20
+#: src/demos/macros/select-component/workbench.ts:21
 #: src/demos/macros/select/workbench.ts:21
 msgid "Casual"
 msgstr "カジュアル"
 
-#: src/demos/macros/plural-component/workbench.ts:13
+#: src/demos/macros/plural-component/workbench.ts:14
 #: src/demos/macros/plural/workbench.ts:14
 msgid "Count"
 msgstr "件数"
 
 #: src/demos/macros/msg-and-define-message/workbench.ts:15
 #: src/demos/macros/t/workbench.ts:15
-#: src/demos/macros/trans-component/workbench.ts:14
+#: src/demos/macros/trans-component/workbench.ts:15
 msgid "Enter a name"
 msgstr "名前を入力してください"
 
-#: src/demos/macros/select-component/workbench.ts:16
+#: src/demos/macros/select-component/workbench.ts:17
 #: src/demos/macros/select/workbench.ts:17
 msgid "Formal"
 msgstr "フォーマル"
@@ -62,16 +62,16 @@ msgstr "やあ！"
 
 #: src/demos/macros/msg-and-define-message/workbench.ts:14
 #: src/demos/macros/t/workbench.ts:14
-#: src/demos/macros/trans-component/workbench.ts:13
+#: src/demos/macros/trans-component/workbench.ts:14
 msgid "Name"
 msgstr "名前"
 
-#: src/demos/macros/select-component/workbench.ts:24
+#: src/demos/macros/select-component/workbench.ts:25
 #: src/demos/macros/select/workbench.ts:25
 msgid "Other"
 msgstr "その他"
 
-#: src/demos/macros/select-ordinal-component/workbench.ts:13
+#: src/demos/macros/select-ordinal-component/workbench.ts:14
 #: src/demos/macros/select-ordinal/workbench.ts:14
 msgid "Place"
 msgstr "順位"
@@ -85,7 +85,7 @@ msgstr "<0>{name}</0>に挨拶しましょう。"
 msgid "form.submit"
 msgstr "送信"
 
-#: src/demos/macros/select-component/workbench.ts:13
+#: src/demos/macros/select-component/workbench.ts:14
 #: src/demos/macros/select/workbench.ts:14
 msgid "Tone"
 msgstr "トーン"

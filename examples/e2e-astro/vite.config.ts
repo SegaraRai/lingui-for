@@ -1,38 +1,22 @@
-import { sveltekit } from "@sveltejs/kit/vite";
-import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite-plus";
 
-import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
-import linguiMacro from "unplugin-lingui-macro/vite";
-
 export default defineConfig({
-  plugins: [linguiMacro(), linguiForSvelte(), tailwindcss(), sveltekit()],
-  test: {
-    environment: "node",
-    fileParallelism: false,
-    include: ["tests/**/*.test.ts"],
-    maxWorkers: 1,
-    name: "e2e-svelte",
-  },
   run: {
     tasks: {
       build: {
-        command: "vp build",
-        dependsOn: ["i18n:build", "sveltekit:sync"],
+        command: "astro build",
+        dependsOn: ["i18n:build"],
+        input: [{ auto: true }, "!**/.vite/deps/_metadata.json"],
       },
       check: {
         command: "vp check && vp run check:extra",
-        dependsOn: ["i18n:build", "sveltekit:sync"],
+        dependsOn: ["i18n:build"],
         cache: false,
       },
       "check:extra": {
-        command: "svelte-check",
-        dependsOn: ["i18n:build", "sveltekit:sync"],
+        command: "astro check",
+        dependsOn: ["i18n:build"],
         cache: false,
-      },
-      "sveltekit:sync": {
-        command: "svelte-kit sync",
-        cache: true,
       },
       "i18n:build": {
         command: "vp run i18n:extract && vp run i18n:compile",

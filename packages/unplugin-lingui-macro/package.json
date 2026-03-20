@@ -72,12 +72,6 @@
     },
     "./package.json": "./package.json"
   },
-  "scripts": {
-    "build": "vp pack",
-    "check": "vp run check:ts",
-    "check:ts": "vp exec tsc -b --noEmit",
-    "test": "vp test"
-  },
   "dependencies": {
     "@babel/core": "^7.29.0",
     "@lingui/babel-plugin-lingui-macro": "^5.9.3",

@@ -44,6 +44,8 @@ jobs:
 
       - run: vp install
 
+      - run: vp run build
+
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:

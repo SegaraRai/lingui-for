@@ -31,23 +31,23 @@ msgstr "{place, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}"
 msgid "{tone, select, formal {Welcome} casual {Hi} other {Hello}}"
 msgstr "{tone, select, formal {Welcome} casual {Hi} other {Hello}}"
 
-#: src/demos/macros/select-component/workbench.ts:20
+#: src/demos/macros/select-component/workbench.ts:21
 #: src/demos/macros/select/workbench.ts:21
 msgid "Casual"
 msgstr "Casual"
 
-#: src/demos/macros/plural-component/workbench.ts:13
+#: src/demos/macros/plural-component/workbench.ts:14
 #: src/demos/macros/plural/workbench.ts:14
 msgid "Count"
 msgstr "Count"
 
 #: src/demos/macros/msg-and-define-message/workbench.ts:15
 #: src/demos/macros/t/workbench.ts:15
-#: src/demos/macros/trans-component/workbench.ts:14
+#: src/demos/macros/trans-component/workbench.ts:15
 msgid "Enter a name"
 msgstr "Enter a name"
 
-#: src/demos/macros/select-component/workbench.ts:16
+#: src/demos/macros/select-component/workbench.ts:17
 #: src/demos/macros/select/workbench.ts:17
 msgid "Formal"
 msgstr "Formal"
@@ -62,16 +62,16 @@ msgstr "Hi there!"
 
 #: src/demos/macros/msg-and-define-message/workbench.ts:14
 #: src/demos/macros/t/workbench.ts:14
-#: src/demos/macros/trans-component/workbench.ts:13
+#: src/demos/macros/trans-component/workbench.ts:14
 msgid "Name"
 msgstr "Name"
 
-#: src/demos/macros/select-component/workbench.ts:24
+#: src/demos/macros/select-component/workbench.ts:25
 #: src/demos/macros/select/workbench.ts:25
 msgid "Other"
 msgstr "Other"
 
-#: src/demos/macros/select-ordinal-component/workbench.ts:13
+#: src/demos/macros/select-ordinal-component/workbench.ts:14
 #: src/demos/macros/select-ordinal/workbench.ts:14
 msgid "Place"
 msgstr "Place"
@@ -85,7 +85,7 @@ msgstr "Say hello to <0>{name}</0>."
 msgid "form.submit"
 msgstr "Submit"
 
-#: src/demos/macros/select-component/workbench.ts:13
+#: src/demos/macros/select-component/workbench.ts:14
 #: src/demos/macros/select/workbench.ts:14
 msgid "Tone"
 msgstr "Tone"

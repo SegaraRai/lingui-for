@@ -2,16 +2,10 @@
   "name": "docs",
   "type": "module",
   "scripts": {
-    "dev": "vp exec astro dev",
-    "lingui:extract": "vp exec lingui extract --clean --overwrite",
-    "lingui:compile": "vp exec lingui compile && vp fmt src/i18n/locales",
-    "lingui:build": "vp run lingui:extract && vp run lingui:compile",
-    "start": "vp exec astro dev",
-    "build": "vp exec astro build",
-    "preview": "vp exec astro preview",
-    "check": "vp run check:ts",
-    "check:ts": "vp exec astro check",
-    "astro": "vp exec astro"
+    "dev": "astro dev",
+    "start": "astro dev",
+    "preview": "astro preview",
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/starlight": "^0.38.1",

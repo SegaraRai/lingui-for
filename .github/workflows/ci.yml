@@ -79,11 +79,7 @@ jobs:
 
       - run: vp install
 
-      - run: vp run build:lib
-
-      - run: vp run build:examples
-
-      - run: vp run build:apps
+      - run: vp run build
 
       - run: vp run check
 
