@@ -4,7 +4,7 @@ import svelte from "@astrojs/svelte";
 import tailwindcss from "@tailwindcss/vite";
 import stripWhitespace from "astro-strip-whitespace";
 import { defineConfig } from "astro/config";
-import type { PluginOption } from "vite";
+import type { PluginOption } from "vite-plus";
 
 import linguiForAstro from "lingui-for-astro/integration";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";

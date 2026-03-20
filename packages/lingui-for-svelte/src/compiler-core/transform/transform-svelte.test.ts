@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 import { transformSvelte } from "./transform-svelte.ts";
 

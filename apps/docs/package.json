@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "astro dev",
     "lingui:extract": "lingui extract --clean --overwrite",
-    "lingui:compile": "lingui compile && prettier --write src/i18n/locales",
+    "lingui:compile": "lingui compile && vp fmt src/i18n/locales",
     "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
     "start": "astro dev",
     "build": "astro build",
@@ -33,6 +33,7 @@
     "lingui-for-svelte": "workspace:*",
     "shiki": "^4.0.2",
     "unplugin-lingui-macro": "workspace:*",
-    "vite": "^7.3.1"
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
   }
 }

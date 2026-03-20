@@ -1,5 +1,5 @@
-import { describe, expect, test } from "vitest";
-import { commands } from "vitest/browser";
+import { describe, expect, test } from "vite-plus/test";
+import { commands } from "vite-plus/test/browser";
 
 describe.sequential("dev hydration", () => {
   test("does not log Lingui locale initialization errors during hydration", async () => {

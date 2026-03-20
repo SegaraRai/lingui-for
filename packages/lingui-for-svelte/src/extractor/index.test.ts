@@ -1,6 +1,6 @@
 import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 import dedent from "dedent";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 import { svelteExtractor } from "./index.ts";

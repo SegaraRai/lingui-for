@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "lingui:extract": "lingui extract --clean --overwrite",
-    "lingui:compile": "lingui compile && prettier --write src/lib/i18n/locales",
+    "lingui:compile": "lingui compile && vp fmt src/lib/i18n/locales",
     "lingui:build": "pnpm run lingui:extract && pnpm run lingui:compile",
     "build": "pnpm run lingui:build && astro build",
     "preview": "astro preview --port 4542",
@@ -13,7 +13,7 @@
     "check:ts": "tsc --noEmit",
     "check:markup": "astro check",
     "pretest": "pnpm run build",
-    "test": "vitest run"
+    "test": "vp test run"
   },
   "dependencies": {
     "@astrojs/node": "^10.0.3",
@@ -38,11 +38,11 @@
     "@types/react-dom": "^19.2.3",
     "astro-strip-whitespace": "^0.2.1",
     "daisyui": "^5.5.19",
-    "prettier": "^3.8.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
     "unplugin-lingui-macro": "workspace:*",
-    "vite": "^7.3.1",
-    "vitest": "^4.1.0"
+    "vite": "catalog:",
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   }
 }

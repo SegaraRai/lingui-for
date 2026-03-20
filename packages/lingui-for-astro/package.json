@@ -2,6 +2,22 @@
   "name": "lingui-for-astro",
   "version": "0.1.1",
   "description": "Macro-first Lingui integration for Astro.",
+  "keywords": [
+    "astro",
+    "esbuild",
+    "i18n",
+    "lingui",
+    "rolldown",
+    "rollup",
+    "rspack",
+    "unplugin",
+    "vite",
+    "webpack"
+  ],
+  "homepage": "https://lingui-for.roundtrip.dev/frameworks/astro/getting-started",
+  "bugs": {
+    "url": "https://github.com/SegaraRai/lingui-for/issues"
+  },
   "license": "MIT",
   "author": "SegaraRai",
   "repository": {
@@ -9,21 +25,10 @@
     "url": "git+https://github.com/SegaraRai/lingui-for.git",
     "directory": "packages/lingui-for-astro"
   },
-  "homepage": "https://lingui-for.roundtrip.dev/frameworks/astro/getting-started",
-  "bugs": {
-    "url": "https://github.com/SegaraRai/lingui-for/issues"
-  },
-  "keywords": [
-    "unplugin",
-    "vite",
-    "rolldown",
-    "rollup",
-    "webpack",
-    "rspack",
-    "esbuild",
-    "lingui",
-    "astro",
-    "i18n"
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
   "type": "module",
   "sideEffects": [
@@ -33,18 +38,6 @@
   ],
   "main": "./dist/runtime/index.mjs",
   "types": "./dist/runtime/index.d.mts",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "build": "tsdown",
-    "check": "pnpm run check:ts && pnpm run check:markup",
-    "check:ts": "tsc -b --noEmit",
-    "check:markup": "astro check",
-    "test": "vitest"
-  },
   "imports": {
     "#astro-analyzer-wasm": "./src/compiler-core/analysis/wasm.ts"
   },
@@ -107,6 +100,13 @@
     },
     "./package.json": "./package.json"
   },
+  "scripts": {
+    "build": "vp pack",
+    "check": "pnpm run check:ts && pnpm run check:markup",
+    "check:ts": "tsc -b --noEmit",
+    "check:markup": "astro check",
+    "test": "vp test"
+  },
   "dependencies": {
     "@babel/core": "^7.29.0",
     "@babel/generator": "^7.29.1",
@@ -128,10 +128,10 @@
     "astro": "^6.0.7",
     "astro-analyzer-wasm": "workspace:*",
     "dedent": "^1.7.2",
-    "tsdown": "0.21.2",
     "typescript": "^5.9.3",
     "unplugin-markup-import": "workspace:*",
-    "vitest": "^4.1.0"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "@lingui/cli": "^5.0.0",

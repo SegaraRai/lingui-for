@@ -1,6 +1,6 @@
 import { setupI18n } from "@lingui/core";
 import { readable } from "svelte/store";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 import { createTranslationStore } from "./translation-store.ts";
 

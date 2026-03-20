@@ -1,6 +1,6 @@
 import { transformSync } from "@babel/core";
 import dedent from "dedent";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 import {
   lowerSyntheticComponentDeclaration,

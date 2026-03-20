@@ -1,6 +1,6 @@
-import "vitest/browser";
+import "vite-plus/test/browser";
 
-declare module "vitest/browser" {
+declare module "vite-plus/test/browser" {
   interface BrowserCommands {
     captureHydrationErrors: (pathname: string) => Promise<{
       bodyText: string;

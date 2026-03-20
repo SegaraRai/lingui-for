@@ -1,6 +1,6 @@
 import { setupI18n } from "@lingui/core";
 import { render } from "svelte/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 import RuntimeTransFixtureLink from "./RuntimeTransFixtureLink.test.svelte";
 import RuntimeTransHarness from "./RuntimeTransHarness.test.svelte";

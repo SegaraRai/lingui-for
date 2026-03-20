@@ -2,6 +2,10 @@
   "name": "unplugin-markup-import",
   "version": "0.1.1",
   "description": "Unplugin for including .svelte and .astro files in bundler output with correct import graph resolution.",
+  "homepage": "https://github.com/SegaraRai/lingui-for/tree/main/packages/unplugin-markup-import#readme",
+  "bugs": {
+    "url": "https://github.com/SegaraRai/lingui-for/issues"
+  },
   "license": "MIT",
   "author": "SegaraRai",
   "repository": {
@@ -9,25 +13,15 @@
     "url": "git+https://github.com/SegaraRai/lingui-for.git",
     "directory": "packages/unplugin-markup-import"
   },
-  "homepage": "https://github.com/SegaraRai/lingui-for/tree/main/packages/unplugin-markup-import#readme",
-  "bugs": {
-    "url": "https://github.com/SegaraRai/lingui-for/issues"
-  },
-  "type": "module",
-  "sideEffects": false,
-  "main": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
-  "scripts": {
-    "build": "tsdown",
-    "check": "pnpm run check:ts",
-    "check:ts": "tsc -b --noEmit",
-    "test": "vitest"
-  },
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
@@ -67,6 +61,12 @@
     },
     "./package.json": "./package.json"
   },
+  "scripts": {
+    "build": "vp pack",
+    "check": "pnpm run check:ts",
+    "check:ts": "tsc -b --noEmit",
+    "test": "vp test"
+  },
   "dependencies": {
     "@typescript-eslint/typescript-estree": "^8.57.1",
     "magic-string": "^0.30.21",
@@ -76,9 +76,9 @@
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
     "@types/node": "^25.5.0",
-    "tsdown": "0.21.2",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.0"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "peerDependencies": {
     "esbuild": "*",

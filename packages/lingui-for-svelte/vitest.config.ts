@@ -1,5 +1,5 @@
 import { svelte } from "@sveltejs/vite-plugin-svelte";
-import { defineProject } from "vitest/config";
+import { defineProject } from "vite-plus";
 
 export default defineProject({
   plugins: [svelte()],

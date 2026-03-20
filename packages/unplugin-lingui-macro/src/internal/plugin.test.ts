@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "vite-plus/test";
 
 import type { LinguiMacroPluginOptions } from "../types.ts";
 import { unpluginFactory } from "./plugin.ts";

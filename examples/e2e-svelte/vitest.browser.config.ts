@@ -1,8 +1,8 @@
-import { playwright } from "@vitest/browser-playwright";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { BrowserContext, ConsoleMessage } from "playwright";
-import { defineProject } from "vitest/config";
+import { defineProject } from "vite-plus";
+import { playwright } from "vite-plus/test/browser-playwright";
 
 const projectRoot = dirname(fileURLToPath(import.meta.url));
 
