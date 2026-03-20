@@ -9,7 +9,7 @@
     "tests/**/*",
     "astro.config.ts",
     "lingui.config.ts",
-    "vite.config.ts"
+    "vitest.config.ts"
   ],
   "exclude": ["dist"]
 }

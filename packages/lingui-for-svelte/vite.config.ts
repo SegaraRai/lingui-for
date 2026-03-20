@@ -1,4 +1,3 @@
-import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { defineConfig } from "vite-plus";
 
 import markupImport from "unplugin-markup-import/rolldown";
@@ -22,16 +21,13 @@ export default defineConfig({
       "unplugin/vite": "src/unplugin/vite.ts",
       "unplugin/webpack": "src/unplugin/webpack.ts",
     },
-    plugins: [markupImport()],
+    plugins: [
+      markupImport({
+        exclude: ["**/*.test.svelte"],
+      }),
+    ],
     attw: {
       profile: "esm-only",
     },
-  },
-  plugins: [svelte()],
-  test: {
-    environment: "node",
-    fileParallelism: false,
-    include: ["src/**/*.test.ts"],
-    name: "lingui-for-svelte",
   },
 });

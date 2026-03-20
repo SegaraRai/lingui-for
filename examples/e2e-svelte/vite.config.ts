@@ -5,14 +5,8 @@ import { defineConfig } from "vite-plus";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 import linguiMacro from "unplugin-lingui-macro/vite";
 
-export default defineConfig(({ mode }) => ({
-  plugins: [
-    linguiMacro(),
-    linguiForSvelte(),
-    tailwindcss(),
-    // sveltekit interferes with Vitest's test environment, so we disable it in test mode.
-    mode === "test" ? null : sveltekit(),
-  ],
+export default defineConfig({
+  plugins: [linguiMacro(), linguiForSvelte(), tailwindcss(), sveltekit()],
   test: {
     environment: "node",
     fileParallelism: false,
@@ -20,4 +14,4 @@ export default defineConfig(({ mode }) => ({
     maxWorkers: 1,
     name: "e2e-svelte",
   },
-}));
+});

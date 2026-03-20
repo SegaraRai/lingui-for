@@ -6,14 +6,21 @@ export default defineConfig({
       typeAware: true,
       typeCheck: true,
     },
+    ignorePatterns: ["**/dist", "**/.astro"],
   },
   fmt: {
     sortTailwindcss: {},
     sortPackageJson: true,
     printWidth: 80,
-    ignorePatterns: ["pnpm-lock.yaml"],
+    ignorePatterns: [
+      "**/.astro",
+      "**/.svelte-kit",
+      "**/.sveltekit-build",
+      "**/dist",
+      "pnpm-lock.yaml",
+    ],
   },
   test: {
-    projects: ["examples/*", "packages/*"],
+    projects: ["packages/*", "examples/*"],
   },
 });
