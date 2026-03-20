@@ -31,7 +31,7 @@
     <div class="space-y-3 text-lg">
       <p>{$t`Immediate translation in markup.`}</p>
       <p>{$t`Hello ${name} from the basic route.`}</p>
-      <p><RuntimeTrans message={localDescriptor} /></p>
+      <p><RuntimeTrans descriptor={localDescriptor} /></p>
       <p>{$t(importedDescriptor)}</p>
       <p>{t(importedSecondaryDescriptor)}</p>
     </div>

@@ -4,6 +4,7 @@ import { readable, type Readable } from "svelte/store";
 
 import {
   createTranslationStore,
+  type Translate,
   type TranslationStore,
 } from "./translation-store.ts";
 
@@ -111,7 +112,8 @@ export function createLinguiAccessors(): LinguiAccessors {
     return cached;
   };
 
-  const translate = ((message) => resolve()._(message)) as TranslationStore;
+  const translate = ((...args: Parameters<Translate>) =>
+    resolve()._(...args)) as TranslationStore;
   translate.subscribe = (run) => resolve()._.subscribe(run);
 
   return {

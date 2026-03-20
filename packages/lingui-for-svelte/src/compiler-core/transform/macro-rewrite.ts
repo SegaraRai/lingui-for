@@ -194,13 +194,6 @@ function isRuntimeI18nCall(path: NodePath<t.CallExpression>): boolean {
   );
 }
 
-function isReactiveTranslatorCall(
-  node: t.CallExpression,
-  translateBinding: string,
-): boolean {
-  return t.isIdentifier(node.callee, { name: `$${translateBinding}` });
-}
-
 function removeRuntimeI18nImports(
   program: t.Program,
   runtimeI18nLocals: ReadonlySet<string>,

@@ -40,7 +40,7 @@ export function transformTemplateExpression(
   options: LinguiAstroTransformOptions,
 ): string {
   const transformed = transformProgram(
-    `${createSyntheticMacroImports(macroImports)}\nconst __expr = (\n${source}\n);`,
+    `${createSyntheticMacroImports(macroImports)}const __expr = (\n${source}\n);`,
     {
       extract: false,
       filename: `${options.filename}?expression`,
@@ -74,7 +74,7 @@ export function transformComponentMacro(
   options: LinguiAstroTransformOptions,
 ): string {
   const transformed = transformProgram(
-    `${createSyntheticMacroImports(macroImports)}\nconst ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${source}\n);`,
+    `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${source}\n);`,
     {
       extract: false,
       filename: `${options.filename}?component`,
@@ -98,19 +98,19 @@ export function buildFrontmatterPrelude(
 
   if (includeAstroContext) {
     lines.push(
-      `import { getLinguiContext as ${RUNTIME_BINDING_GET_LINGUI_CONTEXT} } from "${PACKAGE_RUNTIME}";`,
-      `const ${RUNTIME_BINDING_CONTEXT} = ${RUNTIME_BINDING_GET_LINGUI_CONTEXT}(Astro);`,
-      `const ${RUNTIME_BINDING_I18N} = ${RUNTIME_BINDING_CONTEXT}.i18n;`,
+      `import { getLinguiContext as ${RUNTIME_BINDING_GET_LINGUI_CONTEXT} } from "${PACKAGE_RUNTIME}";\n`,
+      `const ${RUNTIME_BINDING_CONTEXT} = ${RUNTIME_BINDING_GET_LINGUI_CONTEXT}(Astro);\n`,
+      `const ${RUNTIME_BINDING_I18N} = ${RUNTIME_BINDING_CONTEXT}.i18n;\n`,
     );
   }
 
   if (includeRuntimeTrans) {
     lines.push(
-      `import { RuntimeTrans as ${RUNTIME_BINDING_RUNTIME_TRANS} } from "${PACKAGE_RUNTIME}";`,
+      `import { RuntimeTrans as ${RUNTIME_BINDING_RUNTIME_TRANS} } from "${PACKAGE_RUNTIME}";\n`,
     );
   }
 
-  return lines.join("\n");
+  return lines.join("");
 }
 
 export function transformFrontmatterExtractionUnit(
@@ -131,7 +131,7 @@ export function transformExpressionExtractionUnit(
   options: LinguiAstroTransformOptions,
 ): { code: string; map: RawSourceMapLike | null } {
   return transformProgram(
-    `${createSyntheticMacroImports(macroImports)}\nconst __expr = (\n${source}\n);`,
+    `${createSyntheticMacroImports(macroImports)}const __expr = (\n${source}\n);`,
     {
       extract: true,
       filename: `${options.filename}?extract-expression`,
@@ -147,7 +147,7 @@ export function transformComponentExtractionUnit(
   options: LinguiAstroTransformOptions,
 ): { code: string; map: RawSourceMapLike | null } {
   return transformProgram(
-    `${createSyntheticMacroImports(macroImports)}\nconst ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${source}\n);`,
+    `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${source}\n);`,
     {
       extract: true,
       filename: `${options.filename}?extract-component`,
@@ -171,8 +171,8 @@ function createSyntheticMacroImports(
   return [...bindings.entries()]
     .map(([localName, importedName]) =>
       importedName === localName
-        ? `import { ${importedName} } from "${PACKAGE_MACRO}";`
-        : `import { ${importedName} as ${localName} } from "${PACKAGE_MACRO}";`,
+        ? `import { ${importedName} } from "${PACKAGE_MACRO}";\n`
+        : `import { ${importedName} as ${localName} } from "${PACKAGE_MACRO}";\n`,
     )
-    .join("\n");
+    .join("");
 }

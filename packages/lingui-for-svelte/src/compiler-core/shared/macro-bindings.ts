@@ -158,13 +158,10 @@ function createSyntheticExpressionFile(
   bindings: MacroBindings,
 ): t.File | null {
   const syntheticImports = [...bindings.all]
-    .map((localName) => `import { ${localName} } from "${PACKAGE_MACRO}";`)
-    .join("\n");
+    .map((localName) => `import { ${localName} } from "${PACKAGE_MACRO}";\n`)
+    .join("");
 
-  return parseFile(
-    `${syntheticImports}\nconst __expr = (\n${source}\n);`,
-    lang,
-  );
+  return parseFile(`${syntheticImports}const __expr = (\n${source}\n);`, lang);
 }
 
 function isMacroImportBinding(

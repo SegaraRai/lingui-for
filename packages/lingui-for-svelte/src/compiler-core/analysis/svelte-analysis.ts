@@ -88,7 +88,7 @@ function toScriptBlock(
 }
 
 function collectAttributeValueExpressions(
-  value: AST.Attribute["value"] | AST.StyleDirective["value"],
+  value: AST.Attribute["value"],
 ): RangeNode[] {
   if (value === true) {
     return [];

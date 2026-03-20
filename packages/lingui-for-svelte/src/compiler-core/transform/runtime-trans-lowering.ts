@@ -159,31 +159,66 @@ function convertRuntimeTransSpreadArgument(
     return argument;
   }
 
-  return t.objectExpression(
-    argument.properties.map((property) => {
-      if (t.isSpreadElement(property)) {
-        return t.spreadElement(property.argument);
-      }
+  const descriptorProperties: t.ObjectProperty[] = [];
+  const loweredProperties: (t.ObjectProperty | t.SpreadElement)[] = [];
 
-      if (!t.isObjectProperty(property)) {
+  argument.properties.forEach((property) => {
+    if (t.isSpreadElement(property)) {
+      loweredProperties.push(t.spreadElement(property.argument));
+      return;
+    }
+
+    if (!t.isObjectProperty(property)) {
+      throw new Error(
+        "Unsupported object method in runtime Trans spread props",
+      );
+    }
+
+    const propertyName = getObjectPropertyName(property.key);
+
+    if (
+      propertyName === "id" ||
+      propertyName === "message" ||
+      propertyName === "values"
+    ) {
+      if (!t.isExpression(property.value)) {
         throw new Error(
-          "Unsupported object method in runtime Trans spread props",
+          `Unsupported runtime Trans descriptor prop "${propertyName}"`,
         );
       }
 
-      if (getObjectPropertyName(property.key) === "components") {
-        return t.objectProperty(
+      descriptorProperties.push(
+        t.objectProperty(property.key, property.value, property.computed),
+      );
+      return;
+    }
+
+    if (propertyName === "components") {
+      loweredProperties.push(
+        t.objectProperty(
           property.key,
           t.isExpression(property.value)
             ? convertComponentsExpression(property.value)
             : convertRichTextComponentValue(property.value),
           property.computed,
-        );
-      }
+        ),
+      );
+      return;
+    }
 
-      return property;
-    }),
-  );
+    loweredProperties.push(property);
+  });
+
+  if (descriptorProperties.length > 0) {
+    loweredProperties.unshift(
+      t.objectProperty(
+        t.identifier("descriptor"),
+        t.objectExpression(descriptorProperties),
+      ),
+    );
+  }
+
+  return t.objectExpression(loweredProperties);
 }
 
 function convertRuntimeTransAttributeValue(

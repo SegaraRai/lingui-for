@@ -63,8 +63,10 @@ describe("splitSyntheticDeclarations", () => {
     `);
     expect(split.componentReplacements.get(0)).toMatchInlineSnapshot(`
       "<RuntimeTransStable {...{
-        id: "demo.docs",
-        message: "Read the <0>docs</0>.",
+        descriptor: {
+          id: "demo.docs",
+          message: "Read the <0>docs</0>."
+        },
         components: {
           0: {
             kind: "element",

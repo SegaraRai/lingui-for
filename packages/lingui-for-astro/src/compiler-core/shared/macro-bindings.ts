@@ -152,13 +152,13 @@ function createSyntheticExpressionFile(
   const syntheticImports = [...bindings.allImports.entries()]
     .map(([localName, importedName]) =>
       importedName === localName
-        ? `import { ${importedName} } from "${PACKAGE_MACRO}";`
-        : `import { ${importedName} as ${localName} } from "${PACKAGE_MACRO}";`,
+        ? `import { ${importedName} } from "${PACKAGE_MACRO}"\n;`
+        : `import { ${importedName} as ${localName} } from "${PACKAGE_MACRO}";\n`,
     )
-    .join("\n");
+    .join("");
 
   return parseFile(
-    `${syntheticImports}\nconst __lingui_for_astro_expr__ = (\n${source}\n);`,
+    `${syntheticImports}const __lingui_for_astro_expr__ = (\n${source}\n);`,
   );
 }
 

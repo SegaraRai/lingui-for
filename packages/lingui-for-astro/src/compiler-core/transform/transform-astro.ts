@@ -66,7 +66,7 @@ export function transformAstro(
   );
   const finalFrontmatter = [prelude, transformedFrontmatter]
     .filter((part) => part.trim().length > 0)
-    .join("\n");
+    .join("");
 
   if (context.analysis.frontmatter) {
     string.overwrite(

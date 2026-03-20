@@ -8,19 +8,15 @@
 
   let {
     getI18n,
-    id = undefined,
-    message,
-    values = undefined,
+    descriptor,
     components = undefined,
   }: {
     getI18n: () => I18n;
-    id?: string | undefined;
-    message?: MessageDescriptor | string | undefined;
-    values?: Readonly<Record<string, unknown>> | undefined;
+    descriptor: MessageDescriptor;
     components?: TransComponentMap | undefined;
   } = $props();
 
   setLinguiContext(untrack(() => getI18n()));
 </script>
 
-<RuntimeTrans {id} {message} {values} {components} />
+<RuntimeTrans {descriptor} {components} />

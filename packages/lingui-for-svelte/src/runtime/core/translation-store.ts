@@ -1,4 +1,4 @@
-import type { I18n, MessageDescriptor } from "@lingui/core";
+import type { I18n } from "@lingui/core";
 import { derived, type Readable } from "svelte/store";
 
 /**
@@ -7,7 +7,7 @@ import { derived, type Readable } from "svelte/store";
  * Callers pass a Lingui message descriptor and receive the translated string for the currently
  * active locale.
  */
-export type Translate = (message: MessageDescriptor) => string;
+export type Translate = I18n["_"];
 
 /**
  * Readable store whose current value is also directly callable as a translation function.
@@ -18,7 +18,7 @@ export type Translate = (message: MessageDescriptor) => string;
 export type TranslationStore = Readable<Translate> & Translate;
 
 function bindTranslate(instance: I18n): Translate {
-  return (message) => instance._(message);
+  return ((...args: Parameters<Translate>) => instance._(...args)) as Translate;
 }
 
 /**
@@ -36,8 +36,8 @@ export function createTranslationStore(
   getStore: () => Readable<I18n>,
   getRawI18n: () => I18n,
 ): TranslationStore {
-  const store = ((message: MessageDescriptor) =>
-    getRawI18n()._(message)) as TranslationStore;
+  const store = ((...args: Parameters<Translate>) =>
+    getRawI18n()._(...args)) as TranslationStore;
   store.subscribe = (run) =>
     derived(getStore(), (instance) => bindTranslate(instance)).subscribe(run);
 

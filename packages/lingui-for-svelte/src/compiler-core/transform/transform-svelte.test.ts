@@ -552,10 +552,12 @@ describe("transformSvelte", () => {
     	</script>
 
     	<L4sRuntimeTrans {...{
-    	  id: "demo.docs",
-    	  message: "Read the <0>docs</0>, {name}.",
-    	  values: {
-    	    name: name
+    	  descriptor: {
+    	    id: "demo.docs",
+    	    message: "Read the <0>docs</0>, {name}.",
+    	    values: {
+    	      name: name
+    	    }
     	  },
     	  components: {
     	    0: {
@@ -595,10 +597,12 @@ describe("transformSvelte", () => {
     	</script>
 
     	<L4sRuntimeTrans {...{
-    	  id: "N+nKUg",
-    	  message: "Read <0><1>{name}</1></0> carefully.",
-    	  values: {
-    	    name: name
+    	  descriptor: {
+    	    id: "N+nKUg",
+    	    message: "Read <0><1>{name}</1></0> carefully.",
+    	    values: {
+    	      name: name
+    	    }
     	  },
     	  components: {
     	    0: {
@@ -637,8 +641,10 @@ describe("transformSvelte", () => {
     	</script>
 
     	<L4sRuntimeTrans {...{
-    	  id: "demo.docs",
-    	  message: "Read the <0>docs</0>.",
+    	  descriptor: {
+    	    id: "demo.docs",
+    	    message: "Read the <0>docs</0>."
+    	  },
     	  components: {
     	    0: {
     	      kind: "element",
@@ -682,24 +688,30 @@ describe("transformSvelte", () => {
     	</script>
 
     	<L4sRuntimeTrans {...{
-    	  id: "V/M0Vc",
-    	  message: "{count, plural, one {# Book} other {# Books}}",
-    	  values: {
-    	    count: count
+    	  descriptor: {
+    	    id: "V/M0Vc",
+    	    message: "{count, plural, one {# Book} other {# Books}}",
+    	    values: {
+    	      count: count
+    	    }
     	  }
     	}} />
     	<L4sRuntimeTrans {...{
-    	  id: "BGY2VE",
-    	  message: "{gender, select, female {she} other {they}}",
-    	  values: {
-    	    gender: gender
+    	  descriptor: {
+    	    id: "BGY2VE",
+    	    message: "{gender, select, female {she} other {they}}",
+    	    values: {
+    	      gender: gender
+    	    }
     	  }
     	}} />
     	<L4sRuntimeTrans {...{
-    	  id: "0ALwK4",
-    	  message: "{count, selectordinal, one {#st} other {#th}}",
-    	  values: {
-    	    count: count
+    	  descriptor: {
+    	    id: "0ALwK4",
+    	    message: "{count, selectordinal, one {#st} other {#th}}",
+    	    values: {
+    	      count: count
+    	    }
     	  }
     	}} />"
     `);

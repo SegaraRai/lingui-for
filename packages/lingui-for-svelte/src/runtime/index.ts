@@ -33,17 +33,9 @@ export type {
  */
 type RuntimeTransType = Component<{
   /**
-   * Explicit message id to translate.
+   * Lingui descriptor produced by macro lowering.
    */
-  id?: string | undefined;
-  /**
-   * Descriptor or default-message string produced by macro lowering.
-   */
-  message?: MessageDescriptor | string | undefined;
-  /**
-   * Runtime interpolation values merged into the final descriptor.
-   */
-  values?: Readonly<Record<string, unknown>> | undefined;
+  descriptor: MessageDescriptor;
   /**
    * Rich-text component descriptors keyed by placeholder name.
    */

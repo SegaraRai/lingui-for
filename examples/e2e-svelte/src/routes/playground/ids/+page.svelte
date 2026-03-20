@@ -36,7 +36,7 @@
         })}
       </p>
       <p>
-        <RuntimeTrans message={explicitDescriptor} />
+        <RuntimeTrans descriptor={explicitDescriptor} />
       </p>
     </div>
   </div>
