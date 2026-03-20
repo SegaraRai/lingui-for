@@ -1,26 +1,22 @@
 import { parse as parseSvelte } from "svelte/compiler";
 
 import {
+  collectModuleSpecifiers,
+  collectRelativeImports,
   collectRelativeMarkupImports,
   createMarkupFacadeModule,
   rewriteMarkupImports,
-} from "./markup-module.ts";
+} from "../facade.ts";
 import type {
   MarkupFacadeModule,
+  ResolveFacadeSourceSpecifier,
   RewriteMarkupImport,
   RewriteMarkupImportsResult,
   ScriptRange,
-} from "./types.ts";
+} from "../types.ts";
 
 const SVELTE_EXTENSION = ".svelte";
 
-/**
- * Rewrites import and export specifiers inside `<script>` blocks of a Svelte
- * source file.
- *
- * This is a low-level helper that applies a caller-provided specifier mapping
- * without making any assumptions about bundler integration.
- */
 export function rewriteSvelteImports(
   source: string,
   filename: string,
@@ -35,13 +31,6 @@ export function rewriteSvelteImports(
   );
 }
 
-/**
- * Collects direct relative `.svelte` imports referenced from instance and
- * module `<script>` blocks.
- *
- * The returned specifiers are left as-written in the source so callers can
- * resolve them relative to the current file as needed.
- */
 export function collectRelativeSvelteImports(
   source: string,
   filename: string,
@@ -54,18 +43,25 @@ export function collectRelativeSvelteImports(
   );
 }
 
-/**
- * Builds the rewritten emitted `.svelte` source plus its companion facade
- * modules for a single Svelte file.
- *
- * Relative non-Svelte imports are redirected to a generated
- * `*.svelte.imports.mjs` facade so the original `.svelte` file can be shipped
- * alongside bundled JavaScript output.
- */
+export function collectRelativeSvelteModuleImports(
+  source: string,
+  filename: string,
+): readonly string[] {
+  return collectRelativeImports(source, filename, collectScripts);
+}
+
+export function collectSvelteModuleSpecifiers(
+  source: string,
+  filename: string,
+): readonly string[] {
+  return collectModuleSpecifiers(source, filename, collectScripts);
+}
+
 export function createSvelteFacadeModule(
   source: string,
   filename: string,
   relativePath: string,
+  resolveFacadeSourceSpecifier?: ResolveFacadeSourceSpecifier,
 ): MarkupFacadeModule {
   return createMarkupFacadeModule(
     source,
@@ -73,6 +69,7 @@ export function createSvelteFacadeModule(
     relativePath,
     SVELTE_EXTENSION,
     collectScripts,
+    resolveFacadeSourceSpecifier,
   );
 }
 

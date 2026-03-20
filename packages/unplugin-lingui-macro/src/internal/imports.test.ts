@@ -1,3 +1,4 @@
+import dedent from "dedent";
 import { describe, expect, it } from "vite-plus/test";
 
 import { hasImport } from "./imports.ts";
@@ -6,23 +7,23 @@ describe("hasImport", () => {
   const packageNames = ["@lingui/core/macro", "@lingui/react/macro"];
 
   it("detects macros in TSX files", () => {
-    const code = [
-      'import { Trans } from "@lingui/react/macro";',
-      "",
-      "export function Demo() {",
-      "  return <Trans>Hello from React.</Trans>;",
-      "}",
-    ].join("\n");
+    const code = dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      export function Demo() {
+        return <Trans>Hello from React.</Trans>;
+      }
+    `;
 
     expect(hasImport(code, "/virtual/Demo.tsx", packageNames)).toBe(true);
   });
 
   it("supports custom macro package names", () => {
-    const code = [
-      'import { msg } from "@acme/lingui-core";',
-      "",
-      "export const descriptor = msg`Hello from a custom macro package.`;",
-    ].join("\n");
+    const code = dedent`
+      import { msg } from "@acme/lingui-core";
+
+      export const descriptor = msg\`Hello from a custom macro package.\`;
+    `;
 
     expect(hasImport(code, "/virtual/custom.ts", ["@acme/lingui-core"])).toBe(
       true,
@@ -30,12 +31,12 @@ describe("hasImport", () => {
   });
 
   it("falls back to the import block when later syntax is unsupported", () => {
-    const code = [
-      'import { msg } from "@lingui/core/macro";',
-      "",
-      "type User = { name: string };",
-      "export const descriptor = msg`Hello from Flow.`;",
-    ].join("\n");
+    const code = dedent`
+      import { msg } from "@lingui/core/macro";
+
+      type User = { name: string };
+      export const descriptor = msg\`Hello from Flow.\`;
+    `;
 
     expect(hasImport(code, "/virtual/flow.js", ["@lingui/core/macro"])).toBe(
       true,

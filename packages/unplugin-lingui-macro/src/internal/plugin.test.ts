@@ -1,3 +1,4 @@
+import dedent from "dedent";
 import { describe, expect, it } from "vite-plus/test";
 
 import type { LinguiMacroPluginOptions } from "../types.ts";
@@ -28,11 +29,11 @@ function getCode(result: Awaited<ReturnType<typeof runTransform>>) {
 describe("unplugin-lingui-macro", () => {
   it("transforms plain TypeScript descriptors imported from @lingui/core/macro", async () => {
     const result = await runTransform(
-      [
-        'import { msg } from "@lingui/core/macro";',
-        "",
-        "export const descriptor = msg`Hello from plain TypeScript.`;",
-      ].join("\n"),
+      dedent`
+        import { msg } from "@lingui/core/macro";
+
+        export const descriptor = msg\`Hello from plain TypeScript.\`;
+      `,
       "/virtual/shared-descriptor.ts",
     );
 
@@ -43,13 +44,13 @@ describe("unplugin-lingui-macro", () => {
 
   it("transforms React macros when a file imports @lingui/react/macro", async () => {
     const result = await runTransform(
-      [
-        'import { Trans } from "@lingui/react/macro";',
-        "",
-        "export function Demo() {",
-        "  return <Trans>Hello from React.</Trans>;",
-        "}",
-      ].join("\n"),
+      dedent`
+        import { Trans } from "@lingui/react/macro";
+
+        export function Demo() {
+          return <Trans>Hello from React.</Trans>;
+        }
+      `,
       "/virtual/Demo.tsx",
     );
 
@@ -60,11 +61,11 @@ describe("unplugin-lingui-macro", () => {
 
   it("honors custom Lingui macro package names from config", async () => {
     const result = await runTransform(
-      [
-        'import { msg } from "@acme/lingui-core";',
-        "",
-        "export const descriptor = msg`Hello from a custom macro package.`;",
-      ].join("\n"),
+      dedent`
+        import { msg } from "@acme/lingui-core";
+
+        export const descriptor = msg\`Hello from a custom macro package.\`;
+      `,
       "/virtual/custom-macro.ts",
       {
         linguiConfig: {

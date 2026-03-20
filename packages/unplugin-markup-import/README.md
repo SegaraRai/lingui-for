@@ -63,6 +63,7 @@ markupImport({
   rootDir: process.cwd(),
   sourceDir: "src",
   frameworks: ["svelte"],
+  exclude: ["**/*.test.svelte"],
 });
 ```
 
@@ -71,6 +72,8 @@ Supported options:
 - `rootDir`: base directory used to resolve the default `sourceDir`
 - `sourceDir`: directory containing markup files to scan and rewrite
 - `frameworks`: markup frameworks to preserve; supported values are `"svelte"` and `"astro"`
+- `include`: glob or globs for markup files to preserve
+- `exclude`: glob or globs for markup files to skip, such as test fixtures
 
 ## Entrypoints
 

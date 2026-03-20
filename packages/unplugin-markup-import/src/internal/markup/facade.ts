@@ -1,13 +1,18 @@
 import { parse, type TSESTree } from "@typescript-eslint/typescript-estree";
 import MagicString from "magic-string";
 
-import { basenamePath, dirnamePath, resolveRelativeSpecifier } from "./path.ts";
+import {
+  basenamePath,
+  dirnamePath,
+  resolveRelativeSpecifier,
+} from "../fs/paths.ts";
 import type {
   FacadeBinding,
   FacadeDeclaration,
   ImportSpecifierNode,
   InputDeclaration,
   MarkupFacadeModule,
+  ResolveFacadeSourceSpecifier,
   RewriteMarkupImport,
   RewriteMarkupImportsResult,
   ScriptRange,
@@ -101,6 +106,59 @@ export function collectRelativeMarkupImports(
   return [...imports];
 }
 
+export function collectRelativeImports(
+  source: string,
+  filename: string,
+  collectScriptRanges: (
+    source: string,
+    filename: string,
+  ) => readonly ScriptRange[],
+): readonly string[] {
+  const imports = new Set<string>();
+
+  for (const script of collectScriptRanges(source, filename)) {
+    const program = parseScript(script.content, script.lang);
+
+    for (const statement of program.body) {
+      if (!isSupportedImportDeclaration(statement) || !statement.source) {
+        continue;
+      }
+
+      const specifier = statement.source.value;
+      if (specifier.startsWith(".")) {
+        imports.add(specifier);
+      }
+    }
+  }
+
+  return [...imports];
+}
+
+export function collectModuleSpecifiers(
+  source: string,
+  filename: string,
+  collectScriptRanges: (
+    source: string,
+    filename: string,
+  ) => readonly ScriptRange[],
+): readonly string[] {
+  const imports = new Set<string>();
+
+  for (const script of collectScriptRanges(source, filename)) {
+    const program = parseScript(script.content, script.lang);
+
+    for (const statement of program.body) {
+      if (!isSupportedImportDeclaration(statement) || !statement.source) {
+        continue;
+      }
+
+      imports.add(statement.source.value);
+    }
+  }
+
+  return [...imports];
+}
+
 export function createMarkupFacadeModule(
   source: string,
   filename: string,
@@ -110,6 +168,7 @@ export function createMarkupFacadeModule(
     source: string,
     filename: string,
   ) => readonly ScriptRange[],
+  resolveFacadeSourceSpecifier?: ResolveFacadeSourceSpecifier,
 ): MarkupFacadeModule {
   const scripts = collectScriptRanges(source, filename);
   const string = new MagicString(source);
@@ -141,8 +200,15 @@ export function createMarkupFacadeModule(
       const globalStart = script.contentStart + statement.range[0];
       const globalEnd = script.contentStart + statement.range[1];
       string.overwrite(globalStart, globalEnd, replacement.code);
+      const resolvedSource = toFacadeSourceSpecifier(filename, specifier);
       facadeDeclarations.push({
-        source: toFacadeSourceSpecifier(filename, specifier),
+        source:
+          resolveFacadeSourceSpecifier?.(specifier, {
+            filename,
+            markupExtension,
+            relativePath,
+            resolvedSource,
+          }) ?? resolvedSource,
         specifiers: replacement.facadeSpecifiers,
         sideEffectOnly: replacement.sideEffectOnly,
       });
@@ -157,8 +223,6 @@ export function createMarkupFacadeModule(
       assetFileName: relativePath,
       facadeFileName: null,
       facadeCode: null,
-      facadeDtsFileName: null,
-      facadeDtsCode: null,
       rewrittenCode: source,
     };
   }
@@ -171,12 +235,7 @@ export function createMarkupFacadeModule(
       new RegExp(`${escapeRegExp(markupExtension)}$`),
       `${markupExtension}.imports.mjs`,
     ),
-    facadeCode: createFacadeModuleCode(facadeDeclarations, false),
-    facadeDtsFileName: relativePath.replace(
-      new RegExp(`${escapeRegExp(markupExtension)}$`),
-      `${markupExtension}.imports.d.mts`,
-    ),
-    facadeDtsCode: createFacadeModuleCode(facadeDeclarations, true),
+    facadeCode: createFacadeModuleCode(facadeDeclarations, true),
     rewrittenCode: string.toString(),
   };
 }
@@ -359,5 +418,5 @@ function parseScript(code: string, lang: "js" | "ts"): TSESTree.Program {
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replaceAll(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }

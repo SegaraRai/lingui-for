@@ -89,6 +89,7 @@
     "@lingui/conf": "^5.9.3",
     "@types/babel__core": "^7.20.5",
     "@types/node": "^25.5.0",
+    "dedent": "^1.7.2",
     "typescript": "^5.9.3",
     "vite-plus": "catalog:",
     "vitest": "catalog:"

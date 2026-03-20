@@ -1,14 +1,17 @@
 import {
+  collectModuleSpecifiers,
+  collectRelativeImports,
   collectRelativeMarkupImports,
   createMarkupFacadeModule,
   rewriteMarkupImports,
-} from "./markup-module.ts";
+} from "../facade.ts";
 import type {
   MarkupFacadeModule,
+  ResolveFacadeSourceSpecifier,
   RewriteMarkupImport,
   RewriteMarkupImportsResult,
   ScriptRange,
-} from "./types.ts";
+} from "../types.ts";
 
 const ASTRO_EXTENSION = ".astro";
 
@@ -38,10 +41,25 @@ export function collectRelativeAstroImports(
   );
 }
 
+export function collectRelativeAstroModuleImports(
+  source: string,
+  filename: string,
+): readonly string[] {
+  return collectRelativeImports(source, filename, collectAstroScripts);
+}
+
+export function collectAstroModuleSpecifiers(
+  source: string,
+  filename: string,
+): readonly string[] {
+  return collectModuleSpecifiers(source, filename, collectAstroScripts);
+}
+
 export function createAstroFacadeModule(
   source: string,
   filename: string,
   relativePath: string,
+  resolveFacadeSourceSpecifier?: ResolveFacadeSourceSpecifier,
 ): MarkupFacadeModule {
   return createMarkupFacadeModule(
     source,
@@ -49,6 +67,7 @@ export function createAstroFacadeModule(
     relativePath,
     ASTRO_EXTENSION,
     collectAstroScripts,
+    resolveFacadeSourceSpecifier,
   );
 }
 

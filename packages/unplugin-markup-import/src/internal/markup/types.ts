@@ -6,6 +6,18 @@ export type RewriteMarkupImportContext = {
   markupExtension: string;
 };
 
+export type ResolveFacadeSourceSpecifierContext = {
+  filename: string;
+  relativePath: string;
+  markupExtension: string;
+  resolvedSource: string;
+};
+
+export type ResolveFacadeSourceSpecifier = (
+  specifier: string,
+  context: ResolveFacadeSourceSpecifierContext,
+) => string;
+
 export type RewriteMarkupImport = (
   specifier: string,
   context: RewriteMarkupImportContext,
@@ -48,13 +60,7 @@ export type MarkupFacadeModule = {
   assetFileName: string;
   facadeFileName: string | null;
   facadeCode: string | null;
-  facadeDtsFileName: string | null;
-  facadeDtsCode: string | null;
   rewrittenCode: string;
-};
-
-export type StoredFacadeModule = MarkupFacadeModule & {
-  facadeId: string | null;
 };
 
 export type ImportSpecifierNode =

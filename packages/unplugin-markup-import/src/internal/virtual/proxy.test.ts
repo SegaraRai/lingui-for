@@ -2,32 +2,16 @@ import { describe, expect, it } from "vite-plus/test";
 
 import {
   createProxyModuleCode,
-  createScanModuleCode,
   shouldPreserveRelativeMarkupImport,
-} from "./virtual-modules.ts";
+} from "./proxy.ts";
 
 describe("proxy modules", () => {
-  it("creates a proxy that scans the source file and re-exports the public markup specifier", () => {
-    expect(
-      createProxyModuleCode(
-        "C:/Workspace/lingui-for-svelte/src/runtime/trans/RuntimeTrans.svelte",
-        "./trans/RuntimeTrans.svelte",
-      ),
-    ).toMatchInlineSnapshot(`
-      "import "C:/Workspace/lingui-for-svelte/src/runtime/trans/RuntimeTrans.svelte?unplugin-markup-import-scan";
-      export { default } from "./trans/RuntimeTrans.svelte?unplugin-markup-import-public";"
+  it("creates a proxy that re-exports the public markup specifier", () => {
+    expect(createProxyModuleCode("./trans/RuntimeTrans.svelte"))
+      .toMatchInlineSnapshot(`
+    	"export { default } from "./trans/RuntimeTrans.svelte?unplugin-markup-import-public";
+    	"
     `);
-  });
-
-  it("creates scan modules that recurse into nested markup dependencies", () => {
-    expect(
-      createScanModuleCode([
-        "C:/Workspace/lingui-for-svelte/src/runtime/trans/RenderTransNodes.svelte",
-      ]),
-    ).toMatchInlineSnapshot(`
-      "import "C:/Workspace/lingui-for-svelte/src/runtime/trans/RenderTransNodes.svelte?unplugin-markup-import-scan";"
-    `);
-    expect(createScanModuleCode([])).toBe("export {};");
   });
 });
 
@@ -52,7 +36,7 @@ describe("shouldPreserveRelativeMarkupImport", () => {
     ).toBe(true);
   });
 
-  it("ignores non-relative and non-svelte imports", () => {
+  it("ignores non-relative and non-markup imports", () => {
     expect(
       shouldPreserveRelativeMarkupImport(
         "lingui-for-svelte/runtime",

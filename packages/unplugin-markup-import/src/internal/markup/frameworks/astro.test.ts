@@ -1,21 +1,22 @@
+import dedent from "dedent";
 import { describe, expect, it } from "vite-plus/test";
 
 import {
   collectRelativeAstroImports,
   createAstroFacadeModule,
   rewriteAstroImports,
-} from "./astro-module.ts";
+} from "./astro.ts";
 
 describe("rewriteAstroImports", () => {
   it("rewrites import and export specifiers inside astro frontmatter", () => {
-    const source = [
-      "---",
-      'import { helper } from "../component-utils.ts";',
-      'export { helper as exportedHelper } from "../component-utils.ts";',
-      "---",
-      "",
-      "<p>Hello</p>",
-    ].join("\n");
+    const source = dedent`
+      ---
+      import { helper } from "../component-utils.ts";
+      export { helper as exportedHelper } from "../component-utils.ts";
+      ---
+
+      <p>Hello</p>
+    `;
 
     const result = rewriteAstroImports(
       source,
@@ -38,14 +39,14 @@ describe("rewriteAstroImports", () => {
 
 describe("collectRelativeAstroImports", () => {
   it("collects direct relative astro imports from frontmatter", () => {
-    const source = [
-      "---",
-      'import RuntimeTrans from "./RuntimeTrans.astro";',
-      'export { default as RenderTransNode } from "./RenderTransNode.astro";',
-      "---",
-      "",
-      "<slot />",
-    ].join("\n");
+    const source = dedent`
+      ---
+      import RuntimeTrans from "./RuntimeTrans.astro";
+      export { default as RenderTransNode } from "./RenderTransNode.astro";
+      ---
+
+      <slot />
+    `;
 
     expect(
       collectRelativeAstroImports(
@@ -57,21 +58,21 @@ describe("collectRelativeAstroImports", () => {
 });
 
 describe("createAstroFacadeModule", () => {
-  it("creates a rewritten astro asset plus a matching virtual facade module", () => {
-    const source = [
-      "---",
-      'import type { MessageDescriptor } from "@lingui/core";',
-      'import { getLinguiContext } from "./index.ts";',
-      'import RenderTransNodes from "./RenderTransNodes.astro";',
-      'import { translateRuntimeTrans } from "./helpers.ts";',
-      "---",
-      "",
-      "<RenderTransNodes />",
-    ].join("\n");
+  it("rewrites non-astro relative imports through a single companion module", () => {
+    const source = dedent`
+      ---
+      import type { MessageDescriptor } from "@lingui/core";
+      import { getLinguiContext } from "./index.ts";
+      import RenderTransNodes from "./RenderTransNodes.astro";
+      import { translateRuntimeTrans } from "./helpers.ts";
+      ---
+
+      <RenderTransNodes />
+    `;
 
     const result = createAstroFacadeModule(
       source,
-      "C:/Workspace/lingui-for-astro/src/runtime/RuntimeTrans.astro",
+      "/virtual/runtime/RuntimeTrans.astro",
       "runtime/RuntimeTrans.astro",
     );
 
@@ -90,11 +91,8 @@ describe("createAstroFacadeModule", () => {
       <RenderTransNodes />"
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
-      "export { getLinguiContext as __unplugin_markup_import_0 } from "C:/Workspace/lingui-for-astro/src/runtime/index.ts";
-      export { translateRuntimeTrans as __unplugin_markup_import_1 } from "C:/Workspace/lingui-for-astro/src/runtime/helpers.ts";"
+      "export { getLinguiContext as __unplugin_markup_import_0 } from "/virtual/runtime/index.ts";
+      export { translateRuntimeTrans as __unplugin_markup_import_1 } from "/virtual/runtime/helpers.ts";"
     `);
-    expect(result.facadeDtsFileName).toBe(
-      "runtime/RuntimeTrans.astro.imports.d.mts",
-    );
   });
 });

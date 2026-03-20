@@ -1,0 +1,18 @@
+import { describe, expect, it } from "vite-plus/test";
+
+import { createTempFilePath } from "./temp-files.ts";
+
+describe("createTempFilePath", () => {
+  it("uses a dot-stripped original filename and content hash", () => {
+    expect(
+      createTempFilePath(
+        "C:/Workspace/src/.unplugin-markup-import",
+        "runtime/trans/RuntimeTrans.svelte.imports.mjs",
+        'export { default } from "./RuntimeTrans.svelte";\n',
+        ".mjs",
+      ),
+    ).toMatch(
+      /^C:\/Workspace\/src\/\.unplugin-markup-import\/RuntimeTrans-svelte-imports-mjs-[0-9a-f]{10}\.mjs$/,
+    );
+  });
+});

@@ -2,6 +2,7 @@ target
 node_modules
 
 dist
+.unplugin-markup-import
 
 .astro
 .svelte-kit
