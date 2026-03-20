@@ -9,7 +9,10 @@ const {
 }: {
   nodes: readonly TransRenderNode[];
   components: TransComponentMap;
-} = Astro.props;
+} = Astro.props as {
+  nodes: readonly TransRenderNode[];
+  components: TransComponentMap;
+};
 ---
 
 {nodes.map((node) => <RenderTransNode node={node} components={components} />)}

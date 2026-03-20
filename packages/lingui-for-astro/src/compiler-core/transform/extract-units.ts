@@ -58,7 +58,7 @@ export function createAstroExtractionUnits(
   for (const component of context.filteredComponents) {
     const transformed = transformComponentExtractionUnit(
       source.slice(component.range.start, component.range.end),
-      context.macroBindings.componentImports,
+      context.macroBindings.allImports,
       options,
     );
 

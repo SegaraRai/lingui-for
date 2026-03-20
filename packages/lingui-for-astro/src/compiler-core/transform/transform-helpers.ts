@@ -1,5 +1,8 @@
+import { transformSync } from "@babel/core";
 import { generate } from "@babel/generator";
+import traverseModule, { type NodePath } from "@babel/traverse";
 import * as t from "@babel/types";
+import MagicString from "magic-string";
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
@@ -20,6 +23,16 @@ import {
   lowerSyntheticComponentDeclaration,
   stripRuntimeTransImports,
 } from "./runtime-trans-lowering.ts";
+
+const traverse = (
+  typeof traverseModule === "function"
+    ? traverseModule
+    : (
+        traverseModule as unknown as {
+          default: typeof import("@babel/traverse").default;
+        }
+      ).default
+) as typeof import("@babel/traverse").default;
 
 export function transformFrontmatter(
   source: string,
@@ -73,13 +86,19 @@ export function transformComponentMacro(
   macroImports: ReadonlyMap<string, string>,
   options: LinguiAstroTransformOptions,
 ): string {
+  const rewrittenSource = rewriteNestedComponentMacroExpressions(
+    source,
+    macroImports,
+    options,
+  );
   const transformed = transformProgram(
-    `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${source}\n);`,
+    `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${rewrittenSource}\n);`,
     {
       extract: false,
       filename: `${options.filename}?component`,
       linguiConfig: normalizeLinguiConfig(options.linguiConfig),
-      translationMode: "raw",
+      translationMode: "astro-context",
+      runtimeBinding: RUNTIME_BINDING_I18N,
     },
   );
 
@@ -159,6 +178,81 @@ export function transformComponentExtractionUnit(
 
 export function isExtractionCodeRelevant(code: string): boolean {
   return code.includes("/*i18n*/");
+}
+
+function rewriteNestedComponentMacroExpressions(
+  source: string,
+  macroImports: ReadonlyMap<string, string>,
+  options: LinguiAstroTransformOptions,
+): string {
+  if (macroImports.size === 0) {
+    return source;
+  }
+
+  const prefix = "const __component = (\n";
+  const wrapped = `${prefix}${source}\n);`;
+  const parsed = transformSync(wrapped, {
+    ast: true,
+    babelrc: false,
+    code: false,
+    configFile: false,
+    filename: `${options.filename}?component-attrs`,
+    parserOpts: {
+      sourceType: "module",
+      plugins: ["jsx", "typescript"],
+    },
+  });
+
+  if (!parsed?.ast) {
+    return source;
+  }
+
+  const string = new MagicString(source);
+  const offset = prefix.length;
+  const replacements: Array<{ start: number; end: number; code: string }> = [];
+
+  traverse(parsed.ast, {
+    JSXAttribute(path: NodePath<t.JSXAttribute>) {
+      const value = path.node.value;
+      if (
+        !t.isJSXExpressionContainer(value) ||
+        !t.isExpression(value.expression)
+      ) {
+        return;
+      }
+
+      const expressionStart = value.expression.start;
+      const expressionEnd = value.expression.end;
+      if (expressionStart == null || expressionEnd == null) {
+        return;
+      }
+
+      const start = expressionStart - offset;
+      const end = expressionEnd - offset;
+      if (start < 0 || end > source.length) {
+        return;
+      }
+
+      const expressionSource = source.slice(start, end);
+      const transformed = transformTemplateExpression(
+        expressionSource,
+        macroImports,
+        options,
+      );
+
+      if (transformed !== expressionSource) {
+        replacements.push({ start, end, code: transformed });
+      }
+    },
+  });
+
+  replacements
+    .sort((left, right) => right.start - left.start)
+    .forEach(({ start, end, code }) => {
+      string.overwrite(start, end, code);
+    });
+
+  return string.toString();
 }
 
 function createSyntheticMacroImports(

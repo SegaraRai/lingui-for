@@ -23,12 +23,10 @@ describe("RuntimeTrans SSR", () => {
     const result = render(RuntimeTransHarness, {
       props: {
         getI18n: () => i18n,
-        descriptor: {
-          id: "demo.greeting",
-          message: "Hello {name}!",
-          values: {
-            name: "Ada",
-          },
+        id: "demo.greeting",
+        message: "Hello {name}!",
+        values: {
+          name: "Ada",
         },
       },
     });
@@ -49,12 +47,10 @@ describe("RuntimeTrans SSR", () => {
     const result = render(RuntimeTransHarness, {
       props: {
         getI18n: () => i18n,
-        descriptor: {
-          id: "demo.docs",
-          message: "Read <0><1>{name}</1></0> carefully before shipping.",
-          values: {
-            name: "Runtime Ada",
-          },
+        id: "demo.docs",
+        message: "Read <0><1>{name}</1></0> carefully before shipping.",
+        values: {
+          name: "Runtime Ada",
         },
         components: {
           0: {
@@ -84,7 +80,7 @@ describe("RuntimeTrans SSR", () => {
     expect(body).toContain("carefully before shipping.");
   });
 
-  it("renders message-only descriptors through Lingui", () => {
+  it("renders message fallbacks through Lingui", () => {
     const i18n = setupI18n({
       locale: "en",
       messages: {
@@ -95,12 +91,10 @@ describe("RuntimeTrans SSR", () => {
     const result = render(RuntimeTransHarness, {
       props: {
         getI18n: () => i18n,
-        descriptor: {
-          id: "demo.fallback",
-          message: "Fallback <0>copy</0> for {name}.",
-          values: {
-            name: "Ada",
-          },
+        id: "demo.fallback",
+        message: "Fallback <0>copy</0> for {name}.",
+        values: {
+          name: "Ada",
         },
         components: {
           0: {
@@ -129,11 +123,9 @@ describe("RuntimeTrans SSR", () => {
     const result = render(RuntimeTransHarness, {
       props: {
         getI18n: () => i18n,
-        descriptor: {
-          id: "demo.component-only-id",
-          values: {
-            count: 2,
-          },
+        id: "demo.component-only-id",
+        values: {
+          count: 2,
         },
       },
     });

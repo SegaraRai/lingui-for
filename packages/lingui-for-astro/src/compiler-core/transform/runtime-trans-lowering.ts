@@ -103,7 +103,7 @@ function convertRuntimeTransSpreadArgument(
     return argument;
   }
 
-  return t.objectExpression(
+  const lowered = t.objectExpression(
     argument.properties.map((property) => {
       if (t.isSpreadElement(property)) {
         return t.spreadElement(property.argument);
@@ -128,6 +128,9 @@ function convertRuntimeTransSpreadArgument(
       return property;
     }),
   );
+
+  t.inheritsComments(lowered, argument);
+  return lowered;
 }
 
 function convertRuntimeTransAttributeValue(

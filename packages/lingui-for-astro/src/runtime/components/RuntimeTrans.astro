@@ -1,6 +1,4 @@
 ---
-import type { MessageDescriptor } from "@lingui/core";
-
 import { getLinguiContext } from "../core/context.ts";
 import {
   formatRichTextTranslation,
@@ -14,15 +12,15 @@ const {
   message,
   values = {},
   components,
-}: {
-  id?: string | undefined;
-  message?: MessageDescriptor | string | undefined;
+} = Astro.props as {
+  id: string;
+  message?: string | undefined;
   values?: Readonly<Record<string, unknown>> | undefined;
   components?: TransComponentMap | undefined;
-} = Astro.props;
+};
 
 const { i18n } = getLinguiContext(Astro);
-const translated = translateRuntimeTrans(i18n, message, values, id);
+const translated = translateRuntimeTrans(i18n, id, message, values);
 const nodes = components
   ? formatRichTextTranslation(translated, components)
   : [];

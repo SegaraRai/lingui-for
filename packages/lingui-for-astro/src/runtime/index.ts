@@ -1,5 +1,3 @@
-import type { MessageDescriptor } from "@lingui/core";
-
 import RuntimeTransComponent from "./components/RuntimeTrans.astro";
 import type { TransComponentMap } from "./components/rich-text.ts";
 
@@ -17,10 +15,7 @@ export {
   type TransComponentMap,
   type TransRenderNode,
 } from "./components/rich-text.ts";
-export {
-  mergeRuntimeTransValues,
-  translateRuntimeTrans,
-} from "./components/trans-descriptor.ts";
+export { translateRuntimeTrans } from "./components/trans-descriptor.ts";
 export {
   getLinguiContext,
   LINGUI_ASTRO_CONTEXT,
@@ -39,11 +34,11 @@ interface RuntimeTransProps {
   /**
    * Explicit message id to translate.
    */
-  id?: string | undefined;
+  id: string;
   /**
-   * Descriptor or default-message string produced by macro lowering.
+   * Default-message string produced by macro lowering.
    */
-  message?: MessageDescriptor | string | undefined;
+  message?: string | undefined;
   /**
    * Runtime interpolation values merged into the final descriptor.
    */

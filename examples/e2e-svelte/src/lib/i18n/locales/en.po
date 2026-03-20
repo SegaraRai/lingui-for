@@ -13,6 +13,22 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: _i18n._( /*i18n*/ { id: "SMt/JO", message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}", values: { rank: rank, role: role } })
+#. placeholder {1}: _i18n._( /*i18n*/ { id: "IN7jEl", message: "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}", values: { rank: rank, role: role } })
+#. placeholder {2}: _i18n._( /*i18n*/ { id: "MTuVZ1", message: "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}", values: { rank: rank, role: role } })
+#: src/routes/playground/stress/+page.svelte:181
+msgid "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
+msgstr "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
+
+#: src/routes/playground/stress/+page.svelte:133
+msgid "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
+msgstr "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
+
+#: src/routes/playground/stress/+page.svelte:97
+#: src/routes/playground/stress/+page.svelte:111
+msgid "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
+msgstr "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
+
 #: src/routes/playground/components/+page.svelte:44
 msgid "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
 msgstr "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
@@ -25,6 +41,23 @@ msgstr "{count, plural, one {# item in the list.} other {# items in the list.}}"
 #: src/routes/playground/components/+page.svelte:58
 msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 msgstr "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
+
+#: src/routes/playground/stress/+page.svelte:211
+msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
+msgstr "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
+
+#: src/routes/playground/stress/+page.svelte:197
+msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
+msgstr "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
+
+#: src/routes/playground/stress/+page.svelte:183
+msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
+msgstr "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
+
+#: src/routes/playground/stress/+page.svelte:104
+#: src/routes/playground/stress/+page.svelte:119
+msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
+msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 
 #: src/routes/playground/components/+page.svelte:51
 msgid "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
@@ -190,6 +223,10 @@ msgstr "Empty init, load each locale on demand"
 #: src/routes/settings/+page.svelte:7
 msgid "English"
 msgstr "English"
+
+#: src/routes/playground/stress/+page.svelte:22
+msgid "Exact-number branches and deep macro trees"
+msgstr "Exact-number branches and deep macro trees"
 
 #. js-lingui-explicit-id
 #: src/routes/playground/ids/+page.svelte:5
@@ -478,6 +515,10 @@ msgstr "Status summary: active"
 #: src/routes/playground/syntax/+page.svelte:72
 msgid "Status summary: idle"
 msgstr "Status summary: idle"
+
+#: src/routes/playground/stress/+page.svelte:19
+msgid "Stress"
+msgstr "Stress"
 
 #: src/lib/app/LanguageSwitcher.svelte:16
 msgid "Switch language"

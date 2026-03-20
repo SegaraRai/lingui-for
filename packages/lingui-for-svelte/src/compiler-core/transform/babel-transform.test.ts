@@ -8,7 +8,7 @@ describe("transformProgram", () => {
   it("runs the official Lingui transform for raw JavaScript macros", () => {
     const result = transformProgram(
       dedent`
-        import { t } from "lingui-for-svelte/macro";
+        import { t } from "@lingui/core/macro";
 
         const label = t\`Hello \${name}\`;
       `,

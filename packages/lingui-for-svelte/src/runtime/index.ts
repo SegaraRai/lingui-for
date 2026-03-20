@@ -1,4 +1,3 @@
-import type { MessageDescriptor } from "@lingui/core";
 import type { Component } from "svelte";
 
 import RuntimeTransComponent from "./components/RuntimeTrans.svelte";
@@ -15,6 +14,7 @@ export {
   type LinguiAccessors,
   type LinguiContext,
 } from "./core/context.ts";
+export { translateRuntimeTrans } from "./components/trans-descriptor.ts";
 
 /**
  * Props accepted by the runtime `<RuntimeTrans>` component.
@@ -25,9 +25,17 @@ export {
  */
 type RuntimeTransType = Component<{
   /**
-   * Lingui descriptor produced by macro lowering.
+   * Explicit message id to translate.
    */
-  descriptor: MessageDescriptor;
+  id: string;
+  /**
+   * Default-message string produced by macro lowering.
+   */
+  message?: string | undefined;
+  /**
+   * Runtime interpolation values merged into the final descriptor.
+   */
+  values?: Readonly<Record<string, unknown>> | undefined;
   /**
    * Rich-text component descriptors keyed by placeholder name.
    */

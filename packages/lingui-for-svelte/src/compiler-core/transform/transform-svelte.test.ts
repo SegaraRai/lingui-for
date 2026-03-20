@@ -3,6 +3,10 @@ import { describe, expect, it } from "vite-plus/test";
 
 import { transformSvelte } from "./transform-svelte.ts";
 
+function compact(value: string): string {
+  return value.replaceAll(/\s+/g, " ").trim();
+}
+
 describe("transformSvelte", () => {
   it("keeps msg descriptors pure inside user-authored $derived", () => {
     const result = transformSvelte(
@@ -548,6 +552,182 @@ describe("transformSvelte", () => {
     `);
   });
 
+  it("supports exact-number ICU branches in core and component macros", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          import {
+            Plural,
+            plural,
+            SelectOrdinal,
+            selectOrdinal,
+          } from "lingui-for-svelte/macro";
+
+          let count = $state(2);
+          let rank = $state(1);
+        </script>
+
+        <p>{$plural(count, {
+          0: "no queued builds",
+          2: "exactly two queued builds",
+          other: "# queued builds",
+        })}</p>
+        <p>{$selectOrdinal(rank, {
+          1: "take the shortcut",
+          2: "take the scenic route",
+          other: "finish in #th place",
+        })}</p>
+        <Plural
+          value={count}
+          _0="no queued builds"
+          _2="exactly two queued builds"
+          other="# queued builds"
+        />
+        <SelectOrdinal
+          value={rank}
+          _1="take the shortcut"
+          _2="take the scenic route"
+          other="finish in #th place"
+        />
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).toContain("=0 {no queued builds}");
+    expect(result.code).toContain("=2 {exactly two queued builds}");
+    expect(result.code).toContain("=1 {take the shortcut}");
+    expect(result.code).toContain("=2 {take the scenic route}");
+  });
+
+  it("handles deeply nested core and component macro shapes", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          import {
+            Plural,
+            plural,
+            select,
+            selectOrdinal,
+            t,
+          } from "lingui-for-svelte/macro";
+
+          let count = $state(0);
+          let rank = $state(1);
+          let role = $state("admin");
+
+          const deepCore = $derived($t({
+            message: plural(count, {
+              0: selectOrdinal(rank, {
+                1: select(role, {
+                  admin: "core zero first admin",
+                  other: "core zero first other",
+                }),
+                2: select(role, {
+                  admin: "core zero second admin",
+                  other: "core zero second other",
+                }),
+                other: select(role, {
+                  admin: "core zero later admin",
+                  other: "core zero later other",
+                }),
+              }),
+              2: selectOrdinal(rank, {
+                1: select(role, {
+                  admin: "core two first admin",
+                  other: "core two first other",
+                }),
+                2: select(role, {
+                  admin: "core two second admin",
+                  other: "core two second other",
+                }),
+                other: select(role, {
+                  admin: "core two later admin",
+                  other: "core two later other",
+                }),
+              }),
+              other: selectOrdinal(rank, {
+                1: select(role, {
+                  admin: "core many first admin",
+                  other: "core many first other",
+                }),
+                2: select(role, {
+                  admin: "core many second admin",
+                  other: "core many second other",
+                }),
+                other: select(role, {
+                  admin: "core many later admin",
+                  other: "core many later other",
+                }),
+              }),
+            }),
+          }));
+        </script>
+
+        <p>{deepCore}</p>
+        <Plural
+          value={count}
+          _0={selectOrdinal(rank, {
+            1: select(role, {
+              admin: "component zero first admin",
+              other: "component zero first other",
+            }),
+            2: select(role, {
+              admin: "component zero second admin",
+              other: "component zero second other",
+            }),
+            other: select(role, {
+              admin: "component zero later admin",
+              other: "component zero later other",
+            }),
+          })}
+          _2={selectOrdinal(rank, {
+            1: select(role, {
+              admin: "component two first admin",
+              other: "component two first other",
+            }),
+            2: select(role, {
+              admin: "component two second admin",
+              other: "component two second other",
+            }),
+            other: select(role, {
+              admin: "component two later admin",
+              other: "component two later other",
+            }),
+          })}
+          other={selectOrdinal(rank, {
+            1: select(role, {
+              admin: "component many first admin",
+              other: "component many first other",
+            }),
+            2: select(role, {
+              admin: "component many second admin",
+              other: "component many second other",
+            }),
+            other: select(role, {
+              admin: "component many later admin",
+              other: "component many later other",
+            }),
+          })}
+        />
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      'message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}}',
+    );
+    expect(code).toContain("core many later admin");
+    expect(code).toContain(
+      'message: "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"',
+    );
+    expect(code).toContain(
+      'message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}}',
+    );
+    expect(code).toContain("component many later admin");
+  });
+
   it("lowers Trans with embedded elements to the runtime RuntimeTrans component", () => {
     const result = transformSvelte(
       dedent`
@@ -570,13 +750,12 @@ describe("transformSvelte", () => {
     	let name = $state("Ada");
     	</script>
 
-    	<L4sRuntimeTrans {...{
-    	  descriptor: {
-    	    id: "demo.docs",
-    	    message: "Read the <0>docs</0>, {name}.",
-    	    values: {
-    	      name: name
-    	    }
+    	<L4sRuntimeTrans {.../*i18n*/
+    	{
+    	  id: "demo.docs",
+    	  message: "Read the <0>docs</0>, {name}.",
+    	  values: {
+    	    name: name
     	  },
     	  components: {
     	    0: {
@@ -615,13 +794,12 @@ describe("transformSvelte", () => {
     	let name = $state("Ada");
     	</script>
 
-    	<L4sRuntimeTrans {...{
-    	  descriptor: {
-    	    id: "N+nKUg",
-    	    message: "Read <0><1>{name}</1></0> carefully.",
-    	    values: {
-    	      name: name
-    	    }
+    	<L4sRuntimeTrans {.../*i18n*/
+    	{
+    	  id: "N+nKUg",
+    	  message: "Read <0><1>{name}</1></0> carefully.",
+    	  values: {
+    	    name: name
     	  },
     	  components: {
     	    0: {
@@ -659,11 +837,10 @@ describe("transformSvelte", () => {
     	"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
     	</script>
 
-    	<L4sRuntimeTrans {...{
-    	  descriptor: {
-    	    id: "demo.docs",
-    	    message: "Read the <0>docs</0>."
-    	  },
+    	<L4sRuntimeTrans {.../*i18n*/
+    	{
+    	  id: "demo.docs",
+    	  message: "Read the <0>docs</0>.",
     	  components: {
     	    0: {
     	      kind: "element",
@@ -706,31 +883,28 @@ describe("transformSvelte", () => {
     	let gender = $state("female");
     	</script>
 
-    	<L4sRuntimeTrans {...{
-    	  descriptor: {
-    	    id: "V/M0Vc",
-    	    message: "{count, plural, one {# Book} other {# Books}}",
-    	    values: {
-    	      count: count
-    	    }
+    	<L4sRuntimeTrans {.../*i18n*/
+    	{
+    	  id: "V/M0Vc",
+    	  message: "{count, plural, one {# Book} other {# Books}}",
+    	  values: {
+    	    count: count
     	  }
     	}} />
-    	<L4sRuntimeTrans {...{
-    	  descriptor: {
-    	    id: "BGY2VE",
-    	    message: "{gender, select, female {she} other {they}}",
-    	    values: {
-    	      gender: gender
-    	    }
+    	<L4sRuntimeTrans {.../*i18n*/
+    	{
+    	  id: "BGY2VE",
+    	  message: "{gender, select, female {she} other {they}}",
+    	  values: {
+    	    gender: gender
     	  }
     	}} />
-    	<L4sRuntimeTrans {...{
-    	  descriptor: {
-    	    id: "0ALwK4",
-    	    message: "{count, selectordinal, one {#st} other {#th}}",
-    	    values: {
-    	      count: count
-    	    }
+    	<L4sRuntimeTrans {.../*i18n*/
+    	{
+    	  id: "0ALwK4",
+    	  message: "{count, selectordinal, one {#st} other {#th}}",
+    	  values: {
+    	    count: count
     	  }
     	}} />"
     `);

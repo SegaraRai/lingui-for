@@ -1,10 +1,7 @@
 import { describe, expect, it } from "vite-plus/test";
 
 import { formatRichTextTranslation } from "./components/rich-text.ts";
-import {
-  mergeRuntimeTransValues,
-  translateRuntimeTrans,
-} from "./components/trans-descriptor.ts";
+import { translateRuntimeTrans } from "./components/trans-descriptor.ts";
 import { getLinguiContext, setLinguiContext } from "./core/context.ts";
 
 describe("lingui-for-astro runtime helpers", () => {
@@ -17,32 +14,7 @@ describe("lingui-for-astro runtime helpers", () => {
     expect(getLinguiContext({ locals }).i18n).toBe(i18n);
   });
 
-  it("merges runtime values on top of descriptor values", () => {
-    expect(
-      mergeRuntimeTransValues(
-        {
-          id: "demo.greeting",
-          message: "Hello {name} from {place}",
-          values: {
-            name: "Descriptor Ada",
-            place: "Tokyo",
-          },
-        },
-        {
-          name: "Runtime Ada",
-        },
-      ),
-    ).toEqual({
-      id: "demo.greeting",
-      message: "Hello {name} from {place}",
-      values: {
-        name: "Runtime Ada",
-        place: "Tokyo",
-      },
-    });
-  });
-
-  it("translates descriptor, id-only, and string runtime trans inputs", () => {
+  it("translates id-only and fallback-message runtime trans inputs", () => {
     const calls: unknown[] = [];
     const i18n = {
       _: (...args: unknown[]) => {
@@ -52,37 +24,19 @@ describe("lingui-for-astro runtime helpers", () => {
     } as never;
 
     expect(
-      translateRuntimeTrans(
-        i18n,
-        {
-          id: "demo.greeting",
-          message: "Hello {name}",
-          values: {
-            name: "Descriptor Ada",
-          },
-        },
-        {
-          name: "Runtime Ada",
-        },
-      ),
+      translateRuntimeTrans(i18n, "demo.greeting", "Hello {name}", {
+        name: "Runtime Ada",
+      }),
     ).toBe("translated");
     expect(
-      translateRuntimeTrans(i18n, undefined, { count: 2 }, "demo.count"),
+      translateRuntimeTrans(i18n, "demo.count", undefined, { count: 2 }),
     ).toBe("translated");
-    expect(translateRuntimeTrans(i18n, "Save", { count: 1 }, "demo.save")).toBe(
+    expect(translateRuntimeTrans(i18n, "demo.save", "Save", { count: 1 })).toBe(
       "translated",
     );
 
     expect(calls).toEqual([
-      [
-        {
-          id: "demo.greeting",
-          message: "Hello {name}",
-          values: {
-            name: "Runtime Ada",
-          },
-        },
-      ],
+      ["demo.greeting", { name: "Runtime Ada" }, { message: "Hello {name}" }],
       ["demo.count", { count: 2 }, undefined],
       ["demo.save", { count: 1 }, { message: "Save" }],
     ]);

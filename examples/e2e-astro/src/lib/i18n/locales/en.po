@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: 3
-#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-component:9
 #: AstroFormats.astro?extract-expression:10
 msgid "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
 msgstr "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
@@ -31,7 +31,7 @@ msgid "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}
 msgstr "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}"
 
 #. placeholder {0}: "excited"
-#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-component:9
 #: AstroFormats.astro?extract-expression:10
 msgid "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
 msgstr "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
@@ -48,7 +48,7 @@ msgid "{0, select, calm {Svelte select says calm.} excited {Svelte select says e
 msgstr "{0, select, calm {Svelte select says calm.} excited {Svelte select says excited.} other {Svelte select says unknown.}}"
 
 #. placeholder {0}: 2
-#: AstroFormats.astro?extract-component:5
+#: AstroFormats.astro?extract-component:9
 #: AstroFormats.astro?extract-expression:10
 msgid "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
 msgstr "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
@@ -64,6 +64,22 @@ msgstr "{0, selectordinal, one {React finished #st.} two {React finished #nd.} f
 msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 msgstr "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 
+#. placeholder {0}: _i18n._( /*i18n*/ { id: "SMt/JO", message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}", values: { rank: rank, role: role } })
+#. placeholder {1}: _i18n._( /*i18n*/ { id: "IN7jEl", message: "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}", values: { rank: rank, role: role } })
+#. placeholder {2}: _i18n._( /*i18n*/ { id: "MTuVZ1", message: "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}", values: { rank: rank, role: role } })
+#: stress.astro?extract-component:8
+msgid "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
+msgstr "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
+
+#: stress.astro?frontmatter:18
+msgid "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
+msgstr "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
+
+#: stress.astro?extract-component:8
+#: stress.astro?extract-expression:9
+msgid "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
+msgstr "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
+
 #: src/components/svelte/SvelteLinguiIsland.svelte:33
 msgid "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
 msgstr "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
@@ -75,6 +91,26 @@ msgstr "{count} React clicks"
 #: src/components/svelte/SvelteTransitionCounterIsland.svelte:58
 msgid "{count} Svelte clicks"
 msgstr "{count} Svelte clicks"
+
+#: stress.astro?extract-component:38
+#: stress.astro?extract-expression:8
+msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
+msgstr "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
+
+#: stress.astro?extract-component:24
+#: stress.astro?extract-expression:8
+msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
+msgstr "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
+
+#: stress.astro?extract-component:10
+#: stress.astro?extract-expression:8
+msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
+msgstr "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
+
+#: stress.astro?extract-component:8
+#: stress.astro?extract-expression:9
+msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
+msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 
 #: TransitionShowcase.astro?extract-expression:3
 msgid "1. Increment one or more counters in Svelte or React."
@@ -193,6 +229,10 @@ msgstr "Each page isolates one concern so regressions are easier to spot."
 msgid "English"
 msgstr "English"
 
+#: stress.astro?extract-expression:8
+msgid "Exact-number branches and deep macro trees"
+msgstr "Exact-number branches and deep macro trees"
+
 #: index.astro?extract-expression:3
 msgid "Exercise plural, select, and selectOrdinal macros."
 msgstr "Exercise plural, select, and selectOrdinal macros."
@@ -280,6 +320,10 @@ msgstr "Locale persistence"
 #: TransitionShowcase.astro?extract-expression:3
 msgid "Locale prop: {locale}"
 msgstr "Locale prop: {locale}"
+
+#: stress.astro?extract-expression:8
+msgid "Macro stress page"
+msgstr "Macro stress page"
 
 #: index.astro?extract-expression:3
 msgid "Message formats"
@@ -404,7 +448,7 @@ msgstr "Render stamp: {renderStamp}"
 msgid "Render Svelte and React islands with the same locale."
 msgstr "Render Svelte and React islands with the same locale."
 
-#: settings.astro?extract-component:3
+#: settings.astro?extract-component:4
 msgid "Return to the <0>home page</0> when you are done."
 msgstr "Return to the <0>home page</0> when you are done."
 
@@ -482,6 +526,14 @@ msgstr "Settings page"
 msgid "Shared descriptor imported from plain TypeScript."
 msgstr "Shared descriptor imported from plain TypeScript."
 
+#: stress.astro?extract-expression:8
+msgid "Stress"
+msgstr "Stress"
+
+#: stress.astro?frontmatter:14
+msgid "Stress page"
+msgstr "Stress page"
+
 #: settings.astro?extract-expression:4
 msgid "Svelte activates Lingui inside its island."
 msgstr "Svelte activates Lingui inside its island."
@@ -534,7 +586,7 @@ msgstr "Svelte runs plural, select, and selectOrdinal macros in component code."
 msgid "Svelte sees locale {localeLabel}."
 msgstr "Svelte sees locale {localeLabel}."
 
-#: [slug].astro?extract-component:3
+#: [slug].astro?extract-component:4
 msgid "Switch to the <0>second route</0> without dropping the locale."
 msgstr "Switch to the <0>second route</0> without dropping the locale."
 
@@ -632,6 +684,10 @@ msgstr "Transitions page"
 #: index.astro?extract-expression:3
 msgid "Use cookies to keep the next request aligned."
 msgstr "Use cookies to keep the next request aligned."
+
+#: stress.astro?extract-expression:8
+msgid "Use query params to drive exact-number branches and nested macro output."
+msgstr "Use query params to drive exact-number branches and nested macro output."
 
 #: TransitionShowcase.astro?frontmatter:26
 msgid "Use the header language switcher and the paired route link below. The plain persisted islands should keep their counters while still updating to the new locale and page label, while persisted-props keeps both frozen."

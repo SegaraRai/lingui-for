@@ -3,7 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import { unpluginFactory } from "./index.ts";
 
 describe("lingui-for-astro unplugin", () => {
-  it("moves the plugin ahead of Astro compilation in Vite", () => {
+  it("moves the plugin ahead of Astro compilation in Vite", async () => {
     const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
@@ -27,7 +27,7 @@ describe("lingui-for-astro unplugin", () => {
       ],
     };
 
-    runConfigResolved?.call({} as never, config as never);
+    await runConfigResolved?.call({} as never, config as never);
 
     expect(config.plugins.map((entry) => entry.name)).toEqual([
       "vite:pre-alias",

@@ -16,13 +16,15 @@ If you believe a test case is correct, don’t modify it; instead, **mark it as 
 - `vp run build`: build the package
 - `vp run test`: run tests with Vitest
   - Our codebase requires building packages before running tests. Run `vp run build` before `vp run test` to ensure tests run correctly.
-- `vp run format`: format code
+- `vp run format`: format code (workspace root only)
+  - Always run `vp run format` from the workspace root. You don't need to worry about formatting individual packages; this command is fast enough.
 - `vp run check`: run type checks and other static checks
 
 ## Common Pitfalls
 
 - `vp fmt` does not support `.astro` and `.svelte` files. Use `vp run format` instead, which runs both Prettier and `vp fmt` under the hood.
 - Always use `vp run build`, `vp run test`, `vp run check` instead of `vp *`. This ensures that all pre-requisite steps are run before the command, such as building packages before testing.
+- Do not run `vp run check`, `vp run test`, or `vp run build` concurrently. Run sequentially to avoid conflicts in build artifacts. Build is cached so it’s not a problem to run them one after another.
 
 ## Project Dependencies
 

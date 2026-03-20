@@ -63,7 +63,7 @@ describe("transform helpers", () => {
       ),
     );
 
-    expect(code).toContain("<L4aRuntimeTrans {...{");
+    expect(code).toContain("<L4aRuntimeTrans {.../*i18n*/ {");
     expect(code).toContain('message: "Read the <0>docs</0>."');
     expect(code).toContain('tag: "a"');
   });

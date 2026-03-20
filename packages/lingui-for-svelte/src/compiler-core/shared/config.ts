@@ -25,8 +25,17 @@ export function normalizeLinguiConfig(
     config?.runtimeConfigModule &&
     typeof config.runtimeConfigModule === "object" &&
     !Array.isArray(config.runtimeConfigModule)
-      ? config.runtimeConfigModule
-      : {};
+      ? Object.assign({}, config.runtimeConfigModule)
+      : undefined;
+
+  const mergedRuntimeConfigModule = {
+    i18n: ["@lingui/core", "i18n"] as const,
+    Trans: [PACKAGE_RUNTIME, "RuntimeTrans"] as const,
+  };
+
+  if (runtimeConfigModule) {
+    Object.assign(mergedRuntimeConfigModule, runtimeConfigModule);
+  }
 
   return {
     ...config,
@@ -44,11 +53,7 @@ export function normalizeLinguiConfig(
         ...(config?.macro?.jsxPackage ?? []),
       ]),
     },
-    runtimeConfigModule: {
-      i18n: ["@lingui/core", "i18n"] as const,
-      Trans: [PACKAGE_RUNTIME, "RuntimeTrans"] as const,
-      ...runtimeConfigModule,
-    },
+    runtimeConfigModule: mergedRuntimeConfigModule,
   } as LinguiConfigNormalized;
 }
 

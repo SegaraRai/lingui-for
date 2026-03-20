@@ -51,7 +51,7 @@ export function transformAstro(
     .forEach((candidate) => {
       const replacement = transformComponentMacro(
         source.slice(candidate.range.start, candidate.range.end),
-        context.macroBindings.componentImports,
+        context.macroBindings.allImports,
         options,
       );
       string.overwrite(candidate.range.start, candidate.range.end, replacement);

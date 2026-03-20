@@ -9,7 +9,10 @@ const {
 }: {
   node: TransRenderNode;
   components: TransComponentMap;
-} = Astro.props;
+} = Astro.props as {
+  node: TransRenderNode;
+  components: TransComponentMap;
+};
 
 const descriptor =
   typeof node === "string" ? null : (components[node.name] ?? null);

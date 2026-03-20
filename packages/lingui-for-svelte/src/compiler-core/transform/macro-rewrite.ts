@@ -11,6 +11,7 @@ import { collectMacroImportLocals } from "../shared/macro-bindings.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 
 type MacroRewriteState = {
+  descriptorComponentLocals: ReadonlySet<string>;
   descriptorContainerLocals: ReadonlySet<string>;
   directStringLocals: ReadonlySet<string>;
   runtimeTImports: Set<string>;
@@ -21,6 +22,7 @@ type MacroRewriteState = {
 
 function createInitialState(): MacroRewriteState {
   return {
+    descriptorComponentLocals: new Set<string>(),
     descriptorContainerLocals: new Set<string>(),
     directStringLocals: new Set<string>(),
     runtimeTImports: new Set<string>(),
@@ -213,7 +215,10 @@ function getEagerDirectStringLocalName(
 
 function isAllowedDescriptorContext(
   path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-  descriptorContainerLocals: ReadonlySet<string>,
+  state: Pick<
+    MacroRewriteState,
+    "descriptorComponentLocals" | "descriptorContainerLocals"
+  >,
 ): boolean {
   let current: NodePath<t.Node> | null = path.parentPath;
 
@@ -232,11 +237,34 @@ function isAllowedDescriptorContext(
     if (current.isCallExpression() || current.isTaggedTemplateExpression()) {
       const localName = getDirectStringLocalName(
         current,
-        descriptorContainerLocals,
+        state.descriptorContainerLocals,
       );
 
       if (localName) {
         return true;
+      }
+    }
+
+    if (current.isJSXAttribute()) {
+      const attributeName = current.get("name");
+      if (
+        attributeName.isJSXIdentifier() &&
+        !["comment", "context", "id", "offset", "value"].includes(
+          attributeName.node.name,
+        )
+      ) {
+        const openingElement = current.parentPath;
+        if (openingElement?.isJSXOpeningElement()) {
+          const elementName = openingElement.get("name");
+          if (elementName.isJSXIdentifier()) {
+            const binding = elementName.scope.getBinding(elementName.node.name);
+            if (
+              isMacroImportBinding(binding, state.descriptorComponentLocals)
+            ) {
+              return true;
+            }
+          }
+        }
       }
     }
 
@@ -251,10 +279,7 @@ function assertAllowedDirectStringMacroUsage(
   localName: string,
   state: MacroRewriteState,
 ): void {
-  if (
-    localName !== "t" &&
-    isAllowedDescriptorContext(path, state.descriptorContainerLocals)
-  ) {
+  if (localName !== "t" && isAllowedDescriptorContext(path, state)) {
     return;
   }
 
@@ -437,6 +462,10 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
             "select",
             "selectOrdinal",
           ]);
+          state.descriptorComponentLocals = collectMacroImportLocals(
+            path.node,
+            ["Plural", "Select", "SelectOrdinal"],
+          );
           state.descriptorContainerLocals = collectMacroImportLocals(
             path.node,
             ["t", "msg", "defineMessage", "plural", "select", "selectOrdinal"],

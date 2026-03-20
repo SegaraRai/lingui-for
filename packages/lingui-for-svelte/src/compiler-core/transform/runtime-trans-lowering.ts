@@ -159,7 +159,6 @@ function convertRuntimeTransSpreadArgument(
     return argument;
   }
 
-  const descriptorProperties: t.ObjectProperty[] = [];
   const loweredProperties: (t.ObjectProperty | t.SpreadElement)[] = [];
 
   argument.properties.forEach((property) => {
@@ -175,23 +174,6 @@ function convertRuntimeTransSpreadArgument(
     }
 
     const propertyName = getObjectPropertyName(property.key);
-
-    if (
-      propertyName === "id" ||
-      propertyName === "message" ||
-      propertyName === "values"
-    ) {
-      if (!t.isExpression(property.value)) {
-        throw new Error(
-          `Unsupported runtime Trans descriptor prop "${propertyName}"`,
-        );
-      }
-
-      descriptorProperties.push(
-        t.objectProperty(property.key, property.value, property.computed),
-      );
-      return;
-    }
 
     if (propertyName === "components") {
       loweredProperties.push(
@@ -209,16 +191,9 @@ function convertRuntimeTransSpreadArgument(
     loweredProperties.push(property);
   });
 
-  if (descriptorProperties.length > 0) {
-    loweredProperties.unshift(
-      t.objectProperty(
-        t.identifier("descriptor"),
-        t.objectExpression(descriptorProperties),
-      ),
-    );
-  }
-
-  return t.objectExpression(loweredProperties);
+  const lowered = t.objectExpression(loweredProperties);
+  t.inheritsComments(lowered, argument);
+  return lowered;
 }
 
 function convertRuntimeTransAttributeValue(
