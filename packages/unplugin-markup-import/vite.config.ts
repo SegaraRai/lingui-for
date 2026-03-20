@@ -23,10 +23,10 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
-        dependsOn: ["check"],
       },
       check: {
         command: "vp check",
+        dependsOn: ["build"],
         cache: false,
       },
       test: {

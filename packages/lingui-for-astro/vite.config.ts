@@ -37,14 +37,15 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
-        dependsOn: ["check"],
       },
       check: {
         command: "vp check && vp run check:extra",
+        dependsOn: ["build"],
         cache: false,
       },
       "check:extra": {
         command: "astro check",
+        dependsOn: ["build"],
         cache: false,
       },
       test: {
