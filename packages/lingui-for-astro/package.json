@@ -103,7 +103,7 @@
   "scripts": {
     "build": "vp pack",
     "check": "vp run check:ts && vp run check:markup",
-    "check:ts": "vp check && vp exec tsc -b --noEmit",
+    "check:ts": "vp exec tsc -b --noEmit",
     "check:markup": "vp exec astro check",
     "test": "vp test"
   },

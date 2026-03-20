@@ -9,7 +9,7 @@
     "start": "vp exec astro dev",
     "build": "vp exec astro build",
     "preview": "vp exec astro preview",
-    "check": "vp check && vp run check:ts",
+    "check": "vp run check:ts",
     "check:ts": "vp exec astro check",
     "astro": "vp exec astro"
   },

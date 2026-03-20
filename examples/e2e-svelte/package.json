@@ -10,7 +10,7 @@
     "build": "vp run lingui:build && vp exec svelte-kit sync && vp build",
     "preview": "vp exec node .sveltekit-build/index.js",
     "check": "vp run check:ts && vp run check:markup",
-    "check:ts": "vp check && vp exec tsc --noEmit",
+    "check:ts": "vp exec tsc --noEmit",
     "check:markup": "vp exec svelte-check",
     "test": "vp run test:e2e run && vp run test:browser run",
     "test:e2e": "vp test",

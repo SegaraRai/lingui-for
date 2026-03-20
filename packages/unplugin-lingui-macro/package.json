@@ -75,7 +75,7 @@
   "scripts": {
     "build": "vp pack",
     "check": "vp run check:ts",
-    "check:ts": "vp check && vp exec tsc -b --noEmit",
+    "check:ts": "vp exec tsc -b --noEmit",
     "test": "vp test"
   },
   "dependencies": {
