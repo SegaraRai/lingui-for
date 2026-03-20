@@ -1,8 +1,6 @@
 ---
 import type { TransComponentMap, TransRenderNode } from "./rich-text.ts";
 
-import RenderTransNode from "./RenderTransNode.astro";
-
 interface Props {
   nodes: readonly TransRenderNode[];
   components: TransComponentMap;
@@ -11,4 +9,23 @@ interface Props {
 const { nodes, components } = Astro.props;
 ---
 
-{nodes.map((node) => <RenderTransNode node={node} components={components} />)}
+{
+  nodes.map((node) => {
+    const descriptor =
+      typeof node === "string" ? null : (components[node.name] ?? null);
+
+    return typeof node === "string" ? (
+      node
+    ) : descriptor?.kind === "element" ? (
+      <descriptor.tag {...(descriptor.props ?? {})}>
+        <Astro.self nodes={node.children} components={components} />
+      </descriptor.tag>
+    ) : descriptor?.kind === "component" ? (
+      <descriptor.component {...(descriptor.props ?? {})}>
+        <Astro.self nodes={node.children} components={components} />
+      </descriptor.component>
+    ) : (
+      <Astro.self nodes={node.children} components={components} />
+    );
+  })
+}
