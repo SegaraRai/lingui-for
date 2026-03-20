@@ -56,7 +56,7 @@ describe("createMacroPreprocessPlugin", () => {
         const label = $translate\`Hello \${name}\`;
         const books = $plural(count, { one: "# Book", other: "# Books" });
       `,
-      createMacroPreprocessPlugin(createRequest()),
+      createMacroPreprocessPlugin(),
     );
 
     expect(code).toMatchInlineSnapshot(`
@@ -72,7 +72,7 @@ describe("createMacroPreprocessPlugin", () => {
   it("does not rewrite $-prefixed calls without a Lingui macro import", () => {
     const code = runWithPlugin(
       "const label = $t`Hello ${name}`;",
-      createMacroPreprocessPlugin(createRequest()),
+      createMacroPreprocessPlugin(),
     );
 
     expect(code).toBe("const label = $t`Hello ${name}`;");
@@ -85,11 +85,7 @@ describe("createMacroPreprocessPlugin", () => {
 
         const label = t.eager\`Hello \${name}\`;
       `,
-      createMacroPreprocessPlugin(
-        createRequest({
-          translationMode: "svelte-context",
-        }),
-      ),
+      createMacroPreprocessPlugin(),
     );
 
     expect(code).toMatchInlineSnapshot(`
@@ -106,11 +102,7 @@ describe("createMacroPreprocessPlugin", () => {
 
           const label = t\`Hello\`;
         `,
-        createMacroPreprocessPlugin(
-          createRequest({
-            translationMode: "svelte-context",
-          }),
-        ),
+        createMacroPreprocessPlugin(),
       ),
     ).toThrow(/Bare `t` in `.svelte` files is not allowed/);
   });

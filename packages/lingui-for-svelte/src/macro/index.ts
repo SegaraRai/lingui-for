@@ -178,8 +178,6 @@ export const Plural = null as unknown as Component<PluralProps>;
 /**
  * Props accepted by the macro-only `<Select>` component.
  *
- * Use named cases as props prefixed with `_`, for example `_female="She"`, plus an `other` fallback.
- *
  * @see https://lingui-for.roundtrip.dev/macros/select-component#svelte
  */
 export interface SelectProps {

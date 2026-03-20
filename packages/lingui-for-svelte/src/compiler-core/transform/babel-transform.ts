@@ -37,7 +37,7 @@ export function transformProgram(
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
     },
-    plugins: [createMacroPreprocessPlugin(request)],
+    plugins: [createMacroPreprocessPlugin()],
     sourceMaps: true,
   });
 

@@ -421,9 +421,7 @@ function removeRuntimeI18nImports(
  * and `selectOrdinal`, then rewrites `$t(...)` / `$t\`...\`` and friends into a temporary
  * wrapper call so the following Lingui pass can preserve enough information for postprocessing.
  */
-export function createMacroPreprocessPlugin(
-  request: ProgramTransformRequest,
-): PluginObj<MacroRewriteState> {
+export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
   return {
     name: "lingui-for-svelte-macro-preprocess",
     pre() {
