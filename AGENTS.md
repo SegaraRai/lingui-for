@@ -14,6 +14,11 @@
 - `vp run format`: format code
 - `vp run check`: run type checks and other static checks
 
+## Common Pitfalls
+
+- `vp fmt` does not support `.astro` and `.svelte` files. Use `vp run format` instead, which runs both Prettier and `vp fmt` under the hood.
+- Always use `vp run build`, `vp run test`, `vp run check` instead of `vp *`. This ensures that all pre-requisite steps are run before the command, such as building packages before testing.
+
 ## Project Dependencies
 
 - `crates/astro-analyzer` and `packages/astro-analyzer-wasm`
