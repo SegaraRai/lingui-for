@@ -13,10 +13,11 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "src/**/*.svelte",
+    "tests/**/*.ts",
+    "tests/**/*.d.ts",
     "lingui.config.ts",
     "svelte.config.js",
     "vite.config.ts",
-    "vitest.config.ts",
-    "vitest.browser.config.ts"
+    "vitest.config.ts"
   ]
 }

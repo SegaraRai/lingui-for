@@ -12,9 +12,8 @@
     "check": "vp run check:ts && vp run check:markup",
     "check:ts": "vp exec tsc --noEmit",
     "check:markup": "vp exec svelte-check",
-    "test": "vp run test:e2e run && vp run test:browser run",
-    "test:e2e": "vp test",
-    "test:browser": "vp test --config vitest.browser.config.ts"
+    "test": "vp run test:e2e run",
+    "test:e2e": "vp test"
   },
   "dependencies": {
     "@lingui/core": "^5.9.3",

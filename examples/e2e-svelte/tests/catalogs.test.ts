@@ -2,7 +2,14 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vite-plus/test";
 
-const localeDir = resolve(import.meta.dirname, "lib", "i18n", "locales");
+const localeDir = resolve(
+  import.meta.dirname,
+  "..",
+  "src",
+  "lib",
+  "i18n",
+  "locales",
+);
 
 describe("lingui extract and compile outputs", () => {
   it("contains route-local messages in the extracted source catalog", async () => {

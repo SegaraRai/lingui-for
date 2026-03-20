@@ -1,95 +1,48 @@
-import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+export type LocaleCode = "en" | "ja";
 
-const currentDir = dirname(fileURLToPath(import.meta.url));
-const exampleDir = resolve(currentDir, "..");
-const port = 41731;
-const origin = `http://127.0.0.1:${port}`;
+type LocalizedExpectations = Record<LocaleCode, readonly string[]>;
 
-type LocaleCode = "en" | "ja";
-
-type PlaygroundRouteExpectation = {
+export type PlaygroundRouteExpectation = {
   path: string;
-  expectations: Record<LocaleCode, string[]>;
+  expectations: LocalizedExpectations;
 };
 
-let server: ChildProcessWithoutNullStreams | undefined;
-let serverOutput = "";
+export type BrowserRouteExpectation = {
+  expectedBody: readonly string[];
+  locale: LocaleCode;
+  path: string;
+};
 
-async function waitForServer(url: string): Promise<void> {
-  const startedAt = Date.now();
+export type PlaygroundLocaleCase = {
+  expectedBody: readonly string[];
+  locale: LocaleCode;
+  path: string;
+};
 
-  while (Date.now() - startedAt < 30_000) {
-    try {
-      const response = await fetch(url);
-      if (response.ok) {
-        return;
-      }
-    } catch {
-      // The server is not ready yet.
-    }
+export const homePageExpectations: LocalizedExpectations = {
+  en: [
+    "Lingui in a small SvelteKit application",
+    "The server remembers your preferred language",
+    "Messages live next to the code that renders them",
+  ],
+  ja: [
+    "小さな SvelteKit アプリで使う Lingui",
+    "サーバーが選択した言語を記憶する",
+    "メッセージは描画するコードの近くに置く",
+  ],
+};
 
-    await new Promise((resolvePromise) => setTimeout(resolvePromise, 250));
-  }
+export const settingsPageExpectations: LocalizedExpectations = {
+  en: [
+    "Language preference",
+    "Current language",
+    "Choose a language with the switcher in the header.",
+  ],
+  ja: ["言語設定", "現在の言語", "ヘッダーの切り替え"],
+};
 
-  throw new Error(`Timed out waiting for ${url}\n${serverOutput}`);
-}
-
-describe.sequential("e2e-svelte application", () => {
-  beforeAll(async () => {
-    server = spawn("node", [".sveltekit-build/index.js"], {
-      cwd: exampleDir,
-      env: {
-        ...process.env,
-        HOST: "127.0.0.1",
-        ORIGIN: origin,
-        PORT: String(port),
-      },
-      stdio: "pipe",
-    });
-
-    server.stdout.on("data", (chunk: Buffer) => {
-      serverOutput += chunk.toString();
-    });
-    server.stderr.on("data", (chunk: Buffer) => {
-      serverOutput += chunk.toString();
-    });
-
-    await waitForServer(`${origin}/`);
-  }, 30_000);
-
-  afterAll(() => {
-    server?.kill();
-  });
-
-  it("renders the main app home route in english", async () => {
-    const response = await fetch(`${origin}/?lang=en`);
-    const html = await response.text();
-
-    expect(response.status).toBe(200);
-    expect(html).toContain('<html lang="en">');
-    expect(html).toContain("Lingui in a small SvelteKit application");
-    expect(html).toContain("The server remembers your preferred language");
-    expect(html).toContain("Messages live next to the code that renders them");
-    expect(html).toContain('href="/settings"');
-    expect(html).toContain("playground");
-  });
-
-  it("renders the main app settings route in japanese", async () => {
-    const response = await fetch(`${origin}/settings?lang=ja`);
-    const html = await response.text();
-
-    expect(response.status).toBe(200);
-    expect(html).toContain('<html lang="ja">');
-    expect(html).toContain("言語設定");
-    expect(html).toContain("現在の言語");
-    expect(html).toContain("日本語");
-    expect(html).toContain("ヘッダーの切り替え");
-  });
-
-  const playgroundRoutes: PlaygroundRouteExpectation[] = [
+export const playgroundRouteExpectations: readonly PlaygroundRouteExpectation[] =
+  [
     {
       path: "/playground/basic",
       expectations: {
@@ -196,21 +149,79 @@ describe.sequential("e2e-svelte application", () => {
     },
   ];
 
-  for (const playgroundRoute of playgroundRoutes) {
-    for (const locale of ["en", "ja"] as const) {
-      it(`renders ${playgroundRoute.path} in ${locale}`, async () => {
-        const response = await fetch(
-          `${origin}${playgroundRoute.path}?lang=${locale}`,
-        );
-        const html = await response.text();
+export const playgroundLocaleCases: readonly PlaygroundLocaleCase[] =
+  playgroundRouteExpectations.flatMap((routeExpectation) =>
+    (["en", "ja"] as const).map((locale) => ({
+      expectedBody: routeExpectation.expectations[locale],
+      locale,
+      path: routeExpectation.path,
+    })),
+  );
 
-        expect(response.status).toBe(200);
-        expect(html).toContain(`<html lang="${locale}">`);
+export const browserRouteExpectations: readonly BrowserRouteExpectation[] = [
+  {
+    path: "/?lang=ja",
+    locale: "ja",
+    expectedBody: ["小さな SvelteKit アプリで使う Lingui", "設定"],
+  },
+  {
+    path: "/playground/reactive?lang=en",
+    locale: "en",
+    expectedBody: [
+      "$t and rune-backed state",
+      "Hello SvelteKit from the reactive route.",
+      "Count: 2",
+    ],
+  },
+  {
+    path: "/playground/reactive?lang=ja",
+    locale: "ja",
+    expectedBody: [
+      "$t とルーンベースのステート",
+      "リアクティブルートからこんにちは、SvelteKit。",
+      "件数: 2",
+      "現在の状態",
+    ],
+  },
+  {
+    path: "/playground/rich-text?lang=ja",
+    locale: "ja",
+    expectedBody: ["クッキーで保持されるロケール", "意味のある強調"],
+  },
+  {
+    path: "/playground/syntax?lang=ja",
+    locale: "ja",
+    expectedBody: [
+      "Svelte 構文の各所で使う $t",
+      "状態サマリー: アイドル",
+      "フィルタ文字列: （未入力）",
+      "キー付きサブツリーのリビジョン 1",
+    ],
+  },
+  {
+    path: "/playground/components?lang=ja",
+    locale: "ja",
+    expectedBody: [
+      "コンポーネントタスクは 2 件待機中です",
+      "ロケール切り替えを承認しました。",
+      "第 2 リリース候補",
+    ],
+  },
+  {
+    path: "/playground/ids?lang=ja",
+    locale: "ja",
+    expectedBody: [
+      "id、コメント、コンテキストの確認に絞る",
+      "Trans コンポーネントからの明示的な id。",
+    ],
+  },
+];
 
-        for (const expectedText of playgroundRoute.expectations[locale]) {
-          expect(html).toContain(expectedText);
-        }
-      });
-    }
-  }
-});
+export const localeSwitchExpectation = {
+  startPath: "/?lang=en",
+  targetLocale: "ja" as const,
+  expectedBody: [
+    "小さな SvelteKit アプリで使う Lingui",
+    "サーバーが選択した言語を記憶する",
+  ],
+};
