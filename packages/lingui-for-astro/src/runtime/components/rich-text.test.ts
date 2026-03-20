@@ -1,18 +1,8 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { formatRichTextTranslation } from "./components/rich-text.ts";
-import { getLinguiContext, setLinguiContext } from "./core/context.ts";
+import { formatRichTextTranslation } from "./rich-text.ts";
 
-describe("lingui-for-astro runtime helpers", () => {
-  it("stores and reads the request-scoped Lingui context from Astro.locals", () => {
-    const locals: Record<string, unknown> = {};
-    const i18n = { _: () => "translated" } as never;
-
-    setLinguiContext(locals, i18n);
-
-    expect(getLinguiContext({ locals }).i18n).toBe(i18n);
-  });
-
+describe("formatRichTextTranslation", () => {
   it("parses rich-text translations into stable render nodes", () => {
     expect(
       formatRichTextTranslation("Read <0><1>Ada</1></0> carefully.", {
