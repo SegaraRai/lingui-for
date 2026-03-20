@@ -17,7 +17,6 @@ import { FRAMEWORK_HANDLERS } from "../markup/frameworks/registry.ts";
 import type { ShouldExternalizeMarkupImport } from "../markup/types.ts";
 import { createBundlerOptionsHook } from "./bundler-options.ts";
 import {
-  cleanupGeneratedState,
   createLifecycleContext,
   emitGeneratedMarkupAssets,
   scanGeneratedMarkups,
@@ -111,9 +110,6 @@ export const unpluginFactory: UnpluginFactory<
           lifecycleContext,
         ),
       };
-    },
-    buildEnd() {
-      cleanupGeneratedState(tempDir, lifecycleContext);
     },
   };
 };

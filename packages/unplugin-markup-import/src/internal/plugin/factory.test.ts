@@ -184,9 +184,6 @@ describe("unplugin-markup-import lifecycle", () => {
         external: true,
         id: "./RuntimeTrans.svelte",
       });
-
-      plugin.buildEnd?.();
-      expect(existsSync(tempDir)).toBe(false);
     } finally {
       rmSync(fixtureDir, {
         force: true,
