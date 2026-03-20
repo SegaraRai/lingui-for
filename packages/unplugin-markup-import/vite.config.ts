@@ -20,4 +20,10 @@ export default defineConfig({
       profile: "esm-only",
     },
   },
+  test: {
+    environment: "node",
+    fileParallelism: false,
+    include: ["src/**/*.test.ts"],
+    name: "unplugin-markup-import",
+  },
 });

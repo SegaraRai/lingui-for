@@ -1,9 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   },
   "include": [
     ".astro/types.d.ts",
@@ -13,7 +11,5 @@
     "lingui.config.ts",
     "vite.config.ts"
   ],
-  "exclude": [
-    "dist"
-  ]
+  "exclude": ["dist"]
 }
