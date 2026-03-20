@@ -7,7 +7,6 @@ export default defineConfig({
   pack: {
     clean: true,
     dts: true,
-    tsconfig: "tsconfig.lib.json",
     entry: {
       index: "src/index.ts",
       types: "src/types.ts",
