@@ -1,0 +1,561 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`'deep-rich-text-trans' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+const action = "deploy";
+const count = 3;
+const name = "Ada";
+---
+
+<L4aRuntimeTrans {...{
+  id: "zt7J+8",
+  message: "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
+  values: {
+    name: name,
+    count: count,
+    action: action
+  },
+  components: {
+    0: {
+      kind: "element",
+      tag: "strong",
+      props: {}
+    },
+    1: {
+      kind: "element",
+      tag: "em",
+      props: {}
+    },
+    2: {
+      kind: "element",
+      tag: "code",
+      props: {}
+    }
+  }
+}} />"
+`;
+
+exports[`'deep-rich-text-trans' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+export function Example({
+  action,
+  count,
+  name
+}: {
+  action: string;
+  count: number;
+  name: string;
+}) {
+  return <_Trans {...
+  /*i18n*/
+  {
+    id: "zt7J+8",
+    message: "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
+    values: {
+      name: name,
+      count: count,
+      action: action
+    },
+    components: {
+      0: <strong />,
+      1: <em />,
+      2: <code />
+    }
+  }} />;
+}"
+`;
+
+exports[`'deep-rich-text-trans' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+
+let action = $state("deploy");
+let count = $state(3);
+let name = $state("Ada");
+</script>
+
+<L4sRuntimeTrans {...{
+  descriptor: {
+    id: "zt7J+8",
+    message: "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
+    values: {
+      name: name,
+      count: count,
+      action: action
+    }
+  },
+  components: {
+    0: {
+      kind: "element",
+      tag: "strong",
+      props: {}
+    },
+    1: {
+      kind: "element",
+      tag: "em",
+      props: {}
+    },
+    2: {
+      kind: "element",
+      tag: "code",
+      props: {}
+    }
+  }
+}} />"
+`;
+
+exports[`'exact-number-component' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+const count = 2;
+const rank = 1;
+---
+
+<L4aRuntimeTrans {...{
+  id: "a+Xhin",
+  message: "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
+  values: {
+    count: count
+  }
+}} />
+<L4aRuntimeTrans {...{
+  id: "gM41pk",
+  message: "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}",
+  values: {
+    rank: rank
+  }
+}} />"
+`;
+
+exports[`'exact-number-component' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+export function Example({
+  count,
+  rank
+}: {
+  count: number;
+  rank: number;
+}) {
+  return <>
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "a+Xhin",
+      message: "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
+      values: {
+        count: count
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "gM41pk",
+      message: "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}",
+      values: {
+        rank: rank
+      }
+    }} />
+    </>;
+}"
+`;
+
+exports[`'exact-number-component' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+
+let count = $state(2);
+let rank = $state(1);
+</script>
+
+<L4sRuntimeTrans {...{
+  descriptor: {
+    id: "a+Xhin",
+    message: "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
+    values: {
+      count: count
+    }
+  }
+}} />
+<L4sRuntimeTrans {...{
+  descriptor: {
+    id: "gM41pk",
+    message: "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}",
+    values: {
+      rank: rank
+    }
+  }
+}} />"
+`;
+
+exports[`'nested-icu-core' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+const count = 0;
+const rank = 1;
+const role = "admin";
+const deepCore = __l4a_i18n._(
+/*i18n*/
+{
+  id: "K9g4/G",
+  message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
+  values: {
+    count: count,
+    rank: rank,
+    role: role
+  }
+});
+---
+
+<p>{deepCore}</p>"
+`;
+
+exports[`'nested-icu-core' > official core transform 1`] = `
+"import { i18n as _i18n } from "@lingui/core";
+export const message = _i18n._(
+/*i18n*/
+{
+  id: "K9g4/G",
+  message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
+  values: {
+    count: count,
+    rank: rank,
+    role: role
+  }
+});"
+`;
+
+exports[`'nested-icu-core' > svelte transform 1`] = `
+"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+const __l4s_ctx = createLinguiAccessors();
+const __l4s_getI18n = __l4s_ctx.getI18n;
+const __l4s_translate = __l4s_ctx._;
+
+let count = $state(0);
+let rank = $state(1);
+let role = $state("admin");
+const deepCore = $derived($__l4s_translate(
+/*i18n*/
+{
+  id: "K9g4/G",
+  message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
+  values: {
+    count: count,
+    rank: rank,
+    role: role
+  }
+}));
+__l4s_ctx.prime();
+</script>
+
+<p>{deepCore}</p>"
+`;
+
+exports[`'rich-text-trans' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+const name = "Ada";
+---
+
+<L4aRuntimeTrans {...{
+  id: "9/omjw",
+  message: "Hello <0>{name}</0>.",
+  values: {
+    name: name
+  },
+  components: {
+    0: {
+      kind: "element",
+      tag: "strong",
+      props: {}
+    }
+  }
+}} />"
+`;
+
+exports[`'rich-text-trans' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+export function Example({
+  name
+}: {
+  name: string;
+}) {
+  return <_Trans {...
+  /*i18n*/
+  {
+    id: "9/omjw",
+    message: "Hello <0>{name}</0>.",
+    values: {
+      name: name
+    },
+    components: {
+      0: <strong />
+    }
+  }} />;
+}"
+`;
+
+exports[`'rich-text-trans' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+
+let name = $state("Ada");
+</script>
+
+<L4sRuntimeTrans {...{
+  descriptor: {
+    id: "9/omjw",
+    message: "Hello <0>{name}</0>.",
+    values: {
+      name: name
+    }
+  },
+  components: {
+    0: {
+      kind: "element",
+      tag: "strong",
+      props: {}
+    }
+  }
+}} />"
+`;
+
+exports[`'trans-with-deeply-nested-component-icu' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+const count = 0;
+const rank = 1;
+const role = "admin";
+---
+
+<L4aRuntimeTrans {...{
+  id: "Y5Pnrw",
+  message: "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
+  values: {
+    0: __l4a_i18n._(/*i18n*/
+    {
+      id: "Ro3jDG",
+      message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
+      values: {
+        rank: rank,
+        role: role
+      }
+    }),
+    1: __l4a_i18n._(/*i18n*/
+    {
+      id: "/uwo4+",
+      message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
+      values: {
+        rank: rank,
+        role: role
+      }
+    }),
+    2: __l4a_i18n._(/*i18n*/
+    {
+      id: "OsAInm",
+      message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
+      values: {
+        rank: rank,
+        role: role
+      }
+    }),
+    count: count
+  },
+  components: {
+    0: {
+      kind: "element",
+      tag: "strong",
+      props: {}
+    }
+  }
+}} />"
+`;
+
+exports[`'trans-with-deeply-nested-component-icu' > official react transform 1`] = `
+"import { i18n as _i18n } from "@lingui/core";
+import { Trans as _Trans } from "@lingui/react";
+export function Example({
+  count,
+  rank,
+  role
+}: {
+  count: number;
+  rank: number;
+  role: string;
+}) {
+  return <_Trans {...
+  /*i18n*/
+  {
+    id: "Y5Pnrw",
+    message: "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
+    values: {
+      0: _i18n._(
+      /*i18n*/
+      {
+        id: "Ro3jDG",
+        message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
+        values: {
+          rank: rank,
+          role: role
+        }
+      }),
+      1: _i18n._(
+      /*i18n*/
+      {
+        id: "/uwo4+",
+        message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
+        values: {
+          rank: rank,
+          role: role
+        }
+      }),
+      2: _i18n._(
+      /*i18n*/
+      {
+        id: "OsAInm",
+        message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
+        values: {
+          rank: rank,
+          role: role
+        }
+      }),
+      count: count
+    },
+    components: {
+      0: <strong />
+    }
+  }} />;
+}"
+`;
+
+exports[`'trans-with-deeply-nested-component-icu' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+
+let count = $state(0);
+let rank = $state(1);
+let role = $state("admin");
+</script>
+
+<L4sRuntimeTrans {...{
+  descriptor: {
+    id: "Y5Pnrw",
+    message: "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
+    values: {
+      0: __l4s_getI18n()._(
+      /*i18n*/
+      {
+        id: "Ro3jDG",
+        message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
+        values: {
+          rank: rank,
+          role: role
+        }
+      }),
+      1: __l4s_getI18n()._(
+      /*i18n*/
+      {
+        id: "/uwo4+",
+        message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
+        values: {
+          rank: rank,
+          role: role
+        }
+      }),
+      2: __l4s_getI18n()._(
+      /*i18n*/
+      {
+        id: "OsAInm",
+        message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
+        values: {
+          rank: rank,
+          role: role
+        }
+      }),
+      count: count
+    }
+  },
+  components: {
+    0: {
+      kind: "element",
+      tag: "strong",
+      props: {}
+    }
+  }
+}} />"
+`;
+
+exports[`'trans-with-plural' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+const count = 0;
+---
+
+<L4aRuntimeTrans {...{
+  id: "BWlbIC",
+  message: "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
+  values: {
+    count: count
+  },
+  components: {
+    0: {
+      kind: "element",
+      tag: "strong",
+      props: {}
+    }
+  }
+}} />"
+`;
+
+exports[`'trans-with-plural' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+export function Example({
+  count
+}: {
+  count: number;
+}) {
+  return <_Trans {...
+  /*i18n*/
+  {
+    id: "BWlbIC",
+    message: "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
+    values: {
+      count: count
+    },
+    components: {
+      0: <strong />
+    }
+  }} />;
+}"
+`;
+
+exports[`'trans-with-plural' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+
+let count = $state(0);
+</script>
+
+<L4sRuntimeTrans {...{
+  descriptor: {
+    id: "BWlbIC",
+    message: "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
+    values: {
+      count: count
+    }
+  },
+  components: {
+    0: {
+      kind: "element",
+      tag: "strong",
+      props: {}
+    }
+  }
+}} />"
+`;

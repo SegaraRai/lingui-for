@@ -1,0 +1,24 @@
+{
+  "name": "conformance",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@babel/core": "^7.29.0",
+    "@lingui/babel-plugin-lingui-macro": "^5.9.3",
+    "@lingui/core": "^5.9.3",
+    "@lingui/react": "^5.9.3",
+    "astro": "^6.0.7",
+    "lingui-for-astro": "workspace:*",
+    "lingui-for-svelte": "workspace:*",
+    "react": "^19.2.4",
+    "svelte": "^5.54.0"
+  },
+  "devDependencies": {
+    "@types/babel__core": "^7.20.5",
+    "@types/node": "^25.5.0",
+    "dedent": "^1.7.2",
+    "typescript": "^5.9.3",
+    "vite": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}
