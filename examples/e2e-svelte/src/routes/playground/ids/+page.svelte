@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { RuntimeTrans } from "lingui-for-svelte";
-  import { t, msg, Trans } from "lingui-for-svelte/macro";
+  import { msg, t, Trans } from "lingui-for-svelte/macro";
+  import { RuntimeTrans } from "lingui-for-svelte/runtime";
 
   const explicitDescriptor = msg({
     id: "playground.ids.descriptor",

@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { RuntimeTrans } from "lingui-for-svelte";
   import { msg, t } from "lingui-for-svelte/macro";
+  import { RuntimeTrans } from "lingui-for-svelte/runtime";
 
   import {
     importedDescriptor,
