@@ -131,8 +131,7 @@
     "svelte-check": "^4.4.5",
     "typescript": "^5.9.3",
     "unplugin-markup-import": "workspace:*",
-    "vite-plus": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   },
   "peerDependencies": {
     "@lingui/cli": "^5.0.0",

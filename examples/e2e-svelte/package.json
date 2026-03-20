@@ -35,7 +35,6 @@
     "typescript": "^5.9.3",
     "unplugin-lingui-macro": "workspace:*",
     "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "vitest": "catalog:"
+    "vite-plus": "catalog:"
   }
 }
