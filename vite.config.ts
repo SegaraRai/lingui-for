@@ -31,7 +31,15 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command: "vp run --filter ./examples/* --filter ./apps/* build",
+        command: "vp run build:apps && vp run build:examples",
+        dependsOn: ["build:lib"],
+      },
+      "build:apps": {
+        command: "vp run build --filter ./apps/*",
+        dependsOn: ["build:lib"],
+      },
+      "build:examples": {
+        command: "vp run build --filter ./examples/*",
         dependsOn: ["build:lib"],
       },
       "build:lib": {
@@ -43,8 +51,8 @@ export default defineConfig({
         command: "vp run build --filter unplugin-lingui-macro...",
       },
       "build:wasm": {
-        cache: true,
         command: "node ./build-wasm.ts",
+        cache: true,
         env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
       },
       check: {
