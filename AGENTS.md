@@ -23,12 +23,10 @@
 
 - `crates/astro-analyzer` and `packages/astro-analyzer-wasm`
   Build required for `packages/lingui-for-astro`, `examples/*`, and `apps/*`.
-  Run `vp run build:wasm` from the workspace root to build both.
 - `packages/unplugin-markup-import`
   Build required for `packages/lingui-for-svelte`, `packages/lingui-for-astro`, `examples/*`, and `apps/*`.
-  Run `vp run build:lib` from the workspace root to build all libraries in correct order.
 - `packages/lingui-for-astro`, `packages/lingui-for-svelte`, and `packages/unplugin-lingui-macro`
   Build required for `examples/*`, and `apps/*`.
-  Run `vp run build:lib` from the workspace root to build all libraries in correct order.
 
-Run `vp run build` from the workspace root to build all libraries and examples in correct order.
+All `vp run *` commands handle dependencies automatically so you don't need to worry about the build order when working on the project.
+Just run the command for the package you're working on, and it will take care of building any dependencies as needed.
