@@ -4,7 +4,8 @@ export default defineProject({
   test: {
     environment: "node",
     fileParallelism: false,
-    include: ["src/**/*.test.ts"],
+    include: ["tests/**/*.test.ts"],
+    maxWorkers: 1,
     name: "e2e-astro",
   },
 });

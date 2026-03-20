@@ -132,7 +132,11 @@ const modeBody = clientRouter
       }
     </p>
     <div class="card-actions justify-end">
-      <a class="btn btn-primary btn-sm" href={nextHref}>
+      <a
+        data-testid="transition-next-link"
+        class="btn btn-primary btn-sm"
+        href={nextHref}
+      >
         {t`Open ${nextLabel}`}
       </a>
     </div>

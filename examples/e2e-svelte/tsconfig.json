@@ -17,7 +17,6 @@
     "tests/**/*.d.ts",
     "lingui.config.ts",
     "svelte.config.js",
-    "vite.config.ts",
-    "vitest.config.ts"
+    "vite.config.ts"
   ]
 }

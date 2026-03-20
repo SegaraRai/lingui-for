@@ -13,4 +13,7 @@ export default defineConfig({
     printWidth: 80,
     ignorePatterns: ["pnpm-lock.yaml"],
   },
+  test: {
+    projects: ["examples/*", "packages/*"],
+  },
 });

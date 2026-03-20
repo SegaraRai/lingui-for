@@ -21,7 +21,10 @@ function ReactTransitionPanel({
   const [count, setCount] = useState(0);
 
   return (
-    <section className="card border-base-300 bg-base-100 border shadow-lg">
+    <section
+      className="card border-base-300 bg-base-100 border shadow-lg"
+      data-testid={`react-${mode}-panel`}
+    >
       <div className="card-body gap-4">
         <p className="badge badge-accent badge-outline flex-none">
           {
@@ -41,17 +44,21 @@ function ReactTransitionPanel({
             }[mode]
           }
         </p>
-        <p className="text-base-content/70">
+        <p className="text-base-content/70" data-testid={`react-${mode}`}>
           {t`React props say ${pageLabel} in ${localeLabel}.`}
         </p>
         <div className="flex items-center gap-3">
           <button
             className="btn btn-secondary btn-sm"
+            data-testid={`react-${mode}-increment`}
             onClick={() => setCount((current) => current + 1)}
           >
             {t`Increment`}
           </button>
-          <p className="badge badge-secondary badge-lg flex-none">
+          <p
+            className="badge badge-secondary badge-lg flex-none"
+            data-testid={`react-${mode}-count`}
+          >
             {t`${count} React clicks`}
           </p>
         </div>

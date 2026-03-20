@@ -21,7 +21,10 @@
   let count = $state(0);
 </script>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
+<section
+  data-testid={`svelte-${mode}-panel`}
+  class="card border-base-300 bg-base-100 border shadow-lg"
+>
   <div class="card-body gap-4">
     <p class="badge badge-accent badge-outline flex-none">
       {{
@@ -37,14 +40,21 @@
         "persisted-props": $t`This Svelte island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen.`,
       }[mode]}
     </p>
-    <p class="text-base-content/70">
+    <p data-testid={`svelte-${mode}`} class="text-base-content/70">
       {$t`Svelte props say ${pageLabel} in ${localeLabel}.`}
     </p>
     <div class="flex items-center gap-3">
-      <button class="btn btn-secondary btn-sm" onclick={() => (count += 1)}>
+      <button
+        data-testid={`svelte-${mode}-increment`}
+        class="btn btn-secondary btn-sm"
+        onclick={() => (count += 1)}
+      >
         {$t`Increment`}
       </button>
-      <p class="badge badge-secondary badge-lg flex-none">
+      <p
+        data-testid={`svelte-${mode}-count`}
+        class="badge badge-secondary badge-lg flex-none"
+      >
         {$t`${count} Svelte clicks`}
       </p>
     </div>

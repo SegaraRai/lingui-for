@@ -16,6 +16,7 @@ const localeLabel = getLocaleLabel(locale);
 
 <div class="flex flex-wrap items-center gap-2">
   <a
+    data-testid="locale-en-link"
     class:list={[
       "btn btn-sm",
       locale === "en" ? "btn-secondary" : "btn-outline",
@@ -25,6 +26,7 @@ const localeLabel = getLocaleLabel(locale);
     {t`English`}
   </a>
   <a
+    data-testid="locale-ja-link"
     class:list={[
       "btn btn-sm",
       locale === "ja" ? "btn-secondary" : "btn-outline",
@@ -33,7 +35,10 @@ const localeLabel = getLocaleLabel(locale);
   >
     {t`Japanese`}
   </a>
-  <p class="badge badge-neutral badge-lg flex-none">
+  <p
+    data-testid="current-locale-badge"
+    class="badge badge-neutral badge-lg flex-none"
+  >
     {t`Current locale: ${localeLabel}`}
   </p>
 </div>

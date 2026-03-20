@@ -39,6 +39,9 @@ importers:
       prettier-plugin-tailwindcss:
         specifier: ^0.7.2
         version: 0.7.2(prettier-plugin-astro@0.14.1)(prettier-plugin-organize-imports@4.3.0(prettier@3.8.1)(typescript@5.9.3))(prettier-plugin-svelte@3.5.1(prettier@3.8.1)(svelte@5.54.0))(prettier@3.8.1)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
       vite-plus:
         specifier: 'catalog:'
         version: 0.1.13(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.2))(yaml@2.8.2)
@@ -173,6 +176,9 @@ importers:
       daisyui:
         specifier: ^5.5.19
         version: 5.5.19
+      playwright:
+        specifier: ^1.58.2
+        version: 1.58.2
       tailwindcss:
         specifier: ^4.2.2
         version: 4.2.2

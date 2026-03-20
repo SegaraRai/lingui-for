@@ -68,11 +68,11 @@ msgstr "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.}
 msgid "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
 msgstr "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:55
+#: src/components/react/ReactTransitionCounterIsland.tsx:62
 msgid "{count} React clicks"
 msgstr "{count} React clicks"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:48
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:58
 msgid "{count} Svelte clicks"
 msgstr "{count} Svelte clicks"
 
@@ -230,8 +230,8 @@ msgstr "Home"
 msgid "How to use this demo"
 msgstr "How to use this demo"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:52
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:45
+#: src/components/react/ReactTransitionCounterIsland.tsx:56
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:52
 msgid "Increment"
 msgstr "Increment"
 
@@ -332,19 +332,19 @@ msgstr "Page label: {pageLabel}"
 msgid "Persisted islands can keep state while still reflecting a new locale."
 msgstr "Persisted islands can keep state while still reflecting a new locale."
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:30
+#: src/components/react/ReactTransitionCounterIsland.tsx:33
 msgid "Persisted React island"
 msgstr "Persisted React island"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:29
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:32
 msgid "Persisted Svelte island"
 msgstr "Persisted Svelte island"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:31
+#: src/components/react/ReactTransitionCounterIsland.tsx:34
 msgid "Persisted-props React island"
 msgstr "Persisted-props React island"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:30
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:33
 msgid "Persisted-props Svelte island"
 msgstr "Persisted-props Svelte island"
 
@@ -376,7 +376,7 @@ msgstr "React islands"
 msgid "React keeps the <0>settings link</0> inside a translated sentence."
 msgstr "React keeps the <0>settings link</0> inside a translated sentence."
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:45
+#: src/components/react/ReactTransitionCounterIsland.tsx:48
 msgid "React props say {pageLabel} in {localeLabel}."
 msgstr "React props say {pageLabel} in {localeLabel}."
 
@@ -514,7 +514,7 @@ msgstr "Svelte keeps the <0>settings link</0> inside a translated sentence."
 msgid "Svelte macros keep working inside Astro."
 msgstr "Svelte macros keep working inside Astro."
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:41
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:44
 msgid "Svelte props say {pageLabel} in {localeLabel}."
 msgstr "Svelte props say {pageLabel} in {localeLabel}."
 
@@ -578,27 +578,27 @@ msgstr "The page content still changes, but ClientRouter keeps matching persiste
 msgid "This paragraph was translated directly inside a .astro page."
 msgstr "This paragraph was translated directly inside a .astro page."
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:38
+#: src/components/react/ReactTransitionCounterIsland.tsx:41
 msgid "This React island remounts whenever the route or locale changes."
 msgstr "This React island remounts whenever the route or locale changes."
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:40
+#: src/components/react/ReactTransitionCounterIsland.tsx:43
 msgid "This React island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
 msgstr "This React island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:39
+#: src/components/react/ReactTransitionCounterIsland.tsx:42
 msgid "This React island uses transition:persist, so its counter survives while locale and page props still update."
 msgstr "This React island uses transition:persist, so its counter survives while locale and page props still update."
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:35
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:38
 msgid "This Svelte island remounts whenever the route or locale changes."
 msgstr "This Svelte island remounts whenever the route or locale changes."
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:37
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:40
 msgid "This Svelte island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
 msgstr "This Svelte island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:36
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:39
 msgid "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
 msgstr "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
 
@@ -659,11 +659,11 @@ msgstr "Verification routes"
 msgid "Verify linked and emphasized translations across runtimes."
 msgstr "Verify linked and emphasized translations across runtimes."
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:29
+#: src/components/react/ReactTransitionCounterIsland.tsx:32
 msgid "Volatile React island"
 msgstr "Volatile React island"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:28
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:31
 msgid "Volatile Svelte island"
 msgstr "Volatile Svelte island"
 
