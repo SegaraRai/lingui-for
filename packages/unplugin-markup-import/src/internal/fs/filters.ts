@@ -29,14 +29,19 @@ export function matchesScanFilter(
 
   const included =
     scanFilter.include.length === 0 ||
-    scanFilter.include.some((pattern) =>
-      candidates.some((candidate) => pathPosix.matchesGlob(candidate, pattern)),
-    );
+    matchesGlobPatterns(candidates, scanFilter.include);
   if (!included) {
     return false;
   }
 
-  return !scanFilter.exclude.some((pattern) =>
+  return !matchesGlobPatterns(candidates, scanFilter.exclude);
+}
+
+export function matchesGlobPatterns(
+  candidates: readonly string[],
+  patterns: readonly string[],
+): boolean {
+  return patterns.some((pattern) =>
     candidates.some((candidate) => pathPosix.matchesGlob(candidate, pattern)),
   );
 }

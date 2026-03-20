@@ -5,7 +5,10 @@ import { dirnamePath, relativePathFrom } from "../fs/paths.ts";
 import { collectSourceFiles, relativePathFromSourceDir } from "../fs/scan.ts";
 import { createTempFilePath } from "../fs/temp-files.ts";
 import type { FrameworkHandler } from "../markup/frameworks/registry.ts";
-import type { ResolveFacadeSourceSpecifier } from "../markup/types.ts";
+import type {
+  ResolveFacadeSourceSpecifier,
+  ShouldExternalizeMarkupImport,
+} from "../markup/types.ts";
 import type { GeneratedMarkupRecord, ScanFilter } from "./types.ts";
 
 export interface LifecycleContext {
@@ -36,6 +39,7 @@ export function scanGeneratedMarkups(
   handlers: readonly FrameworkHandler[],
   scanFilter: ScanFilter,
   context: LifecycleContext,
+  shouldExternalizeImport?: ShouldExternalizeMarkupImport,
 ): void {
   resetGeneratedState(tempDir, context);
   const resolveFacadeSourceSpecifier =
@@ -62,6 +66,7 @@ export function scanGeneratedMarkups(
       sourceId,
       relativePath,
       resolveFacadeSourceSpecifier,
+      shouldExternalizeImport,
     );
 
     const facadeTempPath =
@@ -137,14 +142,14 @@ function resetGeneratedState(tempDir: string, context: LifecycleContext): void {
 function createTempFacadeSourceSpecifierResolver(
   tempDir: string,
 ): ResolveFacadeSourceSpecifier {
-  return (_specifier, context) =>
-    toRelativeImportSpecifier(
-      relativePathFrom(tempDir, context.resolvedSource),
-    );
-}
+  return (specifier, context) => {
+    if (!specifier.startsWith(".")) {
+      return specifier;
+    }
 
-function toRelativeImportSpecifier(value: string): string {
-  return value.startsWith(".") ? value : `./${value}`;
+    const value = relativePathFrom(tempDir, context.resolvedSource);
+    return value.startsWith(".") ? value : `./${value}`;
+  };
 }
 
 function writeGeneratedFile(filename: string, source: string): void {

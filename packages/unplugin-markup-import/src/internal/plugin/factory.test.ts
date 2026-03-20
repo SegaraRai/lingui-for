@@ -3,6 +3,7 @@ import {
   mkdtempSync,
   mkdirSync,
   readdirSync,
+  readFileSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -12,7 +13,7 @@ import { join } from "node:path";
 import dedent from "dedent";
 import { describe, expect, it } from "vite-plus/test";
 
-import { normalizePath } from "../fs/paths.ts";
+import { normalizePath, relativePathFrom } from "../fs/paths.ts";
 import { unpluginFactory } from "./factory.ts";
 
 type PluginHooks = {
@@ -27,6 +28,7 @@ type PluginHooks = {
     }) => { input?: Record<string, string> } | null | undefined;
   };
   vite?: {
+    apply?: "build" | "serve";
     options?: (inputOptions: {
       input?: Record<string, string>;
     }) => { input?: Record<string, string> } | null | undefined;
@@ -78,6 +80,9 @@ describe("unplugin-markup-import lifecycle", () => {
       const runtimeTransPath = normalizePath(
         join(fixtureDir, "src", "runtime", "RuntimeTrans.svelte"),
       );
+      const renderTransNodesPath = normalizePath(
+        join(fixtureDir, "src", "runtime", "RenderTransNodes.svelte"),
+      );
       const tempDir = join(fixtureDir, "src", ".unplugin-markup-import");
       const emittedFiles: Array<
         | {
@@ -106,18 +111,40 @@ describe("unplugin-markup-import lifecycle", () => {
         "runtime/index",
         "runtime/RuntimeTrans.svelte.imports",
       ]);
+      expect(plugin.vite?.apply).toBe("build");
       expect(existsSync(tempDir)).toBe(true);
-      expect(
-        readdirSync(tempDir).filter((fileName) => fileName.endsWith(".mts")),
-      ).toHaveLength(1);
-      expect(plugin.resolveId?.("./RuntimeTrans.svelte", entryPath)).toBe(
-        "\0unplugin-markup-import-proxy:.%2FRuntimeTrans.svelte",
+      const tempModules = readdirSync(tempDir).filter((fileName) =>
+        fileName.endsWith(".mts"),
       );
-      expect(
-        plugin.load?.("\0unplugin-markup-import-proxy:.%2FRuntimeTrans.svelte"),
-      ).toBe(
-        'export { default } from "./RuntimeTrans.svelte?unplugin-markup-import-public";\n',
+      expect(tempModules).toHaveLength(1);
+      const runtimeTransFacadePath = normalizePath(
+        (optionsResult?.input ?? {})["runtime/RuntimeTrans.svelte.imports"]!,
       );
+      expect(readFileSync(runtimeTransFacadePath, "utf8")).toContain(
+        'from "../runtime/RenderTransNodes.svelte";',
+      );
+      expect(plugin.resolveId?.("./RuntimeTrans.svelte", entryPath)).toEqual({
+        external: true,
+        id: "./RuntimeTrans.svelte",
+      });
+      expect(
+        plugin.resolveId?.(
+          "../runtime/RenderTransNodes.svelte",
+          runtimeTransFacadePath,
+        ),
+      ).toEqual({
+        external: true,
+        id: "./RenderTransNodes.svelte",
+      });
+      expect(
+        plugin.resolveId?.(
+          "../runtime/RenderTransNodes.svelte",
+          relativePathFrom(fixtureDir, runtimeTransFacadePath),
+        ),
+      ).toEqual({
+        external: true,
+        id: "./RenderTransNodes.svelte",
+      });
 
       plugin.buildStart?.call({
         addWatchFile(fileName: string) {
@@ -137,8 +164,13 @@ describe("unplugin-markup-import lifecycle", () => {
         },
       });
 
-      expect(watchedFiles).toEqual([runtimeTransPath]);
+      expect(watchedFiles).toEqual([renderTransNodesPath, runtimeTransPath]);
       expect(emittedFiles).toEqual([
+        expect.objectContaining({
+          fileName: "runtime/RenderTransNodes.svelte",
+          source: expect.stringContaining("<span>nodes</span>"),
+          type: "asset",
+        }),
         expect.objectContaining({
           fileName: "runtime/RuntimeTrans.svelte",
           source: expect.stringContaining("./RuntimeTrans.svelte.imports.mjs"),
@@ -148,6 +180,10 @@ describe("unplugin-markup-import lifecycle", () => {
       expect(
         readdirSync(tempDir).some((fileName) => fileName.endsWith(".mjs")),
       ).toBe(false);
+      expect(plugin.resolveId?.("./RuntimeTrans.svelte", entryPath)).toEqual({
+        external: true,
+        id: "./RuntimeTrans.svelte",
+      });
 
       plugin.buildEnd?.();
       expect(existsSync(tempDir)).toBe(false);
@@ -190,14 +226,21 @@ function writeFixture(fixtureDir: string): void {
     join(fixtureDir, "src", "runtime", "RuntimeTrans.svelte"),
     dedent`
       <script lang="ts">
+        import RenderTransNodes from "./RenderTransNodes.svelte";
         import type { MessageDescriptor } from "./helper.ts";
         import { getMessageId } from "./helper.ts";
 
         let { message }: { message: MessageDescriptor } = $props();
       </script>
 
+      <RenderTransNodes />
       <p>{getMessageId(message)}</p>
     `,
+  );
+
+  writeFileSync(
+    join(fixtureDir, "src", "runtime", "RenderTransNodes.svelte"),
+    "<span>nodes</span>\n",
   );
 
   writeFileSync(

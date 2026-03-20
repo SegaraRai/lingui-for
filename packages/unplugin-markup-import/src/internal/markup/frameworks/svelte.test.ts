@@ -77,7 +77,7 @@ describe("collectRelativeSvelteImports", () => {
 });
 
 describe("createSvelteFacadeModule", () => {
-  it("rewrites non-svelte relative imports through a single companion module", () => {
+  it("rewrites every non-self import through a single companion module", () => {
     const source = dedent`
       <script lang="ts">
         import type { MessageDescriptor } from "@lingui/core";
@@ -102,16 +102,18 @@ describe("createSvelteFacadeModule", () => {
     );
     expect(result.rewrittenCode).toMatchInlineSnapshot(`
     	"<script lang="ts">
-    	  import type { MessageDescriptor } from "@lingui/core";
-    	  import { __unplugin_markup_import_0 as getLinguiContext } from "./RuntimeTrans.svelte.imports.mjs";
-    	  import RenderTransNodes from "./RenderTransNodes.svelte";
-    	  import { __unplugin_markup_import_1 as formatRichTextTranslation, type __unplugin_markup_import_2 as TransComponentMap } from "./RuntimeTrans.svelte.imports.mjs";
+    	  import type { __unplugin_markup_import_0 as MessageDescriptor } from "./RuntimeTrans.svelte.imports.mjs";
+    	  import { __unplugin_markup_import_1 as getLinguiContext } from "./RuntimeTrans.svelte.imports.mjs";
+    	  import { __unplugin_markup_import_2 as RenderTransNodes } from "./RuntimeTrans.svelte.imports.mjs";
+    	  import { __unplugin_markup_import_3 as formatRichTextTranslation, type __unplugin_markup_import_4 as TransComponentMap } from "./RuntimeTrans.svelte.imports.mjs";
     	</script>"
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
-    	"export { getLinguiContext as __unplugin_markup_import_0 } from "/virtual/runtime/core/context.ts";
-    	export { formatRichTextTranslation as __unplugin_markup_import_1 } from "/virtual/runtime/trans/rich-text.ts";
-    	export type { TransComponentMap as __unplugin_markup_import_2 } from "/virtual/runtime/trans/rich-text.ts";
+    	"export type { MessageDescriptor as __unplugin_markup_import_0 } from "@lingui/core";
+    	export { getLinguiContext as __unplugin_markup_import_1 } from "/virtual/runtime/core/context.ts";
+    	export { default as __unplugin_markup_import_2 } from "/virtual/runtime/trans/RenderTransNodes.svelte";
+    	export { formatRichTextTranslation as __unplugin_markup_import_3 } from "/virtual/runtime/trans/rich-text.ts";
+    	export type { TransComponentMap as __unplugin_markup_import_4 } from "/virtual/runtime/trans/rich-text.ts";
     	"
     `);
   });
@@ -135,10 +137,10 @@ describe("createSvelteFacadeModule", () => {
     );
   });
 
-  it("keeps svelte-only import graphs untouched", () => {
+  it("keeps self-only import graphs untouched", () => {
     const source = dedent`
       <script>
-        import RenderTransNodes from "./RenderTransNodes.svelte";
+        import OnlySvelte from "./OnlySvelte.svelte";
       </script>
     `;
 

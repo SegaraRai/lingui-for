@@ -4,8 +4,8 @@ export type MarkupFramework = "astro" | "svelte";
  * Options for the markup import facade plugin.
  *
  * The plugin scans shipped markup files under `sourceDir`, rewrites their
- * internal non-markup relative imports to generated facade modules, and emits
- * rewritten markup assets into the bundle output.
+ * imports to generated facade modules by default, and emits rewritten markup
+ * assets into the bundle output.
  */
 export interface MarkupImportPluginOptions {
   /**
@@ -45,4 +45,13 @@ export interface MarkupImportPluginOptions {
    * exclude test fixtures such as `.test.svelte` files.
    */
   exclude?: string | readonly string[] | undefined;
+
+  /**
+   * Module specifiers that should stay direct instead of being routed through a
+   * generated facade module.
+   *
+   * Patterns are matched against both the original import specifier and its
+   * normalized resolved target when the import is relative.
+   */
+  externalize?: string | readonly string[] | undefined;
 }

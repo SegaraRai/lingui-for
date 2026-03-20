@@ -58,7 +58,7 @@ describe("collectRelativeAstroImports", () => {
 });
 
 describe("createAstroFacadeModule", () => {
-  it("rewrites non-astro relative imports through a single companion module", () => {
+  it("rewrites every non-self import through a single companion module", () => {
     const source = dedent`
       ---
       import type { MessageDescriptor } from "@lingui/core";
@@ -82,17 +82,19 @@ describe("createAstroFacadeModule", () => {
     );
     expect(result.rewrittenCode).toMatchInlineSnapshot(`
       "---
-      import type { MessageDescriptor } from "@lingui/core";
-      import { __unplugin_markup_import_0 as getLinguiContext } from "./RuntimeTrans.astro.imports.mjs";
-      import RenderTransNodes from "./RenderTransNodes.astro";
-      import { __unplugin_markup_import_1 as translateRuntimeTrans } from "./RuntimeTrans.astro.imports.mjs";
+      import type { __unplugin_markup_import_0 as MessageDescriptor } from "./RuntimeTrans.astro.imports.mjs";
+      import { __unplugin_markup_import_1 as getLinguiContext } from "./RuntimeTrans.astro.imports.mjs";
+      import { __unplugin_markup_import_2 as RenderTransNodes } from "./RuntimeTrans.astro.imports.mjs";
+      import { __unplugin_markup_import_3 as translateRuntimeTrans } from "./RuntimeTrans.astro.imports.mjs";
       ---
 
       <RenderTransNodes />"
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
-    	"export { getLinguiContext as __unplugin_markup_import_0 } from "/virtual/runtime/index.ts";
-    	export { translateRuntimeTrans as __unplugin_markup_import_1 } from "/virtual/runtime/helpers.ts";
+    	"export type { MessageDescriptor as __unplugin_markup_import_0 } from "@lingui/core";
+    	export { getLinguiContext as __unplugin_markup_import_1 } from "/virtual/runtime/index.ts";
+    	export { default as __unplugin_markup_import_2 } from "/virtual/runtime/RenderTransNodes.astro";
+    	export { translateRuntimeTrans as __unplugin_markup_import_3 } from "/virtual/runtime/helpers.ts";
     	"
     `);
   });

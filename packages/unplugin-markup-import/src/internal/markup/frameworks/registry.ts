@@ -2,6 +2,7 @@ import type { MarkupFramework } from "../../../types.ts";
 import type {
   MarkupFacadeModule,
   ResolveFacadeSourceSpecifier,
+  ShouldExternalizeMarkupImport,
 } from "../types.ts";
 import { createAstroFacadeModule } from "./astro.ts";
 import { createSvelteFacadeModule } from "./svelte.ts";
@@ -13,6 +14,7 @@ export type FrameworkHandler = {
     filename: string,
     relativePath: string,
     resolveFacadeSourceSpecifier?: ResolveFacadeSourceSpecifier,
+    shouldExternalizeImport?: ShouldExternalizeMarkupImport,
   ) => MarkupFacadeModule;
 };
 

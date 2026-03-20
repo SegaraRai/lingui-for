@@ -13,6 +13,7 @@ import type {
   RewriteMarkupImport,
   RewriteMarkupImportsResult,
   ScriptRange,
+  ShouldExternalizeMarkupImport,
 } from "../types.ts";
 
 const SVELTE_EXTENSION = ".svelte";
@@ -62,6 +63,7 @@ export function createSvelteFacadeModule(
   filename: string,
   relativePath: string,
   resolveFacadeSourceSpecifier?: ResolveFacadeSourceSpecifier,
+  shouldExternalizeImport?: ShouldExternalizeMarkupImport,
 ): MarkupFacadeModule {
   return createMarkupFacadeModule(
     source,
@@ -70,6 +72,7 @@ export function createSvelteFacadeModule(
     SVELTE_EXTENSION,
     collectScripts,
     resolveFacadeSourceSpecifier,
+    shouldExternalizeImport,
   );
 }
 

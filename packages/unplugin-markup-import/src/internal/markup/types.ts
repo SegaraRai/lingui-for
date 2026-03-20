@@ -18,6 +18,11 @@ export type ResolveFacadeSourceSpecifier = (
   context: ResolveFacadeSourceSpecifierContext,
 ) => string;
 
+export type ShouldExternalizeMarkupImport = (
+  specifier: string,
+  context: ResolveFacadeSourceSpecifierContext,
+) => boolean;
+
 export type RewriteMarkupImport = (
   specifier: string,
   context: RewriteMarkupImportContext,

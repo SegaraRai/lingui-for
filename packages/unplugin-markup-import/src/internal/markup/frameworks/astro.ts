@@ -11,6 +11,7 @@ import type {
   RewriteMarkupImport,
   RewriteMarkupImportsResult,
   ScriptRange,
+  ShouldExternalizeMarkupImport,
 } from "../types.ts";
 
 const ASTRO_EXTENSION = ".astro";
@@ -60,6 +61,7 @@ export function createAstroFacadeModule(
   filename: string,
   relativePath: string,
   resolveFacadeSourceSpecifier?: ResolveFacadeSourceSpecifier,
+  shouldExternalizeImport?: ShouldExternalizeMarkupImport,
 ): MarkupFacadeModule {
   return createMarkupFacadeModule(
     source,
@@ -68,6 +70,7 @@ export function createAstroFacadeModule(
     ASTRO_EXTENSION,
     collectAstroScripts,
     resolveFacadeSourceSpecifier,
+    shouldExternalizeImport,
   );
 }
 

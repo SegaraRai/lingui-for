@@ -13,9 +13,11 @@ import type {
   InputDeclaration,
   MarkupFacadeModule,
   ResolveFacadeSourceSpecifier,
+  ResolveFacadeSourceSpecifierContext,
   RewriteMarkupImport,
   RewriteMarkupImportsResult,
   ScriptRange,
+  ShouldExternalizeMarkupImport,
 } from "./types.ts";
 
 export function rewriteMarkupImports(
@@ -169,6 +171,7 @@ export function createMarkupFacadeModule(
     filename: string,
   ) => readonly ScriptRange[],
   resolveFacadeSourceSpecifier?: ResolveFacadeSourceSpecifier,
+  shouldExternalizeImport?: ShouldExternalizeMarkupImport,
 ): MarkupFacadeModule {
   const scripts = collectScriptRanges(source, filename);
   const string = new MagicString(source);
@@ -180,12 +183,21 @@ export function createMarkupFacadeModule(
     const program = parseScript(script.content, script.lang);
 
     for (const statement of program.body) {
-      if (!isSupportedImportDeclaration(statement) || !statement.source) {
+      if (statement.type !== "ImportDeclaration" || !statement.source) {
         continue;
       }
 
       const specifier = statement.source.value;
-      if (!shouldExternalizeSpecifier(specifier, markupExtension)) {
+      const resolvedSource = toFacadeSourceSpecifier(filename, specifier);
+      const context = {
+        filename,
+        markupExtension,
+        relativePath,
+        resolvedSource,
+      };
+      if (
+        shouldPreserveDirectImport(specifier, context, shouldExternalizeImport)
+      ) {
         continue;
       }
 
@@ -200,15 +212,9 @@ export function createMarkupFacadeModule(
       const globalStart = script.contentStart + statement.range[0];
       const globalEnd = script.contentStart + statement.range[1];
       string.overwrite(globalStart, globalEnd, replacement.code);
-      const resolvedSource = toFacadeSourceSpecifier(filename, specifier);
       facadeDeclarations.push({
         source:
-          resolveFacadeSourceSpecifier?.(specifier, {
-            filename,
-            markupExtension,
-            relativePath,
-            resolvedSource,
-          }) ?? resolvedSource,
+          resolveFacadeSourceSpecifier?.(specifier, context) ?? resolvedSource,
         specifiers: replacement.facadeSpecifiers,
         sideEffectOnly: replacement.sideEffectOnly,
       });
@@ -241,7 +247,7 @@ export function createMarkupFacadeModule(
 }
 
 function createFacadeImportReplacement(
-  statement: InputDeclaration,
+  statement: TSESTree.ImportDeclaration,
   relativePath: string,
   markupExtension: string,
   bindingCounter: number,
@@ -251,15 +257,6 @@ function createFacadeImportReplacement(
   nextBindingCounter: number;
   sideEffectOnly: boolean;
 } {
-  if (statement.type !== "ImportDeclaration") {
-    return {
-      code: statement.source ? statement.source.raw : "",
-      facadeSpecifiers: [],
-      nextBindingCounter: bindingCounter,
-      sideEffectOnly: true,
-    };
-  }
-
   const facadeSpecifier = `./${basenamePath(relativePath).replace(
     new RegExp(`${escapeRegExp(markupExtension)}$`),
     `${markupExtension}.imports.mjs`,
@@ -389,11 +386,15 @@ function toFacadeSourceSpecifier(
   return resolveRelativeSpecifier(dirnamePath(sourceMarkupFilename), specifier);
 }
 
-function shouldExternalizeSpecifier(
+function shouldPreserveDirectImport(
   specifier: string,
-  markupExtension: string,
+  context: ResolveFacadeSourceSpecifierContext,
+  shouldExternalizeImport?: ShouldExternalizeMarkupImport,
 ): boolean {
-  return specifier.startsWith(".") && !specifier.endsWith(markupExtension);
+  return (
+    context.resolvedSource === context.filename ||
+    shouldExternalizeImport?.(specifier, context) === true
+  );
 }
 
 function isSupportedImportDeclaration(
