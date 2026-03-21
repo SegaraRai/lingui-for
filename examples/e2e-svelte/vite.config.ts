@@ -18,6 +18,11 @@ export default defineConfig({
           "sveltekit:sync",
         ],
       },
+      preview: {
+        command: "node .sveltekit-build/index.js",
+        dependsOn: ["build"],
+        cache: false,
+      },
       check: {
         command: "vp check && vp run check:extra",
         dependsOn: ["build"],

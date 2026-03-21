@@ -3,8 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "preview": "astro preview --port 4542"
+    "dev": "astro dev"
   },
   "dependencies": {
     "@astrojs/node": "^10.0.3",

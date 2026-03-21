@@ -13,6 +13,11 @@ export default defineConfig({
         ],
         input: [{ auto: true }, "!**/.vite/deps/_metadata.json"],
       },
+      preview: {
+        command: "astro preview",
+        dependsOn: ["build"],
+        cache: false,
+      },
       check: {
         command: "vp check && vp run check:extra",
         dependsOn: ["build"],
