@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vite-plus/test";
+import { afterAll, beforeAll, describe, expect, test } from "vite-plus/test";
 
 import { conformanceFixtures } from "./support/fixtures.ts";
 import {
@@ -10,58 +10,75 @@ import {
   transformSvelteFixture,
 } from "./support/transforms.ts";
 
-describe.for(conformanceFixtures)("$name", (fixture) => {
-  const reference = fixture.officialCore
-    ? transformOfficialCore(fixture.officialCore)
-    : transformOfficialReact(fixture.officialReact!);
+describe.for(["development", "production"])("NODE_ENV=%s", (envValue) => {
+  const originalEnv = process.env.NODE_ENV;
 
-  test("official core transform", () => {
-    if (!fixture.officialCore) {
-      return;
-    }
-
-    expect(transformOfficialCore(fixture.officialCore)).toMatchSnapshot();
+  beforeAll(() => {
+    process.env.NODE_ENV = envValue;
   });
 
-  test("official react transform", () => {
-    if (!fixture.officialReact) {
-      return;
-    }
-
-    expect(transformOfficialReact(fixture.officialReact)).toMatchSnapshot();
+  afterAll(() => {
+    process.env.NODE_ENV = originalEnv;
   });
 
-  test("svelte transform", async () => {
-    if (!fixture.svelte) {
-      return;
-    }
+  describe.for(conformanceFixtures)("$name", (fixture) => {
+    const getReference = () =>
+      fixture.officialCore
+        ? transformOfficialCore(fixture.officialCore)
+        : transformOfficialReact(fixture.officialReact!);
 
-    const transformed = await transformSvelteFixture(fixture.svelte);
-    expect(transformed).toMatchSnapshot();
+    test("official core transform", () => {
+      if (!fixture.officialCore) {
+        return;
+      }
 
-    const transformedIds = extractIds(transformed);
-    const referenceIds = extractIds(reference);
-    expect(transformedIds).toEqual(referenceIds);
+      expect(transformOfficialCore(fixture.officialCore)).toMatchSnapshot();
+    });
 
-    const transformedMessages = extractMessages(transformed);
-    const referenceMessages = extractMessages(reference);
-    expect(transformedMessages).toEqual(referenceMessages);
-  });
+    test("official react transform", () => {
+      if (!fixture.officialReact) {
+        return;
+      }
 
-  test("astro transform", async () => {
-    if (!fixture.astro) {
-      return;
-    }
+      expect(transformOfficialReact(fixture.officialReact)).toMatchSnapshot();
+    });
 
-    const transformed = await transformAstroFixture(fixture.astro);
-    expect(transformed).toMatchSnapshot();
+    test("svelte transform", async () => {
+      if (!fixture.svelte) {
+        return;
+      }
 
-    const transformedIds = extractIds(transformed);
-    const referenceIds = extractIds(reference);
-    expect(transformedIds).toEqual(referenceIds);
+      const transformed = await transformSvelteFixture(fixture.svelte);
+      expect(transformed).toMatchSnapshot();
 
-    const transformedMessages = extractMessages(transformed);
-    const referenceMessages = extractMessages(reference);
-    expect(transformedMessages).toEqual(referenceMessages);
+      const reference = getReference();
+
+      const transformedIds = extractIds(transformed);
+      const referenceIds = extractIds(reference);
+      expect(transformedIds).toEqual(referenceIds);
+
+      const transformedMessages = extractMessages(transformed);
+      const referenceMessages = extractMessages(reference);
+      expect(transformedMessages).toEqual(referenceMessages);
+    });
+
+    test("astro transform", async () => {
+      if (!fixture.astro) {
+        return;
+      }
+
+      const transformed = await transformAstroFixture(fixture.astro);
+      expect(transformed).toMatchSnapshot();
+
+      const reference = getReference();
+
+      const transformedIds = extractIds(transformed);
+      const referenceIds = extractIds(reference);
+      expect(transformedIds).toEqual(referenceIds);
+
+      const transformedMessages = extractMessages(transformed);
+      const referenceMessages = extractMessages(reference);
+      expect(transformedMessages).toEqual(referenceMessages);
+    });
   });
 });
