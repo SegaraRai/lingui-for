@@ -1,6 +1,7 @@
 import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+
 import { stripQuery } from "lingui-for-shared/compiler";
 
 import {
