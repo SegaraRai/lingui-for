@@ -72,12 +72,12 @@ function normalizeExtractedValue(value: unknown): unknown {
     }
 
     const normalized = value
-      .replace(/\r\n/g, "\n")
-      .replace(/[ \t]+\n/g, "\n")
+      .replaceAll("\r\n", "\n")
+      .replaceAll(/[ \t]+\n/g, "\n")
       .trim();
 
     return normalized.includes("_i18n._(") || normalized.includes("/*i18n*/")
-      ? normalized.replace(/\s+/g, " ")
+      ? normalized.replaceAll(/\s+/g, " ")
       : normalized;
   }
 
@@ -148,12 +148,24 @@ function normalizeOfficialMessageOrigin(
   };
 }
 
-export async function extractOfficialReference(
+export async function extractOfficialCore(
   source: string,
-  kind: FixtureReference["kind"],
   fixtureName = "reference",
 ): Promise<ExtractedMessage[]> {
-  return await collectOfficialExtractedMessages({ kind, source }, fixtureName);
+  return await collectOfficialExtractedMessages(
+    { kind: "core", source },
+    fixtureName,
+  );
+}
+
+export async function extractOfficialReact(
+  source: string,
+  fixtureName = "reference",
+): Promise<ExtractedMessage[]> {
+  return await collectOfficialExtractedMessages(
+    { kind: "react", source },
+    fixtureName,
+  );
 }
 
 export async function extractSvelteFixture(

@@ -3,23 +3,21 @@ import { describe, expect, test } from "vite-plus/test";
 
 import {
   extractAstroFixture,
-  extractOfficialReference,
+  extractOfficialCore,
+  extractOfficialReact,
   extractSvelteFixture,
 } from "./support/extract.ts";
 
 describe("invalid transform cases", () => {
   test("official core rejects malformed plural() calls, and Astro/Svelte reject the same shape", async () => {
     await expect(() =>
-      extractOfficialReference(
-        dedent`
-          import { plural, t } from "@lingui/core/macro";
+      extractOfficialCore(dedent`
+        import { plural, t } from "@lingui/core/macro";
 
-          export const label = t({
-            message: plural(),
-          });
-        `,
-        "core",
-      ),
+        export const label = t({
+          message: plural(),
+        });
+      `),
     ).rejects.toThrow(/Unsupported macro usage/);
 
     await expect(
@@ -48,16 +46,13 @@ describe("invalid transform cases", () => {
 
   test("official react rejects spread children in Trans, and Astro/Svelte also reject them", async () => {
     await expect(() =>
-      extractOfficialReference(
-        dedent`
-          import { Trans } from "@lingui/react/macro";
+      extractOfficialReact(dedent`
+        import { Trans } from "@lingui/react/macro";
 
-          export function Example(props: { name: string }) {
-            return <Trans>Hello {...props}</Trans>;
-          }
-        `,
-        "react",
-      ),
+        export function Example(props: { name: string }) {
+          return <Trans>Hello {...props}</Trans>;
+        }
+      `),
     ).rejects.toThrow(/Spread could not be used as Trans children/);
 
     await expect(

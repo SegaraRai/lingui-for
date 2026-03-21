@@ -1,28 +1,19 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { conformanceFixtures } from "./support/fixtures.ts";
 import {
   extractAstroFixture,
-  extractOfficialReference,
+  extractOfficialCore,
+  extractOfficialReact,
   extractSvelteFixture,
   normalizeExtractedMessages,
 } from "./support/extract.ts";
-
-const knownReferenceMismatches = new Set<string>();
+import { conformanceFixtures } from "./support/fixtures.ts";
 
 describe.for(conformanceFixtures)("$name", (fixture) => {
   const extractReference = async () =>
     fixture.officialCore
-      ? await extractOfficialReference(
-          fixture.officialCore,
-          "core",
-          fixture.name,
-        )
-      : await extractOfficialReference(
-          fixture.officialReact!,
-          "react",
-          fixture.name,
-        );
+      ? await extractOfficialCore(fixture.officialCore, fixture.name)
+      : await extractOfficialReact(fixture.officialReact!, fixture.name);
 
   test("official core extraction", async () => {
     if (!fixture.officialCore) {
@@ -30,11 +21,7 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
     }
 
     expect(
-      await extractOfficialReference(
-        fixture.officialCore,
-        "core",
-        fixture.name,
-      ),
+      await extractOfficialCore(fixture.officialCore, fixture.name),
     ).toMatchSnapshot();
   });
 
@@ -44,11 +31,7 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
     }
 
     expect(
-      await extractOfficialReference(
-        fixture.officialReact,
-        "react",
-        fixture.name,
-      ),
+      await extractOfficialReact(fixture.officialReact, fixture.name),
     ).toMatchSnapshot();
   });
 
@@ -65,11 +48,7 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
     expect(normalized).toEqual(reference);
   });
 
-  const astroTest = knownReferenceMismatches.has(`astro:${fixture.name}`)
-    ? test.fails
-    : test;
-
-  astroTest("astro extraction", async () => {
+  test("astro extraction", async () => {
     if (!fixture.astro) {
       return;
     }
