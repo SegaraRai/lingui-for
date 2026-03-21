@@ -89,8 +89,8 @@ export default defineConfig({
               slug: "frameworks/astro/getting-started",
             },
             {
-              label: "Request Context",
-              slug: "frameworks/astro/request-context",
+              label: "i18n Context",
+              slug: "frameworks/astro/i18n-context",
             },
             {
               label: "Using Islands",
@@ -181,6 +181,10 @@ export default defineConfig({
             {
               label: "Rich Text and Structured Messages",
               slug: "guides/rich-text-and-structured-messages",
+            },
+            {
+              label: "Package Reference",
+              slug: "guides/package-reference",
             },
           ],
         },

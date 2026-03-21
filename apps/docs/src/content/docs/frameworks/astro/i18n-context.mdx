@@ -1,5 +1,5 @@
 ---
-title: "Astro: Request Context"
+title: "Astro: i18n Context"
 description: How the Lingui i18n instance is attached to Astro.locals and accessed in .astro files.
 ---
 
@@ -88,9 +88,8 @@ If you need the `I18n` instance in a plain TypeScript helper called from frontma
 
 ```ts title="src/lib/buildPageMeta.ts"
 import { getLinguiContext } from "lingui-for-astro";
-import type { AstroLocals } from "lingui-for-astro";
 
-export function buildPageMeta(locals: AstroLocals) {
+export function buildPageMeta(locals: App.Locals) {
   const { i18n } = getLinguiContext(locals);
   return {
     title: i18n._({ id: "page.title", message: "My Site" }),
@@ -114,3 +113,44 @@ For static sites with many pages, move the frontmatter setup into a shared helpe
 initialization pattern consistent without repeating the whole block in every page.
 
 </Aside>
+
+## Function reference
+
+### `setLinguiContext`
+
+```ts
+import { setLinguiContext } from "lingui-for-astro";
+
+function setLinguiContext(locals: object, instance: I18n): LinguiContext;
+```
+
+Attaches the Lingui instance to the request locals bag. Pass `Astro.locals` (in page frontmatter)
+or `context.locals` (in middleware) as the first argument. Call this before any translated Astro
+content renders.
+
+### `getLinguiContext`
+
+```ts
+import { getLinguiContext } from "lingui-for-astro";
+
+function getLinguiContext(locals: object): LinguiContext;
+```
+
+Reads the Lingui context from `Astro.locals` (or `context.locals` in middleware). Symmetric with
+`setLinguiContext`.
+
+Compiled macro output in `.astro` files calls this automatically. You only need it when accessing
+`i18n` from a plain TypeScript helper that receives `Astro.locals`.
+
+### `LinguiContext`
+
+```ts
+import type { LinguiContext } from "lingui-for-astro";
+
+type LinguiContext = {
+  i18n: I18n;
+};
+```
+
+The value returned by both functions. Access `.i18n` to use the Lingui instance for imperative
+calls such as `i18n._()` or `i18n.activate()`.

@@ -140,3 +140,49 @@ and `loadAndActivate` trigger re-rendering of macros like `$t` and `$plural`.
 For how to resolve the initial locale from URL params, cookies, and browser headers, and how to
 pass it into the layout, see
 [Locale Resolution](/frameworks/svelte/locale-resolution).
+
+## Function reference
+
+### `setLinguiContext`
+
+```ts
+import { setLinguiContext } from "lingui-for-svelte";
+
+function setLinguiContext(instance: I18n): LinguiContext;
+```
+
+Installs the Lingui instance into Svelte component context for the current subtree. Must be called
+inside a Svelte component. All descendant components inherit the context without prop drilling.
+
+Returns the created `LinguiContext` value. The return value is rarely needed; the context is
+accessible to descendant components automatically.
+
+### `getLinguiContext`
+
+```ts
+import { getLinguiContext } from "lingui-for-svelte";
+
+function getLinguiContext(): LinguiContext;
+```
+
+Reads the active Lingui context from the current Svelte component tree. Throws if no context has
+been set.
+
+Compiled macro output calls this internally. You only need it when you want the raw `i18n`
+instance, for example to call `i18n.activate()` in a locale switcher that is not the same
+component that called `setLinguiContext`.
+
+### `LinguiContext`
+
+```ts
+import type { LinguiContext } from "lingui-for-svelte";
+
+type LinguiContext = {
+  i18n: I18n;
+  // other fields are internal
+};
+```
+
+The value returned by both functions. Access `.i18n` to use the raw Lingui instance for imperative
+calls. Other fields on this type are used by compiled macro output and are not part of the public
+API.
