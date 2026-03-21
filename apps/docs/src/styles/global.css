@@ -16,3 +16,7 @@
     @import "tailwindcss/preflight.css";
   }
 }
+
+@layer components {
+  @import "./demo-code.css";
+}
