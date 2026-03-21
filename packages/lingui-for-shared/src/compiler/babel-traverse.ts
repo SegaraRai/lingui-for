@@ -1,8 +1,8 @@
 import * as babelTraverseModule from "@babel/traverse";
 
-export type BabelTraverse = typeof import("@babel/traverse").default;
+type BabelTraverse = typeof import("@babel/traverse").default;
 
-export function getBabelTraverse(): BabelTraverse {
+function getBabelTraverse(): BabelTraverse {
   const moduleValue = babelTraverseModule as unknown as {
     default?: BabelTraverse | { default?: BabelTraverse };
   };
@@ -21,3 +21,5 @@ export function getBabelTraverse(): BabelTraverse {
 
   return candidate;
 }
+
+export const babelTraverse = /*#__PURE__*/ getBabelTraverse();

@@ -1,7 +1,7 @@
 import { parseSync, type NodePath, type ParserOptions } from "@babel/core";
 import * as t from "@babel/types";
 
-import { getBabelTraverse } from "./babel-traverse.ts";
+import { babelTraverse } from "./babel-traverse.ts";
 
 export type SharedMacroBindings<ImportName extends string> = {
   all: ReadonlySet<string>;
@@ -52,9 +52,8 @@ function collectImportLocalsFromFile<ImportName extends string>(
   },
 ): Map<string, ImportName> {
   const locals = new Map<string, ImportName>();
-  const traverse = getBabelTraverse();
 
-  traverse(file, {
+  babelTraverse(file, {
     ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
       if (path.node.source.value !== options.macroPackage) {
         return;
@@ -283,9 +282,8 @@ export function expressionUsesMacroBinding<ImportName extends string>(
   }
 
   let usesMacroBinding = false;
-  const traverse = getBabelTraverse();
 
-  traverse(file, {
+  babelTraverse(file, {
     CallExpression(path: NodePath<t.CallExpression>) {
       if (usesMacroBinding) {
         path.stop();

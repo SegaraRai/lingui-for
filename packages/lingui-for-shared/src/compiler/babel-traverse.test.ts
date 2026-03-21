@@ -1,7 +1,7 @@
 import { parseSync } from "@babel/core";
 import { describe, expect, test } from "vite-plus/test";
 
-import { getBabelTraverse } from "./babel-traverse.ts";
+import { babelTraverse } from "./babel-traverse.ts";
 
 describe("getBabelTraverse", () => {
   test("returns a callable traverse function", () => {
@@ -20,15 +20,14 @@ describe("getBabelTraverse", () => {
     }
 
     let visited = false;
-    const traverse = getBabelTraverse();
 
-    traverse(file, {
+    babelTraverse(file, {
       NumericLiteral(path) {
         visited = path.node.value === 42;
       },
     });
 
-    expect(typeof traverse).toBe("function");
+    expect(typeof babelTraverse).toBe("function");
     expect(visited).toBe(true);
   });
 });

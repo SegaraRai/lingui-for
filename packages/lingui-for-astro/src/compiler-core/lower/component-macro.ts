@@ -1,19 +1,19 @@
-import { transformSync, type NodePath } from "@babel/core";
+import { type NodePath, transformSync } from "@babel/core";
 import * as t from "@babel/types";
 import MagicString from "magic-string";
 
 import {
-  buildPrefixedMappedSnippetMap,
+  babelTraverse,
   buildAnchoredGeneratedSnippetMap,
   buildGeneratedSnippetMap,
-  buildPrefixedSnippetMap,
   buildOutputWithIndexedMap,
+  buildPrefixedMappedSnippetMap,
+  buildPrefixedSnippetMap,
   lowerSyntheticComponentDeclaration,
   type ReplacementChunk,
   stripRuntimeTransImports,
 } from "lingui-for-shared/compiler";
 
-import { getBabelTraverse } from "../shared/babel-traverse.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
   PACKAGE_RUNTIME,
@@ -22,13 +22,13 @@ import {
   SYNTHETIC_PREFIX_COMPONENT,
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
+import { transformProgram } from "./babel-transform.ts";
 import {
   createComponentWrapperPrefix,
   type LoweredSnippet,
   type LoweringSourceMapOptions,
   WRAPPED_SUFFIX,
 } from "./common.ts";
-import { transformProgram } from "./babel-transform.ts";
 import { lowerTemplateExpression } from "./template-expression.ts";
 
 export function lowerComponentMacro(
@@ -143,9 +143,7 @@ function rewriteNestedComponentMacroExpressions(
   const offset = prefix.length;
   const replacements: ReplacementChunk[] = [];
 
-  const traverse = getBabelTraverse();
-
-  traverse(parsed.ast, {
+  babelTraverse(parsed.ast, {
     JSXAttribute(path: NodePath<t.JSXAttribute>) {
       const value = path.node.value;
       if (

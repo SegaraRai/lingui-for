@@ -2,9 +2,9 @@ import { parseSync, type NodePath } from "@babel/core";
 import type * as t from "@babel/types";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
+import { babelTraverse } from "lingui-for-shared/compiler";
 import { analyzeSvelte } from "../analysis/svelte-analysis.ts";
 import type { ScriptBlock, SvelteAnalysis } from "../analysis/types.ts";
-import { getBabelTraverse } from "../shared/babel-traverse.ts";
 import { getParserPlugins, normalizeLinguiConfig } from "../shared/config.ts";
 import { PACKAGE_MACRO } from "../shared/constants.ts";
 import {
@@ -187,11 +187,10 @@ function collectScriptMacros(
     };
   }
 
-  const traverse = getBabelTraverse();
   const imports: ScriptMacroImport[] = [];
   const expressions: ScriptMacroExpression[] = [];
 
-  traverse(ast, {
+  babelTraverse(ast, {
     ImportDeclaration(path) {
       if (path.node.source.value !== PACKAGE_MACRO) {
         return;

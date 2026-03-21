@@ -4,13 +4,13 @@ import { generate } from "@babel/generator";
 import * as t from "@babel/types";
 
 import {
+  babelTraverse,
   buildDirectProgramMap,
   buildGeneratedSnippetMap,
   buildOutputWithIndexedMap,
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
 
-import { getBabelTraverse } from "../shared/babel-traverse.ts";
 import { getParserPlugins, normalizeLinguiConfig } from "../shared/config.ts";
 import {
   PACKAGE_MACRO,
@@ -182,15 +182,13 @@ function collectMacroImportRanges(source: string): SourceRange[] {
       plugins: getParserPlugins(),
     },
   });
-
   if (!file || !t.isFile(file)) {
     return [];
   }
 
   const ranges: SourceRange[] = [];
-  const traverse = getBabelTraverse();
 
-  traverse(file, {
+  babelTraverse(file, {
     ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
       const start = path.node.start;
       const end = path.node.end;
@@ -229,15 +227,13 @@ function collectOriginalMacroExpressionRanges(source: string): SourceRange[] {
       plugins: getParserPlugins(),
     },
   });
-
   if (!file || !t.isFile(file)) {
     return [];
   }
 
   const ranges: SourceRange[] = [];
-  const traverse = getBabelTraverse();
 
-  traverse(file, {
+  babelTraverse(file, {
     CallExpression(path: NodePath<t.CallExpression>) {
       if (!isOriginalMacroExpression(path)) {
         return;
@@ -297,9 +293,8 @@ function collectTransformedRuntimeCallCodes(transformed: {
   ast: t.File;
 }): string[] {
   const calls: string[] = [];
-  const traverse = getBabelTraverse();
 
-  traverse(transformed.ast, {
+  babelTraverse(transformed.ast, {
     CallExpression(path: NodePath<t.CallExpression>) {
       if (
         !t.isMemberExpression(path.node.callee) ||
