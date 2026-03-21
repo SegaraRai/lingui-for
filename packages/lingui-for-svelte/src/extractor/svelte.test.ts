@@ -3,7 +3,7 @@ import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
-import { svelteExtractor } from "./index.ts";
+import { svelteExtractor } from "./svelte.ts";
 
 function createExtractorContext(): { linguiConfig: LinguiConfigNormalized } {
   return {
