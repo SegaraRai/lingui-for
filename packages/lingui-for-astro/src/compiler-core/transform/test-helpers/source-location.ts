@@ -1,8 +1,5 @@
-import dedent from "dedent";
-import { SourceMapConsumer } from "source-map";
-import { describe, expect, it } from "vite-plus/test";
-
-import { transformAstro } from "./transform-astro.ts";
+import type { SourceMapConsumer } from "source-map";
+import type { expect as vpExpect } from "vite-plus/test";
 
 type SourceLocation = {
   line: number;
@@ -14,7 +11,7 @@ type SourceRange = {
   end: number;
 };
 
-type Detection = {
+export type Detection = {
   name: string;
   original: string | RegExp;
   generated: string | RegExp;
@@ -79,11 +76,12 @@ function offsetToLocation(source: string, offset: number): SourceLocation {
   return { line, column };
 }
 
-function assertRangeMapping(
+export function assertRangeMapping(
   consumer: SourceMapConsumer,
   generatedSource: string,
   originalSource: string,
   detection: Detection,
+  expect: typeof vpExpect,
 ): void {
   const generated = findUniqueRange(generatedSource, detection.generated);
   const original = findUniqueRange(originalSource, detection.original);
@@ -120,88 +118,3 @@ function assertRangeMapping(
     originalEnd.column,
   );
 }
-
-describe("transformAstro source map discipline", () => {
-  const source = dedent`
-    ---
-    import { t, Trans } from "lingui-for-astro/macro";
-
-    const keepBefore = "before";
-    const label = t\`Mapped script message\`;
-    const keepAfter = "after";
-    ---
-
-    <section data-keep="yes">
-      <p>{keepBefore}</p>
-      <p><strong>{t\`Mapped template message\`}</strong></p>
-      <a href="/docs"><Trans>Mapped component message</Trans></a>
-      <p>{keepAfter}</p>
-    </section>
-  `;
-
-  const detections: Detection[] = [
-    {
-      name: "frontmatter transform",
-      original: "t`Mapped script message`",
-      generated: /__l4a_i18n\._\([^)]+message: "Mapped script message"[^)]+\)/,
-    },
-    {
-      name: "template transform",
-      original: /t`Mapped template message`/,
-      generated:
-        /__l4a_i18n\._\([^)]+message: "Mapped template message"[^)]+\)/,
-    },
-    {
-      name: "component transform",
-      original: "<Trans>Mapped component message</Trans>",
-      generated: /<L4aRuntimeTrans\b[\s\S]*?\/>/,
-    },
-    {
-      name: "label binding is preserved",
-      original: "const label = ",
-      generated: "const label = ",
-    },
-    {
-      name: "keepAfter binding is preserved",
-      original: 'const keepAfter = "after";',
-      generated: 'const keepAfter = "after";',
-    },
-    {
-      name: "template opening wrapper is preserved",
-      original: "<p><strong>{",
-      generated: "<p><strong>{",
-    },
-    {
-      name: "template closing wrapper is preserved",
-      original: "}</strong></p>",
-      generated: "}</strong></p>",
-    },
-    {
-      name: "component opening wrapper is preserved",
-      original: '<a href="/docs">',
-      generated: '<a href="/docs">',
-    },
-    {
-      name: "component closing wrapper is preserved",
-      original: "</a>",
-      generated: "</a>",
-    },
-  ];
-
-  it("keeps file-level metadata and maps transformed and preserved ranges back to the original astro file", async () => {
-    const result = transformAstro(source, {
-      filename: "/virtual/Page.astro",
-    });
-    const map = result.map!;
-
-    expect(map.file).toBe("Page.astro");
-    expect(map.sources).toEqual(["Page.astro"]);
-    expect(map.sourcesContent).toEqual([source]);
-
-    await SourceMapConsumer.with(map as never, null, (consumer) => {
-      detections.forEach((detection) => {
-        assertRangeMapping(consumer, result.code, source, detection);
-      });
-    });
-  });
-});

@@ -5,74 +5,87 @@ import {
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
 
-import type { LinguiAstroTransformOptions } from "../shared/types.ts";
-import type { AstroTransformContext } from "./astro-transform-context.ts";
+import type { AstroPlan } from "../plan/index.ts";
 import {
   buildFrontmatterPrelude,
-  transformComponentMacro,
   transformFrontmatter,
-  transformTemplateExpression,
-} from "./transform-helpers.ts";
+} from "./frontmatter.ts";
+import { transformComponentMacro } from "./component-macro.ts";
+import { transformTemplateExpression } from "./template-expression.ts";
 
 export function createAstroReplacementPlan(
-  source: string,
-  context: AstroTransformContext,
-  options: LinguiAstroTransformOptions,
+  plan: AstroPlan,
 ): ReplacementChunk[] {
-  const filename = stripQuery(options.filename);
+  const filename = stripQuery(plan.options.filename);
   const mapFile = filename.split(/[\\/]/).at(-1) ?? filename;
   const replacements: ReplacementChunk[] = [];
 
-  context.filteredExpressions.forEach((expression) => {
+  plan.items.forEach((item) => {
+    if (item.kind !== "template-expression") {
+      return;
+    }
+
     const transformed = transformTemplateExpression(
-      source.slice(expression.innerRange.start, expression.innerRange.end),
-      context.macroBindings.allImports,
-      options,
+      item.source,
+      plan.macroImports,
+      plan.options,
       {
-        fullSource: source,
-        sourceStart: expression.innerRange.start,
+        fullSource: plan.source,
+        sourceStart: item.innerRange.start,
       },
     );
 
     replacements.push({
-      start: expression.innerRange.start,
-      end: expression.innerRange.end,
+      start: item.innerRange.start,
+      end: item.innerRange.end,
       code: transformed.code,
       map: transformed.map,
     });
   });
 
-  context.filteredComponents.forEach((candidate) => {
+  plan.items.forEach((item) => {
+    if (item.kind !== "component-macro") {
+      return;
+    }
+
     const replacement = transformComponentMacro(
-      source.slice(candidate.range.start, candidate.range.end),
-      context.macroBindings.allImports,
-      options,
+      item.source,
+      plan.macroImports,
+      plan.options,
       {
-        fullSource: source,
-        sourceStart: candidate.range.start,
+        fullSource: plan.source,
+        sourceStart: item.range.start,
       },
     );
 
     replacements.push({
-      start: candidate.range.start,
-      end: candidate.range.end,
+      start: item.range.start,
+      end: item.range.end,
       code: replacement.code,
       map: replacement.map,
     });
   });
 
-  const transformedFrontmatter = context.usesAstroI18n
-    ? transformFrontmatter(context.frontmatterContent, options, {
-        fullSource: source,
-        sourceStart: context.analysis.frontmatter?.contentRange.start ?? 0,
+  const frontmatter = plan.items.find(
+    (
+      item,
+    ): item is Extract<
+      AstroPlan["items"][number],
+      { kind: "frontmatter-macro-block" }
+    > => item.kind === "frontmatter-macro-block",
+  );
+  const transformedFrontmatter = frontmatter
+    ? transformFrontmatter(frontmatter.source, plan.options, {
+        fullSource: plan.source,
+        sourceStart: frontmatter.contentRange.start,
       })
     : {
-        code: context.frontmatterContent,
+        code: plan.frontmatter?.content ?? "",
         map: null,
       };
   const prelude = buildFrontmatterPrelude(
-    context.usesAstroI18n,
-    context.usesRuntimeTrans,
+    plan.usesAstroI18n,
+    plan.usesRuntimeTrans,
   );
   const finalFrontmatter = normalizeFrontmatterContent(
     [prelude, transformedFrontmatter.code]
@@ -80,13 +93,13 @@ export function createAstroReplacementPlan(
       .join(""),
   );
 
-  if (context.analysis.frontmatter) {
+  if (plan.frontmatter) {
     const frontmatterPrefix = "---\n";
     const frontmatterSuffix = finalFrontmatter.endsWith("\n") ? "---" : "\n---";
 
     replacements.push({
-      start: context.analysis.frontmatter.range.start,
-      end: context.analysis.frontmatter.range.end,
+      start: plan.frontmatter.range.start,
+      end: plan.frontmatter.range.end,
       code: `${frontmatterPrefix}${finalFrontmatter}${frontmatterSuffix}`,
       map:
         transformedFrontmatter.map == null

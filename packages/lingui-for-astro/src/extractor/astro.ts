@@ -5,10 +5,8 @@ import {
   stripQuery,
 } from "lingui-for-shared/compiler";
 
-import {
-  createAstroExtractionUnits,
-  normalizeLinguiConfig,
-} from "../compiler-core/index.ts";
+import { createAstroExtractionUnits } from "../compiler-core/extract/index.ts";
+import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 
 function createExtractorContext(ctx: ExtractorCtx | undefined): ExtractorCtx {
   if (ctx) {

@@ -1,5 +1,5 @@
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
-import { createAstroTransformContext } from "./astro-transform-context.ts";
+import { createAstroPlan } from "../plan/index.ts";
 import {
   applyAstroReplacementPlan,
   createAstroReplacementPlan,
@@ -22,8 +22,8 @@ export function transformAstro(
   source: string,
   options: LinguiAstroTransformOptions,
 ): AstroTransformResult {
-  const context = createAstroTransformContext(source);
-  const replacements = createAstroReplacementPlan(source, context, options);
+  const plan = createAstroPlan(source, options);
+  const replacements = createAstroReplacementPlan(plan);
   const output = applyAstroReplacementPlan(
     source,
     options.filename,
@@ -33,6 +33,6 @@ export function transformAstro(
   return {
     code: output.code,
     map: output.map,
-    analysis: context.analysis,
+    analysis: plan.analysis,
   };
 }

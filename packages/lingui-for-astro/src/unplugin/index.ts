@@ -6,10 +6,8 @@ import {
 
 import { stripQuery } from "lingui-for-shared/compiler";
 
-import {
-  mayContainLinguiMacroImport,
-  transformAstro,
-} from "../compiler-core/index.ts";
+import { mayContainLinguiMacroImport } from "../compiler-core/shared/macro-presence.ts";
+import { transformAstro } from "../compiler-core/transform/index.ts";
 import type { LinguiAstroPluginOptions } from "./types.ts";
 
 function reorderBeforeMatcher<

@@ -1,0 +1,13 @@
+import { describe, expect, it } from "vite-plus/test";
+
+import { initWasmOnce } from "./wasm-vite.ts";
+
+describe("analysis/wasm-vite", () => {
+  it("initializes wasm only once", () => {
+    const first = initWasmOnce();
+    const second = initWasmOnce();
+
+    expect(first).toBe(second);
+    expect(first.memory).toBeDefined();
+  });
+});
