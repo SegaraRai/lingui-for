@@ -15,7 +15,7 @@ interface Props {
 const { id, message, values = {}, components } = Astro.props;
 const options = message != null ? { message } : {};
 
-const { i18n } = getLinguiContext(Astro);
+const { i18n } = getLinguiContext(Astro.locals);
 const translated = i18n._(id, values, options);
 const nodes = components
   ? formatRichTextTranslation(translated, components)

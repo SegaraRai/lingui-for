@@ -10,7 +10,6 @@ export {
   getLinguiContext,
   LINGUI_ASTRO_CONTEXT,
   setLinguiContext,
-  type AstroLike,
   type LinguiContext,
 } from "./core/context.ts";
 

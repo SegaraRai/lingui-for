@@ -8,5 +8,5 @@ test("stores and reads the request-scoped Lingui context from Astro.locals", () 
 
   setLinguiContext(locals, i18n);
 
-  expect(getLinguiContext({ locals }).i18n).toBe(i18n);
+  expect(getLinguiContext(locals).i18n).toBe(i18n);
 });

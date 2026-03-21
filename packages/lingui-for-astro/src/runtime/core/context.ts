@@ -22,16 +22,6 @@ export interface LinguiContext {
 }
 
 /**
- * Minimal Astro-like object accepted by {@link getLinguiContext}.
- */
-export interface AstroLike {
-  /**
-   * Request-scoped locals bag that may contain the Lingui context.
-   */
-  locals: object;
-}
-
-/**
  * Stores the active Lingui context on the current Astro request.
  *
  * @param locals `Astro.locals` object for the current request.
@@ -52,16 +42,14 @@ export function setLinguiContext(
 /**
  * Reads the Lingui runtime context from `Astro.locals`.
  *
- * @param astro Astro-like object exposing the request `locals`.
+ * @param locals `Astro.locals` object for the current request.
  * @returns The active Lingui runtime context for the current request.
  *
  * This is part of the runtime plumbing used by compiled Astro output. Applications typically call
  * it only when bridging context into nested renderers.
  */
-export function getLinguiContext(astro: AstroLike): LinguiContext {
-  const context = (astro.locals as Record<string, unknown>)[
-    LINGUI_ASTRO_CONTEXT
-  ];
+export function getLinguiContext(locals: object): LinguiContext {
+  const context = (locals as Record<string, unknown>)[LINGUI_ASTRO_CONTEXT];
 
   if (!context || typeof context !== "object" || !("i18n" in context)) {
     throw new Error(
