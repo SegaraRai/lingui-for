@@ -107,6 +107,22 @@ const message: string = t`Cart: ${plural(count, {
   </TabItem>
 </Tabs>
 
+## Exact value match
+
+Use a plain numeric key to match an exact count. Exact matches take precedence over category keys.
+
+```ts
+plural(count, {
+  0: "No items",
+  one: "# item",
+  other: "# items",
+});
+```
+
+The component macro [`Plural`](/macros/plural-component) expresses the same match with an
+underscore-prefixed prop (`_0="No items"`). The function form uses a plain number key; no
+underscore is needed.
+
 ## When `plural` is a good fit
 
 - the message depends on a numeric count

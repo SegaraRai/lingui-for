@@ -14,6 +14,11 @@ Use it when a message changes based on a named case such as tone, role, status, 
 category. It can be used directly to produce a translated string, or embedded inside a
 `` t`...` `` template literal when the select belongs to a larger message.
 
+Case keys are plain JavaScript object keys written without any prefix: `{ formal: "Welcome", casual: "Hi", other: "Hello" }`.
+No underscore is used in the function form. The `_`-prefixed convention applies
+only to the component macro [`Select`](/macros/select-component), where underscores
+distinguish custom case props from the reserved `value` and `other` props.
+
 For the framework-agnostic Lingui semantics, see the
 [official `select` reference](https://lingui.dev/ref/macro#select).
 

@@ -6,9 +6,12 @@ description: A workflow for extending an app from one source locale to another l
 ## Typical workflow
 
 1. Add the locale code to `lingui.config.js` or `lingui.config.ts`.
-2. Run message extraction.
-3. Fill in the new catalog entries.
-4. Compile the catalogs.
+2. Run `lingui extract`.
+3. Fill in the new catalog entries (the extracted `.po` or `.json` files contain one entry per
+   message; provide the translated string for each). See the
+   [official catalog format reference](https://lingui.dev/tutorials/cli#catalogs) for file format
+   details.
+4. Run `lingui compile`.
 5. Update the app's locale resolution and catalog loading. See [Load Compiled Catalogs](/guides/load-compiled-catalogs) for patterns.
 6. Verify one page in the new locale end to end.
 

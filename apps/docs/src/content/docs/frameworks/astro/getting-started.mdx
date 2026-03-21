@@ -68,9 +68,10 @@ export default defineConfig({
 
 <Aside>
 
-Astro defaults to static output. The middleware example below is the request-aware setup for
-`server` or `hybrid` output. If your site is fully static, see
-[i18n Context](/frameworks/astro/i18n-context) for the frontmatter-based setup instead.
+Middleware runs for every page regardless of output mode: for `server`/`hybrid` output it handles
+each request, and for `static` output it runs per page during the build. It is the recommended
+initialization pattern in all cases. For simple static sites with no locale logic, an inline
+frontmatter setup is also available. See [i18n Context](/frameworks/astro/i18n-context).
 
 </Aside>
 

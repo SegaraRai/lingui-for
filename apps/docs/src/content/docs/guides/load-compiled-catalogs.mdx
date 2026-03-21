@@ -40,7 +40,7 @@ to switch. No `load()` call is needed.
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">
 
-```ts title="src/lib/i18n/i18n.svelte.ts"
+```ts title="src/lib/i18n/instance.ts"
 import { setupI18n } from "@lingui/core";
 import { catalog, type SupportedLocale } from "./catalog";
 
@@ -52,6 +52,20 @@ export const i18n = setupI18n({
 export function switchLocale(next: SupportedLocale): void {
   i18n.activate(next);
 }
+```
+
+Import this shared instance in your root layout and pass it to `setLinguiContext`:
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { i18n } from "$lib/i18n/instance";
+
+  const { children } = $props();
+  setLinguiContext(i18n);
+</script>
+
+{@render children()}
 ```
 
   </TabItem>

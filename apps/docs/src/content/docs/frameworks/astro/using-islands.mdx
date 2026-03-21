@@ -40,8 +40,43 @@ The translation call site should still use the package that matches the current 
 
 ## Practical pattern
 
-1. Resolve the active locale at the Astro app boundary.
+1. Resolve the active locale at the Astro app boundary (middleware or frontmatter).
 2. Load the correct catalogs for the page render.
 3. Render `.astro` with `lingui-for-astro`.
-4. Pass locale or translated data into islands as props.
-5. Inside each island, use the Lingui integration that belongs to that framework.
+4. Pass `locale` into each island as a prop.
+5. Inside each island, call `setLinguiContext` with that locale.
+
+```astro title="src/pages/index.astro"
+---
+import { t } from "lingui-for-astro/macro";
+import MyIsland from "../components/MyIsland.svelte";
+
+// locale is set in middleware via setLinguiContext
+const locale = Astro.locals.lingui?.i18n.locale ?? "en";
+---
+
+<h1>{t`Welcome`}</h1>
+
+<!-- Pass locale so the island uses the same locale as the page. -->
+<MyIsland client:load {locale} />
+```
+
+```svelte title="src/components/MyIsland.svelte"
+<script lang="ts">
+  import { untrack } from "svelte";
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+  import { catalog } from "$lib/i18n/catalog";
+
+  const { locale = "en" } = $props();
+
+  const i18n = setupI18n({ locale: untrack(() => locale), messages: catalog });
+  setLinguiContext(i18n);
+</script>
+
+<p>{$t`Hello from a Svelte island`}</p>
+```
+
+Pass `locale` from the page, not translated strings, so the island can translate its own messages
+using the same locale, and react to future locale changes if needed.

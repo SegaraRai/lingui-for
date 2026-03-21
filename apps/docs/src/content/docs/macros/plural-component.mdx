@@ -14,6 +14,10 @@ It represents the same ICU plural logic, but authored as component props in mark
 when the surrounding file is already template-heavy and the component form is easier to scan than a
 function call.
 
+Standard ICU plural categories (`zero`, `one`, `two`, `few`, `many`, `other`) are used as plain
+prop names. Exact-value matches use an underscore-prefixed number: `_0="No items"` matches exactly
+when `value` is 0, taking precedence over the category-based props.
+
 For the framework-agnostic Lingui semantics, see the
 [official `Plural` reference](https://lingui.dev/ref/macro#plural-1).
 
@@ -60,6 +64,21 @@ function Component() {
 
   </TabItem>
 </Tabs>
+
+## Exact value match
+
+Prefix a number with `_` to match an exact value. Exact matches take precedence over category
+props.
+
+```svelte
+<Plural value={count} _0="No files" one="# file" other="# files" />
+```
+
+The function form uses a plain numeric key for the same effect:
+
+```svelte
+<p>{$plural(count, { 0: 'No files', one: '# file', other: '# files' })}</p>
+```
 
 ## When `Plural` is a good fit
 

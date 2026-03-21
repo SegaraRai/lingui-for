@@ -13,6 +13,11 @@ import MacroWorkbench from "../../../components/MacroWorkbench.astro";
 It is useful when ordinal cases belong directly in template markup and the component form is easier
 to maintain than a function call.
 
+Standard ICU plural categories (`one`, `two`, `few`, `many`, `other`) are used as plain prop
+names. Exact-value matches use an underscore-prefixed number: `_1="1st"` matches exactly when
+`value` is 1, taking precedence over the category props. This is useful for irregular ordinals
+that do not map cleanly to a category in all locales.
+
 For the framework-agnostic Lingui semantics, see the
 [official `SelectOrdinal` reference](https://lingui.dev/ref/macro#selectordinal-1).
 
@@ -61,6 +66,21 @@ function Component() {
 
   </TabItem>
 </Tabs>
+
+## Exact value match
+
+Prefix a number with `_` to match an exact value. Exact matches take precedence over category
+props.
+
+```svelte
+<SelectOrdinal value={place} _1="1st" _2="2nd" _3="3rd" other="#th" />
+```
+
+The function form uses plain numeric keys for the same effect:
+
+```svelte
+<p>{$selectOrdinal(place, { 1: '1st', 2: '2nd', 3: '3rd', other: '#th' })}</p>
+```
 
 ## When `SelectOrdinal` is a good fit
 

@@ -22,7 +22,35 @@ Ask what the translation needs to preserve:
 This is guidance, not a hard prohibition. The goal is readable authoring that still matches Lingui's
 official semantics.
 
+## Examples
+
+**Plain string: use `t`**
+
+```svelte
+<button>{$t`Submit`}</button>
+<img alt={$t`Profile photo of ${name}`} />
+```
+
+**Rich text with a link: use `Trans`**
+
+```svelte
+<!-- Translators see "Read the <0>documentation</0>." and can reorder the link. -->
+<Trans>Read the <a href="/docs">documentation</a>.</Trans>
+```
+
+**Plural in markup: component form vs. function form**
+
+```svelte
+<!-- Component form: plural branches are visible inline. -->
+<Plural value={count} one="# file selected" other="# files selected" />
+
+<!-- Function form: equivalent, but reads more naturally inside a sentence. -->
+<p>{$t`You have ${$plural(count, { one: "# message", other: "# messages" })}.`}</p>
+```
+
 ## Renderer differences still matter
 
-- In Svelte, rich text can participate in the framework's reactive model.
-- In Astro, rich text is request-bound and server-oriented.
+- In Svelte, `Trans`, `Plural`, and friends participate in the reactive model. They re-render when
+  the locale changes.
+- In Astro, translated output is fixed at render time (build time for static, request time for
+  server/hybrid). There is no client-side re-render.

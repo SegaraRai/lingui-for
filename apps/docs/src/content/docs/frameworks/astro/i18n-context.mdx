@@ -5,48 +5,16 @@ description: How the Lingui i18n instance is attached to Astro.locals and access
 
 import { Aside } from "@astrojs/starlight/components";
 
-Astro defaults to static output, so the setup pattern depends on which mode you choose.
+Middleware is the recommended initialization point regardless of output mode. Astro runs middleware
+for every request in `server` and `hybrid` output, and for every page during the static build in
+`static` output. Either way, `setLinguiContext` runs before the page renders.
 
-- In `static` output, initialize Lingui in each page's frontmatter or through a shared helper
-  called from frontmatter.
-- In `server` and `hybrid` output, initialize Lingui once in middleware for each request.
+`lingui-for-astro` uses `Astro.locals` as the context carrier in all cases.
 
-`lingui-for-astro` uses `Astro.locals` as the context carrier in both cases. The difference is only
-where you populate it.
+## Middleware (all output modes)
 
-<Aside>
-
-Use the static pattern unless you actually need request-aware locale resolution from cookies,
-headers, auth, or other per-request data.
-
-</Aside>
-
-## Static output
-
-Static output is the default Astro mode. Pages are rendered at build time, not per request.
-
-For static pages, initialize Lingui at the top of each page's frontmatter, or through a shared
-helper called from frontmatter.
-
-```astro title="src/pages/index.astro"
----
-import { setupI18n } from "@lingui/core";
-import { setLinguiContext } from "lingui-for-astro";
-import { t } from "lingui-for-astro/macro";
-import { catalog } from "../lib/i18n/catalog";
-
-const locale = "en"; // or derive from Astro.params, config, etc.
-const i18n = setupI18n({ locale, messages: catalog });
-setLinguiContext(Astro.locals, i18n);
----
-
-<h1>{t`Hello`}</h1>
-```
-
-## Server and hybrid output
-
-If you opt into `server` or `hybrid` output, middleware becomes the standard place to call
-`setLinguiContext`.
+Call `setLinguiContext` in middleware so it runs once per page, before any translated content
+renders.
 
 ```ts title="src/middleware.ts"
 import { defineMiddleware } from "astro:middleware";
@@ -62,8 +30,28 @@ export const onRequest = defineMiddleware((context, next) => {
 });
 ```
 
-Everything rendered in that request can then read the same `i18n` instance. No extra props or
-manual context plumbing are needed.
+Everything rendered in that request (or build) can then read the same `i18n` instance. No extra
+props or manual context plumbing are needed.
+
+## Frontmatter (simple static sites)
+
+For a static site with a fixed locale and no per-page locale logic, initializing Lingui in page
+frontmatter is also valid. Skip the middleware entirely.
+
+```astro title="src/pages/index.astro"
+---
+import { setupI18n } from "@lingui/core";
+import { setLinguiContext } from "lingui-for-astro";
+import { t } from "lingui-for-astro/macro";
+import { catalog } from "../lib/i18n/catalog";
+
+const locale = "en"; // or derive from Astro.params, static paths config, etc.
+const i18n = setupI18n({ locale, messages: catalog });
+setLinguiContext(Astro.locals, i18n);
+---
+
+<h1>{t`Hello`}</h1>
+```
 
 ## How `.astro` macros use the context
 
@@ -87,12 +75,15 @@ If you need the `I18n` instance in a plain TypeScript helper called from frontma
 `Astro.locals` explicitly.
 
 ```ts title="src/lib/buildPageMeta.ts"
+import { msg } from "@lingui/core/macro";
 import { getLinguiContext } from "lingui-for-astro";
+
+const pageTitle = msg({ id: "page.title", message: "My Site" });
 
 export function buildPageMeta(locals: App.Locals) {
   const { i18n } = getLinguiContext(locals);
   return {
-    title: i18n._({ id: "page.title", message: "My Site" }),
+    title: i18n._(pageTitle),
   };
 }
 ```
@@ -153,4 +144,6 @@ type LinguiContext = {
 ```
 
 The value returned by both functions. Access `.i18n` to use the Lingui instance for imperative
-calls such as `i18n._()` or `i18n.activate()`.
+calls. `i18n._()` is the low-level translation function that takes a message descriptor directly;
+prefer `msg` from `@lingui/core/macro` to define descriptors so they are extracted correctly.
+See the example above and [Plain JS/TS Setup](/guides/plain-js-ts) for the recommended pattern.

@@ -119,6 +119,23 @@ const message: string = t`Ranked ${selectOrdinal(place, {
   </TabItem>
 </Tabs>
 
+## Exact value match
+
+Use a plain numeric key to match an exact value. Exact matches take precedence over category keys.
+
+```ts
+selectOrdinal(place, {
+  1: "1st",
+  2: "2nd",
+  3: "3rd",
+  other: "#th",
+});
+```
+
+The component macro [`SelectOrdinal`](/macros/select-ordinal-component) expresses the same match
+with an underscore-prefixed prop (`_1="1st"`). The function form uses a plain number key; no
+underscore is needed.
+
 ## When `selectOrdinal` is a good fit
 
 - the output depends on ordinal categories

@@ -13,6 +13,10 @@ import MacroWorkbench from "../../../components/MacroWorkbench.astro";
 It expresses the same case-based ICU selection logic, but in a way that can read more naturally in a
 markup file than a nested function call.
 
+Custom case values (everything except `other`) are prefixed with `_` to distinguish them from
+reserved component props like `value`. For example, a `formal` case becomes `_formal="..."`. The
+`other` case is not prefixed because it is a required ICU keyword, not a custom value.
+
 For the framework-agnostic Lingui semantics, see the
 [official `Select` reference](https://lingui.dev/ref/macro#select-1).
 

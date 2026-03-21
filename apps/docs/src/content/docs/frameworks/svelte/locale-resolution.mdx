@@ -48,8 +48,9 @@ export function resolveLocale(
 ): SupportedLocale {
   if (isSupportedLocale(urlParam)) return urlParam;
   if (isSupportedLocale(cookie)) return cookie;
-  // For production use, replace this with a proper locale negotiation library to
-  // parse the Accept-Language header and select the best-matching supported locale.
+  // For production use, replace this simple check with a proper locale negotiation
+  // library such as @formatjs/intl-localematcher (with Negotiator) to parse the
+  // Accept-Language header and select the best-matching supported locale.
   if (acceptLanguage?.toLowerCase().includes("ja")) return "ja";
   return "en";
 }
@@ -152,8 +153,10 @@ resolved locale for the initial render.
     }
   }
 
+  // Called immediately for the initial SSR render, where $effect does not run.
   ensureLocale(data.locale);
 
+  // Called on every subsequent client-side navigation when data.locale changes.
   $effect(() => {
     ensureLocale(data.locale);
     document.documentElement.lang = data.locale;

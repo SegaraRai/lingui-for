@@ -92,6 +92,10 @@ page. Each island must call `setLinguiContext` itself.
   const { locale = "en" } = $props();
 
   // Islands run in isolation. Initialize their own context.
+  // untrack prevents Svelte from treating this setup code as a reactive
+  // dependency: if `locale` later changes as a prop, the island should
+  // re-activate the existing i18n instance (e.g. via $effect), not re-run
+  // the entire initialization block.
   const i18n = setupI18n({
     locale: untrack(() => locale),
     messages: catalog,

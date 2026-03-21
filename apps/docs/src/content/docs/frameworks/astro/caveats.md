@@ -7,24 +7,26 @@ description: Astro-specific boundaries and tradeoffs.
 
 Astro does not have a built-in component reactivity model for `.astro` files.
 `lingui-for-astro` therefore focuses on build-time or request-time translation, not reactive
-translation stores.
+translation stores. Once a page renders, translated strings are fixed: there is no equivalent of
+Svelte's `$t` that re-evaluates when the locale changes on the client.
 
-In `static` output, initialize Lingui in page frontmatter.
-In `server` and `hybrid` output, initialize it in middleware so it is available for the duration of
-that request.
+Initialize Lingui in middleware (recommended for all output modes) or in page frontmatter for
+simple static sites. See [i18n Context](/frameworks/astro/i18n-context) for details.
 
 ## Runtime helpers are not the primary API
 
-The runtime exists mainly as the compilation target for macros. Prefer `lingui-for-astro/macro`
-unless you are implementing tooling or debugging the transform itself.
+The runtime (`lingui-for-astro/runtime`) is the compilation target for macros. Its API may change
+without a major version bump. Prefer `lingui-for-astro/macro` unless you are implementing tooling
+or debugging the transform itself.
 
 ## MDX is not supported
 
-We have no plans to support MDX in Astro. MDX files are typically processed through static
-analysis, and embedding translation macros within them would interfere with that pipeline.
-For translated MDX content, we recommend maintaining separate `.mdx` files per locale.
+`.mdx` files in Astro are compiled through a Remark/Rehype pipeline that is separate from the
+Vite transform that powers `lingui-for-astro`. Injecting macro calls into that pipeline is not
+supported. For translated MDX content, maintain separate `.mdx` files per locale.
 
 ## Client framework islands keep their own runtime model
 
-If you embed Svelte or React islands in Astro, those islands should use their own Lingui integration
-path. `lingui-for-astro` handles `.astro` files, not the internal runtime of every client framework.
+If you embed Svelte or React islands in Astro, those islands must use their own Lingui integration.
+`lingui-for-astro` only handles the `.astro` compilation step. See
+[Using Islands](/frameworks/astro/using-islands) for the recommended split.

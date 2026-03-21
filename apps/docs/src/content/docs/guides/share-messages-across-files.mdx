@@ -1,6 +1,6 @@
 ---
 title: Share Messages Across Files
-description: Share message descriptors across Astro, Svelte, React, and plain JavaScript or TypeScript.
+description: Share message descriptors across Astro, Svelte, and plain JavaScript or TypeScript.
 ---
 
 ## Use plain JavaScript or TypeScript for shared descriptors
@@ -40,4 +40,8 @@ import { welcome } from "../lib/messages";
 
 - The shared file follows official Lingui Core semantics.
 - Framework-specific packages only handle framework syntax.
-- The same descriptor can be consumed from Astro, Svelte, and React.
+- The same descriptor can be consumed from Astro, Svelte, or any framework that can call `i18n._()`.
+
+For React islands, use the descriptor with `@lingui/react` the same way: `useLingui()` returns
+an `i18n` instance that accepts message descriptors via `i18n._()`. See the official Lingui docs
+for the React-specific API.

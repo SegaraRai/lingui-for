@@ -106,6 +106,24 @@ producers. They remain valid as embedded descriptors inside `$t` or `msg`.
 <!--   Use $plural (reactive) or plural.eager (non-reactive) instead. -->
 ```
 
+Embedding inside `msg` works the same way. Use `msg` when you want to define the descriptor once
+and translate it reactively at multiple call sites:
+
+```svelte
+<script lang="ts">
+  import { msg, plural, t } from "lingui-for-svelte/macro";
+
+  let count = $state(0);
+
+  // Descriptor defined once with plural embedded. No translation happens here.
+  const cartLabel = msg`Cart: ${plural(count, { one: "# item", other: "# items" })}`;
+</script>
+
+<!-- Translated reactively wherever needed. -->
+<p>{$t(cartLabel)}</p>
+<title>{$t(cartLabel)}</title>
+```
+
 ## How they work
 
 ```svelte
