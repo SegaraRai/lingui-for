@@ -67,6 +67,7 @@ export default defineConfig({
 ## Configure Lingui
 
 ```ts title="lingui.config.ts"
+import babelExtractor from "@lingui/cli/api/extractors/babel";
 import { defineConfig } from "@lingui/conf";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
@@ -74,9 +75,16 @@ export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
-  extractors: [svelteExtractor],
+  extractors: [svelteExtractor, babelExtractor],
 });
 ```
+
+<Aside>
+
+If you do not use Lingui macros in plain JavaScript or TypeScript files, you can omit
+`babelExtractor` from the `extractors` array and skip the import.
+
+</Aside>
 
 ## Initialize Lingui
 
