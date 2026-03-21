@@ -4,6 +4,12 @@ import {
   type RawSourceMap,
 } from "source-map";
 
+import {
+  buildDirectProgramMap as buildDirectProgramMapShared,
+  buildGeneratedSnippetMap as buildGeneratedSnippetMapShared,
+  buildPrefixedSnippetMap as buildPrefixedSnippetMapShared,
+} from "lingui-for-shared/compiler";
+
 export {
   advanceGeneratedOffset,
   createIndexedSourceMap,
@@ -109,13 +115,124 @@ export function buildDirectProgramMap(
   originalStart: number,
   snippet: string,
 ): RawSourceMap {
+  return normalizeSourceMap(
+    buildDirectProgramMapShared(
+      source,
+      filename,
+      originalStart,
+      snippet.length,
+    ),
+    filename,
+    source,
+  );
+}
+
+export function buildPrefixedSnippetMap(
+  source: string,
+  filename: string,
+  originalStart: number,
+  prefix: string,
+  originalLength: number,
+): RawSourceMap {
+  return normalizeSourceMap(
+    buildPrefixedSnippetMapShared(
+      source,
+      filename,
+      originalStart,
+      prefix,
+      originalLength,
+    ),
+    filename,
+    source,
+  );
+}
+
+export function buildGeneratedSnippetMap(
+  source: string,
+  filename: string,
+  originalStart: number,
+  generated: string,
+  originalLength: number,
+): RawSourceMap {
+  return normalizeSourceMap(
+    buildGeneratedSnippetMapShared(
+      source,
+      filename,
+      originalStart,
+      generated,
+      originalLength,
+    ),
+    filename,
+    source,
+  );
+}
+
+export function buildAnchoredGeneratedSnippetMap(
+  source: string,
+  filename: string,
+  originalStart: number,
+  generated: string,
+  originalLength: number,
+  anchorOffset: number,
+): RawSourceMap {
   const generator = new SourceMapGenerator({ file: filename });
   const toPosition = createOffsetToPosition(source);
+  const generatedToPosition = createOffsetToPosition(generated);
+  const clampedAnchor = Math.max(0, Math.min(anchorOffset, generated.length));
+  const generatedTailLength = Math.max(generated.length - clampedAnchor, 1);
 
-  addLineMappings(generator, filename, 1, snippet, originalStart, toPosition);
+  for (let offset = 0; offset <= generated.length; offset += 1) {
+    const originalOffset =
+      offset <= clampedAnchor
+        ? originalStart
+        : originalStart +
+          Math.min(
+            Math.floor(
+              ((offset - clampedAnchor) / generatedTailLength) * originalLength,
+            ),
+            originalLength,
+          );
+
+    generator.addMapping({
+      generated: generatedToPosition(offset),
+      original: toPosition(originalOffset),
+      source: filename,
+    });
+  }
+
   generator.setSourceContent(filename, source);
 
-  return generator.toJSON();
+  return normalizeSourceMap(generator.toJSON(), filename, source);
+}
+
+export function buildAnchoredBoundarySnippetMap(
+  source: string,
+  filename: string,
+  originalStart: number,
+  generated: string,
+  originalLength: number,
+  anchorOffset: number,
+): RawSourceMap {
+  const generator = new SourceMapGenerator({ file: filename });
+  const toPosition = createOffsetToPosition(source);
+  const generatedToPosition = createOffsetToPosition(generated);
+  const originalEnd = originalStart + originalLength - 1;
+  const clampedAnchor = Math.max(0, Math.min(anchorOffset, generated.length));
+
+  for (let offset = 0; offset <= generated.length; offset += 1) {
+    generator.addMapping({
+      generated: generatedToPosition(offset),
+      original:
+        offset <= clampedAnchor
+          ? toPosition(originalStart)
+          : toPosition(originalEnd),
+      source: filename,
+    });
+  }
+
+  generator.setSourceContent(filename, source);
+
+  return normalizeSourceMap(generator.toJSON(), filename, source);
 }
 
 export async function composeSourceMaps(
@@ -123,10 +240,10 @@ export async function composeSourceMaps(
   innerMap: RawSourceMap,
 ): Promise<RawSourceMap> {
   return await SourceMapConsumer.with(
-    outerMap as never,
+    outerMap,
     null,
     async (outerConsumer) =>
-      await SourceMapConsumer.with(innerMap as never, null, (innerConsumer) => {
+      await SourceMapConsumer.with(innerMap, null, (innerConsumer) => {
         const generator = new SourceMapGenerator({
           file: outerMap.file ?? innerMap.file,
         });
@@ -178,4 +295,89 @@ export async function composeSourceMaps(
         return generator.toJSON();
       }),
   );
+}
+
+export async function densifyGeneratedLineMappings(
+  map: RawSourceMap,
+  source: string,
+  filename: string,
+  generated: string,
+  originalStart: number,
+): Promise<RawSourceMap> {
+  const generator = new SourceMapGenerator({
+    file: map.file ?? filename,
+  });
+  const originalStartPosition = createOffsetToPosition(source)(originalStart);
+  const lineCount = generated.split("\n").length;
+
+  return await SourceMapConsumer.with(map, null, (consumer) => {
+    let nextLineToSeed = 1;
+    let lastOriginal = originalStartPosition;
+
+    consumer.eachMapping((mapping) => {
+      while (nextLineToSeed <= mapping.generatedLine) {
+        generator.addMapping({
+          generated: { line: nextLineToSeed, column: 0 },
+          original: lastOriginal,
+          source: filename,
+        });
+        nextLineToSeed += 1;
+      }
+
+      if (
+        mapping.originalLine != null &&
+        mapping.originalColumn != null &&
+        mapping.source != null
+      ) {
+        generator.addMapping({
+          generated: {
+            line: mapping.generatedLine,
+            column: mapping.generatedColumn,
+          },
+          original: {
+            line: mapping.originalLine,
+            column: mapping.originalColumn,
+          },
+          source: mapping.source,
+          name: mapping.name ?? undefined,
+        });
+        lastOriginal = {
+          line: mapping.originalLine,
+          column: mapping.originalColumn,
+        };
+      }
+    });
+
+    while (nextLineToSeed <= lineCount) {
+      generator.addMapping({
+        generated: { line: nextLineToSeed, column: 0 },
+        original: lastOriginal,
+        source: filename,
+      });
+      nextLineToSeed += 1;
+    }
+
+    consumer.sources.forEach((sourceName) => {
+      const content = consumer.sourceContentFor(sourceName, true);
+
+      if (content != null) {
+        generator.setSourceContent(sourceName, content);
+      }
+    });
+
+    return normalizeSourceMap(generator.toJSON(), filename, source);
+  });
+}
+
+function normalizeSourceMap(
+  map: RawSourceMap,
+  filename: string,
+  source: string,
+): RawSourceMap {
+  return {
+    ...map,
+    file: filename,
+    sources: [filename],
+    sourcesContent: [source],
+  };
 }

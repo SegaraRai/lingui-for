@@ -42,15 +42,15 @@ msgstr "{count, plural, one {リストに # 件あります。} other {リスト
 msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 msgstr "{count, selectordinal, one {第 # リリース候補} two {第 # リリース候補} few {第 # リリース候補} other {第 # リリース候補}}"
 
-#: src/routes/playground/stress/+page.svelte:211
+#: src/routes/playground/stress/+page.svelte:225
 msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 msgstr ""
 
-#: src/routes/playground/stress/+page.svelte:197
+#: src/routes/playground/stress/+page.svelte:225
 msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 msgstr ""
 
-#: src/routes/playground/stress/+page.svelte:183
+#: src/routes/playground/stress/+page.svelte:225
 msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 msgstr ""
 
@@ -272,7 +272,7 @@ msgid "Force a keyed subtree refresh"
 msgstr "キー付きサブツリーを更新する"
 
 #. placeholder {0}: reactiveState.name
-#: src/routes/playground/reactive/+page.svelte:12
+#: src/routes/playground/reactive/+page.svelte:13
 msgid "Hello {0} from the reactive route."
 msgstr "リアクティブルートからこんにちは、{0}。"
 
@@ -468,7 +468,7 @@ msgid "Script direct static reactivity."
 msgstr "スクリプトの直接固定リアクティビティ。"
 
 #. placeholder {0}: reactivityDemoState.value
-#: src/routes/playground/reactivity/+page.svelte:13
+#: src/routes/playground/reactivity/+page.svelte:14
 msgid "Script value: {0}"
 msgstr "スクリプトの値: {0}"
 

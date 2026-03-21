@@ -7,6 +7,12 @@ function compact(value: string): string {
   return value.replaceAll(/\s+/g, " ").trim();
 }
 
+function expectNoExcessBlankLines(value: string): void {
+  expect(value).not.toMatch(/<script[^>]*>\r?\n\r?\n/);
+  expect(value).not.toMatch(/\r?\n[ \t]+\r?\n/);
+  expect(value).not.toMatch(/\r?\n\r?\n\r?\n+/);
+}
+
 describe("transformSvelte", () => {
   it("keeps msg descriptors pure inside user-authored $derived", () => {
     const result = transformSvelte(
@@ -26,8 +32,7 @@ describe("transformSvelte", () => {
     expect(result.code).toMatchInlineSnapshot(`
     	"<script lang="ts">
     	  let name = $state("Ada");
-    	  const message = $derived(
-    	  /*i18n*/
+    	  const message = $derived(/*i18n*/
     	  {
     	    id: "OVaF9k",
     	    message: "Hello {name}",
@@ -58,6 +63,7 @@ describe("transformSvelte", () => {
       filename: "/virtual/App.svelte",
     });
 
+    expectNoExcessBlankLines(result.code);
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).toContain("$__l4s_translate(");
     expect(result.code).toMatchInlineSnapshot(`
@@ -66,9 +72,7 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
-    	  const heading =
-    	  /*i18n*/
+    	  const heading = /*i18n*/
     	  {
     	    id: "demo.heading",
     	    message: "Hello"
@@ -79,6 +83,7 @@ describe("transformSvelte", () => {
     	    id: "tfDRzk",
     	    message: "Save"
     	  });
+
     	  __l4s_ctx.prime();
     	</script>
 
@@ -102,6 +107,7 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
+    expectNoExcessBlankLines(result.code);
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).not.toContain("_i18n._(");
     expect(result.code).toContain("const label = $__l4s_translate(");
@@ -112,7 +118,6 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let name = $state("Ada");
     	  const label = $__l4s_translate(
     	  /*i18n*/
@@ -123,6 +128,7 @@ describe("transformSvelte", () => {
     	      name: name
     	    }
     	  });
+
     	  __l4s_ctx.prime();
     	</script>
 
@@ -150,7 +156,6 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let name = $state("Ada");
     	  const label = $derived.by(() => $__l4s_translate(
     	  /*i18n*/
@@ -161,6 +166,7 @@ describe("transformSvelte", () => {
     	      name: name
     	    }
     	  }));
+
     	  __l4s_ctx.prime();
     	</script>"
     `);
@@ -191,8 +197,8 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let state = $state("idle");
+
     	  function getStatusText() {
     	    return state === "idle" ? $__l4s_translate(
     	    /*i18n*/
@@ -206,6 +212,7 @@ describe("transformSvelte", () => {
     	      message: "active"
     	    });
     	  }
+
     	  __l4s_ctx.prime();
     	</script>"
     `);
@@ -237,9 +244,9 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let count = $state(2);
     	  let gender = $state("female");
+
     	  const status = $derived.by(() => ({
     	    books: $__l4s_translate(
     	    /*i18n*/
@@ -258,8 +265,9 @@ describe("transformSvelte", () => {
     	      values: {
     	        gender: gender
     	      }
-    	    })
+    	    }),
     	  }));
+
     	  __l4s_ctx.prime();
     	</script>"
     `);
@@ -288,7 +296,6 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let state = $state("idle");
     	  const label = state === "idle" ? $__l4s_translate(
     	  /*i18n*/
@@ -301,6 +308,7 @@ describe("transformSvelte", () => {
     	    id: "s/ereB",
     	    message: "active"
     	  });
+
     	  __l4s_ctx.prime();
     	</script>"
     `);
@@ -330,7 +338,6 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let count = $state(2);
     	  const labels = {
     	    state: $__l4s_translate(
@@ -347,8 +354,9 @@ describe("transformSvelte", () => {
     	      values: {
     	        count: count
     	      }
-    	    })
+    	    }),
     	  };
+
     	  __l4s_ctx.prime();
     	</script>"
     `);
@@ -376,13 +384,13 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  const getStatusText = () => $__l4s_translate(
     	  /*i18n*/
     	  {
     	    id: "oBVc6R",
     	    message: "idle"
     	  });
+
     	  __l4s_ctx.prime();
     	</script>"
     `);
@@ -416,7 +424,6 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let name = $state("Ada");
     	  const eager = __l4s_getI18n()._(
     	  /*i18n*/
@@ -436,6 +443,7 @@ describe("transformSvelte", () => {
     	      name: name
     	    }
     	  });
+
     	  __l4s_ctx.prime();
     	</script>
 
@@ -477,6 +485,7 @@ describe("transformSvelte", () => {
       { filename: "/virtual/App.svelte" },
     );
 
+    expectNoExcessBlankLines(result.code);
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).not.toContain("_i18n._(");
     expect(result.code).toContain("$__l4s_translate(");
@@ -486,8 +495,8 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let name = $state("Ada");
+
     	  __l4s_ctx.prime();
     	</script>
 
@@ -529,9 +538,9 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  let count = $state(2);
     	  let gender = $state("female");
+
     	  __l4s_ctx.prime();
     	</script>
 
@@ -760,7 +769,6 @@ describe("transformSvelte", () => {
     expect(result.code).toMatchInlineSnapshot(`
     	"<script lang="ts">
     	  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
     	  let name = $state("Ada");
     	</script>
 
@@ -804,8 +812,8 @@ describe("transformSvelte", () => {
     expect(result.code).toMatchInlineSnapshot(`
     	"<script lang="ts">
     	  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
     	  import DocLink from "./DocLink.svelte";
+
     	  let name = $state("Ada");
     	</script>
 
@@ -895,7 +903,6 @@ describe("transformSvelte", () => {
     expect(result.code).toMatchInlineSnapshot(`
     	"<script lang="ts">
     	  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
     	  let count = $state(2);
     	  let gender = $state("female");
     	</script>
@@ -989,6 +996,7 @@ describe("transformSvelte", () => {
     expect(result.code).toMatchInlineSnapshot(`
     	"<script lang="ts">
     	  import { t } from "./macro";
+
     	  const label = t\`Hello from another module\`;
     	</script>
 
@@ -1025,17 +1033,18 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  const outer = __l4s_getI18n()._(
     	  /*i18n*/
     	  {
     	    id: "wVGQ6j",
     	    message: "Outer"
     	  });
+
     	  function render() {
     	    const translate = notMacro;
     	    return translate\`Inner\`;
     	  }
+
     	  __l4s_ctx.prime();
     	</script>
 
@@ -1069,8 +1078,8 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-
     	  import Trans from "./Trans.svelte";
+
     	  __l4s_ctx.prime();
     	</script>
 
@@ -1105,6 +1114,7 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
+
     	  __l4s_ctx.prime();
     	</script>
 
@@ -1145,11 +1155,11 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx_1 = createLinguiAccessors_1();
     	  const __l4s_getI18n_1 = __l4s_ctx_1.getI18n;
     	  const __l4s_translate_1 = __l4s_ctx_1._;
-
     	  const createLinguiAccessors = "occupied";
     	  const __l4s_ctx = "occupied";
     	  const __l4s_getI18n = "occupied";
     	  const __l4s_translate = "occupied";
+
     	  __l4s_ctx_1.prime();
     	</script>
 

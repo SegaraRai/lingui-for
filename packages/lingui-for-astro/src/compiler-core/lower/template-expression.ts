@@ -4,6 +4,7 @@ import { generate } from "@babel/generator";
 import * as t from "@babel/types";
 
 import {
+  buildAnchoredGeneratedSnippetMap,
   buildGeneratedSnippetMap,
   buildPrefixedSnippetMap,
 } from "lingui-for-shared/compiler";
@@ -48,7 +49,14 @@ export function lowerTemplateExpression(
   if (loweringOptions.extract) {
     return {
       code: transformed.code,
-      map: transformed.map,
+      map: buildAnchoredGeneratedSnippetMap(
+        loweringOptions.sourceMapOptions?.fullSource ?? source,
+        options.filename,
+        loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+        transformed.code,
+        source.length,
+        getExtractionDescriptorAnchorOffset(transformed.code),
+      ),
     };
   }
 
@@ -88,4 +96,14 @@ export function lowerTemplateExpression(
         )
       : ((generated.map as RawSourceMap | null | undefined) ?? null),
   };
+}
+
+function getExtractionDescriptorAnchorOffset(code: string): number {
+  const commentStart = code.indexOf("/*i18n*/");
+  if (commentStart < 0) {
+    return 0;
+  }
+
+  const descriptorStart = code.indexOf("{", commentStart);
+  return descriptorStart >= 0 ? descriptorStart : commentStart;
 }

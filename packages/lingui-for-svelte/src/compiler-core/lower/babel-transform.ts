@@ -1,6 +1,7 @@
 import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
-import type { RawSourceMap } from "source-map";
+
+import type { SourceMap } from "lingui-for-shared/compiler";
 
 import { getParserPlugins } from "../shared/config.ts";
 import {
@@ -52,7 +53,7 @@ export function transformProgram(
     configFile: false,
     filename: request.filename,
     inputSourceMap:
-      (preprocessed.map as RawSourceMap | null | undefined) ??
+      (preprocessed.map as SourceMap | null | undefined) ??
       request.inputSourceMap,
     parserOpts: {
       sourceType: "module",
@@ -79,6 +80,6 @@ export function transformProgram(
   return {
     code: result.code,
     ast: result.ast,
-    map: (result.map as RawSourceMap | null | undefined) ?? null,
+    map: (result.map as SourceMap | null | undefined) ?? null,
   };
 }

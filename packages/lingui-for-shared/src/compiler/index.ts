@@ -8,3 +8,4 @@ export * from "./paths.ts";
 export * from "./replacement-map.ts";
 export * from "./runtime-trans-lowering.ts";
 export * from "./source-map.ts";
+export * from "./source-map-types.ts";

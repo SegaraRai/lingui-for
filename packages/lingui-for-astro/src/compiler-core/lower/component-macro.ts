@@ -3,9 +3,11 @@ import * as t from "@babel/types";
 import MagicString from "magic-string";
 
 import {
+  buildPrefixedMappedSnippetMap,
+  buildAnchoredGeneratedSnippetMap,
   buildGeneratedSnippetMap,
-  buildOutputWithIndexedMap,
   buildPrefixedSnippetMap,
+  buildOutputWithIndexedMap,
   lowerSyntheticComponentDeclaration,
   type ReplacementChunk,
   stripRuntimeTransImports,
@@ -45,18 +47,30 @@ export function lowerComponentMacro(
     loweringOptions.sourceMapOptions,
   );
   const prefix = createComponentWrapperPrefix(macroImports);
+  const inputSourceMap =
+    !loweringOptions.extract && rewrittenSource.map != null
+      ? buildPrefixedMappedSnippetMap(
+          loweringOptions.sourceMapOptions?.fullSource ?? source,
+          options.filename,
+          loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+          prefix,
+          rewrittenSource.map,
+        )
+      : !loweringOptions.extract
+        ? buildPrefixedSnippetMap(
+            loweringOptions.sourceMapOptions?.fullSource ?? source,
+            options.filename,
+            loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+            prefix,
+            source.length,
+          )
+        : undefined;
   const transformed = transformProgram(
     `${prefix}${rewrittenSource.code}${WRAPPED_SUFFIX}`,
     {
       extract: loweringOptions.extract,
       filename: `${options.filename}${loweringOptions.extract ? "?extract-component" : "?component"}`,
-      inputSourceMap: buildPrefixedSnippetMap(
-        loweringOptions.sourceMapOptions?.fullSource ?? source,
-        options.filename,
-        loweringOptions.sourceMapOptions?.sourceStart ?? 0,
-        prefix,
-        source.length,
-      ),
+      inputSourceMap,
       linguiConfig: normalizeLinguiConfig(options.linguiConfig),
       translationMode: loweringOptions.extract ? "extract" : "astro-context",
       runtimeBinding: loweringOptions.extract
@@ -68,7 +82,14 @@ export function lowerComponentMacro(
   if (loweringOptions.extract) {
     return {
       code: transformed.code,
-      map: transformed.map,
+      map: buildAnchoredGeneratedSnippetMap(
+        loweringOptions.sourceMapOptions?.fullSource ?? source,
+        options.filename,
+        loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+        transformed.code,
+        source.length,
+        getComponentExtractionAnchorOffset(transformed.code),
+      ),
     };
   }
 
@@ -186,4 +207,23 @@ function rewriteNestedComponentMacroExpressions(
   }
 
   return buildOutputWithIndexedMap(source, options.filename, replacements);
+}
+
+function getComponentExtractionAnchorOffset(code: string): number {
+  const messageMatch = code.match(/\bmessage:\s*"([^"\\]|\\.)*"/);
+  if (!messageMatch || messageMatch.index == null) {
+    return getExtractionDescriptorAnchorOffset(code);
+  }
+
+  return messageMatch.index + messageMatch[0].length;
+}
+
+function getExtractionDescriptorAnchorOffset(code: string): number {
+  const commentStart = code.indexOf("/*i18n*/");
+  if (commentStart < 0) {
+    return 0;
+  }
+
+  const descriptorStart = code.indexOf("{", commentStart);
+  return descriptorStart >= 0 ? descriptorStart : commentStart;
 }

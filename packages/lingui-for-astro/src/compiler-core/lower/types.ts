@@ -1,11 +1,12 @@
-import type { LinguiConfigNormalized } from "@lingui/conf";
 import type * as BabelTypes from "@babel/types";
-import type { RawSourceMap } from "source-map";
+import type { LinguiConfigNormalized } from "@lingui/conf";
+
+import type { SourceMap } from "lingui-for-shared/compiler";
 
 export interface ProgramTransform {
   code: string;
   ast: BabelTypes.File;
-  map: RawSourceMap | null;
+  map: SourceMap | null;
 }
 
 export interface ProgramTransformRequest {
@@ -14,5 +15,5 @@ export interface ProgramTransformRequest {
   extract: boolean;
   translationMode: "extract" | "raw" | "astro-context";
   runtimeBinding?: string | undefined;
-  inputSourceMap?: RawSourceMap | undefined;
+  inputSourceMap?: SourceMap | undefined;
 }

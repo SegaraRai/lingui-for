@@ -14,7 +14,7 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: 3
-#: src/components/astro/AstroFormats.astro:52
+#: src/components/astro/AstroFormats.astro:51
 #: src/components/astro/AstroFormats.astro:25
 msgid "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
 msgstr "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
@@ -31,7 +31,7 @@ msgid "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}
 msgstr "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}"
 
 #. placeholder {0}: "excited"
-#: src/components/astro/AstroFormats.astro:60
+#: src/components/astro/AstroFormats.astro:59
 #: src/components/astro/AstroFormats.astro:32
 msgid "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
 msgstr "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
@@ -48,7 +48,7 @@ msgid "{0, select, calm {Svelte select says calm.} excited {Svelte select says e
 msgstr "{0, select, calm {Svelte select says calm.} excited {Svelte select says excited.} other {Svelte select says unknown.}}"
 
 #. placeholder {0}: 2
-#: src/components/astro/AstroFormats.astro:69
+#: src/components/astro/AstroFormats.astro:68
 #: src/components/astro/AstroFormats.astro:40
 msgid "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
 msgstr "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
@@ -75,7 +75,7 @@ msgstr "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
 msgid "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
 msgstr "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
 
-#: src/pages/stress.astro:92
+#: src/pages/stress.astro:91
 #: src/pages/stress.astro:109
 msgid "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
 msgstr "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
@@ -92,19 +92,19 @@ msgstr "{count} React clicks"
 msgid "{count} Svelte clicks"
 msgstr "{count} Svelte clicks"
 
-#: src/pages/stress.astro:156
+#: src/pages/stress.astro:162
 msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 
-#: src/pages/stress.astro:146
+#: src/pages/stress.astro:148
 msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 
-#: src/pages/stress.astro:136
+#: src/pages/stress.astro:134
 msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 
-#: src/pages/stress.astro:101
+#: src/pages/stress.astro:100
 #: src/pages/stress.astro:117
 msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
@@ -113,11 +113,11 @@ msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} 
 msgid "1. Increment one or more counters in Svelte or React."
 msgstr "1. Increment one or more counters in Svelte or React."
 
-#: src/components/TransitionShowcase.astro:53
+#: src/components/TransitionShowcase.astro:52
 msgid "2. Switch between English and Japanese in the header and watch the locale labels."
 msgstr "2. Switch between English and Japanese in the header and watch the locale labels."
 
-#: src/components/TransitionShowcase.astro:58
+#: src/components/TransitionShowcase.astro:57
 msgid "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 msgstr "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 
@@ -145,7 +145,7 @@ msgstr "Astro rich text"
 msgid "Astro rich text keeps component placeholders intact."
 msgstr "Astro rich text keeps component placeholders intact."
 
-#: src/components/astro/AstroFormats.astro:20
+#: src/components/astro/AstroFormats.astro:19
 msgid "Astro runs plural, select, and selectOrdinal macros in component code."
 msgstr "Astro runs plural, select, and selectOrdinal macros in component code."
 
@@ -181,7 +181,7 @@ msgstr "ClientRouter enabled"
 msgid "Compare locale updates and state persistence side by side."
 msgstr "Compare locale updates and state persistence side by side."
 
-#: src/pages/index.astro:134
+#: src/pages/index.astro:133
 msgid "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
 msgstr "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
 
@@ -206,7 +206,7 @@ msgstr "Current page: {currentPage}"
 msgid "Dynamic route checks"
 msgstr "Dynamic route checks"
 
-#: src/pages/routing/[slug].astro:25
+#: src/pages/routing/[slug].astro:24
 msgid "Dynamic routes can translate with params from Astro.url and route data."
 msgstr "Dynamic routes can translate with params from Astro.url and route data."
 
@@ -214,7 +214,7 @@ msgstr "Dynamic routes can translate with params from Astro.url and route data."
 msgid "Dynamic routing"
 msgstr "Dynamic routing"
 
-#: src/pages/islands.astro:32
+#: src/pages/islands.astro:31
 msgid "Each island creates its own runtime, but Astro middleware hands both the same locale."
 msgstr "Each island creates its own runtime, but Astro middleware hands both the same locale."
 
@@ -255,7 +255,7 @@ msgstr "Framework islands"
 msgid "Full reload mode"
 msgstr "Full reload mode"
 
-#: src/pages/transitions.astro:40
+#: src/pages/transitions.astro:39
 msgid "Full reload navigation resets every island before the locale can persist."
 msgstr "Full reload navigation resets every island before the locale can persist."
 
@@ -352,7 +352,7 @@ msgstr "Open {nextLabel}"
 msgid "Open no-router demo"
 msgstr "Open no-router demo"
 
-#: src/pages/transitions.astro:26
+#: src/pages/transitions.astro:25
 msgid "Open one pair without ClientRouter and one pair with ClientRouter. Each pair contains volatile, persisted, and persisted-props Svelte and React islands so you can compare whether counters survive while locale and page props still update."
 msgstr "Open one pair without ClientRouter and one pair with ClientRouter. Each pair contains volatile, persisted, and persisted-props Svelte and React islands so you can compare whether counters survive while locale and page props still update."
 
@@ -369,7 +369,7 @@ msgstr "Overview"
 msgid "Page label: {pageLabel}"
 msgstr "Page label: {pageLabel}"
 
-#: src/pages/transitions.astro:63
+#: src/pages/transitions.astro:62
 msgid "Persisted islands can keep state while still reflecting a new locale."
 msgstr "Persisted islands can keep state while still reflecting a new locale."
 
@@ -595,7 +595,7 @@ msgstr "The active <0>Lingui context</0> is created inside the Svelte island."
 msgid "The active locale reaches React through a dedicated Lingui instance."
 msgstr "The active locale reaches React through a dedicated Lingui instance."
 
-#: src/pages/formats.astro:29
+#: src/pages/formats.astro:28
 msgid "The cards below mirror the same macro families inside component code."
 msgstr "The cards below mirror the same macro families inside component code."
 
@@ -603,23 +603,23 @@ msgstr "The cards below mirror the same macro families inside component code."
 msgid "The cards below render their own rich text messages for comparison."
 msgstr "The cards below render their own rich text messages for comparison."
 
-#: src/pages/server.astro:41
+#: src/pages/server.astro:40
 msgid "The current locale label is {localeLabel}, and it comes from the same request."
 msgstr "The current locale label is {localeLabel}, and it comes from the same request."
 
-#: src/pages/server.astro:28
+#: src/pages/server.astro:27
 msgid "The layout, page body, and locale badge all resolve from the request-bound Lingui instance."
 msgstr "The layout, page body, and locale badge all resolve from the request-bound Lingui instance."
 
-#: src/pages/routing/[slug].astro:33
+#: src/pages/routing/[slug].astro:32
 msgid "The locale cookie still applies here, so the translated page matches the previous request."
 msgstr "The locale cookie still applies here, so the translated page matches the previous request."
 
-#: src/pages/settings.astro:28
+#: src/pages/settings.astro:27
 msgid "The locale is stored in a cookie so the next request stays consistent."
 msgstr "The locale is stored in a cookie so the next request stays consistent."
 
-#: src/pages/transitions.astro:68
+#: src/pages/transitions.astro:67
 msgid "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
 msgstr "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
 
@@ -639,7 +639,7 @@ msgstr "This React island uses transition:persist and transition:persist-props, 
 msgid "This React island uses transition:persist, so its counter survives while locale and page props still update."
 msgstr "This React island uses transition:persist, so its counter survives while locale and page props still update."
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:38
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:37
 msgid "This Svelte island remounts whenever the route or locale changes."
 msgstr "This Svelte island remounts whenever the route or locale changes."
 
@@ -665,7 +665,7 @@ msgstr "Transition demo with ClientRouter"
 msgid "Transition demo without ClientRouter"
 msgstr "Transition demo without ClientRouter"
 
-#: src/pages/transitions.astro:45
+#: src/pages/transitions.astro:44
 msgid "transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation."
 msgstr "transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation."
 
@@ -682,7 +682,7 @@ msgstr "Transitions page"
 msgid "Use cookies to keep the next request aligned."
 msgstr "Use cookies to keep the next request aligned."
 
-#: src/pages/stress.astro:80
+#: src/pages/stress.astro:79
 msgid "Use query params to drive exact-number branches and nested macro output."
 msgstr "Use query params to drive exact-number branches and nested macro output."
 
@@ -694,7 +694,7 @@ msgstr "Use the header language switcher and the paired route link below. The pl
 msgid "Use the header language switcher and the paired route link below. Without ClientRouter, every island remounts, so no state survives and every locale change recreates the islands."
 msgstr "Use the header language switcher and the paired route link below. Without ClientRouter, every island remounts, so no state survives and every locale change recreates the islands."
 
-#: src/components/TransitionShowcase.astro:131
+#: src/components/TransitionShowcase.astro:130
 msgid "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
 msgstr "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
 
@@ -716,7 +716,7 @@ msgstr "Verify linked and emphasized translations across runtimes."
 msgid "Volatile React island"
 msgstr "Volatile React island"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:31
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:30
 msgid "Volatile Svelte island"
 msgstr "Volatile Svelte island"
 

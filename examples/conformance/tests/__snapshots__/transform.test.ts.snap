@@ -199,7 +199,6 @@ export function Example({
 exports[`NODE_ENV=development > 'deep-rich-text-trans' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let action = $state("deploy");
   let count = $state(3);
   let name = $state("Ada");
@@ -298,7 +297,6 @@ export function Example({
 exports[`NODE_ENV=development > 'exact-number-component' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let count = $state(2);
   let rank = $state(1);
 </script>
@@ -367,10 +365,10 @@ exports[`NODE_ENV=development > 'nested-icu-core' > svelte transform 1`] = `
   const __l4s_ctx = createLinguiAccessors();
   const __l4s_getI18n = __l4s_ctx.getI18n;
   const __l4s_translate = __l4s_ctx._;
-
   let count = $state(0);
   let rank = $state(1);
   let role = $state("admin");
+
   const deepCore = $derived($__l4s_translate(
   /*i18n*/
   {
@@ -382,6 +380,7 @@ exports[`NODE_ENV=development > 'nested-icu-core' > svelte transform 1`] = `
       role: role
     }
   }));
+
   __l4s_ctx.prime();
 </script>
 
@@ -440,7 +439,6 @@ export function Example({
 exports[`NODE_ENV=development > 'rich-text-trans' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let name = $state("Ada");
 </script>
 
@@ -577,7 +575,6 @@ export function Example({
 exports[`NODE_ENV=development > 'trans-with-deeply-nested-component-icu' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let count = $state(0);
   let rank = $state(1);
   let role = $state("admin");
@@ -682,7 +679,6 @@ export function Example({
 exports[`NODE_ENV=development > 'trans-with-plural' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let count = $state(0);
 </script>
 
@@ -862,7 +858,6 @@ function Example() {
 exports[`NODE_ENV=development > 'with-id-context-comment-component' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   const value = $state("foo");
 </script>
 
@@ -1119,8 +1114,8 @@ exports[`NODE_ENV=development > 'with-id-context-comment-core' > svelte transfor
   const __l4s_ctx = createLinguiAccessors();
   const __l4s_getI18n = __l4s_ctx.getI18n;
   const __l4s_translate = __l4s_ctx._;
-
   const value = $state("foo");
+
   __l4s_ctx.prime();
 </script>
 
@@ -1391,7 +1386,6 @@ export function Example({
 exports[`NODE_ENV=production > 'deep-rich-text-trans' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let action = $state("deploy");
   let count = $state(3);
   let name = $state("Ada");
@@ -1485,7 +1479,6 @@ export function Example({
 exports[`NODE_ENV=production > 'exact-number-component' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let count = $state(2);
   let rank = $state(1);
 </script>
@@ -1550,10 +1543,10 @@ exports[`NODE_ENV=production > 'nested-icu-core' > svelte transform 1`] = `
   const __l4s_ctx = createLinguiAccessors();
   const __l4s_getI18n = __l4s_ctx.getI18n;
   const __l4s_translate = __l4s_ctx._;
-
   let count = $state(0);
   let rank = $state(1);
   let role = $state("admin");
+
   const deepCore = $derived($__l4s_translate(
   /*i18n*/
   {
@@ -1564,6 +1557,7 @@ exports[`NODE_ENV=production > 'nested-icu-core' > svelte transform 1`] = `
       role: role
     }
   }));
+
   __l4s_ctx.prime();
 </script>
 
@@ -1620,7 +1614,6 @@ export function Example({
 exports[`NODE_ENV=production > 'rich-text-trans' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let name = $state("Ada");
 </script>
 
@@ -1748,7 +1741,6 @@ export function Example({
 exports[`NODE_ENV=production > 'trans-with-deeply-nested-component-icu' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let count = $state(0);
   let rank = $state(1);
   let role = $state("admin");
@@ -1847,7 +1839,6 @@ export function Example({
 exports[`NODE_ENV=production > 'trans-with-plural' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   let count = $state(0);
 </script>
 
@@ -2000,7 +1991,6 @@ function Example() {
 exports[`NODE_ENV=production > 'with-id-context-comment-component' > svelte transform 1`] = `
 "<script lang="ts">
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
-
   const value = $state("foo");
 </script>
 
@@ -2215,8 +2205,8 @@ exports[`NODE_ENV=production > 'with-id-context-comment-core' > svelte transform
   const __l4s_ctx = createLinguiAccessors();
   const __l4s_getI18n = __l4s_ctx.getI18n;
   const __l4s_translate = __l4s_ctx._;
-
   const value = $state("foo");
+
   __l4s_ctx.prime();
 </script>
 

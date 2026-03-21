@@ -20,5 +20,6 @@ describe("lower/template-expression", () => {
     expect(compileLowered.code).toContain("__l4a_i18n._(");
     expect(extractLowered.code).toContain("_i18n._(");
     expect(extractLowered.code).toContain("/*i18n*/");
+    expect(extractLowered.map).not.toBeNull();
   });
 });

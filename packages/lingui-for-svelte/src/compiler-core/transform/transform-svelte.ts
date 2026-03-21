@@ -1,5 +1,3 @@
-import type { RawSourceMap } from "source-map";
-
 import {
   buildOutputWithIndexedMap,
   stripQuery,
@@ -18,10 +16,9 @@ import {
 import { createScriptFilename } from "../shared/paths.ts";
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import {
-  createCombinedProgramFromPlan,
-  createModuleProgramFromPlan,
-  splitSyntheticDeclarations,
-  transformProgram,
+  lowerComponentMacro,
+  lowerScriptExpression,
+  lowerTemplateExpression,
 } from "../lower/index.ts";
 import { createUniqueNameAllocator } from "./identifier-allocation.ts";
 import type { SvelteTransformResult } from "./types.ts";
@@ -32,13 +29,6 @@ type RuntimeBindingsForInjection = {
   getI18n: string;
   translate: string;
   transComponent: string;
-};
-
-type InjectedScript = {
-  prelude: string;
-  body: string;
-  suffix: string;
-  code: string;
 };
 
 export function transformSvelte(
@@ -55,118 +45,162 @@ export function transformSvelte(
   const filename = stripQuery(plan.filename);
   const mapFile = getSourceMapFileName(filename);
   const replacements: ReplacementChunk[] = [];
-  const moduleProgram = createModuleProgramFromPlan(plan);
-  const combinedProgram = createCombinedProgramFromPlan(plan);
 
-  if (analysis.module && moduleProgram) {
-    const transformedModule = transformProgram(moduleProgram.code, {
+  const moduleExpressions = plan.moduleMacros.expressions.map(
+    (expression, index) =>
+      lowerScriptExpression(expression.source, expression.start, plan, {
+        extract: false,
+        translationMode: "raw",
+        filenameSuffix: `?module-expression-${index}`,
+        macroBindings: plan.moduleBindings,
+      }),
+  );
+  const instanceExpressions = plan.instanceMacros.expressions.map(
+    (expression, index) =>
+      lowerScriptExpression(expression.source, expression.start, plan, {
+        extract: false,
+        translationMode: "svelte-context",
+        runtimeBindings,
+        filenameSuffix: `?instance-expression-${index}`,
+        macroBindings: plan.instanceBindings,
+      }),
+  );
+  const templateExpressions = analysis.expressions.map((expression) =>
+    lowerTemplateExpression(expression.source, expression.start, plan, {
       extract: false,
-      filename: moduleProgram.filename,
-      lang: moduleProgram.lang,
-      linguiConfig: plan.linguiConfig,
-      translationMode: "raw",
-      inputSourceMap: moduleProgram.inputSourceMap,
+      runtimeBindings,
+    }),
+  );
+  const components = analysis.components.map((component) =>
+    lowerComponentMacro(component.source, component.start, plan, {
+      extract: false,
+      runtimeBindings,
+      runtimeTransComponentName: runtimeBindings.transComponent,
+    }),
+  );
+
+  plan.moduleMacros.imports.forEach((range) => {
+    replacements.push({
+      start: range.start,
+      end: range.end,
+      code: "",
+      map: null,
     });
+  });
+
+  plan.moduleMacros.expressions.forEach((expression, index) => {
+    const replacement = moduleExpressions[index];
+    if (!replacement) {
+      return;
+    }
 
     replacements.push({
-      start: analysis.module.contentStart,
-      end: analysis.module.contentEnd,
-      code: transformedModule.code,
-      map: transformedModule.map,
+      start: expression.start,
+      end: expression.end,
+      code: replacement.code,
+      map: replacement.map,
+    });
+  });
+
+  if (analysis.instance) {
+    plan.instanceMacros.imports.forEach((range) => {
+      replacements.push({
+        start: range.start,
+        end: range.end,
+        code: "",
+        map: null,
+      });
+    });
+
+    plan.instanceMacros.expressions.forEach((expression, index) => {
+      const replacement = instanceExpressions[index];
+      if (!replacement) {
+        return;
+      }
+
+      replacements.push({
+        start: expression.start,
+        end: expression.end,
+        code: replacement.code,
+        map: replacement.map,
+      });
     });
   }
 
-  if (combinedProgram) {
-    const transformedInstance = transformProgram(combinedProgram.code, {
-      extract: false,
-      filename: combinedProgram.filename,
-      lang: combinedProgram.lang,
-      linguiConfig: plan.linguiConfig,
-      translationMode: "svelte-context",
-      runtimeBindings,
-      inputSourceMap: combinedProgram.inputSourceMap,
+  analysis.expressions.forEach((expression, index) => {
+    const replacement = templateExpressions[index];
+    if (!replacement) {
+      return;
+    }
+
+    replacements.push({
+      start: expression.start,
+      end: expression.end,
+      code: replacement.code,
+      map: replacement.map,
     });
-    const split = splitSyntheticDeclarations(
-      transformedInstance,
-      runtimeBindings.transComponent,
-    );
-    const expressionsCode = Array.from(split.expressionReplacements.values())
-      .map((entry) => entry.code)
-      .join("\n");
-    const componentsCode = Array.from(split.componentReplacements.values())
-      .map((entry) => entry.code)
-      .join("\n");
-    const needsLinguiContextBindings =
-      split.script.code.includes(runtimeBindings.getI18n) ||
-      split.script.code.includes(runtimeBindings.translate) ||
-      expressionsCode.includes(runtimeBindings.getI18n) ||
-      expressionsCode.includes(runtimeBindings.translate);
-    const needsTransComponentBinding = componentsCode.includes(
-      runtimeBindings.transComponent,
-    );
-    const injectedScript =
+  });
+
+  analysis.components.forEach((component, index) => {
+    const replacement = components[index];
+    if (!replacement) {
+      return;
+    }
+
+    replacements.push({
+      start: component.start,
+      end: component.end,
+      code: replacement.code,
+      map: replacement.map,
+    });
+  });
+  const needsLinguiContextBindings = plan.usesLinguiContextBindings;
+  const needsTransComponentBinding = plan.usesRuntimeTrans;
+
+  if (analysis.instance) {
+    const injections =
       needsLinguiContextBindings || needsTransComponentBinding
-        ? injectRuntimeBindings(
-            split.script.code,
+        ? createRuntimeBindingInsertions(
+            analysis.instance.content,
             runtimeBindings,
             needsLinguiContextBindings,
             needsTransComponentBinding,
           )
-        : {
-            prelude: "",
-            body: split.script.code,
-            suffix: "",
-            code: split.script.code,
-          };
-    const formattedScript = analysis.instance
-      ? formatScriptContent(injectedScript.code, analysis.instance.content)
-      : injectedScript.code;
+        : { prelude: "", suffix: "" };
 
-    analysis.expressions.forEach((expression) => {
-      const replacement = split.expressionReplacements.get(expression.index);
-      if (replacement) {
-        replacements.push({
-          start: expression.start,
-          end: expression.end,
-          code: replacement.code,
-          map: replacement.map,
-        });
-      }
-    });
-
-    analysis.components.forEach((component) => {
-      const replacement = split.componentReplacements.get(component.index);
-      if (replacement) {
-        replacements.push({
-          start: component.start,
-          end: component.end,
-          code: replacement.code,
-          map: replacement.map,
-        });
-      }
-    });
-
-    if (analysis.instance) {
-      replacements.push(
-        ...createScriptReplacementChunks(
-          analysis.instance.contentStart,
-          analysis.instance.content,
-          formattedScript,
-          split.script.map,
-          mapFile,
-        ),
-      );
-    } else if (formattedScript.trim().length > 0) {
-      const block = `<script>\n${formattedScript}\n</script>`;
-      const insertionStart = analysis.module ? analysis.module.end : 0;
-
+    if (injections.prelude.length > 0) {
       replacements.push({
-        start: insertionStart,
-        end: insertionStart,
-        code: analysis.module ? `\n\n${block}` : `${block}\n\n`,
+        start: getScriptInsertionStart(source, analysis.instance.contentStart),
+        end: getScriptInsertionStart(source, analysis.instance.contentStart),
+        code: injections.prelude,
         map: null,
       });
     }
+
+    if (injections.suffix.length > 0) {
+      replacements.push({
+        start: analysis.instance.contentEnd,
+        end: analysis.instance.contentEnd,
+        code: injections.suffix,
+        map: null,
+      });
+    }
+  } else if (needsLinguiContextBindings || needsTransComponentBinding) {
+    const injected = createRuntimeBindingInsertions(
+      "",
+      runtimeBindings,
+      needsLinguiContextBindings,
+      needsTransComponentBinding,
+    );
+    const block = `<script>\n${injected.prelude}${injected.suffix}</script>`;
+    const insertionStart = analysis.module ? analysis.module.end : 0;
+
+    replacements.push({
+      start: insertionStart,
+      end: insertionStart,
+      code: analysis.module ? `\n\n${block}` : `${block}\n\n`,
+      map: null,
+    });
   }
 
   return buildOutputWithIndexedMap(source, mapFile, replacements);
@@ -191,12 +225,15 @@ function createRuntimeBindings(
   };
 }
 
-function injectRuntimeBindings(
-  code: string,
+function createRuntimeBindingInsertions(
+  originalScriptContent: string,
   runtimeBindings: RuntimeBindingsForInjection,
   includeLinguiContext: boolean,
   includeTransComponent: boolean,
-): InjectedScript {
+): {
+  prelude: string;
+  suffix: string;
+} {
   const prelude: string[] = [];
   const suffix: string[] = [];
 
@@ -223,48 +260,28 @@ function injectRuntimeBindings(
     suffix.push(`${runtimeBindings.context}.prime();\n`);
   }
 
-  const preludeCode = prelude.join("");
-  const suffixCode = suffix.join("");
-
-  if (code.trim().length === 0) {
-    return {
-      prelude: preludeCode,
-      body: "",
-      suffix: suffixCode,
-      code: `${preludeCode}${suffixCode}`,
-    };
-  }
-
-  const wrappedPrelude = preludeCode.length > 0 ? `${preludeCode}\n` : "";
-  const wrappedSuffix = suffixCode.length > 0 ? `\n${suffixCode}` : "";
+  const indent = detectScriptIndent(originalScriptContent);
 
   return {
-    prelude: wrappedPrelude,
-    body: code,
-    suffix: wrappedSuffix,
-    code: `${wrappedPrelude}${code}${wrappedSuffix}`,
+    prelude:
+      prelude.length > 0
+        ? formatInsertedScript(prelude.join(""), indent, {
+            leadingNewline: false,
+            trailingBlankLine: false,
+          })
+        : "",
+    suffix:
+      suffix.length > 0
+        ? formatInsertedScript(suffix.join(""), indent, {
+            leadingNewline: true,
+          })
+        : "",
   };
 }
 
 function getSourceMapFileName(filename: string): string {
   const segments = filename.split(/[\\/]/);
   return segments.at(-1) ?? filename;
-}
-
-function formatScriptContent(code: string, originalContent: string): string {
-  const indent = detectScriptIndent(originalContent);
-  const body = code
-    .split("\n")
-    .map((line) => (line.length > 0 ? `${indent}${line}` : line))
-    .join("\n");
-  const withLeadingNewline =
-    originalContent.startsWith("\n") && !body.startsWith("\n")
-      ? `\n${body}`
-      : body;
-
-  return originalContent.endsWith("\n") && !withLeadingNewline.endsWith("\n")
-    ? `${withLeadingNewline}\n`
-    : withLeadingNewline;
 }
 
 function detectScriptIndent(content: string): string {
@@ -282,96 +299,33 @@ function detectScriptIndent(content: string): string {
   return "";
 }
 
-function createScriptReplacementChunks(
-  scriptStart: number,
-  original: string,
-  replacement: string,
-  _bodyMap: RawSourceMap | null,
-  _mapFile: string,
-): ReplacementChunk[] {
-  if (original === replacement) {
-    return [];
+function getScriptInsertionStart(source: string, contentStart: number): number {
+  if (source[contentStart] === "\r" && source[contentStart + 1] === "\n") {
+    return contentStart + 2;
   }
 
-  const originalLines = splitLines(original);
-  const replacementLines = splitLines(replacement);
-  const lcs = Array.from({ length: originalLines.length + 1 }, () =>
-    Array.from<number>({ length: replacementLines.length + 1 }).fill(0),
-  );
-
-  for (let left = originalLines.length - 1; left >= 0; left -= 1) {
-    for (let right = replacementLines.length - 1; right >= 0; right -= 1) {
-      lcs[left][right] =
-        originalLines[left] === replacementLines[right]
-          ? (lcs[left + 1]?.[right + 1] ?? 0) + 1
-          : Math.max(lcs[left + 1]?.[right] ?? 0, lcs[left]?.[right + 1] ?? 0);
-    }
+  if (source[contentStart] === "\n") {
+    return contentStart + 1;
   }
 
-  const replacements: ReplacementChunk[] = [];
-  let left = 0;
-  let right = 0;
-  let originalOffset = 0;
-  let replacementOffset = 0;
-  let pendingOriginalStart: number | null = null;
-  let pendingReplacementStart: number | null = null;
-
-  const flush = (): void => {
-    if (
-      pendingOriginalStart == null ||
-      pendingReplacementStart == null ||
-      (originalOffset === pendingOriginalStart &&
-        replacementOffset === pendingReplacementStart)
-    ) {
-      pendingOriginalStart = null;
-      pendingReplacementStart = null;
-      return;
-    }
-
-    replacements.push({
-      start: scriptStart + pendingOriginalStart,
-      end: scriptStart + originalOffset,
-      code: replacement.slice(pendingReplacementStart, replacementOffset),
-      map: null,
-    });
-    pendingOriginalStart = null;
-    pendingReplacementStart = null;
-  };
-
-  while (left < originalLines.length || right < replacementLines.length) {
-    if (
-      left < originalLines.length &&
-      right < replacementLines.length &&
-      originalLines[left] === replacementLines[right]
-    ) {
-      flush();
-      originalOffset += originalLines[left]?.length ?? 0;
-      replacementOffset += replacementLines[right]?.length ?? 0;
-      left += 1;
-      right += 1;
-      continue;
-    }
-
-    pendingOriginalStart ??= originalOffset;
-    pendingReplacementStart ??= replacementOffset;
-
-    if (
-      right >= replacementLines.length ||
-      (left < originalLines.length &&
-        (lcs[left + 1]?.[right] ?? 0) >= (lcs[left]?.[right + 1] ?? 0))
-    ) {
-      originalOffset += originalLines[left]?.length ?? 0;
-      left += 1;
-    } else {
-      replacementOffset += replacementLines[right]?.length ?? 0;
-      right += 1;
-    }
-  }
-
-  flush();
-  return replacements;
+  return contentStart;
 }
 
-function splitLines(value: string): string[] {
-  return value.match(/[^\n]*\n|[^\n]+$/g) ?? [];
+function formatInsertedScript(
+  code: string,
+  indent: string,
+  options: {
+    leadingNewline?: boolean;
+    trailingBlankLine?: boolean;
+  } = {},
+): string {
+  const body = code
+    .replace(/\n$/, "")
+    .split("\n")
+    .map((line) => (line.length > 0 ? `${indent}${line}` : line))
+    .join("\n");
+  const leading = options.leadingNewline ? "\n" : "";
+  const trailing = options.trailingBlankLine ? "\n\n" : "\n";
+
+  return `${leading}${body}${trailing}`;
 }

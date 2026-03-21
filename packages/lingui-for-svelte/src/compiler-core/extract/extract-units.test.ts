@@ -1,6 +1,6 @@
 import dedent from "dedent";
 import { SourceMapConsumer } from "source-map";
-import { describe, expect, it, test } from "vite-plus/test";
+import { describe, expect, it } from "vite-plus/test";
 
 import { createExtractionUnits } from "./extract-units.ts";
 
@@ -87,7 +87,7 @@ function assertRangeMapping(
   });
 
   expect(
-    mappedStart.source,
+    String(mappedStart.source),
     `${detection.name}: missing source for start position`,
   ).toMatch(/App\.svelte$/);
   expect(mappedStart.line, `${detection.name}: start line`).toBe(
@@ -98,7 +98,7 @@ function assertRangeMapping(
   );
 
   expect(
-    mappedEnd.source,
+    String(mappedEnd.source),
     `${detection.name}: missing source for end position`,
   ).toMatch(/App\.svelte$/);
   expect(mappedEnd.line, `${detection.name}: end line`).toBe(originalEnd.line);
@@ -121,11 +121,11 @@ describe("createExtractionUnits", () => {
       { filename: "/virtual/App.svelte" },
     );
 
-    expect(units).toHaveLength(1);
-    expect(units[0]?.code).toContain("/*i18n*/");
+    expect(units.length).toBeGreaterThan(0);
+    expect(units.some((unit) => unit.code.includes("/*i18n*/"))).toBe(true);
   });
 
-  test.fails("maps extracted script, template, and component ranges back to the original svelte file", async () => {
+  it("maps extracted script, template, and component ranges back to the original svelte file", async () => {
     const source = dedent`
         <script lang="ts">
           import { t, Trans } from "lingui-for-svelte/macro";
@@ -140,39 +140,52 @@ describe("createExtractionUnits", () => {
     const units = createExtractionUnits(source, {
       filename: "/virtual/App.svelte",
     });
-    const unit = units[0];
-
-    expect(unit).toBeDefined();
-    const mappedSource = unit?.map?.sources?.[0] ?? unit?.map?.file;
-
-    expect(mappedSource).toBe("/virtual/App.svelte");
-    expect(unit?.map?.sources).toEqual(["/virtual/App.svelte"]);
-    expect(unit?.map?.sourcesContent).toEqual([source]);
-
     const detections: Detection[] = [
       {
         name: "script extraction",
         original: "t.eager`Script origin message`",
-        generated: /_i18n\._\([^)]*message: "Script origin message"[^)]*\)/,
+        generated:
+          /const __lingui_for_svelte_expr_0 = _i18n\._\([\s\S]*?message: "Script origin message"[\s\S]*?\);/,
       },
       {
         name: "template extraction",
         original: /\$t`Template origin message`/,
         generated:
-          /__lingui_for_svelte_expr_0 = _i18n\._\([^)]*message: "Template origin message"[^)]*\)/,
+          /const __lingui_for_svelte_expr_0 = _i18n\._\([\s\S]*?message: "Template origin message"[\s\S]*?\);/,
       },
       {
         name: "component extraction",
         original: "<Trans>Component origin message</Trans>",
         generated:
-          /__lingui_for_svelte_component_0 = <_Trans\b[\s\S]*?message: "Component origin message"[\s\S]*?>/,
+          /const __lingui_for_svelte_component_0 = <_Trans\b[\s\S]*?message: "Component origin message"[\s\S]*?>;/,
       },
     ];
 
-    await SourceMapConsumer.with(unit?.map as never, null, (consumer) => {
-      detections.forEach((detection) => {
+    for (const detection of detections) {
+      const matches = units.filter((unit) => {
+        try {
+          findUniqueRange(unit.code, detection.generated);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+
+      expect(
+        matches,
+        `${detection.name}: expected a single extraction unit`,
+      ).toHaveLength(1);
+
+      const [unit] = matches;
+      const mappedSource = unit?.map?.sources?.[0] ?? unit?.map?.file;
+
+      expect(mappedSource).toBe("/virtual/App.svelte");
+      expect(unit?.map?.sources).toEqual(["/virtual/App.svelte"]);
+      expect(unit?.map?.sourcesContent).toEqual([source]);
+
+      await SourceMapConsumer.with(unit?.map as never, null, (consumer) => {
         assertRangeMapping(consumer, unit?.code ?? "", source, detection);
       });
-    });
+    }
   });
 });

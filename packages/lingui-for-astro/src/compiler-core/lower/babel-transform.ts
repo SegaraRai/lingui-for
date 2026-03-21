@@ -2,7 +2,7 @@ import type { PluginObj } from "@babel/core";
 import { transformSync } from "@babel/core";
 import * as t from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
-import type { RawSourceMap } from "source-map";
+import type { SourceMap } from "lingui-for-shared/compiler";
 
 import { getParserPlugins } from "../shared/config.ts";
 import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
@@ -111,7 +111,7 @@ export function transformProgram(
       ],
       createAstroContextPostprocessPlugin(request),
     ],
-    inputSourceMap: request.inputSourceMap as never,
+    inputSourceMap: request.inputSourceMap,
     sourceMaps: true,
   });
 
@@ -122,6 +122,6 @@ export function transformProgram(
   return {
     code: result.code,
     ast: result.ast,
-    map: (result.map as RawSourceMap | null | undefined) ?? null,
+    map: (result.map as SourceMap | null | undefined) ?? null,
   };
 }

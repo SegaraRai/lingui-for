@@ -1,5 +1,6 @@
+import type { SourceMap } from "lingui-for-shared/compiler";
+
 import type { AstroAnalysis } from "#astro-analyzer-wasm";
-import type { RawSourceMap } from "source-map";
 
 /**
  * Result returned by `transformAstro`.
@@ -12,7 +13,7 @@ export interface AstroTransformResult {
   /**
    * Source map for the transformed file, or `null` when none is generated.
    */
-  map: RawSourceMap | null;
+  map: SourceMap | null;
   /**
    * Source analysis reused by callers that need structural metadata.
    */

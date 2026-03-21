@@ -1,6 +1,7 @@
 import type * as BabelTypes from "@babel/types";
 import type { LinguiConfigNormalized } from "@lingui/conf";
-import type { RawSourceMap } from "source-map";
+
+import type { SourceMap } from "lingui-for-shared/compiler";
 
 import type { ScriptLang } from "../shared/types.ts";
 
@@ -12,7 +13,7 @@ export type SourcePosition = {
 export type ProgramTransform = {
   code: string;
   ast: BabelTypes.File;
-  map: RawSourceMap | null;
+  map: SourceMap | null;
 };
 
 export type MappedCodeFragment = {
@@ -34,5 +35,5 @@ export type ProgramTransformRequest = {
   extract: boolean;
   translationMode: "extract" | "raw" | "svelte-context";
   runtimeBindings?: RuntimeBindingsForTransform | undefined;
-  inputSourceMap?: RawSourceMap;
+  inputSourceMap?: SourceMap;
 };

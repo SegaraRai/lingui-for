@@ -1,6 +1,6 @@
-import type { RawSourceMap } from "source-map";
+import type { SourceMap } from "lingui-for-shared/compiler";
 
 export type ExtractionUnit = {
   code: string;
-  map: RawSourceMap | null;
+  map: SourceMap | null;
 };

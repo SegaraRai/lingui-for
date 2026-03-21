@@ -87,7 +87,7 @@ function assertRangeMapping(
   });
 
   expect(
-    mappedStart.source,
+    String(mappedStart.source),
     `${detection.name}: missing source for start position`,
   ).toMatch(/App\.svelte$/);
   expect(mappedStart.line, `${detection.name}: start line`).toBe(
@@ -98,7 +98,7 @@ function assertRangeMapping(
   );
 
   expect(
-    mappedEnd.source,
+    String(mappedEnd.source),
     `${detection.name}: missing source for end position`,
   ).toMatch(/App\.svelte$/);
   expect(mappedEnd.line, `${detection.name}: end line`).toBe(originalEnd.line);
@@ -215,7 +215,7 @@ describe("transformSvelte source map discipline", () => {
       name: "script transform",
       original: "t.eager`Mapped script message`",
       generated:
-        /\$?__l4s_translate\([^)]*message: "Mapped script message"[^)]*\)/,
+        /__l4s_getI18n\(\)\._\([^)]*message: "Mapped script message"[^)]*\)/,
     },
     {
       name: "template transform",
@@ -260,7 +260,7 @@ describe("transformSvelte source map discipline", () => {
     },
   ];
 
-  test.fails("maps transformed and preserved compile ranges back to the original svelte file", async () => {
+  test("maps transformed and preserved compile ranges back to the original svelte file", async () => {
     const result = transformSvelte(rangeSource, {
       filename: "/virtual/App.svelte",
     });

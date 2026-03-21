@@ -1,4 +1,4 @@
-import type { RawSourceMap } from "source-map";
+import type { SourceMap } from "lingui-for-shared/compiler";
 
 import {
   PACKAGE_MACRO,
@@ -12,7 +12,7 @@ export type LoweringSourceMapOptions = {
 
 export type LoweredSnippet = {
   code: string;
-  map: RawSourceMap | null;
+  map: SourceMap | null;
 };
 
 export const EXPR_PREFIX = "const __expr = (\n";

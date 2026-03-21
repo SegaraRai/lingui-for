@@ -1,8 +1,10 @@
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
 import {
+  isIndexedSourceMap,
   runBabelExtractionUnits,
   stripQuery,
+  type SourceMap,
 } from "lingui-for-shared/compiler";
 
 import { createAstroExtractionUnits } from "../compiler-core/extract/index.ts";
@@ -25,10 +27,27 @@ function normalizeExtractionSourceMap(
     return map;
   }
 
+  const normalizedMap: SourceMap = map;
+
+  if (isIndexedSourceMap(normalizedMap)) {
+    return {
+      ...normalizedMap,
+      file: normalizedMap.file
+        ? stripQuery(normalizedMap.file)
+        : normalizedMap.file,
+      sections: normalizedMap.sections.map((section) => ({
+        ...section,
+        map: normalizeExtractionSourceMap(section.map) ?? section.map,
+      })),
+    };
+  }
+
   return {
-    ...map,
-    file: map.file ? stripQuery(map.file) : map.file,
-    sources: map.sources.map(stripQuery),
+    ...normalizedMap,
+    file: normalizedMap.file
+      ? stripQuery(normalizedMap.file)
+      : normalizedMap.file,
+    sources: normalizedMap.sources.map(stripQuery),
   };
 }
 

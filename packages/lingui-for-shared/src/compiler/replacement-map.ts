@@ -1,24 +1,21 @@
 import MagicString from "magic-string";
-import type { RawSourceMap } from "source-map";
+
+import type {
+  IndexedSourceMap,
+  IndexedSourceMapSection,
+  SourceMap,
+} from "./source-map-types.ts";
 
 export type GeneratedOffset = {
   line: number;
   column: number;
 };
 
-export type ReplacementChunk<TMap = RawSourceMap> = {
+export type ReplacementChunk<TMap = SourceMap> = {
   start: number;
   end: number;
   code: string;
   map: TMap | null;
-};
-
-type IndexedSourceMapSection = {
-  offset: {
-    line: number;
-    column: number;
-  };
-  map: RawSourceMap;
 };
 
 export function createUntouchedChunkMap(
@@ -26,7 +23,7 @@ export function createUntouchedChunkMap(
   filename: string,
   start: number,
   end: number,
-): RawSourceMap | null {
+): SourceMap | null {
   if (end <= start) {
     return null;
   }
@@ -38,13 +35,13 @@ export function createUntouchedChunkMap(
     hires: true,
     includeContent: true,
     source: filename,
-  }) as never as RawSourceMap;
+  });
 }
 
 export function createIndexedSourceMap(
   file: string,
   sections: IndexedSourceMapSection[],
-): RawSourceMap {
+): IndexedSourceMap {
   return {
     version: 3,
     file,
@@ -52,7 +49,7 @@ export function createIndexedSourceMap(
     mappings: "",
     sources: [],
     sections,
-  } as RawSourceMap;
+  };
 }
 
 export function advanceGeneratedOffset(
@@ -74,11 +71,11 @@ export function advanceGeneratedOffset(
   return { line, column };
 }
 
-export function buildOutputWithIndexedMap<TMap extends RawSourceMap>(
+export function buildOutputWithIndexedMap<TMap extends SourceMap>(
   source: string,
   mapFile: string,
   replacements: ReplacementChunk<TMap>[],
-): { code: string; map: RawSourceMap } {
+): { code: string; map: IndexedSourceMap } {
   const sorted = replacements
     .slice()
     .sort((left, right) => left.start - right.start || left.end - right.end);

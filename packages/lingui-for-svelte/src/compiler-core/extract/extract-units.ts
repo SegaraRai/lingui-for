@@ -1,8 +1,8 @@
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import {
-  createCombinedProgramFromPlan,
-  createModuleProgramFromPlan,
-  transformProgram,
+  lowerComponentMacro,
+  lowerScriptExpression,
+  lowerTemplateExpression,
 } from "../lower/index.ts";
 import { createSveltePlan } from "../plan/index.ts";
 import type { ExtractionUnit } from "./types.ts";
@@ -13,48 +13,94 @@ export function createExtractionUnits(
 ): ExtractionUnit[] {
   const plan = createSveltePlan(source, options);
   const units: ExtractionUnit[] = [];
-  const moduleProgram = createModuleProgramFromPlan(plan);
-  const combinedProgram = createCombinedProgramFromPlan(plan);
 
-  if (moduleProgram) {
-    const transformedModule = transformProgram(moduleProgram.code, {
-      extract: true,
-      filename: moduleProgram.filename,
-      lang: moduleProgram.lang,
-      linguiConfig: plan.linguiConfig,
-      translationMode: "extract",
-      inputSourceMap: moduleProgram.inputSourceMap,
-    });
+  plan.moduleMacros.expressions.forEach((expression, index) => {
+    const lowered = lowerScriptExpression(
+      expression.source,
+      expression.start,
+      plan,
+      {
+        extract: true,
+        translationMode: "extract",
+        filenameSuffix: `?extract-module-expression-${index}`,
+        macroBindings: plan.moduleBindings,
+      },
+    );
 
-    if (isExtractionCodeRelevant(transformedModule.code)) {
-      units.push({
-        code: transformedModule.code,
-        map: transformedModule.map,
-      });
+    if (isExtractionCodeRelevant(lowered.code)) {
+      units.push(normalizeExtractionUnit(lowered, source, plan.filename));
     }
-  }
+  });
 
-  if (combinedProgram) {
-    const transformedCombined = transformProgram(combinedProgram.code, {
-      extract: true,
-      filename: combinedProgram.filename,
-      lang: combinedProgram.lang,
-      linguiConfig: plan.linguiConfig,
-      translationMode: "extract",
-      inputSourceMap: combinedProgram.inputSourceMap,
-    });
+  plan.instanceMacros.expressions.forEach((expression, index) => {
+    const lowered = lowerScriptExpression(
+      expression.source,
+      expression.start,
+      plan,
+      {
+        extract: true,
+        translationMode: "extract",
+        filenameSuffix: `?extract-instance-expression-${index}`,
+        macroBindings: plan.instanceBindings,
+      },
+    );
 
-    if (isExtractionCodeRelevant(transformedCombined.code)) {
-      units.push({
-        code: transformedCombined.code,
-        map: transformedCombined.map,
-      });
+    if (isExtractionCodeRelevant(lowered.code)) {
+      units.push(normalizeExtractionUnit(lowered, source, plan.filename));
     }
-  }
+  });
+
+  plan.analysis.expressions.forEach((expression) => {
+    const lowered = lowerTemplateExpression(
+      expression.source,
+      expression.start,
+      plan,
+      {
+        extract: true,
+      },
+    );
+
+    if (isExtractionCodeRelevant(lowered.code)) {
+      units.push(normalizeExtractionUnit(lowered, source, plan.filename));
+    }
+  });
+
+  plan.analysis.components.forEach((component) => {
+    const lowered = lowerComponentMacro(
+      component.source,
+      component.start,
+      plan,
+      {
+        extract: true,
+      },
+    );
+
+    if (isExtractionCodeRelevant(lowered.code)) {
+      units.push(normalizeExtractionUnit(lowered, source, plan.filename));
+    }
+  });
 
   return units;
 }
 
 function isExtractionCodeRelevant(code: string): boolean {
   return code.includes("/*i18n*/");
+}
+
+function normalizeExtractionUnit(
+  unit: ExtractionUnit,
+  source: string,
+  filename: string,
+): ExtractionUnit {
+  return {
+    code: unit.code,
+    map: unit.map
+      ? {
+          ...unit.map,
+          file: filename,
+          sources: [filename],
+          sourcesContent: [source],
+        }
+      : null,
+  };
 }

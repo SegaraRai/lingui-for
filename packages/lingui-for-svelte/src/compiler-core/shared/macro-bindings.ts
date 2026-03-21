@@ -22,7 +22,7 @@ type MacroImportName =
   | "selectOrdinal"
   | "t";
 
-type MacroBindings = {
+export type MacroBindings = {
   all: ReadonlySet<string>;
   components: ReadonlySet<string>;
   reactiveStrings: ReadonlySet<string>;

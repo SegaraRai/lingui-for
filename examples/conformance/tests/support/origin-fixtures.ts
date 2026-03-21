@@ -30,8 +30,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
     expectations: [
       {
         message: "Script origin message",
-        needle: "const scriptLabel = t.eager`Script origin message`;",
-        column: 0,
+        needle: "t.eager`Script origin message`",
       },
       {
         message: "Template origin message",

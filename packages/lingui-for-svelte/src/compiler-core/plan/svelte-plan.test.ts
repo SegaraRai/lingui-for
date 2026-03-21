@@ -7,11 +7,13 @@ describe("createSveltePlan", () => {
   it("analyzes module, instance, expressions, and component macros once", () => {
     const source = dedent`
       <script module lang="ts">
-        export const answer = 42;
+        import { msg } from "lingui-for-svelte/macro";
+        export const descriptor = msg\`Module\`;
       </script>
 
       <script lang="ts">
         import { t, Trans } from "lingui-for-svelte/macro";
+        const eager = t.eager\`Hello\`;
         const label = $t\`Hello\`;
       </script>
 
@@ -28,5 +30,9 @@ describe("createSveltePlan", () => {
     expect(plan.analysis.instance?.lang).toBe("ts");
     expect(plan.analysis.expressions).toHaveLength(1);
     expect(plan.analysis.components).toHaveLength(1);
+    expect(plan.moduleMacros.imports).toHaveLength(1);
+    expect(plan.moduleMacros.expressions).toHaveLength(1);
+    expect(plan.instanceMacros.imports).toHaveLength(1);
+    expect(plan.instanceMacros.expressions).toHaveLength(2);
   });
 });
