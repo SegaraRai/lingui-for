@@ -6,7 +6,11 @@ import { babelTraverse } from "lingui-for-shared/compiler";
 import { analyzeSvelte } from "../analysis/svelte-analysis.ts";
 import type { ScriptBlock, SvelteAnalysis } from "../analysis/types.ts";
 import { getParserPlugins, normalizeLinguiConfig } from "../shared/config.ts";
-import { PACKAGE_MACRO } from "../shared/constants.ts";
+import {
+  EAGER_TRANSLATION_PROPERTY,
+  PACKAGE_MACRO,
+  REACTIVE_MACRO_PREFIX,
+} from "../shared/constants.ts";
 import {
   parseMacroBindings,
   type MacroBindings,
@@ -78,11 +82,14 @@ function getMacroLocalName(
     }
 
     const { name } = expression.node;
-    if (!name.startsWith("$") || expression.scope.hasBinding(name)) {
+    if (
+      !name.startsWith(REACTIVE_MACRO_PREFIX) ||
+      expression.scope.hasBinding(name)
+    ) {
       return null;
     }
 
-    const localName = name.slice(1);
+    const localName = name.slice(REACTIVE_MACRO_PREFIX.length);
     const binding = expression.scope.getBinding(localName);
     return bindings.reactiveStrings.has(localName) &&
       binding?.path.isImportSpecifier() === true &&
@@ -110,7 +117,7 @@ function getMacroLocalName(
     const property = callee.get("property");
     const object = callee.get("object");
     if (
-      property.isIdentifier({ name: "eager" }) &&
+      property.isIdentifier({ name: EAGER_TRANSLATION_PROPERTY }) &&
       object.isIdentifier() &&
       isMacroImportIdentifier(object, bindings) &&
       bindings.reactiveStrings.has(object.node.name)
@@ -138,7 +145,7 @@ function getMacroLocalName(
   const property = tag.get("property");
   const object = tag.get("object");
   if (
-    property.isIdentifier({ name: "eager" }) &&
+    property.isIdentifier({ name: EAGER_TRANSLATION_PROPERTY }) &&
     object.isIdentifier() &&
     isMacroImportIdentifier(object, bindings) &&
     bindings.reactiveStrings.has(object.node.name)

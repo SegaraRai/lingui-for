@@ -8,6 +8,7 @@ import {
   buildDirectProgramMap,
   buildGeneratedSnippetMap,
   buildOutputWithIndexedMap,
+  LINGUI_TRANSLATE_METHOD,
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
 
@@ -302,7 +303,9 @@ function collectTransformedRuntimeCallCodes(transformed: {
         !t.isIdentifier(path.node.callee.object, {
           name: RUNTIME_BINDING_I18N,
         }) ||
-        !t.isIdentifier(path.node.callee.property, { name: "_" })
+        !t.isIdentifier(path.node.callee.property, {
+          name: LINGUI_TRANSLATE_METHOD,
+        })
       ) {
         return;
       }

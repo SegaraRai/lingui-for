@@ -2,9 +2,17 @@ import type { NodePath, PluginObj } from "@babel/core";
 import * as t from "@babel/types";
 
 import {
+  LINGUI_CORE_PACKAGE,
+  LINGUI_I18N_EXPORT,
+  LINGUI_TRANSLATE_METHOD,
+} from "lingui-for-shared/compiler";
+
+import {
+  EAGER_TRANSLATION_PROPERTY,
   EAGER_TRANSLATION_WRAPPER,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
+  REACTIVE_MACRO_PREFIX,
   REACTIVE_TRANSLATION_WRAPPER,
 } from "../shared/constants.ts";
 import { collectMacroImportLocals } from "../shared/macro-bindings.ts";
@@ -34,7 +42,7 @@ function createInitialState(): MacroRewriteState {
 
 function collectRuntimeI18nLocals(program: t.Program): Set<string> {
   const locals = new Set<string>();
-  const runtimeSources = new Set([PACKAGE_RUNTIME, "@lingui/core"]);
+  const runtimeSources = new Set([PACKAGE_RUNTIME, LINGUI_CORE_PACKAGE]);
 
   program.body.forEach((statement) => {
     if (
@@ -47,7 +55,7 @@ function collectRuntimeI18nLocals(program: t.Program): Set<string> {
     statement.specifiers.forEach((specifier) => {
       if (
         t.isImportSpecifier(specifier) &&
-        t.isIdentifier(specifier.imported, { name: "i18n" })
+        t.isIdentifier(specifier.imported, { name: LINGUI_I18N_EXPORT })
       ) {
         locals.add(specifier.local.name);
       }
@@ -99,11 +107,14 @@ function getReactiveLocalName(
   }
 
   const { name } = expression.node;
-  if (!name.startsWith("$") || expression.scope.hasBinding(name)) {
+  if (
+    !name.startsWith(REACTIVE_MACRO_PREFIX) ||
+    expression.scope.hasBinding(name)
+  ) {
     return null;
   }
 
-  const localName = name.slice(1);
+  const localName = name.slice(REACTIVE_MACRO_PREFIX.length);
   return isMacroImportBinding(
     expression.scope.getBinding(localName),
     reactiveStringLocals,
@@ -170,7 +181,9 @@ function extractDescriptorArgument(
     !t.isCallExpression(expression) ||
     !t.isMemberExpression(expression.callee) ||
     expression.callee.computed ||
-    !t.isIdentifier(expression.callee.property, { name: "_" })
+    !t.isIdentifier(expression.callee.property, {
+      name: LINGUI_TRANSLATE_METHOD,
+    })
   ) {
     return null;
   }
@@ -201,7 +214,7 @@ function getEagerDirectStringLocalName(
   }
 
   const property = member.get("property");
-  if (!property.isIdentifier({ name: "eager" })) {
+  if (!property.isIdentifier({ name: EAGER_TRANSLATION_PROPERTY })) {
     return null;
   }
 
@@ -382,7 +395,10 @@ function isRuntimeI18nCall(path: NodePath<t.CallExpression>): boolean {
 
   const object = callee.get("object");
   const property = callee.get("property");
-  if (!object.isIdentifier() || !property.isIdentifier({ name: "_" })) {
+  if (
+    !object.isIdentifier() ||
+    !property.isIdentifier({ name: LINGUI_TRANSLATE_METHOD })
+  ) {
     return false;
   }
 
@@ -393,7 +409,7 @@ function isRuntimeI18nCall(path: NodePath<t.CallExpression>): boolean {
 
   const importSpecifier = binding.path.node;
   if (
-    !t.isIdentifier(importSpecifier.imported, { name: "i18n" }) ||
+    !t.isIdentifier(importSpecifier.imported, { name: LINGUI_I18N_EXPORT }) ||
     !binding.path.parentPath.isImportDeclaration()
   ) {
     return false;
@@ -401,7 +417,7 @@ function isRuntimeI18nCall(path: NodePath<t.CallExpression>): boolean {
 
   return (
     binding.path.parentPath.node.source.value === PACKAGE_RUNTIME ||
-    binding.path.parentPath.node.source.value === "@lingui/core"
+    binding.path.parentPath.node.source.value === LINGUI_CORE_PACKAGE
   );
 }
 
@@ -413,7 +429,7 @@ function removeRuntimeI18nImports(
     return;
   }
 
-  const runtimeSources = new Set([PACKAGE_RUNTIME, "@lingui/core"]);
+  const runtimeSources = new Set([PACKAGE_RUNTIME, LINGUI_CORE_PACKAGE]);
 
   program.body = program.body.flatMap((statement) => {
     if (
@@ -426,7 +442,7 @@ function removeRuntimeI18nImports(
     statement.specifiers = statement.specifiers.filter((specifier) => {
       return !(
         t.isImportSpecifier(specifier) &&
-        t.isIdentifier(specifier.imported, { name: "i18n" }) &&
+        t.isIdentifier(specifier.imported, { name: LINGUI_I18N_EXPORT }) &&
         t.isIdentifier(specifier.local) &&
         runtimeI18nLocals.has(specifier.local.name)
       );

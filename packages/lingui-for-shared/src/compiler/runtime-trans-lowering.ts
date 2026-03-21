@@ -1,6 +1,8 @@
 import { generate } from "@babel/generator";
 import * as t from "@babel/types";
 
+import { LINGUI_RUNTIME_TRANS_EXPORT } from "./lingui-constants.ts";
+
 export type ProgramTransformLike<TMap> = {
   code: string;
   ast: t.File;
@@ -547,7 +549,9 @@ function removeRuntimeTransImports(
     statement.specifiers = statement.specifiers.filter((specifier) => {
       return !(
         t.isImportSpecifier(specifier) &&
-        t.isIdentifier(specifier.imported, { name: "RuntimeTrans" }) &&
+        t.isIdentifier(specifier.imported, {
+          name: LINGUI_RUNTIME_TRANS_EXPORT,
+        }) &&
         shouldRemoveRuntimeTransImport(specifier.local.name)
       );
     });

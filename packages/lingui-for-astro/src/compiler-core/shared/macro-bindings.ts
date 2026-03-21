@@ -1,5 +1,7 @@
 import {
   expressionUsesMacroBinding as expressionUsesSharedMacroBinding,
+  LINGUI_ALL_MACRO_IMPORTS,
+  LINGUI_COMPONENT_MACRO_IMPORTS,
   parseMacroBindings as parseSharedMacroBindings,
   type SharedMacroBindings,
 } from "lingui-for-shared/compiler";
@@ -7,36 +9,15 @@ import {
 import { getParserPlugins } from "./config.ts";
 import { PACKAGE_MACRO } from "./constants.ts";
 
-type MacroImportName =
-  | "Trans"
-  | "Plural"
-  | "Select"
-  | "SelectOrdinal"
-  | "defineMessage"
-  | "msg"
-  | "plural"
-  | "select"
-  | "selectOrdinal"
-  | "t";
+type MacroImportName = (typeof LINGUI_ALL_MACRO_IMPORTS)[number];
 
 export type MacroBindings = SharedMacroBindings<MacroImportName>;
 
-const COMPONENT_IMPORTS = [
-  "Trans",
-  "Plural",
-  "Select",
-  "SelectOrdinal",
-] as const;
+const COMPONENT_IMPORTS =
+  LINGUI_COMPONENT_MACRO_IMPORTS satisfies readonly MacroImportName[];
 
-const ALL_MACRO_IMPORTS = [
-  ...COMPONENT_IMPORTS,
-  "defineMessage",
-  "msg",
-  "plural",
-  "select",
-  "selectOrdinal",
-  "t",
-] as const satisfies readonly MacroImportName[];
+const ALL_MACRO_IMPORTS =
+  LINGUI_ALL_MACRO_IMPORTS satisfies readonly MacroImportName[];
 
 export function parseMacroBindings(code: string): MacroBindings {
   return parseSharedMacroBindings(code, {

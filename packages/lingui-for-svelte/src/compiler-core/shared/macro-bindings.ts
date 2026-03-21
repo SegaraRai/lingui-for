@@ -3,25 +3,18 @@ import type * as t from "@babel/types";
 import {
   collectMacroImportLocals as collectSharedMacroImportLocals,
   expressionUsesMacroBinding as expressionUsesSharedMacroBinding,
+  LINGUI_ALL_MACRO_IMPORTS,
+  LINGUI_COMPONENT_MACRO_IMPORTS,
+  LINGUI_DIRECT_STRING_MACRO_IMPORTS,
   parseMacroBindings as parseSharedMacroBindings,
   type SharedMacroBindings,
 } from "lingui-for-shared/compiler";
 
 import { getParserPlugins } from "./config.ts";
-import { PACKAGE_MACRO } from "./constants.ts";
+import { EAGER_TRANSLATION_PROPERTY, PACKAGE_MACRO } from "./constants.ts";
 import type { ScriptLang } from "./types.ts";
 
-type MacroImportName =
-  | "Trans"
-  | "Plural"
-  | "Select"
-  | "SelectOrdinal"
-  | "defineMessage"
-  | "msg"
-  | "plural"
-  | "select"
-  | "selectOrdinal"
-  | "t";
+type MacroImportName = (typeof LINGUI_ALL_MACRO_IMPORTS)[number];
 
 export type MacroBindings = {
   all: ReadonlySet<string>;
@@ -31,26 +24,14 @@ export type MacroBindings = {
   componentImports: ReadonlyMap<string, MacroImportName>;
 };
 
-const REACTIVE_STRING_IMPORTS = [
-  "t",
-  "plural",
-  "select",
-  "selectOrdinal",
-] as const;
+const REACTIVE_STRING_IMPORTS =
+  LINGUI_DIRECT_STRING_MACRO_IMPORTS satisfies readonly MacroImportName[];
 
-const COMPONENT_IMPORTS = [
-  "Trans",
-  "Plural",
-  "Select",
-  "SelectOrdinal",
-] as const;
+const COMPONENT_IMPORTS =
+  LINGUI_COMPONENT_MACRO_IMPORTS satisfies readonly MacroImportName[];
 
-const ALL_MACRO_IMPORTS = [
-  ...COMPONENT_IMPORTS,
-  "defineMessage",
-  "msg",
-  ...REACTIVE_STRING_IMPORTS,
-] as const satisfies readonly MacroImportName[];
+const ALL_MACRO_IMPORTS =
+  LINGUI_ALL_MACRO_IMPORTS satisfies readonly MacroImportName[];
 
 function isReactiveStringImportName(
   importedName: MacroImportName,
@@ -116,7 +97,7 @@ export function expressionUsesMacroBinding(
     {
       parserPlugins: getParserPlugins(lang),
       macroPackage: PACKAGE_MACRO,
-      eagerPropertyName: "eager",
+      eagerPropertyName: EAGER_TRANSLATION_PROPERTY,
       reactiveAliasImports: bindings.reactiveStrings,
     },
   );

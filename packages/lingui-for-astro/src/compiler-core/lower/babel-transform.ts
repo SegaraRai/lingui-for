@@ -3,7 +3,12 @@ import { transformSync } from "@babel/core";
 import * as t from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
-import type { SourceMap } from "lingui-for-shared/compiler";
+import {
+  LINGUI_CORE_PACKAGE,
+  LINGUI_I18N_EXPORT,
+  LINGUI_TRANSLATE_METHOD,
+  type SourceMap,
+} from "lingui-for-shared/compiler";
 
 import { getParserPlugins } from "../shared/config.ts";
 import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
@@ -22,7 +27,7 @@ function createAstroContextPostprocessPlugin(
           path.node.body.forEach((statement) => {
             if (
               !t.isImportDeclaration(statement) ||
-              statement.source.value !== "@lingui/core"
+              statement.source.value !== LINGUI_CORE_PACKAGE
             ) {
               return;
             }
@@ -30,7 +35,7 @@ function createAstroContextPostprocessPlugin(
             statement.specifiers.forEach((specifier) => {
               if (
                 t.isImportSpecifier(specifier) &&
-                t.isIdentifier(specifier.imported, { name: "i18n" })
+                t.isIdentifier(specifier.imported, { name: LINGUI_I18N_EXPORT })
               ) {
                 state.runtimeI18nLocals.add(specifier.local.name);
               }
@@ -45,7 +50,7 @@ function createAstroContextPostprocessPlugin(
           path.node.body = path.node.body.flatMap((statement) => {
             if (
               !t.isImportDeclaration(statement) ||
-              statement.source.value !== "@lingui/core"
+              statement.source.value !== LINGUI_CORE_PACKAGE
             ) {
               return [statement];
             }
@@ -53,7 +58,9 @@ function createAstroContextPostprocessPlugin(
             statement.specifiers = statement.specifiers.filter((specifier) => {
               return !(
                 t.isImportSpecifier(specifier) &&
-                t.isIdentifier(specifier.imported, { name: "i18n" }) &&
+                t.isIdentifier(specifier.imported, {
+                  name: LINGUI_I18N_EXPORT,
+                }) &&
                 state.runtimeI18nLocals.has(specifier.local.name)
               );
             });
@@ -75,7 +82,9 @@ function createAstroContextPostprocessPlugin(
           path.node.callee.computed ||
           !t.isIdentifier(path.node.callee.object) ||
           !state.runtimeI18nLocals.has(path.node.callee.object.name) ||
-          !t.isIdentifier(path.node.callee.property, { name: "_" })
+          !t.isIdentifier(path.node.callee.property, {
+            name: LINGUI_TRANSLATE_METHOD,
+          })
         ) {
           return;
         }

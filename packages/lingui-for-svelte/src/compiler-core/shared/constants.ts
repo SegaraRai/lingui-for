@@ -68,6 +68,12 @@ export const REACTIVE_TRANSLATION_WRAPPER =
 export const EAGER_TRANSLATION_WRAPPER =
   "__lingui_for_svelte_eager_translation__";
 
+/** Property name used by Svelte macros for explicit eager translations. */
+export const EAGER_TRANSLATION_PROPERTY = "eager";
+
+/** Prefix used by Svelte's reactive macro sugar such as `$t` and `$plural`. */
+export const REACTIVE_MACRO_PREFIX = "$";
+
 /**
  * Default local binding name for the object returned by `getLinguiContext()`.
  *

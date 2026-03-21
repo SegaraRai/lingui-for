@@ -2,6 +2,7 @@ export * from "./babel-traverse.ts";
 export * from "./config.ts";
 export * from "./extractor.ts";
 export * from "./identifier-allocation.ts";
+export * from "./lingui-constants.ts";
 export * from "./macro-presence.ts";
 export * from "./macro-bindings.ts";
 export * from "./paths.ts";
