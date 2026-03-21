@@ -1,8 +1,6 @@
+import type { RawSourceMap } from "source-map";
 import { PACKAGE_MACRO } from "../shared/constants.ts";
-import type {
-  LinguiAstroTransformOptions,
-  RawSourceMapLike,
-} from "../shared/types.ts";
+import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import { createAstroTransformContext } from "./astro-transform-context.ts";
 import {
   isExtractionCodeRelevant,
@@ -25,9 +23,9 @@ import {
 export function createAstroExtractionUnits(
   source: string,
   options: LinguiAstroTransformOptions,
-): { code: string; map: RawSourceMapLike | null }[] {
+): { code: string; map: RawSourceMap | null }[] {
   const context = createAstroTransformContext(source);
-  const units: { code: string; map: RawSourceMapLike | null }[] = [];
+  const units: { code: string; map: RawSourceMap | null }[] = [];
 
   if (context.frontmatterContent.includes(PACKAGE_MACRO)) {
     const transformedFrontmatter = transformFrontmatterExtractionUnit(

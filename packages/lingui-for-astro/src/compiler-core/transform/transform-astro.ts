@@ -6,6 +6,7 @@ import {
 
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import { createAstroTransformContext } from "./astro-transform-context.ts";
+import { buildGeneratedSnippetMap, offsetSourceMap } from "./source-map.ts";
 import {
   buildFrontmatterPrelude,
   transformComponentMacro,
@@ -32,18 +33,30 @@ export function transformAstro(
 ): AstroTransformResult {
   const context = createAstroTransformContext(source);
   const replacements: ReplacementChunk[] = [];
+  const filename = stripQuery(options.filename);
+  const mapFile = filename.split(/[\\/]/).at(-1) ?? filename;
 
   context.filteredExpressions.slice().forEach((expression) => {
     const transformed = transformTemplateExpression(
       source.slice(expression.innerRange.start, expression.innerRange.end),
       context.macroBindings.allImports,
       options,
+      {
+        fullSource: source,
+        sourceStart: expression.innerRange.start,
+      },
     );
     replacements.push({
-      start: expression.range.start,
-      end: expression.range.end,
-      code: `{${transformed}}`,
-      map: null,
+      start: expression.innerRange.start,
+      end: expression.innerRange.end,
+      code: transformed.code,
+      map: buildGeneratedSnippetMap(
+        source,
+        mapFile,
+        expression.innerRange.start,
+        transformed.code,
+        expression.innerRange.end - expression.innerRange.start,
+      ),
     });
   });
 
@@ -52,23 +65,33 @@ export function transformAstro(
       source.slice(candidate.range.start, candidate.range.end),
       context.macroBindings.allImports,
       options,
+      {
+        fullSource: source,
+        sourceStart: candidate.range.start,
+      },
     );
     replacements.push({
       start: candidate.range.start,
       end: candidate.range.end,
-      code: replacement,
-      map: null,
+      code: replacement.code,
+      map: replacement.map,
     });
   });
 
   const transformedFrontmatter = context.usesAstroI18n
-    ? transformFrontmatter(context.frontmatterContent, options)
-    : context.frontmatterContent;
+    ? transformFrontmatter(context.frontmatterContent, options, {
+        fullSource: source,
+        sourceStart: context.analysis.frontmatter?.contentRange.start ?? 0,
+      })
+    : {
+        code: context.frontmatterContent,
+        map: null,
+      };
   const prelude = buildFrontmatterPrelude(
     context.usesAstroI18n,
     context.usesRuntimeTrans,
   );
-  const finalFrontmatter = [prelude, transformedFrontmatter]
+  const finalFrontmatter = [prelude, transformedFrontmatter.code]
     .filter((part) => part.trim().length > 0)
     .join("");
 
@@ -77,7 +100,10 @@ export function transformAstro(
       start: context.analysis.frontmatter.contentRange.start,
       end: context.analysis.frontmatter.contentRange.end,
       code: finalFrontmatter,
-      map: null,
+      map:
+        transformedFrontmatter.map == null
+          ? null
+          : offsetSourceMap(transformedFrontmatter.map, mapFile, prelude),
     });
   } else if (finalFrontmatter.trim().length > 0) {
     replacements.push({
@@ -88,8 +114,6 @@ export function transformAstro(
     });
   }
 
-  const filename = stripQuery(options.filename);
-  const mapFile = filename.split(/[\\/]/).at(-1) ?? filename;
   const output = buildOutputWithIndexedMap(source, mapFile, replacements);
 
   return {

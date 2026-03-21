@@ -36,7 +36,7 @@ describe("transform helpers", () => {
     const code = compact(
       transformFrontmatter(source, {
         filename: "/virtual/Page.astro",
-      }),
+      }).code,
     );
 
     expect(code).not.toContain('from "lingui-for-astro/macro"');
@@ -48,7 +48,7 @@ describe("transform helpers", () => {
       "t`Hello ${name}`",
       new Map([["t", "t"]]),
       { filename: "/virtual/Page.astro" },
-    );
+    ).code;
 
     expect(code).toContain("__l4a_i18n._(");
     expect(code).toContain('message: "Hello {name}"');
@@ -60,7 +60,7 @@ describe("transform helpers", () => {
         '<Trans>Read the <a href="/docs">docs</a>.</Trans>',
         new Map([["Trans", "Trans"]]),
         { filename: "/virtual/Page.astro" },
-      ),
+      ).code,
     );
 
     expect(code).toContain("<L4aRuntimeTrans {.../*i18n*/ {");

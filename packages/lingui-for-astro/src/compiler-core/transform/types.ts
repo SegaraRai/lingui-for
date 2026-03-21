@@ -1,13 +1,13 @@
+import type { RawSourceMap } from "source-map";
 import type * as BabelTypes from "@babel/types";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import type { AstroAnalysis } from "#astro-analyzer-wasm";
-import type { RawSourceMapLike } from "../shared/types.ts";
 
 export interface ProgramTransform {
   code: string;
   ast: BabelTypes.File;
-  map: RawSourceMapLike | null;
+  map: RawSourceMap | null;
 }
 
 export interface ProgramTransformRequest {
@@ -16,7 +16,7 @@ export interface ProgramTransformRequest {
   extract: boolean;
   translationMode: "extract" | "raw" | "astro-context";
   runtimeBinding?: string | undefined;
-  inputSourceMap?: RawSourceMapLike | undefined;
+  inputSourceMap?: RawSourceMap | undefined;
 }
 
 /**
@@ -30,7 +30,7 @@ export interface AstroTransformResult {
   /**
    * Source map for the transformed file, or `null` when none is generated.
    */
-  map: RawSourceMapLike | null;
+  map: RawSourceMap | null;
   /**
    * Source analysis reused by callers that need structural metadata.
    */
