@@ -28,14 +28,16 @@
 }
 
 .demo-code-block .astro-code {
-  margin: 0 !important;
-  padding-block: var(--ec-codePadBlk) !important;
-  padding-inline: var(--ec-codePadInl) !important;
+  /* fallback value is needed for pages where starlight code component is not used */
 
-  font-family: var(--ec-codeFontFml) !important;
-  font-size: var(--ec-codeFontSize) !important;
-  font-weight: var(--ec-codeFontWg) !important;
-  line-height: var(--ec-codeLineHt) !important;
+  margin: 0 !important;
+  padding-block: var(--ec-codePadBlk, 0.75rem) !important;
+  padding-inline: var(--ec-codePadInl, 1rem) !important;
+
+  font-family: var(--ec-codeFontFml, var(--__sl-font-mono)) !important;
+  font-size: var(--ec-codeFontSize, var(--sl-text-code)) !important;
+  font-weight: var(--ec-codeFontWg, 400) !important;
+  line-height: var(--ec-codeLineHt, var(--sl-line-height)) !important;
 }
 
 :root[data-theme="dark"] .demo-code-block .astro-code {
