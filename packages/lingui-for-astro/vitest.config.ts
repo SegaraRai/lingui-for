@@ -1,12 +1,7 @@
 import { defineProject } from "vite-plus";
 
 export default defineProject({
-  test: {
-    environment: "node",
-    fileParallelism: false,
-    include: ["src/**/*.test.ts"],
-    name: "lingui-for-astro",
-  },
+  test: {},
   resolve: {
     // Vite(st) does not seem to support conditional imports yet?
     // In the future we should use `resolve.conditions` instead.

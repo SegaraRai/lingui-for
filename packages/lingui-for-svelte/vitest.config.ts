@@ -7,10 +7,5 @@ export default defineProject({
       configFile: false,
     }),
   ],
-  test: {
-    environment: "node",
-    fileParallelism: false,
-    include: ["src/**/*.test.ts"],
-    name: "lingui-for-svelte",
-  },
+  test: {},
 });

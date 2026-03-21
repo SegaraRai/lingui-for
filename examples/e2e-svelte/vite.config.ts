@@ -7,13 +7,6 @@ import linguiMacro from "unplugin-lingui-macro/vite";
 
 export default defineConfig({
   plugins: [linguiMacro(), linguiForSvelte(), tailwindcss(), sveltekit()],
-  test: {
-    environment: "node",
-    fileParallelism: false,
-    include: ["tests/**/*.test.ts"],
-    maxWorkers: 1,
-    name: "e2e-svelte",
-  },
   run: {
     tasks: {
       build: {
