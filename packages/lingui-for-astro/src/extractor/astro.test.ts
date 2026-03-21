@@ -160,9 +160,17 @@ const role = "admin";
       messages.find(
         (message) =>
           message.message ===
+          "Astro runs plural, select, and selectOrdinal macros in component code.",
+      )?.origin,
+    ).toEqual([filename, 20, 8]);
+
+    expect(
+      messages.find(
+        (message) =>
+          message.message ===
           "{0, plural, one {# Astro format sample} other {# Astro format samples}}",
       )?.origin,
-    ).toEqual([filename, 51, 7]);
+    ).toEqual([filename, 52, 8]);
 
     expect(
       messages.find(
@@ -170,7 +178,7 @@ const role = "admin";
           message.message ===
           "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}",
       )?.origin,
-    ).toEqual([filename, 59, 7]);
+    ).toEqual([filename, 60, 8]);
 
     expect(
       messages.find(
@@ -178,7 +186,7 @@ const role = "admin";
           message.message ===
           "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}",
       )?.origin,
-    ).toEqual([filename, 68, 7]);
+    ).toEqual([filename, 69, 8]);
   });
 
   test("keeps origins for multiline t template expressions in Astro component markup", async () => {
@@ -207,7 +215,7 @@ const role = "admin";
           message.message ===
           "2. Switch between English and Japanese in the header and watch the locale labels.",
       )?.origin,
-    ).toEqual([filename, 52, 7]);
+    ).toEqual([filename, 53, 8]);
 
     expect(
       messages.find(
@@ -215,6 +223,6 @@ const role = "admin";
           message.message ===
           "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen.",
       )?.origin,
-    ).toEqual([filename, 57, 7]);
+    ).toEqual([filename, 58, 8]);
   });
 });

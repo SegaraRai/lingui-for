@@ -47,14 +47,18 @@ export function lowerTemplateExpression(
   });
 
   if (loweringOptions.extract) {
+    const originalStart =
+      (loweringOptions.sourceMapOptions?.sourceStart ?? 0) +
+      getLeadingWhitespaceLength(source);
+
     return {
       code: transformed.code,
       map: buildAnchoredGeneratedSnippetMap(
         loweringOptions.sourceMapOptions?.fullSource ?? source,
         options.filename,
-        loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+        originalStart,
         transformed.code,
-        source.length,
+        getTrimmedSourceLength(source),
         getExtractionDescriptorAnchorOffset(transformed.code),
       ),
     };
