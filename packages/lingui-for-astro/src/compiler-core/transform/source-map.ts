@@ -1,8 +1,4 @@
-import {
-  SourceMapConsumer,
-  SourceMapGenerator,
-  type RawSourceMap,
-} from "source-map";
+import { SourceMapGenerator, type RawSourceMap } from "source-map";
 import MagicString from "magic-string";
 
 type SourcePosition = {
@@ -42,12 +38,8 @@ export function buildDirectProgramMap(
   source: string,
   filename: string,
   originalStart: number,
-  snippetOrLength: string | number,
+  originalLength: number,
 ): RawSourceMap {
-  const originalLength =
-    typeof snippetOrLength === "number"
-      ? snippetOrLength
-      : snippetOrLength.length;
   const string = new MagicString(source, { filename }).snip(
     originalStart,
     originalStart + originalLength,
@@ -61,14 +53,12 @@ export function buildDirectProgramMap(
   }) as never as RawSourceMap;
 }
 
-export function buildWrappedSnippetMap(
+export function buildPrefixedSnippetMap(
   source: string,
   filename: string,
   originalStart: number,
   prefix: string,
-  snippet: string,
-  _suffix: string,
-  originalLength = snippet.length,
+  originalLength: number,
 ): RawSourceMap {
   const snippetMap = buildDirectProgramMap(
     source,
@@ -151,66 +141,4 @@ export function offsetSourceMap(
       },
     ],
   } as RawSourceMap;
-}
-
-export async function composeSourceMaps(
-  outerMap: RawSourceMap,
-  innerMap: RawSourceMap,
-): Promise<RawSourceMap> {
-  return await SourceMapConsumer.with(
-    outerMap as never,
-    null,
-    async (outerConsumer) =>
-      await SourceMapConsumer.with(innerMap as never, null, (innerConsumer) => {
-        const generator = new SourceMapGenerator({
-          file: outerMap.file ?? innerMap.file,
-        });
-
-        outerConsumer.eachMapping((mapping) => {
-          if (
-            mapping.originalLine == null ||
-            mapping.originalColumn == null ||
-            mapping.source == null
-          ) {
-            return;
-          }
-
-          const original = innerConsumer.originalPositionFor({
-            line: mapping.originalLine,
-            column: mapping.originalColumn,
-          });
-
-          if (
-            original.line == null ||
-            original.column == null ||
-            original.source == null
-          ) {
-            return;
-          }
-
-          generator.addMapping({
-            generated: {
-              line: mapping.generatedLine,
-              column: mapping.generatedColumn,
-            },
-            original: {
-              line: original.line,
-              column: original.column,
-            },
-            source: original.source,
-            name: original.name ?? mapping.name ?? undefined,
-          });
-        });
-
-        innerConsumer.sources.forEach((source) => {
-          const content = innerConsumer.sourceContentFor(source, true);
-
-          if (content != null) {
-            generator.setSourceContent(source, content);
-          }
-        });
-
-        return generator.toJSON();
-      }),
-  );
 }

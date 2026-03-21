@@ -11,8 +11,7 @@ import {
 } from "lingui-for-shared/compiler";
 
 import { getBabelTraverse } from "../shared/babel-traverse.ts";
-import { normalizeLinguiConfig } from "../shared/config.ts";
-import { getParserPlugins } from "../shared/config.ts";
+import { getParserPlugins, normalizeLinguiConfig } from "../shared/config.ts";
 import {
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
@@ -30,8 +29,8 @@ import {
 } from "./runtime-trans-lowering.ts";
 import {
   buildDirectProgramMap,
+  buildPrefixedSnippetMap,
   buildGeneratedSnippetMap,
-  buildWrappedSnippetMap,
 } from "./source-map.ts";
 
 const EXPR_PREFIX = "const __expr = (\n";
@@ -58,7 +57,7 @@ export function transformFrontmatter(
           sourceMapOptions.fullSource,
           stripQuery(options.filename),
           sourceMapOptions.sourceStart,
-          source,
+          source.length,
         )
       : undefined,
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
@@ -96,13 +95,12 @@ export function transformTemplateExpression(
     {
       extract: false,
       filename: `${options.filename}?expression`,
-      inputSourceMap: buildWrappedSnippetMap(
+      inputSourceMap: buildPrefixedSnippetMap(
         sourceMapOptions?.fullSource ?? source,
         originalFilename,
         sourceMapOptions?.sourceStart ?? 0,
         `${createSyntheticMacroImports(macroImports)}${EXPR_PREFIX}`,
-        source,
-        WRAPPED_SUFFIX,
+        source.length,
       ),
       linguiConfig: normalizeLinguiConfig(options.linguiConfig),
       translationMode: "astro-context",
@@ -168,13 +166,11 @@ export function transformComponentMacro(
     {
       extract: false,
       filename: `${options.filename}?component`,
-      inputSourceMap: buildWrappedSnippetMap(
+      inputSourceMap: buildPrefixedSnippetMap(
         sourceMapOptions?.fullSource ?? source,
         originalFilename,
         sourceMapOptions?.sourceStart ?? 0,
         `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n`,
-        rewrittenSource.code,
-        WRAPPED_SUFFIX,
         source.length,
       ),
       linguiConfig: normalizeLinguiConfig(options.linguiConfig),
@@ -236,7 +232,7 @@ export function transformFrontmatterExtractionUnit(
       fullSource,
       options.filename,
       sourceStart,
-      source,
+      source.length,
     ),
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
     translationMode: "extract",
@@ -254,13 +250,12 @@ export function transformExpressionExtractionUnit(
   return transformProgram(`${prefix}${source}${WRAPPED_SUFFIX}`, {
     extract: true,
     filename: `${options.filename}?extract-expression`,
-    inputSourceMap: buildWrappedSnippetMap(
+    inputSourceMap: buildPrefixedSnippetMap(
       fullSource,
       options.filename,
       sourceStart,
       prefix,
-      source,
-      WRAPPED_SUFFIX,
+      source.length,
     ),
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
     translationMode: "extract",
@@ -278,13 +273,12 @@ export function transformComponentExtractionUnit(
   return transformProgram(`${prefix}${source}${WRAPPED_SUFFIX}`, {
     extract: true,
     filename: `${options.filename}?extract-component`,
-    inputSourceMap: buildWrappedSnippetMap(
+    inputSourceMap: buildPrefixedSnippetMap(
       fullSource,
       options.filename,
       sourceStart,
       prefix,
-      source,
-      WRAPPED_SUFFIX,
+      source.length,
     ),
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
     translationMode: "extract",
@@ -328,12 +322,7 @@ function rewriteNestedComponentMacroExpressions(
 
   const string = new MagicString(source);
   const offset = prefix.length;
-  const replacements: Array<{
-    start: number;
-    end: number;
-    code: string;
-    map: RawSourceMap | null;
-  }> = [];
+  const replacements: ReplacementChunk[] = [];
 
   const traverse = getBabelTraverse();
 
@@ -400,12 +389,7 @@ function rewriteNestedComponentMacroExpressions(
     source,
     stripQuery(options.filename).split(/[\\/]/).at(-1) ??
       stripQuery(options.filename),
-    replacements as Array<{
-      start: number;
-      end: number;
-      code: string;
-      map: RawSourceMap | null;
-    }>,
+    replacements,
   );
 
   return output;
