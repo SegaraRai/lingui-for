@@ -42,8 +42,7 @@ export function transformSvelte(
     analysis.instance?.content ?? "",
     analysis.instance?.lang ?? "ts",
   );
-  const filename = stripQuery(plan.filename);
-  const mapFile = getSourceMapFileName(filename);
+  const mapFile = stripQuery(plan.filename);
   const replacements: ReplacementChunk[] = [];
 
   const moduleExpressions = plan.moduleMacros.expressions.map(
@@ -278,12 +277,6 @@ function createRuntimeBindingInsertions(
         : "",
   };
 }
-
-function getSourceMapFileName(filename: string): string {
-  const segments = filename.split(/[\\/]/);
-  return segments.at(-1) ?? filename;
-}
-
 function detectScriptIndent(content: string): string {
   for (const line of content.split("\n")) {
     if (line.trim().length === 0) {

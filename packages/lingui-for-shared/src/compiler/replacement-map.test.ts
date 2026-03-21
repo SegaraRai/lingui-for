@@ -23,8 +23,8 @@ describe("replacement map helpers", () => {
       12,
     );
 
-    expect(map?.file).toBe("virtual.ts");
-    expect(map?.sources).toEqual(["virtual.ts"]);
+    expect(map?.file).toBe("/virtual.ts");
+    expect(map?.sources).toEqual(["/virtual.ts"]);
     expect(map?.sourcesContent).toEqual(["const answer = 42;"]);
   });
 

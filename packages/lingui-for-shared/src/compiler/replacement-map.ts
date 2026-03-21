@@ -29,13 +29,18 @@ export function createUntouchedChunkMap(
   }
 
   const string = new MagicString(source, { filename }).snip(start, end);
-
-  return string.generateMap({
+  const map = string.generateMap({
     file: filename,
     hires: true,
     includeContent: true,
     source: filename,
   });
+
+  map.file = filename;
+  map.sources = [filename];
+  map.sourcesContent = [source];
+
+  return map;
 }
 
 export function createIndexedSourceMap(

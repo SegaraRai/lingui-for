@@ -1240,8 +1240,8 @@ describe("transformSvelte source map discipline", () => {
     expect(result.code).toContain("<p>{keepAfter}</p>");
 
     await SourceMapConsumer.with(result.map as never, null, () => {
-      expect(result.map.file).toBe("App.svelte");
-      expect(result.map.sources).toEqual(["App.svelte"]);
+      expect(result.map.file).toBe("/virtual/App.svelte");
+      expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
       expect(result.map.sourcesContent).toEqual([source]);
     });
   });
@@ -1308,6 +1308,11 @@ describe("transformSvelte source map discipline", () => {
       <p><strong>{$t\`Mapped template message\`}</strong></p>
       <a href="/docs"><Trans>Mapped component message</Trans></a>
       <p>{keepAfter}</p>
+      <p>{
+
+        $t\`Range check with surrounding whitespace\`
+
+      }</p>
     </section>
   `;
 
@@ -1322,7 +1327,13 @@ describe("transformSvelte source map discipline", () => {
       name: "template transform",
       original: /\$t`Mapped template message`/,
       generated:
-        /\$?__l4s_translate\([^)]*message: "Mapped template message"[^)]*\)/,
+        /\$__l4s_translate\([^)]*message: "Mapped template message"[^)]*\)/,
+    },
+    {
+      name: "range check with surrounding whitespace",
+      original: /\$t`Range check with surrounding whitespace`/,
+      generated:
+        /\$__l4s_translate\([^)]*message: "Range check with surrounding whitespace"[^)]*\)/,
     },
     {
       name: "component transform",
@@ -1366,8 +1377,8 @@ describe("transformSvelte source map discipline", () => {
       filename: "/virtual/App.svelte",
     });
 
-    expect(result.map.file).toBe("App.svelte");
-    expect(result.map.sources).toEqual(["App.svelte"]);
+    expect(result.map.file).toBe("/virtual/App.svelte");
+    expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
     expect(result.map.sourcesContent).toEqual([rangeSource]);
 
     await SourceMapConsumer.with(result.map as never, null, (consumer) => {
@@ -1377,7 +1388,7 @@ describe("transformSvelte source map discipline", () => {
           result.code,
           rangeSource,
           detection,
-          "App.svelte",
+          "/virtual/App.svelte",
           expect,
         );
       });

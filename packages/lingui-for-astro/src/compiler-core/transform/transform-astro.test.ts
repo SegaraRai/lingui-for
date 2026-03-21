@@ -319,6 +319,11 @@ describe("transformAstro source map discipline", () => {
       <p><strong>{t\`Mapped template message\`}</strong></p>
       <a href="/docs"><Trans>Mapped component message</Trans></a>
       <p>{keepAfter}</p>
+      <p>{
+
+        t\`Range check with surrounding whitespace\`
+
+      }</p>
     </section>
   `;
 
@@ -333,6 +338,12 @@ describe("transformAstro source map discipline", () => {
       original: /t`Mapped template message`/,
       generated:
         /__l4a_i18n\._\([^)]+message: "Mapped template message"[^)]+\)/,
+    },
+    {
+      name: "range check with surrounding whitespace",
+      original: /t`Range check with surrounding whitespace`/,
+      generated:
+        /__l4a_i18n\._\([^)]+message: "Range check with surrounding whitespace"[^)]+\)/,
     },
     {
       name: "component transform",
@@ -377,8 +388,8 @@ describe("transformAstro source map discipline", () => {
     });
     const map = result.map!;
 
-    expect(map.file).toBe("Page.astro");
-    expect(map.sources).toEqual(["Page.astro"]);
+    expect(map.file).toBe("/virtual/Page.astro");
+    expect(map.sources).toEqual(["/virtual/Page.astro"]);
     expect(map.sourcesContent).toEqual([source]);
 
     await SourceMapConsumer.with(map as never, null, (consumer) => {
@@ -388,7 +399,7 @@ describe("transformAstro source map discipline", () => {
           result.code,
           source,
           detection,
-          "Page.astro",
+          "/virtual/Page.astro",
           expect,
         );
       });

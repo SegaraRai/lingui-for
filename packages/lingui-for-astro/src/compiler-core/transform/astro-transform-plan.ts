@@ -16,8 +16,7 @@ import type { AstroPlan } from "../plan/index.ts";
 export function createAstroReplacementPlan(
   plan: AstroPlan,
 ): ReplacementChunk[] {
-  const filename = stripQuery(plan.options.filename);
-  const mapFile = filename.split(/[\\/]/).at(-1) ?? filename;
+  const mapFile = stripQuery(plan.options.filename);
   const replacements: ReplacementChunk[] = [];
 
   plan.items.forEach((item) => {
@@ -148,7 +147,6 @@ export function applyAstroReplacementPlan(
   filename: string,
   replacements: ReplacementChunk[],
 ): { code: string; map: ReturnType<typeof buildOutputWithIndexedMap>["map"] } {
-  const mapFile =
-    stripQuery(filename).split(/[\\/]/).at(-1) ?? stripQuery(filename);
+  const mapFile = stripQuery(filename);
   return buildOutputWithIndexedMap(source, mapFile, replacements);
 }

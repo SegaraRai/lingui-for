@@ -90,9 +90,10 @@ export function lowerTemplateExpression(
       ? buildGeneratedSnippetMap(
           loweringOptions.sourceMapOptions.fullSource,
           options.filename,
-          loweringOptions.sourceMapOptions.sourceStart,
+          loweringOptions.sourceMapOptions.sourceStart +
+            getLeadingWhitespaceLength(source),
           generated.code,
-          source.length,
+          getTrimmedSourceLength(source),
         )
       : ((generated.map as RawSourceMap | null | undefined) ?? null),
   };
@@ -106,4 +107,14 @@ function getExtractionDescriptorAnchorOffset(code: string): number {
 
   const descriptorStart = code.indexOf("{", commentStart);
   return descriptorStart >= 0 ? descriptorStart : commentStart;
+}
+
+function getLeadingWhitespaceLength(source: string): number {
+  const match = source.match(/^\s*/);
+  return match?.[0].length ?? 0;
+}
+
+function getTrimmedSourceLength(source: string): number {
+  const trimmed = source.trim();
+  return Math.max(trimmed.length, 1);
 }
