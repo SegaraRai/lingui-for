@@ -1,10 +1,4 @@
-import type {
-  AstroAnalysis,
-  AstroComponentCandidate,
-  AstroExpression,
-  FrontmatterBlock,
-} from "#astro-analyzer-wasm";
-
+import type { AstroAnalysis } from "#astro-analyzer-wasm";
 import { PACKAGE_MACRO } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import {
@@ -12,22 +6,27 @@ import {
   type AstroTransformContext,
 } from "./astro-transform-context.ts";
 
+// All ranges in AstroPlanItem are JavaScript string character (UTF-16 code
+// unit) offsets, not raw UTF-8 byte offsets from the WASM analyzer. The
+// conversion happens in createAstroPlanFromContext via context.byteToChar.
+export type CharRange = { start: number; end: number };
+
 export type AstroPlanItem =
   | {
       kind: "frontmatter-macro-block";
-      range: FrontmatterBlock["range"];
-      contentRange: FrontmatterBlock["contentRange"];
+      range: CharRange;
+      contentRange: CharRange;
       source: string;
     }
   | {
       kind: "template-expression";
-      range: AstroExpression["range"];
-      innerRange: AstroExpression["innerRange"];
+      range: CharRange;
+      innerRange: CharRange;
       source: string;
     }
   | {
       kind: "component-macro";
-      range: AstroComponentCandidate["range"];
+      range: CharRange;
       source: string;
     };
 
@@ -37,8 +36,8 @@ export interface AstroPlan {
   analysis: AstroAnalysis;
   frontmatter:
     | {
-        range: FrontmatterBlock["range"];
-        contentRange: FrontmatterBlock["contentRange"];
+        range: CharRange;
+        contentRange: CharRange;
         content: string;
       }
     | undefined;
@@ -63,36 +62,45 @@ export function createAstroPlanFromContext(
   context: AstroTransformContext,
 ): AstroPlan {
   const items: AstroPlanItem[] = [];
+  const toChar = context.byteToChar;
 
   if (
     context.analysis.frontmatter &&
     context.frontmatterContent.includes(PACKAGE_MACRO)
   ) {
+    const fm = context.analysis.frontmatter;
     items.push({
       kind: "frontmatter-macro-block",
-      range: context.analysis.frontmatter.range,
-      contentRange: context.analysis.frontmatter.contentRange,
+      range: { start: toChar(fm.range.start), end: toChar(fm.range.end) },
+      contentRange: {
+        start: toChar(fm.contentRange.start),
+        end: toChar(fm.contentRange.end),
+      },
       source: context.frontmatterContent,
     });
   }
 
   context.filteredExpressions.forEach((expression) => {
+    const innerStart = toChar(expression.innerRange.start);
+    const innerEnd = toChar(expression.innerRange.end);
     items.push({
       kind: "template-expression",
-      range: expression.range,
-      innerRange: expression.innerRange,
-      source: source.slice(
-        expression.innerRange.start,
-        expression.innerRange.end,
-      ),
+      range: {
+        start: toChar(expression.range.start),
+        end: toChar(expression.range.end),
+      },
+      innerRange: { start: innerStart, end: innerEnd },
+      source: source.slice(innerStart, innerEnd),
     });
   });
 
   context.filteredComponents.forEach((component) => {
+    const start = toChar(component.range.start);
+    const end = toChar(component.range.end);
     items.push({
       kind: "component-macro",
-      range: component.range,
-      source: source.slice(component.range.start, component.range.end),
+      range: { start, end },
+      source: source.slice(start, end),
     });
   });
 
@@ -102,8 +110,14 @@ export function createAstroPlanFromContext(
     analysis: context.analysis,
     frontmatter: context.analysis.frontmatter
       ? {
-          range: context.analysis.frontmatter.range,
-          contentRange: context.analysis.frontmatter.contentRange,
+          range: {
+            start: toChar(context.analysis.frontmatter.range.start),
+            end: toChar(context.analysis.frontmatter.range.end),
+          },
+          contentRange: {
+            start: toChar(context.analysis.frontmatter.contentRange.start),
+            end: toChar(context.analysis.frontmatter.contentRange.end),
+          },
           content: context.frontmatterContent,
         }
       : undefined,

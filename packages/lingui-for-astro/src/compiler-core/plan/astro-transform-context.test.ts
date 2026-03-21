@@ -1,6 +1,7 @@
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
+import { createAstroPlan } from "./astro-plan.ts";
 import {
   createAstroTransformContext,
   getFrontmatterContent,
@@ -73,5 +74,60 @@ describe("getFrontmatterContent", () => {
     const context = createAstroTransformContext(source);
 
     expect(getFrontmatterContent(source, context.analysis)).toBe("");
+  });
+
+  test("returns correct content when frontmatter contains non-ASCII characters", () => {
+    // The WASM analyzer returns UTF-8 byte offsets. Non-ASCII characters like
+    // the em dash (U+2014, 3 UTF-8 bytes, 1 JS char) cause a drift between
+    // byte positions and JS string character positions. The content range must
+    // not overshoot into the closing --- fence.
+    const source = [
+      "---",
+      "// Note: résumé — keep this comment",
+      'const label = "hello";',
+      "---",
+      "",
+      "<p>{label}</p>",
+    ].join("\n");
+    const context = createAstroTransformContext(source);
+
+    const content = getFrontmatterContent(source, context.analysis);
+    expect(content).not.toContain("---");
+    expect(content.trim()).toBe(
+      '// Note: résumé — keep this comment\nconst label = "hello";',
+    );
+  });
+});
+
+describe("createAstroPlan – non-ASCII sources", () => {
+  test("correctly slices expression source after multi-byte frontmatter characters", () => {
+    // If WASM byte offsets were used directly as JS string char offsets, the
+    // expression source would be sliced from the wrong position after any
+    // multi-byte character earlier in the file.
+    const source = [
+      "---",
+      "// résumé — frontmatter comment with multibyte chars",
+      'import { t } from "lingui-for-astro/macro";',
+      "---",
+      "",
+      "<p>{t`Hello`}</p>",
+    ].join("\n");
+
+    const plan = createAstroPlan(source, { filename: "/virtual/Page.astro" });
+
+    const expr = plan.items.find((i) => i.kind === "template-expression");
+    expect(expr).toBeDefined();
+    // The plan item's source and innerRange are char-based after the fix, so
+    // the source string and the slice of the original source both give the
+    // correct expression text.
+    expect(expr!.source).toBe("t`Hello`");
+    expect(
+      source.slice(
+        (expr as Extract<typeof expr, { kind: "template-expression" }>)!
+          .innerRange.start,
+        (expr as Extract<typeof expr, { kind: "template-expression" }>)!
+          .innerRange.end,
+      ),
+    ).toBe("t`Hello`");
   });
 });

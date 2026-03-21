@@ -20,6 +20,7 @@ export interface AstroTransformContext {
   filteredComponents: AstroComponentCandidate[];
   usesAstroI18n: boolean;
   usesRuntimeTrans: boolean;
+  byteToChar: (byteOffset: number) => number;
 }
 
 export function createAstroTransformContext(
@@ -28,7 +29,12 @@ export function createAstroTransformContext(
   initWasmOnce();
 
   const analysis = analyzeAstro(source);
-  const frontmatterContent = getFrontmatterContent(source, analysis);
+  const byteToChar = buildByteToCharConverter(source);
+  const frontmatterContent = getFrontmatterContent(
+    source,
+    analysis,
+    byteToChar,
+  );
   const macroBindings = parseMacroBindings(frontmatterContent);
   const filteredComponents = filterComponentCandidates(
     analysis.componentCandidates,
@@ -39,6 +45,7 @@ export function createAstroTransformContext(
     analysis.expressions,
     macroBindings,
     filteredComponents,
+    byteToChar,
   );
 
   return {
@@ -51,20 +58,60 @@ export function createAstroTransformContext(
       frontmatterContent.includes(PACKAGE_MACRO) ||
       filteredExpressions.length > 0,
     usesRuntimeTrans: filteredComponents.length > 0,
+    byteToChar,
+  };
+}
+
+// Builds a mapping from UTF-8 byte offsets to JavaScript string (UTF-16 code
+// unit) character offsets. The WASM analyzer returns byte-based ranges; this
+// converter lets the rest of the pipeline work with character indices, which is
+// what String.prototype.slice and MagicString expect.
+export function buildByteToCharConverter(
+  source: string,
+): (byteOffset: number) => number {
+  const bytes = new TextEncoder().encode(source);
+  const table = new Int32Array(bytes.length + 1);
+  let charPos = 0;
+  let bytePos = 0;
+
+  while (bytePos < bytes.length) {
+    table[bytePos] = charPos;
+    const byte = bytes[bytePos]!;
+    let seqLen: number;
+    if (byte < 0x80) {
+      seqLen = 1;
+    } else if (byte < 0xe0) {
+      seqLen = 2;
+    } else if (byte < 0xf0) {
+      seqLen = 3;
+    } else {
+      // 4-byte UTF-8 sequence = supplementary code point = surrogate pair in JS
+      seqLen = 4;
+      charPos++;
+    }
+    bytePos += seqLen;
+    charPos++;
+  }
+  table[bytePos] = charPos;
+
+  return (byteOffset: number) => {
+    const idx = Math.min(byteOffset, bytes.length);
+    return table[idx]!;
   };
 }
 
 export function getFrontmatterContent(
   source: string,
   analysis: AstroAnalysis,
+  byteToChar: (byteOffset: number) => number = buildByteToCharConverter(source),
 ): string {
   if (!analysis.frontmatter) {
     return "";
   }
 
   return source.slice(
-    analysis.frontmatter.contentRange.start,
-    analysis.frontmatter.contentRange.end,
+    byteToChar(analysis.frontmatter.contentRange.start),
+    byteToChar(analysis.frontmatter.contentRange.end),
   );
 }
 
@@ -93,6 +140,7 @@ function filterExpressions(
   expressions: AstroExpression[],
   macroBindings: MacroBindings,
   filteredComponents: readonly AstroComponentCandidate[],
+  byteToChar: (byteOffset: number) => number,
 ): AstroExpression[] {
   const results: AstroExpression[] = [];
 
@@ -108,8 +156,8 @@ function filterExpressions(
     }
 
     const expressionSource = source.slice(
-      expression.innerRange.start,
-      expression.innerRange.end,
+      byteToChar(expression.innerRange.start),
+      byteToChar(expression.innerRange.end),
     );
     if (expressionUsesMacroBinding(expressionSource, macroBindings)) {
       results.push(expression);

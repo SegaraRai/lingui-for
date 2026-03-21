@@ -145,6 +145,20 @@ const httpRouteExpectations: readonly HttpRouteExpectation[] = [
     expectedHtmlSnippets: ['href="/"'],
   },
   {
+    path: "/init/inline",
+    expectedBody: {
+      en: [
+        "Inline initialization check",
+        "This page initializes Lingui in its own frontmatter.",
+      ],
+      ja: [
+        "インライン初期化チェック",
+        "このページはフロントマターで Lingui を初期化します。",
+      ],
+    },
+    expectedHtmlSnippets: [],
+  },
+  {
     path: "/transitions",
     expectedBody: {
       en: [
