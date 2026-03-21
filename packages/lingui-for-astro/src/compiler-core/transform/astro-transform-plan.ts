@@ -5,13 +5,13 @@ import {
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
 
-import type { AstroPlan } from "../plan/index.ts";
 import {
   buildFrontmatterPrelude,
-  transformFrontmatter,
-} from "./frontmatter.ts";
-import { transformComponentMacro } from "./component-macro.ts";
-import { transformTemplateExpression } from "./template-expression.ts";
+  lowerComponentMacro,
+  lowerFrontmatterMacros,
+  lowerTemplateExpression,
+} from "../lower/index.ts";
+import type { AstroPlan } from "../plan/index.ts";
 
 export function createAstroReplacementPlan(
   plan: AstroPlan,
@@ -25,13 +25,16 @@ export function createAstroReplacementPlan(
       return;
     }
 
-    const transformed = transformTemplateExpression(
+    const transformed = lowerTemplateExpression(
       item.source,
       plan.macroImports,
       plan.options,
       {
-        fullSource: plan.source,
-        sourceStart: item.innerRange.start,
+        extract: false,
+        sourceMapOptions: {
+          fullSource: plan.source,
+          sourceStart: item.innerRange.start,
+        },
       },
     );
 
@@ -48,13 +51,16 @@ export function createAstroReplacementPlan(
       return;
     }
 
-    const replacement = transformComponentMacro(
+    const replacement = lowerComponentMacro(
       item.source,
       plan.macroImports,
       plan.options,
       {
-        fullSource: plan.source,
-        sourceStart: item.range.start,
+        extract: false,
+        sourceMapOptions: {
+          fullSource: plan.source,
+          sourceStart: item.range.start,
+        },
       },
     );
 
@@ -75,9 +81,12 @@ export function createAstroReplacementPlan(
     > => item.kind === "frontmatter-macro-block",
   );
   const transformedFrontmatter = frontmatter
-    ? transformFrontmatter(frontmatter.source, plan.options, {
-        fullSource: plan.source,
-        sourceStart: frontmatter.contentRange.start,
+    ? lowerFrontmatterMacros(frontmatter.source, plan.options, {
+        extract: false,
+        sourceMapOptions: {
+          fullSource: plan.source,
+          sourceStart: frontmatter.contentRange.start,
+        },
       })
     : {
         code: plan.frontmatter?.content ?? "",

@@ -1,11 +1,13 @@
 import type { RawSourceMap } from "source-map";
 
+import {
+  isExtractionCodeRelevant,
+  lowerComponentMacro,
+  lowerFrontmatterMacros,
+  lowerTemplateExpression,
+} from "../lower/index.ts";
 import { createAstroPlan, type AstroPlan } from "../plan/index.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
-import { transformComponentExtractionUnit } from "./component-macro.ts";
-import { isExtractionCodeRelevant } from "./common.ts";
-import { transformFrontmatterExtractionUnit } from "./frontmatter.ts";
-import { transformExpressionExtractionUnit } from "./template-expression.ts";
 
 export function createAstroExtractionUnits(
   source: string,
@@ -30,11 +32,16 @@ export function createAstroExtractionUnitsFromPlan(
   );
 
   if (frontmatter) {
-    const transformedFrontmatter = transformFrontmatterExtractionUnit(
-      plan.source,
+    const transformedFrontmatter = lowerFrontmatterMacros(
       frontmatter.source,
-      frontmatter.contentRange.start,
       plan.options,
+      {
+        extract: true,
+        sourceMapOptions: {
+          fullSource: plan.source,
+          sourceStart: frontmatter.contentRange.start,
+        },
+      },
     );
 
     if (isExtractionCodeRelevant(transformedFrontmatter.code)) {
@@ -44,12 +51,17 @@ export function createAstroExtractionUnitsFromPlan(
 
   for (const item of plan.items) {
     if (item.kind === "template-expression") {
-      const transformed = transformExpressionExtractionUnit(
-        plan.source,
+      const transformed = lowerTemplateExpression(
         item.source,
-        item.innerRange.start,
         plan.macroImports,
         plan.options,
+        {
+          extract: true,
+          sourceMapOptions: {
+            fullSource: plan.source,
+            sourceStart: item.innerRange.start,
+          },
+        },
       );
 
       if (isExtractionCodeRelevant(transformed.code)) {
@@ -58,12 +70,17 @@ export function createAstroExtractionUnitsFromPlan(
     }
 
     if (item.kind === "component-macro") {
-      const transformed = transformComponentExtractionUnit(
-        plan.source,
+      const transformed = lowerComponentMacro(
         item.source,
-        item.range.start,
         plan.macroImports,
         plan.options,
+        {
+          extract: true,
+          sourceMapOptions: {
+            fullSource: plan.source,
+            sourceStart: item.range.start,
+          },
+        },
       );
 
       if (isExtractionCodeRelevant(transformed.code)) {

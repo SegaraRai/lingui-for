@@ -12,12 +12,13 @@ import { normalizeLinguiConfig } from "../shared/config.ts";
 import { RUNTIME_BINDING_I18N } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import {
-  EXPR_PREFIX,
-  WRAPPED_SUFFIX,
   createSyntheticMacroImports,
-} from "../extract/common.ts";
-import { transformProgram } from "../transform/babel-transform.ts";
-import type { LoweredSnippet, LoweringSourceMapOptions } from "./common.ts";
+  EXPR_PREFIX,
+  type LoweredSnippet,
+  type LoweringSourceMapOptions,
+  WRAPPED_SUFFIX,
+} from "./common.ts";
+import { transformProgram } from "./babel-transform.ts";
 
 export function lowerTemplateExpression(
   source: string,

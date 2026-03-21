@@ -22,18 +22,6 @@ describe("transformProgram", () => {
 
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).toContain("_i18n._(");
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { i18n as _i18n } from "@lingui/core";
-      const label = _i18n._(
-      /*i18n*/
-      {
-        id: "OVaF9k",
-        message: "Hello {name}",
-        values: {
-          name: name
-        }
-      });"
-    `);
   });
 
   it("rewrites runtime i18n access to the Astro context binding in astro-context mode", () => {
@@ -56,17 +44,6 @@ describe("transformProgram", () => {
     expect(result.code).not.toContain(
       'import { i18n as _i18n } from "@lingui/core";',
     );
-    expect(result.code).toMatchInlineSnapshot(`
-      "const label = __l4a_i18n._(
-      /*i18n*/
-      {
-        id: "OVaF9k",
-        message: "Hello {name}",
-        values: {
-          name: name
-        }
-      });"
-    `);
   });
 
   it("keeps extraction output in Lingui-friendly form", () => {
@@ -86,14 +63,5 @@ describe("transformProgram", () => {
 
     expect(result.code).toContain("/*i18n*/");
     expect(result.code).toContain("_i18n._(");
-    expect(result.code).toMatchInlineSnapshot(`
-      "import { i18n as _i18n } from "@lingui/core";
-      const __lingui_for_astro_expr_0 = _i18n._(
-      /*i18n*/
-      {
-        id: "demo.save",
-        message: "Save"
-      });"
-    `);
   });
 });

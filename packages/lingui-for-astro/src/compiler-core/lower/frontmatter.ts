@@ -21,7 +21,7 @@ import {
   RUNTIME_BINDING_RUNTIME_TRANS,
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
-import { transformProgram } from "../transform/babel-transform.ts";
+import { transformProgram } from "./babel-transform.ts";
 import type { LoweredSnippet, LoweringSourceMapOptions } from "./common.ts";
 
 type SourceRange = {

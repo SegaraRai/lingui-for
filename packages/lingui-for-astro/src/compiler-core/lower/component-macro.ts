@@ -6,26 +6,27 @@ import {
   buildGeneratedSnippetMap,
   buildOutputWithIndexedMap,
   buildPrefixedSnippetMap,
+  lowerSyntheticComponentDeclaration,
   type ReplacementChunk,
+  stripRuntimeTransImports,
 } from "lingui-for-shared/compiler";
 
 import { getBabelTraverse } from "../shared/babel-traverse.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
+  PACKAGE_RUNTIME,
   RUNTIME_BINDING_I18N,
   RUNTIME_BINDING_RUNTIME_TRANS,
+  SYNTHETIC_PREFIX_COMPONENT,
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import {
   createComponentWrapperPrefix,
+  type LoweredSnippet,
+  type LoweringSourceMapOptions,
   WRAPPED_SUFFIX,
-} from "../extract/common.ts";
-import { transformProgram } from "../transform/babel-transform.ts";
-import {
-  lowerSyntheticComponentDeclaration,
-  stripRuntimeTransImports,
-} from "../transform/runtime-trans-lowering.ts";
-import type { LoweredSnippet, LoweringSourceMapOptions } from "./common.ts";
+} from "./common.ts";
+import { transformProgram } from "./babel-transform.ts";
 import { lowerTemplateExpression } from "./template-expression.ts";
 
 export function lowerComponentMacro(
@@ -71,10 +72,11 @@ export function lowerComponentMacro(
     };
   }
 
-  stripRuntimeTransImports(transformed.ast.program);
+  stripRuntimeTransImports(transformed.ast.program, PACKAGE_RUNTIME);
   const code = lowerSyntheticComponentDeclaration(
     transformed,
     RUNTIME_BINDING_RUNTIME_TRANS,
+    SYNTHETIC_PREFIX_COMPONENT,
   );
   return {
     code,
