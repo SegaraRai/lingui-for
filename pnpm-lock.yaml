@@ -326,18 +326,6 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
-      '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
-      '@lingui/cli':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
-      '@lingui/conf':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
-      '@lingui/core':
-        specifier: ^5.9.3
-        version: 5.9.3(@lingui/babel-plugin-lingui-macro@5.9.3(typescript@5.9.3))
       esbuild:
         specifier: '*'
         version: 0.27.4
@@ -366,6 +354,18 @@ importers:
       '@arethetypeswrong/core':
         specifier: ^0.18.2
         version: 0.18.2
+      '@lingui/babel-plugin-lingui-macro':
+        specifier: ^5.9.3
+        version: 5.9.3(typescript@5.9.3)
+      '@lingui/cli':
+        specifier: ^5.9.3
+        version: 5.9.3(typescript@5.9.3)
+      '@lingui/conf':
+        specifier: ^5.9.3
+        version: 5.9.3(typescript@5.9.3)
+      '@lingui/core':
+        specifier: ^5.9.3
+        version: 5.9.3(@lingui/babel-plugin-lingui-macro@5.9.3(typescript@5.9.3))
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5
@@ -462,9 +462,6 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
-      '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
       '@typescript-eslint/typescript-estree':
         specifier: ^8.57.1
         version: 8.57.1(typescript@5.9.3)
@@ -499,6 +496,9 @@ importers:
       '@arethetypeswrong/core':
         specifier: ^0.18.2
         version: 0.18.2
+      '@lingui/babel-plugin-lingui-macro':
+        specifier: ^5.9.3
+        version: 5.9.3(typescript@5.9.3)
       '@lingui/cli':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
