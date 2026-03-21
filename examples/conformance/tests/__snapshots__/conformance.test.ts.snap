@@ -1,5 +1,129 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`NODE_ENV=development > 'component-whitespacing' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+
+---
+
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "DFZbAv",
+  message: "Before{value}After",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "INRnBm",
+  message: " Before  {value}  After ",
+  values: {
+    value: value
+  }
+}} />"
+`;
+
+exports[`NODE_ENV=development > 'component-whitespacing' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+function Example() {
+  return <>
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      message: "Before {value} After",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "DFZbAv",
+      message: "Before{value}After",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      message: "Before {value} After",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "INRnBm",
+      message: " Before  {value}  After ",
+      values: {
+        value: value
+      }
+    }} />
+    </>;
+}"
+`;
+
+exports[`NODE_ENV=development > 'component-whitespacing' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+</script>
+
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "DFZbAv",
+  message: "Before{value}After",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "INRnBm",
+  message: " Before  {value}  After ",
+  values: {
+    value: value
+  }
+}} />"
+`;
+
 exports[`NODE_ENV=development > 'deep-rich-text-trans' > astro transform 1`] = `
 "---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
 const __l4a_ctx = __l4a_getLinguiContext(Astro);
@@ -560,6 +684,615 @@ let count = $state(0);
 }} />"
 `;
 
+exports[`NODE_ENV=development > 'with-id-context-comment-component' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+const value = "foo";
+---
+
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "with-interpolation-with-id",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "bVvypv",
+  message: "Message with interpolation: {value}",
+  context: "This is a context",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  comment: "This is a comment",
+  values: {
+    value: value
+  }
+}} />
+
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "no-interpolation-with-id",
+  message: "Message without interpolation"
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "SSpjjA",
+  message: "Message without interpolation",
+  context: "This is a context"
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation",
+  comment: "This is a comment"
+}} />"
+`;
+
+exports[`NODE_ENV=development > 'with-id-context-comment-component' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+const value = "foo";
+function Example() {
+  return <>
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "dBHrOY",
+      message: "Message with interpolation: {value}",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "with-interpolation-with-id",
+      message: "Message with interpolation: {value}",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "bVvypv",
+      message: "Message with interpolation: {value}",
+      context: "This is a context",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "dBHrOY",
+      message: "Message with interpolation: {value}",
+      comment: "This is a comment",
+      values: {
+        value: value
+      }
+    }} />
+
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "YYBbrl",
+      message: "Message without interpolation"
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "no-interpolation-with-id",
+      message: "Message without interpolation"
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "SSpjjA",
+      message: "Message without interpolation",
+      context: "This is a context"
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "YYBbrl",
+      message: "Message without interpolation",
+      comment: "This is a comment"
+    }} />
+    </>;
+}"
+`;
+
+exports[`NODE_ENV=development > 'with-id-context-comment-component' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+
+const value = $state("foo");
+</script>
+
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "with-interpolation-with-id",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "bVvypv",
+  message: "Message with interpolation: {value}",
+  context: "This is a context",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  comment: "This is a comment",
+  values: {
+    value: value
+  }
+}} />
+
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "no-interpolation-with-id",
+  message: "Message without interpolation"
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "SSpjjA",
+  message: "Message without interpolation",
+  context: "This is a context"
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation",
+  comment: "This is a comment"
+}} />"
+`;
+
+exports[`NODE_ENV=development > 'with-id-context-comment-core' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+const value = "foo";
+---
+
+<p id="v1a">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v1b">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v2">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "with-interpolation-with-id",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v3">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "bVvypv",
+  message: "Message with interpolation: {value}",
+  context: "This is a context",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v4">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  comment: "This is a comment",
+  values: {
+    value: value
+  }
+})}</p>
+
+<p id="p1a">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+})}</p>
+<p id="p1b">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+})}</p>
+<p id="p2">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "no-interpolation-with-id",
+  message: "Message without interpolation"
+})}</p>
+<p id="p3">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "SSpjjA",
+  message: "Message without interpolation",
+  context: "This is a context"
+})}</p>
+<p id="p4">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation",
+  comment: "This is a comment"
+})}</p>"
+`;
+
+exports[`NODE_ENV=development > 'with-id-context-comment-core' > official core transform 1`] = `
+"import { i18n as _i18n } from "@lingui/core";
+const value = "foo";
+const v1a = _i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+});
+const v1b = _i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+});
+const v2 = _i18n._(
+/*i18n*/
+{
+  id: "with-interpolation-with-id",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+});
+const v3 = _i18n._(
+/*i18n*/
+{
+  id: "bVvypv",
+  message: "Message with interpolation: {value}",
+  context: "This is a context",
+  values: {
+    value: value
+  }
+});
+const v4 = _i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  comment: "This is a comment",
+  values: {
+    value: value
+  }
+});
+const p1a = _i18n._(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+});
+const p1b = _i18n._(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+});
+const p2 = _i18n._(
+/*i18n*/
+{
+  id: "no-interpolation-with-id",
+  message: "Message without interpolation"
+});
+const p3 = _i18n._(
+/*i18n*/
+{
+  id: "SSpjjA",
+  message: "Message without interpolation",
+  context: "This is a context"
+});
+const p4 = _i18n._(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation",
+  comment: "This is a comment"
+});"
+`;
+
+exports[`NODE_ENV=development > 'with-id-context-comment-core' > svelte transform 1`] = `
+"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+const __l4s_ctx = createLinguiAccessors();
+const __l4s_getI18n = __l4s_ctx.getI18n;
+const __l4s_translate = __l4s_ctx._;
+
+const value = $state("foo");
+__l4s_ctx.prime();
+</script>
+
+<p id="v1a">{$__l4s_translate(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v1b">{$__l4s_translate(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v2">{$__l4s_translate(
+/*i18n*/
+{
+  id: "with-interpolation-with-id",
+  message: "Message with interpolation: {value}",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v3">{$__l4s_translate(
+/*i18n*/
+{
+  id: "bVvypv",
+  message: "Message with interpolation: {value}",
+  context: "This is a context",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v4">{$__l4s_translate(
+/*i18n*/
+{
+  id: "dBHrOY",
+  message: "Message with interpolation: {value}",
+  comment: "This is a comment",
+  values: {
+    value: value
+  }
+})}</p>
+
+<p id="p1a">{$__l4s_translate(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+})}</p>
+<p id="p1b">{$__l4s_translate(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation"
+})}</p>
+<p id="p2">{$__l4s_translate(
+/*i18n*/
+{
+  id: "no-interpolation-with-id",
+  message: "Message without interpolation"
+})}</p>
+<p id="p3">{$__l4s_translate(
+/*i18n*/
+{
+  id: "SSpjjA",
+  message: "Message without interpolation",
+  context: "This is a context"
+})}</p>
+<p id="p4">{$__l4s_translate(
+/*i18n*/
+{
+  id: "YYBbrl",
+  message: "Message without interpolation",
+  comment: "This is a comment"
+})}</p>"
+`;
+
+exports[`NODE_ENV=production > 'component-whitespacing' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+
+---
+
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "DFZbAv",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "INRnBm",
+  values: {
+    value: value
+  }
+}} />"
+`;
+
+exports[`NODE_ENV=production > 'component-whitespacing' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+function Example() {
+  return <>
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "DFZbAv",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "INRnBm",
+      values: {
+        value: value
+      }
+    }} />
+    </>;
+}"
+`;
+
+exports[`NODE_ENV=production > 'component-whitespacing' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+</script>
+
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "DFZbAv",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "INRnBm",
+  values: {
+    value: value
+  }
+}} />"
+`;
+
 exports[`NODE_ENV=production > 'deep-rich-text-trans' > astro transform 1`] = `
 "---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
 const __l4a_ctx = __l4a_getLinguiContext(Astro);
@@ -1088,4 +1821,419 @@ let count = $state(0);
     }
   }
 }} />"
+`;
+
+exports[`NODE_ENV=production > 'with-id-context-comment-component' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+const value = "foo";
+---
+
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "with-interpolation-with-id",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "bVvypv",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+}} />
+
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl"
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl"
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "no-interpolation-with-id"
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "SSpjjA"
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl"
+}} />"
+`;
+
+exports[`NODE_ENV=production > 'with-id-context-comment-component' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+const value = "foo";
+function Example() {
+  return <>
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "dBHrOY",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "with-interpolation-with-id",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "bVvypv",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "dBHrOY",
+      values: {
+        value: value
+      }
+    }} />
+
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "YYBbrl"
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "no-interpolation-with-id"
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "SSpjjA"
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "YYBbrl"
+    }} />
+    </>;
+}"
+`;
+
+exports[`NODE_ENV=production > 'with-id-context-comment-component' > svelte transform 1`] = `
+"<script lang="ts">import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+
+const value = $state("foo");
+</script>
+
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "with-interpolation-with-id",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "bVvypv",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+}} />
+
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl"
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl"
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "no-interpolation-with-id"
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "SSpjjA"
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "YYBbrl"
+}} />"
+`;
+
+exports[`NODE_ENV=production > 'with-id-context-comment-core' > astro transform 1`] = `
+"---import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
+const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_i18n = __l4a_ctx.i18n;
+const value = "foo";
+---
+
+<p id="v1a">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v1b">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v2">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "with-interpolation-with-id",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v3">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "bVvypv",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v4">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+})}</p>
+
+<p id="p1a">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "YYBbrl"
+})}</p>
+<p id="p1b">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "YYBbrl"
+})}</p>
+<p id="p2">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "no-interpolation-with-id"
+})}</p>
+<p id="p3">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "SSpjjA"
+})}</p>
+<p id="p4">{__l4a_i18n._(
+/*i18n*/
+{
+  id: "YYBbrl"
+})}</p>"
+`;
+
+exports[`NODE_ENV=production > 'with-id-context-comment-core' > official core transform 1`] = `
+"import { i18n as _i18n } from "@lingui/core";
+const value = "foo";
+const v1a = _i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+});
+const v1b = _i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+});
+const v2 = _i18n._(
+/*i18n*/
+{
+  id: "with-interpolation-with-id",
+  values: {
+    value: value
+  }
+});
+const v3 = _i18n._(
+/*i18n*/
+{
+  id: "bVvypv",
+  values: {
+    value: value
+  }
+});
+const v4 = _i18n._(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+});
+const p1a = _i18n._(
+/*i18n*/
+{
+  id: "YYBbrl"
+});
+const p1b = _i18n._(
+/*i18n*/
+{
+  id: "YYBbrl"
+});
+const p2 = _i18n._(
+/*i18n*/
+{
+  id: "no-interpolation-with-id"
+});
+const p3 = _i18n._(
+/*i18n*/
+{
+  id: "SSpjjA"
+});
+const p4 = _i18n._(
+/*i18n*/
+{
+  id: "YYBbrl"
+});"
+`;
+
+exports[`NODE_ENV=production > 'with-id-context-comment-core' > svelte transform 1`] = `
+"<script lang="ts">import { createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+const __l4s_ctx = createLinguiAccessors();
+const __l4s_getI18n = __l4s_ctx.getI18n;
+const __l4s_translate = __l4s_ctx._;
+
+const value = $state("foo");
+__l4s_ctx.prime();
+</script>
+
+<p id="v1a">{$__l4s_translate(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v1b">{$__l4s_translate(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v2">{$__l4s_translate(
+/*i18n*/
+{
+  id: "with-interpolation-with-id",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v3">{$__l4s_translate(
+/*i18n*/
+{
+  id: "bVvypv",
+  values: {
+    value: value
+  }
+})}</p>
+<p id="v4">{$__l4s_translate(
+/*i18n*/
+{
+  id: "dBHrOY",
+  values: {
+    value: value
+  }
+})}</p>
+
+<p id="p1a">{$__l4s_translate(
+/*i18n*/
+{
+  id: "YYBbrl"
+})}</p>
+<p id="p1b">{$__l4s_translate(
+/*i18n*/
+{
+  id: "YYBbrl"
+})}</p>
+<p id="p2">{$__l4s_translate(
+/*i18n*/
+{
+  id: "no-interpolation-with-id"
+})}</p>
+<p id="p3">{$__l4s_translate(
+/*i18n*/
+{
+  id: "SSpjjA"
+})}</p>
+<p id="p4">{$__l4s_translate(
+/*i18n*/
+{
+  id: "YYBbrl"
+})}</p>"
 `;

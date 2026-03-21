@@ -120,6 +120,12 @@ importers:
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
+      '@lingui/cli':
+        specifier: ^5.9.3
+        version: 5.9.3(typescript@5.9.3)
+      '@lingui/conf':
+        specifier: ^5.9.3
+        version: 5.9.3(typescript@5.9.3)
       '@lingui/core':
         specifier: ^5.9.3
         version: 5.9.3(@lingui/babel-plugin-lingui-macro@5.9.3(typescript@5.9.3))

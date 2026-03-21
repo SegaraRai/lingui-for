@@ -528,4 +528,269 @@ export const conformanceFixtures: readonly ConformanceFixture[] = [
       </Trans>
     `,
   },
+  {
+    name: "with-id-context-comment-core",
+    officialCore: dedent`
+      import { t } from "@lingui/core/macro";
+
+      const value = "foo";
+
+      const v1a = t\`Message with interpolation: \${value}\`;
+      const v1b = t({
+        message: \`Message with interpolation: \${value}\`,
+      });
+      const v2 = t({
+        id: "with-interpolation-with-id",
+        message: \`Message with interpolation: \${value}\`,
+      });
+      const v3 = t({
+        context: "This is a context",
+        message: \`Message with interpolation: \${value}\`,
+      });
+      const v4 = t({
+        comment: "This is a comment",
+        message: \`Message with interpolation: \${value}\`,
+      });
+
+      const p1a = t\`Message without interpolation\`;
+      const p1b = t({
+        message: "Message without interpolation",
+      });
+      const p2 = t({
+        id: "no-interpolation-with-id",
+        message: "Message without interpolation",
+      });
+      const p3 = t({
+        context: "This is a context",
+        message: "Message without interpolation",
+      });
+      const p4 = t({
+        comment: "This is a comment",
+        message: "Message without interpolation",
+      });
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+
+        const value = $state("foo");
+      </script>
+
+      <p id="v1a">{$t\`Message with interpolation: \${value}\`}</p>
+      <p id="v1b">{$t({
+        message: \`Message with interpolation: \${value}\`,
+      })}</p>
+      <p id="v2">{$t({
+        id: "with-interpolation-with-id",
+        message: \`Message with interpolation: \${value}\`,
+      })}</p>
+      <p id="v3">{$t({
+        context: "This is a context",
+        message: \`Message with interpolation: \${value}\`,
+      })}</p>
+      <p id="v4">{$t({
+        comment: "This is a comment",
+        message: \`Message with interpolation: \${value}\`,
+      })}</p>
+
+      <p id="p1a">{$t\`Message without interpolation\`}</p>
+      <p id="p1b">{$t({
+        message: "Message without interpolation",
+      })}</p>
+      <p id="p2">{$t({
+        id: "no-interpolation-with-id",
+        message: "Message without interpolation",
+      })}</p>
+      <p id="p3">{$t({
+        context: "This is a context",
+        message: "Message without interpolation",
+      })}</p>
+      <p id="p4">{$t({
+        comment: "This is a comment",
+        message: "Message without interpolation",
+      })}</p>
+    `,
+    astro: dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+
+      const value = "foo";
+      ---
+
+      <p id="v1a">{t\`Message with interpolation: \${value}\`}</p>
+      <p id="v1b">{t({
+        message: \`Message with interpolation: \${value}\`,
+      })}</p>
+      <p id="v2">{t({
+        id: "with-interpolation-with-id",
+        message: \`Message with interpolation: \${value}\`,
+      })}</p>
+      <p id="v3">{t({
+        context: "This is a context",
+        message: \`Message with interpolation: \${value}\`,
+      })}</p>
+      <p id="v4">{t({
+        comment: "This is a comment",
+        message: \`Message with interpolation: \${value}\`,
+      })}</p>
+
+      <p id="p1a">{t\`Message without interpolation\`}</p>
+      <p id="p1b">{t({
+        message: "Message without interpolation",
+      })}</p>
+      <p id="p2">{t({
+        id: "no-interpolation-with-id",
+        message: "Message without interpolation",
+      })}</p>
+      <p id="p3">{t({
+        context: "This is a context",
+        message: "Message without interpolation",
+      })}</p>
+      <p id="p4">{t({
+        comment: "This is a comment",
+        message: "Message without interpolation",
+      })}</p>
+    `,
+  },
+  {
+    name: "with-id-context-comment-component",
+    officialReact: dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      const value = "foo";
+
+      function Example() {
+        return (
+          <>
+            <Trans>Message with interpolation: {value}</Trans>
+            <Trans id="with-interpolation-with-id">Message with interpolation: {value}</Trans>
+            <Trans context="This is a context">Message with interpolation: {value}</Trans>
+            <Trans comment="This is a comment">Message with interpolation: {value}</Trans>
+
+            <Trans>Message without interpolation</Trans>
+            <Trans id="no-interpolation-with-id">Message without interpolation</Trans>
+            <Trans context="This is a context">Message without interpolation</Trans>
+            <Trans comment="This is a comment">Message without interpolation</Trans>
+          </>
+        );
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+
+        const value = $state("foo");
+      </script>
+
+      <Trans>Message with interpolation: {value}</Trans>
+      <Trans>Message with interpolation: {value}</Trans>
+      <Trans id="with-interpolation-with-id">Message with interpolation: {value}</Trans>
+      <Trans context="This is a context">Message with interpolation: {value}</Trans>
+      <Trans comment="This is a comment">Message with interpolation: {value}</Trans>
+
+      <Trans>Message without interpolation</Trans>
+      <Trans>Message without interpolation</Trans>
+      <Trans id="no-interpolation-with-id">Message without interpolation</Trans>
+      <Trans context="This is a context">Message without interpolation</Trans>
+      <Trans comment="This is a comment">Message without interpolation</Trans>
+    `,
+    astro: dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+
+      const value = "foo";
+      ---
+
+      <Trans>Message with interpolation: {value}</Trans>
+      <Trans>Message with interpolation: {value}</Trans>
+      <Trans id="with-interpolation-with-id">Message with interpolation: {value}</Trans>
+      <Trans context="This is a context">Message with interpolation: {value}</Trans>
+      <Trans comment="This is a comment">Message with interpolation: {value}</Trans>
+
+      <Trans>Message without interpolation</Trans>
+      <Trans>Message without interpolation</Trans>
+      <Trans id="no-interpolation-with-id">Message without interpolation</Trans>
+      <Trans context="This is a context">Message without interpolation</Trans>
+      <Trans comment="This is a comment">Message without interpolation</Trans>
+    `,
+  },
+  {
+    name: "component-whitespacing",
+    officialReact: dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      function Example() {
+        return (
+          <>
+            <Trans>
+              Before{" "}
+              {value}{" "}
+              After
+            </Trans>
+            <Trans>
+              Before
+              {value}
+              After
+            </Trans>
+            <Trans>
+              Before {value} After
+            </Trans>
+            <Trans>
+              {" "}Before{" "}
+              {" "}{value}{" "}
+              {" "}After{" "}
+            </Trans>
+          </>
+        );
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+      </script>
+
+      <Trans>
+        Before{" "}
+        {value}{" "}
+        After
+      </Trans>
+      <Trans>
+        Before
+        {value}
+        After
+      </Trans>
+      <Trans>
+        Before {value} After
+      </Trans>
+      <Trans>
+        {" "}Before{" "}
+        {" "}{value}{" "}
+        {" "}After{" "}
+      </Trans>
+    `,
+    astro: dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>
+        Before{" "}
+        {value}{" "}
+        After
+      </Trans>
+      <Trans>
+        Before
+        {value}
+        After
+      </Trans>
+      <Trans>
+        Before {value} After
+      </Trans>
+      <Trans>
+        {" "}Before{" "}
+        {" "}{value}{" "}
+        {" "}After{" "}
+      </Trans>
+    `,
+  },
 ];
