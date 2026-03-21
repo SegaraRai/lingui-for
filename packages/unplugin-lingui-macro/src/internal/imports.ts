@@ -28,7 +28,7 @@ function completesImportStatement(line: string): boolean {
 }
 
 function extractLeadingImportBlock(code: string): string {
-  const lines = code.match(/.*(?:\r?\n|$)/g)?.filter(Boolean) ?? [];
+  const lines = code.split(/\r?\n/).filter(Boolean) ?? [];
   let importBlock = "";
   let inBlockComment = false;
   let collectingImport = false;
