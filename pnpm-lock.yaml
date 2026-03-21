@@ -332,6 +332,9 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
+      '@lingui/babel-plugin-lingui-macro':
+        specifier: ^5.9.3
+        version: 5.9.3(typescript@5.9.3)
       esbuild:
         specifier: '*'
         version: 0.27.4
@@ -360,9 +363,6 @@ importers:
       '@arethetypeswrong/core':
         specifier: ^0.18.2
         version: 0.18.2
-      '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
       '@lingui/cli':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
@@ -468,15 +468,12 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
-      '@typescript-eslint/typescript-estree':
-        specifier: ^8.57.1
-        version: 8.57.1(typescript@5.9.3)
+      '@lingui/babel-plugin-lingui-macro':
+        specifier: ^5.9.3
+        version: 5.9.3(typescript@5.9.3)
       esbuild:
         specifier: '*'
         version: 0.27.4
-      estree-walker-ts:
-        specifier: ^1.1.0
-        version: 1.1.0
       magic-string:
         specifier: ^0.30.21
         version: 0.30.21
@@ -502,9 +499,6 @@ importers:
       '@arethetypeswrong/core':
         specifier: ^0.18.2
         version: 0.18.2
-      '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
       '@lingui/cli':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
@@ -3374,9 +3368,6 @@ packages:
 
   estree-util-visit@2.0.0:
     resolution: {integrity: sha512-m5KgiH85xAhhW8Wta0vShLcUvOsh3LLPI2YVwcbio1l7E09NTLL1EyMZFM1OyWowoH0skScNbhOPl4kcBgzTww==}
-
-  estree-walker-ts@1.1.0:
-    resolution: {integrity: sha512-qZDD6u86YMB15jps0ZYDE7fxJl2EZsxspagUcLg6K3k/WKRkGGpXM/5kk5a2UvX5+yv6viQ1jYYr1De4IiBx/w==}
 
   estree-walker@2.0.2:
     resolution: {integrity: sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==}
@@ -8071,8 +8062,6 @@ snapshots:
     dependencies:
       '@types/estree-jsx': 1.0.5
       '@types/unist': 3.0.3
-
-  estree-walker-ts@1.1.0: {}
 
   estree-walker@2.0.2: {}
 
