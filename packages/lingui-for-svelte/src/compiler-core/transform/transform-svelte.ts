@@ -5,7 +5,13 @@ import {
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
 
+import {
+  lowerComponentMacro,
+  lowerScriptExpression,
+  lowerTemplateExpression,
+} from "../lower/index.ts";
 import { createSveltePlan } from "../plan/index.ts";
+import { getParserPlugins } from "../shared/config.ts";
 import {
   EXPORT_CREATE_LINGUI_ACCESSORS,
   PACKAGE_RUNTIME,
@@ -14,14 +20,8 @@ import {
   RUNTIME_BINDING_GET_I18N,
   RUNTIME_BINDING_TRANSLATE,
 } from "../shared/constants.ts";
-import { getParserPlugins } from "../shared/config.ts";
 import { createScriptFilename } from "../shared/paths.ts";
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
-import {
-  lowerComponentMacro,
-  lowerScriptExpression,
-  lowerTemplateExpression,
-} from "../lower/index.ts";
 import type { SvelteTransformResult } from "./types.ts";
 
 type RuntimeBindingsForInjection = {
@@ -284,7 +284,7 @@ function detectScriptIndent(content: string): string {
       continue;
     }
 
-    const indent = line.match(/^\s*/)?.[0];
+    const indent = /^\s*/.exec(line)?.[0];
     if (indent != null) {
       return indent;
     }

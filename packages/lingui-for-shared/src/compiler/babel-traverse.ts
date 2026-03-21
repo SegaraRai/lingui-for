@@ -6,20 +6,18 @@ function getBabelTraverse(): BabelTraverse {
   const moduleValue = babelTraverseModule as unknown as {
     default?: BabelTraverse | { default?: BabelTraverse };
   };
-  const candidate =
-    typeof moduleValue.default === "function"
-      ? moduleValue.default
-      : typeof moduleValue.default?.default === "function"
-        ? moduleValue.default.default
-        : null;
 
-  if (!candidate) {
-    throw new TypeError(
-      "Unable to resolve @babel/traverse default export at runtime.",
-    );
+  if (typeof moduleValue.default === "function") {
+    return moduleValue.default;
   }
 
-  return candidate;
+  if (typeof moduleValue.default?.default === "function") {
+    return moduleValue.default.default;
+  }
+
+  throw new TypeError(
+    "Unable to resolve @babel/traverse default export at runtime.",
+  );
 }
 
 export const babelTraverse = /*#__PURE__*/ getBabelTraverse();

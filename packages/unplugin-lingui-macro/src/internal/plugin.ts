@@ -11,8 +11,6 @@ import { stripQuery } from "lingui-for-shared/compiler";
 import type { LinguiMacroPluginOptions } from "../types.ts";
 import { hasImport } from "./imports.ts";
 
-const SCRIPT_RE = /\.[^?]*\.[cm]?[jt]sx?$|\.[cm]?[jt]sx?$/;
-
 type RuntimeConfigModule = NonNullable<
   LinguiMacroPluginOptions["linguiConfig"]
 >["runtimeConfigModule"];
@@ -140,7 +138,7 @@ export const unpluginFactory: UnpluginFactory<
     if (
       filename.includes("/node_modules/") ||
       filename.includes("\\node_modules\\") ||
-      !SCRIPT_RE.test(filename) ||
+      !/\.[cm]?[jt]sx?$/.test(filename) ||
       !hasImport(code, filename, getMacroPackages(linguiConfig))
     ) {
       return null;
