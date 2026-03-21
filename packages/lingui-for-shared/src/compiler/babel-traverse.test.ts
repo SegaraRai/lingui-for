@@ -3,7 +3,7 @@ import { describe, expect, test } from "vite-plus/test";
 
 import { babelTraverse } from "./babel-traverse.ts";
 
-describe("getBabelTraverse", () => {
+describe("babelTraverse", () => {
   test("returns a callable traverse function", () => {
     const file = parseSync("const answer = 42;", {
       ast: true,
