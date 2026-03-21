@@ -1,11 +1,11 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import { transformProgram } from "./babel-transform.ts";
 
 describe("transformProgram", () => {
-  it("runs the official Lingui transform for raw JavaScript macros", () => {
+  test("runs the official Lingui transform for raw JavaScript macros", () => {
     const result = transformProgram(
       dedent`
         import { t } from "lingui-for-astro/macro";
@@ -24,7 +24,7 @@ describe("transformProgram", () => {
     expect(result.code).toContain("_i18n._(");
   });
 
-  it("rewrites runtime i18n access to the Astro context binding in astro-context mode", () => {
+  test("rewrites runtime i18n access to the Astro context binding in astro-context mode", () => {
     const result = transformProgram(
       dedent`
         import { t } from "lingui-for-astro/macro";
@@ -46,7 +46,7 @@ describe("transformProgram", () => {
     );
   });
 
-  it("keeps extraction output in Lingui-friendly form", () => {
+  test("keeps extraction output in Lingui-friendly form", () => {
     const result = transformProgram(
       dedent`
         import { t } from "lingui-for-astro/macro";

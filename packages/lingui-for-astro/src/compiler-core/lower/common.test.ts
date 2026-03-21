@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import type { LoweredSnippet, LoweringSourceMapOptions } from "./common.ts";
 
 describe("lower/common", () => {
-  it("exposes shared lowering types", () => {
+  test("exposes shared lowering types", () => {
     const mapOptions: LoweringSourceMapOptions = {
       fullSource: "source",
       sourceStart: 0,

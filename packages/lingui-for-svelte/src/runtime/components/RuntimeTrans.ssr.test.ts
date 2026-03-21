@@ -1,6 +1,6 @@
 import { setupI18n } from "@lingui/core";
 import { render } from "svelte/server";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import RuntimeTransFixtureLink from "./RuntimeTransFixtureLink.test.svelte";
 import RuntimeTransHarness from "./RuntimeTransHarness.test.svelte";
@@ -10,7 +10,7 @@ function normalizeSsrBody(body: string): string {
 }
 
 describe("RuntimeTrans SSR", () => {
-  it("renders translated plain text descriptors", () => {
+  test("renders translated plain text descriptors", () => {
     const i18n = setupI18n({
       locale: "ja",
       messages: {
@@ -34,7 +34,7 @@ describe("RuntimeTrans SSR", () => {
     expect(normalizeSsrBody(result.body)).toBe("こんにちは Ada！");
   });
 
-  it("renders translated embedded elements with merged runtime values", () => {
+  test("renders translated embedded elements with merged runtime values", () => {
     const i18n = setupI18n({
       locale: "en",
       messages: {
@@ -80,7 +80,7 @@ describe("RuntimeTrans SSR", () => {
     expect(body).toContain("carefully before shipping.");
   });
 
-  it("renders message fallbacks through Lingui", () => {
+  test("renders message fallbacks through Lingui", () => {
     const i18n = setupI18n({
       locale: "en",
       messages: {
@@ -110,7 +110,7 @@ describe("RuntimeTrans SSR", () => {
     );
   });
 
-  it("renders id-only runtime Trans calls after build-style lowering", () => {
+  test("renders id-only runtime Trans calls after build-style lowering", () => {
     const i18n = setupI18n({
       locale: "ja",
       messages: {

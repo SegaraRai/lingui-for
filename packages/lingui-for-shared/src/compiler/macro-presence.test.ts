@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { mayContainLinguiMacroImport } from "./macro-presence.ts";
 
 describe("mayContainLinguiMacroImport", () => {
-  it("detects the configured macro package in source", () => {
+  test("detects the configured macro package in source", () => {
     expect(
       mayContainLinguiMacroImport(
         'import { t } from "lingui-for-test/macro";',

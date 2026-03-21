@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createScriptFilename } from "./paths.ts";
 
 describe("paths", () => {
-  it("creates synthetic script filenames", () => {
+  test("creates synthetic script filenames", () => {
     expect(createScriptFilename("/work/App.svelte", "instance", "ts")).toBe(
       "/work/App.instance.ts",
     );

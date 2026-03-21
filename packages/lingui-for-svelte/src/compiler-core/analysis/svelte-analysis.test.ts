@@ -1,10 +1,10 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { analyzeSvelte } from "./svelte-analysis.ts";
 
 describe("analyzeSvelte", () => {
-  it("extracts only imported macro expressions and components", () => {
+  test("extracts only imported macro expressions and components", () => {
     const source = dedent`
       <script module lang="ts">
         export const prerender = true;
@@ -36,7 +36,7 @@ describe("analyzeSvelte", () => {
     ]);
   });
 
-  it("returns no scripts or macro expressions for markup-only components", () => {
+  test("returns no scripts or macro expressions for markup-only components", () => {
     const analysis = analyzeSvelte("<p>{1 + 2}</p>", "Inline.svelte");
 
     expect(analysis.instance).toBeNull();
@@ -45,7 +45,7 @@ describe("analyzeSvelte", () => {
     expect(analysis.components).toHaveLength(0);
   });
 
-  it("ignores same-name components and expressions when they are not macro imports", () => {
+  test("ignores same-name components and expressions when they are not macro imports", () => {
     const source = dedent`
       <script lang="ts">
         import Select from "./Select.svelte";
@@ -63,7 +63,7 @@ describe("analyzeSvelte", () => {
     expect(analysis.components).toHaveLength(0);
   });
 
-  it("extracts block, attribute, and special-tag expressions explicitly by node type", () => {
+  test("extracts block, attribute, and special-tag expressions explicitly by node type", () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "lingui-for-svelte/macro";

@@ -1,6 +1,6 @@
 import { transformSync, type PluginItem } from "@babel/core";
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
@@ -48,7 +48,7 @@ function createRequest(
 }
 
 describe("createMacroPreprocessPlugin", () => {
-  it("wraps reactive $-prefixed string macros when they are imported from the macro package", () => {
+  test("wraps reactive $-prefixed string macros when they are imported from the macro package", () => {
     const code = runWithPlugin(
       dedent`
         import { t as translate, plural } from "lingui-for-svelte/macro";
@@ -69,7 +69,7 @@ describe("createMacroPreprocessPlugin", () => {
     `);
   });
 
-  it("does not rewrite $-prefixed calls without a Lingui macro import", () => {
+  test("does not rewrite $-prefixed calls without a Lingui macro import", () => {
     const code = runWithPlugin(
       "const label = $t`Hello ${name}`;",
       createMacroPreprocessPlugin(),
@@ -78,7 +78,7 @@ describe("createMacroPreprocessPlugin", () => {
     expect(code).toBe("const label = $t`Hello ${name}`;");
   });
 
-  it("wraps explicit eager direct translations", () => {
+  test("wraps explicit eager direct translations", () => {
     const code = runWithPlugin(
       dedent`
         import { t } from "lingui-for-svelte/macro";
@@ -94,7 +94,7 @@ describe("createMacroPreprocessPlugin", () => {
     `);
   });
 
-  it("rejects bare direct t calls in strict Svelte mode", () => {
+  test("rejects bare direct t calls in strict Svelte mode", () => {
     expect(() =>
       runWithPlugin(
         dedent`
@@ -109,7 +109,7 @@ describe("createMacroPreprocessPlugin", () => {
 });
 
 describe("createMacroPostprocessPlugin", () => {
-  it("rewrites reactive wrappers to context-aware translator calls in svelte-context mode", () => {
+  test("rewrites reactive wrappers to context-aware translator calls in svelte-context mode", () => {
     const code = runWithPlugin(
       dedent`
         import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
@@ -158,7 +158,7 @@ describe("createMacroPostprocessPlugin", () => {
     `);
   });
 
-  it("keeps top-level variable initializers as direct translator reads after lowering reactive wrappers", () => {
+  test("keeps top-level variable initializers as direct translator reads after lowering reactive wrappers", () => {
     const code = runWithPlugin(
       dedent`
         import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
@@ -202,7 +202,7 @@ describe("createMacroPostprocessPlugin", () => {
     `);
   });
 
-  it("unwraps reactive wrappers back to plain Lingui calls in extract mode", () => {
+  test("unwraps reactive wrappers back to plain Lingui calls in extract mode", () => {
     const code = runWithPlugin(
       dedent`
         import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
@@ -229,7 +229,7 @@ describe("createMacroPostprocessPlugin", () => {
     `);
   });
 
-  it("unwraps eager wrappers to direct translator calls", () => {
+  test("unwraps eager wrappers to direct translator calls", () => {
     const code = runWithPlugin(
       dedent`
         import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";

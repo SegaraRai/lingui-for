@@ -1,11 +1,11 @@
 import { setupI18n } from "@lingui/core";
 import { readable } from "svelte/store";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createTranslationStore } from "./translation-store.ts";
 
 describe("createTranslationStore", () => {
-  it("translates descriptors eagerly through direct calls", () => {
+  test("translates descriptors eagerly through direct calls", () => {
     const instance = setupI18n({
       locale: "en",
       messages: {
@@ -20,7 +20,7 @@ describe("createTranslationStore", () => {
     expect(store({ id: "hello", message: "Hello" })).toBe("Hello");
   });
 
-  it("publishes a translator function and updates subscribers on locale changes", () => {
+  test("publishes a translator function and updates subscribers on locale changes", () => {
     const instance = setupI18n({
       locale: "en",
       messages: {
@@ -60,7 +60,7 @@ describe("createTranslationStore", () => {
     expect(values).toContain("こんにちは");
   });
 
-  it("shares the underlying store subscription across multiple subscribers", () => {
+  test("shares the underlying store subscription across multiple subscribers", () => {
     const instance = setupI18n({
       locale: "en",
       messages: {

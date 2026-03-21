@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { getParserPlugins, normalizeLinguiConfig } from "./config.ts";
 
 describe("config helpers", () => {
-  it("normalizes macro packages and runtime bindings", () => {
+  test("normalizes macro packages and runtime bindings", () => {
     const config = normalizeLinguiConfig(
       {
         macro: {
@@ -39,7 +39,7 @@ describe("config helpers", () => {
     });
   });
 
-  it("returns parser plugins with optional typescript support", () => {
+  test("returns parser plugins with optional typescript support", () => {
     expect(getParserPlugins()).toEqual([
       "importAttributes",
       "explicitResourceManagement",

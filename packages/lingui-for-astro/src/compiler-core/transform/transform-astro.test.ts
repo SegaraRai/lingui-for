@@ -1,11 +1,12 @@
 import dedent from "dedent";
 import { SourceMapConsumer } from "source-map";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   assertRangeMapping,
   type Detection,
-} from "./test-helpers/source-location.ts";
+} from "lingui-for-shared/test-helpers";
+
 import { transformAstro } from "./transform-astro.ts";
 
 function compact(value: string): string {
@@ -13,7 +14,7 @@ function compact(value: string): string {
 }
 
 describe("transformAstro", () => {
-  it("rewrites frontmatter and template expressions through request-scoped i18n", () => {
+  test("rewrites frontmatter and template expressions through request-scoped i18n", () => {
     const source = dedent`
       ---
       import { t } from "lingui-for-astro/macro";
@@ -46,7 +47,7 @@ describe("transformAstro", () => {
     expect(code).toContain('message: "Hello {name}"');
   });
 
-  it("lowers component macros to the RuntimeTrans Astro component", () => {
+  test("lowers component macros to the RuntimeTrans Astro component", () => {
     const source = dedent`
       ---
       import { Trans as LocalTrans } from "lingui-for-astro/macro";
@@ -73,7 +74,7 @@ describe("transformAstro", () => {
     expect(code).toContain('href: "/docs"');
   });
 
-  it("supports exact-number ICU branches in core and component macros", () => {
+  test("supports exact-number ICU branches in core and component macros", () => {
     const source = dedent`
       ---
       import {
@@ -122,7 +123,7 @@ describe("transformAstro", () => {
     expect(code).toContain("=2 {take the scenic route}");
   });
 
-  it("handles deeply nested core and component macro shapes", () => {
+  test("handles deeply nested core and component macro shapes", () => {
     const source = dedent`
       ---
       import {
@@ -250,7 +251,7 @@ describe("transformAstro", () => {
     expect(code).toContain("component many later admin");
   });
 
-  it("leaves same-name non-macro components untouched", () => {
+  test("leaves same-name non-macro components untouched", () => {
     const source = dedent`
       ---
       import Trans from "./Trans.astro";
@@ -268,7 +269,7 @@ describe("transformAstro", () => {
 });
 
 describe("transformAstro edit discipline", () => {
-  it("rewrites only macro-bearing regions and preserves untouched frontmatter and markup", () => {
+  test("rewrites only macro-bearing regions and preserves untouched frontmatter and markup", () => {
     const source = dedent`
       ---
       import { t, Trans } from "lingui-for-astro/macro";
@@ -370,7 +371,7 @@ describe("transformAstro source map discipline", () => {
     },
   ];
 
-  it("keeps file-level metadata and maps transformed and preserved ranges back to the original astro file", async () => {
+  test("keeps file-level metadata and maps transformed and preserved ranges back to the original astro file", async () => {
     const result = transformAstro(source, {
       filename: "/virtual/Page.astro",
     });
@@ -382,7 +383,14 @@ describe("transformAstro source map discipline", () => {
 
     await SourceMapConsumer.with(map as never, null, (consumer) => {
       detections.forEach((detection) => {
-        assertRangeMapping(consumer, result.code, source, detection, expect);
+        assertRangeMapping(
+          consumer,
+          result.code,
+          source,
+          detection,
+          "Page.astro",
+          expect,
+        );
       });
     });
   });

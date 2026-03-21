@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 const localeDir = resolve(
   import.meta.dirname,
@@ -12,7 +12,7 @@ const localeDir = resolve(
 );
 
 describe("lingui extract and compile outputs", () => {
-  it("contains route-local messages in the extracted source catalog", async () => {
+  test("contains route-local messages in the extracted source catalog", async () => {
     const enPo = await readFile(resolve(localeDir, "en.po"), "utf8");
 
     expect(enPo).toContain("Lingui in a small SvelteKit application");
@@ -37,7 +37,7 @@ describe("lingui extract and compile outputs", () => {
     expect(enPo).toContain('msgid "playground.ids.descriptor"');
   });
 
-  it("contains japanese translations in the compiled catalog", async () => {
+  test("contains japanese translations in the compiled catalog", async () => {
     const jaCatalog = await readFile(resolve(localeDir, "ja.ts"), "utf8");
 
     expect(jaCatalog).toContain("小さな SvelteKit アプリで使う Lingui");

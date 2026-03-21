@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   collectRelativeAstroImports,
@@ -8,7 +8,7 @@ import {
 } from "./astro.ts";
 
 describe("rewriteAstroImports", () => {
-  it("rewrites import and export specifiers inside astro frontmatter", () => {
+  test("rewrites import and export specifiers inside astro frontmatter", () => {
     const source = dedent`
       ---
       import { helper } from "../component-utils.ts";
@@ -38,7 +38,7 @@ describe("rewriteAstroImports", () => {
 });
 
 describe("collectRelativeAstroImports", () => {
-  it("collects direct relative astro imports from frontmatter", () => {
+  test("collects direct relative astro imports from frontmatter", () => {
     const source = dedent`
       ---
       import RuntimeTrans from "./RuntimeTrans.astro";
@@ -58,7 +58,7 @@ describe("collectRelativeAstroImports", () => {
 });
 
 describe("createAstroFacadeModule", () => {
-  it("rewrites every non-self import through a single companion module", () => {
+  test("rewrites every non-self import through a single companion module", () => {
     const source = dedent`
       ---
       import type { MessageDescriptor } from "@lingui/core";

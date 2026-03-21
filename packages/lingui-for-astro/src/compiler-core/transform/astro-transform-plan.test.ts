@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createAstroPlan } from "../plan/index.ts";
 import {
@@ -8,7 +8,7 @@ import {
 } from "./astro-transform-plan.ts";
 
 describe("transform/astro-transform-plan", () => {
-  it("builds and applies compile replacements from a plan", () => {
+  test("builds and applies compile replacements from a plan", () => {
     const source = dedent`
       ---
       import { t } from "lingui-for-astro/macro";

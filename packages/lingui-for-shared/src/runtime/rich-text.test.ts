@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { formatRichTextTranslation } from "./rich-text.ts";
 
 describe("formatRichTextTranslation", () => {
-  it("parses paired and self-closing placeholder tags", () => {
+  test("parses paired and self-closing placeholder tags", () => {
     expect(
       formatRichTextTranslation("Read the <0>docs</0><1/>.", {
         0: {
@@ -33,7 +33,7 @@ describe("formatRichTextTranslation", () => {
     ]);
   });
 
-  it("preserves nested placeholder structure", () => {
+  test("preserves nested placeholder structure", () => {
     expect(
       formatRichTextTranslation("<0><1>Deep</1></0>", {
         0: {
@@ -62,14 +62,14 @@ describe("formatRichTextTranslation", () => {
     ]);
   });
 
-  it("flattens tags that do not have component entries", () => {
+  test("flattens tags that do not have component entries", () => {
     expect(formatRichTextTranslation("Read <0>docs</0>", {})).toEqual([
       "Read ",
       "docs",
     ]);
   });
 
-  it("preserves known placeholders nested inside unknown wrappers", () => {
+  test("preserves known placeholders nested inside unknown wrappers", () => {
     expect(
       formatRichTextTranslation("Read <x><0>docs</0></x> now.", {
         0: {
@@ -89,7 +89,7 @@ describe("formatRichTextTranslation", () => {
     ]);
   });
 
-  it("allocates stable keys for repeated placeholder occurrences", () => {
+  test("allocates stable keys for repeated placeholder occurrences", () => {
     expect(
       formatRichTextTranslation("<0>One</0> and <0>Two</0>", {
         0: {
@@ -114,7 +114,7 @@ describe("formatRichTextTranslation", () => {
     ]);
   });
 
-  it("falls back to literal text for malformed placeholder markup", () => {
+  test("falls back to literal text for malformed placeholder markup", () => {
     expect(
       formatRichTextTranslation("Read <0>docs</1> and <0>later", {
         0: {
@@ -125,13 +125,13 @@ describe("formatRichTextTranslation", () => {
     ).toEqual(["Read <0>docs</1> and <0>later"]);
   });
 
-  it("drops unknown self-closing placeholders while preserving adjacent text", () => {
+  test("drops unknown self-closing placeholders while preserving adjacent text", () => {
     expect(formatRichTextTranslation("Line<1/>break", {})).toEqual([
       "Linebreak",
     ]);
   });
 
-  it("parses rich-text translations into stable render nodes", () => {
+  test("parses rich-text translations into stable render nodes", () => {
     expect(
       formatRichTextTranslation("Read <0><1>Ada</1></0> carefully.", {
         0: {
@@ -162,7 +162,7 @@ describe("formatRichTextTranslation", () => {
     ]);
   });
 
-  it("treats unknown rich-text tags as transparent wrappers", () => {
+  test("treats unknown rich-text tags as transparent wrappers", () => {
     expect(
       formatRichTextTranslation("Read <0>the <1>docs</1></0> carefully.", {
         1: {

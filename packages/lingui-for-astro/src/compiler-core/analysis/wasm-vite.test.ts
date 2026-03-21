@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { initWasmOnce } from "./wasm-vite.ts";
 
 describe("analysis/wasm-vite", () => {
-  it("initializes wasm only once", () => {
+  test("initializes wasm only once", () => {
     const first = initWasmOnce();
     const second = initWasmOnce();
 

@@ -20,6 +20,10 @@
       "types": "./dist/runtime/index.d.mts",
       "default": "./dist/runtime/index.mjs"
     },
+    "./test-helpers": {
+      "types": "./dist/test-helpers/index.d.mts",
+      "default": "./dist/test-helpers/index.mjs"
+    },
     "./package.json": "./package.json"
   },
   "devDependencies": {
@@ -40,13 +44,14 @@
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/generator": "^7.29.1",
-    "@babel/traverse": "^7.29.0",
-    "@babel/types": "^7.29.0",
+    "@babel/core": "^7.0.0",
+    "@babel/generator": "^7.0.0",
+    "@babel/traverse": "^7.0.0",
+    "@babel/types": "^7.0.0",
     "@lingui/cli": "^5.0.0",
     "@lingui/conf": "^5.0.0",
-    "magic-string": "^0.30.21",
-    "source-map": "^0.7.6"
+    "magic-string": "^0.30.0",
+    "source-map": "^0.7.0",
+    "vite-plus": "catalog:"
   }
 }

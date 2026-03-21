@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   buildFrontmatterPrelude,
@@ -7,7 +7,7 @@ import {
 } from "./frontmatter.ts";
 
 describe("lower/frontmatter", () => {
-  it("builds frontmatter preludes and lowers runtime frontmatter macros", () => {
+  test("builds frontmatter preludes and lowers runtime frontmatter macros", () => {
     expect(buildFrontmatterPrelude(true, true)).toContain("getLinguiContext");
 
     const lowered = lowerFrontmatterMacros(

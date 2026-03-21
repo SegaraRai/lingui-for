@@ -1,6 +1,6 @@
 import { parseSync } from "@babel/core";
 import * as t from "@babel/types";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   collectMacroImportLocals,
@@ -11,7 +11,7 @@ import {
 const parserPlugins = ["typescript", "jsx"] as const;
 
 describe("macro bindings helpers", () => {
-  it("collects macro import locals from a program", () => {
+  test("collects macro import locals from a program", () => {
     const parsed = parseSync(
       'import { t as translate, Trans } from "lingui-for-test/macro";',
       {
@@ -38,7 +38,7 @@ describe("macro bindings helpers", () => {
     ).toEqual(new Set(["translate", "Trans"]));
   });
 
-  it("parses all macro and component bindings from source", () => {
+  test("parses all macro and component bindings from source", () => {
     const bindings = parseMacroBindings(
       'import { t as translate, plural, Trans } from "lingui-for-test/macro";',
       {
@@ -60,7 +60,7 @@ describe("macro bindings helpers", () => {
     );
   });
 
-  it("detects macro bindings in expressions, including eager and reactive aliases", () => {
+  test("detects macro bindings in expressions, including eager and reactive aliases", () => {
     const bindings = parseMacroBindings(
       'import { t, plural } from "lingui-for-test/macro";',
       {
@@ -99,7 +99,7 @@ describe("macro bindings helpers", () => {
     ).toBe(false);
   });
 
-  it("returns empty bindings when parse errors are swallowed", () => {
+  test("returns empty bindings when parse errors are swallowed", () => {
     expect(
       parseMacroBindings("<>", {
         parserPlugins: [...parserPlugins],

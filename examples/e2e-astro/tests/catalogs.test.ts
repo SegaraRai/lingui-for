@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 const localeDir = resolve(
   import.meta.dirname,
@@ -12,7 +12,7 @@ const localeDir = resolve(
 );
 
 describe("lingui extract and compile outputs", () => {
-  it("contains messages from every Astro verification route", async () => {
+  test("contains messages from every Astro verification route", async () => {
     const enPo = await readFile(resolve(localeDir, "en.po"), "utf8");
 
     expect(enPo).toContain("Lingui Astro multi-page playground");
@@ -37,7 +37,7 @@ describe("lingui extract and compile outputs", () => {
     expect(enPo).toContain("Persisted-props React island");
   });
 
-  it("contains japanese translations for representative multi-page messages", async () => {
+  test("contains japanese translations for representative multi-page messages", async () => {
     const jaCatalog = await readFile(resolve(localeDir, "ja.ts"), "utf8");
 
     expect(jaCatalog).toContain("Lingui Astro マルチページプレイグラウンド");

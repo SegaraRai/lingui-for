@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createSveltePlan } from "../plan/svelte-plan.ts";
 import {
@@ -8,7 +8,7 @@ import {
 } from "./programs.ts";
 
 describe("lower/programs", () => {
-  it("creates direct and combined lowering programs from a plan", () => {
+  test("creates direct and combined lowering programs from a plan", () => {
     const plan = createSveltePlan(
       dedent`
         <script module lang="ts">

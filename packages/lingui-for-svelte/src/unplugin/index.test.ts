@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { unpluginFactory } from "./index.ts";
 
 describe("lingui-for-svelte unplugin", () => {
-  it("skips non-svelte files", () => {
+  test("skips non-svelte files", () => {
     const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
@@ -17,7 +17,7 @@ describe("lingui-for-svelte unplugin", () => {
     expect(runTransform?.call({} as never, "const x = 1;", "/a.ts")).toBeNull();
   });
 
-  it("skips .svelte files that do not reference lingui-for-svelte macros", () => {
+  test("skips .svelte files that do not reference lingui-for-svelte macros", () => {
     const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {

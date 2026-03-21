@@ -1,11 +1,11 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import { transformProgram } from "./babel-transform.ts";
 
 describe("transformProgram", () => {
-  it("runs the official Lingui transform for raw JavaScript macros", () => {
+  test("runs the official Lingui transform for raw JavaScript macros", () => {
     const result = transformProgram(
       dedent`
         import { t } from "@lingui/core/macro";
@@ -37,7 +37,7 @@ describe("transformProgram", () => {
     `);
   });
 
-  it("lowers reactive wrappers to translator bindings in svelte-context mode", () => {
+  test("lowers reactive wrappers to translator bindings in svelte-context mode", () => {
     const result = transformProgram(
       dedent`
         import { t } from "lingui-for-svelte/macro";
@@ -74,7 +74,7 @@ describe("transformProgram", () => {
     `);
   });
 
-  it("keeps extraction output in Lingui-friendly form", () => {
+  test("keeps extraction output in Lingui-friendly form", () => {
     const result = transformProgram(
       dedent`
         import { t } from "lingui-for-svelte/macro";

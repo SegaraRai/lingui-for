@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createUniqueNameAllocator } from "./identifier-allocation.ts";
 
 describe("createUniqueNameAllocator", () => {
-  it("avoids collisions with existing top-level bindings", () => {
+  test("avoids collisions with existing top-level bindings", () => {
     const allocate = createUniqueNameAllocator(
       `
         import { createLinguiAccessors } from "lingui-for-svelte/runtime";
@@ -24,7 +24,7 @@ describe("createUniqueNameAllocator", () => {
     expect(allocate("__l4s_translate")).toBe("__l4s_translate_1");
   });
 
-  it("reserves generated names for subsequent allocations", () => {
+  test("reserves generated names for subsequent allocations", () => {
     const allocate = createUniqueNameAllocator("", {
       filename: "/virtual/App.svelte.ts",
       parserPlugins: ["typescript", "jsx"],

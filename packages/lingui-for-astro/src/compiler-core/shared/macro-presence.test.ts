@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { mayContainLinguiMacroImport } from "./macro-presence.ts";
 
 describe("mayContainLinguiMacroImport", () => {
-  it("returns true when the Astro macro package appears in source", () => {
+  test("returns true when the Astro macro package appears in source", () => {
     expect(
       mayContainLinguiMacroImport(
         'import { t } from "lingui-for-astro/macro";',
@@ -11,7 +11,7 @@ describe("mayContainLinguiMacroImport", () => {
     ).toBe(true);
   });
 
-  it("returns false when the Astro macro package is absent", () => {
+  test("returns false when the Astro macro package is absent", () => {
     expect(
       mayContainLinguiMacroImport('import { t } from "@lingui/core/macro";'),
     ).toBe(false);

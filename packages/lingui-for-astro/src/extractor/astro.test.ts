@@ -1,6 +1,6 @@
-import { readFileSync } from "node:fs";
 import type { ExtractedMessage } from "@lingui/conf";
-import { describe, expect, it } from "vite-plus/test";
+import { readFileSync } from "node:fs";
+import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 import { astroExtractor } from "./astro.ts";
@@ -8,7 +8,7 @@ import { astroExtractor } from "./astro.ts";
 const linguiConfig = normalizeLinguiConfig();
 
 describe("astroExtractor", () => {
-  it("preserves original origins without query suffixes for indexed source maps", async () => {
+  test("preserves original origins without query suffixes for indexed source maps", async () => {
     const source = `---
 import { t } from "lingui-for-astro/macro";
 
@@ -32,7 +32,7 @@ const label = t\`Frontmatter origin message\`;
     expect(messages[0]?.origin).toEqual(["/virtual/origin-check.astro", 4, 14]);
   });
 
-  it("preserves origins for nested extracted messages inside component macro ICU branches", async () => {
+  test("preserves origins for nested extracted messages inside component macro ICU branches", async () => {
     const source = `---
 import {
   Plural,
@@ -91,7 +91,7 @@ const role = "admin";
     expect(nested?.origin).toEqual(["/virtual/nested-origin.astro", 18, 6]);
   });
 
-  it("preserves origins for deep component-macro ICU messages in stress page extraction", async () => {
+  test("preserves origins for deep component-macro ICU messages in stress page extraction", async () => {
     const source = readFileSync(
       new URL(
         "../../../../examples/e2e-astro/src/pages/stress.astro",
@@ -136,7 +136,7 @@ const role = "admin";
     ).toEqual([filename, 162, 21]);
   });
 
-  it("keeps origins for core macro template expressions in Astro component markup", async () => {
+  test("keeps origins for core macro template expressions in Astro component markup", async () => {
     const source = readFileSync(
       new URL(
         "../../../../examples/e2e-astro/src/components/astro/AstroFormats.astro",
@@ -181,7 +181,7 @@ const role = "admin";
     ).toEqual([filename, 68, 7]);
   });
 
-  it("keeps origins for multiline t template expressions in Astro component markup", async () => {
+  test("keeps origins for multiline t template expressions in Astro component markup", async () => {
     const source = readFileSync(
       new URL(
         "../../../../examples/e2e-astro/src/components/TransitionShowcase.astro",

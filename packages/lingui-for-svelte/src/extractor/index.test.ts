@@ -1,6 +1,6 @@
 import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 import { svelteExtractor } from "./index.ts";
@@ -24,7 +24,7 @@ async function collectMessages(
 }
 
 describe("svelteExtractor", () => {
-  it("extracts tagged template literals from svelte sources", async () => {
+  test("extracts tagged template literals from svelte sources", async () => {
     const source = dedent`
       <script lang="ts">
         import { msg, t } from "lingui-for-svelte/macro";
@@ -70,7 +70,7 @@ describe("svelteExtractor", () => {
     );
   });
 
-  it("does not extract markup macros without a user-authored macro import", async () => {
+  test("does not extract markup macros without a user-authored macro import", async () => {
     const source = dedent`
       <p>{$t\`Markup-only extraction\`}</p>
     `;
@@ -89,7 +89,7 @@ describe("svelteExtractor", () => {
     expect(messages).toEqual([]);
   });
 
-  it("does not extract same-name markup macros imported from other modules", async () => {
+  test("does not extract same-name markup macros imported from other modules", async () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "./macro";
@@ -112,7 +112,7 @@ describe("svelteExtractor", () => {
     expect(messages).toEqual([]);
   });
 
-  it("extracts imported alias markup expressions", async () => {
+  test("extracts imported alias markup expressions", async () => {
     const source = dedent`
       <script lang="ts">
         import { t as translate } from "lingui-for-svelte/macro";
@@ -137,7 +137,7 @@ describe("svelteExtractor", () => {
     ).toBe(true);
   });
 
-  it("does not extract same-name component macros imported from other modules", async () => {
+  test("does not extract same-name component macros imported from other modules", async () => {
     const source = dedent`
       <script lang="ts">
         import Trans from "./Trans.svelte";
@@ -160,7 +160,7 @@ describe("svelteExtractor", () => {
     expect(messages).toEqual([]);
   });
 
-  it("does not extract shadowed macro aliases that no longer reference the import", async () => {
+  test("does not extract shadowed macro aliases that no longer reference the import", async () => {
     const source = dedent`
       <script lang="ts">
         import { t as translate } from "lingui-for-svelte/macro";
@@ -191,7 +191,7 @@ describe("svelteExtractor", () => {
     expect(messages.some((message) => message.message === "Inner")).toBe(false);
   });
 
-  it("extracts Trans component macros with embedded elements", async () => {
+  test("extracts Trans component macros with embedded elements", async () => {
     const source = dedent`
       <script lang="ts">
         import { Trans } from "lingui-for-svelte/macro";
@@ -221,7 +221,7 @@ describe("svelteExtractor", () => {
     ).toBe(true);
   });
 
-  it("extracts nested rich-text placeholders from Trans component macros", async () => {
+  test("extracts nested rich-text placeholders from Trans component macros", async () => {
     const source = dedent`
       <script lang="ts">
         import { Trans } from "lingui-for-svelte/macro";
@@ -250,7 +250,7 @@ describe("svelteExtractor", () => {
     ).toBe(true);
   });
 
-  it("extracts Plural, Select, and SelectOrdinal component macros", async () => {
+  test("extracts Plural, Select, and SelectOrdinal component macros", async () => {
     const source = dedent`
       <script lang="ts">
         import {

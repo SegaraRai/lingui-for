@@ -1,12 +1,12 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { hasImport } from "./imports.ts";
 
 describe("hasImport", () => {
   const packageNames = ["@lingui/core/macro", "@lingui/react/macro"];
 
-  it("detects macros in TSX files", () => {
+  test("detects macros in TSX files", () => {
     const code = dedent`
       import { Trans } from "@lingui/react/macro";
 
@@ -18,7 +18,7 @@ describe("hasImport", () => {
     expect(hasImport(code, "/virtual/Demo.tsx", packageNames)).toBe(true);
   });
 
-  it("supports custom macro package names", () => {
+  test("supports custom macro package names", () => {
     const code = dedent`
       import { msg } from "@acme/lingui-core";
 
@@ -30,7 +30,7 @@ describe("hasImport", () => {
     );
   });
 
-  it("falls back to the import block when later syntax is unsupported", () => {
+  test("falls back to the import block when later syntax is unsupported", () => {
     const code = dedent`
       import { msg } from "@lingui/core/macro";
 
@@ -43,7 +43,7 @@ describe("hasImport", () => {
     );
   });
 
-  it("returns false when no Lingui macro import exists", () => {
+  test("returns false when no Lingui macro import exists", () => {
     expect(
       hasImport(
         'export const value = "plain";',
@@ -53,7 +53,7 @@ describe("hasImport", () => {
     ).toBe(false);
   });
 
-  it("ignores string literals that only mention a macro package", () => {
+  test("ignores string literals that only mention a macro package", () => {
     expect(
       hasImport(
         'export const note = "import { msg } from \\"@lingui/core/macro\\"";',

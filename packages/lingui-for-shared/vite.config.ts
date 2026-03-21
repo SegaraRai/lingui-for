@@ -8,6 +8,7 @@ export default defineConfig({
       index: "src/index.ts",
       "compiler/index": "src/compiler/index.ts",
       "runtime/index": "src/runtime/index.ts",
+      "test-helpers/index": "src/test-helpers/index.ts",
     },
     attw: {
       profile: "esm-only",

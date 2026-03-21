@@ -1,12 +1,12 @@
 import { transformSync } from "@babel/core";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
+import type { ProgramTransformLike } from "./runtime-trans-lowering.ts";
 import {
   lowerSyntheticComponentDeclaration,
   splitSyntheticDeclarations,
   stripRuntimeTransImports,
 } from "./runtime-trans-lowering.ts";
-import type { ProgramTransformLike } from "./runtime-trans-lowering.ts";
 
 function parseProgram(code: string): ProgramTransformLike<null> {
   const result = transformSync(code, {
@@ -33,7 +33,7 @@ function parseProgram(code: string): ProgramTransformLike<null> {
 }
 
 describe("runtime trans lowering helpers", () => {
-  it("splits synthetic declarations into script and replacements", () => {
+  test("splits synthetic declarations into script and replacements", () => {
     const transformed = parseProgram(`
       import { RuntimeTrans as LocalRuntimeTrans } from "lingui-for-test/runtime";
       import { helper } from "./helper.ts";
@@ -73,7 +73,7 @@ describe("runtime trans lowering helpers", () => {
     expect(split.componentReplacements.get(0)?.code).toContain('tag: "a"');
   });
 
-  it("lowers a synthetic component declaration directly to markup", () => {
+  test("lowers a synthetic component declaration directly to markup", () => {
     const transformed = parseProgram(`
       const __component_0 = <LocalRuntimeTrans {...{
         id: "demo.docs",
@@ -93,7 +93,7 @@ describe("runtime trans lowering helpers", () => {
     ).toContain("<RuntimeTransStable {...{");
   });
 
-  it("removes RuntimeTrans imports when requested", () => {
+  test("removes RuntimeTrans imports when requested", () => {
     const transformed = parseProgram(`
       import { RuntimeTrans, helper } from "lingui-for-test/runtime";
       import { keep } from "./keep.ts";

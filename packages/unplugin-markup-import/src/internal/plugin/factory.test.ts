@@ -1,7 +1,7 @@
 import {
   existsSync,
-  mkdtempSync,
   mkdirSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
   rmSync,
@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { normalizePath, relativePathFrom } from "../fs/paths.ts";
 import { unpluginFactory } from "./factory.ts";
@@ -55,7 +55,7 @@ type PluginHooks = {
 };
 
 describe("unplugin-markup-import lifecycle", () => {
-  it("filters scanned markup files with include and exclude globs", () => {
+  test("filters scanned markup files with include and exclude globs", () => {
     const fixtureDir = mkdtempSync(join(tmpdir(), "unplugin-markup-import-"));
 
     try {

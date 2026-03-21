@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { afterAll, beforeAll, describe, expect, test } from "vite-plus/test";
 
 import { AppServer, serverModes } from "./support/app-server.ts";
 import { httpRouteCases } from "./support/expectations.ts";
@@ -14,7 +14,7 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
     await server.close();
   });
 
-  it.for(httpRouteCases)(
+  test.for(httpRouteCases)(
     "renders $path in $locale",
     async ({ expectedBody, expectedHtmlSnippets, locale, path }) => {
       const response = await server.fetch(`${path}?lang=${locale}`);
@@ -33,7 +33,7 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
     },
   );
 
-  it("reuses the locale cookie on routing and settings routes", async () => {
+  test("reuses the locale cookie on routing and settings routes", async () => {
     const initial = await server.fetch("/server?lang=ja");
     const initialHtml = await initial.text();
     const cookie = initial.headers.get("set-cookie");
@@ -92,7 +92,7 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
     ).toBe(3);
   });
 
-  it("renders imported descriptor content across Astro, Svelte, and React islands", async () => {
+  test("renders imported descriptor content across Astro, Svelte, and React islands", async () => {
     const response = await server.fetch("/islands?lang=en");
     const html = await response.text();
 

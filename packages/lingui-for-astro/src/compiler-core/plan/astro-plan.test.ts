@@ -1,10 +1,10 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createAstroPlan } from "./astro-plan.ts";
 
 describe("createAstroPlan", () => {
-  it("creates frontmatter, expression, and component plan items", () => {
+  test("creates frontmatter, expression, and component plan items", () => {
     const source = dedent`
       ---
       import { t, Trans } from "lingui-for-astro/macro";

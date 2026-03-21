@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import type {
   MacroComponent,
@@ -9,7 +9,7 @@ import type {
 import { buildCombinedProgram } from "./synthetic-program.ts";
 
 describe("buildCombinedProgram", () => {
-  it("combines script, expressions, and component macros into one synthetic module", () => {
+  test("combines script, expressions, and component macros into one synthetic module", () => {
     const source = dedent`
       <script lang="ts">
         import { t, Trans } from "lingui-for-svelte/macro";

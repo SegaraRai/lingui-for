@@ -1,10 +1,10 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createSveltePlan } from "./svelte-plan.ts";
 
 describe("createSveltePlan", () => {
-  it("analyzes module, instance, expressions, and component macros once", () => {
+  test("analyzes module, instance, expressions, and component macros once", () => {
     const source = dedent`
       <script module lang="ts">
         import { msg } from "lingui-for-svelte/macro";

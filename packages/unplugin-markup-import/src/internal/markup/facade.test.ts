@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   collectModuleSpecifiers,
@@ -10,7 +10,7 @@ import {
 import type { ScriptRange } from "./types.ts";
 
 describe("rewriteMarkupImports", () => {
-  it("rewrites generic import and export specifiers within provided script ranges", () => {
+  test("rewrites generic import and export specifiers within provided script ranges", () => {
     const source = dedent`
       import { helper } from "./helpers.ts";
       export { helper as exportedHelper } from "./helpers.ts";
@@ -36,7 +36,7 @@ describe("rewriteMarkupImports", () => {
 });
 
 describe("collectModuleSpecifiers", () => {
-  it("collects both relative-only and all module specifiers from generic script ranges", () => {
+  test("collects both relative-only and all module specifiers from generic script ranges", () => {
     const source = dedent`
       import { helper } from "./helpers.ts";
       import { runtime } from "@scope/runtime";
@@ -61,7 +61,7 @@ describe("collectModuleSpecifiers", () => {
 });
 
 describe("createMarkupFacadeModule", () => {
-  it("builds one companion module for every non-self import", () => {
+  test("builds one companion module for every non-self import", () => {
     const source = dedent`
       import "./polyfill.ts";
       import DefaultThing from "./default.ts";
@@ -101,7 +101,7 @@ describe("createMarkupFacadeModule", () => {
     `);
   });
 
-  it("keeps self imports direct", () => {
+  test("keeps self imports direct", () => {
     const source = dedent`
       import Self from "./Entry.svelte";
     `;
@@ -118,7 +118,7 @@ describe("createMarkupFacadeModule", () => {
     expect(result.rewrittenCode).toBe(source);
   });
 
-  it("keeps configured externalized imports direct", () => {
+  test("keeps configured externalized imports direct", () => {
     const source = dedent`
       import { runtime } from "@scope/runtime";
       import View from "./View.svelte";

@@ -1,12 +1,12 @@
 import type { SourceMapConsumer } from "source-map";
 import type { expect as vpExpect } from "vite-plus/test";
 
-type SourceLocation = {
+export type SourceLocation = {
   line: number;
   column: number;
 };
 
-type SourceRange = {
+export type SourceRange = {
   start: number;
   end: number;
 };
@@ -17,7 +17,10 @@ export type Detection = {
   generated: string | RegExp;
 };
 
-function findUniqueRange(source: string, needle: string | RegExp): SourceRange {
+export function findUniqueRange(
+  source: string,
+  needle: string | RegExp,
+): SourceRange {
   if (typeof needle === "string") {
     const start = source.indexOf(needle);
     if (start < 0) {
@@ -60,7 +63,10 @@ function findUniqueRange(source: string, needle: string | RegExp): SourceRange {
   };
 }
 
-function offsetToLocation(source: string, offset: number): SourceLocation {
+export function offsetToLocation(
+  source: string,
+  offset: number,
+): SourceLocation {
   let line = 1;
   let column = 0;
 
@@ -81,6 +87,7 @@ export function assertRangeMapping(
   generatedSource: string,
   originalSource: string,
   detection: Detection,
+  filename: string,
   expect: typeof vpExpect,
 ): void {
   const generated = findUniqueRange(generatedSource, detection.generated);
@@ -101,7 +108,7 @@ export function assertRangeMapping(
   expect(
     mappedStart.source,
     `${detection.name}: missing source for start position`,
-  ).toMatch(/Page\.astro$/);
+  ).toBe(filename);
   expect(mappedStart.line, `${detection.name}: start line`).toBe(
     originalStart.line,
   );
@@ -112,7 +119,7 @@ export function assertRangeMapping(
   expect(
     mappedEnd.source,
     `${detection.name}: missing source for end position`,
-  ).toMatch(/Page\.astro$/);
+  ).toBe(filename);
   expect(mappedEnd.line, `${detection.name}: end line`).toBe(originalEnd.line);
   expect(mappedEnd.column, `${detection.name}: end column`).toBe(
     originalEnd.column,

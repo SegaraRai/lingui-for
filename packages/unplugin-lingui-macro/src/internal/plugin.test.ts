@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import type { LinguiMacroPluginOptions } from "../types.ts";
 import { unpluginFactory } from "./plugin.ts";
@@ -27,7 +27,7 @@ function getCode(result: Awaited<ReturnType<typeof runTransform>>) {
 }
 
 describe("unplugin-lingui-macro", () => {
-  it("transforms plain TypeScript descriptors imported from @lingui/core/macro", async () => {
+  test("transforms plain TypeScript descriptors imported from @lingui/core/macro", async () => {
     const result = await runTransform(
       dedent`
         import { msg } from "@lingui/core/macro";
@@ -42,7 +42,7 @@ describe("unplugin-lingui-macro", () => {
     expect(getCode(result)).not.toContain("@lingui/core/macro");
   });
 
-  it("transforms React macros when a file imports @lingui/react/macro", async () => {
+  test("transforms React macros when a file imports @lingui/react/macro", async () => {
     const result = await runTransform(
       dedent`
         import { Trans } from "@lingui/react/macro";
@@ -59,7 +59,7 @@ describe("unplugin-lingui-macro", () => {
     expect(getCode(result)).toContain("@lingui/react");
   });
 
-  it("honors custom Lingui macro package names from config", async () => {
+  test("honors custom Lingui macro package names from config", async () => {
     const result = await runTransform(
       dedent`
         import { msg } from "@acme/lingui-core";

@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createSveltePlan } from "../plan/svelte-plan.ts";
 import {
@@ -8,7 +8,7 @@ import {
 } from "./snippet-lowering.ts";
 
 describe("snippet-lowering", () => {
-  it("lowers a template expression for compile", () => {
+  test("lowers a template expression for compile", () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "lingui-for-svelte/macro";
@@ -36,7 +36,7 @@ describe("snippet-lowering", () => {
     expect(lowered.code).toContain("__l4s_translate");
   });
 
-  it("lowers a component macro for compile", () => {
+  test("lowers a component macro for compile", () => {
     const source = dedent`
       <script lang="ts">
         import { Trans } from "lingui-for-svelte/macro";

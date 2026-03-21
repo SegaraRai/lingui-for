@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vite-plus/test";
+import { afterAll, beforeAll, describe, expect, test } from "vite-plus/test";
 
 import { AppServer, serverModes } from "./support/app-server.ts";
 import {
@@ -18,7 +18,7 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
     await server.close();
   });
 
-  it("renders the main app home route in english", async () => {
+  test("renders the main app home route in english", async () => {
     const response = await server.fetch("/?lang=en");
     const html = await response.text();
 
@@ -33,7 +33,7 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
     expect(html).toContain("playground");
   });
 
-  it("renders the main app settings route in japanese", async () => {
+  test("renders the main app settings route in japanese", async () => {
     const response = await server.fetch("/settings?lang=ja");
     const html = await response.text();
 
@@ -45,7 +45,7 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
     }
   }, 60_000);
 
-  it.for(playgroundLocaleCases)(
+  test.for(playgroundLocaleCases)(
     "renders $path in $locale",
     async ({ expectedBody, locale, path }) => {
       const response = await server.fetch(`${path}?lang=${locale}`);

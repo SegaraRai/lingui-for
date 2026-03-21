@@ -1,10 +1,10 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createAstroExtractionUnits } from "./extract-units.ts";
 
 describe("createAstroExtractionUnits", () => {
-  it("extracts imported alias template expressions", () => {
+  test("extracts imported alias template expressions", () => {
     const source = dedent`
       ---
       import { t as translate } from "lingui-for-astro/macro";
@@ -23,7 +23,7 @@ describe("createAstroExtractionUnits", () => {
     expect(units[0]?.code).toContain('message: "Extract me"');
   });
 
-  it("extracts component macros through synthetic RuntimeTrans declarations", () => {
+  test("extracts component macros through synthetic RuntimeTrans declarations", () => {
     const source = dedent`
       ---
       import { Trans } from "lingui-for-astro/macro";
@@ -46,7 +46,7 @@ describe("createAstroExtractionUnits", () => {
     expect(units[0]?.code).toContain("components");
   });
 
-  it("ignores nested object literal fragments inside multiline format macros", () => {
+  test("ignores nested object literal fragments inside multiline format macros", () => {
     const source = dedent`
       ---
       import { plural } from "lingui-for-astro/macro";
@@ -70,7 +70,7 @@ describe("createAstroExtractionUnits", () => {
     expect(units[0]?.code).not.toContain("const __expr = (");
   });
 
-  it("does not emit nested component extraction units inside Trans", () => {
+  test("does not emit nested component extraction units inside Trans", () => {
     const source = dedent`
       ---
       import { Plural, Trans } from "lingui-for-astro/macro";

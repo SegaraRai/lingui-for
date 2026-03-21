@@ -1,10 +1,10 @@
 import { parseSync } from "@babel/core";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { getBabelTraverse } from "./babel-traverse.ts";
 
 describe("getBabelTraverse", () => {
-  it("returns a callable traverse function", () => {
+  test("returns a callable traverse function", () => {
     const file = parseSync("const answer = 42;", {
       ast: true,
       babelrc: false,

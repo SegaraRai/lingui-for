@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   buildDirectProgramMap,
@@ -13,7 +13,7 @@ type IndexedRawSourceMap = {
 };
 
 describe("source-map helpers", () => {
-  it("computes line and column from a byte offset", () => {
+  test("computes line and column from a byte offset", () => {
     const toPosition = createOffsetToPosition("a\nbc\n");
 
     expect(toPosition(0)).toEqual({ line: 1, column: 0 });
@@ -21,7 +21,7 @@ describe("source-map helpers", () => {
     expect(toPosition(4)).toEqual({ line: 2, column: 2 });
   });
 
-  it("builds direct and prefixed snippet maps", () => {
+  test("builds direct and prefixed snippet maps", () => {
     const direct = buildDirectProgramMap(
       "const answer = 42;",
       "/virtual/file.ts",
@@ -43,7 +43,7 @@ describe("source-map helpers", () => {
     expect(prefixed.sources).toEqual(["/virtual/file.ts"]);
   });
 
-  it("builds generated snippet boundary maps and offsets maps", () => {
+  test("builds generated snippet boundary maps and offsets maps", () => {
     const generated = buildGeneratedSnippetMap(
       "const answer = 42;",
       "file.ts",

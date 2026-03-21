@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { lowerComponentMacro } from "./component-macro.ts";
 
 describe("lower/component-macro", () => {
-  it("lowers component macros for compile and extract", () => {
+  test("lowers component macros for compile and extract", () => {
     const source = '<Trans>Read the <a href="/docs">docs</a>.</Trans>';
 
     const compileLowered = lowerComponentMacro(

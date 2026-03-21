@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   createAstroTransformContext,
@@ -7,7 +7,7 @@ import {
 } from "./astro-transform-context.ts";
 
 describe("createAstroTransformContext", () => {
-  it("collects frontmatter, macro bindings, and macro-bearing nodes", () => {
+  test("collects frontmatter, macro bindings, and macro-bearing nodes", () => {
     const source = dedent`
       ---
       import { t, Trans } from "lingui-for-astro/macro";
@@ -33,7 +33,7 @@ describe("createAstroTransformContext", () => {
     expect(result.usesRuntimeTrans).toBe(true);
   });
 
-  it("keeps non-macro expressions and components out of the filtered sets", () => {
+  test("keeps non-macro expressions and components out of the filtered sets", () => {
     const source = dedent`
       ---
       const plain = "ignore";
@@ -53,7 +53,7 @@ describe("createAstroTransformContext", () => {
 });
 
 describe("getFrontmatterContent", () => {
-  it("returns only the inner frontmatter content", () => {
+  test("returns only the inner frontmatter content", () => {
     const source = dedent`
       ---
       const label = "hello";
@@ -68,7 +68,7 @@ describe("getFrontmatterContent", () => {
     );
   });
 
-  it("returns an empty string when no frontmatter exists", () => {
+  test("returns an empty string when no frontmatter exists", () => {
     const source = "<p>Hello</p>";
     const context = createAstroTransformContext(source);
 

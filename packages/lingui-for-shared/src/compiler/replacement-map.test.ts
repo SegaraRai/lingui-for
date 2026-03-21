@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vite-plus/test";
 import type { RawSourceMap } from "source-map";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   advanceGeneratedOffset,
@@ -8,14 +8,14 @@ import {
 } from "./replacement-map.ts";
 
 describe("replacement map helpers", () => {
-  it("advances generated offsets across lines", () => {
+  test("advances generated offsets across lines", () => {
     expect(advanceGeneratedOffset({ line: 0, column: 0 }, "a\nbc")).toEqual({
       line: 1,
       column: 2,
     });
   });
 
-  it("creates source maps for untouched source chunks", () => {
+  test("creates source maps for untouched source chunks", () => {
     const map = createUntouchedChunkMap(
       "const answer = 42;",
       "/virtual.ts",
@@ -28,7 +28,7 @@ describe("replacement map helpers", () => {
     expect(map?.sourcesContent).toEqual(["const answer = 42;"]);
   });
 
-  it("builds output and indexed maps for replaced source", () => {
+  test("builds output and indexed maps for replaced source", () => {
     const result = buildOutputWithIndexedMap(
       "const answer = 42;",
       "/virtual.ts",

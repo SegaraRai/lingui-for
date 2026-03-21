@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { lowerTemplateExpression } from "./template-expression.ts";
 
 describe("lower/template-expression", () => {
-  it("lowers template expressions for compile and extract", () => {
+  test("lowers template expressions for compile and extract", () => {
     const compileLowered = lowerTemplateExpression(
       "t`Hello ${name}`",
       new Map([["t", "t"]]),

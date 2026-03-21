@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { unpluginFactory } from "./index.ts";
 
 describe("lingui-for-astro unplugin", () => {
-  it("moves the plugin ahead of Astro compilation in Vite", async () => {
+  test("moves the plugin ahead of Astro compilation in Vite", async () => {
     const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
@@ -37,7 +37,7 @@ describe("lingui-for-astro unplugin", () => {
     ]);
   });
 
-  it("skips .astro files that do not reference lingui-for-astro macros", async () => {
+  test("skips .astro files that do not reference lingui-for-astro macros", async () => {
     const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {

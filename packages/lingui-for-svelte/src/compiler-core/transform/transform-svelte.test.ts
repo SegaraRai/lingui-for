@@ -1,6 +1,13 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
+import {
+  assertRangeMapping,
+  findUniqueRange,
+  offsetToLocation,
+  type Detection,
+} from "lingui-for-shared/test-helpers";
+import { SourceMapConsumer } from "source-map";
 import { transformSvelte } from "./transform-svelte.ts";
 
 function compact(value: string): string {
@@ -14,7 +21,7 @@ function expectNoExcessBlankLines(value: string): void {
 }
 
 describe("transformSvelte", () => {
-  it("keeps msg descriptors pure inside user-authored $derived", () => {
+  test("keeps msg descriptors pure inside user-authored $derived", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -46,7 +53,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("rewrites eager t in script and $t in markup through separate runtime paths", () => {
+  test("rewrites eager t in script and $t in markup through separate runtime paths", () => {
     const source = dedent`
       <script lang="ts">
         import { msg, t } from "lingui-for-svelte/macro";
@@ -92,7 +99,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps $t inside script initializers as direct translator reads", () => {
+  test("keeps $t inside script initializers as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -136,7 +143,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("wraps $t inside $derived.by callbacks with another derived translator read", () => {
+  test("wraps $t inside $derived.by callbacks with another derived translator read", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -172,7 +179,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps $t inside ordinary function branches as direct translator reads", () => {
+  test("keeps $t inside ordinary function branches as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -218,7 +225,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps reactive plural/select macros inside callback-based derived runes as direct translator reads", () => {
+  test("keeps reactive plural/select macros inside callback-based derived runes as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -273,7 +280,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps top-level ternary initializers containing reactive translations as direct translator reads", () => {
+  test("keeps top-level ternary initializers containing reactive translations as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -314,7 +321,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps top-level object initializers containing reactive translations as direct translator reads", () => {
+  test("keeps top-level object initializers containing reactive translations as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -362,7 +369,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps top-level function initializers that return reactive translations as direct translator reads", () => {
+  test("keeps top-level function initializers that return reactive translations as direct translator reads", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -396,7 +403,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps $t in script direct while letting t.eager stay eager", () => {
+  test("keeps $t in script direct while letting t.eager stay eager", () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "lingui-for-svelte/macro";
@@ -452,7 +459,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("rejects bare direct t in Svelte scripts", () => {
+  test("rejects bare direct t in Svelte scripts", () => {
     expect(() =>
       transformSvelte(
         dedent`
@@ -471,7 +478,7 @@ describe("transformSvelte", () => {
     ).toThrow(/Bare `t` in `.svelte` files is not allowed/);
   });
 
-  it("rewrites $t markup expressions to runtime reactive translations", () => {
+  test("rewrites $t markup expressions to runtime reactive translations", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -512,7 +519,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("treats $plural, $select, and $selectOrdinal as reactive string macros", () => {
+  test("treats $plural, $select, and $selectOrdinal as reactive string macros", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -574,7 +581,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("supports exact-number ICU branches in core and component macros", () => {
+  test("supports exact-number ICU branches in core and component macros", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -621,7 +628,7 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("=2 {take the scenic route}");
   });
 
-  it("handles deeply nested core and component macro shapes", () => {
+  test("handles deeply nested core and component macro shapes", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -750,7 +757,7 @@ describe("transformSvelte", () => {
     expect(code).toContain("component many later admin");
   });
 
-  it("lowers Trans with embedded elements to the runtime RuntimeTrans component", () => {
+  test("lowers Trans with embedded elements to the runtime RuntimeTrans component", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -792,7 +799,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("lowers Trans with nested embedded elements and components", () => {
+  test("lowers Trans with nested embedded elements and components", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -842,7 +849,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("injects RuntimeTrans for imported alias component macros", () => {
+  test("injects RuntimeTrans for imported alias component macros", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -878,7 +885,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("lowers Plural, Select, and SelectOrdinal component macros to RuntimeTrans", () => {
+  test("lowers Plural, Select, and SelectOrdinal component macros to RuntimeTrans", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -934,7 +941,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("does not activate markup macros without a macro import", () => {
+  test("does not activate markup macros without a macro import", () => {
     const source = dedent`
       <p>{$t\`Hello from markup-only component\`}</p>
       <Trans id="demo.docs">Read the docs.</Trans>
@@ -949,7 +956,7 @@ describe("transformSvelte", () => {
     expect(result.code).toBe(source.trim());
   });
 
-  it("does not activate same-name components imported from other modules", () => {
+  test("does not activate same-name components imported from other modules", () => {
     const source = dedent`
       <script lang="ts">
         import Trans from "./Trans.svelte";
@@ -969,7 +976,7 @@ describe("transformSvelte", () => {
     );
   });
 
-  it("does not activate same-name non-component macros imported from other modules", () => {
+  test("does not activate same-name non-component macros imported from other modules", () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "./macro";
@@ -1005,7 +1012,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("keeps shadowed macro aliases untouched while rewriting the still-bound usages", () => {
+  test("keeps shadowed macro aliases untouched while rewriting the still-bound usages", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -1052,7 +1059,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("does not lower same-name components from non-macro imports even when macro expressions are present", () => {
+  test("does not lower same-name components from non-macro imports even when macro expressions are present", () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "lingui-for-svelte/macro";
@@ -1093,7 +1100,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("injects a script block for imported markup-only expressions", () => {
+  test("injects a script block for imported markup-only expressions", () => {
     const source = dedent`
       <script>
         import { t as translate } from "lingui-for-svelte/macro";
@@ -1127,7 +1134,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("avoids collisions when injecting hidden Lingui bindings", () => {
+  test("avoids collisions when injecting hidden Lingui bindings", () => {
     const source = dedent`
       <script lang="ts">
         import { t } from "lingui-for-svelte/macro";
@@ -1172,7 +1179,7 @@ describe("transformSvelte", () => {
     `);
   });
 
-  it("primes lazy Lingui accessors after same-component initialization helpers", () => {
+  test("primes lazy Lingui accessors after same-component initialization helpers", () => {
     const result = transformSvelte(
       dedent`
         <script lang="ts">
@@ -1198,5 +1205,182 @@ describe("transformSvelte", () => {
     expect(result.code.indexOf("useLinguiLocale(() => locale);")).toBeLessThan(
       result.code.indexOf("__l4s_ctx.prime();"),
     );
+  });
+});
+
+describe("transformSvelte source map discipline", () => {
+  const source = dedent`
+    <script lang="ts">
+      import { t, Trans } from "lingui-for-svelte/macro";
+
+      const keepBefore = "before";
+      // KEEP_SCRIPT_COMMENT
+      const eagerLabel = t.eager\`Mapped script message\`;
+      const keepAfter = "after";
+    </script>
+
+    <section data-keep="yes">
+      <p>{keepBefore}</p>
+      <p>{$t\`Mapped template message\`}</p>
+      <Trans>Mapped component message</Trans>
+      <p>{keepAfter}</p>
+    </section>
+  `;
+
+  test("preserves untouched script and markup while keeping file-level source map metadata", async () => {
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.code).toContain('const keepBefore = "before";');
+    expect(result.code).toContain("// KEEP_SCRIPT_COMMENT");
+    expect(result.code).toContain('const keepAfter = "after";');
+    expect(result.code).toContain('<section data-keep="yes">');
+    expect(result.code).toContain("<p>{keepBefore}</p>");
+    expect(result.code).toContain("<p>{keepAfter}</p>");
+
+    await SourceMapConsumer.with(result.map as never, null, () => {
+      expect(result.map.file).toBe("App.svelte");
+      expect(result.map.sources).toEqual(["App.svelte"]);
+      expect(result.map.sourcesContent).toEqual([source]);
+    });
+  });
+
+  test("maps unchanged script lines back to their original locations instead of the rewritten script prelude", async () => {
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    const generatedScript = offsetToLocation(
+      result.code,
+      findUniqueRange(result.code, 'const keepAfter = "after";').start,
+    );
+    const originalScript = offsetToLocation(
+      source,
+      findUniqueRange(source, 'const keepAfter = "after";').start,
+    );
+    const generatedMarkup = offsetToLocation(
+      result.code,
+      findUniqueRange(result.code, "<p>{keepAfter}</p>").start,
+    );
+    const originalMarkup = offsetToLocation(
+      source,
+      findUniqueRange(source, "<p>{keepAfter}</p>").start,
+    );
+    const mappedSource = result.map.sources[0] ?? result.map.file;
+
+    await SourceMapConsumer.with(result.map as never, null, (consumer) => {
+      expect(
+        consumer.originalPositionFor({
+          line: generatedScript.line,
+          column: generatedScript.column,
+        }),
+      ).toMatchObject({
+        source: mappedSource,
+        line: originalScript.line,
+        column: originalScript.column,
+      });
+
+      expect(
+        consumer.originalPositionFor({
+          line: generatedMarkup.line,
+          column: generatedMarkup.column,
+        }),
+      ).toMatchObject({
+        source: mappedSource,
+        line: originalMarkup.line,
+        column: originalMarkup.column,
+      });
+    });
+  });
+
+  const rangeSource = dedent`
+    <script lang="ts">
+      import { t, Trans } from "lingui-for-svelte/macro";
+
+      const keepBefore = "before";
+      const label = t.eager\`Mapped script message\`;
+      const keepAfter = "after";
+    </script>
+
+    <section data-keep="yes">
+      <p>{keepBefore}</p>
+      <p><strong>{$t\`Mapped template message\`}</strong></p>
+      <a href="/docs"><Trans>Mapped component message</Trans></a>
+      <p>{keepAfter}</p>
+    </section>
+  `;
+
+  const detections: Detection[] = [
+    {
+      name: "script transform",
+      original: "t.eager`Mapped script message`",
+      generated:
+        /__l4s_getI18n\(\)\._\([^)]*message: "Mapped script message"[^)]*\)/,
+    },
+    {
+      name: "template transform",
+      original: /\$t`Mapped template message`/,
+      generated:
+        /\$?__l4s_translate\([^)]*message: "Mapped template message"[^)]*\)/,
+    },
+    {
+      name: "component transform",
+      original: "<Trans>Mapped component message</Trans>",
+      generated: /<L4sRuntimeTrans\b[\s\S]*?\/>/,
+    },
+    {
+      name: "label binding is preserved",
+      original: "const label = ",
+      generated: "const label = ",
+    },
+    {
+      name: "keepAfter binding is preserved",
+      original: 'const keepAfter = "after";',
+      generated: 'const keepAfter = "after";',
+    },
+    {
+      name: "template opening wrapper is preserved",
+      original: "<p><strong>{",
+      generated: "<p><strong>{",
+    },
+    {
+      name: "template closing wrapper is preserved",
+      original: "}</strong></p>",
+      generated: "}</strong></p>",
+    },
+    {
+      name: "component opening wrapper is preserved",
+      original: '<a href="/docs">',
+      generated: '<a href="/docs">',
+    },
+    {
+      name: "component closing wrapper is preserved",
+      original: "</a>",
+      generated: "</a>",
+    },
+  ];
+
+  test("maps transformed and preserved compile ranges back to the original svelte file", async () => {
+    const result = transformSvelte(rangeSource, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.map.file).toBe("App.svelte");
+    expect(result.map.sources).toEqual(["App.svelte"]);
+    expect(result.map.sourcesContent).toEqual([rangeSource]);
+
+    await SourceMapConsumer.with(result.map as never, null, (consumer) => {
+      detections.forEach((detection) => {
+        assertRangeMapping(
+          consumer,
+          result.code,
+          rangeSource,
+          detection,
+          "App.svelte",
+          expect,
+        );
+      });
+    });
   });
 });

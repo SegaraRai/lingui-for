@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import {
   collectRelativeSvelteImports,
@@ -8,7 +8,7 @@ import {
 } from "./svelte.ts";
 
 describe("rewriteSvelteImports", () => {
-  it("rewrites import and export specifiers inside both svelte script blocks", () => {
+  test("rewrites import and export specifiers inside both svelte script blocks", () => {
     const source = dedent`
       <script lang="ts">
         import { helper } from "../component-utils.ts";
@@ -40,7 +40,7 @@ describe("rewriteSvelteImports", () => {
     `);
   });
 
-  it("leaves svelte files untouched when the rewrite callback returns null", () => {
+  test("leaves svelte files untouched when the rewrite callback returns null", () => {
     const source = dedent`
       <script>
         import helper from "./helper.js";
@@ -59,7 +59,7 @@ describe("rewriteSvelteImports", () => {
 });
 
 describe("collectRelativeSvelteImports", () => {
-  it("collects direct relative svelte imports from both script blocks", () => {
+  test("collects direct relative svelte imports from both script blocks", () => {
     const source = dedent`
       <script>
         import Child from "./Child.svelte";
@@ -77,7 +77,7 @@ describe("collectRelativeSvelteImports", () => {
 });
 
 describe("createSvelteFacadeModule", () => {
-  it("rewrites every non-self import through a single companion module", () => {
+  test("rewrites every non-self import through a single companion module", () => {
     const source = dedent`
       <script lang="ts">
         import type { MessageDescriptor } from "@lingui/core";
@@ -118,7 +118,7 @@ describe("createSvelteFacadeModule", () => {
     `);
   });
 
-  it("supports temp-source-relative facade specifiers", () => {
+  test("supports temp-source-relative facade specifiers", () => {
     const source = dedent`
       <script lang="ts">
         import { getLinguiContext } from "../core/context.ts";
@@ -137,7 +137,7 @@ describe("createSvelteFacadeModule", () => {
     );
   });
 
-  it("keeps self-only import graphs untouched", () => {
+  test("keeps self-only import graphs untouched", () => {
     const source = dedent`
       <script>
         import OnlySvelte from "./OnlySvelte.svelte";
@@ -154,7 +154,7 @@ describe("createSvelteFacadeModule", () => {
     expect(result.rewrittenCode).toBe(source);
   });
 
-  it("keeps type-only exports in the companion source", () => {
+  test("keeps type-only exports in the companion source", () => {
     const source = dedent`
       <script lang="ts">
         import type { TransComponentMap, TransRenderNode } from "./rich-text.ts";

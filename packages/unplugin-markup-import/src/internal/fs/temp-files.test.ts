@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { createTempFilePath } from "./temp-files.ts";
 
 describe("createTempFilePath", () => {
-  it("uses a dot-stripped original filename and content hash", () => {
+  test("uses a dot-stripped original filename and content hash", () => {
     expect(
       createTempFilePath(
         "C:/Workspace/src/.unplugin-markup-import",

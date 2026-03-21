@@ -1,6 +1,6 @@
 import { transformSync } from "@babel/core";
 import dedent from "dedent";
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { splitSyntheticDeclarations } from "./runtime-trans-lowering.ts";
 import type { ProgramTransform } from "./types.ts";
@@ -30,7 +30,7 @@ function parseProgram(code: string): ProgramTransform {
 }
 
 describe("splitSyntheticDeclarations", () => {
-  it("separates synthetic expressions and lowers RuntimeTrans JSX back to Svelte", () => {
+  test("separates synthetic expressions and lowers RuntimeTrans JSX back to Svelte", () => {
     const transformed = parseProgram(dedent`
       import { RuntimeTrans as LocalRuntimeTrans } from "lingui-for-svelte/runtime";
       import { helper } from "./helper.ts";

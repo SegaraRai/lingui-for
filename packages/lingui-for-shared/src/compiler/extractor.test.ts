@@ -1,5 +1,5 @@
 import type { ExtractorCtx } from "@lingui/conf";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, test, vi } from "vite-plus/test";
 
 import {
   getLinguiExtractorParserPlugins,
@@ -23,7 +23,7 @@ function createExtractorContext(): ExtractorCtx {
 }
 
 describe("extractor helpers", () => {
-  it("builds extractor parser plugins from Lingui config", () => {
+  test("builds extractor parser plugins from Lingui config", () => {
     expect(getLinguiExtractorParserPlugins(createExtractorContext())).toEqual([
       "importAttributes",
       "explicitResourceManagement",
@@ -35,7 +35,7 @@ describe("extractor helpers", () => {
     ]);
   });
 
-  it("forwards extraction units and normalized source maps to Lingui", async () => {
+  test("forwards extraction units and normalized source maps to Lingui", async () => {
     extractFromFileWithBabelMock.mockResolvedValue(undefined);
     const onMessageExtracted = vi.fn();
     const ctx = createExtractorContext();

@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { getParserPlugins, normalizeLinguiConfig } from "./config.ts";
 
 describe("shared/config", () => {
-  it("normalizes Lingui config for astro runtime and macro packages", () => {
+  test("normalizes Lingui config for astro runtime and macro packages", () => {
     const config = normalizeLinguiConfig();
 
     expect(config.macro?.corePackage).toContain("lingui-for-astro/macro");
@@ -12,7 +12,7 @@ describe("shared/config", () => {
     );
   });
 
-  it("returns parser plugins including typescript and jsx", () => {
+  test("returns parser plugins including typescript and jsx", () => {
     const plugins = getParserPlugins();
 
     expect(plugins).toContain("typescript");

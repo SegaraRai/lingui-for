@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vite-plus/test";
+import { describe, expect, test } from "vite-plus/test";
 
 import { getParserPlugins, normalizeLinguiConfig } from "./config.ts";
 
 describe("normalizeLinguiConfig", () => {
-  it("adds lingui-for-svelte macro packages and runtime bindings", () => {
+  test("adds lingui-for-svelte macro packages and runtime bindings", () => {
     const config = normalizeLinguiConfig();
     const macro = config.macro!;
 
@@ -16,7 +16,7 @@ describe("normalizeLinguiConfig", () => {
     ]);
   });
 
-  it("preserves explicit overrides", () => {
+  test("preserves explicit overrides", () => {
     const config = normalizeLinguiConfig({
       runtimeConfigModule: {
         i18n: ["custom-runtime", "customI18n"],
@@ -37,7 +37,7 @@ describe("normalizeLinguiConfig", () => {
 });
 
 describe("getParserPlugins", () => {
-  it("includes typescript only for ts sources", () => {
+  test("includes typescript only for ts sources", () => {
     expect(getParserPlugins("ts")).toContain("typescript");
     expect(getParserPlugins("js")).not.toContain("typescript");
     expect(getParserPlugins("js")).toContain("jsx");
