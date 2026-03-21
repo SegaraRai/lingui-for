@@ -3,7 +3,7 @@
 exports[`NODE_ENV=development > 'component-whitespacing' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
@@ -128,7 +128,7 @@ exports[`NODE_ENV=development > 'component-whitespacing' > svelte transform 1`] 
 exports[`NODE_ENV=development > 'deep-rich-text-trans' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -236,7 +236,7 @@ exports[`NODE_ENV=development > 'deep-rich-text-trans' > svelte transform 1`] = 
 exports[`NODE_ENV=development > 'exact-number-component' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -322,7 +322,7 @@ exports[`NODE_ENV=development > 'exact-number-component' > svelte transform 1`] 
 exports[`NODE_ENV=development > 'nested-icu-core' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 
 const count = 0;
@@ -390,7 +390,7 @@ exports[`NODE_ENV=development > 'nested-icu-core' > svelte transform 1`] = `
 exports[`NODE_ENV=development > 'rich-text-trans' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -462,7 +462,7 @@ exports[`NODE_ENV=development > 'rich-text-trans' > svelte transform 1`] = `
 exports[`NODE_ENV=development > 'trans-with-deeply-nested-component-icu' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -630,7 +630,7 @@ exports[`NODE_ENV=development > 'trans-with-deeply-nested-component-icu' > svelt
 exports[`NODE_ENV=development > 'trans-with-plural' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -702,7 +702,7 @@ exports[`NODE_ENV=development > 'trans-with-plural' > svelte transform 1`] = `
 exports[`NODE_ENV=development > 'with-id-context-comment-component' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -936,7 +936,7 @@ exports[`NODE_ENV=development > 'with-id-context-comment-component' > svelte tra
 exports[`NODE_ENV=development > 'with-id-context-comment-core' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 
 const value = "foo";
@@ -1204,7 +1204,7 @@ exports[`NODE_ENV=development > 'with-id-context-comment-core' > svelte transfor
 exports[`NODE_ENV=production > 'component-whitespacing' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
@@ -1317,7 +1317,7 @@ exports[`NODE_ENV=production > 'component-whitespacing' > svelte transform 1`] =
 exports[`NODE_ENV=production > 'deep-rich-text-trans' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -1422,7 +1422,7 @@ exports[`NODE_ENV=production > 'deep-rich-text-trans' > svelte transform 1`] = `
 exports[`NODE_ENV=production > 'exact-number-component' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -1502,7 +1502,7 @@ exports[`NODE_ENV=production > 'exact-number-component' > svelte transform 1`] =
 exports[`NODE_ENV=production > 'nested-icu-core' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 
 const count = 0;
@@ -1567,7 +1567,7 @@ exports[`NODE_ENV=production > 'nested-icu-core' > svelte transform 1`] = `
 exports[`NODE_ENV=production > 'rich-text-trans' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -1636,7 +1636,7 @@ exports[`NODE_ENV=production > 'rich-text-trans' > svelte transform 1`] = `
 exports[`NODE_ENV=production > 'trans-with-deeply-nested-component-icu' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -1792,7 +1792,7 @@ exports[`NODE_ENV=production > 'trans-with-deeply-nested-component-icu' > svelte
 exports[`NODE_ENV=production > 'trans-with-plural' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -1861,7 +1861,7 @@ exports[`NODE_ENV=production > 'trans-with-plural' > svelte transform 1`] = `
 exports[`NODE_ENV=production > 'with-id-context-comment-component' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -2055,7 +2055,7 @@ exports[`NODE_ENV=production > 'with-id-context-comment-component' > svelte tran
 exports[`NODE_ENV=production > 'with-id-context-comment-core' > astro transform 1`] = `
 "---
 import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";
-const __l4a_ctx = __l4a_getLinguiContext(Astro);
+const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);
 const __l4a_i18n = __l4a_ctx.i18n;
 
 const value = "foo";
