@@ -12,7 +12,6 @@ export {
   lowerScriptExpression,
   lowerTemplateExpression,
 } from "./snippet-lowering.ts";
-export { splitSyntheticDeclarations } from "./runtime-trans-lowering.ts";
 export {
   addLineMappings,
   buildDirectProgramMap,

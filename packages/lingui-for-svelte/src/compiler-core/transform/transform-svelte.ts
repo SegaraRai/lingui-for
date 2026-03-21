@@ -1,5 +1,6 @@
 import {
   buildOutputWithIndexedMap,
+  createUniqueNameAllocator as createSharedUniqueNameAllocator,
   stripQuery,
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
@@ -13,6 +14,7 @@ import {
   RUNTIME_BINDING_GET_I18N,
   RUNTIME_BINDING_TRANSLATE,
 } from "../shared/constants.ts";
+import { getParserPlugins } from "../shared/config.ts";
 import { createScriptFilename } from "../shared/paths.ts";
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import {
@@ -20,7 +22,6 @@ import {
   lowerScriptExpression,
   lowerTemplateExpression,
 } from "../lower/index.ts";
-import { createUniqueNameAllocator } from "./identifier-allocation.ts";
 import type { SvelteTransformResult } from "./types.ts";
 
 type RuntimeBindingsForInjection = {
@@ -210,9 +211,9 @@ function createRuntimeBindings(
   instanceCode: string,
   lang: "js" | "ts",
 ): RuntimeBindingsForInjection {
-  const allocateName = createUniqueNameAllocator(instanceCode, {
+  const allocateName = createSharedUniqueNameAllocator(instanceCode, {
     filename: createScriptFilename(filename, "instance", lang),
-    lang,
+    parserPlugins: getParserPlugins(lang),
   });
 
   return {

@@ -4,12 +4,13 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import { stripQuery } from "lingui-for-shared/compiler";
-
 import {
   mayContainLinguiMacroImport,
-  transformSvelte,
-} from "../compiler-core/index.ts";
+  stripQuery,
+} from "lingui-for-shared/compiler";
+
+import { transformSvelte } from "../compiler-core/index.ts";
+import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";
 import type { LinguiSveltePluginOptions } from "./types.ts";
 
 export const unpluginFactory: UnpluginFactory<
@@ -28,7 +29,7 @@ export const unpluginFactory: UnpluginFactory<
     }
 
     if (filename.endsWith(".svelte")) {
-      if (!mayContainLinguiMacroImport(code)) {
+      if (!mayContainLinguiMacroImport(code, PACKAGE_MACRO)) {
         return null;
       }
 

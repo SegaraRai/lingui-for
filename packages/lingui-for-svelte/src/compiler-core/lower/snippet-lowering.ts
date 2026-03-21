@@ -1,15 +1,17 @@
 import {
+  createMappedOutput,
+  splitSyntheticDeclarations as splitSyntheticDeclarationsShared,
+} from "lingui-for-shared/compiler";
+
+import {
   PACKAGE_MACRO,
   RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
+  PACKAGE_RUNTIME,
   SYNTHETIC_PREFIX_COMPONENT,
   SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
 import type { MacroBindings } from "../shared/macro-bindings.ts";
 import type { SveltePlan } from "../plan/svelte-plan.ts";
-import {
-  createMappedOutput,
-  splitSyntheticDeclarations,
-} from "./runtime-trans-lowering.ts";
 import { transformProgram } from "./babel-transform.ts";
 import {
   buildAnchoredGeneratedSnippetMap,
@@ -22,6 +24,24 @@ import type {
   ProgramTransform,
   RuntimeBindingsForTransform,
 } from "./types.ts";
+
+function splitSyntheticDeclarations(
+  transformed: ProgramTransform,
+  runtimeTransComponentName = "L4sRuntimeTrans",
+): {
+  script: MappedCodeFragment;
+  expressionReplacements: Map<number, MappedCodeFragment>;
+  componentReplacements: Map<number, MappedCodeFragment>;
+} {
+  return splitSyntheticDeclarationsShared(transformed, {
+    runtimePackageName: PACKAGE_RUNTIME,
+    runtimeTransComponentName,
+    syntheticExpressionPrefix: SYNTHETIC_PREFIX_EXPRESSION,
+    syntheticComponentPrefix: SYNTHETIC_PREFIX_COMPONENT,
+    shouldRemoveRuntimeTransImport: (localName) =>
+      localName === runtimeTransComponentName,
+  });
+}
 
 function createSyntheticMacroImports(macroBindings: MacroBindings): string {
   if (macroBindings.allImports.size === 0) {
