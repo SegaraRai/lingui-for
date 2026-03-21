@@ -1,4 +1,5 @@
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+
 import { runBabelExtractionUnits } from "lingui-for-shared/compiler";
 
 import {

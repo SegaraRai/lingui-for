@@ -2,6 +2,7 @@ import type { PluginObj } from "@babel/core";
 import { transformSync } from "@babel/core";
 import * as t from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
+
 import type { SourceMap } from "lingui-for-shared/compiler";
 
 import { getParserPlugins } from "../shared/config.ts";

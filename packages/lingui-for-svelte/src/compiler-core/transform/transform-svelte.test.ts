@@ -1,4 +1,5 @@
 import dedent from "dedent";
+import { SourceMapConsumer } from "source-map";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
@@ -7,7 +8,6 @@ import {
   offsetToLocation,
   type Detection,
 } from "lingui-for-shared/test-helpers";
-import { SourceMapConsumer } from "source-map";
 import { transformSvelte } from "./transform-svelte.ts";
 
 function compact(value: string): string {

@@ -1,10 +1,11 @@
+import type * as t from "@babel/types";
+
 import {
   collectMacroImportLocals as collectSharedMacroImportLocals,
   expressionUsesMacroBinding as expressionUsesSharedMacroBinding,
   parseMacroBindings as parseSharedMacroBindings,
   type SharedMacroBindings,
 } from "lingui-for-shared/compiler";
-import type * as t from "@babel/types";
 
 import { getParserPlugins } from "./config.ts";
 import { PACKAGE_MACRO } from "./constants.ts";

@@ -4,7 +4,5 @@
     ".astro/types.d.ts",
     "src/**/*.astro",
     "src/**/*.ts",
-    "src/**/*.d.ts",
-    "../lingui-for-shared/src/compiler/paths.test.ts"
   ]
 }
