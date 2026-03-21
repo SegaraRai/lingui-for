@@ -20,6 +20,8 @@ If you believe a test case is correct, don’t modify it; instead, **mark it as 
   - Always run `vp run format` from the workspace root. You don't need to worry about formatting individual packages; this command is fast enough.
 - `vp run check`: run type checks and other static checks
 
+TIP: Run `vp run format` → `vp run check` → `vp run test` sequentially to ensure a smooth development workflow.
+
 ## Common Pitfalls
 
 - `vp fmt` does not support `.astro` and `.svelte` files. Use `vp run format` from workspace root instead, which runs both Prettier and `vp fmt` under the hood.
