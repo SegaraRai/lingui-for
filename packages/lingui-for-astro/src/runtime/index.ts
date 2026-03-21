@@ -1,5 +1,5 @@
 import RuntimeTransComponent from "./components/RuntimeTrans.astro";
-import type { TransComponentMap } from "./components/rich-text.ts";
+import type { TransComponentMap } from "./components/types.ts";
 
 export type {
   I18n,
@@ -13,7 +13,7 @@ export type {
   TransComponentDescriptor,
   TransComponentMap,
   TransRenderNode,
-} from "./components/rich-text.ts";
+} from "./components/types.ts";
 export {
   getLinguiContext,
   LINGUI_ASTRO_CONTEXT,
