@@ -9,5 +9,5 @@
     "lib": ["Es2024"],
     "types": ["node"]
   },
-  "include": ["tests/**/*.ts", "vitest.config.ts"]
+  "include": ["tests/**/*.ts"]
 }
