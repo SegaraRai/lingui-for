@@ -22,6 +22,7 @@ const { control } = Astro.props as Props;
       <input
         data-control-id={control.id}
         data-control-type="text"
+        name={control.id}
         value={control.initial}
         placeholder={control.placeholder ? t(control.placeholder) : undefined}
         class:list={[
@@ -38,6 +39,7 @@ const { control } = Astro.props as Props;
         data-control-id={control.id}
         data-control-type="number"
         type="number"
+        name={control.id}
         value={String(control.initial)}
         min={control.min}
         max={control.max}
@@ -46,10 +48,11 @@ const { control } = Astro.props as Props;
       />
     ) : control.type === "boolean" ? (
       <button
-        type="button"
         aria-pressed={control.initial ? "true" : "false"}
         data-control-id={control.id}
         data-control-type="boolean"
+        type="button"
+        name={control.id}
         class="rounded-lg border border-(--demo-control-field-border) px-3 py-1.5 text-sm transition-colors aria-pressed:bg-(--demo-control-field-active-background) aria-pressed:text-(--demo-control-field-active-text) aria-[pressed=false]:text-(--demo-control-field-text)"
       >
         {control.initial ? "On" : "Off"}
@@ -58,6 +61,7 @@ const { control } = Astro.props as Props;
       <select
         data-control-id={control.id}
         data-control-type="select"
+        name={control.id}
         value={control.initial}
         class="h-9 rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) px-3 text-sm text-(--demo-control-field-text)"
       >
