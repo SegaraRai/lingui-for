@@ -69,4 +69,34 @@ describe("createAstroExtractionUnits", () => {
     expect(units[0]?.code).toContain("plural");
     expect(units[0]?.code).not.toContain("const __expr = (");
   });
+
+  it("does not emit nested component extraction units inside Trans", () => {
+    const source = dedent`
+      ---
+      import { Plural, Trans } from "lingui-for-astro/macro";
+      const count = 0;
+      ---
+
+      <Trans>
+        You have{" "}
+        <strong>
+          <Plural
+            value={count}
+            _0="no unread messages"
+            one="# unread message"
+            other="# unread messages"
+          />
+        </strong>.
+      </Trans>
+    `;
+
+    const units = createAstroExtractionUnits(source, {
+      filename: "/virtual/trans-with-plural.astro",
+    });
+
+    expect(units).toHaveLength(1);
+    expect(units[0]?.code).toContain(
+      'message: "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>."',
+    );
+  });
 });

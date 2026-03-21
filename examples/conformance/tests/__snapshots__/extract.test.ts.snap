@@ -8,7 +8,7 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "id": "/txFeF",
     "message": "Before {value} After",
     "origin": [
-      "Conformance.astro?extract-component",
+      "component-whitespacing.astro",
       3,
       0,
     ],
@@ -22,7 +22,7 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "id": "DFZbAv",
     "message": "Before{value}After",
     "origin": [
-      "Conformance.astro?extract-component",
+      "component-whitespacing.astro",
       3,
       0,
     ],
@@ -36,7 +36,7 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "id": "/txFeF",
     "message": "Before {value} After",
     "origin": [
-      "Conformance.astro?extract-component",
+      "component-whitespacing.astro",
       3,
       0,
     ],
@@ -50,7 +50,7 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "id": "INRnBm",
     "message": " Before  {value}  After ",
     "origin": [
-      "Conformance.astro?extract-component",
+      "component-whitespacing.astro",
       3,
       0,
     ],
@@ -69,7 +69,7 @@ exports[`'component-whitespacing' > official react extraction 1`] = `
     "id": "/txFeF",
     "message": "Before {value} After",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/component-whitespacing.reference.tsx",
       6,
       4,
     ],
@@ -83,7 +83,7 @@ exports[`'component-whitespacing' > official react extraction 1`] = `
     "id": "DFZbAv",
     "message": "Before{value}After",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/component-whitespacing.reference.tsx",
       15,
       4,
     ],
@@ -97,7 +97,7 @@ exports[`'component-whitespacing' > official react extraction 1`] = `
     "id": "/txFeF",
     "message": "Before {value} After",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/component-whitespacing.reference.tsx",
       24,
       4,
     ],
@@ -111,7 +111,7 @@ exports[`'component-whitespacing' > official react extraction 1`] = `
     "id": "INRnBm",
     "message": " Before  {value}  After ",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/component-whitespacing.reference.tsx",
       33,
       4,
     ],
@@ -130,7 +130,7 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
     "id": "/txFeF",
     "message": "Before {value} After",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/component-whitespacing.svelte",
       5,
       0,
     ],
@@ -144,7 +144,7 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
     "id": "DFZbAv",
     "message": "Before{value}After",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/component-whitespacing.svelte",
       10,
       0,
     ],
@@ -158,7 +158,7 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
     "id": "/txFeF",
     "message": "Before {value} After",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/component-whitespacing.svelte",
       15,
       0,
     ],
@@ -172,7 +172,7 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
     "id": "INRnBm",
     "message": " Before  {value}  After ",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/component-whitespacing.svelte",
       18,
       0,
     ],
@@ -191,7 +191,7 @@ exports[`'deep-rich-text-trans' > astro extraction 1`] = `
     "id": "zt7J+8",
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
-      "Conformance.astro?extract-component",
+      "deep-rich-text-trans.astro",
       3,
       0,
     ],
@@ -212,7 +212,7 @@ exports[`'deep-rich-text-trans' > official react extraction 1`] = `
     "id": "zt7J+8",
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/deep-rich-text-trans.reference.tsx",
       13,
       2,
     ],
@@ -233,7 +233,7 @@ exports[`'deep-rich-text-trans' > svelte extraction 1`] = `
     "id": "zt7J+8",
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/deep-rich-text-trans.svelte",
       9,
       0,
     ],
@@ -254,7 +254,7 @@ exports[`'exact-number-component' > astro extraction 1`] = `
     "id": "a+Xhin",
     "message": "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "exact-number-component.astro",
       4,
       0,
     ],
@@ -268,7 +268,7 @@ exports[`'exact-number-component' > astro extraction 1`] = `
     "id": "gM41pk",
     "message": "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "exact-number-component.astro",
       4,
       0,
     ],
@@ -287,7 +287,7 @@ exports[`'exact-number-component' > official react extraction 1`] = `
     "id": "a+Xhin",
     "message": "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/exact-number-component.reference.tsx",
       12,
       4,
     ],
@@ -301,7 +301,7 @@ exports[`'exact-number-component' > official react extraction 1`] = `
     "id": "gM41pk",
     "message": "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/exact-number-component.reference.tsx",
       21,
       4,
     ],
@@ -320,7 +320,7 @@ exports[`'exact-number-component' > svelte extraction 1`] = `
     "id": "a+Xhin",
     "message": "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/exact-number-component.svelte",
       8,
       0,
     ],
@@ -334,7 +334,7 @@ exports[`'exact-number-component' > svelte extraction 1`] = `
     "id": "gM41pk",
     "message": "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/exact-number-component.svelte",
       14,
       0,
     ],
@@ -353,7 +353,7 @@ exports[`'nested-icu-core' > astro extraction 1`] = `
     "id": "K9g4/G",
     "message": "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     "origin": [
-      "Conformance.astro?frontmatter",
+      "nested-icu-core.astro",
       7,
       19,
     ],
@@ -374,7 +374,7 @@ exports[`'nested-icu-core' > official core extraction 1`] = `
     "id": "K9g4/G",
     "message": "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/nested-icu-core.reference.ts",
       4,
       0,
     ],
@@ -395,7 +395,7 @@ exports[`'nested-icu-core' > svelte extraction 1`] = `
     "id": "K9g4/G",
     "message": "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/nested-icu-core.svelte",
       8,
       0,
     ],
@@ -416,7 +416,7 @@ exports[`'rich-text-trans' > astro extraction 1`] = `
     "id": "9/omjw",
     "message": "Hello <0>{name}</0>.",
     "origin": [
-      "Conformance.astro?extract-component",
+      "rich-text-trans.astro",
       3,
       0,
     ],
@@ -435,7 +435,7 @@ exports[`'rich-text-trans' > official react extraction 1`] = `
     "id": "9/omjw",
     "message": "Hello <0>{name}</0>.",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/rich-text-trans.reference.tsx",
       9,
       2,
     ],
@@ -454,7 +454,7 @@ exports[`'rich-text-trans' > svelte extraction 1`] = `
     "id": "9/omjw",
     "message": "Hello <0>{name}</0>.",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/rich-text-trans.svelte",
       7,
       0,
     ],
@@ -470,55 +470,10 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "Ro3jDG",
-    "message": "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
-    "origin": [
-      "Conformance.astro?extract-expression",
-      6,
-      0,
-    ],
-    "placeholders": {
-      "rank": "rank",
-      "role": "role",
-    },
-  },
-  {
-    "comment": undefined,
-    "context": undefined,
-    "id": "/uwo4+",
-    "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
-    "origin": [
-      "Conformance.astro?extract-expression",
-      6,
-      0,
-    ],
-    "placeholders": {
-      "rank": "rank",
-      "role": "role",
-    },
-  },
-  {
-    "comment": undefined,
-    "context": undefined,
-    "id": "OsAInm",
-    "message": "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
-    "origin": [
-      "Conformance.astro?extract-expression",
-      6,
-      0,
-    ],
-    "placeholders": {
-      "rank": "rank",
-      "role": "role",
-    },
-  },
-  {
-    "comment": undefined,
-    "context": undefined,
     "id": "Y5Pnrw",
     "message": "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
     "origin": [
-      "Conformance.astro?extract-component",
+      "trans-with-deeply-nested-component-icu.astro",
       6,
       0,
     ],
@@ -562,7 +517,7 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
     "id": "Ro3jDG",
     "message": "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "trans-with-deeply-nested-component-icu.astro",
       11,
       10,
     ],
@@ -577,7 +532,7 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
     "id": "/uwo4+",
     "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "trans-with-deeply-nested-component-icu.astro",
       25,
       10,
     ],
@@ -592,97 +547,8 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
     "id": "OsAInm",
     "message": "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "trans-with-deeply-nested-component-icu.astro",
       39,
-      13,
-    ],
-    "placeholders": {
-      "rank": "rank",
-      "role": "role",
-    },
-  },
-  {
-    "comment": undefined,
-    "context": undefined,
-    "id": "urSMCa",
-    "message": "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}",
-    "origin": [
-      "Conformance.astro?extract-component",
-      6,
-      0,
-    ],
-    "placeholders": {
-      "0": "_i18n._(
-    /*i18n*/
-    {
-      id: "Ro3jDG",
-      message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
-      values: {
-        rank: rank,
-        role: role
-      }
-    })",
-      "1": "_i18n._(
-    /*i18n*/
-    {
-      id: "/uwo4+",
-      message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
-      values: {
-        rank: rank,
-        role: role
-      }
-    })",
-      "2": "_i18n._(
-    /*i18n*/
-    {
-      id: "OsAInm",
-      message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
-      values: {
-        rank: rank,
-        role: role
-      }
-    })",
-      "count": "count",
-    },
-  },
-  {
-    "comment": undefined,
-    "context": undefined,
-    "id": "Ro3jDG",
-    "message": "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
-    "origin": [
-      "Conformance.astro?extract-component",
-      8,
-      10,
-    ],
-    "placeholders": {
-      "rank": "rank",
-      "role": "role",
-    },
-  },
-  {
-    "comment": undefined,
-    "context": undefined,
-    "id": "/uwo4+",
-    "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
-    "origin": [
-      "Conformance.astro?extract-component",
-      22,
-      10,
-    ],
-    "placeholders": {
-      "rank": "rank",
-      "role": "role",
-    },
-  },
-  {
-    "comment": undefined,
-    "context": undefined,
-    "id": "OsAInm",
-    "message": "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
-    "origin": [
-      "Conformance.astro?extract-component",
-      36,
       13,
     ],
     "placeholders": {
@@ -701,7 +567,7 @@ exports[`'trans-with-deeply-nested-component-icu' > official react extraction 1`
     "id": "Y5Pnrw",
     "message": "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/trans-with-deeply-nested-component-icu.reference.tsx",
       14,
       2,
     ],
@@ -745,7 +611,7 @@ exports[`'trans-with-deeply-nested-component-icu' > official react extraction 1`
     "id": "Ro3jDG",
     "message": "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/trans-with-deeply-nested-component-icu.reference.tsx",
       20,
       6,
     ],
@@ -760,7 +626,7 @@ exports[`'trans-with-deeply-nested-component-icu' > official react extraction 1`
     "id": "/uwo4+",
     "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/trans-with-deeply-nested-component-icu.reference.tsx",
       30,
       6,
     ],
@@ -775,7 +641,7 @@ exports[`'trans-with-deeply-nested-component-icu' > official react extraction 1`
     "id": "OsAInm",
     "message": "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/trans-with-deeply-nested-component-icu.reference.tsx",
       40,
       6,
     ],
@@ -795,7 +661,7 @@ exports[`'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
     "id": "Y5Pnrw",
     "message": "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/trans-with-deeply-nested-component-icu.svelte",
       14,
       0,
     ],
@@ -839,7 +705,7 @@ exports[`'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
     "id": "Ro3jDG",
     "message": "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/trans-with-deeply-nested-component-icu.svelte",
       19,
       0,
     ],
@@ -854,7 +720,7 @@ exports[`'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
     "id": "/uwo4+",
     "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/trans-with-deeply-nested-component-icu.svelte",
       33,
       0,
     ],
@@ -869,7 +735,7 @@ exports[`'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
     "id": "OsAInm",
     "message": "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/trans-with-deeply-nested-component-icu.svelte",
       47,
       0,
     ],
@@ -889,21 +755,7 @@ exports[`'trans-with-plural' > astro extraction 1`] = `
     "id": "BWlbIC",
     "message": "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
     "origin": [
-      "Conformance.astro?extract-component",
-      4,
-      0,
-    ],
-    "placeholders": {
-      "count": "count",
-    },
-  },
-  {
-    "comment": undefined,
-    "context": undefined,
-    "id": "42f5OD",
-    "message": "{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}",
-    "origin": [
-      "Conformance.astro?extract-component",
+      "trans-with-plural.astro",
       4,
       0,
     ],
@@ -922,7 +774,7 @@ exports[`'trans-with-plural' > official react extraction 1`] = `
     "id": "BWlbIC",
     "message": "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/trans-with-plural.reference.tsx",
       9,
       2,
     ],
@@ -941,7 +793,7 @@ exports[`'trans-with-plural' > svelte extraction 1`] = `
     "id": "BWlbIC",
     "message": "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/trans-with-plural.svelte",
       7,
       0,
     ],
@@ -960,7 +812,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -974,7 +826,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -988,7 +840,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "with-interpolation-with-id",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -1002,7 +854,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "bVvypv",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -1016,7 +868,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -1030,7 +882,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -1042,7 +894,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -1054,7 +906,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "no-interpolation-with-id",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -1066,7 +918,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "SSpjjA",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -1078,7 +930,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-component",
+      "with-id-context-comment-component.astro",
       3,
       0,
     ],
@@ -1095,7 +947,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/with-id-context-comment-component.reference.tsx",
       7,
       4,
     ],
@@ -1109,7 +961,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
     "id": "with-interpolation-with-id",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/with-id-context-comment-component.reference.tsx",
       16,
       4,
     ],
@@ -1123,7 +975,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
     "id": "bVvypv",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/with-id-context-comment-component.reference.tsx",
       25,
       4,
     ],
@@ -1137,7 +989,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/with-id-context-comment-component.reference.tsx",
       35,
       4,
     ],
@@ -1151,7 +1003,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/with-id-context-comment-component.reference.tsx",
       46,
       4,
     ],
@@ -1163,7 +1015,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
     "id": "no-interpolation-with-id",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/with-id-context-comment-component.reference.tsx",
       52,
       4,
     ],
@@ -1175,7 +1027,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
     "id": "SSpjjA",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/with-id-context-comment-component.reference.tsx",
       58,
       4,
     ],
@@ -1187,7 +1039,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.tsx",
+      "/virtual/with-id-context-comment-component.reference.tsx",
       65,
       4,
     ],
@@ -1204,7 +1056,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       7,
       0,
     ],
@@ -1218,7 +1070,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       8,
       0,
     ],
@@ -1232,7 +1084,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "with-interpolation-with-id",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       9,
       0,
     ],
@@ -1246,7 +1098,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "bVvypv",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       10,
       0,
     ],
@@ -1260,7 +1112,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       11,
       0,
     ],
@@ -1274,7 +1126,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       13,
       0,
     ],
@@ -1286,7 +1138,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       14,
       0,
     ],
@@ -1298,7 +1150,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "no-interpolation-with-id",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       15,
       0,
     ],
@@ -1310,7 +1162,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "SSpjjA",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       16,
       0,
     ],
@@ -1322,7 +1174,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-component.svelte",
       17,
       0,
     ],
@@ -1339,7 +1191,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       0,
     ],
@@ -1353,7 +1205,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       2,
     ],
@@ -1367,7 +1219,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "with-interpolation-with-id",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       2,
     ],
@@ -1381,7 +1233,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "bVvypv",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       2,
     ],
@@ -1395,7 +1247,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       2,
     ],
@@ -1409,7 +1261,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       0,
     ],
@@ -1421,7 +1273,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       2,
     ],
@@ -1433,7 +1285,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "no-interpolation-with-id",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       2,
     ],
@@ -1445,7 +1297,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "SSpjjA",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       2,
     ],
@@ -1457,7 +1309,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "Conformance.astro?extract-expression",
+      "with-id-context-comment-core.astro",
       3,
       2,
     ],
@@ -1474,7 +1326,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       5,
       0,
     ],
@@ -1488,7 +1340,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       14,
       0,
     ],
@@ -1502,7 +1354,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "with-interpolation-with-id",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       23,
       0,
     ],
@@ -1516,7 +1368,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "bVvypv",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       32,
       0,
     ],
@@ -1530,7 +1382,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       42,
       0,
     ],
@@ -1544,7 +1396,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       52,
       0,
     ],
@@ -1556,7 +1408,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       58,
       0,
     ],
@@ -1568,7 +1420,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "no-interpolation-with-id",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       64,
       0,
     ],
@@ -1580,7 +1432,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "SSpjjA",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       70,
       0,
     ],
@@ -1592,7 +1444,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/conformance-reference.ts",
+      "/virtual/with-id-context-comment-core.reference.ts",
       77,
       0,
     ],
@@ -1609,7 +1461,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       7,
       13,
     ],
@@ -1623,7 +1475,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       8,
       13,
     ],
@@ -1637,7 +1489,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "with-interpolation-with-id",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       11,
       12,
     ],
@@ -1651,7 +1503,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "bVvypv",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       15,
       12,
     ],
@@ -1665,7 +1517,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       19,
       12,
     ],
@@ -1679,7 +1531,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       24,
       13,
     ],
@@ -1691,7 +1543,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       25,
       13,
     ],
@@ -1703,7 +1555,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "no-interpolation-with-id",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       28,
       12,
     ],
@@ -1715,7 +1567,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "SSpjjA",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       32,
       12,
     ],
@@ -1727,7 +1579,7 @@ exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "/virtual/Conformance.svelte",
+      "/virtual/with-id-context-comment-core.svelte",
       36,
       12,
     ],

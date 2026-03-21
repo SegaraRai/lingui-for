@@ -30,13 +30,15 @@ export function createAstroTransformContext(
   const analysis = analyzeAstro(source);
   const frontmatterContent = getFrontmatterContent(source, analysis);
   const macroBindings = parseMacroBindings(frontmatterContent);
+  const filteredComponents = filterComponentCandidates(
+    analysis.componentCandidates,
+    macroBindings.components,
+  );
   const filteredExpressions = filterExpressions(
     source,
     analysis.expressions,
     macroBindings,
-  );
-  const filteredComponents = analysis.componentCandidates.filter((candidate) =>
-    macroBindings.components.has(candidate.tagName),
+    filteredComponents,
   );
 
   return {
@@ -66,14 +68,45 @@ export function getFrontmatterContent(
   );
 }
 
+function filterComponentCandidates(
+  candidates: readonly AstroComponentCandidate[],
+  componentBindings: ReadonlySet<string>,
+): AstroComponentCandidate[] {
+  return candidates.filter((candidate) => {
+    if (!componentBindings.has(candidate.tagName)) {
+      return false;
+    }
+
+    return !candidates.some((other) => {
+      return (
+        other !== candidate &&
+        componentBindings.has(other.tagName) &&
+        other.range.start <= candidate.range.start &&
+        other.range.end >= candidate.range.end
+      );
+    });
+  });
+}
+
 function filterExpressions(
   source: string,
   expressions: AstroExpression[],
   macroBindings: MacroBindings,
+  filteredComponents: readonly AstroComponentCandidate[],
 ): AstroExpression[] {
   const results: AstroExpression[] = [];
 
   for (const expression of expressions) {
+    if (
+      filteredComponents.some(
+        (candidate) =>
+          candidate.range.start <= expression.range.start &&
+          candidate.range.end >= expression.range.end,
+      )
+    ) {
+      continue;
+    }
+
     const expressionSource = source.slice(
       expression.innerRange.start,
       expression.innerRange.end,

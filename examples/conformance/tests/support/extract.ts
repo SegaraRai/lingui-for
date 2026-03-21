@@ -103,6 +103,7 @@ function compareMessages(
 
 async function collectOfficialExtractedMessages(
   reference: FixtureReference,
+  fixtureName: string,
 ): Promise<ExtractedMessage[]> {
   const transformed =
     reference.kind === "core"
@@ -112,8 +113,8 @@ async function collectOfficialExtractedMessages(
 
   const origin =
     reference.kind === "core"
-      ? "/virtual/conformance-reference.ts"
-      : "/virtual/conformance-reference.tsx";
+      ? `/virtual/${fixtureName}.reference.ts`
+      : `/virtual/${fixtureName}.reference.tsx`;
 
   await extractFromFileWithBabel(
     origin,
@@ -150,17 +151,19 @@ function normalizeOfficialMessageOrigin(
 export async function extractOfficialReference(
   source: string,
   kind: FixtureReference["kind"],
+  fixtureName = "reference",
 ): Promise<ExtractedMessage[]> {
-  return await collectOfficialExtractedMessages({ kind, source });
+  return await collectOfficialExtractedMessages({ kind, source }, fixtureName);
 }
 
 export async function extractSvelteFixture(
   source: string,
+  fixtureName = "conformance",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
 
   await svelteExtractor.extract(
-    "/virtual/Conformance.svelte",
+    `/virtual/${fixtureName}.svelte`,
     source,
     (message) => {
       messages.push(message);
@@ -173,11 +176,12 @@ export async function extractSvelteFixture(
 
 export async function extractAstroFixture(
   source: string,
+  fixtureName = "conformance",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
 
   await astroExtractor.extract(
-    "/virtual/Conformance.astro",
+    `/virtual/${fixtureName}.astro`,
     source,
     (message) => {
       messages.push(message);

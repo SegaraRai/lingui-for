@@ -8,16 +8,21 @@ import {
   normalizeExtractedMessages,
 } from "./support/extract.ts";
 
-const knownReferenceMismatches = new Set([
-  "astro:trans-with-plural",
-  "astro:trans-with-deeply-nested-component-icu",
-]);
+const knownReferenceMismatches = new Set<string>();
 
 describe.for(conformanceFixtures)("$name", (fixture) => {
   const extractReference = async () =>
     fixture.officialCore
-      ? await extractOfficialReference(fixture.officialCore, "core")
-      : await extractOfficialReference(fixture.officialReact!, "react");
+      ? await extractOfficialReference(
+          fixture.officialCore,
+          "core",
+          fixture.name,
+        )
+      : await extractOfficialReference(
+          fixture.officialReact!,
+          "react",
+          fixture.name,
+        );
 
   test("official core extraction", async () => {
     if (!fixture.officialCore) {
@@ -25,7 +30,11 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
     }
 
     expect(
-      await extractOfficialReference(fixture.officialCore, "core"),
+      await extractOfficialReference(
+        fixture.officialCore,
+        "core",
+        fixture.name,
+      ),
     ).toMatchSnapshot();
   });
 
@@ -35,7 +44,11 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
     }
 
     expect(
-      await extractOfficialReference(fixture.officialReact, "react"),
+      await extractOfficialReference(
+        fixture.officialReact,
+        "react",
+        fixture.name,
+      ),
     ).toMatchSnapshot();
   });
 
@@ -44,7 +57,7 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
       return;
     }
 
-    const extracted = await extractSvelteFixture(fixture.svelte);
+    const extracted = await extractSvelteFixture(fixture.svelte, fixture.name);
     expect(extracted).toMatchSnapshot();
 
     const normalized = normalizeExtractedMessages(extracted);
@@ -61,7 +74,7 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
       return;
     }
 
-    const extracted = await extractAstroFixture(fixture.astro);
+    const extracted = await extractAstroFixture(fixture.astro, fixture.name);
     expect(extracted).toMatchSnapshot();
 
     const normalized = normalizeExtractedMessages(extracted);

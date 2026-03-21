@@ -1,6 +1,7 @@
 import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+import { stripQuery } from "lingui-for-shared/compiler";
 
 import {
   createAstroExtractionUnits,
@@ -35,6 +36,20 @@ function getParserPlugins(
   ];
 }
 
+function normalizeExtractionSourceMap(
+  map: ExtractorCtx["sourceMaps"],
+): ExtractorCtx["sourceMaps"] {
+  if (!map) {
+    return map;
+  }
+
+  return {
+    ...map,
+    file: map.file ? stripQuery(map.file) : map.file,
+    sources: map.sources.map(stripQuery),
+  };
+}
+
 /**
  * Lingui extractor for `.astro` source files.
  *
@@ -61,7 +76,7 @@ export const astroExtractor: ExtractorType = {
         unit.map
           ? {
               ...extractorCtx,
-              sourceMaps: unit.map,
+              sourceMaps: normalizeExtractionSourceMap(unit.map),
             }
           : extractorCtx,
         {
