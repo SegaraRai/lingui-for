@@ -1,10 +1,9 @@
-import { resolve } from "node:path";
-import { pathToFileURL } from "node:url";
-
 import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
-const workspaceRoot = resolve(import.meta.dirname, "..", "..", "..", "..");
+import { unpluginFactory as astroUnpluginFactory } from "lingui-for-astro/unplugin";
+import { unpluginFactory as svelteUnpluginFactory } from "lingui-for-svelte/unplugin";
+
 const linguiConfig = {
   macro: {
     corePackage: ["@lingui/core/macro", "@lingui/macro"],
@@ -36,63 +35,27 @@ function transformOfficial(code: string, filename: string): string {
   return result.code;
 }
 
-type TransformHook = (code: string, id: string) => unknown;
-
 type TransformResult = {
   code: string;
 };
 
-type DistTransformModule = {
-  unpluginFactory?: (options?: unknown) => {
-    transform?: TransformHook | { handler?: TransformHook };
-  };
-  n?: (options?: unknown) => {
-    transform?: TransformHook | { handler?: TransformHook };
-  };
-};
-
-let astroTransformModulePromise: Promise<DistTransformModule> | undefined;
-let svelteTransformModulePromise: Promise<DistTransformModule> | undefined;
-
-async function loadDistTransformModule(
-  packageName: "lingui-for-astro" | "lingui-for-svelte",
-): Promise<DistTransformModule> {
-  return (await import(
-    pathToFileURL(
-      resolve(
-        workspaceRoot,
-        "packages",
-        packageName,
-        "dist",
-        "unplugin",
-        "index.mjs",
-      ),
-    ).href
-  )) as DistTransformModule;
-}
-
-async function getAstroTransformModule(): Promise<DistTransformModule> {
-  astroTransformModulePromise ??= loadDistTransformModule("lingui-for-astro");
-  return await astroTransformModulePromise;
-}
-
-async function getSvelteTransformModule(): Promise<DistTransformModule> {
-  svelteTransformModulePromise ??= loadDistTransformModule("lingui-for-svelte");
-  return await svelteTransformModulePromise;
-}
+type TestTransformFactory = (options?: unknown) =>
+  | {
+      transform?: (code: string, id: string) => unknown;
+    }
+  | {
+      transform?: {
+        handler?: (code: string, id: string) => unknown;
+      };
+    };
 
 async function runPluginTransform(
-  module: DistTransformModule,
+  factory: TestTransformFactory,
+  options: unknown,
   code: string,
   id: string,
 ): Promise<string> {
-  const factory = module.unpluginFactory ?? module.n;
-
-  if (!factory) {
-    throw new Error(`Transform factory was not found for ${id}.`);
-  }
-
-  const plugin = factory(undefined);
+  const plugin = factory(options as never);
   const transform =
     typeof plugin.transform === "function"
       ? plugin.transform
@@ -113,6 +76,14 @@ async function runPluginTransform(
   return result.code;
 }
 
+async function runFixtureTransform(
+  factory: TestTransformFactory,
+  code: string,
+  id: string,
+): Promise<string> {
+  return await runPluginTransform(factory, undefined, code, id);
+}
+
 export function transformOfficialCore(code: string): string {
   return transformOfficial(code, "/virtual/conformance-core.ts");
 }
@@ -122,16 +93,16 @@ export function transformOfficialReact(code: string): string {
 }
 
 export async function transformSvelteFixture(source: string): Promise<string> {
-  return await runPluginTransform(
-    await getSvelteTransformModule(),
+  return await runFixtureTransform(
+    svelteUnpluginFactory as unknown as TestTransformFactory,
     source,
     "/virtual/Conformance.svelte",
   );
 }
 
 export async function transformAstroFixture(source: string): Promise<string> {
-  return await runPluginTransform(
-    await getAstroTransformModule(),
+  return await runFixtureTransform(
+    astroUnpluginFactory as unknown as TestTransformFactory,
     source,
     "/virtual/Conformance.astro",
   );

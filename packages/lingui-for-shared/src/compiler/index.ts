@@ -7,3 +7,4 @@ export * from "./macro-bindings.ts";
 export * from "./paths.ts";
 export * from "./replacement-map.ts";
 export * from "./runtime-trans-lowering.ts";
+export * from "./source-map.ts";

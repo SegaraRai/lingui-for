@@ -106,6 +106,7 @@ export function transformProgram(
     code: true,
     configFile: false,
     filename: request.filename,
+    sourceFileName: request.filename,
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(),

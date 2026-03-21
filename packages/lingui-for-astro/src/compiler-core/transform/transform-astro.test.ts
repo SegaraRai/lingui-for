@@ -26,6 +26,9 @@ describe("transformAstro", () => {
     });
     const code = compact(result.code);
 
+    expect(result.code).toContain(
+      '---\nimport { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";',
+    );
     expect(code).toContain(
       'import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";',
     );

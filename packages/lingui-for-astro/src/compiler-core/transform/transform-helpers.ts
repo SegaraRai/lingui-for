@@ -6,6 +6,9 @@ import type { RawSourceMap } from "source-map";
 
 import {
   buildOutputWithIndexedMap,
+  buildDirectProgramMap,
+  buildGeneratedSnippetMap,
+  buildPrefixedSnippetMap,
   stripQuery,
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
@@ -27,11 +30,6 @@ import {
   lowerSyntheticComponentDeclaration,
   stripRuntimeTransImports,
 } from "./runtime-trans-lowering.ts";
-import {
-  buildDirectProgramMap,
-  buildPrefixedSnippetMap,
-  buildGeneratedSnippetMap,
-} from "./source-map.ts";
 
 const EXPR_PREFIX = "const __expr = (\n";
 const WRAPPED_SUFFIX = "\n);";

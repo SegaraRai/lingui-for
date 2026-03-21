@@ -1,5 +1,5 @@
-import { SourceMapGenerator, type RawSourceMap } from "source-map";
 import MagicString from "magic-string";
+import { SourceMapGenerator, type RawSourceMap } from "source-map";
 
 type SourcePosition = {
   line: number;
@@ -45,12 +45,16 @@ export function buildDirectProgramMap(
     originalStart + originalLength,
   );
 
-  return string.generateMap({
-    file: filename,
-    hires: true,
-    includeContent: true,
-    source: filename,
-  }) as never as RawSourceMap;
+  return normalizeMagicStringMapFilename(
+    string.generateMap({
+      file: filename,
+      hires: true,
+      includeContent: true,
+      source: filename,
+    }) as never as RawSourceMap,
+    filename,
+    string.toString(),
+  );
 }
 
 export function buildPrefixedSnippetMap(
@@ -60,14 +64,20 @@ export function buildPrefixedSnippetMap(
   prefix: string,
   originalLength: number,
 ): RawSourceMap {
-  const snippetMap = buildDirectProgramMap(
-    source,
-    filename,
-    originalStart,
-    originalLength,
-  );
+  const string = new MagicString(source, { filename })
+    .snip(originalStart, originalStart + originalLength)
+    .prepend(prefix);
 
-  return offsetSourceMap(snippetMap, filename, prefix);
+  return normalizeMagicStringMapFilename(
+    string.generateMap({
+      file: filename,
+      hires: true,
+      includeContent: true,
+      source: filename,
+    }) as never as RawSourceMap,
+    filename,
+    string.toString(),
+  );
 }
 
 export function buildGeneratedSnippetMap(
@@ -79,10 +89,9 @@ export function buildGeneratedSnippetMap(
 ): RawSourceMap {
   const generator = new SourceMapGenerator({ file: filename });
   const toPosition = createOffsetToPosition(source);
-  const generatedEnd = createOffsetToPosition(generated)(generated.length);
-  const generatedLast = createOffsetToPosition(generated)(
-    Math.max(generated.length - 1, 0),
-  );
+  const generatedToPosition = createOffsetToPosition(generated);
+  const generatedEnd = generatedToPosition(generated.length);
+  const generatedLast = generatedToPosition(Math.max(generated.length - 1, 0));
 
   generator.addMapping({
     generated: { line: 1, column: 0 },
@@ -141,4 +150,17 @@ export function offsetSourceMap(
       },
     ],
   } as RawSourceMap;
+}
+
+function normalizeMagicStringMapFilename(
+  map: RawSourceMap,
+  filename: string,
+  sourceContent: string,
+): RawSourceMap {
+  return {
+    ...map,
+    file: filename,
+    sources: [filename],
+    sourcesContent: [sourceContent],
+  };
 }
