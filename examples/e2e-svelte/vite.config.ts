@@ -18,16 +18,21 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp build",
-        dependsOn: ["i18n:build", "sveltekit:sync"],
+        dependsOn: [
+          "lingui-for-svelte#build",
+          "unplugin-lingui-macro#build",
+          "i18n:build",
+          "sveltekit:sync",
+        ],
       },
       check: {
         command: "vp check && vp run check:extra",
-        dependsOn: ["i18n:build", "sveltekit:sync"],
+        dependsOn: ["build"],
         cache: false,
       },
       "check:extra": {
         command: "svelte-check",
-        dependsOn: ["i18n:build", "sveltekit:sync"],
+        dependsOn: ["build"],
         cache: false,
       },
       "sveltekit:sync": {

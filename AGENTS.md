@@ -22,7 +22,7 @@ If you believe a test case is correct, don’t modify it; instead, **mark it as 
 
 ## Common Pitfalls
 
-- `vp fmt` does not support `.astro` and `.svelte` files. Use `vp run format` instead, which runs both Prettier and `vp fmt` under the hood.
+- `vp fmt` does not support `.astro` and `.svelte` files. Use `vp run format` from workspace root instead, which runs both Prettier and `vp fmt` under the hood.
 - Always use `vp run build`, `vp run test`, `vp run check` instead of `vp *`. This ensures that all pre-requisite steps are run before the command, such as building packages before testing.
 - Do not run `vp run check`, `vp run test`, or `vp run build` concurrently. Run sequentially to avoid conflicts in build artifacts. Build is cached so it’s not a problem to run them one after another.
 - DO NOT use `vp pack` or `vp build`. Use `vp run build` from the workspace root.

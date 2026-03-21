@@ -5,17 +5,22 @@ export default defineConfig({
     tasks: {
       build: {
         command: "astro build",
-        dependsOn: ["i18n:build"],
+        dependsOn: [
+          "lingui-for-astro#build",
+          "lingui-for-svelte#build",
+          "unplugin-lingui-macro#build",
+          "i18n:build",
+        ],
         input: [{ auto: true }, "!**/.vite/deps/_metadata.json"],
       },
       check: {
         command: "vp check && vp run check:extra",
-        dependsOn: ["i18n:build"],
+        dependsOn: ["build"],
         cache: false,
       },
       "check:extra": {
         command: "astro check",
-        dependsOn: ["i18n:build"],
+        dependsOn: ["build"],
         cache: false,
       },
       "i18n:build": {

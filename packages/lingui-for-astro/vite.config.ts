@@ -36,6 +36,11 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
+        dependsOn: [
+          "lingui-for-workspace#build:wasm",
+          "lingui-for-shared#build",
+          "unplugin-markup-import#build",
+        ],
       },
       check: {
         command: "vp check && vp run check:extra",
