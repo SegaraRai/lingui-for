@@ -1,0 +1,24 @@
+export { transformProgram } from "./babel-transform.ts";
+export {
+  createMacroPostprocessPlugin,
+  createMacroPreprocessPlugin,
+} from "./macro-rewrite.ts";
+export {
+  createCombinedProgramFromPlan,
+  createModuleProgramFromPlan,
+} from "./programs.ts";
+export { splitSyntheticDeclarations } from "./runtime-trans-lowering.ts";
+export {
+  addLineMappings,
+  buildDirectProgramMap,
+  composeSourceMaps,
+  createOffsetToPosition,
+} from "./source-map.ts";
+export { buildCombinedProgram } from "./synthetic-program.ts";
+export type {
+  MappedCodeFragment,
+  ProgramTransform,
+  ProgramTransformRequest,
+  RuntimeBindingsForTransform,
+  SourcePosition,
+} from "./types.ts";

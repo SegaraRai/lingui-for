@@ -1,8 +1,4 @@
-export { createExtractionUnits } from "./extract-units.ts";
+export { createExtractionUnits } from "../extract/index.ts";
 export { transformSvelte } from "./transform-svelte.ts";
-export type {
-  ExtractionUnit,
-  ProgramTransform,
-  ProgramTransformRequest,
-  SvelteTransformResult,
-} from "./types.ts";
+export type { ExtractionUnit } from "../extract/index.ts";
+export type { SvelteTransformResult } from "./types.ts";

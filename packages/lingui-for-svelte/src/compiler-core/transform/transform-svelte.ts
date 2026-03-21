@@ -6,8 +6,7 @@ import {
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
 
-import { analyzeSvelte } from "../analysis/svelte-analysis.ts";
-import { normalizeLinguiConfig } from "../shared/config.ts";
+import { createSveltePlan } from "../plan/index.ts";
 import {
   EXPORT_CREATE_LINGUI_ACCESSORS,
   PACKAGE_RUNTIME,
@@ -18,11 +17,13 @@ import {
 } from "../shared/constants.ts";
 import { createScriptFilename } from "../shared/paths.ts";
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
-import { transformProgram } from "./babel-transform.ts";
+import {
+  createCombinedProgramFromPlan,
+  createModuleProgramFromPlan,
+  splitSyntheticDeclarations,
+  transformProgram,
+} from "../lower/index.ts";
 import { createUniqueNameAllocator } from "./identifier-allocation.ts";
-import { splitSyntheticDeclarations } from "./runtime-trans-lowering.ts";
-import { buildDirectProgramMap } from "./source-map.ts";
-import { buildCombinedProgram } from "./synthetic-program.ts";
 import type { SvelteTransformResult } from "./types.ts";
 
 type RuntimeBindingsForInjection = {
@@ -44,34 +45,27 @@ export function transformSvelte(
   source: string,
   options: LinguiSvelteTransformOptions,
 ): SvelteTransformResult {
-  const analysis = analyzeSvelte(source, options.filename);
-  const linguiConfig = normalizeLinguiConfig(options.linguiConfig);
+  const plan = createSveltePlan(source, options);
+  const { analysis } = plan;
   const runtimeBindings = createRuntimeBindings(
-    options.filename,
+    plan.filename,
     analysis.instance?.content ?? "",
     analysis.instance?.lang ?? "ts",
   );
-  const filename = stripQuery(options.filename);
+  const filename = stripQuery(plan.filename);
   const mapFile = getSourceMapFileName(filename);
   const replacements: ReplacementChunk[] = [];
+  const moduleProgram = createModuleProgramFromPlan(plan);
+  const combinedProgram = createCombinedProgramFromPlan(plan);
 
-  if (analysis.module) {
-    const transformedModule = transformProgram(analysis.module.content, {
+  if (analysis.module && moduleProgram) {
+    const transformedModule = transformProgram(moduleProgram.code, {
       extract: false,
-      filename: createScriptFilename(
-        options.filename,
-        "module",
-        analysis.module.lang,
-      ),
-      lang: analysis.module.lang,
-      linguiConfig,
+      filename: moduleProgram.filename,
+      lang: moduleProgram.lang,
+      linguiConfig: plan.linguiConfig,
       translationMode: "raw",
-      inputSourceMap: buildDirectProgramMap(
-        source,
-        options.filename,
-        analysis.module.contentStart,
-        analysis.module.content,
-      ),
+      inputSourceMap: moduleProgram.inputSourceMap,
     });
 
     replacements.push({
@@ -82,30 +76,15 @@ export function transformSvelte(
     });
   }
 
-  if (
-    analysis.instance ||
-    analysis.expressions.length > 0 ||
-    analysis.components.length > 0
-  ) {
-    const combined = buildCombinedProgram(
-      source,
-      options.filename,
-      analysis.instance,
-      analysis.expressions,
-      analysis.components,
-    );
-    const transformedInstance = transformProgram(combined.code, {
+  if (combinedProgram) {
+    const transformedInstance = transformProgram(combinedProgram.code, {
       extract: false,
-      filename: createScriptFilename(
-        options.filename,
-        "instance",
-        analysis.instance?.lang ?? "ts",
-      ),
-      lang: analysis.instance?.lang ?? "ts",
-      linguiConfig,
+      filename: combinedProgram.filename,
+      lang: combinedProgram.lang,
+      linguiConfig: plan.linguiConfig,
       translationMode: "svelte-context",
       runtimeBindings,
-      inputSourceMap: combined.map,
+      inputSourceMap: combinedProgram.inputSourceMap,
     });
     const split = splitSyntheticDeclarations(
       transformedInstance,

@@ -1,6 +1,6 @@
 import type { RawSourceMap } from "source-map";
 
-export type SvelteTransformResult = {
+export type ExtractionUnit = {
   code: string;
-  map: RawSourceMap;
+  map: RawSourceMap | null;
 };
