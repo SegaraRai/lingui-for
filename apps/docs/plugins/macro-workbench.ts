@@ -10,8 +10,9 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
+import { transformSvelte } from "lingui-for-svelte/__internal__/transform";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
-import { transformSvelte } from "../../../packages/lingui-for-svelte/src/compiler-core/index.ts";
+
 import linguiConfig from "../lingui.config.ts";
 import {
   WORKBENCH_LOCALE_REGISTRY,

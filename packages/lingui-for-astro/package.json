@@ -47,6 +47,10 @@
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
     },
+    "./__internal__/transform": {
+      "types": "./dist/__internal__/transform.d.mts",
+      "default": "./dist/__internal__/transform.mjs"
+    },
     "./extractor": {
       "types": "./dist/extractor/index.d.mts",
       "default": "./dist/extractor/index.mjs"

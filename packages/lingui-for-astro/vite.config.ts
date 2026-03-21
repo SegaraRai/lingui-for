@@ -8,6 +8,7 @@ export default defineConfig({
     dts: true,
     entry: {
       index: "src/index.ts",
+      "__internal__/transform": "src/__internal__/transform.ts",
       "extractor/index": "src/extractor/index.ts",
       "macro/index": "src/macro/index.ts",
       "runtime/index": "src/runtime/index.ts",
