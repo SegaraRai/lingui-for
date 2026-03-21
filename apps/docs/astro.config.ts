@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 import starlight from "@astrojs/starlight";
@@ -13,6 +14,10 @@ import linguiMacro from "unplugin-lingui-macro/vite";
 import { macroWorkbenchPlugin } from "./plugins/macro-workbench.ts";
 
 const projectRoot = fileURLToPath(new URL("./", import.meta.url));
+const hashTabSyncScript = readFileSync(
+  new URL("./src/scripts/hash-tab-sync.js", import.meta.url),
+  "utf8",
+);
 
 export default defineConfig({
   output: "static",
@@ -25,6 +30,7 @@ export default defineConfig({
     linguiForAstro(),
     svelte(),
     starlight({
+      head: [{ tag: "script", content: hashTabSyncScript }],
       title: "lingui-for",
       description:
         "Macro-first, official-first Lingui support for frameworks and languages beyond the official integrations.",
