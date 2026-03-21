@@ -2,9 +2,6 @@
   "name": "e2e-svelte",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "vp dev"
-  },
   "dependencies": {
     "@lingui/core": "^5.9.3",
     "lingui-for-svelte": "workspace:*",

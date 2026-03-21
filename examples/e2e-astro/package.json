@@ -2,9 +2,6 @@
   "name": "e2e-astro",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "astro dev"
-  },
   "dependencies": {
     "@astrojs/node": "^10.0.3",
     "@astrojs/react": "^5.0.1",

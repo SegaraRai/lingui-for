@@ -13,6 +13,16 @@ export default defineConfig({
         ],
         input: [{ auto: true }, "!**/.vite/deps/_metadata.json"],
       },
+      dev: {
+        command: "astro dev",
+        dependsOn: [
+          "lingui-for-astro#build",
+          "lingui-for-svelte#build",
+          "unplugin-lingui-macro#build",
+          "i18n:build",
+        ],
+        cache: false,
+      },
       preview: {
         command: "astro preview",
         dependsOn: ["build"],

@@ -1,9 +1,6 @@
 {
   "name": "docs",
   "type": "module",
-  "scripts": {
-    "dev": "astro dev"
-  },
   "dependencies": {
     "@astrojs/starlight": "^0.38.1",
     "@astrojs/starlight-tailwind": "^5.0.0",

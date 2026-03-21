@@ -18,6 +18,16 @@ export default defineConfig({
           "sveltekit:sync",
         ],
       },
+      dev: {
+        command: "vp dev",
+        dependsOn: [
+          "lingui-for-svelte#build",
+          "unplugin-lingui-macro#build",
+          "i18n:build",
+          "sveltekit:sync",
+        ],
+        cache: false,
+      },
       preview: {
         command: "node .sveltekit-build/index.js",
         dependsOn: ["build"],
