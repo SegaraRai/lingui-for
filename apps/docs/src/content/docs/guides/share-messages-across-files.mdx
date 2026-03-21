@@ -6,7 +6,8 @@ description: Share message descriptors across Astro, Svelte, React, and plain Ja
 ## Use plain JavaScript or TypeScript for shared descriptors
 
 When a message needs to be reused across multiple renderers, define the descriptor in plain
-JavaScript or TypeScript with official Lingui core macros.
+JavaScript or TypeScript with official Lingui core macros. See [Plain JS/TS Setup](/guides/plain-js-ts)
+for the build transform and extractor configuration required for plain TypeScript files.
 
 ```ts title="src/lib/messages.ts"
 import { msg } from "@lingui/core/macro";

@@ -29,3 +29,6 @@ are working on the integration itself.
 Plain JavaScript and TypeScript macro support is handled by `unplugin-lingui-macro`, not by the
 Svelte syntax transform. That split is intentional and follows Lingui's official macro model more
 closely.
+
+See [Plain JS/TS Setup](/guides/plain-js-ts) for setup instructions and the recommended descriptor
+pattern.

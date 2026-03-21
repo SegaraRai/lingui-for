@@ -52,10 +52,11 @@ For the framework-agnostic Lingui semantics, see the
 </p>
 ```
 
-In `.svelte` files, `selectOrdinal` used standalone takes the reactive `$selectOrdinal` form.
-When nested inside `` $t`...` ``, use `selectOrdinal` without the `$` prefix.
+In `.svelte` files, use `$selectOrdinal` for reactive standalone use. When nested inside
+`` $t`...` ``, use `selectOrdinal` without the `$` prefix.
 
-See [Reactive Macros](/frameworks/svelte/reactive-macros) for the full explanation.
+See [Reactive Macros](/frameworks/svelte/reactive-macros) for the full explanation, including the
+`selectOrdinal.eager` escape hatch.
 
   </TabItem>
   <TabItem icon="astro" label="Astro">

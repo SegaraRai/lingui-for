@@ -14,6 +14,41 @@ description: How to think about the translation pipeline from source code to ren
 
 Debugging is much easier when these are treated separately.
 
+## Transform and extraction are separate concerns
+
+Every file type that uses Lingui macros needs **two things configured independently**:
+
+- a **build transform** that compiles macro calls into runtime calls at build time
+- an **extractor** that teaches `lingui extract` how to find message descriptors in source files
+
+These serve different phases. A successful build does not mean extraction is working - the
+extractor runs separately via the Lingui CLI and must be configured on its own.
+
+| File type                    | Build transform                   | Extractor                                           |
+| ---------------------------- | --------------------------------- | --------------------------------------------------- |
+| `.svelte`                    | `lingui-for-svelte/unplugin/vite` | `lingui-for-svelte/extractor`                       |
+| `.astro`                     | `lingui-for-astro/integration`    | `lingui-for-astro/extractor`                        |
+| `.ts`, `.js`, `.tsx`, `.jsx` | `unplugin-lingui-macro/vite`      | `@lingui/cli/api/extractors/babel` (default export) |
+
+In a mixed project, both extractors must be listed. For example, a SvelteKit project with shared
+utility files in plain TypeScript:
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [svelteExtractor, babelExtractor],
+});
+```
+
+Without `babelExtractor`, any `t` call in a `.ts` file will compile correctly at build time but
+will not appear in the extracted catalog.
+
 ## Which tools are responsible for what
 
 - `lingui-for-svelte` and `lingui-for-astro`

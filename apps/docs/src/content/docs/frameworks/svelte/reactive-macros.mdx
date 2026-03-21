@@ -5,14 +5,14 @@ description: How $t, $plural, $select, and $selectOrdinal work in Svelte compone
 
 `lingui-for-svelte` provides reactive forms of the Lingui core macros.
 
-TL;DR: Add `$` when the macro is the outermost reactive expression; use the bare form when nesting inside another Lingui macro (`` $t`...` ``, `msg`).
+TL;DR: Use `$t` and friends for reactive use in markup and `$derived`. Use `*.eager` for an explicit non-reactive snapshot. Use bare forms only when nesting inside `$t` or `msg`.
 
-| Reactive form    | Core macro      |
-| ---------------- | --------------- |
-| `$t`             | `t`             |
-| `$plural`        | `plural`        |
-| `$select`        | `select`        |
-| `$selectOrdinal` | `selectOrdinal` |
+| Reactive form    | Eager (non-reactive)  | Core macro      |
+| ---------------- | --------------------- | --------------- |
+| `$t`             | `t.eager`             | `t`             |
+| `$plural`        | `plural.eager`        | `plural`        |
+| `$select`        | `select.eager`        | `select`        |
+| `$selectOrdinal` | `selectOrdinal.eager` | `selectOrdinal` |
 
 ## Standalone vs. embedded
 
@@ -56,6 +56,55 @@ value in script, write the rune yourself.
 
 That keeps the rule simple: Lingui provides the reactive macro form, and you choose where to use a
 Svelte rune around it.
+
+## Eager (non-reactive) form
+
+`t.eager`, `plural.eager`, `select.eager`, and `selectOrdinal.eager` are _escape hatches_. They
+produce a translated string immediately using the current locale but do not subscribe to locale
+changes.
+
+If you need a message in a non-reactive context, the preferred approach is to define a descriptor
+with `msg` and translate it with `$t(descriptor)` at render time:
+
+```svelte
+<script lang="ts">
+  import { msg, t } from "lingui-for-svelte/macro";
+
+  // Define a descriptor - no translation happens here.
+  const ariaLabel = msg`Submit`;
+</script>
+
+<!-- Translate reactively at render time. -->
+<button aria-label={$t(ariaLabel)}>{$t`Submit`}</button>
+```
+
+Use `*.eager` only when you genuinely need a translated string at initialization time and the
+descriptor pattern does not fit. For example, passing a translated label to a third-party API
+that runs once during component setup and cannot re-render later.
+
+```svelte
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+
+  // One-time call to an external API that cannot re-render.
+  externalLib.setTitle(t.eager`My App`);
+</script>
+```
+
+Bare `t` (without `.eager` or `$`) is a **compile-time error** in `.svelte` files. The compiler
+rejects it because it silently drops locale reactivity.
+
+Bare `plural`, `select`, and `selectOrdinal` are also rejected when used as standalone string
+producers. They remain valid as embedded descriptors inside `$t` or `msg`.
+
+```svelte
+<!-- Allowed: bare plural as a descriptor embedded inside $t -->
+<p>{$t`Cart: ${plural(count, { one: "# item", other: "# items" })}`}</p>
+
+<!-- Not allowed: bare plural as a standalone string producer -->
+<!-- ✗ <p>{plural(count, { one: "# item", other: "# items" })}</p> -->
+<!--   Use $plural (reactive) or plural.eager (non-reactive) instead. -->
+```
 
 ## How they work
 

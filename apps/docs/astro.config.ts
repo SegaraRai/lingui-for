@@ -159,6 +159,10 @@ export default defineConfig({
               slug: "guides/install-and-first-translation",
             },
             {
+              label: "Plain JS/TS Setup",
+              slug: "guides/plain-js-ts",
+            },
+            {
               label: "Add a Locale",
               slug: "guides/add-a-locale",
             },

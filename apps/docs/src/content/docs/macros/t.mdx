@@ -34,11 +34,11 @@ For the framework-agnostic Lingui semantics, see the
 <p>{$t`Hello ${name}`}</p>
 ```
 
-In `.svelte` files, the reactive form is `$t`
-`$t` re-evaluates automatically when the active locale changes.
+In `.svelte` files, use `$t`. It re-evaluates automatically when the active locale changes. Bare
+`t` (without `$`) is a compile-time error.
 
-See [Reactive Macros](/frameworks/svelte/reactive-macros) for how this works and the
-standalone vs. embedded `$` rule.
+See [Reactive Macros](/frameworks/svelte/reactive-macros) for how this works, when to use
+`$derived`, and the `t.eager` escape hatch.
 
   </TabItem>
   <TabItem icon="astro" label="Astro">

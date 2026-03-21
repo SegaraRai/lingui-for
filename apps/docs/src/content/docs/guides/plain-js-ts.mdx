@@ -1,0 +1,155 @@
+---
+title: Plain JS/TS Setup
+description: Use Lingui macros in plain JavaScript and TypeScript files.
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+Plain `.js`, `.ts`, `.jsx`, and `.tsx` files use `@lingui/core/macro` with `unplugin-lingui-macro`
+for the build transform and `@lingui/cli/api/extractors/babel` for extraction.
+
+This also applies to `.svelte.js` and `.svelte.ts` files — those go through the plain JS/TS
+pipeline, not the Svelte syntax transform.
+
+## Install
+
+<Tabs syncKey="package-manager">
+  <TabItem label="Vite+">
+
+```sh
+vp add -D unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```sh
+npm install -D unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```sh
+pnpm add -D unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="yarn">
+
+```sh
+yarn add -D unplugin-lingui-macro
+```
+
+  </TabItem>
+</Tabs>
+
+`@lingui/cli` and `@lingui/conf` are required for extraction and catalog compilation. If you
+followed a framework getting-started guide they are already installed.
+
+## Configure the build transform
+
+Add `linguiMacro()` to Vite plugins. In a framework project, place it before the framework plugin.
+
+```ts title="vite.config.ts"
+import linguiMacro from "unplugin-lingui-macro/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    linguiMacro(),
+    // sveltekit(), svelte(), etc.
+  ],
+});
+```
+
+For Astro, add it under `vite.plugins` in `astro.config.ts`.
+
+## Configure extraction
+
+Add the Babel extractor to `lingui.config.ts`. In a project that already has a framework extractor,
+list both.
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+// import { svelteExtractor } from "lingui-for-svelte/extractor";
+// import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [
+    babelExtractor,
+    // svelteExtractor,
+    // astroExtractor,
+  ],
+});
+```
+
+<Aside>
+
+Without `babelExtractor`, macros in `.ts`/`.js` files compile correctly at build time but their
+messages will not appear in the extracted catalog.
+
+</Aside>
+
+## Define message descriptors, not translated strings
+
+In plain JS/TS, `t` and `plural` resolve through `@lingui/core`'s _global_ i18n instance, not
+the instance registered via `setLinguiContext` in your Svelte or Astro code. In a framework app
+that does not configure the global instance, calling `t` directly in a `.ts` file will either
+fail or translate against the wrong locale.
+
+The recommended approach is to define **message descriptors** with `msg` or `defineMessage`, and
+translate them in framework code where the i18n context is available. This matches Lingui's
+[Lazy Translations](https://lingui.dev/guides/lazy-translations) pattern.
+
+```ts title="src/lib/labels.ts"
+import { defineMessage, msg } from "@lingui/core/macro";
+
+// Descriptors only. No translation happens here.
+export const labels = {
+  greeting: msg`Hello`,
+  submit: msg`Submit`,
+} as const;
+
+export const welcomeMessage = defineMessage({
+  id: "welcome",
+  message: "Welcome back",
+});
+```
+
+Then translate the descriptors in framework code where the context is set:
+
+```svelte title="src/lib/MyComponent.svelte"
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+  import { labels } from "./labels";
+</script>
+
+<p>{$t(labels.greeting)}</p>
+<button>{$t(labels.submit)}</button>
+```
+
+```astro title="src/pages/index.astro"
+---
+import { t } from "lingui-for-astro/macro";
+import { labels } from "../lib/labels";
+---
+
+<p>{t(labels.greeting)}</p>
+```
+
+See [Share Messages Across Files](/guides/share-messages-across-files) for more patterns, and
+[msg and defineMessage](/macros/msg-and-define-message) for the full descriptor API.
+
+## See also
+
+- [Extract, Compile, and Verify](/guides/extract-compile-verify) - why transform and extraction
+  are separate and must both be configured
+- [Share Messages Across Files](/guides/share-messages-across-files) - descriptor patterns for
+  cross-file and cross-framework reuse
+- [Svelte: Getting Started](/frameworks/svelte/getting-started) - for Svelte-specific setup
+- [Astro: Getting Started](/frameworks/astro/getting-started) - for Astro-specific setup
