@@ -24,8 +24,19 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
+    "@babel/generator": "^7.29.1",
+    "@babel/types": "^7.29.0",
+    "@types/babel__generator": "^7.27.0",
     "@types/node": "^25.5.0",
+    "magic-string": "^0.30.21",
+    "source-map": "^0.7.6",
     "typescript": "^5.9.3",
     "vite-plus": "catalog:"
+  },
+  "peerDependencies": {
+    "@babel/generator": "^7.29.1",
+    "@babel/types": "^7.29.0",
+    "magic-string": "^0.30.21",
+    "source-map": "^0.7.6"
   }
 }

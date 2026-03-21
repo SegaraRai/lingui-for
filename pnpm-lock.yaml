@@ -20,6 +20,9 @@ importers:
       '@changesets/cli':
         specifier: ^2.30.0
         version: 2.30.0(@types/node@25.5.0)
+      '@types/node':
+        specifier: ^25.5.0
+        version: 25.5.0
       playwright:
         specifier: ^1.58.2
         version: 1.58.2
@@ -402,9 +405,24 @@ importers:
       '@arethetypeswrong/core':
         specifier: ^0.18.2
         version: 0.18.2
+      '@babel/generator':
+        specifier: ^7.29.1
+        version: 7.29.1
+      '@babel/types':
+        specifier: ^7.29.0
+        version: 7.29.0
+      '@types/babel__generator':
+        specifier: ^7.27.0
+        version: 7.27.0
       '@types/node':
         specifier: ^25.5.0
         version: 25.5.0
+      magic-string:
+        specifier: ^0.30.21
+        version: 0.30.21
+      source-map:
+        specifier: ^0.7.6
+        version: 0.7.6
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

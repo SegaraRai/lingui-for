@@ -1,9 +1,15 @@
-import MagicString from "magic-string";
 import {
   SourceMapConsumer,
   SourceMapGenerator,
   type RawSourceMap,
 } from "source-map";
+
+export {
+  advanceGeneratedOffset,
+  createIndexedSourceMap,
+  createUntouchedChunkMap,
+  type GeneratedOffset,
+} from "lingui-for-shared/compiler";
 
 import type { SourcePosition } from "./types.ts";
 
@@ -112,19 +118,6 @@ export function buildDirectProgramMap(
   return generator.toJSON();
 }
 
-type IndexedSourceMapSection = {
-  offset: {
-    line: number;
-    column: number;
-  };
-  map: RawSourceMap;
-};
-
-export type GeneratedOffset = {
-  line: number;
-  column: number;
-};
-
 export async function composeSourceMaps(
   outerMap: RawSourceMap,
   innerMap: RawSourceMap,
@@ -185,57 +178,4 @@ export async function composeSourceMaps(
         return generator.toJSON();
       }),
   );
-}
-
-export function createUntouchedChunkMap(
-  source: string,
-  filename: string,
-  start: number,
-  end: number,
-): RawSourceMap | null {
-  if (end <= start) {
-    return null;
-  }
-
-  const string = new MagicString(source, { filename }).snip(start, end);
-
-  return string.generateMap({
-    file: filename,
-    hires: true,
-    includeContent: true,
-    source: filename,
-  }) as never as RawSourceMap;
-}
-
-export function createIndexedSourceMap(
-  file: string,
-  sections: IndexedSourceMapSection[],
-): RawSourceMap {
-  return {
-    version: 3,
-    file,
-    names: [],
-    mappings: "",
-    sources: [],
-    sections,
-  } as RawSourceMap;
-}
-
-export function advanceGeneratedOffset(
-  current: GeneratedOffset,
-  code: string,
-): GeneratedOffset {
-  let line = current.line;
-  let column = current.column;
-
-  for (let index = 0; index < code.length; index += 1) {
-    if (code[index] === "\n") {
-      line += 1;
-      column = 0;
-    } else {
-      column += 1;
-    }
-  }
-
-  return { line, column };
 }

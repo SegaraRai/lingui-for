@@ -1,6 +1,10 @@
 import type { RawSourceMap } from "source-map";
 
-import { stripQuery } from "lingui-for-shared/compiler";
+import {
+  buildOutputWithIndexedMap,
+  stripQuery,
+  type ReplacementChunk,
+} from "lingui-for-shared/compiler";
 
 import { analyzeSvelte } from "../analysis/svelte-analysis.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
@@ -17,13 +21,7 @@ import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
 import { createUniqueNameAllocator } from "./identifier-allocation.ts";
 import { splitSyntheticDeclarations } from "./runtime-trans-lowering.ts";
-import {
-  advanceGeneratedOffset,
-  buildDirectProgramMap,
-  createIndexedSourceMap,
-  createUntouchedChunkMap,
-  type GeneratedOffset,
-} from "./source-map.ts";
+import { buildDirectProgramMap } from "./source-map.ts";
 import { buildCombinedProgram } from "./synthetic-program.ts";
 import type { SvelteTransformResult } from "./types.ts";
 
@@ -33,13 +31,6 @@ type RuntimeBindingsForInjection = {
   getI18n: string;
   translate: string;
   transComponent: string;
-};
-
-type ReplacementChunk = {
-  start: number;
-  end: number;
-  code: string;
-  map: RawSourceMap | null;
 };
 
 type InjectedScript = {
@@ -199,7 +190,7 @@ export function transformSvelte(
     }
   }
 
-  return buildOutputWithIndexedMap(source, filename, mapFile, replacements);
+  return buildOutputWithIndexedMap(source, mapFile, replacements);
 }
 
 function createRuntimeBindings(
@@ -273,73 +264,6 @@ function injectRuntimeBindings(
     body: code,
     suffix: wrappedSuffix,
     code: `${wrappedPrelude}${code}${wrappedSuffix}`,
-  };
-}
-
-function buildOutputWithIndexedMap(
-  source: string,
-  filename: string,
-  mapFile: string,
-  replacements: ReplacementChunk[],
-): SvelteTransformResult {
-  const sorted = replacements
-    .slice()
-    .sort((left, right) => left.start - right.start || left.end - right.end);
-  const sections: Array<{
-    offset: { line: number; column: number };
-    map: RawSourceMap;
-  }> = [];
-  let cursor = 0;
-  let code = "";
-  let offset: GeneratedOffset = { line: 0, column: 0 };
-
-  for (const replacement of sorted) {
-    if (replacement.start < cursor) {
-      continue;
-    }
-
-    const untouched = source.slice(cursor, replacement.start);
-    const untouchedMap = createUntouchedChunkMap(
-      source,
-      mapFile,
-      cursor,
-      replacement.start,
-    );
-
-    code += untouched;
-    if (untouchedMap) {
-      sections.push({ offset, map: untouchedMap });
-    }
-    offset = advanceGeneratedOffset(offset, untouched);
-
-    code += replacement.code;
-    if (replacement.map) {
-      sections.push({ offset, map: replacement.map });
-    }
-    offset = advanceGeneratedOffset(offset, replacement.code);
-    cursor = replacement.end;
-  }
-
-  const tail = source.slice(cursor);
-  const tailMap = createUntouchedChunkMap(
-    source,
-    mapFile,
-    cursor,
-    source.length,
-  );
-
-  code += tail;
-  if (tailMap) {
-    sections.push({ offset, map: tailMap });
-  }
-
-  return {
-    code,
-    map: {
-      ...createIndexedSourceMap(mapFile, sections),
-      sources: [mapFile],
-      sourcesContent: [source],
-    },
   };
 }
 
