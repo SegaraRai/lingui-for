@@ -1,10 +1,6 @@
-import type { RawSourceMap } from "source-map";
-
-import { buildDirectProgramMap } from "lingui-for-shared/compiler";
-
-import { normalizeLinguiConfig } from "../shared/config.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
-import { transformProgram } from "../transform/babel-transform.ts";
+import { lowerFrontmatterMacros } from "../lower/index.ts";
+import type { RawSourceMap } from "source-map";
 
 export function transformFrontmatterExtractionUnit(
   fullSource: string,
@@ -12,16 +8,11 @@ export function transformFrontmatterExtractionUnit(
   sourceStart: number,
   options: LinguiAstroTransformOptions,
 ): { code: string; map: RawSourceMap | null } {
-  return transformProgram(source, {
+  return lowerFrontmatterMacros(source, options, {
     extract: true,
-    filename: `${options.filename}?frontmatter`,
-    inputSourceMap: buildDirectProgramMap(
+    sourceMapOptions: {
       fullSource,
-      options.filename,
       sourceStart,
-      source.length,
-    ),
-    linguiConfig: normalizeLinguiConfig(options.linguiConfig),
-    translationMode: "extract",
+    },
   });
 }
