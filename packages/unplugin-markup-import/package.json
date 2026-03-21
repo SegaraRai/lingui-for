@@ -53,9 +53,9 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
-    "@types/node": "^25.5.0",
+    "@types/node": "catalog:",
     "dedent": "^1.7.2",
-    "typescript": "^5.9.3",
+    "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
