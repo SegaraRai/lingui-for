@@ -1,5 +1,5 @@
 ---
-"lingui-for-svelte": minor
+"lingui-for-astro": minor
 ---
 
-Add @lingui/babel-plugin-lingui-macro as peer dependency.
+Add `@lingui/cli`, `@lingui/conf`, and `@lingui/core` as peer dependencies.
