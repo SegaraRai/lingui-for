@@ -2,14 +2,6 @@ import RuntimeTransComponent from "./components/RuntimeTrans.astro";
 import type { TransComponentMap } from "./components/types.ts";
 
 export type {
-  I18n,
-  Locale,
-  Locales,
-  MessageDescriptor,
-  Messages,
-} from "@lingui/core";
-
-export type {
   TransComponentDescriptor,
   TransComponentMap,
   TransRenderNode,

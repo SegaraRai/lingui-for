@@ -3,8 +3,8 @@
   import { untrack } from "svelte";
 
   import { setLinguiContext } from "../core/context.ts";
-  import type { TransComponentMap } from "./types.ts";
   import RuntimeTrans from "./RuntimeTrans.svelte";
+  import type { TransComponentMap } from "./types.ts";
 
   let {
     getI18n,
