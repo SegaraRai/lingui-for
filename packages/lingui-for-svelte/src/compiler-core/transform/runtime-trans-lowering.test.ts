@@ -51,17 +51,17 @@ describe("splitSyntheticDeclarations", () => {
 
     const split = splitSyntheticDeclarations(transformed, "RuntimeTransStable");
 
-    expect(split.scriptCode).toMatchInlineSnapshot(`
-      "import { helper } from "./helper.ts";
-      const keep = helper();"
+    expect(split.script.code).toMatchInlineSnapshot(`
+    	"import { helper } from "./helper.ts";
+    	const keep = helper();"
     `);
-    expect(split.expressionReplacements.get(0)).toMatchInlineSnapshot(`
-      "$__l4s_translate({
-        id: "demo.heading",
-        message: "Hello"
-      })"
+    expect(split.expressionReplacements.get(0)?.code).toMatchInlineSnapshot(`
+    	"$__l4s_translate({
+    	  id: "demo.heading",
+    	  message: "Hello"
+    	})"
     `);
-    expect(split.componentReplacements.get(0)).toMatchInlineSnapshot(`
+    expect(split.componentReplacements.get(0)?.code).toMatchInlineSnapshot(`
     	"<RuntimeTransStable {...{
     	  id: "demo.docs",
     	  message: "Read the <0>docs</0>.",

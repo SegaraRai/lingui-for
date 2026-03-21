@@ -1,4 +1,9 @@
-import { SourceMapGenerator, type RawSourceMap } from "source-map";
+import MagicString from "magic-string";
+import {
+  SourceMapConsumer,
+  SourceMapGenerator,
+  type RawSourceMap,
+} from "source-map";
 
 import type { SourcePosition } from "./types.ts";
 
@@ -105,4 +110,132 @@ export function buildDirectProgramMap(
   generator.setSourceContent(filename, source);
 
   return generator.toJSON();
+}
+
+type IndexedSourceMapSection = {
+  offset: {
+    line: number;
+    column: number;
+  };
+  map: RawSourceMap;
+};
+
+export type GeneratedOffset = {
+  line: number;
+  column: number;
+};
+
+export async function composeSourceMaps(
+  outerMap: RawSourceMap,
+  innerMap: RawSourceMap,
+): Promise<RawSourceMap> {
+  return await SourceMapConsumer.with(
+    outerMap as never,
+    null,
+    async (outerConsumer) =>
+      await SourceMapConsumer.with(innerMap as never, null, (innerConsumer) => {
+        const generator = new SourceMapGenerator({
+          file: outerMap.file ?? innerMap.file,
+        });
+
+        outerConsumer.eachMapping((mapping) => {
+          if (
+            mapping.originalLine == null ||
+            mapping.originalColumn == null ||
+            mapping.source == null
+          ) {
+            return;
+          }
+
+          const original = innerConsumer.originalPositionFor({
+            line: mapping.originalLine,
+            column: mapping.originalColumn,
+          });
+
+          if (
+            original.line == null ||
+            original.column == null ||
+            original.source == null
+          ) {
+            return;
+          }
+
+          generator.addMapping({
+            generated: {
+              line: mapping.generatedLine,
+              column: mapping.generatedColumn,
+            },
+            original: {
+              line: original.line,
+              column: original.column,
+            },
+            source: original.source,
+            name: original.name ?? mapping.name ?? undefined,
+          });
+        });
+
+        innerConsumer.sources.forEach((source) => {
+          const content = innerConsumer.sourceContentFor(source, true);
+
+          if (content != null) {
+            generator.setSourceContent(source, content);
+          }
+        });
+
+        return generator.toJSON();
+      }),
+  );
+}
+
+export function createUntouchedChunkMap(
+  source: string,
+  filename: string,
+  start: number,
+  end: number,
+): RawSourceMap | null {
+  if (end <= start) {
+    return null;
+  }
+
+  const string = new MagicString(source, { filename }).snip(start, end);
+
+  return string.generateMap({
+    file: filename,
+    hires: true,
+    includeContent: true,
+    source: filename,
+  }) as never as RawSourceMap;
+}
+
+export function createIndexedSourceMap(
+  file: string,
+  sections: IndexedSourceMapSection[],
+): RawSourceMap {
+  return {
+    version: 3,
+    file,
+    names: [],
+    mappings: "",
+    sources: [],
+    sections,
+  } as RawSourceMap;
+}
+
+export function advanceGeneratedOffset(
+  current: GeneratedOffset,
+  code: string,
+): GeneratedOffset {
+  let line = current.line;
+  let column = current.column;
+
+  for (let index = 0; index < code.length; index += 1) {
+    if (code[index] === "\n") {
+      line += 1;
+      column = 0;
+    } else {
+      column += 1;
+    }
+  }
+
+  return { line, column };
 }

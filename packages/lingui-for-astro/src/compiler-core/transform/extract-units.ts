@@ -31,7 +31,9 @@ export function createAstroExtractionUnits(
 
   if (context.frontmatterContent.includes(PACKAGE_MACRO)) {
     const transformedFrontmatter = transformFrontmatterExtractionUnit(
+      source,
       context.frontmatterContent,
+      context.analysis.frontmatter?.contentRange.start ?? 0,
       options,
     );
 
@@ -45,7 +47,9 @@ export function createAstroExtractionUnits(
 
   for (const expression of context.filteredExpressions) {
     const transformed = transformExpressionExtractionUnit(
+      source,
       source.slice(expression.innerRange.start, expression.innerRange.end),
+      expression.innerRange.start,
       context.macroBindings.allImports,
       options,
     );
@@ -57,7 +61,9 @@ export function createAstroExtractionUnits(
 
   for (const component of context.filteredComponents) {
     const transformed = transformComponentExtractionUnit(
+      source,
       source.slice(component.range.start, component.range.end),
+      component.range.start,
       context.macroBindings.allImports,
       options,
     );

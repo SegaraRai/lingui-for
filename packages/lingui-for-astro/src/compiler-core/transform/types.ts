@@ -16,6 +16,7 @@ export interface ProgramTransformRequest {
   extract: boolean;
   translationMode: "extract" | "raw" | "astro-context";
   runtimeBinding?: string | undefined;
+  inputSourceMap?: RawSourceMapLike | undefined;
 }
 
 /**

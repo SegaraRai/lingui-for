@@ -1,6 +1,5 @@
 import type * as BabelTypes from "@babel/types";
 import type { LinguiConfigNormalized } from "@lingui/conf";
-import type MagicString from "magic-string";
 import type { RawSourceMap } from "source-map";
 
 import type { ScriptLang } from "../shared/types.ts";
@@ -46,6 +45,14 @@ export type ProgramTransform = {
    * Optional raw source map emitted by Babel.
    */
   map: RawSourceMap | null;
+};
+
+/**
+ * One generated code fragment paired with an optional source map.
+ */
+export type MappedCodeFragment = {
+  code: string;
+  map: ProgramTransform["map"];
 };
 
 /**
@@ -101,7 +108,7 @@ export type SvelteTransformResult = {
    */
   code: string;
   /**
-   * MagicString-generated source map from the rewritten component back to the original.
+   * Source map from the rewritten component back to the original.
    */
-  map: ReturnType<MagicString["generateMap"]>;
+  map: RawSourceMap;
 };

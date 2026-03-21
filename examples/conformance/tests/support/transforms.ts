@@ -1,4 +1,3 @@
-import { readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -44,7 +43,10 @@ type TransformResult = {
 };
 
 type DistTransformModule = {
-  n: (options?: unknown) => {
+  unpluginFactory?: (options?: unknown) => {
+    transform?: TransformHook | { handler?: TransformHook };
+  };
+  n?: (options?: unknown) => {
     transform?: TransformHook | { handler?: TransformHook };
   };
 };
@@ -55,16 +57,17 @@ let svelteTransformModulePromise: Promise<DistTransformModule> | undefined;
 async function loadDistTransformModule(
   packageName: "lingui-for-astro" | "lingui-for-svelte",
 ): Promise<DistTransformModule> {
-  const distDir = resolve(workspaceRoot, "packages", packageName, "dist");
-  const entryNames = await readdir(distDir);
-  const fileName = entryNames.find((entry) => /^unplugin-.*\.mjs$/.test(entry));
-
-  if (!fileName) {
-    throw new Error(`Could not find a built transform entry in ${distDir}.`);
-  }
-
   return (await import(
-    pathToFileURL(resolve(distDir, fileName)).href
+    pathToFileURL(
+      resolve(
+        workspaceRoot,
+        "packages",
+        packageName,
+        "dist",
+        "unplugin",
+        "index.mjs",
+      ),
+    ).href
   )) as DistTransformModule;
 }
 
@@ -83,7 +86,13 @@ async function runPluginTransform(
   code: string,
   id: string,
 ): Promise<string> {
-  const plugin = module.n(undefined);
+  const factory = module.unpluginFactory ?? module.n;
+
+  if (!factory) {
+    throw new Error(`Transform factory was not found for ${id}.`);
+  }
+
+  const plugin = factory(undefined);
   const transform =
     typeof plugin.transform === "function"
       ? plugin.transform

@@ -6,7 +6,7 @@ import {
   SYNTHETIC_PREFIX_COMPONENT,
   SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
-import type { ProgramTransform } from "./types.ts";
+import type { MappedCodeFragment, ProgramTransform } from "./types.ts";
 
 const GENERATE_OPTIONS = {
   comments: true,
@@ -33,13 +33,13 @@ export function splitSyntheticDeclarations(
   transformed: ProgramTransform,
   runtimeTransComponentName = "L4sRuntimeTrans",
 ): {
-  scriptCode: string;
-  expressionReplacements: Map<number, string>;
-  componentReplacements: Map<number, string>;
+  script: MappedCodeFragment;
+  expressionReplacements: Map<number, MappedCodeFragment>;
+  componentReplacements: Map<number, MappedCodeFragment>;
 } {
   const retained: t.Statement[] = [];
-  const expressionReplacements = new Map<number, string>();
-  const componentReplacements = new Map<number, string>();
+  const expressionReplacements = new Map<number, MappedCodeFragment>();
+  const componentReplacements = new Map<number, MappedCodeFragment>();
   const runtimeTransLocalsToRemove = new Set<string>();
 
   transformed.ast.program.body.forEach((statement) => {
@@ -64,10 +64,10 @@ export function splitSyntheticDeclarations(
       );
 
       if (Number.isFinite(index) && declaration.init) {
-        expressionReplacements.set(
-          index,
-          generate(declaration.init, GENERATE_OPTIONS).code,
-        );
+        expressionReplacements.set(index, {
+          code: generateNodeCode(declaration.init),
+          map: null,
+        });
         return;
       }
     }
@@ -86,13 +86,13 @@ export function splitSyntheticDeclarations(
         if (runtimeTransLocal) {
           runtimeTransLocalsToRemove.add(runtimeTransLocal);
         }
-        componentReplacements.set(
-          index,
-          convertRuntimeTransJsxToSvelte(
+        componentReplacements.set(index, {
+          code: convertRuntimeTransJsxToSvelte(
             declaration.init,
             runtimeTransComponentName,
           ),
-        );
+          map: null,
+        });
         return;
       }
     }
@@ -100,21 +100,94 @@ export function splitSyntheticDeclarations(
     retained.push(statement);
   });
 
-  return {
-    scriptCode: createProgramCode(
-      removeRuntimeTransImports(retained, runtimeTransLocalsToRemove),
+  const script = createMappedOutput(
+    t.file(
+      t.program(
+        removeRuntimeTransImports(retained, runtimeTransLocalsToRemove),
+        [],
+        "module",
+      ),
     ),
+    transformed,
+  );
+
+  Array.from(expressionReplacements.keys()).forEach((index) => {
+    const declaration = findSyntheticDeclaration(
+      transformed.ast.program.body,
+      `${SYNTHETIC_PREFIX_EXPRESSION}${index}`,
+    );
+
+    if (declaration?.init) {
+      expressionReplacements.set(
+        index,
+        createMappedOutput(declaration.init, transformed),
+      );
+    }
+  });
+
+  Array.from(componentReplacements.entries()).forEach(([index, entry]) => {
+    componentReplacements.set(index, {
+      code: entry.code,
+      map: null,
+    });
+  });
+
+  return {
+    script,
     expressionReplacements,
     componentReplacements,
   };
 }
 
-function createProgramCode(body: t.Statement[]): string {
-  if (body.length === 0) {
-    return "";
+function generateNodeCode(node: t.Node): string {
+  return generate(node, GENERATE_OPTIONS).code;
+}
+
+function createMappedOutput(
+  node: t.Node,
+  transformed: ProgramTransform,
+): MappedCodeFragment {
+  const generated = generate(
+    node,
+    {
+      comments: true,
+      jsescOption: { minimal: true },
+      retainLines: false,
+      sourceMaps: true,
+      sourceFileName:
+        transformed.map?.file ?? transformed.map?.sources?.[0] ?? "input.js",
+    },
+    transformed.code,
+  );
+  const directMap =
+    (generated.map as ProgramTransform["map"] | undefined) ?? null;
+
+  return {
+    code: generated.code,
+    map: directMap,
+  };
+}
+
+function findSyntheticDeclaration(
+  statements: readonly t.Statement[],
+  name: string,
+): t.VariableDeclarator | null {
+  for (const statement of statements) {
+    if (
+      !t.isVariableDeclaration(statement) ||
+      statement.declarations.length !== 1
+    ) {
+      continue;
+    }
+
+    const declaration = statement.declarations[0];
+
+    if (t.isIdentifier(declaration?.id, { name })) {
+      return declaration;
+    }
   }
 
-  return generate(t.file(t.program(body, [], "module")), GENERATE_OPTIONS).code;
+  return null;
 }
 
 function convertRuntimeTransJsxToSvelte(

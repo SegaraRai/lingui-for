@@ -23,6 +23,10 @@ import {
   lowerSyntheticComponentDeclaration,
   stripRuntimeTransImports,
 } from "./runtime-trans-lowering.ts";
+import { buildDirectProgramMap, buildWrappedSnippetMap } from "./source-map.ts";
+
+const EXPR_PREFIX = "const __expr = (\n";
+const WRAPPED_SUFFIX = "\n);";
 
 export function transformFrontmatter(
   source: string,
@@ -43,7 +47,7 @@ export function transformTemplateExpression(
   options: LinguiAstroTransformOptions,
 ): string {
   const transformed = transformProgram(
-    `${createSyntheticMacroImports(macroImports)}const __expr = (\n${source}\n);`,
+    `${createSyntheticMacroImports(macroImports)}${EXPR_PREFIX}${source}${WRAPPED_SUFFIX}`,
     {
       extract: false,
       filename: `${options.filename}?expression`,
@@ -82,7 +86,7 @@ export function transformComponentMacro(
     options,
   );
   const transformed = transformProgram(
-    `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${rewrittenSource}\n);`,
+    `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${rewrittenSource}${WRAPPED_SUFFIX}`,
     {
       extract: false,
       filename: `${options.filename}?component`,
@@ -123,47 +127,71 @@ export function buildFrontmatterPrelude(
 }
 
 export function transformFrontmatterExtractionUnit(
+  fullSource: string,
   source: string,
+  sourceStart: number,
   options: LinguiAstroTransformOptions,
 ): { code: string; map: RawSourceMapLike | null } {
   return transformProgram(source, {
     extract: true,
     filename: `${options.filename}?frontmatter`,
+    inputSourceMap: buildDirectProgramMap(
+      fullSource,
+      options.filename,
+      sourceStart,
+      source,
+    ),
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
     translationMode: "extract",
   });
 }
 
 export function transformExpressionExtractionUnit(
+  fullSource: string,
   source: string,
+  sourceStart: number,
   macroImports: ReadonlyMap<string, string>,
   options: LinguiAstroTransformOptions,
 ): { code: string; map: RawSourceMapLike | null } {
-  return transformProgram(
-    `${createSyntheticMacroImports(macroImports)}const __expr = (\n${source}\n);`,
-    {
-      extract: true,
-      filename: `${options.filename}?extract-expression`,
-      linguiConfig: normalizeLinguiConfig(options.linguiConfig),
-      translationMode: "extract",
-    },
-  );
+  const prefix = `${createSyntheticMacroImports(macroImports)}${EXPR_PREFIX}`;
+  return transformProgram(`${prefix}${source}${WRAPPED_SUFFIX}`, {
+    extract: true,
+    filename: `${options.filename}?extract-expression`,
+    inputSourceMap: buildWrappedSnippetMap(
+      fullSource,
+      options.filename,
+      sourceStart,
+      prefix,
+      source,
+      WRAPPED_SUFFIX,
+    ),
+    linguiConfig: normalizeLinguiConfig(options.linguiConfig),
+    translationMode: "extract",
+  });
 }
 
 export function transformComponentExtractionUnit(
+  fullSource: string,
   source: string,
+  sourceStart: number,
   macroImports: ReadonlyMap<string, string>,
   options: LinguiAstroTransformOptions,
 ): { code: string; map: RawSourceMapLike | null } {
-  return transformProgram(
-    `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n${source}\n);`,
-    {
-      extract: true,
-      filename: `${options.filename}?extract-component`,
-      linguiConfig: normalizeLinguiConfig(options.linguiConfig),
-      translationMode: "extract",
-    },
-  );
+  const prefix = `${createSyntheticMacroImports(macroImports)}const ${SYNTHETIC_PREFIX_COMPONENT}0 = (\n`;
+  return transformProgram(`${prefix}${source}${WRAPPED_SUFFIX}`, {
+    extract: true,
+    filename: `${options.filename}?extract-component`,
+    inputSourceMap: buildWrappedSnippetMap(
+      fullSource,
+      options.filename,
+      sourceStart,
+      prefix,
+      source,
+      WRAPPED_SUFFIX,
+    ),
+    linguiConfig: normalizeLinguiConfig(options.linguiConfig),
+    translationMode: "extract",
+  });
 }
 
 export function isExtractionCodeRelevant(code: string): boolean {

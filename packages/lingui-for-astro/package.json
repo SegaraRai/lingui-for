@@ -111,6 +111,7 @@
     "@lingui/conf": "^5.9.3",
     "@lingui/core": "^5.9.3",
     "magic-string": "^0.30.21",
+    "source-map": "^0.7.6",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {

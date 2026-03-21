@@ -121,6 +121,7 @@ export function transformProgram(
       ],
       createAstroContextPostprocessPlugin(request),
     ],
+    inputSourceMap: request.inputSourceMap as never,
     sourceMaps: true,
   });
 

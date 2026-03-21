@@ -173,9 +173,12 @@ export async function extractSvelteFixture(
   fixtureName = "conformance",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
+  const filename = fixtureName.endsWith(".svelte")
+    ? fixtureName
+    : `/virtual/${fixtureName}.svelte`;
 
   await svelteExtractor.extract(
-    `/virtual/${fixtureName}.svelte`,
+    filename,
     source,
     (message) => {
       messages.push(message);
@@ -191,9 +194,12 @@ export async function extractAstroFixture(
   fixtureName = "conformance",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
+  const filename = fixtureName.endsWith(".astro")
+    ? fixtureName
+    : `/virtual/${fixtureName}.astro`;
 
   await astroExtractor.extract(
-    `/virtual/${fixtureName}.astro`,
+    filename,
     source,
     (message) => {
       messages.push(message);

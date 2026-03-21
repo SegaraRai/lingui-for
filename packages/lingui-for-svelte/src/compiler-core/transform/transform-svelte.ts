@@ -1,4 +1,4 @@
-import MagicString from "magic-string";
+import type { RawSourceMap } from "source-map";
 
 import { stripQuery } from "lingui-for-shared/compiler";
 
@@ -17,13 +17,16 @@ import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
 import { createUniqueNameAllocator } from "./identifier-allocation.ts";
 import { splitSyntheticDeclarations } from "./runtime-trans-lowering.ts";
-import { buildDirectProgramMap } from "./source-map.ts";
+import {
+  advanceGeneratedOffset,
+  buildDirectProgramMap,
+  createIndexedSourceMap,
+  createUntouchedChunkMap,
+  type GeneratedOffset,
+} from "./source-map.ts";
 import { buildCombinedProgram } from "./synthetic-program.ts";
 import type { SvelteTransformResult } from "./types.ts";
 
-/**
- * Runtime bindings injected into transformed Svelte code when the transform detects they are needed.
- */
 type RuntimeBindingsForInjection = {
   createLinguiAccessors: string;
   context: string;
@@ -32,30 +35,34 @@ type RuntimeBindingsForInjection = {
   transComponent: string;
 };
 
-/**
- * Transforms a `.svelte` file into rewritten Svelte source and source map.
- *
- * @param source Original Svelte component source.
- * @param options Filename and optional Lingui config.
- * @returns A {@link SvelteTransformResult} containing transformed Svelte code and a source map.
- *
- * This is the main Svelte entry point for the compiler core. It transforms the module script
- * independently, lifts instance/template content into a synthetic program, runs the Babel/Lingui
- * transform in Svelte-context mode, lowers synthetic declarations back into Svelte source, and
- * injects hidden runtime bindings only when the rewritten output actually needs them.
- */
+type ReplacementChunk = {
+  start: number;
+  end: number;
+  code: string;
+  map: RawSourceMap | null;
+};
+
+type InjectedScript = {
+  prelude: string;
+  body: string;
+  suffix: string;
+  code: string;
+};
+
 export function transformSvelte(
   source: string,
   options: LinguiSvelteTransformOptions,
 ): SvelteTransformResult {
   const analysis = analyzeSvelte(source, options.filename);
   const linguiConfig = normalizeLinguiConfig(options.linguiConfig);
-  const string = new MagicString(source);
   const runtimeBindings = createRuntimeBindings(
     options.filename,
     analysis.instance?.content ?? "",
     analysis.instance?.lang ?? "ts",
   );
+  const filename = stripQuery(options.filename);
+  const mapFile = getSourceMapFileName(filename);
+  const replacements: ReplacementChunk[] = [];
 
   if (analysis.module) {
     const transformedModule = transformProgram(analysis.module.content, {
@@ -76,11 +83,12 @@ export function transformSvelte(
       ),
     });
 
-    string.overwrite(
-      analysis.module.contentStart,
-      analysis.module.contentEnd,
-      transformedModule.code,
-    );
+    replacements.push({
+      start: analysis.module.contentStart,
+      end: analysis.module.contentEnd,
+      code: transformedModule.code,
+      map: transformedModule.map,
+    });
   }
 
   if (
@@ -112,79 +120,86 @@ export function transformSvelte(
       transformedInstance,
       runtimeBindings.transComponent,
     );
-    const expressionsCode = Array.from(
-      split.expressionReplacements.values(),
-    ).join("\n");
-    const componentsCode = Array.from(
-      split.componentReplacements.values(),
-    ).join("\n");
+    const expressionsCode = Array.from(split.expressionReplacements.values())
+      .map((entry) => entry.code)
+      .join("\n");
+    const componentsCode = Array.from(split.componentReplacements.values())
+      .map((entry) => entry.code)
+      .join("\n");
     const needsLinguiContextBindings =
-      split.scriptCode.includes(runtimeBindings.getI18n) ||
-      split.scriptCode.includes(runtimeBindings.translate) ||
+      split.script.code.includes(runtimeBindings.getI18n) ||
+      split.script.code.includes(runtimeBindings.translate) ||
       expressionsCode.includes(runtimeBindings.getI18n) ||
       expressionsCode.includes(runtimeBindings.translate);
     const needsTransComponentBinding = componentsCode.includes(
       runtimeBindings.transComponent,
     );
-    const scriptCode =
+    const injectedScript =
       needsLinguiContextBindings || needsTransComponentBinding
         ? injectRuntimeBindings(
-            split.scriptCode,
+            split.script.code,
             runtimeBindings,
             needsLinguiContextBindings,
             needsTransComponentBinding,
           )
-        : split.scriptCode;
+        : {
+            prelude: "",
+            body: split.script.code,
+            suffix: "",
+            code: split.script.code,
+          };
+    const formattedScript = analysis.instance
+      ? formatScriptContent(injectedScript.code, analysis.instance.content)
+      : injectedScript.code;
 
-    analysis.expressions
-      .slice()
-      .sort((left, right) => right.start - left.start)
-      .forEach((expression) => {
-        const replacement = split.expressionReplacements.get(expression.index);
-        if (replacement) {
-          string.overwrite(expression.start, expression.end, replacement);
-        }
-      });
+    analysis.expressions.forEach((expression) => {
+      const replacement = split.expressionReplacements.get(expression.index);
+      if (replacement) {
+        replacements.push({
+          start: expression.start,
+          end: expression.end,
+          code: replacement.code,
+          map: replacement.map,
+        });
+      }
+    });
 
-    analysis.components
-      .slice()
-      .sort((left, right) => right.start - left.start)
-      .forEach((component) => {
-        const replacement = split.componentReplacements.get(component.index);
-        if (replacement) {
-          string.overwrite(component.start, component.end, replacement);
-        }
-      });
+    analysis.components.forEach((component) => {
+      const replacement = split.componentReplacements.get(component.index);
+      if (replacement) {
+        replacements.push({
+          start: component.start,
+          end: component.end,
+          code: replacement.code,
+          map: replacement.map,
+        });
+      }
+    });
 
     if (analysis.instance) {
-      string.overwrite(
-        analysis.instance.contentStart,
-        analysis.instance.contentEnd,
-        scriptCode,
+      replacements.push(
+        ...createScriptReplacementChunks(
+          analysis.instance.contentStart,
+          analysis.instance.content,
+          formattedScript,
+          split.script.map,
+          mapFile,
+        ),
       );
-    } else if (scriptCode.trim().length > 0) {
-      const block = `<script>\n${scriptCode}\n</script>\n\n`;
+    } else if (formattedScript.trim().length > 0) {
+      const block = `<script>\n${formattedScript}\n</script>`;
+      const insertionStart = analysis.module ? analysis.module.end : 0;
 
-      if (analysis.module) {
-        string.appendLeft(
-          analysis.module.end,
-          `\n\n<script>\n${scriptCode}\n</script>`,
-        );
-      } else {
-        string.prepend(block);
-      }
+      replacements.push({
+        start: insertionStart,
+        end: insertionStart,
+        code: analysis.module ? `\n\n${block}` : `${block}\n\n`,
+        map: null,
+      });
     }
   }
 
-  return {
-    code: string.toString(),
-    map: string.generateMap({
-      file: stripQuery(options.filename),
-      hires: true,
-      includeContent: true,
-      source: stripQuery(options.filename),
-    }),
-  };
+  return buildOutputWithIndexedMap(source, filename, mapFile, replacements);
 }
 
 function createRuntimeBindings(
@@ -211,7 +226,7 @@ function injectRuntimeBindings(
   runtimeBindings: RuntimeBindingsForInjection,
   includeLinguiContext: boolean,
   includeTransComponent: boolean,
-): string {
+): InjectedScript {
   const prelude: string[] = [];
   const suffix: string[] = [];
 
@@ -242,8 +257,218 @@ function injectRuntimeBindings(
   const suffixCode = suffix.join("");
 
   if (code.trim().length === 0) {
-    return `${preludeCode}${suffixCode}`;
+    return {
+      prelude: preludeCode,
+      body: "",
+      suffix: suffixCode,
+      code: `${preludeCode}${suffixCode}`,
+    };
   }
 
-  return `${preludeCode}\n${code}\n${suffixCode}`;
+  const wrappedPrelude = preludeCode.length > 0 ? `${preludeCode}\n` : "";
+  const wrappedSuffix = suffixCode.length > 0 ? `\n${suffixCode}` : "";
+
+  return {
+    prelude: wrappedPrelude,
+    body: code,
+    suffix: wrappedSuffix,
+    code: `${wrappedPrelude}${code}${wrappedSuffix}`,
+  };
+}
+
+function buildOutputWithIndexedMap(
+  source: string,
+  filename: string,
+  mapFile: string,
+  replacements: ReplacementChunk[],
+): SvelteTransformResult {
+  const sorted = replacements
+    .slice()
+    .sort((left, right) => left.start - right.start || left.end - right.end);
+  const sections: Array<{
+    offset: { line: number; column: number };
+    map: RawSourceMap;
+  }> = [];
+  let cursor = 0;
+  let code = "";
+  let offset: GeneratedOffset = { line: 0, column: 0 };
+
+  for (const replacement of sorted) {
+    if (replacement.start < cursor) {
+      continue;
+    }
+
+    const untouched = source.slice(cursor, replacement.start);
+    const untouchedMap = createUntouchedChunkMap(
+      source,
+      mapFile,
+      cursor,
+      replacement.start,
+    );
+
+    code += untouched;
+    if (untouchedMap) {
+      sections.push({ offset, map: untouchedMap });
+    }
+    offset = advanceGeneratedOffset(offset, untouched);
+
+    code += replacement.code;
+    if (replacement.map) {
+      sections.push({ offset, map: replacement.map });
+    }
+    offset = advanceGeneratedOffset(offset, replacement.code);
+    cursor = replacement.end;
+  }
+
+  const tail = source.slice(cursor);
+  const tailMap = createUntouchedChunkMap(
+    source,
+    mapFile,
+    cursor,
+    source.length,
+  );
+
+  code += tail;
+  if (tailMap) {
+    sections.push({ offset, map: tailMap });
+  }
+
+  return {
+    code,
+    map: {
+      ...createIndexedSourceMap(mapFile, sections),
+      sources: [mapFile],
+      sourcesContent: [source],
+    },
+  };
+}
+
+function getSourceMapFileName(filename: string): string {
+  const segments = filename.split(/[\\/]/);
+  return segments.at(-1) ?? filename;
+}
+
+function formatScriptContent(code: string, originalContent: string): string {
+  const indent = detectScriptIndent(originalContent);
+  const body = code
+    .split("\n")
+    .map((line) => (line.length > 0 ? `${indent}${line}` : line))
+    .join("\n");
+  const withLeadingNewline =
+    originalContent.startsWith("\n") && !body.startsWith("\n")
+      ? `\n${body}`
+      : body;
+
+  return originalContent.endsWith("\n") && !withLeadingNewline.endsWith("\n")
+    ? `${withLeadingNewline}\n`
+    : withLeadingNewline;
+}
+
+function detectScriptIndent(content: string): string {
+  for (const line of content.split("\n")) {
+    if (line.trim().length === 0) {
+      continue;
+    }
+
+    const indent = line.match(/^\s*/)?.[0];
+    if (indent != null) {
+      return indent;
+    }
+  }
+
+  return "";
+}
+
+function createScriptReplacementChunks(
+  scriptStart: number,
+  original: string,
+  replacement: string,
+  _bodyMap: RawSourceMap | null,
+  _mapFile: string,
+): ReplacementChunk[] {
+  if (original === replacement) {
+    return [];
+  }
+
+  const originalLines = splitLines(original);
+  const replacementLines = splitLines(replacement);
+  const lcs = Array.from({ length: originalLines.length + 1 }, () =>
+    Array.from<number>({ length: replacementLines.length + 1 }).fill(0),
+  );
+
+  for (let left = originalLines.length - 1; left >= 0; left -= 1) {
+    for (let right = replacementLines.length - 1; right >= 0; right -= 1) {
+      lcs[left][right] =
+        originalLines[left] === replacementLines[right]
+          ? (lcs[left + 1]?.[right + 1] ?? 0) + 1
+          : Math.max(lcs[left + 1]?.[right] ?? 0, lcs[left]?.[right + 1] ?? 0);
+    }
+  }
+
+  const replacements: ReplacementChunk[] = [];
+  let left = 0;
+  let right = 0;
+  let originalOffset = 0;
+  let replacementOffset = 0;
+  let pendingOriginalStart: number | null = null;
+  let pendingReplacementStart: number | null = null;
+
+  const flush = (): void => {
+    if (
+      pendingOriginalStart == null ||
+      pendingReplacementStart == null ||
+      (originalOffset === pendingOriginalStart &&
+        replacementOffset === pendingReplacementStart)
+    ) {
+      pendingOriginalStart = null;
+      pendingReplacementStart = null;
+      return;
+    }
+
+    replacements.push({
+      start: scriptStart + pendingOriginalStart,
+      end: scriptStart + originalOffset,
+      code: replacement.slice(pendingReplacementStart, replacementOffset),
+      map: null,
+    });
+    pendingOriginalStart = null;
+    pendingReplacementStart = null;
+  };
+
+  while (left < originalLines.length || right < replacementLines.length) {
+    if (
+      left < originalLines.length &&
+      right < replacementLines.length &&
+      originalLines[left] === replacementLines[right]
+    ) {
+      flush();
+      originalOffset += originalLines[left]?.length ?? 0;
+      replacementOffset += replacementLines[right]?.length ?? 0;
+      left += 1;
+      right += 1;
+      continue;
+    }
+
+    pendingOriginalStart ??= originalOffset;
+    pendingReplacementStart ??= replacementOffset;
+
+    if (
+      right >= replacementLines.length ||
+      (left < originalLines.length &&
+        (lcs[left + 1]?.[right] ?? 0) >= (lcs[left]?.[right + 1] ?? 0))
+    ) {
+      originalOffset += originalLines[left]?.length ?? 0;
+      left += 1;
+    } else {
+      replacementOffset += replacementLines[right]?.length ?? 0;
+      right += 1;
+    }
+  }
+
+  flush();
+  return replacements;
+}
+
+function splitLines(value: string): string[] {
+  return value.match(/[^\n]*\n|[^\n]+$/g) ?? [];
 }

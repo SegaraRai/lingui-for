@@ -8,8 +8,8 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "id": "/txFeF",
     "message": "Before {value} After",
     "origin": [
-      "component-whitespacing.astro",
-      3,
+      "/virtual/component-whitespacing.astro",
+      5,
       0,
     ],
     "placeholders": {
@@ -22,8 +22,8 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "id": "DFZbAv",
     "message": "Before{value}After",
     "origin": [
-      "component-whitespacing.astro",
-      3,
+      "/virtual/component-whitespacing.astro",
+      10,
       0,
     ],
     "placeholders": {
@@ -36,8 +36,8 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "id": "/txFeF",
     "message": "Before {value} After",
     "origin": [
-      "component-whitespacing.astro",
-      3,
+      "/virtual/component-whitespacing.astro",
+      15,
       0,
     ],
     "placeholders": {
@@ -50,8 +50,8 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "id": "INRnBm",
     "message": " Before  {value}  After ",
     "origin": [
-      "component-whitespacing.astro",
-      3,
+      "/virtual/component-whitespacing.astro",
+      18,
       0,
     ],
     "placeholders": {
@@ -191,8 +191,8 @@ exports[`'deep-rich-text-trans' > astro extraction 1`] = `
     "id": "zt7J+8",
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
-      "deep-rich-text-trans.astro",
-      3,
+      "/virtual/deep-rich-text-trans.astro",
+      9,
       0,
     ],
     "placeholders": {
@@ -254,8 +254,8 @@ exports[`'exact-number-component' > astro extraction 1`] = `
     "id": "a+Xhin",
     "message": "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
     "origin": [
-      "exact-number-component.astro",
-      4,
+      "/virtual/exact-number-component.astro",
+      8,
       0,
     ],
     "placeholders": {
@@ -268,8 +268,8 @@ exports[`'exact-number-component' > astro extraction 1`] = `
     "id": "gM41pk",
     "message": "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}",
     "origin": [
-      "exact-number-component.astro",
-      4,
+      "/virtual/exact-number-component.astro",
+      14,
       0,
     ],
     "placeholders": {
@@ -353,9 +353,9 @@ exports[`'nested-icu-core' > astro extraction 1`] = `
     "id": "K9g4/G",
     "message": "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     "origin": [
-      "nested-icu-core.astro",
+      "/virtual/nested-icu-core.astro",
       7,
-      19,
+      0,
     ],
     "placeholders": {
       "count": "count",
@@ -416,8 +416,8 @@ exports[`'rich-text-trans' > astro extraction 1`] = `
     "id": "9/omjw",
     "message": "Hello <0>{name}</0>.",
     "origin": [
-      "rich-text-trans.astro",
-      3,
+      "/virtual/rich-text-trans.astro",
+      7,
       0,
     ],
     "placeholders": {
@@ -473,8 +473,8 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
     "id": "Y5Pnrw",
     "message": "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
     "origin": [
-      "trans-with-deeply-nested-component-icu.astro",
-      6,
+      "/virtual/trans-with-deeply-nested-component-icu.astro",
+      14,
       0,
     ],
     "placeholders": {
@@ -517,9 +517,9 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
     "id": "Ro3jDG",
     "message": "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
     "origin": [
-      "trans-with-deeply-nested-component-icu.astro",
-      11,
-      10,
+      "/virtual/trans-with-deeply-nested-component-icu.astro",
+      19,
+      0,
     ],
     "placeholders": {
       "rank": "rank",
@@ -532,9 +532,9 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
     "id": "/uwo4+",
     "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
     "origin": [
-      "trans-with-deeply-nested-component-icu.astro",
-      25,
-      10,
+      "/virtual/trans-with-deeply-nested-component-icu.astro",
+      33,
+      0,
     ],
     "placeholders": {
       "rank": "rank",
@@ -547,9 +547,9 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
     "id": "OsAInm",
     "message": "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
     "origin": [
-      "trans-with-deeply-nested-component-icu.astro",
-      39,
-      13,
+      "/virtual/trans-with-deeply-nested-component-icu.astro",
+      47,
+      0,
     ],
     "placeholders": {
       "rank": "rank",
@@ -755,8 +755,8 @@ exports[`'trans-with-plural' > astro extraction 1`] = `
     "id": "BWlbIC",
     "message": "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
     "origin": [
-      "trans-with-plural.astro",
-      4,
+      "/virtual/trans-with-plural.astro",
+      7,
       0,
     ],
     "placeholders": {
@@ -812,8 +812,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      7,
       0,
     ],
     "placeholders": {
@@ -826,8 +826,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      8,
       0,
     ],
     "placeholders": {
@@ -840,8 +840,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "with-interpolation-with-id",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      9,
       0,
     ],
     "placeholders": {
@@ -854,8 +854,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "bVvypv",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      10,
       0,
     ],
     "placeholders": {
@@ -868,8 +868,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      11,
       0,
     ],
     "placeholders": {
@@ -882,8 +882,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      13,
       0,
     ],
     "placeholders": {},
@@ -894,8 +894,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      14,
       0,
     ],
     "placeholders": {},
@@ -906,8 +906,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "no-interpolation-with-id",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      15,
       0,
     ],
     "placeholders": {},
@@ -918,8 +918,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "SSpjjA",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      16,
       0,
     ],
     "placeholders": {},
@@ -930,8 +930,8 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-component.astro",
-      3,
+      "/virtual/with-id-context-comment-component.astro",
+      17,
       0,
     ],
     "placeholders": {},
@@ -1191,9 +1191,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      0,
+      "/virtual/with-id-context-comment-core.astro",
+      7,
+      13,
     ],
     "placeholders": {
       "value": "value",
@@ -1205,9 +1205,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      2,
+      "/virtual/with-id-context-comment-core.astro",
+      8,
+      13,
     ],
     "placeholders": {
       "value": "value",
@@ -1219,9 +1219,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "with-interpolation-with-id",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      2,
+      "/virtual/with-id-context-comment-core.astro",
+      11,
+      12,
     ],
     "placeholders": {
       "value": "value",
@@ -1233,9 +1233,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "bVvypv",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      2,
+      "/virtual/with-id-context-comment-core.astro",
+      15,
+      12,
     ],
     "placeholders": {
       "value": "value",
@@ -1247,9 +1247,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "dBHrOY",
     "message": "Message with interpolation: {value}",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      2,
+      "/virtual/with-id-context-comment-core.astro",
+      19,
+      12,
     ],
     "placeholders": {
       "value": "value",
@@ -1261,9 +1261,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      0,
+      "/virtual/with-id-context-comment-core.astro",
+      24,
+      13,
     ],
     "placeholders": {},
   },
@@ -1273,9 +1273,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      2,
+      "/virtual/with-id-context-comment-core.astro",
+      25,
+      13,
     ],
     "placeholders": {},
   },
@@ -1285,9 +1285,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "no-interpolation-with-id",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      2,
+      "/virtual/with-id-context-comment-core.astro",
+      28,
+      12,
     ],
     "placeholders": {},
   },
@@ -1297,9 +1297,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "SSpjjA",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      2,
+      "/virtual/with-id-context-comment-core.astro",
+      32,
+      12,
     ],
     "placeholders": {},
   },
@@ -1309,9 +1309,9 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
     "id": "YYBbrl",
     "message": "Message without interpolation",
     "origin": [
-      "with-id-context-comment-core.astro",
-      3,
-      2,
+      "/virtual/with-id-context-comment-core.astro",
+      36,
+      12,
     ],
     "placeholders": {},
   },

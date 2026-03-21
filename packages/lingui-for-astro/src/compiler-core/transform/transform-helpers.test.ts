@@ -69,17 +69,27 @@ describe("transform helpers", () => {
   });
 
   it("builds extraction units for frontmatter, expressions, and components", () => {
+    const frontmatterSource =
+      'import { t } from "lingui-for-astro/macro";\nconst label = t`Welcome`;';
     const frontmatter = transformFrontmatterExtractionUnit(
-      'import { t } from "lingui-for-astro/macro";\nconst label = t`Welcome`;',
+      frontmatterSource,
+      frontmatterSource,
+      0,
       { filename: "/virtual/Page.astro" },
     );
+    const expressionSource = "t`Extract me`";
     const expression = transformExpressionExtractionUnit(
-      "t`Extract me`",
+      expressionSource,
+      expressionSource,
+      0,
       new Map([["t", "t"]]),
       { filename: "/virtual/Page.astro" },
     );
+    const componentSource = '<Trans>Read the <a href="/docs">docs</a>.</Trans>';
     const component = transformComponentExtractionUnit(
-      '<Trans>Read the <a href="/docs">docs</a>.</Trans>',
+      componentSource,
+      componentSource,
+      0,
       new Map([["Trans", "Trans"]]),
       { filename: "/virtual/Page.astro" },
     );
