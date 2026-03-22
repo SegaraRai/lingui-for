@@ -28,7 +28,7 @@ describe("transform/astro-transform-plan", () => {
     expect(replacements.length).toBeGreaterThan(0);
     expect(result.code).toContain("__l4a_i18n._(");
     expect(result.code).toContain(
-      'import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";',
+      'import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";',
     );
   });
 });

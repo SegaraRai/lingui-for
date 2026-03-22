@@ -59,3 +59,22 @@ export function getLinguiContext(locals: object): LinguiContext {
 
   return context as LinguiContext;
 }
+
+type Translate = I18n["_"];
+
+/**
+ * Creates a lazy i18n accessor for use in Astro frontmatter.
+ *
+ * @param locals `Astro.locals` object for the current request.
+ * @returns An object with a single `_` property that proxies to the active Lingui instance's
+ * translation function.
+ *
+ * This is used by the compiler to support translations in frontmatter. It defers reading the
+ * Lingui context until the first call to `_`, allowing it to work when the context is set in
+ * the same frontmatter block.
+ */
+export function createFrontmatterI18n(locals: object): Pick<I18n, "_"> {
+  const translate = ((...args: Parameters<Translate>) =>
+    getLinguiContext(locals).i18n._(...args)) as Translate;
+  return { _: translate };
+}

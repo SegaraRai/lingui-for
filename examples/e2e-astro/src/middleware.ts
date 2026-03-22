@@ -10,6 +10,13 @@ import {
 import { createAppI18n } from "./lib/i18n/runtime";
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  // Pages under /init/ manage their own Lingui context in frontmatter and must
+  // not have it set by middleware, so they can test the same-component init
+  // pattern in isolation.
+  if (context.url.pathname.startsWith("/init/")) {
+    return next();
+  }
+
   const requestedLocale = context.url.searchParams.get("lang");
   const cookieLocale = context.cookies.get(LOCALE_COOKIE)?.value;
   const locale = resolveLocale(

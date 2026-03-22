@@ -7,6 +7,7 @@ export type {
   TransRenderNode,
 } from "./components/types.ts";
 export {
+  createFrontmatterI18n,
   getLinguiContext,
   LINGUI_ASTRO_CONTEXT,
   setLinguiContext,

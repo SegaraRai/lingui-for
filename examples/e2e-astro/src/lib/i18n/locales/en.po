@@ -272,6 +272,11 @@ msgstr "How to use this demo"
 msgid "Increment"
 msgstr "Increment"
 
+#: src/pages/init/inline.astro:23
+#: src/pages/init/inline.astro:26
+msgid "Inline initialization check"
+msgstr "Inline initialization check"
+
 #: src/pages/islands.astro:17
 msgid "Island translation checks"
 msgstr "Island translation checks"
@@ -622,6 +627,10 @@ msgstr "The locale is stored in a cookie so the next request stays consistent."
 #: src/pages/transitions.astro:68
 msgid "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
 msgstr "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
+
+#: src/pages/init/inline.astro:27
+msgid "This page initializes Lingui in its own frontmatter."
+msgstr "This page initializes Lingui in its own frontmatter."
 
 #: src/pages/server.astro:37
 msgid "This paragraph was translated directly inside a .astro page."

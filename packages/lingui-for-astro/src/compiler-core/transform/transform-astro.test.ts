@@ -33,15 +33,14 @@ describe("transformAstro", () => {
     const code = compact(result.code);
 
     expect(result.code).toContain(
-      '---\nimport { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";',
+      '---\nimport { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";',
     );
     expect(code).toContain(
-      'import { getLinguiContext as __l4a_getLinguiContext } from "lingui-for-astro/runtime";',
+      'import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";',
     );
     expect(code).toContain(
-      "const __l4a_ctx = __l4a_getLinguiContext(Astro.locals);",
+      "const __l4a_i18n = __l4a_createI18n(Astro.locals);",
     );
-    expect(code).toContain("const __l4a_i18n = __l4a_ctx.i18n;");
     expect(code).not.toContain('from "lingui-for-astro/macro"');
     expect(code).toContain("const label = __l4a_i18n._(");
     expect(code).toContain("title={__l4a_i18n._(");

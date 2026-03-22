@@ -8,7 +8,9 @@ import {
 
 describe("lower/frontmatter", () => {
   test("builds frontmatter preludes and lowers runtime frontmatter macros", () => {
-    expect(buildFrontmatterPrelude(true, true)).toContain("getLinguiContext");
+    expect(buildFrontmatterPrelude(true, true)).toContain(
+      "createFrontmatterI18n",
+    );
 
     const lowered = lowerFrontmatterMacros(
       dedent`

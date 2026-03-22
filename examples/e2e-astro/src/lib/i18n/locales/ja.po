@@ -272,6 +272,11 @@ msgstr "このデモの使い方"
 msgid "Increment"
 msgstr "増やす"
 
+#: src/pages/init/inline.astro:23
+#: src/pages/init/inline.astro:26
+msgid "Inline initialization check"
+msgstr "インライン初期化チェック"
+
 #: src/pages/islands.astro:17
 msgid "Island translation checks"
 msgstr "アイランド翻訳の確認"
@@ -622,6 +627,10 @@ msgstr "ロケールはクッキーに保存されるため、次のリクエス
 #: src/pages/transitions.astro:68
 msgid "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
 msgstr "ページ本体が切り替わっても、ClientRouter は一致する永続化されたノードを遷移中もマウントしたまま保ちます。"
+
+#: src/pages/init/inline.astro:27
+msgid "This page initializes Lingui in its own frontmatter."
+msgstr "このページはフロントマターで Lingui を初期化します。"
 
 #: src/pages/server.astro:37
 msgid "This paragraph was translated directly inside a .astro page."

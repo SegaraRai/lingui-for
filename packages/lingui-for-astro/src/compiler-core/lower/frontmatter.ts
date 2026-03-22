@@ -16,8 +16,7 @@ import { getParserPlugins, normalizeLinguiConfig } from "../shared/config.ts";
 import {
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
-  RUNTIME_BINDING_CONTEXT,
-  RUNTIME_BINDING_GET_LINGUI_CONTEXT,
+  RUNTIME_BINDING_CREATE_FRONTMATTER_I18N,
   RUNTIME_BINDING_I18N,
   RUNTIME_BINDING_RUNTIME_TRANS,
 } from "../shared/constants.ts";
@@ -37,10 +36,13 @@ export function buildFrontmatterPrelude(
   const lines: string[] = [];
 
   if (includeAstroContext) {
+    // createFrontmatterI18n defers the getLinguiContext call until the first
+    // macro invocation. This allows setLinguiContext to be called in the same
+    // frontmatter block (same-component init pattern) without the prelude
+    // throwing because the context has not been set yet.
     lines.push(
-      `import { getLinguiContext as ${RUNTIME_BINDING_GET_LINGUI_CONTEXT} } from "${PACKAGE_RUNTIME}";\n`,
-      `const ${RUNTIME_BINDING_CONTEXT} = ${RUNTIME_BINDING_GET_LINGUI_CONTEXT}(Astro.locals);\n`,
-      `const ${RUNTIME_BINDING_I18N} = ${RUNTIME_BINDING_CONTEXT}.i18n;\n`,
+      `import { createFrontmatterI18n as ${RUNTIME_BINDING_CREATE_FRONTMATTER_I18N} } from "${PACKAGE_RUNTIME}";\n`,
+      `const ${RUNTIME_BINDING_I18N} = ${RUNTIME_BINDING_CREATE_FRONTMATTER_I18N}(Astro.locals);\n`,
     );
   }
 
