@@ -5,13 +5,18 @@ use tree_sitter::{Language, Node, Parser};
 use crate::{
     AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroImport, Span,
     framework::FrameworkAdapter,
-    js::{JsMacroSyntax, collect_macro_candidates_in_javascript},
+    js::{
+        BindingParseMode, JsMacroSyntax, collect_declared_names_from_binding_source,
+        collect_macro_candidates_in_javascript,
+        collect_macro_candidates_in_javascript_with_shadowing,
+    },
     parse,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SvelteScriptAnalysis {
     pub scripts: Vec<SvelteScriptBlock>,
+    pub template_expressions: Vec<SvelteTemplateExpression>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -20,6 +25,14 @@ pub struct SvelteScriptBlock {
     pub is_module: bool,
     pub macro_imports: Vec<MacroImport>,
     pub candidates: Vec<MacroCandidate>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SvelteTemplateExpression {
+    pub outer_span: Span,
+    pub inner_span: Span,
+    pub candidates: Vec<MacroCandidate>,
+    pub shadowed_names: Vec<String>,
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -52,7 +65,23 @@ pub fn analyze_svelte(source: &str) -> Result<SvelteScriptAnalysis, AnalyzerErro
     let root = tree.root_node();
     let mut scripts = Vec::new();
     collect_script_blocks(source, root, &mut scripts)?;
-    Ok(SvelteScriptAnalysis { scripts })
+    let template_imports = scripts
+        .iter()
+        .filter(|script| !script.is_module)
+        .flat_map(|script| script.macro_imports.iter().cloned())
+        .collect::<Vec<_>>();
+    let mut template_expressions = Vec::new();
+    collect_template_expressions(
+        source,
+        root,
+        &template_imports,
+        &mut Vec::new(),
+        &mut template_expressions,
+    )?;
+    Ok(SvelteScriptAnalysis {
+        scripts,
+        template_expressions,
+    })
 }
 
 fn collect_script_blocks(
@@ -115,6 +144,301 @@ fn analyze_script_block(
         macro_imports,
         candidates,
     }))
+}
+
+fn collect_template_expressions(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    expressions: &mut Vec<SvelteTemplateExpression>,
+) -> Result<(), AnalyzerError> {
+    match node.kind() {
+        "script_element" | "style_element" => return Ok(()),
+        "expression" => {
+            push_expression(source, node, imports, scope_stack, expressions)?;
+            return Ok(());
+        }
+        "const_tag" => {
+            let names = declared_names_from_const_tag(source, node)?;
+            if !names.is_empty() {
+                if let Some(frame) = scope_stack.last_mut() {
+                    frame.extend(names);
+                } else {
+                    scope_stack.push(names);
+                }
+            }
+            return Ok(());
+        }
+        "if_statement" | "else_block" | "else_if_block" | "key_statement" => {
+            scope_stack.push(Vec::new());
+            let mut cursor = node.walk();
+            for child in node.children(&mut cursor) {
+                collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+            }
+            scope_stack.pop();
+            return Ok(());
+        }
+        "each_statement" => {
+            visit_each_statement(source, node, imports, scope_stack, expressions)?;
+            return Ok(());
+        }
+        "then_block" => {
+            visit_named_block(
+                source,
+                node,
+                imports,
+                scope_stack,
+                expressions,
+                "then_start",
+            )?;
+            return Ok(());
+        }
+        "catch_block" => {
+            visit_named_block(
+                source,
+                node,
+                imports,
+                scope_stack,
+                expressions,
+                "catch_start",
+            )?;
+            return Ok(());
+        }
+        "snippet_statement" => {
+            visit_snippet_statement(source, node, imports, scope_stack, expressions)?;
+            return Ok(());
+        }
+        "element" | "self_closing_tag" => {
+            visit_element_like(source, node, imports, scope_stack, expressions)?;
+            return Ok(());
+        }
+        _ => {}
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+    }
+    Ok(())
+}
+
+fn push_expression(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &[Vec<String>],
+    expressions: &mut Vec<SvelteTemplateExpression>,
+) -> Result<(), AnalyzerError> {
+    let Some(raw_text) = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == "svelte_raw_text")
+    else {
+        return Ok(());
+    };
+
+    let inner_span = Span::from_node(raw_text);
+    let outer_span = Span::from_node(node);
+    let expression_source = &source[inner_span.start..inner_span.end];
+    let shadowed_names = scope_stack
+        .iter()
+        .flat_map(|frame| frame.iter().cloned())
+        .collect::<Vec<_>>();
+    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+        expression_source,
+        imports,
+        inner_span.start,
+        JsMacroSyntax::Svelte,
+        &shadowed_names,
+    )?;
+    expressions.push(SvelteTemplateExpression {
+        outer_span,
+        inner_span,
+        candidates,
+        shadowed_names,
+    });
+    Ok(())
+}
+
+fn visit_each_statement(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    expressions: &mut Vec<SvelteTemplateExpression>,
+) -> Result<(), AnalyzerError> {
+    let start = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == "each_start");
+    let frame = start
+        .map(|start| declared_names_from_each_start(source, start))
+        .transpose()?
+        .unwrap_or_default();
+
+    scope_stack.push(frame);
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == "each_start" || child.kind() == "each_end" {
+            continue;
+        }
+        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+    }
+    scope_stack.pop();
+    Ok(())
+}
+
+fn visit_named_block(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    expressions: &mut Vec<SvelteTemplateExpression>,
+    start_kind: &str,
+) -> Result<(), AnalyzerError> {
+    let start = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == start_kind);
+    let frame = start
+        .map(|start| {
+            declared_names_from_optional_raw_text(source, start, BindingParseMode::SingleParam)
+        })
+        .transpose()?
+        .flatten()
+        .unwrap_or_default();
+
+    scope_stack.push(frame);
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == start_kind {
+            continue;
+        }
+        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+    }
+    scope_stack.pop();
+    Ok(())
+}
+
+fn visit_snippet_statement(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    expressions: &mut Vec<SvelteTemplateExpression>,
+) -> Result<(), AnalyzerError> {
+    let start = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == "snippet_start");
+    let frame = start
+        .map(|start| {
+            declared_names_from_optional_raw_text(source, start, BindingParseMode::FunctionParams)
+        })
+        .transpose()?
+        .flatten()
+        .unwrap_or_default();
+
+    scope_stack.push(frame);
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == "snippet_start" || child.kind() == "snippet_end" {
+            continue;
+        }
+        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+    }
+    scope_stack.pop();
+    Ok(())
+}
+
+fn visit_element_like(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    expressions: &mut Vec<SvelteTemplateExpression>,
+) -> Result<(), AnalyzerError> {
+    let let_bindings = let_bindings_from_element(source, node);
+    let has_let_bindings = !let_bindings.is_empty();
+    if has_let_bindings {
+        scope_stack.push(let_bindings);
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if node.kind() == "element" && (child.kind() == "start_tag" || child.kind() == "end_tag") {
+            continue;
+        }
+        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+    }
+
+    if has_let_bindings {
+        scope_stack.pop();
+    }
+    Ok(())
+}
+
+fn declared_names_from_const_tag(
+    source: &str,
+    node: Node<'_>,
+) -> Result<Vec<String>, AnalyzerError> {
+    declared_names_from_optional_raw_text(source, node, BindingParseMode::VariableDeclarator)
+        .map(|names| names.unwrap_or_default())
+}
+
+fn declared_names_from_each_start(
+    source: &str,
+    node: Node<'_>,
+) -> Result<Vec<String>, AnalyzerError> {
+    let Some(parameter) = node.child_by_field_name("parameter") else {
+        return Ok(Vec::new());
+    };
+    collect_declared_names_from_binding_source(
+        text(source, parameter),
+        BindingParseMode::FunctionParams,
+    )
+}
+
+fn declared_names_from_optional_raw_text(
+    source: &str,
+    node: Node<'_>,
+    mode: BindingParseMode,
+) -> Result<Option<Vec<String>>, AnalyzerError> {
+    let raw_text = find_first_descendant(node, "svelte_raw_text");
+    let Some(raw_text) = raw_text else {
+        return Ok(None);
+    };
+    let names = collect_declared_names_from_binding_source(text(source, raw_text), mode)?;
+    Ok(Some(names))
+}
+
+fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<String> {
+    let tag = match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag"),
+        "self_closing_tag" => Some(node),
+        _ => None,
+    };
+    let Some(tag) = tag else {
+        return Vec::new();
+    };
+
+    let mut names = Vec::new();
+    let mut cursor = tag.walk();
+    for child in tag.children(&mut cursor) {
+        if child.kind() != "attribute" {
+            continue;
+        }
+        let Some(name_node) = child
+            .children(&mut child.walk())
+            .find(|grandchild| grandchild.kind() == "attribute_name")
+        else {
+            continue;
+        };
+        let attribute_name = text(source, name_node);
+        if let Some(local_name) = attribute_name.strip_prefix("let:") {
+            names.push(local_name.to_string());
+        }
+    }
+    names
 }
 
 fn collect_script_macro_imports(
@@ -226,4 +550,19 @@ fn unquote(text: &str) -> Option<String> {
 
 fn is_macro_module_specifier(specifier: &str) -> bool {
     specifier.ends_with("/macro")
+}
+
+fn find_first_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
+    if node.kind() == kind {
+        return Some(node);
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if let Some(found) = find_first_descendant(child, kind) {
+            return Some(found);
+        }
+    }
+
+    None
 }

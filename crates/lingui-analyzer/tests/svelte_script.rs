@@ -18,6 +18,7 @@ fn collects_svelte_script_macros_with_reactive_and_eager_flavors() {
 
     let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
     assert_eq!(analysis.scripts.len(), 1);
+    assert!(analysis.template_expressions.is_empty());
 
     let script = &analysis.scripts[0];
     assert!(!script.is_module);
@@ -82,4 +83,72 @@ fn ignores_shadowed_names_in_svelte_script() {
     assert_eq!(script.candidates.len(), 1);
     assert_eq!(script.candidates[0].imported_name, "t");
     assert_eq!(script.candidates[0].flavor, MacroFlavor::Direct);
+}
+
+#[test]
+fn tracks_template_scope_shadowing_across_svelte_binders() {
+    let source = indoc! {r#"
+        <script>
+          import { t } from "@lingui/core/macro";
+        </script>
+
+        {t`root`}
+        {#each items as t}
+          {t`each-shadowed`}
+        {/each}
+        {#await promise}
+          {:then t}
+          {t`then-shadowed`}
+        {/await}
+        {#await promise}
+          {:catch t}
+          {t`catch-shadowed`}
+        {/await}
+        {#snippet row(t)}
+          {t`snippet-shadowed`}
+        {/snippet}
+        {#if visible}
+          {@const t = localize()}
+          {t`const-shadowed`}
+        {/if}
+        <Widget let:t>
+          {t`let-shadowed`}
+        </Widget>
+        {t`after-widget`}
+    "#};
+
+    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let counts = analysis
+        .template_expressions
+        .iter()
+        .map(|expression| expression.candidates.len())
+        .collect::<Vec<_>>();
+    let shadowed = analysis
+        .template_expressions
+        .iter()
+        .map(|expression| expression.shadowed_names.clone())
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        shadowed,
+        vec![
+            vec![],
+            vec!["t".to_string()],
+            vec!["t".to_string()],
+            vec!["t".to_string()],
+            vec!["t".to_string()],
+            vec!["t".to_string()],
+            vec!["t".to_string()],
+            vec![],
+        ]
+    );
+    assert_eq!(counts, vec![1, 0, 0, 0, 0, 0, 0, 1]);
+    assert_eq!(
+        analysis.template_expressions[7].candidates[0].imported_name,
+        "t"
+    );
+    assert_eq!(
+        analysis.template_expressions[0].candidates[0].imported_name,
+        "t"
+    );
 }

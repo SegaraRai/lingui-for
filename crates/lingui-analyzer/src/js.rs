@@ -16,6 +16,16 @@ pub fn collect_macro_candidates_in_javascript(
     base_offset: usize,
     syntax: JsMacroSyntax,
 ) -> Result<Vec<MacroCandidate>, crate::AnalyzerError> {
+    collect_macro_candidates_in_javascript_with_shadowing(source, imports, base_offset, syntax, &[])
+}
+
+pub fn collect_macro_candidates_in_javascript_with_shadowing(
+    source: &str,
+    imports: &[MacroImport],
+    base_offset: usize,
+    syntax: JsMacroSyntax,
+    shadowed_names: &[String],
+) -> Result<Vec<MacroCandidate>, crate::AnalyzerError> {
     let js_tree = parse::parse_javascript(source)?;
     let js_root = js_tree.root_node();
     Ok(collect_macro_candidates_from_root(
@@ -24,6 +34,7 @@ pub fn collect_macro_candidates_in_javascript(
         imports,
         base_offset,
         syntax,
+        shadowed_names,
     ))
 }
 
@@ -33,8 +44,10 @@ pub fn collect_macro_candidates_from_root(
     imports: &[MacroImport],
     base_offset: usize,
     syntax: JsMacroSyntax,
+    shadowed_names: &[String],
 ) -> Vec<MacroCandidate> {
     let mut scope = LexicalScope::new(imports.iter().cloned());
+    scope.declare_many(shadowed_names.iter().cloned());
     let mut candidates = Vec::new();
     visit_node(
         source,
@@ -45,6 +58,30 @@ pub fn collect_macro_candidates_from_root(
         &mut candidates,
     );
     candidates
+}
+
+pub fn collect_declared_names_from_binding_source(
+    source: &str,
+    mode: BindingParseMode,
+) -> Result<Vec<String>, crate::AnalyzerError> {
+    let wrapped = match mode {
+        BindingParseMode::VariableDeclarator => format!("const {source};"),
+        BindingParseMode::FunctionParams => format!("function __lf({source}) {{}}"),
+        BindingParseMode::SingleParam => format!("(({source}) => 0)"),
+    };
+
+    let tree = parse::parse_javascript(&wrapped)?;
+    let root = tree.root_node();
+    let mut names = Vec::new();
+    collect_declared_names(root, &wrapped, &mut names);
+    Ok(names)
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BindingParseMode {
+    VariableDeclarator,
+    FunctionParams,
+    SingleParam,
 }
 
 fn visit_node(
@@ -323,4 +360,52 @@ fn shift_span(span: Span, base_offset: usize) -> Span {
 
 fn text<'a>(source: &'a str, node: Node<'_>) -> &'a str {
     &source[node.start_byte()..node.end_byte()]
+}
+
+fn collect_declared_names(node: Node<'_>, source: &str, names: &mut Vec<String>) {
+    match node.kind() {
+        "variable_declarator" => {
+            if let Some(name) = node.child_by_field_name("name") {
+                collect_pattern_names(name, source, names);
+            }
+        }
+        "formal_parameters" => {
+            let mut cursor = node.walk();
+            for child in node.children(&mut cursor) {
+                collect_pattern_names(child, source, names);
+            }
+        }
+        "arrow_function" | "function_declaration" | "function_expression" => {
+            if let Some(parameters) = node.child_by_field_name("parameters") {
+                collect_declared_names(parameters, source, names);
+            }
+        }
+        _ => {
+            let mut cursor = node.walk();
+            for child in node.children(&mut cursor) {
+                collect_declared_names(child, source, names);
+            }
+        }
+    }
+}
+
+fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) {
+    match node.kind() {
+        "identifier" | "shorthand_property_identifier_pattern" => {
+            names.push(text(source, node).to_string());
+        }
+        "array_pattern" | "object_pattern" | "assignment_pattern" | "pair_pattern"
+        | "rest_pattern" | "formal_parameters" => {
+            let mut cursor = node.walk();
+            for child in node.children(&mut cursor) {
+                collect_pattern_names(child, source, names);
+            }
+        }
+        "pair" => {
+            if let Some(value) = node.child_by_field_name("value") {
+                collect_pattern_names(value, source, names);
+            }
+        }
+        _ => {}
+    }
 }
