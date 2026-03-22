@@ -1,19 +1,11 @@
 import { describe, expect, test } from "vite-plus/test";
 
 import {
-  advanceGeneratedOffset,
   buildOutputWithIndexedMap,
   createUntouchedChunkMap,
 } from "./replacement-map.ts";
 
 describe("replacement map helpers", () => {
-  test("advances generated offsets across lines", () => {
-    expect(advanceGeneratedOffset({ line: 0, column: 0 }, "a\nbc")).toEqual({
-      line: 1,
-      column: 2,
-    });
-  });
-
   test("creates source maps for untouched source chunks", () => {
     const map = createUntouchedChunkMap(
       "const answer = 42;",

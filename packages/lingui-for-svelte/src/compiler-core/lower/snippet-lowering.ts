@@ -3,8 +3,10 @@ import {
   buildAnchoredGeneratedSnippetMap,
   buildGeneratedSnippetMap,
   buildPrefixedSnippetMap,
+  composeSourceMaps,
   createMappedOutput,
   splitSyntheticDeclarations as splitSyntheticDeclarationsShared,
+  withEndMapping,
 } from "lingui-for-shared/compiler";
 
 import type { SveltePlan } from "../plan/svelte-plan.ts";
@@ -85,16 +87,7 @@ export function lowerTemplateExpression(
           lowered.code,
           getSourceLineIndent(plan.source, start),
         ),
-        map: buildGeneratedSnippetMap(
-          plan.source,
-          plan.filename,
-          start,
-          indentMultilineReplacement(
-            lowered.code,
-            getSourceLineIndent(plan.source, start),
-          ),
-          source.length,
-        ),
+        map: lowered.map,
       };
 }
 
@@ -119,16 +112,7 @@ export function lowerScriptExpression(
           lowered.code,
           getSourceLineIndent(plan.source, start),
         ),
-        map: buildGeneratedSnippetMap(
-          plan.source,
-          plan.filename,
-          start,
-          indentMultilineReplacement(
-            lowered.code,
-            getSourceLineIndent(plan.source, start),
-          ),
-          source.length,
-        ),
+        map: lowered.map,
       };
 }
 
@@ -190,12 +174,24 @@ function lowerScriptLikeExpression(
     RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
   );
 
-  return (
-    split.expressionReplacements.get(0) ?? {
-      code: source,
-      map: null,
-    }
-  );
+  const fragment = split.expressionReplacements.get(0);
+  if (fragment == null) {
+    return { code: source, map: null };
+  }
+
+  return {
+    code: fragment.code,
+    map:
+      fragment.map != null && transformed.map != null
+        ? withEndMapping(
+            composeSourceMaps(fragment.map, transformed.map),
+            plan.filename,
+            fragment.code,
+            plan.source,
+            start + source.length - 1,
+          )
+        : null,
+  };
 }
 
 function getExtractionDescriptorAnchorOffset(code: string): number {
@@ -273,27 +269,23 @@ export function lowerComponentMacro(
   );
   const replacement = split.componentReplacements.get(0);
 
-  return replacement
-    ? {
-        code: indentMultilineReplacement(
-          replacement.code,
-          getSourceLineIndent(plan.source, start),
-        ),
-        map: buildGeneratedSnippetMap(
-          plan.source,
-          plan.filename,
-          start,
-          indentMultilineReplacement(
-            replacement.code,
-            getSourceLineIndent(plan.source, start),
-          ),
-          source.length,
-        ),
-      }
-    : {
-        code: source,
-        map: null,
-      };
+  if (!replacement) {
+    return { code: source, map: null };
+  }
+
+  const indent = getSourceLineIndent(plan.source, start);
+  const indented = indentMultilineReplacement(replacement.code, indent);
+
+  return {
+    code: indented,
+    map: buildGeneratedSnippetMap(
+      plan.source,
+      plan.filename,
+      start,
+      indented,
+      source.length,
+    ),
+  };
 }
 
 function getSourceLineIndent(source: string, offset: number): string {

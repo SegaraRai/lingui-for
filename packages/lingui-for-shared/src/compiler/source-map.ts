@@ -362,6 +362,57 @@ export function composeSourceMaps(
   return toEncodedMap(gen);
 }
 
+export function withEndMapping(
+  map: EncodedSourceMap,
+  filename: string,
+  generatedCode: string,
+  source: string,
+  originalEndOffset: number,
+): EncodedSourceMap {
+  const gen = new GenMapping({ file: map.file ?? filename });
+  const tracer = new TraceMap(map);
+
+  eachMapping(tracer, (mapping) => {
+    if (
+      mapping.source == null ||
+      mapping.originalLine == null ||
+      mapping.originalColumn == null
+    ) {
+      return;
+    }
+    addMapping2(gen, {
+      generated: {
+        line: mapping.generatedLine,
+        column: mapping.generatedColumn,
+      },
+      original: {
+        line: mapping.originalLine,
+        column: mapping.originalColumn,
+      },
+      source: mapping.source,
+      name: mapping.name ?? null,
+    });
+  });
+
+  tracer.sources.forEach((src) => {
+    if (src == null) return;
+    const content = sourceContentFor(tracer, src);
+    if (content != null) setSourceContent(gen, src, content);
+  });
+
+  if (generatedCode.length > 0) {
+    addMapping(gen, {
+      generated: createOffsetToPosition(generatedCode)(
+        generatedCode.length - 1,
+      ),
+      original: createOffsetToPosition(source)(originalEndOffset),
+      source: filename,
+    });
+  }
+
+  return toEncodedMap(gen);
+}
+
 export function offsetSourceMap(
   map: EncodedSourceMap,
   file: string,
