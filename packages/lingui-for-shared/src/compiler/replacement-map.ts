@@ -37,7 +37,7 @@ export function buildOutputWithIndexedMap(
     source: mapFile,
     file: mapFile,
     includeContent: true,
-    hires: "boundary",
+    hires: true,
   }) as unknown as EncodedSourceMap;
   // MagicString computes `sources` relative to `file`, which collapses to the
   // basename when source === file.  Override with the absolute path so callers

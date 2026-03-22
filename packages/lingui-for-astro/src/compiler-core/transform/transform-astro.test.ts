@@ -1,11 +1,9 @@
 import dedent from "dedent";
-import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
+import { TraceMap } from "@jridgewell/trace-mapping";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
   assertRangeMapping,
-  findUniqueRange,
-  offsetToLocation,
   type Detection,
 } from "lingui-for-shared/test-helpers";
 
@@ -330,15 +328,10 @@ describe("transformAstro source map discipline", () => {
     </section>
   `;
 
-  // Transformed detections: MagicString maps the whole replacement to the
-  // original start position — only start line/column can be verified.
-  const transformedDetections: Detection[] = [
+  const detections: Detection[] = [
     {
-      // The entire frontmatter block is replaced as one chunk, so all
-      // generated frontmatter positions map back to the frontmatter start
-      // (line 1). Use the unique frontmatter opener as the expected origin.
       name: "frontmatter transform",
-      original: "---\nimport",
+      original: "t`Mapped script message`",
       generated: /__l4a_i18n\._\([^)]+message: "Mapped script message"[^)]+\)/,
     },
     {
@@ -348,10 +341,8 @@ describe("transformAstro source map discipline", () => {
         /__l4a_i18n\._\([^)]+message: "Mapped template message"[^)]+\)/,
     },
     {
-      // innerRange.start is the \n immediately after the { brace, so the
-      // source map maps back to that newline — use it as the expected origin.
       name: "range check with surrounding whitespace",
-      original: "\n\n    t`Range check with surrounding whitespace`",
+      original: /t`Range check with surrounding whitespace`/,
       generated:
         /__l4a_i18n\._\([^)]+message: "Range check with surrounding whitespace"[^)]+\)/,
     },
@@ -360,18 +351,16 @@ describe("transformAstro source map discipline", () => {
       original: "<Trans>Mapped component message</Trans>",
       generated: /<L4aRuntimeTrans\b[\s\S]*?\/>/,
     },
-  ];
-
-  // Frontmatter bindings: the entire frontmatter block is replaced as one
-  // chunk, so all frontmatter content (including preserved bindings) maps to
-  // the frontmatter start position (line 1). Only check source + line.
-  const frontmatterPreservedGeneratedPatterns: Array<string | RegExp> = [
-    "const label = ",
-    'const keepAfter = "after";',
-  ];
-
-  // Template preserved detections: untouched markup has accurate start+end mapping.
-  const preservedDetections: Detection[] = [
+    {
+      name: "label binding is preserved",
+      original: "const label = ",
+      generated: "const label = ",
+    },
+    {
+      name: "keepAfter binding is preserved",
+      original: 'const keepAfter = "after";',
+      generated: 'const keepAfter = "after";',
+    },
     {
       name: "template opening wrapper is preserved",
       original: "<p><strong>{",
@@ -405,42 +394,7 @@ describe("transformAstro source map discipline", () => {
     expect(map.sourcesContent).toEqual([source]);
 
     const consumer = new TraceMap(map);
-
-    transformedDetections.forEach((detection) => {
-      const genRange = findUniqueRange(result.code, detection.generated);
-      const origRange = findUniqueRange(source, detection.original);
-      const genStart = offsetToLocation(result.code, genRange.start);
-      const origStart = offsetToLocation(source, origRange.start);
-      const mapped = originalPositionFor(consumer, {
-        line: genStart.line,
-        column: genStart.column,
-      });
-      expect(mapped.source, `${detection.name}: source`).toBe(
-        "/virtual/Page.astro",
-      );
-      expect(mapped.line, `${detection.name}: start line`).toBe(origStart.line);
-      expect(mapped.column, `${detection.name}: start column`).toBe(
-        origStart.column,
-      );
-    });
-
-    // Frontmatter-preserved bindings all map to frontmatter start (line 1).
-    frontmatterPreservedGeneratedPatterns.forEach((pattern) => {
-      const genRange = findUniqueRange(result.code, pattern);
-      const genStart = offsetToLocation(result.code, genRange.start);
-      const mapped = originalPositionFor(consumer, {
-        line: genStart.line,
-        column: genStart.column,
-      });
-      expect(mapped.source, `${String(pattern)}: source`).toBe(
-        "/virtual/Page.astro",
-      );
-      expect(mapped.line, `${String(pattern)}: maps to frontmatter start`).toBe(
-        1,
-      );
-    });
-
-    preservedDetections.forEach((detection) => {
+    detections.forEach((detection) => {
       assertRangeMapping(
         consumer,
         result.code,

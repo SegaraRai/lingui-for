@@ -154,7 +154,7 @@ export function createAstroExtractionUnitsFromPlan(
         source: filename,
         file: filename,
         includeContent: false,
-        hires: false,
+        hires: true,
       }) as any;
       map.sources = [filename];
       units.push({ code: lowered.code, map });

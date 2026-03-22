@@ -66,8 +66,8 @@ describe("createExtractionUnits", () => {
       {
         // Component macro: lowered with extract:true through Babel + Lingui macro.
         // Lingui transforms <Trans> to an object form: message: "..." (not JSX).
-        // The component source map uses hires:false so only start position is
-        // checked (the entire lowered code maps to the component's start offset).
+        // The component source map uses hires:true; only start position is
+        // checked because the entire lowered code maps to the component's start.
         name: "component extraction",
         original: "<Trans>Component origin message</Trans>",
         generated: /message:\s*"Component origin message"/,

@@ -48,6 +48,38 @@ export function buildFrontmatterPrelude(
   return lines.join("");
 }
 
+/**
+ * Runs the frontmatter macro transform and returns individual replacement
+ * chunks with positions adjusted to the absolute source offsets in the full
+ * Astro file. Each chunk covers exactly one import removal or one macro
+ * expression replacement, so the caller can push them directly into the
+ * file-level replacement list and get per-expression source-map accuracy.
+ */
+export function buildFrontmatterTransformChunks(
+  content: string,
+  contentOffset: number,
+  options: LinguiAstroTransformOptions,
+  loweringOptions: { runtimeBinding: string },
+): ReplacementChunk[] {
+  const runtimeBinding = loweringOptions.runtimeBinding;
+  const transformed = transformProgram(content, {
+    translationMode: "astro-context",
+    filename: `${options.filename}?frontmatter`,
+    linguiConfig: normalizeLinguiConfig(options.linguiConfig),
+    runtimeBinding,
+  });
+  const chunks = createFrontmatterReplacementChunks(
+    content,
+    transformed,
+    runtimeBinding,
+  );
+  return chunks.map((chunk) => ({
+    start: chunk.start + contentOffset,
+    end: chunk.end + contentOffset,
+    code: chunk.code,
+  }));
+}
+
 export function lowerFrontmatterMacros(
   source: string,
   options: LinguiAstroTransformOptions,

@@ -1,5 +1,5 @@
-import dedent from "dedent";
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
+import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
@@ -1290,6 +1290,90 @@ describe("transformSvelte source map discipline", () => {
       column: originalMarkup.column,
     });
   });
+});
+
+describe("transformSvelte source map discipline", () => {
+  const source = dedent`
+    <script lang="ts">
+      import { t, Trans } from "lingui-for-svelte/macro";
+
+      const keepBefore = "before";
+      // KEEP_SCRIPT_COMMENT
+      const eagerLabel = t.eager\`Mapped script message\`;
+      const keepAfter = "after";
+    </script>
+
+    <section data-keep="yes">
+      <p>{keepBefore}</p>
+      <p>{$t\`Mapped template message\`}</p>
+      <Trans>Mapped component message</Trans>
+      <p>{keepAfter}</p>
+    </section>
+  `;
+
+  test("preserves untouched script and markup while keeping file-level source map metadata", () => {
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.code).toContain('const keepBefore = "before";');
+    expect(result.code).toContain("// KEEP_SCRIPT_COMMENT");
+    expect(result.code).toContain('const keepAfter = "after";');
+    expect(result.code).toContain('<section data-keep="yes">');
+    expect(result.code).toContain("<p>{keepBefore}</p>");
+    expect(result.code).toContain("<p>{keepAfter}</p>");
+
+    expect(result.map.file).toBe("/virtual/App.svelte");
+    expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
+    expect(result.map.sourcesContent).toEqual([source]);
+  });
+
+  test("maps unchanged script lines back to their original locations instead of the rewritten script prelude", () => {
+    const result = transformSvelte(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    const generatedScript = offsetToLocation(
+      result.code,
+      findUniqueRange(result.code, 'const keepAfter = "after";').start,
+    );
+    const originalScript = offsetToLocation(
+      source,
+      findUniqueRange(source, 'const keepAfter = "after";').start,
+    );
+    const generatedMarkup = offsetToLocation(
+      result.code,
+      findUniqueRange(result.code, "<p>{keepAfter}</p>").start,
+    );
+    const originalMarkup = offsetToLocation(
+      source,
+      findUniqueRange(source, "<p>{keepAfter}</p>").start,
+    );
+    const mappedSource = result.map.sources[0] ?? result.map.file;
+
+    const consumer = new TraceMap(result.map);
+    expect(
+      originalPositionFor(consumer, {
+        line: generatedScript.line,
+        column: generatedScript.column,
+      }),
+    ).toMatchObject({
+      source: mappedSource,
+      line: originalScript.line,
+      column: originalScript.column,
+    });
+
+    expect(
+      originalPositionFor(consumer, {
+        line: generatedMarkup.line,
+        column: generatedMarkup.column,
+      }),
+    ).toMatchObject({
+      source: mappedSource,
+      line: originalMarkup.line,
+      column: originalMarkup.column,
+    });
+  });
 
   const rangeSource = dedent`
     <script lang="ts">
@@ -1313,10 +1397,7 @@ describe("transformSvelte source map discipline", () => {
     </section>
   `;
 
-  // Detections for REPLACED regions (macros transformed to runtime calls).
-  // MagicString maps the entire replacement to the original start position, so
-  // only the start mapping can be verified accurately for these.
-  const transformedDetections: Detection[] = [
+  const detections: Detection[] = [
     {
       name: "script transform",
       original: "t.eager`Mapped script message`",
@@ -1340,11 +1421,6 @@ describe("transformSvelte source map discipline", () => {
       original: "<Trans>Mapped component message</Trans>",
       generated: /<L4sRuntimeTrans\b[\s\S]*?\/>/,
     },
-  ];
-
-  // Detections for UNTOUCHED regions (text preserved verbatim in output).
-  // Both start and end positions can be verified for these.
-  const preservedDetections: Detection[] = [
     {
       name: "label binding is preserved",
       original: "const label = ",
@@ -1387,30 +1463,7 @@ describe("transformSvelte source map discipline", () => {
     expect(result.map.sourcesContent).toEqual([rangeSource]);
 
     const consumer = new TraceMap(result.map);
-
-    // For replaced regions, verify only start position (MagicString maps entire
-    // replacement to original start; end-position accuracy requires per-chunk maps).
-    transformedDetections.forEach((detection) => {
-      const genRange = findUniqueRange(result.code, detection.generated);
-      const origRange = findUniqueRange(rangeSource, detection.original);
-      const genStart = offsetToLocation(result.code, genRange.start);
-      const origStart = offsetToLocation(rangeSource, origRange.start);
-      const mapped = originalPositionFor(consumer, {
-        line: genStart.line,
-        column: genStart.column,
-      });
-
-      expect(mapped.source, `${detection.name}: missing source`).toBe(
-        "/virtual/App.svelte",
-      );
-      expect(mapped.line, `${detection.name}: start line`).toBe(origStart.line);
-      expect(mapped.column, `${detection.name}: start column`).toBe(
-        origStart.column,
-      );
-    });
-
-    // For preserved (untouched) regions, verify both start and end.
-    preservedDetections.forEach((detection) => {
+    detections.forEach((detection) => {
       assertRangeMapping(
         consumer,
         result.code,

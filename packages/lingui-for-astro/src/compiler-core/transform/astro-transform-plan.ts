@@ -6,8 +6,8 @@ import {
 
 import {
   buildFrontmatterPrelude,
+  buildFrontmatterTransformChunks,
   lowerComponentMacro,
-  lowerFrontmatterMacros,
   lowerTemplateExpression,
 } from "../lower/index.ts";
 import type { AstroPlan } from "../plan/index.ts";
@@ -61,7 +61,7 @@ export function createAstroReplacementPlan(
     });
   });
 
-  const frontmatter = plan.items.find(
+  const frontmatterMacroBlock = plan.items.find(
     (
       item,
     ): item is Extract<
@@ -69,56 +69,55 @@ export function createAstroReplacementPlan(
       { kind: "frontmatter-macro-block" }
     > => item.kind === "frontmatter-macro-block",
   );
-  const transformedFrontmatter = frontmatter
-    ? lowerFrontmatterMacros(frontmatter.source, plan.options, {
-        extract: false,
-        runtimeBinding: plan.runtimeBindings.i18n,
-      })
-    : {
-        code: plan.frontmatter?.content ?? "",
-      };
   const prelude = buildFrontmatterPrelude(
     plan.usesAstroI18n,
     plan.usesRuntimeTrans,
     plan.runtimeBindings,
   );
-  const finalFrontmatter = normalizeFrontmatterContent(
-    [prelude, transformedFrontmatter.code]
-      .filter((part) => part.trim().length > 0)
-      .join(""),
-  );
 
   if (plan.frontmatter) {
-    const frontmatterPrefix = "---\n";
-    const frontmatterSuffix = finalFrontmatter.endsWith("\n") ? "---" : "\n---";
+    const contentOffset = plan.frontmatter.contentRange.start;
+    // contentRange.start may point to the opening \n after the first ---
+    // delimiter. Skip past it so the prelude lands after the newline (giving
+    // ---\n<prelude>...) rather than before it (giving ---<prelude>\n...).
+    let preludeInsertPoint = contentOffset;
+    if (plan.source[preludeInsertPoint] === "\r") preludeInsertPoint++;
+    if (plan.source[preludeInsertPoint] === "\n") preludeInsertPoint++;
 
-    replacements.push({
-      start: plan.frontmatter.range.start,
-      end: plan.frontmatter.range.end,
-      code: `${frontmatterPrefix}${finalFrontmatter}${frontmatterSuffix}`,
-    });
-  } else if (finalFrontmatter.trim().length > 0) {
+    // Insert the runtime prelude as new text at the start of the frontmatter
+    // content block. Using a zero-width chunk preserves every other character's
+    // source position so the map stays accurate for all surrounding code.
+    if (prelude.length > 0) {
+      replacements.push({
+        start: preludeInsertPoint,
+        end: preludeInsertPoint,
+        code: prelude,
+      });
+    }
+    // Push individual import-removal and expression-replacement chunks so that
+    // each transformed call maps back to its exact original position instead of
+    // mapping everything to the frontmatter start.
+    if (frontmatterMacroBlock) {
+      replacements.push(
+        ...buildFrontmatterTransformChunks(
+          frontmatterMacroBlock.source,
+          contentOffset,
+          plan.options,
+          { runtimeBinding: plan.runtimeBindings.i18n },
+        ),
+      );
+    }
+  } else if (prelude.trim().length > 0) {
     replacements.push({
       start: 0,
       end: 0,
-      code: `---\n${finalFrontmatter}\n---\n`,
+      code: `---\n${prelude}\n---\n`,
     });
   }
 
   return replacements;
 }
 
-function normalizeFrontmatterContent(content: string): string {
-  if (content.startsWith("\r\n")) {
-    return content.slice(2);
-  }
-
-  if (content.startsWith("\n")) {
-    return content.slice(1);
-  }
-
-  return content;
-}
 
 export function applyAstroReplacementPlan(
   source: string,

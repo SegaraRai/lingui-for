@@ -93,9 +93,9 @@ export function assertRangeMapping(
   const generated = findUniqueRange(generatedSource, detection.generated);
   const original = findUniqueRange(originalSource, detection.original);
   const generatedStart = offsetToLocation(generatedSource, generated.start);
-  const generatedEnd = offsetToLocation(generatedSource, generated.end - 1);
+  const generatedEnd = offsetToLocation(generatedSource, generated.end);
   const originalStart = offsetToLocation(originalSource, original.start);
-  const originalEnd = offsetToLocation(originalSource, original.end - 1);
+  const originalEnd = offsetToLocation(originalSource, original.end);
   const mappedStart = originalPositionFor(consumer, {
     line: generatedStart.line,
     column: generatedStart.column,

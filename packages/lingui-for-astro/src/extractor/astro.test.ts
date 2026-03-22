@@ -89,7 +89,7 @@ const role = "admin";
     );
 
     // Component macros map all generated positions to the component's start
-    // (ms.overwrite + hires:false). <Trans> starts at line 14, column 0.
+    // (ms.overwrite). <Trans> starts at line 14, column 0.
     expect(nested?.origin).toEqual(["/virtual/nested-origin.astro", 14, 0]);
   });
 
@@ -162,7 +162,7 @@ const role = "admin";
     );
 
     // Component macros map all generated positions to the component's start
-    // (ms.overwrite + hires:false). <Plural> starts at line 9, column 0.
+    // (ms.overwrite). <Plural> starts at line 9, column 0.
     // All three ICU branch messages therefore share the same origin.
     expect(
       messages.find(

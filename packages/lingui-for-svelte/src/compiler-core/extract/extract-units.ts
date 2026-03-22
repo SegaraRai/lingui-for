@@ -153,7 +153,7 @@ export function createExtractionUnits(
       source: plan.filename,
       file: plan.filename,
       includeContent: false,
-      hires: false,
+      hires: true,
     }) as any;
     map.sources = [plan.filename];
     units.push({ code: lowered.code, map });
