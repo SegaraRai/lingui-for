@@ -1,5 +1,9 @@
 import MagicString from "magic-string";
-import { SourceMapConsumer, SourceMapGenerator } from "source-map";
+import {
+  SourceMapConsumer,
+  SourceMapGenerator,
+  type RawSourceMap,
+} from "source-map";
 
 import type { IndexedSourceMap, SourceMap } from "./source-map-types.ts";
 
@@ -41,7 +45,7 @@ export function buildDirectProgramMap(
   filename: string,
   originalStart: number,
   originalLength: number,
-): SourceMap {
+): RawSourceMap {
   const string = new MagicString(source, { filename }).snip(
     originalStart,
     originalStart + originalLength,
@@ -65,7 +69,7 @@ export function buildPrefixedSnippetMap(
   originalStart: number,
   prefix: string,
   originalLength: number,
-): SourceMap {
+): RawSourceMap {
   const originalPosition = createOffsetToPosition(source)(originalStart);
   const prefixPosition = createOffsetToPosition(prefix);
   const bodyMap = buildDirectProgramMap(
@@ -178,7 +182,7 @@ export function buildGeneratedSnippetMap(
   originalStart: number,
   generated: string,
   originalLength: number,
-): SourceMap {
+): RawSourceMap {
   const generator = new SourceMapGenerator({ file: filename });
   const toPosition = createOffsetToPosition(source);
   const generatedToPosition = createOffsetToPosition(generated);
@@ -209,7 +213,7 @@ export function buildAnchoredGeneratedSnippetMap(
   generated: string,
   originalLength: number,
   anchorOffset: number,
-): SourceMap {
+): RawSourceMap {
   const generator = new SourceMapGenerator({ file: filename });
   const toPosition = createOffsetToPosition(source);
   const generatedToPosition = createOffsetToPosition(generated);
@@ -241,9 +245,9 @@ export function buildAnchoredGeneratedSnippetMap(
 }
 
 export async function composeSourceMaps(
-  outerMap: SourceMap,
-  innerMap: SourceMap,
-): Promise<SourceMap> {
+  outerMap: RawSourceMap,
+  innerMap: RawSourceMap,
+): Promise<RawSourceMap> {
   return await SourceMapConsumer.with(
     outerMap,
     null,
@@ -358,10 +362,10 @@ function computeGeneratedOffset(code: string): {
 }
 
 function normalizeMagicStringMapFilename(
-  map: SourceMap,
+  map: RawSourceMap,
   filename: string,
   sourceContent: string,
-): SourceMap {
+): RawSourceMap {
   return {
     ...map,
     file: filename,

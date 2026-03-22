@@ -1,4 +1,5 @@
 import MagicString from "magic-string";
+import type { RawSourceMap } from "source-map";
 
 import type {
   IndexedSourceMap,
@@ -23,7 +24,7 @@ export function createUntouchedChunkMap(
   filename: string,
   start: number,
   end: number,
-): SourceMap | null {
+): RawSourceMap | null {
   if (end <= start) {
     return null;
   }

@@ -1,7 +1,5 @@
 import type { RawSourceMap } from "source-map";
 
-export type FlatSourceMap = RawSourceMap;
-
 export type IndexedSourceMapSection = {
   offset: {
     line: number;
@@ -20,7 +18,7 @@ export type IndexedSourceMap = Omit<
   sections: IndexedSourceMapSection[];
 };
 
-export type SourceMap = FlatSourceMap | IndexedSourceMap;
+export type SourceMap = RawSourceMap | IndexedSourceMap;
 
 export function isIndexedSourceMap(map: SourceMap): map is IndexedSourceMap {
   return "sections" in map && Array.isArray(map.sections);

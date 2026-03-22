@@ -1,6 +1,6 @@
-import type { SourceMap } from "lingui-for-shared/compiler";
+import type { RawSourceMap } from "source-map";
 
 export type SvelteTransformResult = {
   code: string;
-  map: SourceMap;
+  map: RawSourceMap;
 };
