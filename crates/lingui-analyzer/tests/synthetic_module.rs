@@ -56,3 +56,80 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
     assert_eq!(synthetic.mappings.len(), 3);
     assert!(synthetic.generated_spans["__lf_0"].start < synthetic.generated_spans["__lf_0"].end);
 }
+
+#[test]
+fn builds_synthetic_module_for_svelte_template_components() {
+    let source = indoc! {r#"
+        <script>
+          import { Trans as T } from "@lingui/react/macro";
+        </script>
+
+        <T id="root" />
+        <T id="second">Hello</T>
+    "#};
+
+    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let candidates = analysis
+        .template_components
+        .iter()
+        .map(|component| component.candidate.clone())
+        .collect::<Vec<_>>();
+    let synthetic = build_synthetic_module(source, &analysis.scripts[0].macro_imports, &candidates);
+
+    assert!(
+        synthetic
+            .source
+            .contains("import { Trans as T } from \"@lingui/react/macro\";")
+    );
+    assert!(
+        synthetic
+            .source
+            .contains("const __lf_0 = <T id=\"root\" />;")
+    );
+    assert!(
+        synthetic
+            .source
+            .contains("const __lf_1 = <T id=\"second\">Hello</T>;")
+    );
+    assert_eq!(synthetic.declaration_ids.len(), 2);
+}
+
+#[test]
+fn groups_synthetic_imports_by_source() {
+    let source = indoc! {r#"
+        <script>
+          import { t } from "@lingui/core/macro";
+          import { Trans as T } from "@lingui/react/macro";
+          const direct = t`Hello`;
+        </script>
+
+        <T id="root" />
+    "#};
+
+    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let mut candidates = analysis.scripts[0].candidates.clone();
+    candidates.extend(
+        analysis
+            .template_components
+            .iter()
+            .map(|component| component.candidate.clone()),
+    );
+    let synthetic = build_synthetic_module(source, &analysis.scripts[0].macro_imports, &candidates);
+
+    assert!(
+        synthetic
+            .source
+            .contains("import { t } from \"@lingui/core/macro\";")
+    );
+    assert!(
+        synthetic
+            .source
+            .contains("import { Trans as T } from \"@lingui/react/macro\";")
+    );
+    assert!(synthetic.source.contains("const __lf_0 = t`Hello`;"));
+    assert!(
+        synthetic
+            .source
+            .contains("const __lf_1 = <T id=\"root\" />;")
+    );
+}

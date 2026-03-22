@@ -56,32 +56,42 @@ pub fn build_synthetic_module(
 }
 
 fn render_import_line(imports: &[MacroImport]) -> Option<String> {
-    let mut unique = Vec::<(&str, &str, &str)>::new();
+    let mut grouped = BTreeMap::<&str, Vec<(&str, &str)>>::new();
     for import_decl in imports {
-        let key = (
-            import_decl.source.as_str(),
+        let specifiers = grouped.entry(import_decl.source.as_str()).or_default();
+        let specifier = (
             import_decl.imported_name.as_str(),
             import_decl.local_name.as_str(),
         );
-        if !unique.contains(&key) {
-            unique.push(key);
+        if !specifiers.contains(&specifier) {
+            specifiers.push(specifier);
         }
     }
 
-    let source = unique.first()?.0;
-    let specifiers = unique
-        .iter()
-        .map(|(_, imported_name, local_name)| {
-            if imported_name == local_name {
-                (*local_name).to_string()
-            } else {
-                format!("{imported_name} as {local_name}")
-            }
+    if grouped.is_empty() {
+        return None;
+    }
+
+    let lines = grouped
+        .into_iter()
+        .map(|(source, specifiers)| {
+            let rendered = specifiers
+                .into_iter()
+                .map(|(imported_name, local_name)| {
+                    if imported_name == local_name {
+                        local_name.to_string()
+                    } else {
+                        format!("{imported_name} as {local_name}")
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("import {{ {rendered} }} from \"{source}\";")
         })
         .collect::<Vec<_>>()
-        .join(", ");
+        .join("\n");
 
-    Some(format!("import {{ {specifiers} }} from \"{source}\";"))
+    Some(lines)
 }
 
 fn normalize_candidate_source(source: &str, candidate: &MacroCandidate) -> String {
