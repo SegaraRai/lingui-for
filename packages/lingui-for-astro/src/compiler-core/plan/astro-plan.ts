@@ -1,7 +1,9 @@
 import type { AstroAnalysis } from "#astro-analyzer-wasm";
+import type { AstroRuntimeBindings } from "../shared/constants.ts";
 import { PACKAGE_MACRO } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import {
+  allocateAstroRuntimeBindings,
   createAstroTransformContext,
   type AstroTransformContext,
 } from "./astro-transform-context.ts";
@@ -45,6 +47,7 @@ export interface AstroPlan {
   items: AstroPlanItem[];
   usesAstroI18n: boolean;
   usesRuntimeTrans: boolean;
+  runtimeBindings: AstroRuntimeBindings;
 }
 
 export function createAstroPlan(
@@ -125,5 +128,9 @@ export function createAstroPlanFromContext(
     items,
     usesAstroI18n: context.usesAstroI18n,
     usesRuntimeTrans: context.usesRuntimeTrans,
+    runtimeBindings: allocateAstroRuntimeBindings(
+      context.frontmatterContent,
+      options.filename,
+    ),
   };
 }

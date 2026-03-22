@@ -5,7 +5,16 @@ import {
   type AstroComponentCandidate,
   type AstroExpression,
 } from "#astro-analyzer-wasm";
-import { PACKAGE_MACRO } from "../shared/constants.ts";
+import { createUniqueNameAllocator } from "lingui-for-shared/compiler";
+
+import { getParserPlugins } from "../shared/config.ts";
+import {
+  PACKAGE_MACRO,
+  RUNTIME_BINDING_CREATE_FRONTMATTER_I18N,
+  RUNTIME_BINDING_I18N,
+  RUNTIME_BINDING_RUNTIME_TRANS,
+  type AstroRuntimeBindings,
+} from "../shared/constants.ts";
 import {
   expressionUsesMacroBinding,
   parseMacroBindings,
@@ -165,4 +174,19 @@ function filterExpressions(
   }
 
   return results;
+}
+
+export function allocateAstroRuntimeBindings(
+  frontmatterContent: string,
+  filename: string,
+): AstroRuntimeBindings {
+  const allocate = createUniqueNameAllocator(frontmatterContent, {
+    filename: `${filename}?frontmatter`,
+    parserPlugins: getParserPlugins(),
+  });
+  return {
+    createI18n: allocate(RUNTIME_BINDING_CREATE_FRONTMATTER_I18N),
+    i18n: allocate(RUNTIME_BINDING_I18N),
+    runtimeTrans: allocate(RUNTIME_BINDING_RUNTIME_TRANS),
+  };
 }

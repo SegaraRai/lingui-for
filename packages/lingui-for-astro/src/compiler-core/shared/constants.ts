@@ -8,3 +8,15 @@ export const RUNTIME_BINDING_GET_LINGUI_CONTEXT = "__l4a_getLinguiContext";
 export const RUNTIME_BINDING_CREATE_FRONTMATTER_I18N = "__l4a_createI18n";
 export const RUNTIME_BINDING_I18N = "__l4a_i18n";
 export const RUNTIME_BINDING_RUNTIME_TRANS = "L4aRuntimeTrans";
+
+export type AstroRuntimeBindings = {
+  createI18n: string;
+  i18n: string;
+  runtimeTrans: string;
+};
+
+export const DEFAULT_ASTRO_RUNTIME_BINDINGS: AstroRuntimeBindings = {
+  createI18n: RUNTIME_BINDING_CREATE_FRONTMATTER_I18N,
+  i18n: RUNTIME_BINDING_I18N,
+  runtimeTrans: RUNTIME_BINDING_RUNTIME_TRANS,
+};

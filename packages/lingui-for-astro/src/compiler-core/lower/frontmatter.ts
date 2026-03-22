@@ -14,11 +14,11 @@ import {
 
 import { getParserPlugins, normalizeLinguiConfig } from "../shared/config.ts";
 import {
+  DEFAULT_ASTRO_RUNTIME_BINDINGS,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
-  RUNTIME_BINDING_CREATE_FRONTMATTER_I18N,
   RUNTIME_BINDING_I18N,
-  RUNTIME_BINDING_RUNTIME_TRANS,
+  type AstroRuntimeBindings,
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
@@ -32,6 +32,7 @@ type SourceRange = {
 export function buildFrontmatterPrelude(
   includeAstroContext: boolean,
   includeRuntimeTrans: boolean,
+  bindings: AstroRuntimeBindings = DEFAULT_ASTRO_RUNTIME_BINDINGS,
 ): string {
   const lines: string[] = [];
 
@@ -41,14 +42,14 @@ export function buildFrontmatterPrelude(
     // frontmatter block (same-component init pattern) without the prelude
     // throwing because the context has not been set yet.
     lines.push(
-      `import { createFrontmatterI18n as ${RUNTIME_BINDING_CREATE_FRONTMATTER_I18N} } from "${PACKAGE_RUNTIME}";\n`,
-      `const ${RUNTIME_BINDING_I18N} = ${RUNTIME_BINDING_CREATE_FRONTMATTER_I18N}(Astro.locals);\n`,
+      `import { createFrontmatterI18n as ${bindings.createI18n} } from "${PACKAGE_RUNTIME}";\n`,
+      `const ${bindings.i18n} = ${bindings.createI18n}(Astro.locals);\n`,
     );
   }
 
   if (includeRuntimeTrans) {
     lines.push(
-      `import { RuntimeTrans as ${RUNTIME_BINDING_RUNTIME_TRANS} } from "${PACKAGE_RUNTIME}";\n`,
+      `import { RuntimeTrans as ${bindings.runtimeTrans} } from "${PACKAGE_RUNTIME}";\n`,
     );
   }
 
@@ -61,8 +62,10 @@ export function lowerFrontmatterMacros(
   loweringOptions: {
     extract: boolean;
     sourceMapOptions?: LoweringSourceMapOptions;
+    runtimeBinding?: string;
   },
 ): LoweredSnippet {
+  const runtimeBinding = loweringOptions.runtimeBinding ?? RUNTIME_BINDING_I18N;
   const transformed = transformProgram(source, {
     extract: loweringOptions.extract,
     filename: `${options.filename}?frontmatter`,
@@ -76,7 +79,7 @@ export function lowerFrontmatterMacros(
       : undefined,
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
     translationMode: loweringOptions.extract ? "extract" : "astro-context",
-    runtimeBinding: loweringOptions.extract ? undefined : RUNTIME_BINDING_I18N,
+    runtimeBinding: loweringOptions.extract ? undefined : runtimeBinding,
   });
 
   if (loweringOptions.extract) {
@@ -92,6 +95,7 @@ export function lowerFrontmatterMacros(
     options.filename,
     loweringOptions.sourceMapOptions?.fullSource ?? source,
     loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+    runtimeBinding,
   );
 }
 
@@ -104,6 +108,7 @@ function rebuildFrontmatterWithMappings(
   mapFile: string,
   fullSource: string,
   sourceStart: number,
+  runtimeBinding: string,
 ): LoweredSnippet {
   const replacements = createFrontmatterReplacementChunks(
     original,
@@ -111,6 +116,7 @@ function rebuildFrontmatterWithMappings(
     fullSource,
     mapFile,
     sourceStart,
+    runtimeBinding,
   );
 
   return buildOutputWithIndexedMap(original, mapFile, replacements);
@@ -125,10 +131,14 @@ function createFrontmatterReplacementChunks(
   fullSource: string,
   mapFile: string,
   sourceStart: number,
+  runtimeBinding: string,
 ): ReplacementChunk[] {
   const importRanges = collectMacroImportRanges(original);
   const originalMacroRanges = collectOriginalMacroExpressionRanges(original);
-  const transformedCalls = collectTransformedRuntimeCallCodes(transformed);
+  const transformedCalls = collectTransformedRuntimeCallCodes(
+    transformed,
+    runtimeBinding,
+  );
 
   if (originalMacroRanges.length !== transformedCalls.length) {
     throw new Error(
@@ -291,10 +301,13 @@ function isOriginalMacroExpression(
   );
 }
 
-function collectTransformedRuntimeCallCodes(transformed: {
-  code: string;
-  ast: t.File;
-}): string[] {
+function collectTransformedRuntimeCallCodes(
+  transformed: {
+    code: string;
+    ast: t.File;
+  },
+  runtimeBinding: string,
+): string[] {
   const calls: string[] = [];
 
   babelTraverse(transformed.ast, {
@@ -303,7 +316,7 @@ function collectTransformedRuntimeCallCodes(transformed: {
         !t.isMemberExpression(path.node.callee) ||
         path.node.callee.computed ||
         !t.isIdentifier(path.node.callee.object, {
-          name: RUNTIME_BINDING_I18N,
+          name: runtimeBinding,
         }) ||
         !t.isIdentifier(path.node.callee.property, {
           name: LINGUI_TRANSLATE_METHOD,

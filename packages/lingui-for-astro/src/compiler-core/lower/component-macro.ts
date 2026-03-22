@@ -16,10 +16,10 @@ import {
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
+  DEFAULT_ASTRO_RUNTIME_BINDINGS,
   PACKAGE_RUNTIME,
-  RUNTIME_BINDING_I18N,
-  RUNTIME_BINDING_RUNTIME_TRANS,
   SYNTHETIC_PREFIX_COMPONENT,
+  type AstroRuntimeBindings,
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
@@ -38,13 +38,17 @@ export function lowerComponentMacro(
   loweringOptions: {
     extract: boolean;
     sourceMapOptions?: LoweringSourceMapOptions;
+    runtimeBindings?: Pick<AstroRuntimeBindings, "i18n" | "runtimeTrans">;
   },
 ): LoweredSnippet {
+  const bindings =
+    loweringOptions.runtimeBindings ?? DEFAULT_ASTRO_RUNTIME_BINDINGS;
   const rewrittenSource = rewriteNestedComponentMacroExpressions(
     source,
     macroImports,
     options,
     loweringOptions.sourceMapOptions,
+    bindings.i18n,
   );
   const prefix = createComponentWrapperPrefix(macroImports);
   const inputSourceMap =
@@ -73,9 +77,7 @@ export function lowerComponentMacro(
       inputSourceMap,
       linguiConfig: normalizeLinguiConfig(options.linguiConfig),
       translationMode: loweringOptions.extract ? "extract" : "astro-context",
-      runtimeBinding: loweringOptions.extract
-        ? undefined
-        : RUNTIME_BINDING_I18N,
+      runtimeBinding: loweringOptions.extract ? undefined : bindings.i18n,
     },
   );
 
@@ -96,7 +98,7 @@ export function lowerComponentMacro(
   stripRuntimeTransImports(transformed.ast.program, PACKAGE_RUNTIME);
   const code = lowerSyntheticComponentDeclaration(
     transformed,
-    RUNTIME_BINDING_RUNTIME_TRANS,
+    bindings.runtimeTrans,
     SYNTHETIC_PREFIX_COMPONENT,
   );
   return {
@@ -116,6 +118,7 @@ function rewriteNestedComponentMacroExpressions(
   macroImports: ReadonlyMap<string, string>,
   options: LinguiAstroTransformOptions,
   sourceMapOptions: LoweringSourceMapOptions | undefined,
+  runtimeBinding: string,
 ): LoweredSnippet {
   if (macroImports.size === 0) {
     return { code: source, map: null };
@@ -171,6 +174,7 @@ function rewriteNestedComponentMacroExpressions(
         options,
         {
           extract: false,
+          runtimeBinding,
           sourceMapOptions: sourceMapOptions
             ? {
                 fullSource: sourceMapOptions.fullSource,

@@ -28,6 +28,7 @@ export function lowerTemplateExpression(
   loweringOptions: {
     extract: boolean;
     sourceMapOptions?: LoweringSourceMapOptions;
+    runtimeBinding?: string;
   },
 ): LoweredSnippet {
   const prefix = `${createSyntheticMacroImports(macroImports)}${EXPR_PREFIX}`;
@@ -43,7 +44,9 @@ export function lowerTemplateExpression(
     ),
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
     translationMode: loweringOptions.extract ? "extract" : "astro-context",
-    runtimeBinding: loweringOptions.extract ? undefined : RUNTIME_BINDING_I18N,
+    runtimeBinding: loweringOptions.extract
+      ? undefined
+      : (loweringOptions.runtimeBinding ?? RUNTIME_BINDING_I18N),
   });
 
   if (loweringOptions.extract) {

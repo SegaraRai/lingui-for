@@ -6,6 +6,7 @@ import {
   createAstroTransformContext,
   getFrontmatterContent,
 } from "./astro-transform-context.ts";
+import { transformAstro } from "../transform/transform-astro.ts";
 
 describe("createAstroTransformContext", () => {
   test("collects frontmatter, macro bindings, and macro-bearing nodes", () => {
@@ -96,6 +97,64 @@ describe("getFrontmatterContent", () => {
     expect(content.trim()).toBe(
       '// Note: résumé — keep this comment\nconst label = "hello";',
     );
+  });
+});
+
+describe("allocateAstroRuntimeBindings", () => {
+  test("allocates default names when frontmatter has no conflicts", () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+      const label = t\`Hello\`;
+      ---
+      <p>{label}</p>
+    `;
+
+    const plan = createAstroPlan(source, { filename: "/virtual/Page.astro" });
+
+    expect(plan.runtimeBindings.i18n).toBe("__l4a_i18n");
+    expect(plan.runtimeBindings.createI18n).toBe("__l4a_createI18n");
+    expect(plan.runtimeBindings.runtimeTrans).toBe("L4aRuntimeTrans");
+  });
+
+  test("allocates suffixed names when frontmatter already defines the default names", () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+      const __l4a_i18n = "occupied";
+      const __l4a_createI18n = "occupied";
+      const L4aRuntimeTrans = "occupied";
+      const label = t\`Hello\`;
+      ---
+      <p>{label}</p>
+    `;
+
+    const plan = createAstroPlan(source, { filename: "/virtual/Page.astro" });
+
+    expect(plan.runtimeBindings.i18n).toBe("__l4a_i18n_1");
+    expect(plan.runtimeBindings.createI18n).toBe("__l4a_createI18n_1");
+    expect(plan.runtimeBindings.runtimeTrans).toBe("L4aRuntimeTrans_1");
+  });
+
+  test("emits the allocated names in the transformed output", () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+      const __l4a_i18n = "occupied";
+      const __l4a_createI18n = "occupied";
+      ---
+      <p>{t\`Hello\`}</p>
+    `;
+
+    const result = transformAstro(source, { filename: "/virtual/Page.astro" });
+
+    // Prelude uses the allocated (suffixed) names.
+    expect(result.code).toContain(
+      "createFrontmatterI18n as __l4a_createI18n_1",
+    );
+    expect(result.code).toContain("const __l4a_i18n_1 = __l4a_createI18n_1");
+    // Template expression uses the allocated i18n accessor.
+    expect(result.code).toContain("__l4a_i18n_1._(");
   });
 });
 

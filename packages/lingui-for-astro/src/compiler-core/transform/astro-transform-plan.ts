@@ -30,6 +30,7 @@ export function createAstroReplacementPlan(
       plan.options,
       {
         extract: false,
+        runtimeBinding: plan.runtimeBindings.i18n,
         sourceMapOptions: {
           fullSource: plan.source,
           sourceStart: item.innerRange.start,
@@ -56,6 +57,7 @@ export function createAstroReplacementPlan(
       plan.options,
       {
         extract: false,
+        runtimeBindings: plan.runtimeBindings,
         sourceMapOptions: {
           fullSource: plan.source,
           sourceStart: item.range.start,
@@ -82,6 +84,7 @@ export function createAstroReplacementPlan(
   const transformedFrontmatter = frontmatter
     ? lowerFrontmatterMacros(frontmatter.source, plan.options, {
         extract: false,
+        runtimeBinding: plan.runtimeBindings.i18n,
         sourceMapOptions: {
           fullSource: plan.source,
           sourceStart: frontmatter.contentRange.start,
@@ -94,6 +97,7 @@ export function createAstroReplacementPlan(
   const prelude = buildFrontmatterPrelude(
     plan.usesAstroI18n,
     plan.usesRuntimeTrans,
+    plan.runtimeBindings,
   );
   const finalFrontmatter = normalizeFrontmatterContent(
     [prelude, transformedFrontmatter.code]
