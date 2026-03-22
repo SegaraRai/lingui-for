@@ -6,6 +6,11 @@ import {
   type EncodedSourceMap,
 } from "@jridgewell/gen-mapping";
 
+import {
+  addLineMappings,
+  createOffsetToPosition,
+} from "lingui-for-shared/compiler";
+
 import type {
   MacroComponent,
   MarkupExpression,
@@ -15,7 +20,6 @@ import {
   SYNTHETIC_PREFIX_COMPONENT,
   SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
-import { addLineMappings, createOffsetToPosition } from "./source-map.ts";
 
 /**
  * Builds a temporary JS/TS module that represents the transformable parts of a `.svelte` file.

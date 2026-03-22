@@ -19,7 +19,7 @@ export {
   buildPrefixedSnippetMap,
   composeSourceMaps,
   createOffsetToPosition,
-} from "./source-map.ts";
+} from "lingui-for-shared/compiler";
 export { buildCombinedProgram } from "./synthetic-program.ts";
 export type {
   MappedCodeFragment,

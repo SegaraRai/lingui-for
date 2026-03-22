@@ -1,24 +1,22 @@
 import {
+  buildAnchoredBoundarySnippetMap,
+  buildAnchoredGeneratedSnippetMap,
+  buildGeneratedSnippetMap,
+  buildPrefixedSnippetMap,
   createMappedOutput,
   splitSyntheticDeclarations as splitSyntheticDeclarationsShared,
 } from "lingui-for-shared/compiler";
 
+import type { SveltePlan } from "../plan/svelte-plan.ts";
 import {
   PACKAGE_MACRO,
-  RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
   PACKAGE_RUNTIME,
+  RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
   SYNTHETIC_PREFIX_COMPONENT,
   SYNTHETIC_PREFIX_EXPRESSION,
 } from "../shared/constants.ts";
 import type { MacroBindings } from "../shared/macro-bindings.ts";
-import type { SveltePlan } from "../plan/svelte-plan.ts";
 import { transformProgram } from "./babel-transform.ts";
-import {
-  buildAnchoredGeneratedSnippetMap,
-  buildAnchoredBoundarySnippetMap,
-  buildGeneratedSnippetMap,
-  buildPrefixedSnippetMap,
-} from "./source-map.ts";
 import type {
   MappedCodeFragment,
   ProgramTransform,
@@ -211,8 +209,8 @@ function getExtractionDescriptorAnchorOffset(code: string): number {
 }
 
 function getComponentExtractionAnchorOffset(code: string): number {
-  const messageMatch = code.match(/\bmessage:\s*"([^"\\]|\\.)*"/);
-  if (!messageMatch || messageMatch.index == null) {
+  const messageMatch = /\bmessage:\s*"([^"\\]|\\.)*"/.exec(code);
+  if (messageMatch?.index == null) {
     return getExtractionDescriptorAnchorOffset(code);
   }
 

@@ -1,18 +1,18 @@
-import { eachMapping, TraceMap } from "@jridgewell/trace-mapping";
 import {
-  GenMapping,
   addMapping,
+  GenMapping,
   setSourceContent,
   toEncodedMap,
   type EncodedSourceMap,
 } from "@jridgewell/gen-mapping";
+import { eachMapping, TraceMap } from "@jridgewell/trace-mapping";
 
-import { createOffsetToPosition } from "./source-map.ts";
-
-export type GeneratedOffset = {
-  line: number;
-  column: number;
-};
+import {
+  addMapping2,
+  computeGeneratedOffset,
+  createOffsetToPosition,
+  type SourcePosition,
+} from "./source-map.ts";
 
 export type ReplacementChunk = {
   start: number;
@@ -49,25 +49,6 @@ export function createUntouchedChunkMap(
   return toEncodedMap(gen);
 }
 
-export function advanceGeneratedOffset(
-  current: GeneratedOffset,
-  code: string,
-): GeneratedOffset {
-  let line = current.line;
-  let column = current.column;
-
-  for (let index = 0; index < code.length; index += 1) {
-    if (code[index] === "\n") {
-      line += 1;
-      column = 0;
-    } else {
-      column += 1;
-    }
-  }
-
-  return { line, column };
-}
-
 export function buildOutputWithIndexedMap(
   source: string,
   mapFile: string,
@@ -79,7 +60,7 @@ export function buildOutputWithIndexedMap(
   const gen = new GenMapping({ file: mapFile });
   let cursor = 0;
   let code = "";
-  let offset: GeneratedOffset = { line: 0, column: 0 };
+  let offset: SourcePosition = { line: 0, column: 0 };
 
   for (const replacement of sorted) {
     if (replacement.start < cursor) {
@@ -98,13 +79,13 @@ export function buildOutputWithIndexedMap(
     if (untouchedMap) {
       applyChunkMappings(gen, untouchedMap, offset);
     }
-    offset = advanceGeneratedOffset(offset, untouched);
+    offset = computeGeneratedOffset(untouched, offset);
 
     code += replacement.code;
     if (replacement.map) {
       applyChunkMappings(gen, replacement.map, offset);
     }
-    offset = advanceGeneratedOffset(offset, replacement.code);
+    offset = computeGeneratedOffset(replacement.code, offset);
     cursor = replacement.end;
   }
 
@@ -129,7 +110,7 @@ export function buildOutputWithIndexedMap(
 function applyChunkMappings(
   gen: GenMapping,
   map: EncodedSourceMap,
-  offset: GeneratedOffset,
+  offset: SourcePosition,
 ): void {
   const tracer = new TraceMap(map);
 
@@ -153,15 +134,11 @@ function applyChunkMappings(
       line: mapping.originalLine,
       column: mapping.originalColumn,
     };
-    if (mapping.name != null) {
-      addMapping(gen, {
-        generated,
-        original,
-        source: mapping.source,
-        name: mapping.name,
-      });
-    } else {
-      addMapping(gen, { generated, original, source: mapping.source });
-    }
+    addMapping2(gen, {
+      generated,
+      original,
+      source: mapping.source,
+      name: mapping.name,
+    });
   });
 }

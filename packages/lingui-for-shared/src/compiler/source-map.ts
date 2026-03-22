@@ -13,7 +13,7 @@ import {
   TraceMap,
 } from "@jridgewell/trace-mapping";
 
-type SourcePosition = {
+export type SourcePosition = {
   line: number;
   column: number;
 };
@@ -46,7 +46,7 @@ export function createOffsetToPosition(
   };
 }
 
-export function addMappingHelper(
+export function addMapping2(
   gen: GenMapping,
   mapping: {
     generated: SourcePosition;
@@ -67,9 +67,11 @@ export function addMappingHelper(
   }
 }
 
-type InputSourceMap = NonNullable<TransformOptions["inputSourceMap"]>;
-export function toBabelInputSourceMap(map: EncodedSourceMap): InputSourceMap {
-  return map as InputSourceMap;
+type BabelInputSourceMap = NonNullable<TransformOptions["inputSourceMap"]>;
+export function toBabelInputSourceMap(
+  map: EncodedSourceMap,
+): BabelInputSourceMap {
+  return map as BabelInputSourceMap;
 }
 
 type UnpluginSourceMap = {
@@ -90,6 +92,7 @@ export function buildDirectProgramMap(
   filename: string,
   originalStart: number,
   originalLength: number,
+  sourceContent?: string,
 ): EncodedSourceMap {
   const snippet = source.slice(originalStart, originalStart + originalLength);
   const gen = new GenMapping({ file: filename });
@@ -104,7 +107,63 @@ export function buildDirectProgramMap(
     });
   }
 
-  setSourceContent(gen, filename, snippet);
+  setSourceContent(gen, filename, sourceContent ?? snippet);
+
+  return toEncodedMap(gen);
+}
+
+export function addLineMappings(
+  gen: GenMapping,
+  filename: string,
+  generatedStartLine: number,
+  snippet: string,
+  originalStartOffset: number,
+  toPosition: (offset: number) => SourcePosition,
+): number {
+  const lineOffsets = [0];
+
+  for (let index = 0; index < snippet.length; index += 1) {
+    if (snippet[index] === "\n" && index + 1 < snippet.length) {
+      lineOffsets.push(index + 1);
+    }
+  }
+
+  lineOffsets.forEach((offset, lineIndex) => {
+    addMapping(gen, {
+      generated: { line: generatedStartLine + lineIndex, column: 0 },
+      original: toPosition(originalStartOffset + offset),
+      source: filename,
+    });
+  });
+
+  return lineOffsets.length;
+}
+
+export function buildAnchoredBoundarySnippetMap(
+  source: string,
+  filename: string,
+  originalStart: number,
+  generated: string,
+  originalLength: number,
+  anchorOffset: number,
+): EncodedSourceMap {
+  const gen = new GenMapping({ file: filename });
+  const toPosition = createOffsetToPosition(source);
+  const generatedToPosition = createOffsetToPosition(generated);
+  const originalEnd = originalStart + originalLength - 1;
+
+  for (let offset = 0; offset <= generated.length; offset += 1) {
+    addMapping(gen, {
+      generated: generatedToPosition(offset),
+      original:
+        offset <= anchorOffset
+          ? toPosition(originalStart)
+          : toPosition(originalEnd),
+      source: filename,
+    });
+  }
+
+  setSourceContent(gen, filename, source);
 
   return toEncodedMap(gen);
 }
@@ -198,9 +257,7 @@ export function buildGeneratedSnippetMap(
 
   for (let offset = 0; offset <= generated.length; offset += 1) {
     const ratio = offset / generatedLength;
-    const originalOffset =
-      originalStart +
-      Math.min(Math.floor(ratio * originalLength), originalLength);
+    const originalOffset = originalStart + Math.floor(ratio * originalLength);
 
     addMapping(gen, {
       generated: generatedToPosition(offset),
@@ -225,20 +282,14 @@ export function buildAnchoredGeneratedSnippetMap(
   const gen = new GenMapping({ file: filename });
   const toPosition = createOffsetToPosition(source);
   const generatedToPosition = createOffsetToPosition(generated);
-  const clampedAnchor = Math.max(0, Math.min(anchorOffset, generated.length));
-  const generatedTailLength = Math.max(generated.length - clampedAnchor, 1);
+  const tailLength = generated.length - anchorOffset;
 
   for (let offset = 0; offset <= generated.length; offset += 1) {
     const originalOffset =
-      offset <= clampedAnchor
+      offset <= anchorOffset
         ? originalStart
         : originalStart +
-          Math.min(
-            Math.floor(
-              ((offset - clampedAnchor) / generatedTailLength) * originalLength,
-            ),
-            originalLength,
-          );
+          Math.floor(((offset - anchorOffset) / tailLength) * originalLength);
 
     addMapping(gen, {
       generated: generatedToPosition(offset),
@@ -286,7 +337,7 @@ export function composeSourceMaps(
     }
 
     const name = original.name ?? mapping.name;
-    addMappingHelper(gen, {
+    addMapping2(gen, {
       generated: {
         line: mapping.generatedLine,
         column: mapping.generatedColumn,
@@ -332,25 +383,23 @@ export function offsetSourceMap(
   return toEncodedMap(gen);
 }
 
-function computeGeneratedOffset(code: string): {
-  line: number;
-  column: number;
-} {
-  const offset = {
-    line: 0,
-    column: 0,
-  };
+export function computeGeneratedOffset(
+  code: string,
+  current?: Readonly<SourcePosition>,
+): SourcePosition {
+  let line = current?.line ?? 0;
+  let column = current?.column ?? 0;
 
-  for (let index = 0; index < code.length; index += 1) {
-    if (code[index] === "\n") {
-      offset.line += 1;
-      offset.column = 0;
+  for (const char of code) {
+    if (char === "\n") {
+      line += 1;
+      column = 0;
     } else {
-      offset.column += 1;
+      column += 1;
     }
   }
 
-  return offset;
+  return { line, column };
 }
 
 function applyMappings(gen: GenMapping, map: EncodedSourceMap): void {
@@ -360,7 +409,7 @@ function applyMappings(gen: GenMapping, map: EncodedSourceMap): void {
 function applyMappingsWithOffset(
   gen: GenMapping,
   map: EncodedSourceMap,
-  offset: { line: number; column: number },
+  offset: Readonly<SourcePosition>,
 ): void {
   const tracer = new TraceMap(map);
 
@@ -384,7 +433,7 @@ function applyMappingsWithOffset(
       line: mapping.originalLine,
       column: mapping.originalColumn,
     };
-    addMappingHelper(gen, {
+    addMapping2(gen, {
       generated,
       original,
       source: mapping.source,

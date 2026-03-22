@@ -1,8 +1,9 @@
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
+import { buildDirectProgramMap } from "lingui-for-shared/compiler";
+
 import type { SveltePlan } from "../plan/svelte-plan.ts";
 import { createScriptFilename } from "../shared/paths.ts";
-import { buildDirectProgramMap } from "./source-map.ts";
 import { buildCombinedProgram } from "./synthetic-program.ts";
 
 export type LoweringProgram = {
@@ -29,7 +30,8 @@ export function createModuleProgramFromPlan(
       plan.source,
       plan.filename,
       module.contentStart,
-      module.content,
+      module.content.length,
+      plan.source,
     ),
   };
 }
