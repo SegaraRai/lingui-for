@@ -43,7 +43,9 @@ describe("lower/frontmatter", () => {
 
     expect(chunks).toEqual([
       expect.objectContaining({ code: "" }),
-      expect.objectContaining({ code: expect.stringContaining("__l4a_i18n._(") }),
+      expect.objectContaining({
+        code: expect.stringContaining("__l4a_i18n._("),
+      }),
     ]);
   });
 });

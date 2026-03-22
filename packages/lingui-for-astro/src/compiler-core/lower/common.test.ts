@@ -10,7 +10,6 @@ describe("lower/common", () => {
     };
     const lowered: LoweredSnippet = {
       code: "code",
-      map: null,
     };
 
     expect(mapOptions.sourceStart).toBe(0);

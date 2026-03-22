@@ -1,3 +1,4 @@
+import type { NodePath } from "@babel/core";
 import { generate } from "@babel/generator";
 import * as t from "@babel/types";
 

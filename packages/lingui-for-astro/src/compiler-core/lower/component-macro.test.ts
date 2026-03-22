@@ -14,18 +14,17 @@ describe("lower/component-macro", () => {
       i18n: RUNTIME_BINDING_I18N,
       runtimeTrans: RUNTIME_BINDING_RUNTIME_TRANS,
     };
-    const sourceMapOptions = { fullSource: source, sourceStart: 0 };
     const compileLowered = lowerComponentMacro(
       source,
       new Map([["Trans", "Trans"]]),
       { filename: "/virtual/Page.astro" },
-      { extract: false, runtimeBindings, sourceMapOptions },
+      { extract: false, runtimeBindings },
     );
     const extractLowered = lowerComponentMacro(
       source,
       new Map([["Trans", "Trans"]]),
       { filename: "/virtual/Page.astro" },
-      { extract: true, runtimeBindings, sourceMapOptions },
+      { extract: true, runtimeBindings },
     );
 
     expect(compileLowered.code).toContain("<L4aRuntimeTrans");

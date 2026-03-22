@@ -12,6 +12,10 @@ import {
   REACTIVE_MACRO_PREFIX,
 } from "../shared/constants.ts";
 import {
+  applyBoundaryStripRanges,
+  buildInvalidDirectMacroUsageMessage,
+} from "../shared/macro-usage.ts";
+import {
   parseMacroBindings,
   type MacroBindings,
 } from "../shared/macro-bindings.ts";
@@ -55,35 +59,6 @@ export type SveltePlan = {
   usesLinguiContextBindings: boolean;
   usesRuntimeTrans: boolean;
 };
-
-function applyBoundaryStripRanges(
-  start: number,
-  end: number,
-  stripRanges: ReadonlyArray<{ start: number; end: number }>,
-): { normalizedStart: number; normalizedEnd: number } {
-  let normalizedStart = start;
-  let normalizedEnd = end;
-
-  while (true) {
-    const leading = stripRanges.find(
-      (range) => range.start === normalizedStart,
-    );
-    if (!leading) {
-      break;
-    }
-    normalizedStart = leading.end;
-  }
-
-  while (true) {
-    const trailing = stripRanges.find((range) => range.end === normalizedEnd);
-    if (!trailing) {
-      break;
-    }
-    normalizedEnd = trailing.start;
-  }
-
-  return { normalizedStart, normalizedEnd };
-}
 
 function isMacroImportIdentifier(
   path:
@@ -373,6 +348,21 @@ function collectScriptMacros(
   };
 }
 
+function validateScriptMacroExpressions(plan: ScriptMacroPlan): void {
+  for (const expression of plan.expressions) {
+    if (
+      !expression.requiresLinguiContext ||
+      expression.stripRanges.length > 0
+    ) {
+      continue;
+    }
+
+    const localName =
+      expression.source.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*)/)?.[1] ?? "macro";
+    throw new Error(buildInvalidDirectMacroUsageMessage(localName));
+  }
+}
+
 export function createSveltePlan(
   source: string,
   options: LinguiSvelteTransformOptions,
@@ -391,6 +381,8 @@ export function createSveltePlan(
     options.filename,
     analysis.instance,
   );
+  validateScriptMacroExpressions(moduleMacros);
+  validateScriptMacroExpressions(instanceMacros);
 
   return {
     source,

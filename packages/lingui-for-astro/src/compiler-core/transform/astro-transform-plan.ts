@@ -1,4 +1,8 @@
-import { buildOutputWithIndexedMap, stripQuery, type ReplacementChunk } from "lingui-for-shared/compiler";
+import {
+  buildOutputWithIndexedMap,
+  stripQuery,
+  type ReplacementChunk,
+} from "lingui-for-shared/compiler";
 
 import {
   buildFrontmatterPrelude,
@@ -72,39 +76,40 @@ export function createAstroReplacementPlan(
   );
 
   if (plan.frontmatter) {
-    const relativeFrontmatterChunks =
-      frontmatterMacroBlock
+    const frontmatter = plan.frontmatter;
+    const relativeFrontmatterChunks = frontmatterMacroBlock
       ? buildFrontmatterTransformChunks(
           frontmatterMacroBlock.source,
           0,
-          plan.frontmatter.macroImportRanges,
-          plan.frontmatter.macroExpressionRanges,
+          frontmatter.macroImportRanges,
+          frontmatter.macroExpressionRanges,
           plan.options,
           { runtimeBinding: plan.runtimeBindings.i18n },
         )
       : [];
-    const preludeWithSeparator = plan.frontmatter.hasRemainingContentAfterImportRemoval
-      ? `${prelude}\n`
-      : prelude;
+    const preludeWithSeparator =
+      frontmatter.hasRemainingContentAfterImportRemoval
+        ? `${prelude}\n`
+        : prelude;
 
     // Insert the runtime prelude as new text at the start of the frontmatter
     // content block. Using a zero-width chunk preserves every other character's
     // source position so the map stays accurate for all surrounding code.
     if (prelude.length > 0) {
       replacements.push({
-        start: plan.frontmatter.preludeInsertPoint,
-        end: plan.frontmatter.preludeInsertPoint,
+        start: frontmatter.preludeInsertPoint,
+        end: frontmatter.preludeInsertPoint,
         code: preludeWithSeparator,
       });
     }
     if (
-      !plan.frontmatter.hasRemainingContentAfterImportRemoval &&
+      !frontmatter.hasRemainingContentAfterImportRemoval &&
       (prelude.length > 0 || relativeFrontmatterChunks.length > 0) &&
-      plan.frontmatter.trailingWhitespaceRange
+      frontmatter.trailingWhitespaceRange
     ) {
       replacements.push({
-        start: plan.frontmatter.trailingWhitespaceRange.start,
-        end: plan.frontmatter.trailingWhitespaceRange.end,
+        start: frontmatter.trailingWhitespaceRange.start,
+        end: frontmatter.trailingWhitespaceRange.end,
         code: "",
       });
     }
@@ -115,8 +120,8 @@ export function createAstroReplacementPlan(
       replacements.push(
         ...relativeFrontmatterChunks.map((chunk) => ({
           ...chunk,
-          start: chunk.start + plan.frontmatter.contentRange.start,
-          end: chunk.end + plan.frontmatter.contentRange.start,
+          start: chunk.start + frontmatter.contentRange.start,
+          end: chunk.end + frontmatter.contentRange.start,
         })),
       );
     }

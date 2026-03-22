@@ -50,6 +50,9 @@ describe("buildCombinedProgram", () => {
         start: expressionStart,
         end: expressionStart + expressionSource.length,
         source: expressionSource,
+        normalizedStart: expressionStart,
+        normalizedEnd: expressionStart + expressionSource.length,
+        stripRanges: [],
       },
     ];
 

@@ -199,7 +199,10 @@ function computeTrailingWhitespaceRange(
   frontmatterRange: CharRange,
   contentRange: CharRange,
 ): CharRange | null {
-  const frontmatterSource = source.slice(frontmatterRange.start, frontmatterRange.end);
+  const frontmatterSource = source.slice(
+    frontmatterRange.start,
+    frontmatterRange.end,
+  );
   const closingFenceOffset = frontmatterSource.lastIndexOf("---");
 
   if (closingFenceOffset < 0) {

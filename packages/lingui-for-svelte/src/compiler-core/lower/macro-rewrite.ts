@@ -16,6 +16,7 @@ import {
   REACTIVE_TRANSLATION_WRAPPER,
 } from "../shared/constants.ts";
 import { collectMacroImportLocals } from "../shared/macro-bindings.ts";
+import { buildInvalidDirectMacroUsageMessage } from "../shared/macro-usage.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 
 type MacroRewriteState = {
@@ -296,17 +297,9 @@ function assertAllowedDirectStringMacroUsage(
     return;
   }
 
-  const reactiveName = `$${localName}`;
-  const replacement =
-    localName === "t"
-      ? `\`$${localName}(...)\`, \`$${localName}\`...\`\`, \`${localName}.eager(...)\`, or \`${localName}.eager\`...\`\``
-      : `\`${reactiveName}(...)\` or \`${localName}.eager(...)\``;
-  const detail =
-    localName === "t"
-      ? "Bare `t` in `.svelte` files is not allowed because it loses locale reactivity."
-      : `Bare \`${localName}\` in \`.svelte\` files is only allowed when building a descriptor, for example inside \`msg(...)\`, \`defineMessage(...)\`, \`$t(...)\`, or a \`message:\` field.`;
-
-  throw path.buildCodeFrameError(`${detail} Use ${replacement} instead.`);
+  throw path.buildCodeFrameError(
+    buildInvalidDirectMacroUsageMessage(localName),
+  );
 }
 
 function buildDirectStringMacroFromEager(

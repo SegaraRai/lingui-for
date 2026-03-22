@@ -35,4 +35,19 @@ describe("createSveltePlan", () => {
     expect(plan.instanceMacros.imports).toHaveLength(1);
     expect(plan.instanceMacros.expressions).toHaveLength(2);
   });
+
+  test("rejects bare reactive script macros during planning", () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+        const label = t\`Hello\`;
+      </script>
+    `;
+
+    expect(() =>
+      createSveltePlan(source, {
+        filename: "/virtual/App.svelte",
+      }),
+    ).toThrow(/Bare `t` in `.svelte` files is not allowed/);
+  });
 });

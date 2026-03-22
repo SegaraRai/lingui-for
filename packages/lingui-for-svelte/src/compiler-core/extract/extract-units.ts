@@ -10,53 +10,14 @@ import {
 } from "../lower/snippet-lowering.ts";
 import { createSveltePlan } from "../plan/index.ts";
 import type { MacroBindings } from "../shared/macro-bindings.ts";
-import {
-  SYNTHETIC_PREFIX_COMPONENT,
-  SYNTHETIC_PREFIX_EXPRESSION,
-} from "../shared/constants.ts";
+import { SYNTHETIC_PREFIX_EXPRESSION } from "../shared/constants.ts";
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
-
-/**
- * Validates that script macro expressions are using valid Svelte reactive-string
- * syntax (`$t`, `t.eager`, etc.) and throws for bare usages that would lose
- * locale reactivity or be semantically incorrect in a `.svelte` file.
- */
-function validateScriptExpression(expression: {
-  source: string;
-  requiresLinguiContext: boolean;
-  stripRanges: ReadonlyArray<unknown>;
-}): void {
-  if (!expression.requiresLinguiContext || expression.stripRanges.length > 0) {
-    return;
-  }
-  // Bare reactive-string macro usage without $-prefix or .eager.
-  const localName =
-    expression.source.match(/^([a-zA-Z_$][a-zA-Z0-9_$]*)/)?.[1] ?? "macro";
-  const reactiveName = `$${localName}`;
-  const replacement =
-    localName === "t"
-      ? `\`$${localName}(...)\`, \`$${localName}\`...\`\`, \`${localName}.eager(...)\`, or \`${localName}.eager\`...\`\``
-      : `\`${reactiveName}(...)\` or \`${localName}.eager(...)\``;
-  const detail =
-    localName === "t"
-      ? "Bare `t` in `.svelte` files is not allowed because it loses locale reactivity."
-      : `Bare \`${localName}\` in \`.svelte\` files is only allowed when building a descriptor, for example inside \`msg(...)\`, \`defineMessage(...)\`, \`$t(...)\`, or a \`message:\` field.`;
-  throw new Error(`${detail} Use ${replacement} instead.`);
-}
 
 export function createExtractionUnits(
   source: string,
   options: LinguiSvelteTransformOptions,
 ): ExtractionUnit[] {
   const plan = createSveltePlan(source, options);
-
-  // Validate script expressions before building extraction units.
-  for (const expression of plan.instanceMacros.expressions) {
-    validateScriptExpression(expression);
-  }
-  for (const expression of plan.moduleMacros.expressions) {
-    validateScriptExpression(expression);
-  }
 
   const units: ExtractionUnit[] = [];
 
@@ -130,19 +91,15 @@ export function createExtractionUnits(
       plan,
       { extract: true },
     );
-    const { map, code } = buildOutputWithIndexedMap(
-      plan.source,
-      plan.filename,
-      [
-        { start: 0, end: component.start, code: "" },
-        {
-          start: component.start,
-          end: component.end,
-          code: lowered.code,
-        },
-        { start: component.end, end: plan.source.length, code: "" },
-      ],
-    );
+    const { map } = buildOutputWithIndexedMap(plan.source, plan.filename, [
+      { start: 0, end: component.start, code: "" },
+      {
+        start: component.start,
+        end: component.end,
+        code: lowered.code,
+      },
+      { start: component.end, end: plan.source.length, code: "" },
+    ]);
     delete map.sourcesContent;
     units.push({ code: lowered.code, map });
   });

@@ -62,11 +62,7 @@ export function createAstroExtractionUnitsFromPlan(
     > => item.kind === "frontmatter-macro-block",
   );
 
-  if (
-    frontmatterItem &&
-    plan.frontmatter &&
-    plan.frontmatter.hasMacroCalls
-  ) {
+  if (frontmatterItem && plan.frontmatter && plan.frontmatter.hasMacroCalls) {
     units.push(
       buildExtractionUnit(
         plan.source,

@@ -17,7 +17,6 @@ describe("transformProgram", () => {
         filename: "/virtual/Page.astro?frontmatter",
         linguiConfig: normalizeLinguiConfig(),
         runtimeBinding: "__l4a_i18n",
-        inputSourceMap: null,
       },
     );
 
@@ -39,7 +38,6 @@ describe("transformProgram", () => {
         filename: "/virtual/Page.astro?extract-expression",
         linguiConfig: normalizeLinguiConfig(),
         runtimeBinding: null,
-        inputSourceMap: null,
       },
     );
 

@@ -160,25 +160,6 @@ function lowerScriptLikeExpression(
   return { code: fragment.code, map: null };
 }
 
-function getExtractionDescriptorAnchorOffset(code: string): number {
-  const commentStart = code.indexOf("/*i18n*/");
-  if (commentStart < 0) {
-    return 0;
-  }
-
-  const descriptorStart = code.indexOf("{", commentStart);
-  return descriptorStart >= 0 ? descriptorStart : commentStart;
-}
-
-function getComponentExtractionAnchorOffset(code: string): number {
-  const messageMatch = /\bmessage:\s*"([^"\\]|\\.)*"/.exec(code);
-  if (messageMatch?.index == null) {
-    return getExtractionDescriptorAnchorOffset(code);
-  }
-
-  return messageMatch.index + messageMatch[0].length;
-}
-
 export function lowerComponentMacro(
   source: string,
   start: number,
