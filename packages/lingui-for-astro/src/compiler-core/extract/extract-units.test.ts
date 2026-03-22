@@ -22,6 +22,24 @@ describe("createAstroExtractionUnits", () => {
     expect(units[0]?.map).toBeTruthy();
   });
 
+  test("does not emit a frontmatter unit for import-only frontmatter", () => {
+    const source = dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>Hello</Trans>
+    `;
+
+    const units = createAstroExtractionUnits(source, {
+      filename: "/virtual/Page.astro",
+    });
+
+    expect(units).toHaveLength(1);
+    expect(units[0]?.code).toContain("/*i18n*/");
+    expect(units[0]?.code).not.toContain('from "lingui-for-astro/macro"');
+  });
+
   test("extracts component macros through synthetic RuntimeTrans declarations", () => {
     const source = dedent`
       ---

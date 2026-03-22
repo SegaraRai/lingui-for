@@ -11,7 +11,6 @@ export { transformProgram } from "./babel-transform.ts";
 export {
   buildFrontmatterPrelude,
   buildFrontmatterTransformChunks,
-  lowerFrontmatterMacros,
 } from "./frontmatter.ts";
 export { lowerTemplateExpression } from "./template-expression.ts";
 export { lowerComponentMacro } from "./component-macro.ts";

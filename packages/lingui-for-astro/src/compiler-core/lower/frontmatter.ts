@@ -1,29 +1,19 @@
-import type { NodePath } from "@babel/core";
-import { parseSync } from "@babel/core";
 import { generate } from "@babel/generator";
 import * as t from "@babel/types";
 
 import {
   babelTraverse,
-  buildOutputWithIndexedMap,
   LINGUI_TRANSLATE_METHOD,
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
 
-import { getParserPlugins, normalizeLinguiConfig } from "../shared/config.ts";
+import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
-  PACKAGE_MACRO,
   PACKAGE_RUNTIME,
   type AstroRuntimeBindings,
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
-import type { LoweredSnippet } from "./common.ts";
-
-type SourceRange = {
-  start: number;
-  end: number;
-};
 
 export function buildFrontmatterPrelude(
   includeAstroContext: boolean,
@@ -58,6 +48,8 @@ export function buildFrontmatterPrelude(
 export function buildFrontmatterTransformChunks(
   content: string,
   contentOffset: number,
+  macroImportRanges: ReadonlyArray<{ start: number; end: number }>,
+  macroExpressionRanges: ReadonlyArray<{ start: number; end: number }>,
   options: LinguiAstroTransformOptions,
   loweringOptions: { runtimeBinding: string },
 ): ReplacementChunk[] {
@@ -69,8 +61,9 @@ export function buildFrontmatterTransformChunks(
     runtimeBinding,
   });
   const chunks = createFrontmatterReplacementChunks(
-    content,
     transformed,
+    macroImportRanges,
+    macroExpressionRanges,
     runtimeBinding,
   );
   return chunks.map((chunk) => ({
@@ -80,75 +73,30 @@ export function buildFrontmatterTransformChunks(
   }));
 }
 
-export function lowerFrontmatterMacros(
-  source: string,
-  options: LinguiAstroTransformOptions,
-  loweringOptions: {
-    extract: boolean;
-    runtimeBinding: string;
-  },
-): LoweredSnippet {
-  const runtimeBinding = loweringOptions.runtimeBinding;
-
-  if (loweringOptions.extract) {
-    const transformed = transformProgram(source, {
-      translationMode: "extract",
-      filename: `${options.filename}?frontmatter`,
-      linguiConfig: normalizeLinguiConfig(options.linguiConfig),
-      runtimeBinding: null,
-    });
-    return { code: transformed.code };
-  }
-
-  const transformed = transformProgram(source, {
-    translationMode: "astro-context",
-    filename: `${options.filename}?frontmatter`,
-    linguiConfig: normalizeLinguiConfig(options.linguiConfig),
-    runtimeBinding,
-  });
-
-  return rebuildFrontmatterCode(source, transformed, runtimeBinding);
-}
-
-function rebuildFrontmatterCode(
-  original: string,
-  transformed: { code: string; ast: t.File },
-  runtimeBinding: string,
-): LoweredSnippet {
-  const replacements = createFrontmatterReplacementChunks(
-    original,
-    transformed,
-    runtimeBinding,
-  );
-
-  return { code: buildOutputWithIndexedMap(original, "", replacements).code };
-}
-
 function createFrontmatterReplacementChunks(
-  original: string,
   transformed: { code: string; ast: t.File },
+  macroImportRanges: ReadonlyArray<{ start: number; end: number }>,
+  macroExpressionRanges: ReadonlyArray<{ start: number; end: number }>,
   runtimeBinding: string,
 ): ReplacementChunk[] {
-  const importRanges = collectMacroImportRanges(original);
-  const originalMacroRanges = collectOriginalMacroExpressionRanges(original);
   const transformedCalls = collectTransformedRuntimeCallCodes(
     transformed,
     runtimeBinding,
   );
 
-  if (originalMacroRanges.length !== transformedCalls.length) {
+  if (macroExpressionRanges.length !== transformedCalls.length) {
     throw new Error(
-      `Frontmatter transform replacement count mismatch: expected ${originalMacroRanges.length}, received ${transformedCalls.length}`,
+      `Frontmatter transform replacement count mismatch: expected ${macroExpressionRanges.length}, received ${transformedCalls.length}`,
     );
   }
 
   const replacements: ReplacementChunk[] = [];
 
-  importRanges.forEach((range) => {
+  macroImportRanges.forEach((range) => {
     replacements.push({ start: range.start, end: range.end, code: "" });
   });
 
-  originalMacroRanges.forEach((range, index) => {
+  macroExpressionRanges.forEach((range, index) => {
     const code = transformedCalls[index];
 
     if (code == null) {
@@ -161,123 +109,6 @@ function createFrontmatterReplacementChunks(
   return replacements.filter(
     (replacement) =>
       replacement.start !== replacement.end || replacement.code.length > 0,
-  );
-}
-
-function collectMacroImportRanges(source: string): SourceRange[] {
-  const file = parseSync(source, {
-    ast: true,
-    babelrc: false,
-    code: false,
-    configFile: false,
-    parserOpts: {
-      sourceType: "module",
-      plugins: getParserPlugins(),
-    },
-  });
-  if (!file || !t.isFile(file)) {
-    return [];
-  }
-
-  const ranges: SourceRange[] = [];
-
-  babelTraverse(file, {
-    ImportDeclaration(path: NodePath<t.ImportDeclaration>) {
-      const start = path.node.start;
-      const end = path.node.end;
-
-      if (
-        path.node.source.value !== PACKAGE_MACRO ||
-        start == null ||
-        end == null
-      ) {
-        return;
-      }
-
-      let nextEnd = end;
-      while (
-        nextEnd < source.length &&
-        (source[nextEnd] === "\n" || source[nextEnd] === "\r")
-      ) {
-        nextEnd += 1;
-      }
-
-      ranges.push({ start, end: nextEnd });
-    },
-  });
-
-  return ranges;
-}
-
-function collectOriginalMacroExpressionRanges(source: string): SourceRange[] {
-  const file = parseSync(source, {
-    ast: true,
-    babelrc: false,
-    code: false,
-    configFile: false,
-    parserOpts: {
-      sourceType: "module",
-      plugins: getParserPlugins(),
-    },
-  });
-  if (!file || !t.isFile(file)) {
-    return [];
-  }
-
-  const ranges: SourceRange[] = [];
-
-  babelTraverse(file, {
-    CallExpression(path: NodePath<t.CallExpression>) {
-      if (!isOriginalMacroExpression(path)) {
-        return;
-      }
-
-      const start = path.node.start;
-      const end = path.node.end;
-      if (start == null || end == null) {
-        return;
-      }
-
-      ranges.push({ start, end });
-      path.skip();
-    },
-    TaggedTemplateExpression(path: NodePath<t.TaggedTemplateExpression>) {
-      if (!isOriginalMacroExpression(path)) {
-        return;
-      }
-
-      const start = path.node.start;
-      const end = path.node.end;
-      if (start == null || end == null) {
-        return;
-      }
-
-      ranges.push({ start, end });
-      path.skip();
-    },
-  });
-
-  return ranges.toSorted((left, right) => left.start - right.start);
-}
-
-function isOriginalMacroExpression(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-): boolean {
-  const callee = path.isCallExpression() ? path.get("callee") : path.get("tag");
-
-  if (!callee.isIdentifier()) {
-    return false;
-  }
-
-  const binding = callee.scope.getBinding(callee.node.name);
-  if (!binding?.path.isImportSpecifier()) {
-    return false;
-  }
-
-  const importDeclaration = binding.path.parentPath;
-  return (
-    importDeclaration?.isImportDeclaration() === true &&
-    importDeclaration.node.source.value === PACKAGE_MACRO
   );
 }
 

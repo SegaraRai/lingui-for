@@ -22,6 +22,9 @@ describe("createAstroPlan", () => {
     expect(plan.frontmatter?.content).toContain(
       "const label = t`Script message`;",
     );
+    expect(plan.frontmatter?.macroImportRanges).toHaveLength(1);
+    expect(plan.frontmatter?.macroExpressionRanges).toHaveLength(1);
+    expect(plan.frontmatter?.hasMacroCalls).toBe(true);
     expect(plan.items.map((item) => item.kind)).toEqual([
       "frontmatter-macro-block",
       "template-expression",

@@ -1,6 +1,8 @@
-import MagicString from "magic-string";
-
-import type { ExtractionUnit } from "lingui-for-shared/compiler";
+import {
+  buildOutputWithIndexedMap,
+  type ExtractionUnit,
+  type ReplacementChunk,
+} from "lingui-for-shared/compiler";
 
 import { lowerComponentMacro } from "../lower/component-macro.ts";
 import {
@@ -23,28 +25,17 @@ function buildExtractionUnit(
   prefix: string,
   suffix: string,
 ): ExtractionUnit {
-  const ms = new MagicString(fullSource, { filename });
-  if (snippetStart > 0) {
-    ms.remove(0, snippetStart);
-  }
-  if (snippetEnd < fullSource.length) {
-    ms.remove(snippetEnd, fullSource.length);
-  }
-  if (prefix.length > 0) {
-    ms.prepend(prefix);
-  }
-  const code = ms.toString() + suffix;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const map = ms.generateMap({
-    source: filename,
-    file: filename,
-    includeContent: true,
-    hires: true,
-  }) as any;
-  // MagicString computes sources as a path relative to `file`, which collapses
-  // to just the basename when source === file. Override with the absolute path
-  // so that Lingui can correctly relativize against rootDir.
-  map.sources = [filename];
+  const replacements: ReplacementChunk[] = [
+    { start: 0, end: snippetStart, code: "" },
+    { start: snippetStart, end: snippetStart, code: prefix },
+    { start: snippetEnd, end: snippetEnd, code: suffix },
+    { start: snippetEnd, end: fullSource.length, code: "" },
+  ];
+  const { code, map } = buildOutputWithIndexedMap(
+    fullSource,
+    filename,
+    replacements,
+  );
   return { code, map };
 }
 
@@ -54,26 +45,6 @@ export function createAstroExtractionUnits(
 ): ExtractionUnit[] {
   const plan = createAstroPlan(source, options);
   return createAstroExtractionUnitsFromPlan(plan);
-}
-
-/**
- * Returns true when the frontmatter content contains at least one macro call
- * or tagged-template usage (i.e. something beyond bare import declarations).
- * This avoids emitting an extraction unit for import-only frontmatters.
- */
-function frontmatterHasMacroCalls(
-  content: string,
-  macroImports: ReadonlyMap<string, string>,
-): boolean {
-  if (macroImports.size === 0) return false;
-  // Strip import declarations so we don't match the package name inside them.
-  const withoutImports = content.replace(
-    /^[ \t]*import\b[^;]*;[ \t]*(\r?\n)?/gm,
-    "",
-  );
-  return [...macroImports.keys()].some((name) =>
-    new RegExp("\\b" + name + "\\s*[`(]").test(withoutImports),
-  );
 }
 
 export function createAstroExtractionUnitsFromPlan(
@@ -94,7 +65,7 @@ export function createAstroExtractionUnitsFromPlan(
   if (
     frontmatterItem &&
     plan.frontmatter &&
-    frontmatterHasMacroCalls(plan.frontmatter.content, plan.macroImports)
+    plan.frontmatter.hasMacroCalls
   ) {
     units.push(
       buildExtractionUnit(
@@ -141,22 +112,15 @@ export function createAstroExtractionUnitsFromPlan(
           },
         },
       );
-      const ms = new MagicString(plan.source, { filename });
-      if (item.range.start > 0) {
-        ms.remove(0, item.range.start);
-      }
-      if (item.range.end < plan.source.length) {
-        ms.remove(item.range.end, plan.source.length);
-      }
-      ms.overwrite(item.range.start, item.range.end, lowered.code);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const map = ms.generateMap({
-        source: filename,
-        file: filename,
-        includeContent: false,
-        hires: true,
-      }) as any;
-      map.sources = [filename];
+      const { map } = buildOutputWithIndexedMap(plan.source, filename, [
+        { start: 0, end: item.range.start, code: "" },
+        {
+          start: item.range.start,
+          end: item.range.end,
+          code: lowered.code,
+        },
+        { start: item.range.end, end: plan.source.length, code: "" },
+      ]);
       units.push({ code: lowered.code, map });
     }
   }
