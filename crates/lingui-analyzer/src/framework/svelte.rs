@@ -4,6 +4,7 @@ use tree_sitter::{Language, Node, Parser};
 
 use crate::{
     AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroImport, Span,
+    alloc::ensure_tree_sitter_allocator,
     framework::FrameworkAdapter,
     js::{
         BindingParseMode, JsLikeLanguage, JsMacroSyntax,
@@ -58,6 +59,7 @@ thread_local! {
 }
 
 fn build_parser(language: Language) -> RefCell<Parser> {
+    ensure_tree_sitter_allocator();
     let mut parser = Parser::new();
     parser
         .set_language(&language)

@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use tree_sitter::{Language, Parser, Tree};
 
-use crate::AnalyzerError;
+use crate::{AnalyzerError, alloc::ensure_tree_sitter_allocator};
 
 thread_local! {
     static ASTRO_PARSER: RefCell<Parser> = build_parser(tree_sitter_astro::LANGUAGE.into());
@@ -11,6 +11,7 @@ thread_local! {
 }
 
 fn build_parser(language: Language) -> RefCell<Parser> {
+    ensure_tree_sitter_allocator();
     let mut parser = Parser::new();
     parser
         .set_language(&language)

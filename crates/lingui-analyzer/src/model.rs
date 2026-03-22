@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
 
+use serde::{Deserialize, Serialize};
 use tree_sitter::Node;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Span {
     pub start: usize,
     pub end: usize,
@@ -18,20 +19,20 @@ impl Span {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EmbeddedScriptKind {
     Frontmatter,
     Script,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EmbeddedScriptRegion {
     pub kind: EmbeddedScriptKind,
     pub outer_span: Span,
     pub inner_span: Span,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MacroImport {
     pub source: String,
     pub imported_name: String,
@@ -39,21 +40,21 @@ pub struct MacroImport {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum MacroCandidateKind {
     CallExpression,
     TaggedTemplateExpression,
     Component,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum MacroFlavor {
     Direct,
     Reactive,
     Eager,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MacroCandidate {
     pub kind: MacroCandidateKind,
     pub imported_name: String,
@@ -64,7 +65,7 @@ pub struct MacroCandidate {
     pub strip_spans: Vec<Span>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct SyntheticModule {
     pub source: String,
     pub source_name: String,
@@ -76,7 +77,7 @@ pub struct SyntheticModule {
     pub mappings: Vec<SyntheticMapping>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SyntheticMapping {
     pub declaration_id: String,
     pub original_span: Span,

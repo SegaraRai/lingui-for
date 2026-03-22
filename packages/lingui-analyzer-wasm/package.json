@@ -1,0 +1,23 @@
+{
+  "name": "lingui-analyzer-wasm",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist/index_bg.wasm",
+    "dist/index_bg.wasm.d.ts",
+    "dist/index.js",
+    "dist/index.d.ts"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./wasm": "./dist/index_bg.wasm",
+    "./package.json": "./package.json"
+  }
+}

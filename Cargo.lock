@@ -300,7 +300,10 @@ dependencies = [
 name = "lingui-analyzer"
 version = "0.0.0"
 dependencies = [
+ "console_error_panic_hook",
  "indoc",
+ "serde",
+ "serde-wasm-bindgen",
  "sourcemap",
  "thiserror",
  "tree-sitter",
@@ -308,6 +311,7 @@ dependencies = [
  "tree-sitter-javascript",
  "tree-sitter-svelte-ng",
  "tree-sitter-typescript",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -606,11 +610,10 @@ dependencies = [
 [[package]]
 name = "tree-sitter-javascript"
 version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68204f2abc0627a90bdf06e605f5c470aa26fdcb2081ea553a04bdad756693f5"
 dependencies = [
  "cc",
  "tree-sitter-language",
+ "tree-sitter-wasm-build-tool",
 ]
 
 [[package]]
@@ -631,11 +634,19 @@ dependencies = [
 [[package]]
 name = "tree-sitter-typescript"
 version = "0.23.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c5f76ed8d947a75cc446d5fccd8b602ebf0cde64ccf2ffa434d873d7a575eff"
 dependencies = [
  "cc",
  "tree-sitter-language",
+ "tree-sitter-wasm-build-tool",
+]
+
+[[package]]
+name = "tree-sitter-wasm-build-tool"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6958cb1005ebc9a14a9860799f634dc881bcc4d9a58e55834776a6d58891a11"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
