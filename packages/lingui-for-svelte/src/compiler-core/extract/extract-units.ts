@@ -1,6 +1,8 @@
-import MagicString from "magic-string";
-
-import type { ExtractionUnit } from "lingui-for-shared/compiler";
+import {
+  buildOutputWithIndexedMap,
+  type ExtractionUnit,
+  type ReplacementChunk,
+} from "lingui-for-shared/compiler";
 
 import {
   createSyntheticMacroImports,
@@ -65,40 +67,30 @@ export function createExtractionUnits(
     stripRanges: ReadonlyArray<{ start: number; end: number }>,
   ): ExtractionUnit {
     const prefix = `${createSyntheticMacroImports(macroBindings)}const ${SYNTHETIC_PREFIX_EXPRESSION}0 = (\n`;
-    const ms = new MagicString(plan.source, { filename: plan.filename });
-    if (snippetStart > 0) {
-      ms.remove(0, snippetStart);
-    }
-    if (snippetEnd < plan.source.length) {
-      ms.remove(snippetEnd, plan.source.length);
-    }
-    // Apply AST-derived strip ranges to remove Svelte-specific syntax
-    // ($-reactive prefix, .eager member) at their exact positions so that
-    // message text containing $ is never incorrectly altered.
-    for (const range of stripRanges) {
-      ms.remove(range.start, range.end);
-    }
-    ms.prepend(prefix);
-    const code = ms.toString() + "\n);";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const map = ms.generateMap({
-      source: plan.filename,
-      file: plan.filename,
-      includeContent: true,
-      hires: true,
-    }) as any;
-    // MagicString computes sources as a path relative to `file`, which collapses
-    // to just the basename when source === file. Override with the absolute path
-    // so that Lingui can correctly relativize against rootDir.
-    map.sources = [plan.filename];
+    const replacements: ReplacementChunk[] = [
+      { start: 0, end: snippetStart, code: "" },
+      { start: snippetStart, end: snippetStart, code: prefix },
+      ...stripRanges.map((range) => ({
+        start: range.start,
+        end: range.end,
+        code: "",
+      })),
+      { start: snippetEnd, end: snippetEnd, code: "\n);" },
+      { start: snippetEnd, end: plan.source.length, code: "" },
+    ];
+    const { code, map } = buildOutputWithIndexedMap(
+      plan.source,
+      plan.filename,
+      replacements,
+    );
     return { code, map };
   }
 
   plan.moduleMacros.expressions.forEach((expression) => {
     units.push(
       buildExpressionUnit(
-        expression.start,
-        expression.end,
+        expression.normalizedStart,
+        expression.normalizedEnd,
         plan.moduleBindings,
         expression.stripRanges,
       ),
@@ -108,8 +100,8 @@ export function createExtractionUnits(
   plan.instanceMacros.expressions.forEach((expression) => {
     units.push(
       buildExpressionUnit(
-        expression.start,
-        expression.end,
+        expression.normalizedStart,
+        expression.normalizedEnd,
         plan.instanceBindings,
         expression.stripRanges,
       ),
@@ -119,8 +111,8 @@ export function createExtractionUnits(
   plan.analysis.expressions.forEach((expression) => {
     units.push(
       buildExpressionUnit(
-        expression.start,
-        expression.end,
+        expression.normalizedStart,
+        expression.normalizedEnd,
         plan.macroBindings,
         expression.stripRanges,
       ),
@@ -129,9 +121,8 @@ export function createExtractionUnits(
 
   // Component macros are lowered via Plan A (transformProgram with extract:true)
   // to correctly handle nested core macros (e.g. selectOrdinal inside Plural
-  // attribute values). A source map is built by overwriting the component range
-  // with the lowered code so that MagicString maps every position in the
-  // lowered code back to the component's start position in the original source.
+  // attribute values). The extraction unit is still assembled from replacement
+  // chunks so compile and extract share the same map-building strategy.
   plan.analysis.components.forEach((component) => {
     const lowered = lowerComponentMacro(
       component.source,
@@ -139,23 +130,20 @@ export function createExtractionUnits(
       plan,
       { extract: true },
     );
-    const componentEnd = component.start + component.source.length;
-    const ms = new MagicString(plan.source, { filename: plan.filename });
-    if (component.start > 0) {
-      ms.remove(0, component.start);
-    }
-    if (componentEnd < plan.source.length) {
-      ms.remove(componentEnd, plan.source.length);
-    }
-    ms.overwrite(component.start, componentEnd, lowered.code);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const map = ms.generateMap({
-      source: plan.filename,
-      file: plan.filename,
-      includeContent: false,
-      hires: true,
-    }) as any;
-    map.sources = [plan.filename];
+    const { map, code } = buildOutputWithIndexedMap(
+      plan.source,
+      plan.filename,
+      [
+        { start: 0, end: component.start, code: "" },
+        {
+          start: component.start,
+          end: component.end,
+          code: lowered.code,
+        },
+        { start: component.end, end: plan.source.length, code: "" },
+      ],
+    );
+    delete map.sourcesContent;
     units.push({ code: lowered.code, map });
   });
 

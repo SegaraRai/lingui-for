@@ -84,7 +84,6 @@ export function transformSvelte(
       start: range.start,
       end: range.end,
       code: "",
-      map: null,
     });
   });
 
@@ -98,7 +97,6 @@ export function transformSvelte(
       start: expression.start,
       end: expression.end,
       code: replacement.code,
-      map: replacement.map,
     });
   });
 
@@ -108,7 +106,6 @@ export function transformSvelte(
         start: range.start,
         end: range.end,
         code: "",
-        map: null,
       });
     });
 
@@ -122,7 +119,6 @@ export function transformSvelte(
         start: expression.start,
         end: expression.end,
         code: replacement.code,
-        map: replacement.map,
       });
     });
   }
@@ -137,7 +133,6 @@ export function transformSvelte(
       start: expression.start,
       end: expression.end,
       code: replacement.code,
-      map: replacement.map,
     });
   });
 
@@ -151,7 +146,6 @@ export function transformSvelte(
       start: component.start,
       end: component.end,
       code: replacement.code,
-      map: replacement.map,
     });
   });
   const needsLinguiContextBindings = plan.usesLinguiContextBindings;
@@ -173,7 +167,6 @@ export function transformSvelte(
         start: getScriptInsertionStart(source, analysis.instance.contentStart),
         end: getScriptInsertionStart(source, analysis.instance.contentStart),
         code: injections.prelude,
-        map: null,
       });
     }
 
@@ -182,7 +175,6 @@ export function transformSvelte(
         start: analysis.instance.contentEnd,
         end: analysis.instance.contentEnd,
         code: injections.suffix,
-        map: null,
       });
     }
   } else if (needsLinguiContextBindings || needsTransComponentBinding) {
@@ -199,7 +191,6 @@ export function transformSvelte(
       start: insertionStart,
       end: insertionStart,
       code: analysis.module ? `\n\n${block}` : `${block}\n\n`,
-      map: null,
     });
   }
 

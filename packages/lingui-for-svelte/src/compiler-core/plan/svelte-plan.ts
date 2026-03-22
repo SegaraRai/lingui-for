@@ -25,6 +25,8 @@ export type ScriptMacroImport = {
 export type ScriptMacroExpression = {
   start: number;
   end: number;
+  normalizedStart: number;
+  normalizedEnd: number;
   source: string;
   requiresLinguiContext: boolean;
   /**
@@ -53,6 +55,35 @@ export type SveltePlan = {
   usesLinguiContextBindings: boolean;
   usesRuntimeTrans: boolean;
 };
+
+function applyBoundaryStripRanges(
+  start: number,
+  end: number,
+  stripRanges: ReadonlyArray<{ start: number; end: number }>,
+): { normalizedStart: number; normalizedEnd: number } {
+  let normalizedStart = start;
+  let normalizedEnd = end;
+
+  while (true) {
+    const leading = stripRanges.find(
+      (range) => range.start === normalizedStart,
+    );
+    if (!leading) {
+      break;
+    }
+    normalizedStart = leading.end;
+  }
+
+  while (true) {
+    const trailing = stripRanges.find((range) => range.end === normalizedEnd);
+    if (!trailing) {
+      break;
+    }
+    normalizedEnd = trailing.start;
+  }
+
+  return { normalizedStart, normalizedEnd };
+}
 
 function isMacroImportIdentifier(
   path:
@@ -275,10 +306,18 @@ function collectScriptMacros(
           end: dotStart + 1 + EAGER_TRANSLATION_PROPERTY.length,
         });
       }
+      const end = script.contentStart + path.node.end;
+      const { normalizedStart, normalizedEnd } = applyBoundaryStripRanges(
+        absStart,
+        end,
+        stripRanges,
+      );
 
       expressions.push({
         start: absStart,
-        end: script.contentStart + path.node.end,
+        end,
+        normalizedStart,
+        normalizedEnd,
         source: nodeSource,
         requiresLinguiContext: bindings.reactiveStrings.has(localName),
         stripRanges,
@@ -305,10 +344,18 @@ function collectScriptMacros(
           end: dotStart + 1 + EAGER_TRANSLATION_PROPERTY.length,
         });
       }
+      const end = script.contentStart + path.node.end;
+      const { normalizedStart, normalizedEnd } = applyBoundaryStripRanges(
+        absStart,
+        end,
+        stripRanges,
+      );
 
       expressions.push({
         start: absStart,
-        end: script.contentStart + path.node.end,
+        end,
+        normalizedStart,
+        normalizedEnd,
         source: nodeSource,
         requiresLinguiContext: bindings.reactiveStrings.has(localName),
         stripRanges,

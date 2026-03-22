@@ -1,5 +1,6 @@
 import type * as BabelTypes from "@babel/types";
 import type { LinguiConfigNormalized } from "@lingui/conf";
+import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
 import type { ScriptLang } from "../shared/types.ts";
 
@@ -15,6 +16,7 @@ export type ProgramTransform = {
 
 export type MappedCodeFragment = {
   code: string;
+  map?: EncodedSourceMap | null;
 };
 
 export type RuntimeBindingsForTransform = {

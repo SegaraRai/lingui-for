@@ -67,6 +67,24 @@ export function createAstroPlanFromContext(
   const items: AstroPlanItem[] = [];
   const toChar = context.byteToChar;
 
+  const trimWhitespaceRange = (start: number, end: number): CharRange => {
+    let trimmedStart = start;
+    let trimmedEnd = end;
+
+    while (trimmedStart < trimmedEnd && /\s/.test(source[trimmedStart] ?? "")) {
+      trimmedStart += 1;
+    }
+
+    while (
+      trimmedEnd > trimmedStart &&
+      /\s/.test(source[trimmedEnd - 1] ?? "")
+    ) {
+      trimmedEnd -= 1;
+    }
+
+    return { start: trimmedStart, end: trimmedEnd };
+  };
+
   if (
     context.analysis.frontmatter &&
     context.frontmatterContent.includes(PACKAGE_MACRO)
@@ -84,16 +102,18 @@ export function createAstroPlanFromContext(
   }
 
   context.filteredExpressions.forEach((expression) => {
-    const innerStart = toChar(expression.innerRange.start);
-    const innerEnd = toChar(expression.innerRange.end);
+    const trimmedInnerRange = trimWhitespaceRange(
+      toChar(expression.innerRange.start),
+      toChar(expression.innerRange.end),
+    );
     items.push({
       kind: "template-expression",
       range: {
         start: toChar(expression.range.start),
         end: toChar(expression.range.end),
       },
-      innerRange: { start: innerStart, end: innerEnd },
-      source: source.slice(innerStart, innerEnd),
+      innerRange: trimmedInnerRange,
+      source: source.slice(trimmedInnerRange.start, trimmedInnerRange.end),
     });
   });
 

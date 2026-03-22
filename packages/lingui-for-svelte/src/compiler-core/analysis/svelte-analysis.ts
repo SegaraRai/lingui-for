@@ -239,6 +239,35 @@ function collectReactiveStripRanges(
   return stripRanges;
 }
 
+function applyBoundaryStripRanges(
+  start: number,
+  end: number,
+  stripRanges: ReadonlyArray<{ start: number; end: number }>,
+): { normalizedStart: number; normalizedEnd: number } {
+  let normalizedStart = start;
+  let normalizedEnd = end;
+
+  while (true) {
+    const leading = stripRanges.find(
+      (range) => range.start === normalizedStart,
+    );
+    if (!leading) {
+      break;
+    }
+    normalizedStart = leading.end;
+  }
+
+  while (true) {
+    const trailing = stripRanges.find((range) => range.end === normalizedEnd);
+    if (!trailing) {
+      break;
+    }
+    normalizedEnd = trailing.start;
+  }
+
+  return { normalizedStart, normalizedEnd };
+}
+
 function collectExpressions(
   source: string,
   fragment: AST.Fragment,
@@ -275,12 +304,19 @@ function collectExpressions(
       reactiveStrings,
       parserPlugins,
     );
+    const { normalizedStart, normalizedEnd } = applyBoundaryStripRanges(
+      candidate.start,
+      candidate.end,
+      stripRanges,
+    );
 
     expressions.push({
       index: expressions.length,
       start: candidate.start,
       end: candidate.end,
       source: source.slice(candidate.start, candidate.end),
+      normalizedStart,
+      normalizedEnd,
       stripRanges,
     });
   };

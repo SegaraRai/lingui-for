@@ -83,6 +83,7 @@ export function lowerTemplateExpression(
           lowered.code,
           getSourceLineIndent(plan.source, start),
         ),
+        map: null,
       };
 }
 
@@ -107,6 +108,7 @@ export function lowerScriptExpression(
           lowered.code,
           getSourceLineIndent(plan.source, start),
         ),
+        map: null,
       };
 }
 
@@ -142,7 +144,7 @@ function lowerScriptLikeExpression(
       ? `const ${SYNTHETIC_PREFIX_EXPRESSION}0 = ${replacement.code};`
       : transformed.code;
 
-    return { code };
+    return { code, map: null };
   }
 
   const split = splitSyntheticDeclarations(
@@ -152,10 +154,10 @@ function lowerScriptLikeExpression(
 
   const fragment = split.expressionReplacements.get(0);
   if (fragment == null) {
-    return { code: source };
+    return { code: source, map: null };
   }
 
-  return { code: fragment.code };
+  return { code: fragment.code, map: null };
 }
 
 function getExtractionDescriptorAnchorOffset(code: string): number {
@@ -206,7 +208,7 @@ export function lowerComponentMacro(
       ? `const ${SYNTHETIC_PREFIX_COMPONENT}0 = ${replacement.code};`
       : transformed.code;
 
-    return { code };
+    return { code, map: null };
   }
 
   const split = splitSyntheticDeclarations(
@@ -217,13 +219,16 @@ export function lowerComponentMacro(
   const replacement = split.componentReplacements.get(0);
 
   if (!replacement) {
-    return { code: source };
+    return { code: source, map: null };
   }
 
-  const indent = getSourceLineIndent(plan.source, start);
-  const indented = indentMultilineReplacement(replacement.code, indent);
-
-  return { code: indented };
+  return {
+    code: indentMultilineReplacement(
+      replacement.code,
+      getSourceLineIndent(plan.source, start),
+    ),
+    map: null,
+  };
 }
 
 function getSourceLineIndent(source: string, offset: number): string {
