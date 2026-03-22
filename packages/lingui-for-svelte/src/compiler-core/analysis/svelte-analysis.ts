@@ -1,9 +1,14 @@
+import { parseSync } from "@babel/core";
+import type * as t from "@babel/types";
 import { parse, type AST } from "svelte/compiler";
 
+import { babelTraverse } from "lingui-for-shared/compiler";
+import { getParserPlugins } from "../shared/config.ts";
 import {
   expressionUsesMacroBinding,
   parseMacroBindings,
 } from "../shared/macro-bindings.ts";
+import { REACTIVE_MACRO_PREFIX } from "../shared/constants.ts";
 import type { ScriptKind, ScriptLang } from "../shared/types.ts";
 import type {
   MacroComponent,
@@ -165,10 +170,81 @@ function visitElementChildren(
   element.fragment.nodes.forEach(visitNode);
 }
 
+/**
+ * Collects the absolute source ranges for `$`-sigils that must be stripped
+ * before passing a template expression to the Lingui macro Babel plugin.
+ *
+ * Uses Babel's AST to locate `$name` identifiers that are the *tag* of a
+ * `TaggedTemplateExpression` or the *callee* of a `CallExpression`. This
+ * ensures that `$t()` or `$t\`\`` appearing as **literal text** inside a
+ * template literal's string content are never treated as strip targets.
+ */
+function collectReactiveStripRanges(
+  snippet: string,
+  snippetOffset: number,
+  reactiveStrings: ReadonlySet<string>,
+  parserPlugins: ReturnType<typeof getParserPlugins>,
+): Array<{ start: number; end: number }> {
+  const stripRanges: Array<{ start: number; end: number }> = [];
+  // Wrap in `(\n…\n)` so any expression is valid without ASI ambiguity.
+  // Positions in the Babel AST are therefore offset by `prefix.length`.
+  const prefix = "(\n";
+  let file: t.File | null = null;
+  try {
+    file = parseSync(`${prefix}${snippet}\n)`, {
+      parserOpts: { plugins: parserPlugins, strictMode: false },
+      configFile: false,
+      babelrc: false,
+    }) as t.File | null;
+  } catch {
+    return stripRanges;
+  }
+  if (!file) return stripRanges;
+
+  babelTraverse(file, {
+    TaggedTemplateExpression(path) {
+      const tag = path.get("tag");
+      if (tag.isIdentifier()) {
+        const name = tag.node.name;
+        if (
+          name.startsWith(REACTIVE_MACRO_PREFIX) &&
+          reactiveStrings.has(name.slice(REACTIVE_MACRO_PREFIX.length))
+        ) {
+          const pos = tag.node.start;
+          if (pos != null) {
+            const absPos = snippetOffset + pos - prefix.length;
+            stripRanges.push({ start: absPos, end: absPos + 1 });
+          }
+        }
+      }
+    },
+    CallExpression(path) {
+      const callee = path.get("callee");
+      if (callee.isIdentifier()) {
+        const name = callee.node.name;
+        if (
+          name.startsWith(REACTIVE_MACRO_PREFIX) &&
+          reactiveStrings.has(name.slice(REACTIVE_MACRO_PREFIX.length))
+        ) {
+          const pos = callee.node.start;
+          if (pos != null) {
+            const absPos = snippetOffset + pos - prefix.length;
+            stripRanges.push({ start: absPos, end: absPos + 1 });
+          }
+        }
+      }
+    },
+  });
+
+  return stripRanges;
+}
+
 function collectExpressions(
   source: string,
   fragment: AST.Fragment,
   componentBindings: ReadonlySet<string>,
+  reactiveStrings: ReadonlySet<string>,
+  parserPlugins: ReturnType<typeof getParserPlugins>,
   expressionSourceUsesMacro: (source: string) => boolean,
 ): {
   expressions: MarkupExpression[];
@@ -189,11 +265,23 @@ function collectExpressions(
     }
 
     seen.add(identity);
+
+    // Use Babel's AST to locate only the tag/callee positions that carry a
+    // `$`-sigil, so that `$t()` or `$t\`\`` appearing as *literal text* inside
+    // a template literal's string content is never incorrectly stripped.
+    const stripRanges = collectReactiveStripRanges(
+      source.slice(candidate.start, candidate.end),
+      candidate.start,
+      reactiveStrings,
+      parserPlugins,
+    );
+
     expressions.push({
       index: expressions.length,
       start: candidate.start,
       end: candidate.end,
       source: source.slice(candidate.start, candidate.end),
+      stripRanges,
     });
   };
 
@@ -295,10 +383,13 @@ export function analyzeSvelte(
   const macroBindings = instance
     ? parseMacroBindings(instance.content, instance.lang)
     : parseMacroBindings("", expressionLang);
+  const parserPlugins = getParserPlugins(expressionLang);
   const { expressions, components } = collectExpressions(
     source,
     ast.fragment,
     macroBindings.components,
+    macroBindings.reactiveStrings,
+    parserPlugins,
     (expressionSource) =>
       expressionUsesMacroBinding(
         expressionSource,

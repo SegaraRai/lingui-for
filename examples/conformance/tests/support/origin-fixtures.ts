@@ -34,7 +34,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "Template origin message",
-        needle: "$t`Template origin message`",
+        needle: "t`Template origin message`",
       },
       {
         message: "Component origin message",

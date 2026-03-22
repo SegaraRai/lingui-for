@@ -12,13 +12,10 @@ function createExtractorContext(
   ctx: ExtractorCtx | undefined,
   options?: LinguiSvelteTransformOptions,
 ): ExtractorCtx {
-  if (ctx) {
-    return ctx;
-  }
-
-  return {
-    linguiConfig: normalizeLinguiConfig(options?.linguiConfig),
-  };
+  const linguiConfig = normalizeLinguiConfig(
+    ctx?.linguiConfig ?? options?.linguiConfig,
+  );
+  return ctx ? { ...ctx, linguiConfig } : { linguiConfig };
 }
 
 /**

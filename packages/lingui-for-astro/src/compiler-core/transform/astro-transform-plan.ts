@@ -1,6 +1,5 @@
 import {
   buildOutputWithIndexedMap,
-  offsetSourceMap,
   stripQuery,
   type ReplacementChunk,
 } from "lingui-for-shared/compiler";
@@ -16,7 +15,6 @@ import type { AstroPlan } from "../plan/index.ts";
 export function createAstroReplacementPlan(
   plan: AstroPlan,
 ): ReplacementChunk[] {
-  const mapFile = stripQuery(plan.options.filename);
   const replacements: ReplacementChunk[] = [];
 
   plan.items.forEach((item) => {
@@ -31,10 +29,6 @@ export function createAstroReplacementPlan(
       {
         extract: false,
         runtimeBinding: plan.runtimeBindings.i18n,
-        sourceMapOptions: {
-          fullSource: plan.source,
-          sourceStart: item.innerRange.start,
-        },
       },
     );
 
@@ -42,7 +36,6 @@ export function createAstroReplacementPlan(
       start: item.innerRange.start,
       end: item.innerRange.end,
       code: transformed.code,
-      map: transformed.map,
     });
   });
 
@@ -58,10 +51,6 @@ export function createAstroReplacementPlan(
       {
         extract: false,
         runtimeBindings: plan.runtimeBindings,
-        sourceMapOptions: {
-          fullSource: plan.source,
-          sourceStart: item.range.start,
-        },
       },
     );
 
@@ -69,7 +58,6 @@ export function createAstroReplacementPlan(
       start: item.range.start,
       end: item.range.end,
       code: replacement.code,
-      map: replacement.map,
     });
   });
 
@@ -85,14 +73,9 @@ export function createAstroReplacementPlan(
     ? lowerFrontmatterMacros(frontmatter.source, plan.options, {
         extract: false,
         runtimeBinding: plan.runtimeBindings.i18n,
-        sourceMapOptions: {
-          fullSource: plan.source,
-          sourceStart: frontmatter.contentRange.start,
-        },
       })
     : {
         code: plan.frontmatter?.content ?? "",
-        map: null,
       };
   const prelude = buildFrontmatterPrelude(
     plan.usesAstroI18n,
@@ -113,21 +96,12 @@ export function createAstroReplacementPlan(
       start: plan.frontmatter.range.start,
       end: plan.frontmatter.range.end,
       code: `${frontmatterPrefix}${finalFrontmatter}${frontmatterSuffix}`,
-      map:
-        transformedFrontmatter.map == null
-          ? null
-          : offsetSourceMap(
-              transformedFrontmatter.map,
-              mapFile,
-              `${frontmatterPrefix}${prelude}`,
-            ),
     });
   } else if (finalFrontmatter.trim().length > 0) {
     replacements.push({
       start: 0,
       end: 0,
       code: `---\n${finalFrontmatter}\n---\n`,
-      map: null,
     });
   }
 

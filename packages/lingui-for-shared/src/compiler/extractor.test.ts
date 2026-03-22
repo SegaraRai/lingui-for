@@ -101,7 +101,7 @@ describe("extractor helpers", () => {
       {
         plugins: getLinguiExtractorParserPlugins(ctx),
       },
-      true,
+      false,
     );
   });
 });

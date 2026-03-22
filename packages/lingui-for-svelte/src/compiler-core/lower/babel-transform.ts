@@ -1,8 +1,5 @@
 import { transformSync } from "@babel/core";
-import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
-
-import { toBabelInputSourceMap } from "lingui-for-shared/compiler";
 
 import { getParserPlugins } from "../shared/config.ts";
 import {
@@ -16,8 +13,8 @@ import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
  *
  * @param code Program source text to transform.
  * @param request Transform configuration describing filename, parser mode, Lingui config,
- * extraction mode, translation mode, runtime bindings, and optional input source map.
- * @returns A {@link ProgramTransform} containing transformed code, transformed AST, and source map.
+ * extraction mode, translation mode, and runtime bindings.
+ * @returns A {@link ProgramTransform} containing transformed code and transformed AST.
  *
  * The pipeline has three stages:
  * 1. preprocess custom reactive syntax such as `$t`
@@ -34,15 +31,11 @@ export function transformProgram(
     code: true,
     configFile: false,
     filename: request.filename,
-    inputSourceMap: request.inputSourceMap
-      ? toBabelInputSourceMap(request.inputSourceMap)
-      : undefined,
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
     },
     plugins: [createMacroPreprocessPlugin()],
-    sourceMaps: true,
   });
 
   if (!preprocessed?.code) {
@@ -55,11 +48,6 @@ export function transformProgram(
     code: true,
     configFile: false,
     filename: request.filename,
-    inputSourceMap:
-      preprocessed.map ??
-      (request.inputSourceMap
-        ? toBabelInputSourceMap(request.inputSourceMap)
-        : undefined),
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
@@ -75,7 +63,6 @@ export function transformProgram(
       ],
       createMacroPostprocessPlugin(request),
     ],
-    sourceMaps: true,
   });
 
   if (!result?.ast || result.code == null) {
@@ -85,6 +72,5 @@ export function transformProgram(
   return {
     code: result.code,
     ast: result.ast,
-    map: (result.map as EncodedSourceMap | null | undefined) ?? null,
   };
 }

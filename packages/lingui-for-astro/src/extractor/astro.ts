@@ -9,13 +9,8 @@ import { createAstroExtractionUnits } from "../compiler-core/extract/index.ts";
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 
 function createExtractorContext(ctx: ExtractorCtx | undefined): ExtractorCtx {
-  if (ctx) {
-    return ctx;
-  }
-
-  return {
-    linguiConfig: normalizeLinguiConfig(),
-  };
+  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig);
+  return ctx ? { ...ctx, linguiConfig } : { linguiConfig };
 }
 
 function normalizeExtractionSourceMap(

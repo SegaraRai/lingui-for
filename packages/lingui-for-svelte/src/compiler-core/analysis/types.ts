@@ -41,6 +41,11 @@ export type MarkupExpression = RangeNode & {
    * Original source slice for the expression.
    */
   source: string;
+  /**
+   * Absolute source ranges to remove before passing the snippet to the Lingui macro plugin.
+   * Used to strip Svelte-specific syntax (`$` reactive prefix) that the plugin does not understand.
+   */
+  stripRanges: Array<{ start: number; end: number }>;
 };
 
 /**

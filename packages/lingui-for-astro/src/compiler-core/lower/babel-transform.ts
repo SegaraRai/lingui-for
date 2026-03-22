@@ -1,14 +1,12 @@
 import type { PluginObj } from "@babel/core";
 import { transformSync } from "@babel/core";
 import * as t from "@babel/types";
-import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
 import {
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
   LINGUI_TRANSLATE_METHOD,
-  toBabelInputSourceMap,
 } from "lingui-for-shared/compiler";
 
 import { getParserPlugins } from "../shared/config.ts";
@@ -104,7 +102,6 @@ export function transformProgram(
     code: true,
     configFile: false,
     filename: request.filename,
-    sourceFileName: request.filename,
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(),
@@ -120,10 +117,6 @@ export function transformProgram(
       ],
       createAstroContextPostprocessPlugin(request),
     ],
-    inputSourceMap: request.inputSourceMap
-      ? toBabelInputSourceMap(request.inputSourceMap)
-      : undefined,
-    sourceMaps: true,
   });
 
   if (!result?.ast || result.code == null) {
@@ -133,6 +126,5 @@ export function transformProgram(
   return {
     code: result.code,
     ast: result.ast,
-    map: (result.map as EncodedSourceMap | null | undefined) ?? null,
   };
 }

@@ -5,8 +5,6 @@ import * as t from "@babel/types";
 
 import {
   babelTraverse,
-  buildDirectProgramMap,
-  buildGeneratedSnippetMap,
   buildOutputWithIndexedMap,
   LINGUI_TRANSLATE_METHOD,
   type ReplacementChunk,
@@ -20,7 +18,7 @@ import {
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
-import type { LoweredSnippet, LoweringSourceMapOptions } from "./common.ts";
+import type { LoweredSnippet } from "./common.ts";
 
 type SourceRange = {
   start: number;
@@ -35,10 +33,6 @@ export function buildFrontmatterPrelude(
   const lines: string[] = [];
 
   if (includeAstroContext) {
-    // createFrontmatterI18n defers the getLinguiContext call until the first
-    // macro invocation. This allows setLinguiContext to be called in the same
-    // frontmatter block (same-component init pattern) without the prelude
-    // throwing because the context has not been set yet.
     lines.push(
       `import { createFrontmatterI18n as ${bindings.createI18n} } from "${PACKAGE_RUNTIME}";\n`,
       `const ${bindings.i18n} = ${bindings.createI18n}(Astro.locals);\n`,
@@ -59,82 +53,48 @@ export function lowerFrontmatterMacros(
   options: LinguiAstroTransformOptions,
   loweringOptions: {
     extract: boolean;
-    sourceMapOptions: LoweringSourceMapOptions;
     runtimeBinding: string;
   },
 ): LoweredSnippet {
   const runtimeBinding = loweringOptions.runtimeBinding;
-  const inputSourceMap = buildDirectProgramMap(
-    loweringOptions.sourceMapOptions.fullSource,
-    options.filename,
-    loweringOptions.sourceMapOptions.sourceStart,
-    source.length,
-  );
 
   if (loweringOptions.extract) {
     const transformed = transformProgram(source, {
       translationMode: "extract",
       filename: `${options.filename}?frontmatter`,
-      inputSourceMap,
       linguiConfig: normalizeLinguiConfig(options.linguiConfig),
       runtimeBinding: null,
     });
-    return {
-      code: transformed.code,
-      map: transformed.map,
-    };
+    return { code: transformed.code };
   }
 
   const transformed = transformProgram(source, {
     translationMode: "astro-context",
     filename: `${options.filename}?frontmatter`,
-    inputSourceMap,
     linguiConfig: normalizeLinguiConfig(options.linguiConfig),
     runtimeBinding,
   });
 
-  return rebuildFrontmatterWithMappings(
-    source,
-    transformed,
-    options.filename,
-    loweringOptions.sourceMapOptions.fullSource,
-    loweringOptions.sourceMapOptions.sourceStart,
-    runtimeBinding,
-  );
+  return rebuildFrontmatterCode(source, transformed, runtimeBinding);
 }
 
-function rebuildFrontmatterWithMappings(
+function rebuildFrontmatterCode(
   original: string,
-  transformed: {
-    code: string;
-    ast: t.File;
-  },
-  mapFile: string,
-  fullSource: string,
-  sourceStart: number,
+  transformed: { code: string; ast: t.File },
   runtimeBinding: string,
 ): LoweredSnippet {
   const replacements = createFrontmatterReplacementChunks(
     original,
     transformed,
-    fullSource,
-    mapFile,
-    sourceStart,
     runtimeBinding,
   );
 
-  return buildOutputWithIndexedMap(original, mapFile, replacements);
+  return { code: buildOutputWithIndexedMap(original, "", replacements).code };
 }
 
 function createFrontmatterReplacementChunks(
   original: string,
-  transformed: {
-    code: string;
-    ast: t.File;
-  },
-  fullSource: string,
-  mapFile: string,
-  sourceStart: number,
+  transformed: { code: string; ast: t.File },
   runtimeBinding: string,
 ): ReplacementChunk[] {
   const importRanges = collectMacroImportRanges(original);
@@ -153,12 +113,7 @@ function createFrontmatterReplacementChunks(
   const replacements: ReplacementChunk[] = [];
 
   importRanges.forEach((range) => {
-    replacements.push({
-      start: range.start,
-      end: range.end,
-      code: "",
-      map: null,
-    });
+    replacements.push({ start: range.start, end: range.end, code: "" });
   });
 
   originalMacroRanges.forEach((range, index) => {
@@ -168,18 +123,7 @@ function createFrontmatterReplacementChunks(
       throw new Error("Missing transformed runtime call for frontmatter macro");
     }
 
-    replacements.push({
-      start: range.start,
-      end: range.end,
-      code,
-      map: buildGeneratedSnippetMap(
-        fullSource,
-        mapFile,
-        sourceStart + range.start,
-        code,
-        range.end - range.start,
-      ),
-    });
+    replacements.push({ start: range.start, end: range.end, code });
   });
 
   return replacements.filter(
@@ -306,10 +250,7 @@ function isOriginalMacroExpression(
 }
 
 function collectTransformedRuntimeCallCodes(
-  transformed: {
-    code: string;
-    ast: t.File;
-  },
+  transformed: { code: string; ast: t.File },
   runtimeBinding: string,
 ): string[] {
   const calls: string[] = [];

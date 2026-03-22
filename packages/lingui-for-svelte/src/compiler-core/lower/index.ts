@@ -12,14 +12,6 @@ export {
   lowerScriptExpression,
   lowerTemplateExpression,
 } from "./snippet-lowering.ts";
-export {
-  addLineMappings,
-  buildDirectProgramMap,
-  buildGeneratedSnippetMap,
-  buildPrefixedSnippetMap,
-  composeSourceMaps,
-  createOffsetToPosition,
-} from "lingui-for-shared/compiler";
 export { buildCombinedProgram } from "./synthetic-program.ts";
 export type {
   MappedCodeFragment,

@@ -88,7 +88,9 @@ const role = "admin";
         "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
     );
 
-    expect(nested?.origin).toEqual(["/virtual/nested-origin.astro", 18, 6]);
+    // Component macros map all generated positions to the component's start
+    // (ms.overwrite + hires:false). <Trans> starts at line 14, column 0.
+    expect(nested?.origin).toEqual(["/virtual/nested-origin.astro", 14, 0]);
   });
 
   test("preserves origins for deep component-macro ICU messages in stress page extraction", async () => {
@@ -159,13 +161,16 @@ const role = "admin";
       { linguiConfig },
     );
 
+    // Component macros map all generated positions to the component's start
+    // (ms.overwrite + hires:false). <Plural> starts at line 9, column 0.
+    // All three ICU branch messages therefore share the same origin.
     expect(
       messages.find(
         (message) =>
           message.message ===
           "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}",
       )?.origin,
-    ).toEqual([filename, 11, 16]);
+    ).toEqual([filename, 9, 0]);
 
     expect(
       messages.find(
@@ -173,7 +178,7 @@ const role = "admin";
           message.message ===
           "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}",
       )?.origin,
-    ).toEqual([filename, 25, 14]);
+    ).toEqual([filename, 9, 0]);
 
     expect(
       messages.find(
@@ -181,7 +186,7 @@ const role = "admin";
           message.message ===
           "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}",
       )?.origin,
-    ).toEqual([filename, 39, 12]);
+    ).toEqual([filename, 9, 0]);
   });
 
   test("keeps origins for core macro template expressions in Astro component markup", async () => {

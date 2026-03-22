@@ -42,15 +42,15 @@ msgstr "{count, plural, one {リストに # 件あります。} other {リスト
 msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 msgstr "{count, selectordinal, one {第 # リリース候補} two {第 # リリース候補} few {第 # リリース候補} other {第 # リリース候補}}"
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:181
 msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 msgstr ""
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:181
 msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 msgstr ""
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:181
 msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 msgstr ""
 
@@ -508,17 +508,17 @@ msgstr "スニペットバッジ"
 msgid "Snippet item: {text}"
 msgstr "スニペット項目: {text}"
 
-#: src/routes/playground/syntax/+page.svelte:73
+#: src/routes/playground/syntax/+page.svelte:74
 msgid "Status summary: active"
 msgstr "状態サマリー: アクティブ"
 
-#: src/routes/playground/syntax/+page.svelte:72
+#: src/routes/playground/syntax/+page.svelte:73
 msgid "Status summary: idle"
 msgstr "状態サマリー: アイドル"
 
 #: src/routes/playground/stress/+page.svelte:19
 msgid "Stress"
-msgstr ""
+msgstr "ストレス"
 
 #: src/lib/app/LanguageSwitcher.svelte:16
 msgid "Switch language"

@@ -6,7 +6,7 @@ import { LINGUI_RUNTIME_TRANS_EXPORT } from "./lingui-constants.ts";
 export type ProgramTransformLike<TMap> = {
   code: string;
   ast: t.File;
-  map: TMap | null;
+  map?: TMap | null;
 };
 
 export type MappedCodeFragment<TMap> = {

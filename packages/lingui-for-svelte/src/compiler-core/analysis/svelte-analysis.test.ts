@@ -45,6 +45,51 @@ describe("analyzeSvelte", () => {
     expect(analysis.components).toHaveLength(0);
   });
 
+  test("does not strip $ from $t() or $t`` inside message text (template literal content)", () => {
+    // $t() and $t`` inside template literal CONTENT are literal characters, not
+    // macro calls. Only the outer tag position (the $ sigil of the reactive call
+    // itself) should appear in stripRanges.
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+      </script>
+
+      <p>{$t\`Use $t() to translate\`}</p>
+    `;
+
+    const analysis = analyzeSvelte(source, "MacroInContent.svelte");
+
+    expect(analysis.expressions).toHaveLength(1);
+    const [expr] = analysis.expressions;
+    // The expression source is the full tagged template: $t`Use $t() to translate`
+    expect(expr?.source).toBe("$t`Use $t() to translate`");
+    // Only ONE strip range: the $ at position 0 (the reactive sigil on the tag).
+    // The $ at position 7 (inside the template content "$t()") must NOT be stripped.
+    expect(expr?.stripRanges).toHaveLength(1);
+    expect(expr?.stripRanges[0]?.start).toBe(
+      (expr?.start ?? 0) + 0, // position of the leading $ of $t
+    );
+  });
+
+  test("does strip $ from nested $t calls inside ${} interpolations", () => {
+    // $t`` inside a ${} interpolation IS a macro call and must be stripped.
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+        const condition = true;
+      </script>
+
+      <p>{condition ? $t\`yes\` : $t\`no\`}</p>
+    `;
+
+    const analysis = analyzeSvelte(source, "NestedMacro.svelte");
+
+    expect(analysis.expressions).toHaveLength(1);
+    const [expr] = analysis.expressions;
+    // The expression is the full conditional; both $t`` uses must be stripped.
+    expect(expr?.stripRanges).toHaveLength(2);
+  });
+
   test("ignores same-name components and expressions when they are not macro imports", () => {
     const source = dedent`
       <script lang="ts">

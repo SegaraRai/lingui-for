@@ -1,5 +1,3 @@
-import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
-
 import {
   PACKAGE_MACRO,
   SYNTHETIC_PREFIX_COMPONENT,
@@ -12,7 +10,6 @@ export type LoweringSourceMapOptions = {
 
 export type LoweredSnippet = {
   code: string;
-  map: EncodedSourceMap | null;
 };
 
 export const EXPR_PREFIX = "const __expr = (\n";

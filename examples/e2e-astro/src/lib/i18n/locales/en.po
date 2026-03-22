@@ -92,15 +92,15 @@ msgstr "{count} React clicks"
 msgid "{count} Svelte clicks"
 msgstr "{count} Svelte clicks"
 
-#: src/pages/stress.astro:162
+#: src/pages/stress.astro:132
 msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 
-#: src/pages/stress.astro:148
+#: src/pages/stress.astro:132
 msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 
-#: src/pages/stress.astro:134
+#: src/pages/stress.astro:132
 msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 
@@ -648,7 +648,7 @@ msgstr "This React island uses transition:persist and transition:persist-props, 
 msgid "This React island uses transition:persist, so its counter survives while locale and page props still update."
 msgstr "This React island uses transition:persist, so its counter survives while locale and page props still update."
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:37
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:38
 msgid "This Svelte island remounts whenever the route or locale changes."
 msgstr "This Svelte island remounts whenever the route or locale changes."
 
@@ -725,7 +725,7 @@ msgstr "Verify linked and emphasized translations across runtimes."
 msgid "Volatile React island"
 msgstr "Volatile React island"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:30
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:31
 msgid "Volatile Svelte island"
 msgstr "Volatile Svelte island"
 

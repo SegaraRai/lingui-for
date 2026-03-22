@@ -1,22 +1,19 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import {
-  buildOutputWithIndexedMap,
-  createUntouchedChunkMap,
-} from "./replacement-map.ts";
+import { buildOutputWithIndexedMap } from "./replacement-map.ts";
 
 describe("replacement map helpers", () => {
-  test("creates source maps for untouched source chunks", () => {
-    const map = createUntouchedChunkMap(
+  test("maps untouched source regions back to the original file", () => {
+    const result = buildOutputWithIndexedMap(
       "const answer = 42;",
       "/virtual.ts",
-      6,
-      12,
+      [],
     );
 
-    expect(map?.file).toBe("/virtual.ts");
-    expect(map?.sources).toEqual(["/virtual.ts"]);
-    expect(map?.sourcesContent).toEqual(["const answer = 42;"]);
+    expect(result.code).toBe("const answer = 42;");
+    expect(result.map.file).toBe("/virtual.ts");
+    expect(result.map.sources).toEqual(["/virtual.ts"]);
+    expect(result.map.sourcesContent).toEqual(["const answer = 42;"]);
   });
 
   test("builds output and indexed maps for replaced source", () => {
@@ -28,14 +25,6 @@ describe("replacement map helpers", () => {
           start: 6,
           end: 12,
           code: "result",
-          map: {
-            version: 3,
-            file: "/virtual.ts",
-            names: [],
-            mappings: "",
-            sources: ["/virtual.ts"],
-            sourcesContent: ["result"],
-          },
         },
       ],
     );

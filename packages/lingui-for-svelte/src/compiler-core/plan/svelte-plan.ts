@@ -27,6 +27,11 @@ export type ScriptMacroExpression = {
   end: number;
   source: string;
   requiresLinguiContext: boolean;
+  /**
+   * Absolute source ranges to remove before passing the snippet to the Lingui macro plugin.
+   * Covers the reactive `$` prefix (e.g. `$t`) and the `.eager` member (e.g. `t.eager`).
+   */
+  stripRanges: Array<{ start: number; end: number }>;
 };
 
 export type ScriptMacroPlan = {
@@ -256,11 +261,27 @@ function collectScriptMacros(
         return;
       }
 
+      const nodeSource = script.content.slice(path.node.start, path.node.end);
+      const absStart = script.contentStart + path.node.start;
+      const stripRanges: Array<{ start: number; end: number }> = [];
+      if (nodeSource.startsWith("$")) {
+        stripRanges.push({ start: absStart, end: absStart + 1 });
+      } else if (
+        nodeSource.startsWith(`${localName}.${EAGER_TRANSLATION_PROPERTY}`)
+      ) {
+        const dotStart = absStart + localName.length;
+        stripRanges.push({
+          start: dotStart,
+          end: dotStart + 1 + EAGER_TRANSLATION_PROPERTY.length,
+        });
+      }
+
       expressions.push({
-        start: script.contentStart + path.node.start,
+        start: absStart,
         end: script.contentStart + path.node.end,
-        source: script.content.slice(path.node.start, path.node.end),
+        source: nodeSource,
         requiresLinguiContext: bindings.reactiveStrings.has(localName),
+        stripRanges,
       });
       path.skip();
     },
@@ -270,11 +291,27 @@ function collectScriptMacros(
         return;
       }
 
+      const nodeSource = script.content.slice(path.node.start, path.node.end);
+      const absStart = script.contentStart + path.node.start;
+      const stripRanges: Array<{ start: number; end: number }> = [];
+      if (nodeSource.startsWith("$")) {
+        stripRanges.push({ start: absStart, end: absStart + 1 });
+      } else if (
+        nodeSource.startsWith(`${localName}.${EAGER_TRANSLATION_PROPERTY}`)
+      ) {
+        const dotStart = absStart + localName.length;
+        stripRanges.push({
+          start: dotStart,
+          end: dotStart + 1 + EAGER_TRANSLATION_PROPERTY.length,
+        });
+      }
+
       expressions.push({
-        start: script.contentStart + path.node.start,
+        start: absStart,
         end: script.contentStart + path.node.end,
-        source: script.content.slice(path.node.start, path.node.end),
+        source: nodeSource,
         requiresLinguiContext: bindings.reactiveStrings.has(localName),
+        stripRanges,
       });
       path.skip();
     },

@@ -58,7 +58,7 @@ export async function runBabelExtractionUnits(
       {
         plugins: parserPlugins,
       },
-      true,
+      !sourceMaps,
     );
   }
 }

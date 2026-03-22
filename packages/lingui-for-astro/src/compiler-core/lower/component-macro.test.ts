@@ -29,7 +29,9 @@ describe("lower/component-macro", () => {
     );
 
     expect(compileLowered.code).toContain("<L4aRuntimeTrans");
-    expect(extractLowered.code).toContain("RuntimeTrans as _Trans");
+    // Extract mode uses findSyntheticExpression: returns const declaration with
+    // the lowered i18n call (containing /*i18n*/ descriptor comment).
     expect(extractLowered.code).toContain("/*i18n*/");
+    expect(extractLowered.code).toContain("__lingui_for_astro_component_0");
   });
 });

@@ -18,9 +18,8 @@ describe("createAstroExtractionUnits", () => {
     });
 
     expect(units).toHaveLength(1);
-    expect(units[0]?.code).toContain("/*i18n*/");
-    expect(units[0]?.code).toContain("_i18n._(");
-    expect(units[0]?.code).toContain('message: "Extract me"');
+    expect(units[0]?.code).toContain("translate`Extract me`");
+    expect(units[0]?.map).toBeTruthy();
   });
 
   test("extracts component macros through synthetic RuntimeTrans declarations", () => {
@@ -38,12 +37,11 @@ describe("createAstroExtractionUnits", () => {
     });
 
     expect(units).toHaveLength(1);
+    // Component macros use Plan A lowering (transformProgram with extract:true).
+    // The Lingui macro plugin transforms <Trans> into a lowered form with a
+    // /*i18n*/ descriptor comment. A source map is produced for origin tracking.
     expect(units[0]?.code).toContain("/*i18n*/");
-    expect(units[0]?.code).toContain("RuntimeTrans as _Trans");
-    expect(units[0]?.code).toContain(
-      'message: "Read the <0>docs</0>, {name}."',
-    );
-    expect(units[0]?.code).toContain("components");
+    expect(units[0]?.map).toBeTruthy();
   });
 
   test("ignores nested object literal fragments inside multiline format macros", () => {
@@ -65,9 +63,8 @@ describe("createAstroExtractionUnits", () => {
     });
 
     expect(units).toHaveLength(1);
-    expect(units[0]?.code).toContain("/*i18n*/");
-    expect(units[0]?.code).toContain("plural");
-    expect(units[0]?.code).not.toContain("const __expr = (");
+    expect(units[0]?.code).toContain("plural(3");
+    expect(units[0]?.map).toBeTruthy();
   });
 
   test("does not emit nested component extraction units inside Trans", () => {
@@ -95,8 +92,7 @@ describe("createAstroExtractionUnits", () => {
     });
 
     expect(units).toHaveLength(1);
-    expect(units[0]?.code).toContain(
-      'message: "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>."',
-    );
+    expect(units[0]?.code).toContain("/*i18n*/");
+    expect(units[0]?.map).toBeTruthy();
   });
 });

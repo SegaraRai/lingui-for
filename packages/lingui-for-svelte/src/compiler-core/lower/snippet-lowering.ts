@@ -1,12 +1,6 @@
 import {
-  buildAnchoredBoundarySnippetMap,
-  buildAnchoredGeneratedSnippetMap,
-  buildGeneratedSnippetMap,
-  buildPrefixedSnippetMap,
-  composeSourceMaps,
   createMappedOutput,
   splitSyntheticDeclarations as splitSyntheticDeclarationsShared,
-  withEndMapping,
 } from "lingui-for-shared/compiler";
 
 import type { SveltePlan } from "../plan/svelte-plan.ts";
@@ -43,7 +37,9 @@ function splitSyntheticDeclarations(
   });
 }
 
-function createSyntheticMacroImports(macroBindings: MacroBindings): string {
+export function createSyntheticMacroImports(
+  macroBindings: MacroBindings,
+): string {
   if (macroBindings.allImports.size === 0) {
     return "";
   }
@@ -87,7 +83,6 @@ export function lowerTemplateExpression(
           lowered.code,
           getSourceLineIndent(plan.source, start),
         ),
-        map: lowered.map,
       };
 }
 
@@ -112,7 +107,6 @@ export function lowerScriptExpression(
           lowered.code,
           getSourceLineIndent(plan.source, start),
         ),
-        map: lowered.map,
       };
 }
 
@@ -136,13 +130,6 @@ function lowerScriptLikeExpression(
     linguiConfig: plan.linguiConfig,
     translationMode: options.translationMode,
     runtimeBindings: options.runtimeBindings,
-    inputSourceMap: buildPrefixedSnippetMap(
-      plan.source,
-      plan.filename,
-      start,
-      prefix,
-      source.length,
-    ),
   });
 
   if (options.extract) {
@@ -154,19 +141,8 @@ function lowerScriptLikeExpression(
     const code = replacement
       ? `const ${SYNTHETIC_PREFIX_EXPRESSION}0 = ${replacement.code};`
       : transformed.code;
-    const anchorOffset = getExtractionDescriptorAnchorOffset(code);
 
-    return {
-      code,
-      map: buildAnchoredGeneratedSnippetMap(
-        plan.source,
-        plan.filename,
-        start,
-        code,
-        source.length,
-        anchorOffset,
-      ),
-    };
+    return { code };
   }
 
   const split = splitSyntheticDeclarations(
@@ -176,22 +152,10 @@ function lowerScriptLikeExpression(
 
   const fragment = split.expressionReplacements.get(0);
   if (fragment == null) {
-    return { code: source, map: null };
+    return { code: source };
   }
 
-  return {
-    code: fragment.code,
-    map:
-      fragment.map != null && transformed.map != null
-        ? withEndMapping(
-            composeSourceMaps(fragment.map, transformed.map),
-            plan.filename,
-            fragment.code,
-            plan.source,
-            start + source.length - 1,
-          )
-        : null,
-  };
+  return { code: fragment.code };
 }
 
 function getExtractionDescriptorAnchorOffset(code: string): number {
@@ -231,13 +195,6 @@ export function lowerComponentMacro(
     linguiConfig: plan.linguiConfig,
     translationMode: options.extract ? "extract" : "svelte-context",
     runtimeBindings: options.runtimeBindings,
-    inputSourceMap: buildPrefixedSnippetMap(
-      plan.source,
-      plan.filename,
-      start,
-      prefix,
-      source.length,
-    ),
   });
 
   if (options.extract) {
@@ -249,17 +206,7 @@ export function lowerComponentMacro(
       ? `const ${SYNTHETIC_PREFIX_COMPONENT}0 = ${replacement.code};`
       : transformed.code;
 
-    return {
-      code,
-      map: buildAnchoredBoundarySnippetMap(
-        plan.source,
-        plan.filename,
-        start,
-        code,
-        source.length,
-        getComponentExtractionAnchorOffset(code),
-      ),
-    };
+    return { code };
   }
 
   const split = splitSyntheticDeclarations(
@@ -270,22 +217,13 @@ export function lowerComponentMacro(
   const replacement = split.componentReplacements.get(0);
 
   if (!replacement) {
-    return { code: source, map: null };
+    return { code: source };
   }
 
   const indent = getSourceLineIndent(plan.source, start);
   const indented = indentMultilineReplacement(replacement.code, indent);
 
-  return {
-    code: indented,
-    map: buildGeneratedSnippetMap(
-      plan.source,
-      plan.filename,
-      start,
-      indented,
-      source.length,
-    ),
-  };
+  return { code: indented };
 }
 
 function getSourceLineIndent(source: string, offset: number): string {

@@ -1,17 +1,13 @@
 import { type NodePath, transformSync } from "@babel/core";
 import * as t from "@babel/types";
-import MagicString from "magic-string";
 
 import {
   babelTraverse,
-  buildAnchoredGeneratedSnippetMap,
-  buildGeneratedSnippetMap,
   buildOutputWithIndexedMap,
-  buildPrefixedMappedSnippetMap,
-  buildPrefixedSnippetMap,
+  createMappedOutput,
   lowerSyntheticComponentDeclaration,
-  type ReplacementChunk,
   stripRuntimeTransImports,
+  type ReplacementChunk,
 } from "lingui-for-shared/compiler";
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
@@ -25,7 +21,6 @@ import { transformProgram } from "./babel-transform.ts";
 import {
   createComponentWrapperPrefix,
   type LoweredSnippet,
-  type LoweringSourceMapOptions,
   WRAPPED_SUFFIX,
 } from "./common.ts";
 import { lowerTemplateExpression } from "./template-expression.ts";
@@ -36,7 +31,6 @@ export function lowerComponentMacro(
   options: LinguiAstroTransformOptions,
   loweringOptions: {
     extract: boolean;
-    sourceMapOptions: LoweringSourceMapOptions;
     runtimeBindings: Pick<AstroRuntimeBindings, "i18n" | "runtimeTrans">;
   },
 ): LoweredSnippet {
@@ -45,7 +39,6 @@ export function lowerComponentMacro(
     source,
     macroImports,
     options,
-    loweringOptions.sourceMapOptions,
     bindings.i18n,
   );
   const prefix = createComponentWrapperPrefix(macroImports);
@@ -56,46 +49,33 @@ export function lowerComponentMacro(
       {
         translationMode: "extract",
         filename: `${options.filename}?extract-component`,
-        inputSourceMap: null,
         linguiConfig: normalizeLinguiConfig(options.linguiConfig),
         runtimeBinding: null,
       },
     );
-    return {
-      code: transformed.code,
-      map: buildAnchoredGeneratedSnippetMap(
-        loweringOptions.sourceMapOptions.fullSource,
-        options.filename,
-        loweringOptions.sourceMapOptions.sourceStart,
-        transformed.code,
-        source.length,
-        getComponentExtractionAnchorOffset(transformed.code),
-      ),
-    };
+    const syntheticDecl = transformed.ast.program.body.find(
+      (stmt): stmt is import("@babel/types").VariableDeclaration =>
+        stmt.type === "VariableDeclaration" &&
+        stmt.declarations.length === 1 &&
+        stmt.declarations[0]?.id.type === "Identifier" &&
+        stmt.declarations[0].id.name.startsWith(SYNTHETIC_PREFIX_COMPONENT) &&
+        stmt.declarations[0].init != null,
+    );
+    if (syntheticDecl) {
+      const init = syntheticDecl.declarations[0]!.init!;
+      const fragment = createMappedOutput(init, transformed);
+      return {
+        code: `const ${SYNTHETIC_PREFIX_COMPONENT}0 = ${fragment.code};`,
+      };
+    }
+    return { code: transformed.code };
   }
 
-  const inputSourceMap =
-    rewrittenSource.map == null
-      ? buildPrefixedSnippetMap(
-          loweringOptions.sourceMapOptions.fullSource,
-          options.filename,
-          loweringOptions.sourceMapOptions.sourceStart,
-          prefix,
-          source.length,
-        )
-      : buildPrefixedMappedSnippetMap(
-          loweringOptions.sourceMapOptions.fullSource,
-          options.filename,
-          loweringOptions.sourceMapOptions.sourceStart,
-          prefix,
-          rewrittenSource.map,
-        );
   const transformed = transformProgram(
     `${prefix}${rewrittenSource.code}${WRAPPED_SUFFIX}`,
     {
       translationMode: "astro-context",
       filename: `${options.filename}?component`,
-      inputSourceMap,
       linguiConfig: normalizeLinguiConfig(options.linguiConfig),
       runtimeBinding: bindings.i18n,
     },
@@ -107,27 +87,17 @@ export function lowerComponentMacro(
     bindings.runtimeTrans,
     SYNTHETIC_PREFIX_COMPONENT,
   );
-  return {
-    code,
-    map: buildGeneratedSnippetMap(
-      loweringOptions.sourceMapOptions.fullSource,
-      options.filename,
-      loweringOptions.sourceMapOptions.sourceStart,
-      code,
-      source.length,
-    ),
-  };
+  return { code };
 }
 
 function rewriteNestedComponentMacroExpressions(
   source: string,
   macroImports: ReadonlyMap<string, string>,
   options: LinguiAstroTransformOptions,
-  sourceMapOptions: LoweringSourceMapOptions,
   runtimeBinding: string,
 ): LoweredSnippet {
   if (macroImports.size === 0) {
-    return { code: source, map: null };
+    return { code: source };
   }
 
   const prefix = "const __component = (\n";
@@ -145,10 +115,9 @@ function rewriteNestedComponentMacroExpressions(
   });
 
   if (!parsed?.ast) {
-    return { code: source, map: null };
+    return { code: source };
   }
 
-  const string = new MagicString(source);
   const offset = prefix.length;
   const replacements: ReplacementChunk[] = [];
 
@@ -181,52 +150,21 @@ function rewriteNestedComponentMacroExpressions(
         {
           extract: false,
           runtimeBinding,
-          sourceMapOptions: {
-            fullSource: sourceMapOptions.fullSource,
-            sourceStart: sourceMapOptions.sourceStart + start,
-          },
         },
       );
 
       if (transformed.code !== source.slice(start, end)) {
-        replacements.push({
-          start,
-          end,
-          code: transformed.code,
-          map: transformed.map,
-        });
+        replacements.push({ start, end, code: transformed.code });
       }
     },
   });
 
-  replacements
-    .toSorted((left, right) => right.start - left.start)
-    .forEach(({ start, end, code }) => {
-      string.overwrite(start, end, code);
-    });
-
   if (replacements.length === 0) {
-    return { code: source, map: null };
+    return { code: source };
   }
 
-  return buildOutputWithIndexedMap(source, options.filename, replacements);
-}
-
-function getComponentExtractionAnchorOffset(code: string): number {
-  const messageMatch = /\bmessage:\s*"([^"\\]|\\.)*"/.exec(code);
-  if (messageMatch?.index == null) {
-    return getExtractionDescriptorAnchorOffset(code);
-  }
-
-  return messageMatch.index + messageMatch[0].length;
-}
-
-function getExtractionDescriptorAnchorOffset(code: string): number {
-  const commentStart = code.indexOf("/*i18n*/");
-  if (commentStart < 0) {
-    return 0;
-  }
-
-  const descriptorStart = code.indexOf("{", commentStart);
-  return descriptorStart >= 0 ? descriptorStart : commentStart;
+  return {
+    code: buildOutputWithIndexedMap(source, options.filename, replacements)
+      .code,
+  };
 }
