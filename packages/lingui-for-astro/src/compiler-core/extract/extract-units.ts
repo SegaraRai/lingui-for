@@ -37,6 +37,7 @@ export function createAstroExtractionUnitsFromPlan(
       plan.options,
       {
         extract: true,
+        runtimeBinding: plan.runtimeBindings.i18n,
         sourceMapOptions: {
           fullSource: plan.source,
           sourceStart: frontmatter.contentRange.start,
@@ -57,6 +58,7 @@ export function createAstroExtractionUnitsFromPlan(
         plan.options,
         {
           extract: true,
+          runtimeBinding: plan.runtimeBindings.i18n,
           sourceMapOptions: {
             fullSource: plan.source,
             sourceStart: item.innerRange.start,
@@ -76,6 +78,7 @@ export function createAstroExtractionUnitsFromPlan(
         plan.options,
         {
           extract: true,
+          runtimeBindings: plan.runtimeBindings,
           sourceMapOptions: {
             fullSource: plan.source,
             sourceStart: item.range.start,

@@ -16,10 +16,9 @@ import {
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import {
-  DEFAULT_ASTRO_RUNTIME_BINDINGS,
+  type AstroRuntimeBindings,
   PACKAGE_RUNTIME,
   SYNTHETIC_PREFIX_COMPONENT,
-  type AstroRuntimeBindings,
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
@@ -37,12 +36,11 @@ export function lowerComponentMacro(
   options: LinguiAstroTransformOptions,
   loweringOptions: {
     extract: boolean;
-    sourceMapOptions?: LoweringSourceMapOptions;
-    runtimeBindings?: Pick<AstroRuntimeBindings, "i18n" | "runtimeTrans">;
+    sourceMapOptions: LoweringSourceMapOptions;
+    runtimeBindings: Pick<AstroRuntimeBindings, "i18n" | "runtimeTrans">;
   },
 ): LoweredSnippet {
-  const bindings =
-    loweringOptions.runtimeBindings ?? DEFAULT_ASTRO_RUNTIME_BINDINGS;
+  const bindings = loweringOptions.runtimeBindings;
   const rewrittenSource = rewriteNestedComponentMacroExpressions(
     source,
     macroImports,
@@ -51,49 +49,57 @@ export function lowerComponentMacro(
     bindings.i18n,
   );
   const prefix = createComponentWrapperPrefix(macroImports);
-  const inputSourceMap =
-    !loweringOptions.extract && rewrittenSource.map != null
-      ? buildPrefixedMappedSnippetMap(
-          loweringOptions.sourceMapOptions?.fullSource ?? source,
-          options.filename,
-          loweringOptions.sourceMapOptions?.sourceStart ?? 0,
-          prefix,
-          rewrittenSource.map,
-        )
-      : !loweringOptions.extract
-        ? buildPrefixedSnippetMap(
-            loweringOptions.sourceMapOptions?.fullSource ?? source,
-            options.filename,
-            loweringOptions.sourceMapOptions?.sourceStart ?? 0,
-            prefix,
-            source.length,
-          )
-        : undefined;
-  const transformed = transformProgram(
-    `${prefix}${rewrittenSource.code}${WRAPPED_SUFFIX}`,
-    {
-      extract: loweringOptions.extract,
-      filename: `${options.filename}${loweringOptions.extract ? "?extract-component" : "?component"}`,
-      inputSourceMap,
-      linguiConfig: normalizeLinguiConfig(options.linguiConfig),
-      translationMode: loweringOptions.extract ? "extract" : "astro-context",
-      runtimeBinding: loweringOptions.extract ? undefined : bindings.i18n,
-    },
-  );
 
   if (loweringOptions.extract) {
+    const transformed = transformProgram(
+      `${prefix}${rewrittenSource.code}${WRAPPED_SUFFIX}`,
+      {
+        translationMode: "extract",
+        filename: `${options.filename}?extract-component`,
+        inputSourceMap: null,
+        linguiConfig: normalizeLinguiConfig(options.linguiConfig),
+        runtimeBinding: null,
+      },
+    );
     return {
       code: transformed.code,
       map: buildAnchoredGeneratedSnippetMap(
-        loweringOptions.sourceMapOptions?.fullSource ?? source,
+        loweringOptions.sourceMapOptions.fullSource,
         options.filename,
-        loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+        loweringOptions.sourceMapOptions.sourceStart,
         transformed.code,
         source.length,
         getComponentExtractionAnchorOffset(transformed.code),
       ),
     };
   }
+
+  const inputSourceMap =
+    rewrittenSource.map == null
+      ? buildPrefixedSnippetMap(
+          loweringOptions.sourceMapOptions.fullSource,
+          options.filename,
+          loweringOptions.sourceMapOptions.sourceStart,
+          prefix,
+          source.length,
+        )
+      : buildPrefixedMappedSnippetMap(
+          loweringOptions.sourceMapOptions.fullSource,
+          options.filename,
+          loweringOptions.sourceMapOptions.sourceStart,
+          prefix,
+          rewrittenSource.map,
+        );
+  const transformed = transformProgram(
+    `${prefix}${rewrittenSource.code}${WRAPPED_SUFFIX}`,
+    {
+      translationMode: "astro-context",
+      filename: `${options.filename}?component`,
+      inputSourceMap,
+      linguiConfig: normalizeLinguiConfig(options.linguiConfig),
+      runtimeBinding: bindings.i18n,
+    },
+  );
 
   stripRuntimeTransImports(transformed.ast.program, PACKAGE_RUNTIME);
   const code = lowerSyntheticComponentDeclaration(
@@ -104,9 +110,9 @@ export function lowerComponentMacro(
   return {
     code,
     map: buildGeneratedSnippetMap(
-      loweringOptions.sourceMapOptions?.fullSource ?? source,
+      loweringOptions.sourceMapOptions.fullSource,
       options.filename,
-      loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+      loweringOptions.sourceMapOptions.sourceStart,
       code,
       source.length,
     ),
@@ -117,7 +123,7 @@ function rewriteNestedComponentMacroExpressions(
   source: string,
   macroImports: ReadonlyMap<string, string>,
   options: LinguiAstroTransformOptions,
-  sourceMapOptions: LoweringSourceMapOptions | undefined,
+  sourceMapOptions: LoweringSourceMapOptions,
   runtimeBinding: string,
 ): LoweredSnippet {
   if (macroImports.size === 0) {
@@ -175,15 +181,10 @@ function rewriteNestedComponentMacroExpressions(
         {
           extract: false,
           runtimeBinding,
-          sourceMapOptions: sourceMapOptions
-            ? {
-                fullSource: sourceMapOptions.fullSource,
-                sourceStart: sourceMapOptions.sourceStart + start,
-              }
-            : {
-                fullSource: source,
-                sourceStart: start,
-              },
+          sourceMapOptions: {
+            fullSource: sourceMapOptions.fullSource,
+            sourceStart: sourceMapOptions.sourceStart + start,
+          },
         },
       );
 
@@ -213,7 +214,7 @@ function rewriteNestedComponentMacroExpressions(
 
 function getComponentExtractionAnchorOffset(code: string): number {
   const messageMatch = code.match(/\bmessage:\s*"([^"\\]|\\.)*"/);
-  if (!messageMatch || messageMatch.index == null) {
+  if (messageMatch?.index == null) {
     return getExtractionDescriptorAnchorOffset(code);
   }
 

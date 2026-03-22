@@ -14,9 +14,3 @@ export type AstroRuntimeBindings = {
   i18n: string;
   runtimeTrans: string;
 };
-
-export const DEFAULT_ASTRO_RUNTIME_BINDINGS: AstroRuntimeBindings = {
-  createI18n: RUNTIME_BINDING_CREATE_FRONTMATTER_I18N,
-  i18n: RUNTIME_BINDING_I18N,
-  runtimeTrans: RUNTIME_BINDING_RUNTIME_TRANS,
-};

@@ -14,10 +14,8 @@ import {
 
 import { getParserPlugins, normalizeLinguiConfig } from "../shared/config.ts";
 import {
-  DEFAULT_ASTRO_RUNTIME_BINDINGS,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
-  RUNTIME_BINDING_I18N,
   type AstroRuntimeBindings,
 } from "../shared/constants.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
@@ -32,7 +30,7 @@ type SourceRange = {
 export function buildFrontmatterPrelude(
   includeAstroContext: boolean,
   includeRuntimeTrans: boolean,
-  bindings: AstroRuntimeBindings = DEFAULT_ASTRO_RUNTIME_BINDINGS,
+  bindings: AstroRuntimeBindings,
 ): string {
   const lines: string[] = [];
 
@@ -61,40 +59,46 @@ export function lowerFrontmatterMacros(
   options: LinguiAstroTransformOptions,
   loweringOptions: {
     extract: boolean;
-    sourceMapOptions?: LoweringSourceMapOptions;
-    runtimeBinding?: string;
+    sourceMapOptions: LoweringSourceMapOptions;
+    runtimeBinding: string;
   },
 ): LoweredSnippet {
-  const runtimeBinding = loweringOptions.runtimeBinding ?? RUNTIME_BINDING_I18N;
-  const transformed = transformProgram(source, {
-    extract: loweringOptions.extract,
-    filename: `${options.filename}?frontmatter`,
-    inputSourceMap: loweringOptions.sourceMapOptions
-      ? buildDirectProgramMap(
-          loweringOptions.sourceMapOptions.fullSource,
-          options.filename,
-          loweringOptions.sourceMapOptions.sourceStart,
-          source.length,
-        )
-      : undefined,
-    linguiConfig: normalizeLinguiConfig(options.linguiConfig),
-    translationMode: loweringOptions.extract ? "extract" : "astro-context",
-    runtimeBinding: loweringOptions.extract ? undefined : runtimeBinding,
-  });
+  const runtimeBinding = loweringOptions.runtimeBinding;
+  const inputSourceMap = buildDirectProgramMap(
+    loweringOptions.sourceMapOptions.fullSource,
+    options.filename,
+    loweringOptions.sourceMapOptions.sourceStart,
+    source.length,
+  );
 
   if (loweringOptions.extract) {
+    const transformed = transformProgram(source, {
+      translationMode: "extract",
+      filename: `${options.filename}?frontmatter`,
+      inputSourceMap,
+      linguiConfig: normalizeLinguiConfig(options.linguiConfig),
+      runtimeBinding: null,
+    });
     return {
       code: transformed.code,
       map: transformed.map,
     };
   }
 
+  const transformed = transformProgram(source, {
+    translationMode: "astro-context",
+    filename: `${options.filename}?frontmatter`,
+    inputSourceMap,
+    linguiConfig: normalizeLinguiConfig(options.linguiConfig),
+    runtimeBinding,
+  });
+
   return rebuildFrontmatterWithMappings(
     source,
     transformed,
     options.filename,
-    loweringOptions.sourceMapOptions?.fullSource ?? source,
-    loweringOptions.sourceMapOptions?.sourceStart ?? 0,
+    loweringOptions.sourceMapOptions.fullSource,
+    loweringOptions.sourceMapOptions.sourceStart,
     runtimeBinding,
   );
 }

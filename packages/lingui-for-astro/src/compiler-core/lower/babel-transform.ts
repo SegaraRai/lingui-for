@@ -70,10 +70,7 @@ function createAstroContextPostprocessPlugin(
         },
       },
       CallExpression(path, state) {
-        if (
-          request.translationMode !== "astro-context" ||
-          !request.runtimeBinding
-        ) {
+        if (request.translationMode !== "astro-context") {
           return;
         }
 
@@ -99,6 +96,7 @@ export function transformProgram(
   code: string,
   request: ProgramTransformRequest,
 ): ProgramTransform {
+  const extract = request.translationMode === "extract";
   const result = transformSync(code, {
     ast: true,
     babelrc: false,
@@ -114,14 +112,14 @@ export function transformProgram(
       [
         linguiMacroPlugin,
         {
-          extract: request.extract,
+          extract,
           linguiConfig: request.linguiConfig,
-          stripMessageField: request.extract ? false : undefined,
+          stripMessageField: extract ? false : undefined,
         },
       ],
       createAstroContextPostprocessPlugin(request),
     ],
-    inputSourceMap: request.inputSourceMap,
+    inputSourceMap: request.inputSourceMap ?? undefined,
     sourceMaps: true,
   });
 

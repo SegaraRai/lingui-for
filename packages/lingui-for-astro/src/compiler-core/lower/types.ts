@@ -9,11 +9,18 @@ export interface ProgramTransform {
   map: SourceMap | null;
 }
 
-export interface ProgramTransformRequest {
-  filename: string;
-  linguiConfig: LinguiConfigNormalized;
-  extract: boolean;
-  translationMode: "extract" | "raw" | "astro-context";
-  runtimeBinding?: string | undefined;
-  inputSourceMap?: SourceMap | undefined;
-}
+export type ProgramTransformRequest =
+  | {
+      translationMode: "extract";
+      filename: string;
+      linguiConfig: LinguiConfigNormalized;
+      inputSourceMap: SourceMap | null;
+      runtimeBinding: null;
+    }
+  | {
+      translationMode: "astro-context";
+      filename: string;
+      linguiConfig: LinguiConfigNormalized;
+      inputSourceMap: SourceMap | null;
+      runtimeBinding: string;
+    };
