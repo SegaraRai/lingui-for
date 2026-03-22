@@ -10,13 +10,27 @@ pub enum JsMacroSyntax {
     Svelte,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum JsLikeLanguage {
+    JavaScript,
+    TypeScript,
+}
+
 pub fn collect_macro_candidates_in_javascript(
     source: &str,
     imports: &[MacroImport],
     base_offset: usize,
     syntax: JsMacroSyntax,
+    language: JsLikeLanguage,
 ) -> Result<Vec<MacroCandidate>, crate::AnalyzerError> {
-    collect_macro_candidates_in_javascript_with_shadowing(source, imports, base_offset, syntax, &[])
+    collect_macro_candidates_in_javascript_with_shadowing(
+        source,
+        imports,
+        base_offset,
+        syntax,
+        language,
+        &[],
+    )
 }
 
 pub fn collect_macro_candidates_in_javascript_with_shadowing(
@@ -24,9 +38,13 @@ pub fn collect_macro_candidates_in_javascript_with_shadowing(
     imports: &[MacroImport],
     base_offset: usize,
     syntax: JsMacroSyntax,
+    language: JsLikeLanguage,
     shadowed_names: &[String],
 ) -> Result<Vec<MacroCandidate>, crate::AnalyzerError> {
-    let js_tree = parse::parse_javascript(source)?;
+    let js_tree = match language {
+        JsLikeLanguage::JavaScript => parse::parse_javascript(source)?,
+        JsLikeLanguage::TypeScript => parse::parse_typescript(source)?,
+    };
     let js_root = js_tree.root_node();
     Ok(collect_macro_candidates_from_root(
         source,
@@ -63,6 +81,7 @@ pub fn collect_macro_candidates_from_root(
 pub fn collect_declared_names_from_binding_source(
     source: &str,
     mode: BindingParseMode,
+    language: JsLikeLanguage,
 ) -> Result<Vec<String>, crate::AnalyzerError> {
     let wrapped = match mode {
         BindingParseMode::VariableDeclarator => format!("const {source};"),
@@ -70,7 +89,10 @@ pub fn collect_declared_names_from_binding_source(
         BindingParseMode::SingleParam => format!("(({source}) => 0)"),
     };
 
-    let tree = parse::parse_javascript(&wrapped)?;
+    let tree = match language {
+        JsLikeLanguage::JavaScript => parse::parse_javascript(&wrapped)?,
+        JsLikeLanguage::TypeScript => parse::parse_typescript(&wrapped)?,
+    };
     let root = tree.root_node();
     let mut names = Vec::new();
     collect_declared_names(root, &wrapped, &mut names);
@@ -228,6 +250,13 @@ fn declare_pattern(source: &str, node: Node<'_>, scope: &mut LexicalScope) {
     match node.kind() {
         "identifier" | "shorthand_property_identifier_pattern" => {
             scope.declare(text(source, node));
+        }
+        "required_parameter" | "optional_parameter" => {
+            if let Some(pattern) = node.child_by_field_name("pattern") {
+                declare_pattern(source, pattern, scope);
+            } else if let Some(name) = node.child_by_field_name("name") {
+                declare_pattern(source, name, scope);
+            }
         }
         "array_pattern" | "object_pattern" | "assignment_pattern" | "pair_pattern"
         | "rest_pattern" | "formal_parameters" => {
@@ -393,6 +422,13 @@ fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) 
     match node.kind() {
         "identifier" | "shorthand_property_identifier_pattern" => {
             names.push(text(source, node).to_string());
+        }
+        "required_parameter" | "optional_parameter" => {
+            if let Some(pattern) = node.child_by_field_name("pattern") {
+                collect_pattern_names(pattern, source, names);
+            } else if let Some(name) = node.child_by_field_name("name") {
+                collect_pattern_names(name, source, names);
+            }
         }
         "array_pattern" | "object_pattern" | "assignment_pattern" | "pair_pattern"
         | "rest_pattern" | "formal_parameters" => {

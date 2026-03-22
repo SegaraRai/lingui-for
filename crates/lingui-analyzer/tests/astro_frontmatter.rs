@@ -128,3 +128,27 @@ fn collects_template_expression_candidates_from_frontmatter_imports() {
         MacroCandidateKind::CallExpression
     );
 }
+
+#[test]
+fn supports_typescript_syntax_in_frontmatter_and_template_expressions() {
+    let source = indoc! {r#"
+        ---
+        import { t as tt } from "@lingui/core/macro";
+
+        const count: number = 1;
+        const message = tt({ id: "typed", message: count satisfies number ? "ok" : "bad" });
+        ---
+
+        <div>{count && tt`Hello`}</div>
+    "#};
+
+    let analysis = AstroAdapter.analyze(source).expect("analysis succeeds");
+
+    assert_eq!(analysis.frontmatter_candidates.len(), 1);
+    assert_eq!(analysis.template_expressions.len(), 1);
+    assert_eq!(analysis.template_expressions[0].candidates.len(), 1);
+    assert_eq!(
+        analysis.template_expressions[0].candidates[0].kind,
+        MacroCandidateKind::TaggedTemplateExpression
+    );
+}

@@ -3,7 +3,7 @@ use tree_sitter::Node;
 use crate::{
     AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroImport, Span,
     framework::FrameworkAdapter,
-    js::{JsMacroSyntax, collect_macro_candidates_in_javascript},
+    js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript},
     parse,
 };
 
@@ -48,6 +48,7 @@ pub fn analyze_astro(source: &str) -> Result<AstroFrontmatterAnalysis, AnalyzerE
             &macro_imports,
             frontmatter_region.inner_span.start,
             JsMacroSyntax::Standard,
+            JsLikeLanguage::TypeScript,
         )?;
         (macro_imports, candidates)
     } else {
@@ -90,7 +91,7 @@ fn collect_macro_imports(
     source: &str,
     base_offset: usize,
 ) -> Result<Vec<MacroImport>, AnalyzerError> {
-    let js_tree = parse::parse_javascript(source)?;
+    let js_tree = parse::parse_typescript(source)?;
     let root = js_tree.root_node();
     let mut imports = Vec::new();
     let mut cursor = root.walk();
@@ -209,6 +210,8 @@ fn push_template_expression(
         imports,
         inner_span.start,
         JsMacroSyntax::Standard,
+        // Astro template expressions accept TypeScript syntax such as `as` and `satisfies`.
+        JsLikeLanguage::TypeScript,
     )?;
     expressions.push(AstroTemplateExpression {
         outer_span,

@@ -6,8 +6,8 @@ use crate::{
     AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroImport, Span,
     framework::FrameworkAdapter,
     js::{
-        BindingParseMode, JsMacroSyntax, collect_declared_names_from_binding_source,
-        collect_macro_candidates_in_javascript,
+        BindingParseMode, JsLikeLanguage, JsMacroSyntax,
+        collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
         collect_macro_candidates_in_javascript_with_shadowing,
     },
     parse,
@@ -139,13 +139,17 @@ fn analyze_script_block(
     };
 
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
-    let macro_imports =
-        collect_script_macro_imports(script_source, content_region.inner_span.start)?;
+    let macro_imports = collect_script_macro_imports(
+        script_source,
+        content_region.inner_span.start,
+        script_language(source, start_tag),
+    )?;
     let candidates = collect_macro_candidates_in_javascript(
         script_source,
         &macro_imports,
         content_region.inner_span.start,
         JsMacroSyntax::Svelte,
+        script_language(source, start_tag),
     )?;
 
     Ok(Some(SvelteScriptBlock {
@@ -169,6 +173,9 @@ fn collect_template_expressions(
         "expression" => {
             push_expression(source, node, imports, scope_stack, expressions)?;
             return Ok(());
+        }
+        "html_tag" | "render_tag" | "key_start" | "await_start" | "if_start" | "else_if_start" => {
+            push_raw_text_expression(source, node, imports, scope_stack, expressions)?;
         }
         "const_tag" => {
             let names = declared_names_from_const_tag(source, node)?;
@@ -269,10 +276,45 @@ fn push_expression(
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
+        // Svelte template expressions accept TypeScript syntax such as `as` and `satisfies`.
+        JsLikeLanguage::TypeScript,
         &shadowed_names,
     )?;
     expressions.push(SvelteTemplateExpression {
         outer_span,
+        inner_span,
+        candidates,
+        shadowed_names,
+    });
+    Ok(())
+}
+
+fn push_raw_text_expression(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &[Vec<String>],
+    expressions: &mut Vec<SvelteTemplateExpression>,
+) -> Result<(), AnalyzerError> {
+    let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
+        return Ok(());
+    };
+
+    let inner_span = Span::from_node(raw_text);
+    let shadowed_names = scope_stack
+        .iter()
+        .flat_map(|frame| frame.iter().cloned())
+        .collect::<Vec<_>>();
+    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+        text(source, raw_text),
+        imports,
+        inner_span.start,
+        JsMacroSyntax::Svelte,
+        JsLikeLanguage::TypeScript,
+        &shadowed_names,
+    )?;
+    expressions.push(SvelteTemplateExpression {
+        outer_span: Span::from_node(node),
         inner_span,
         candidates,
         shadowed_names,
@@ -291,6 +333,9 @@ fn visit_each_statement(
     let start = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "each_start");
+    if let Some(start) = start {
+        push_each_start_expression(source, start, imports, scope_stack, expressions)?;
+    }
     let frame = start
         .map(|start| declared_names_from_each_start(source, start))
         .transpose()?
@@ -305,6 +350,39 @@ fn visit_each_statement(
         collect_template_expressions(source, child, imports, scope_stack, expressions, components)?;
     }
     scope_stack.pop();
+    Ok(())
+}
+
+fn push_each_start_expression(
+    source: &str,
+    each_start: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &[Vec<String>],
+    expressions: &mut Vec<SvelteTemplateExpression>,
+) -> Result<(), AnalyzerError> {
+    let Some(identifier) = each_start.child_by_field_name("identifier") else {
+        return Ok(());
+    };
+
+    let inner_span = Span::from_node(identifier);
+    let shadowed_names = scope_stack
+        .iter()
+        .flat_map(|frame| frame.iter().cloned())
+        .collect::<Vec<_>>();
+    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+        text(source, identifier),
+        imports,
+        inner_span.start,
+        JsMacroSyntax::Svelte,
+        JsLikeLanguage::TypeScript,
+        &shadowed_names,
+    )?;
+    expressions.push(SvelteTemplateExpression {
+        outer_span: Span::from_node(each_start),
+        inner_span,
+        candidates,
+        shadowed_names,
+    });
     Ok(())
 }
 
@@ -467,6 +545,7 @@ fn declared_names_from_each_start(
     collect_declared_names_from_binding_source(
         text(source, parameter),
         BindingParseMode::FunctionParams,
+        JsLikeLanguage::TypeScript,
     )
 }
 
@@ -479,7 +558,11 @@ fn declared_names_from_optional_raw_text(
     let Some(raw_text) = raw_text else {
         return Ok(None);
     };
-    let names = collect_declared_names_from_binding_source(text(source, raw_text), mode)?;
+    let names = collect_declared_names_from_binding_source(
+        text(source, raw_text),
+        mode,
+        JsLikeLanguage::TypeScript,
+    )?;
     Ok(Some(names))
 }
 
@@ -526,8 +609,12 @@ fn is_component_tag_name(tag_name: &str) -> bool {
 fn collect_script_macro_imports(
     source: &str,
     base_offset: usize,
+    language: JsLikeLanguage,
 ) -> Result<Vec<MacroImport>, AnalyzerError> {
-    let js_tree = parse::parse_javascript(source)?;
+    let js_tree = match language {
+        JsLikeLanguage::JavaScript => parse::parse_javascript(source)?,
+        JsLikeLanguage::TypeScript => parse::parse_typescript(source)?,
+    };
     let root = js_tree.root_node();
     let mut imports = Vec::new();
     let mut cursor = root.walk();
@@ -602,6 +689,22 @@ fn start_tag_has_context_module(source: &str, start_tag: Node<'_>) -> bool {
     }
 
     false
+}
+
+fn script_language(source: &str, start_tag: Node<'_>) -> JsLikeLanguage {
+    let mut cursor = start_tag.walk();
+    for child in start_tag.children(&mut cursor) {
+        if child.kind() != "attribute" {
+            continue;
+        }
+
+        let attribute_text = text(source, child);
+        if attribute_text.contains("lang") && attribute_text.contains("ts") {
+            return JsLikeLanguage::TypeScript;
+        }
+    }
+
+    JsLikeLanguage::JavaScript
 }
 
 fn shift_span(span: Span, base_offset: usize) -> Span {
