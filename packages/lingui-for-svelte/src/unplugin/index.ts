@@ -7,6 +7,7 @@ import {
 import {
   mayContainLinguiMacroImport,
   stripQuery,
+  toUnpluginSourceMap,
 } from "lingui-for-shared/compiler";
 
 import { transformSvelte } from "../compiler-core/index.ts";
@@ -40,7 +41,7 @@ export const unpluginFactory: UnpluginFactory<
 
       return {
         code: transformed.code,
-        map: transformed.map,
+        map: toUnpluginSourceMap(transformed.map),
       };
     }
 

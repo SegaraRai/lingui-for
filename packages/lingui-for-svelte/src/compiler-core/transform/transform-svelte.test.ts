@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { SourceMapConsumer } from "source-map";
+import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
@@ -1227,7 +1227,7 @@ describe("transformSvelte source map discipline", () => {
     </section>
   `;
 
-  test("preserves untouched script and markup while keeping file-level source map metadata", async () => {
+  test("preserves untouched script and markup while keeping file-level source map metadata", () => {
     const result = transformSvelte(source, {
       filename: "/virtual/App.svelte",
     });
@@ -1239,14 +1239,12 @@ describe("transformSvelte source map discipline", () => {
     expect(result.code).toContain("<p>{keepBefore}</p>");
     expect(result.code).toContain("<p>{keepAfter}</p>");
 
-    await SourceMapConsumer.with(result.map as never, null, () => {
-      expect(result.map.file).toBe("/virtual/App.svelte");
-      expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
-      expect(result.map.sourcesContent).toEqual([source]);
-    });
+    expect(result.map.file).toBe("/virtual/App.svelte");
+    expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
+    expect(result.map.sourcesContent).toEqual([source]);
   });
 
-  test("maps unchanged script lines back to their original locations instead of the rewritten script prelude", async () => {
+  test("maps unchanged script lines back to their original locations instead of the rewritten script prelude", () => {
     const result = transformSvelte(source, {
       filename: "/virtual/App.svelte",
     });
@@ -1269,28 +1267,27 @@ describe("transformSvelte source map discipline", () => {
     );
     const mappedSource = result.map.sources[0] ?? result.map.file;
 
-    await SourceMapConsumer.with(result.map as never, null, (consumer) => {
-      expect(
-        consumer.originalPositionFor({
-          line: generatedScript.line,
-          column: generatedScript.column,
-        }),
-      ).toMatchObject({
-        source: mappedSource,
-        line: originalScript.line,
-        column: originalScript.column,
-      });
+    const consumer = new TraceMap(result.map);
+    expect(
+      originalPositionFor(consumer, {
+        line: generatedScript.line,
+        column: generatedScript.column,
+      }),
+    ).toMatchObject({
+      source: mappedSource,
+      line: originalScript.line,
+      column: originalScript.column,
+    });
 
-      expect(
-        consumer.originalPositionFor({
-          line: generatedMarkup.line,
-          column: generatedMarkup.column,
-        }),
-      ).toMatchObject({
-        source: mappedSource,
-        line: originalMarkup.line,
-        column: originalMarkup.column,
-      });
+    expect(
+      originalPositionFor(consumer, {
+        line: generatedMarkup.line,
+        column: generatedMarkup.column,
+      }),
+    ).toMatchObject({
+      source: mappedSource,
+      line: originalMarkup.line,
+      column: originalMarkup.column,
     });
   });
 
@@ -1372,7 +1369,7 @@ describe("transformSvelte source map discipline", () => {
     },
   ];
 
-  test("maps transformed and preserved compile ranges back to the original svelte file", async () => {
+  test("maps transformed and preserved compile ranges back to the original svelte file", () => {
     const result = transformSvelte(rangeSource, {
       filename: "/virtual/App.svelte",
     });
@@ -1381,17 +1378,16 @@ describe("transformSvelte source map discipline", () => {
     expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
     expect(result.map.sourcesContent).toEqual([rangeSource]);
 
-    await SourceMapConsumer.with(result.map as never, null, (consumer) => {
-      detections.forEach((detection) => {
-        assertRangeMapping(
-          consumer,
-          result.code,
-          rangeSource,
-          detection,
-          "/virtual/App.svelte",
-          expect,
-        );
-      });
+    const consumer = new TraceMap(result.map);
+    detections.forEach((detection) => {
+      assertRangeMapping(
+        consumer,
+        result.code,
+        rangeSource,
+        detection,
+        "/virtual/App.svelte",
+        expect,
+      );
     });
   });
 });

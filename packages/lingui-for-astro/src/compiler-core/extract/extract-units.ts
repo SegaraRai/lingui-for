@@ -1,4 +1,4 @@
-import type { SourceMap } from "lingui-for-shared/compiler";
+import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
 import {
   isExtractionCodeRelevant,
@@ -12,15 +12,15 @@ import type { LinguiAstroTransformOptions } from "../shared/types.ts";
 export function createAstroExtractionUnits(
   source: string,
   options: LinguiAstroTransformOptions,
-): { code: string; map: SourceMap | null }[] {
+): { code: string; map: EncodedSourceMap | null }[] {
   const plan = createAstroPlan(source, options);
   return createAstroExtractionUnitsFromPlan(plan);
 }
 
 export function createAstroExtractionUnitsFromPlan(
   plan: AstroPlan,
-): { code: string; map: SourceMap | null }[] {
-  const units: { code: string; map: SourceMap | null }[] = [];
+): { code: string; map: EncodedSourceMap | null }[] {
+  const units: { code: string; map: EncodedSourceMap | null }[] = [];
 
   const frontmatter = plan.items.find(
     (

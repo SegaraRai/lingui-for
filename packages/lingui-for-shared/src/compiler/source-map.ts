@@ -1,11 +1,17 @@
-import MagicString from "magic-string";
+import type { TransformOptions } from "@babel/core";
 import {
-  SourceMapConsumer,
-  SourceMapGenerator,
-  type RawSourceMap,
-} from "source-map";
-
-import type { IndexedSourceMap, SourceMap } from "./source-map-types.ts";
+  addMapping,
+  GenMapping,
+  setSourceContent,
+  toEncodedMap,
+  type EncodedSourceMap,
+} from "@jridgewell/gen-mapping";
+import {
+  eachMapping,
+  originalPositionFor,
+  sourceContentFor,
+  TraceMap,
+} from "@jridgewell/trace-mapping";
 
 type SourcePosition = {
   line: number;
@@ -40,27 +46,67 @@ export function createOffsetToPosition(
   };
 }
 
+export function addMappingHelper(
+  gen: GenMapping,
+  mapping: {
+    generated: SourcePosition;
+    original: SourcePosition;
+    source: string;
+    name: string | null;
+  },
+): void {
+  const { name, ...base } = mapping;
+
+  if (name == null) {
+    addMapping(gen, base);
+  } else {
+    addMapping(gen, {
+      ...base,
+      name,
+    });
+  }
+}
+
+type InputSourceMap = NonNullable<TransformOptions["inputSourceMap"]>;
+export function toBabelInputSourceMap(map: EncodedSourceMap): InputSourceMap {
+  return map as InputSourceMap;
+}
+
+type UnpluginSourceMap = {
+  file?: string | undefined;
+  mappings: string;
+  names: string[];
+  sourceRoot?: string | undefined;
+  sources: string[];
+  sourcesContent?: string[] | undefined;
+  version: number;
+};
+export function toUnpluginSourceMap(map: EncodedSourceMap): UnpluginSourceMap {
+  return map as UnpluginSourceMap;
+}
+
 export function buildDirectProgramMap(
   source: string,
   filename: string,
   originalStart: number,
   originalLength: number,
-): RawSourceMap {
-  const string = new MagicString(source, { filename }).snip(
-    originalStart,
-    originalStart + originalLength,
-  );
+): EncodedSourceMap {
+  const snippet = source.slice(originalStart, originalStart + originalLength);
+  const gen = new GenMapping({ file: filename });
+  const toOriginalPosition = createOffsetToPosition(source);
+  const toSnippetPosition = createOffsetToPosition(snippet);
 
-  return normalizeMagicStringMapFilename(
-    string.generateMap({
-      file: filename,
-      hires: true,
-      includeContent: true,
+  for (let offset = 0; offset <= snippet.length; offset += 1) {
+    addMapping(gen, {
+      generated: toSnippetPosition(offset),
+      original: toOriginalPosition(originalStart + offset),
       source: filename,
-    }),
-    filename,
-    string.toString(),
-  );
+    });
+  }
+
+  setSourceContent(gen, filename, snippet);
+
+  return toEncodedMap(gen);
 }
 
 export function buildPrefixedSnippetMap(
@@ -69,7 +115,7 @@ export function buildPrefixedSnippetMap(
   originalStart: number,
   prefix: string,
   originalLength: number,
-): RawSourceMap {
+): EncodedSourceMap {
   const originalPosition = createOffsetToPosition(source)(originalStart);
   const prefixPosition = createOffsetToPosition(prefix);
   const bodyMap = buildDirectProgramMap(
@@ -79,7 +125,7 @@ export function buildPrefixedSnippetMap(
     originalLength,
   );
   const offsetBodyMap = offsetSourceMap(bodyMap, filename, prefix);
-  const generator = new SourceMapGenerator({ file: filename });
+  const gen = new GenMapping({ file: filename });
   const prefixEnd = prefixPosition(prefix.length);
 
   for (let line = 1; line <= prefixEnd.line; line += 1) {
@@ -89,7 +135,7 @@ export function buildPrefixedSnippetMap(
         : (prefix.split("\n")[line - 1]?.length ?? 0);
 
     for (let column = 0; column <= maxColumn; column += 1) {
-      generator.addMapping({
+      addMapping(gen, {
         generated: { line, column },
         original: originalPosition,
         source: filename,
@@ -97,34 +143,11 @@ export function buildPrefixedSnippetMap(
     }
   }
 
-  void SourceMapConsumer.with(offsetBodyMap, null, (consumer) => {
-    consumer.eachMapping((mapping) => {
-      if (
-        mapping.originalLine == null ||
-        mapping.originalColumn == null ||
-        mapping.source == null
-      ) {
-        return;
-      }
+  applyMappings(gen, offsetBodyMap);
 
-      generator.addMapping({
-        generated: {
-          line: mapping.generatedLine,
-          column: mapping.generatedColumn,
-        },
-        original: {
-          line: mapping.originalLine,
-          column: mapping.originalColumn,
-        },
-        source: mapping.source,
-        name: mapping.name ?? undefined,
-      });
-    });
-  });
+  setSourceContent(gen, filename, source);
 
-  generator.setSourceContent(filename, source);
-
-  return generator.toJSON();
+  return toEncodedMap(gen);
 }
 
 export function buildPrefixedMappedSnippetMap(
@@ -132,11 +155,11 @@ export function buildPrefixedMappedSnippetMap(
   filename: string,
   originalStart: number,
   prefix: string,
-  bodyMap: SourceMap,
-): IndexedSourceMap {
+  bodyMap: EncodedSourceMap,
+): EncodedSourceMap {
   const originalPosition = createOffsetToPosition(source)(originalStart);
   const prefixPosition = createOffsetToPosition(prefix);
-  const generator = new SourceMapGenerator({ file: filename });
+  const gen = new GenMapping({ file: filename });
   const prefixEnd = prefixPosition(prefix.length);
 
   for (let line = 1; line <= prefixEnd.line; line += 1) {
@@ -146,7 +169,7 @@ export function buildPrefixedMappedSnippetMap(
         : (prefix.split("\n")[line - 1]?.length ?? 0);
 
     for (let column = 0; column <= maxColumn; column += 1) {
-      generator.addMapping({
+      addMapping(gen, {
         generated: { line, column },
         original: originalPosition,
         source: filename,
@@ -154,26 +177,11 @@ export function buildPrefixedMappedSnippetMap(
     }
   }
 
-  generator.setSourceContent(filename, source);
+  setSourceContent(gen, filename, source);
 
-  return {
-    version: 3,
-    file: filename,
-    names: [],
-    mappings: "",
-    sources: [filename],
-    sourcesContent: [source],
-    sections: [
-      {
-        offset: { line: 0, column: 0 },
-        map: generator.toJSON(),
-      },
-      {
-        offset: computeGeneratedOffset(prefix),
-        map: bodyMap,
-      },
-    ],
-  };
+  applyMappingsWithOffset(gen, bodyMap, computeGeneratedOffset(prefix));
+
+  return toEncodedMap(gen);
 }
 
 export function buildGeneratedSnippetMap(
@@ -182,8 +190,8 @@ export function buildGeneratedSnippetMap(
   originalStart: number,
   generated: string,
   originalLength: number,
-): RawSourceMap {
-  const generator = new SourceMapGenerator({ file: filename });
+): EncodedSourceMap {
+  const gen = new GenMapping({ file: filename });
   const toPosition = createOffsetToPosition(source);
   const generatedToPosition = createOffsetToPosition(generated);
   const generatedLength = Math.max(generated.length, 1);
@@ -194,16 +202,16 @@ export function buildGeneratedSnippetMap(
       originalStart +
       Math.min(Math.floor(ratio * originalLength), originalLength);
 
-    generator.addMapping({
+    addMapping(gen, {
       generated: generatedToPosition(offset),
       original: toPosition(originalOffset),
       source: filename,
     });
   }
 
-  generator.setSourceContent(filename, source);
+  setSourceContent(gen, filename, source);
 
-  return generator.toJSON();
+  return toEncodedMap(gen);
 }
 
 export function buildAnchoredGeneratedSnippetMap(
@@ -213,8 +221,8 @@ export function buildAnchoredGeneratedSnippetMap(
   generated: string,
   originalLength: number,
   anchorOffset: number,
-): RawSourceMap {
-  const generator = new SourceMapGenerator({ file: filename });
+): EncodedSourceMap {
+  const gen = new GenMapping({ file: filename });
   const toPosition = createOffsetToPosition(source);
   const generatedToPosition = createOffsetToPosition(generated);
   const clampedAnchor = Math.max(0, Math.min(anchorOffset, generated.length));
@@ -232,112 +240,96 @@ export function buildAnchoredGeneratedSnippetMap(
             originalLength,
           );
 
-    generator.addMapping({
+    addMapping(gen, {
       generated: generatedToPosition(offset),
       original: toPosition(originalOffset),
       source: filename,
     });
   }
 
-  generator.setSourceContent(filename, source);
+  setSourceContent(gen, filename, source);
 
-  return generator.toJSON();
+  return toEncodedMap(gen);
 }
 
-export async function composeSourceMaps(
-  outerMap: RawSourceMap,
-  innerMap: RawSourceMap,
-): Promise<RawSourceMap> {
-  return await SourceMapConsumer.with(
-    outerMap,
-    null,
-    async (outerConsumer) =>
-      await SourceMapConsumer.with(innerMap, null, (innerConsumer) => {
-        const generator = new SourceMapGenerator({
-          file: outerMap.file ?? innerMap.file ?? "",
-        });
+export function composeSourceMaps(
+  outerMap: EncodedSourceMap,
+  innerMap: EncodedSourceMap,
+): EncodedSourceMap {
+  const gen = new GenMapping({
+    file: outerMap.file ?? innerMap.file ?? "",
+  });
 
-        outerConsumer.eachMapping((mapping) => {
-          if (
-            mapping.originalLine == null ||
-            mapping.originalColumn == null ||
-            mapping.source == null
-          ) {
-            return;
-          }
+  const outer = new TraceMap(outerMap);
+  const inner = new TraceMap(innerMap);
 
-          const original = innerConsumer.originalPositionFor({
-            line: mapping.originalLine,
-            column: mapping.originalColumn,
-          });
+  eachMapping(outer, (mapping) => {
+    if (
+      mapping.originalLine == null ||
+      mapping.originalColumn == null ||
+      mapping.source == null
+    ) {
+      return;
+    }
 
-          if (
-            original.line == null ||
-            original.column == null ||
-            original.source == null
-          ) {
-            return;
-          }
+    const original = originalPositionFor(inner, {
+      line: mapping.originalLine,
+      column: mapping.originalColumn,
+    });
 
-          generator.addMapping({
-            generated: {
-              line: mapping.generatedLine,
-              column: mapping.generatedColumn,
-            },
-            original: {
-              line: original.line,
-              column: original.column,
-            },
-            source: original.source,
-            name: original.name ?? mapping.name ?? undefined,
-          });
-        });
+    if (
+      original?.line == null ||
+      original.column == null ||
+      original.source == null
+    ) {
+      return;
+    }
 
-        innerConsumer.sources.forEach((source) => {
-          const content = innerConsumer.sourceContentFor(source, true);
+    const name = original.name ?? mapping.name;
+    addMappingHelper(gen, {
+      generated: {
+        line: mapping.generatedLine,
+        column: mapping.generatedColumn,
+      },
+      original: {
+        line: original.line,
+        column: original.column,
+      },
+      source: original.source,
+      name,
+    });
+  });
 
-          if (content != null) {
-            generator.setSourceContent(source, content);
-          }
-        });
+  inner.sources.forEach((source) => {
+    if (source == null) return;
+    const content = sourceContentFor(inner, source);
+    if (content != null) {
+      setSourceContent(gen, source, content);
+    }
+  });
 
-        return generator.toJSON();
-      }),
-  );
+  return toEncodedMap(gen);
 }
 
 export function offsetSourceMap(
-  map: SourceMap,
+  map: EncodedSourceMap,
   file: string,
   prefix: string,
-): IndexedSourceMap {
-  const offset = {
-    line: 0,
-    column: 0,
-  };
+): EncodedSourceMap {
+  const prefixOffset = computeGeneratedOffset(prefix);
+  const gen = new GenMapping({ file });
 
-  for (let index = 0; index < prefix.length; index += 1) {
-    if (prefix[index] === "\n") {
-      offset.line += 1;
-      offset.column = 0;
-    } else {
-      offset.column += 1;
+  applyMappingsWithOffset(gen, map, prefixOffset);
+
+  map.sources.forEach((source) => {
+    if (source == null) return;
+    const content = map.sourcesContent?.[map.sources.indexOf(source)] ?? null;
+    if (content != null) {
+      setSourceContent(gen, source, content);
     }
-  }
+  });
 
-  return {
-    version: 3,
-    file,
-    names: [],
-    mappings: "",
-    sources: [],
-    sections: [
-      {
-        offset,
-        map,
-      },
-    ],
-  };
+  return toEncodedMap(gen);
 }
 
 function computeGeneratedOffset(code: string): {
@@ -361,15 +353,42 @@ function computeGeneratedOffset(code: string): {
   return offset;
 }
 
-function normalizeMagicStringMapFilename(
-  map: RawSourceMap,
-  filename: string,
-  sourceContent: string,
-): RawSourceMap {
-  return {
-    ...map,
-    file: filename,
-    sources: [filename],
-    sourcesContent: [sourceContent],
-  };
+function applyMappings(gen: GenMapping, map: EncodedSourceMap): void {
+  applyMappingsWithOffset(gen, map, { line: 0, column: 0 });
+}
+
+function applyMappingsWithOffset(
+  gen: GenMapping,
+  map: EncodedSourceMap,
+  offset: { line: number; column: number },
+): void {
+  const tracer = new TraceMap(map);
+
+  eachMapping(tracer, (mapping) => {
+    if (
+      mapping.source == null ||
+      mapping.originalLine == null ||
+      mapping.originalColumn == null
+    ) {
+      return;
+    }
+
+    const generated = {
+      line: offset.line + mapping.generatedLine,
+      column:
+        mapping.generatedLine === 1
+          ? offset.column + mapping.generatedColumn
+          : mapping.generatedColumn,
+    };
+    const original = {
+      line: mapping.originalLine,
+      column: mapping.originalColumn,
+    };
+    addMappingHelper(gen, {
+      generated,
+      original,
+      source: mapping.source,
+      name: mapping.name ?? null,
+    });
+  });
 }

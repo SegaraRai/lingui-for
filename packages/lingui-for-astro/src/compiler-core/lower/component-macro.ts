@@ -213,7 +213,7 @@ function rewriteNestedComponentMacroExpressions(
 }
 
 function getComponentExtractionAnchorOffset(code: string): number {
-  const messageMatch = code.match(/\bmessage:\s*"([^"\\]|\\.)*"/);
+  const messageMatch = /\bmessage:\s*"([^"\\]|\\.)*"/.exec(code);
   if (messageMatch?.index == null) {
     return getExtractionDescriptorAnchorOffset(code);
   }

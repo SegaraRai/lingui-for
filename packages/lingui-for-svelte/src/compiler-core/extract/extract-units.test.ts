@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { SourceMapConsumer } from "source-map";
+import { TraceMap } from "@jridgewell/trace-mapping";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
@@ -28,7 +28,7 @@ describe("createExtractionUnits", () => {
     expect(units.some((unit) => unit.code.includes("/*i18n*/"))).toBe(true);
   });
 
-  test("maps extracted script, template, and component ranges back to the original svelte file", async () => {
+  test("maps extracted script, template, and component ranges back to the original svelte file", () => {
     const source = dedent`
         <script lang="ts">
           import { t, Trans } from "lingui-for-svelte/macro";
@@ -86,16 +86,17 @@ describe("createExtractionUnits", () => {
       expect(unit?.map?.sources).toEqual(["/virtual/App.svelte"]);
       expect(unit?.map?.sourcesContent).toEqual([source]);
 
-      await SourceMapConsumer.with(unit?.map as never, null, (consumer) => {
+      if (unit?.map) {
+        const consumer = new TraceMap(unit.map);
         assertRangeMapping(
           consumer,
-          unit?.code ?? "",
+          unit.code,
           source,
           detection,
           "/virtual/App.svelte",
           expect,
         );
-      });
+      }
     }
   });
 });

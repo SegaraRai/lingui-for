@@ -1,5 +1,5 @@
 import dedent from "dedent";
-import { SourceMapConsumer } from "source-map";
+import { TraceMap } from "@jridgewell/trace-mapping";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
@@ -383,7 +383,7 @@ describe("transformAstro source map discipline", () => {
     },
   ];
 
-  test("keeps file-level metadata and maps transformed and preserved ranges back to the original astro file", async () => {
+  test("keeps file-level metadata and maps transformed and preserved ranges back to the original astro file", () => {
     const result = transformAstro(source, {
       filename: "/virtual/Page.astro",
     });
@@ -393,17 +393,16 @@ describe("transformAstro source map discipline", () => {
     expect(map.sources).toEqual(["/virtual/Page.astro"]);
     expect(map.sourcesContent).toEqual([source]);
 
-    await SourceMapConsumer.with(map as never, null, (consumer) => {
-      detections.forEach((detection) => {
-        assertRangeMapping(
-          consumer,
-          result.code,
-          source,
-          detection,
-          "/virtual/Page.astro",
-          expect,
-        );
-      });
+    const consumer = new TraceMap(map);
+    detections.forEach((detection) => {
+      assertRangeMapping(
+        consumer,
+        result.code,
+        source,
+        detection,
+        "/virtual/Page.astro",
+        expect,
+      );
     });
   });
 });

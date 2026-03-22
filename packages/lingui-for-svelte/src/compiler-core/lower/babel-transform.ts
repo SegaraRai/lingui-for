@@ -1,7 +1,8 @@
 import { transformSync } from "@babel/core";
+import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
-import type { SourceMap } from "lingui-for-shared/compiler";
+import { toBabelInputSourceMap } from "lingui-for-shared/compiler";
 
 import { getParserPlugins } from "../shared/config.ts";
 import {
@@ -33,7 +34,9 @@ export function transformProgram(
     code: true,
     configFile: false,
     filename: request.filename,
-    inputSourceMap: request.inputSourceMap,
+    inputSourceMap: request.inputSourceMap
+      ? toBabelInputSourceMap(request.inputSourceMap)
+      : undefined,
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
@@ -53,8 +56,10 @@ export function transformProgram(
     configFile: false,
     filename: request.filename,
     inputSourceMap:
-      (preprocessed.map as SourceMap | null | undefined) ??
-      request.inputSourceMap,
+      preprocessed.map ??
+      (request.inputSourceMap
+        ? toBabelInputSourceMap(request.inputSourceMap)
+        : undefined),
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
@@ -80,6 +85,6 @@ export function transformProgram(
   return {
     code: result.code,
     ast: result.ast,
-    map: (result.map as SourceMap | null | undefined) ?? null,
+    map: (result.map as EncodedSourceMap | null | undefined) ?? null,
   };
 }

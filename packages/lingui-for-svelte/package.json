@@ -107,9 +107,10 @@
     "@babel/generator": "^7.29.1",
     "@babel/traverse": "^7.29.0",
     "@babel/types": "^7.29.0",
+    "@jridgewell/gen-mapping": "^0.3.13",
+    "@jridgewell/trace-mapping": "^0.3.31",
     "@lingui/babel-plugin-lingui-macro": "^5.9.3",
     "magic-string": "^0.30.21",
-    "source-map": "^0.7.6",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {

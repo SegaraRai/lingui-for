@@ -8,10 +8,6 @@ import {
   offsetSourceMap,
 } from "./source-map.ts";
 
-type IndexedRawSourceMap = {
-  sections: unknown[];
-};
-
 describe("source-map helpers", () => {
   test("computes line and column from a byte offset", () => {
     const toPosition = createOffsetToPosition("a\nbc\n");
@@ -54,6 +50,7 @@ describe("source-map helpers", () => {
     const offset = offsetSourceMap(generated, "file.ts", "{");
 
     expect(generated.sources).toEqual(["file.ts"]);
-    expect((offset as unknown as IndexedRawSourceMap).sections).toHaveLength(1);
+    expect(offset.sources).toEqual(["file.ts"]);
+    expect(offset.mappings).toBeTruthy();
   });
 });

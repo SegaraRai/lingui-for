@@ -1,12 +1,12 @@
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
+import { transformAstro } from "../transform/transform-astro.ts";
 import { createAstroPlan } from "./astro-plan.ts";
 import {
   createAstroTransformContext,
   getFrontmatterContent,
 } from "./astro-transform-context.ts";
-import { transformAstro } from "../transform/transform-astro.ts";
 
 describe("createAstroTransformContext", () => {
   test("collects frontmatter, macro bindings, and macro-bearing nodes", () => {
@@ -180,13 +180,8 @@ describe("createAstroPlan – non-ASCII sources", () => {
     // the source string and the slice of the original source both give the
     // correct expression text.
     expect(expr!.source).toBe("t`Hello`");
-    expect(
-      source.slice(
-        (expr as Extract<typeof expr, { kind: "template-expression" }>)!
-          .innerRange.start,
-        (expr as Extract<typeof expr, { kind: "template-expression" }>)!
-          .innerRange.end,
-      ),
-    ).toBe("t`Hello`");
+    expect(source.slice(expr!.innerRange.start, expr!.innerRange.end)).toBe(
+      "t`Hello`",
+    );
   });
 });

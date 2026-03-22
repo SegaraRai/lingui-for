@@ -1,4 +1,4 @@
-import type { SourceMapConsumer } from "source-map";
+import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import type { expect as vpExpect } from "vite-plus/test";
 
 export type SourceLocation = {
@@ -83,7 +83,7 @@ export function offsetToLocation(
 }
 
 export function assertRangeMapping(
-  consumer: SourceMapConsumer,
+  consumer: TraceMap,
   generatedSource: string,
   originalSource: string,
   detection: Detection,
@@ -96,11 +96,11 @@ export function assertRangeMapping(
   const generatedEnd = offsetToLocation(generatedSource, generated.end - 1);
   const originalStart = offsetToLocation(originalSource, original.start);
   const originalEnd = offsetToLocation(originalSource, original.end - 1);
-  const mappedStart = consumer.originalPositionFor({
+  const mappedStart = originalPositionFor(consumer, {
     line: generatedStart.line,
     column: generatedStart.column,
   });
-  const mappedEnd = consumer.originalPositionFor({
+  const mappedEnd = originalPositionFor(consumer, {
     line: generatedEnd.line,
     column: generatedEnd.column,
   });

@@ -1,4 +1,3 @@
-import type { RawSourceMap } from "source-map";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
@@ -51,8 +50,7 @@ describe("replacement map helpers", () => {
 
     expect(result.code).toBe("const result = 42;");
     expect(result.map.file).toBe("/virtual.ts");
-    expect(
-      (result.map as RawSourceMap & { sections: unknown[] }).sections,
-    ).toHaveLength(3);
+    expect(result.map.sources).toEqual(["/virtual.ts"]);
+    expect(result.map.mappings).toBeTruthy();
   });
 });

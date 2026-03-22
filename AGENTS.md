@@ -3,7 +3,7 @@
 ## Core Rules
 
 - Always use Svelte 5 syntax with runes.
-- Use Vite+ (`vp`) instead of `pnpm` for all commands.
+- Use Vite+ (`vp`) instead of `npx` and `pnpm` for all commands.
 - DO NOT invoke `vp` or `pnpm` from test code.
 
 ## Writing Tests
@@ -19,6 +19,8 @@ If you believe a test case is correct, don’t modify it; instead, **mark it as 
 - `vp run format`: format code (workspace root only)
   - Always run `vp run format` from the workspace root. You don't need to worry about formatting individual packages; this command is fast enough.
 - `vp run check`: run type checks and other static checks
+- `vp exec <command>`: run an external package command, such as `vp exec lingui extract`.
+- `vp add <package>`: add a new package
 
 TIP: Run `vp run format` → `vp run check` → `vp run test` sequentially to ensure a smooth development workflow.
 

@@ -1,4 +1,10 @@
-import { SourceMapGenerator, type RawSourceMap } from "source-map";
+import {
+  GenMapping,
+  addMapping,
+  setSourceContent,
+  toEncodedMap,
+  type EncodedSourceMap,
+} from "@jridgewell/gen-mapping";
 
 import type {
   MacroComponent,
@@ -33,19 +39,19 @@ export function buildCombinedProgram(
   components: readonly MacroComponent[],
 ): {
   code: string;
-  map: RawSourceMap;
+  map: EncodedSourceMap;
 } {
-  const generator = new SourceMapGenerator({ file: filename });
+  const gen = new GenMapping({ file: filename });
   const toPosition = createOffsetToPosition(source);
   let code = "";
 
-  generator.setSourceContent(filename, source);
+  setSourceContent(gen, filename, source);
 
   if (script) {
     const generatedLine = code.split("\n").length;
     code += script.content;
     addLineMappings(
-      generator,
+      gen,
       filename,
       generatedLine,
       script.content,
@@ -63,7 +69,7 @@ export function buildCombinedProgram(
     const name = `${SYNTHETIC_PREFIX_EXPRESSION}${expression.index}`;
 
     code += `const ${name} = (\n`;
-    generator.addMapping({
+    addMapping(gen, {
       generated: { line: generatedLine, column: 0 },
       original: toPosition(expression.start),
       source: filename,
@@ -71,7 +77,7 @@ export function buildCombinedProgram(
 
     code += expression.source;
     addLineMappings(
-      generator,
+      gen,
       filename,
       generatedLine + 1,
       expression.source,
@@ -87,7 +93,7 @@ export function buildCombinedProgram(
     const name = `${SYNTHETIC_PREFIX_COMPONENT}${component.index}`;
 
     code += `const ${name} = (\n`;
-    generator.addMapping({
+    addMapping(gen, {
       generated: { line: generatedLine, column: 0 },
       original: toPosition(component.start),
       source: filename,
@@ -95,7 +101,7 @@ export function buildCombinedProgram(
 
     code += component.source;
     addLineMappings(
-      generator,
+      gen,
       filename,
       generatedLine + 1,
       component.source,
@@ -108,6 +114,6 @@ export function buildCombinedProgram(
 
   return {
     code,
-    map: generator.toJSON(),
+    map: toEncodedMap(gen),
   };
 }

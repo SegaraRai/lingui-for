@@ -1,8 +1,16 @@
 import {
-  SourceMapConsumer,
-  SourceMapGenerator,
-  type RawSourceMap,
-} from "source-map";
+  addMapping,
+  GenMapping,
+  setSourceContent,
+  toEncodedMap,
+  type EncodedSourceMap,
+} from "@jridgewell/gen-mapping";
+import {
+  eachMapping,
+  originalPositionFor,
+  sourceContentFor,
+  TraceMap,
+} from "@jridgewell/trace-mapping";
 
 import {
   buildDirectProgramMap as buildDirectProgramMapShared,
@@ -10,14 +18,13 @@ import {
   buildPrefixedSnippetMap as buildPrefixedSnippetMapShared,
 } from "lingui-for-shared/compiler";
 
+import type { SourcePosition } from "./types.ts";
+
 export {
   advanceGeneratedOffset,
-  createIndexedSourceMap,
   createUntouchedChunkMap,
   type GeneratedOffset,
 } from "lingui-for-shared/compiler";
-
-import type { SourcePosition } from "./types.ts";
 
 /**
  * Creates a converter from character offsets within a source string to 1-based source-map positions.
@@ -59,7 +66,7 @@ export function createOffsetToPosition(
 /**
  * Adds one mapping per generated line for a copied snippet.
  *
- * @param generator Source-map generator receiving the mappings.
+ * @param gen Source-map generator receiving the mappings.
  * @param filename Logical original filename recorded in the map.
  * @param generatedStartLine 1-based line number where the snippet starts in generated output.
  * @param snippet Generated snippet text whose lines should be mapped.
@@ -71,7 +78,7 @@ export function createOffsetToPosition(
  * logic consistent across transform stages.
  */
 export function addLineMappings(
-  generator: SourceMapGenerator,
+  gen: GenMapping,
   filename: string,
   generatedStartLine: number,
   snippet: string,
@@ -87,7 +94,7 @@ export function addLineMappings(
   }
 
   lineOffsets.forEach((offset, lineIndex) => {
-    generator.addMapping({
+    addMapping(gen, {
       generated: { line: generatedStartLine + lineIndex, column: 0 },
       original: toPosition(originalStartOffset + offset),
       source: filename,
@@ -114,7 +121,7 @@ export function buildDirectProgramMap(
   filename: string,
   originalStart: number,
   snippet: string,
-): RawSourceMap {
+): EncodedSourceMap {
   return normalizeSourceMap(
     buildDirectProgramMapShared(
       source,
@@ -133,7 +140,7 @@ export function buildPrefixedSnippetMap(
   originalStart: number,
   prefix: string,
   originalLength: number,
-): RawSourceMap {
+): EncodedSourceMap {
   return normalizeSourceMap(
     buildPrefixedSnippetMapShared(
       source,
@@ -153,7 +160,7 @@ export function buildGeneratedSnippetMap(
   originalStart: number,
   generated: string,
   originalLength: number,
-): RawSourceMap {
+): EncodedSourceMap {
   return normalizeSourceMap(
     buildGeneratedSnippetMapShared(
       source,
@@ -174,8 +181,8 @@ export function buildAnchoredGeneratedSnippetMap(
   generated: string,
   originalLength: number,
   anchorOffset: number,
-): RawSourceMap {
-  const generator = new SourceMapGenerator({ file: filename });
+): EncodedSourceMap {
+  const gen = new GenMapping({ file: filename });
   const toPosition = createOffsetToPosition(source);
   const generatedToPosition = createOffsetToPosition(generated);
   const clampedAnchor = Math.max(0, Math.min(anchorOffset, generated.length));
@@ -193,16 +200,16 @@ export function buildAnchoredGeneratedSnippetMap(
             originalLength,
           );
 
-    generator.addMapping({
+    addMapping(gen, {
       generated: generatedToPosition(offset),
       original: toPosition(originalOffset),
       source: filename,
     });
   }
 
-  generator.setSourceContent(filename, source);
+  setSourceContent(gen, filename, source);
 
-  return normalizeSourceMap(generator.toJSON(), filename, source);
+  return normalizeSourceMap(toEncodedMap(gen), filename, source);
 }
 
 export function buildAnchoredBoundarySnippetMap(
@@ -212,15 +219,15 @@ export function buildAnchoredBoundarySnippetMap(
   generated: string,
   originalLength: number,
   anchorOffset: number,
-): RawSourceMap {
-  const generator = new SourceMapGenerator({ file: filename });
+): EncodedSourceMap {
+  const gen = new GenMapping({ file: filename });
   const toPosition = createOffsetToPosition(source);
   const generatedToPosition = createOffsetToPosition(generated);
   const originalEnd = originalStart + originalLength - 1;
   const clampedAnchor = Math.max(0, Math.min(anchorOffset, generated.length));
 
   for (let offset = 0; offset <= generated.length; offset += 1) {
-    generator.addMapping({
+    addMapping(gen, {
       generated: generatedToPosition(offset),
       original:
         offset <= clampedAnchor
@@ -230,126 +237,97 @@ export function buildAnchoredBoundarySnippetMap(
     });
   }
 
-  generator.setSourceContent(filename, source);
+  setSourceContent(gen, filename, source);
 
-  return normalizeSourceMap(generator.toJSON(), filename, source);
+  return normalizeSourceMap(toEncodedMap(gen), filename, source);
 }
 
-export async function composeSourceMaps(
-  outerMap: RawSourceMap,
-  innerMap: RawSourceMap,
-): Promise<RawSourceMap> {
-  return await SourceMapConsumer.with(
-    outerMap,
-    null,
-    async (outerConsumer) =>
-      await SourceMapConsumer.with(innerMap, null, (innerConsumer) => {
-        const generator = new SourceMapGenerator({
-          file: outerMap.file ?? innerMap.file,
-        });
+export function composeSourceMaps(
+  outerMap: EncodedSourceMap,
+  innerMap: EncodedSourceMap,
+): EncodedSourceMap {
+  const gen = new GenMapping({
+    file: outerMap.file ?? innerMap.file,
+  });
 
-        outerConsumer.eachMapping((mapping) => {
-          if (
-            mapping.originalLine == null ||
-            mapping.originalColumn == null ||
-            mapping.source == null
-          ) {
-            return;
-          }
+  const outer = new TraceMap(outerMap);
+  const inner = new TraceMap(innerMap);
 
-          const original = innerConsumer.originalPositionFor({
-            line: mapping.originalLine,
-            column: mapping.originalColumn,
-          });
+  eachMapping(outer, (mapping) => {
+    if (
+      mapping.originalLine == null ||
+      mapping.originalColumn == null ||
+      mapping.source == null
+    ) {
+      return;
+    }
 
-          if (
-            original.line == null ||
-            original.column == null ||
-            original.source == null
-          ) {
-            return;
-          }
+    const original = originalPositionFor(inner, {
+      line: mapping.originalLine,
+      column: mapping.originalColumn,
+    });
 
-          generator.addMapping({
-            generated: {
-              line: mapping.generatedLine,
-              column: mapping.generatedColumn,
-            },
-            original: {
-              line: original.line,
-              column: original.column,
-            },
-            source: original.source,
-            name: original.name ?? mapping.name ?? undefined,
-          });
-        });
+    if (
+      original.line == null ||
+      original.column == null ||
+      original.source == null
+    ) {
+      return;
+    }
 
-        innerConsumer.sources.forEach((source) => {
-          const content = innerConsumer.sourceContentFor(source, true);
+    const base = {
+      generated: {
+        line: mapping.generatedLine,
+        column: mapping.generatedColumn,
+      },
+      original: {
+        line: original.line,
+        column: original.column,
+      },
+      source: original.source,
+    };
+    const name = original.name ?? mapping.name;
+    if (name == null) {
+      addMapping(gen, base);
+    } else {
+      addMapping(gen, {
+        ...base,
+        name,
+      });
+    }
+  });
 
-          if (content != null) {
-            generator.setSourceContent(source, content);
-          }
-        });
+  inner.sources.forEach((source) => {
+    if (source == null) return;
+    const content = sourceContentFor(inner, source);
+    if (content != null) {
+      setSourceContent(gen, source, content);
+    }
+  });
 
-        return generator.toJSON();
-      }),
-  );
+  return toEncodedMap(gen);
 }
 
-export async function densifyGeneratedLineMappings(
-  map: RawSourceMap,
+export function densifyGeneratedLineMappings(
+  map: EncodedSourceMap,
   source: string,
   filename: string,
   generated: string,
   originalStart: number,
-): Promise<RawSourceMap> {
-  const generator = new SourceMapGenerator({
+): EncodedSourceMap {
+  const gen = new GenMapping({
     file: map.file ?? filename,
   });
   const originalStartPosition = createOffsetToPosition(source)(originalStart);
   const lineCount = generated.split("\n").length;
+  const tracer = new TraceMap(map);
 
-  return await SourceMapConsumer.with(map, null, (consumer) => {
-    let nextLineToSeed = 1;
-    let lastOriginal = originalStartPosition;
+  let nextLineToSeed = 1;
+  let lastOriginal = originalStartPosition;
 
-    consumer.eachMapping((mapping) => {
-      while (nextLineToSeed <= mapping.generatedLine) {
-        generator.addMapping({
-          generated: { line: nextLineToSeed, column: 0 },
-          original: lastOriginal,
-          source: filename,
-        });
-        nextLineToSeed += 1;
-      }
-
-      if (
-        mapping.originalLine != null &&
-        mapping.originalColumn != null &&
-        mapping.source != null
-      ) {
-        generator.addMapping({
-          generated: {
-            line: mapping.generatedLine,
-            column: mapping.generatedColumn,
-          },
-          original: {
-            line: mapping.originalLine,
-            column: mapping.originalColumn,
-          },
-          source: mapping.source,
-          name: mapping.name ?? undefined,
-        });
-        lastOriginal = {
-          line: mapping.originalLine,
-          column: mapping.originalColumn,
-        };
-      }
-    });
-
-    while (nextLineToSeed <= lineCount) {
-      generator.addMapping({
+  eachMapping(tracer, (mapping) => {
+    while (nextLineToSeed <= mapping.generatedLine) {
+      addMapping(gen, {
         generated: { line: nextLineToSeed, column: 0 },
         original: lastOriginal,
         source: filename,
@@ -357,23 +335,63 @@ export async function densifyGeneratedLineMappings(
       nextLineToSeed += 1;
     }
 
-    consumer.sources.forEach((sourceName) => {
-      const content = consumer.sourceContentFor(sourceName, true);
-
-      if (content != null) {
-        generator.setSourceContent(sourceName, content);
+    if (
+      mapping.originalLine != null &&
+      mapping.originalColumn != null &&
+      mapping.source != null
+    ) {
+      const base = {
+        generated: {
+          line: mapping.generatedLine,
+          column: mapping.generatedColumn,
+        },
+        original: {
+          line: mapping.originalLine,
+          column: mapping.originalColumn,
+        },
+        source: mapping.source,
+      };
+      const name = mapping.name;
+      if (name == null) {
+        addMapping(gen, base);
+      } else {
+        addMapping(gen, {
+          ...base,
+          name,
+        });
       }
-    });
-
-    return normalizeSourceMap(generator.toJSON(), filename, source);
+      lastOriginal = {
+        line: mapping.originalLine,
+        column: mapping.originalColumn,
+      };
+    }
   });
+
+  while (nextLineToSeed <= lineCount) {
+    addMapping(gen, {
+      generated: { line: nextLineToSeed, column: 0 },
+      original: lastOriginal,
+      source: filename,
+    });
+    nextLineToSeed += 1;
+  }
+
+  tracer.sources.forEach((sourceName) => {
+    if (sourceName == null) return;
+    const content = sourceContentFor(tracer, sourceName);
+    if (content != null) {
+      setSourceContent(gen, sourceName, content);
+    }
+  });
+
+  return normalizeSourceMap(toEncodedMap(gen), filename, source);
 }
 
 function normalizeSourceMap(
-  map: RawSourceMap,
+  map: EncodedSourceMap,
   filename: string,
   source: string,
-): RawSourceMap {
+): EncodedSourceMap {
   return {
     ...map,
     file: filename,

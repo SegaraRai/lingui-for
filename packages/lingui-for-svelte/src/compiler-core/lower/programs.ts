@@ -1,4 +1,4 @@
-import type { SourceMap } from "lingui-for-shared/compiler";
+import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
 import type { SveltePlan } from "../plan/svelte-plan.ts";
 import { createScriptFilename } from "../shared/paths.ts";
@@ -9,7 +9,7 @@ export type LoweringProgram = {
   code: string;
   filename: string;
   lang: "js" | "ts";
-  inputSourceMap: SourceMap;
+  inputSourceMap: EncodedSourceMap;
 };
 
 export function createModuleProgramFromPlan(

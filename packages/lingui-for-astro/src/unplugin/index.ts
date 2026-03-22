@@ -4,7 +4,7 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import { stripQuery } from "lingui-for-shared/compiler";
+import { stripQuery, toUnpluginSourceMap } from "lingui-for-shared/compiler";
 
 import { mayContainLinguiMacroImport } from "../compiler-core/shared/macro-presence.ts";
 import { transformAstro } from "../compiler-core/transform/index.ts";
@@ -70,7 +70,7 @@ export const unpluginFactory: UnpluginFactory<
 
       return {
         code: transformed.code,
-        map: transformed.map,
+        map: transformed.map ? toUnpluginSourceMap(transformed.map) : undefined,
       };
     }
 

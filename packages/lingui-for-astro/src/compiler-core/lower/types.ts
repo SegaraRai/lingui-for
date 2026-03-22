@@ -1,12 +1,11 @@
 import type * as BabelTypes from "@babel/types";
+import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import type { LinguiConfigNormalized } from "@lingui/conf";
-
-import type { SourceMap } from "lingui-for-shared/compiler";
 
 export interface ProgramTransform {
   code: string;
   ast: BabelTypes.File;
-  map: SourceMap | null;
+  map: EncodedSourceMap | null;
 }
 
 export type ProgramTransformRequest =
@@ -14,13 +13,13 @@ export type ProgramTransformRequest =
       translationMode: "extract";
       filename: string;
       linguiConfig: LinguiConfigNormalized;
-      inputSourceMap: SourceMap | null;
+      inputSourceMap: EncodedSourceMap | null;
       runtimeBinding: null;
     }
   | {
       translationMode: "astro-context";
       filename: string;
       linguiConfig: LinguiConfigNormalized;
-      inputSourceMap: SourceMap | null;
+      inputSourceMap: EncodedSourceMap | null;
       runtimeBinding: string;
     };

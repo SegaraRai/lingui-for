@@ -1,6 +1,6 @@
-import type { SourceMap } from "lingui-for-shared/compiler";
+import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
 export type ExtractionUnit = {
   code: string;
-  map: SourceMap | null;
+  map: EncodedSourceMap | null;
 };

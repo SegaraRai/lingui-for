@@ -332,6 +332,12 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
+      '@jridgewell/gen-mapping':
+        specifier: ^0.3.13
+        version: 0.3.13
+      '@jridgewell/trace-mapping':
+        specifier: ^0.3.31
+        version: 0.3.31
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
@@ -347,9 +353,6 @@ importers:
       rollup:
         specifier: ^3 || ^4
         version: 4.59.0
-      source-map:
-        specifier: ^0.7.6
-        version: 0.7.6
       unplugin:
         specifier: ^3.0.0
         version: 3.0.0
@@ -423,6 +426,12 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
+      '@jridgewell/gen-mapping':
+        specifier: ^0.3.13
+        version: 0.3.13
+      '@jridgewell/trace-mapping':
+        specifier: ^0.3.31
+        version: 0.3.31
       '@lingui/cli':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
@@ -444,9 +453,6 @@ importers:
       magic-string:
         specifier: ^0.30.21
         version: 0.30.21
-      source-map:
-        specifier: ^0.7.6
-        version: 0.7.6
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -468,6 +474,12 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
+      '@jridgewell/gen-mapping':
+        specifier: ^0.3.13
+        version: 0.3.13
+      '@jridgewell/trace-mapping':
+        specifier: ^0.3.31
+        version: 0.3.31
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
@@ -483,9 +495,6 @@ importers:
       rollup:
         specifier: ^3 || ^4
         version: 4.59.0
-      source-map:
-        specifier: ^0.7.6
-        version: 0.7.6
       unplugin:
         specifier: ^3.0.0
         version: 3.0.0
