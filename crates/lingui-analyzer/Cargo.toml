@@ -6,6 +6,7 @@ edition = "2024"
 license = "MIT"
 
 [dependencies]
+sourcemap = "9.3.2"
 thiserror = "2"
 tree-sitter = "0.26"
 tree-sitter-astro = { git = "https://github.com/SegaraRai/tree-sitter-astro.git" }

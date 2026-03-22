@@ -67,6 +67,9 @@ pub struct MacroCandidate {
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct SyntheticModule {
     pub source: String,
+    pub source_name: String,
+    pub synthetic_name: String,
+    pub source_map_json: Option<String>,
     pub declaration_ids: Vec<String>,
     pub original_spans: BTreeMap<String, Span>,
     pub generated_spans: BTreeMap<String, Span>,

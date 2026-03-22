@@ -5,6 +5,7 @@ mod model;
 mod parse;
 pub mod scope;
 pub mod synthetic;
+mod utf16;
 
 pub use error::AnalyzerError;
 pub use model::{
