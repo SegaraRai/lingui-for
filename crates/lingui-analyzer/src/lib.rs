@@ -11,17 +11,26 @@ mod utf16;
 use wasm_bindgen::prelude::*;
 
 use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
-use crate::synthetic::build_synthetic_module;
+use crate::synthetic::build_synthetic_module_with_names;
 
 pub use error::AnalyzerError;
 pub use model::{
     EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroCandidateKind, MacroFlavor,
-    MacroImport, Span, SyntheticMapping, SyntheticModule,
+    MacroImport, Span, SyntheticMapping, SyntheticModule, SyntheticModuleOptions,
 };
 
 pub fn build_synthetic_module_for_framework(
     framework: &str,
     source: &str,
+) -> Result<SyntheticModule, AnalyzerError> {
+    build_synthetic_module_for_framework_with_names(framework, source, "source", "synthetic.js")
+}
+
+pub fn build_synthetic_module_for_framework_with_names(
+    framework: &str,
+    source: &str,
+    source_name: &str,
+    synthetic_name: &str,
 ) -> Result<SyntheticModule, AnalyzerError> {
     match framework {
         "astro" => {
@@ -40,8 +49,10 @@ pub fn build_synthetic_module_for_framework(
                     .map(|component| component.candidate),
             );
             sort_candidates(&mut candidates);
-            Ok(build_synthetic_module(
+            Ok(build_synthetic_module_with_names(
                 source,
+                source_name,
+                synthetic_name,
                 &analysis.macro_imports,
                 &candidates,
             ))
@@ -71,7 +82,13 @@ pub fn build_synthetic_module_for_framework(
                     .map(|component| component.candidate),
             );
             sort_candidates(&mut candidates);
-            Ok(build_synthetic_module(source, &imports, &candidates))
+            Ok(build_synthetic_module_with_names(
+                source,
+                source_name,
+                synthetic_name,
+                &imports,
+                &candidates,
+            ))
         }
         _ => Err(AnalyzerError::UnsupportedFramework(framework.to_string())),
     }
@@ -90,6 +107,23 @@ pub fn wasm_build_synthetic_module(
 
     let module = build_synthetic_module_for_framework(&framework, &source)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    serde_wasm_bindgen::to_value(&module)
+        .map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen(js_name = "buildSyntheticModuleWithOptions")]
+pub fn wasm_build_synthetic_module_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+    console_error_panic_hook::set_once();
+
+    let options: SyntheticModuleOptions = serde_wasm_bindgen::from_value(options)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let module = build_synthetic_module_for_framework_with_names(
+        &options.framework,
+        &options.source,
+        options.source_name.as_deref().unwrap_or("source"),
+        options.synthetic_name.as_deref().unwrap_or("synthetic.js"),
+    )
+    .map_err(|error| JsValue::from_str(&error.to_string()))?;
     serde_wasm_bindgen::to_value(&module)
         .map_err(|error| JsValue::from_str(&error.to_string()))
 }

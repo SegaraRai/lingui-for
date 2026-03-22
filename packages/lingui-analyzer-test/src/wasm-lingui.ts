@@ -14,6 +14,7 @@ import type {
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import {
   buildSyntheticModule,
+  buildSyntheticModuleWithOptions,
   initSync,
 } from "../../lingui-analyzer-wasm/dist/index.js";
 
@@ -25,10 +26,8 @@ const linguiMacroPluginFactory =
   "default" in linguiMacroPlugin
     ? linguiMacroPlugin.default
     : linguiMacroPlugin;
-const generate =
-  typeof generateModule === "function" ? generateModule : generateModule.default;
-const traverse =
-  typeof traverseModule === "function" ? traverseModule : traverseModule.default;
+const generate = generateModule as typeof import("@babel/generator").default;
+const traverse = traverseModule as typeof import("@babel/traverse").default;
 let wasmInitialized = false;
 const linguiConfig = createLinguiConfig();
 
@@ -49,9 +48,21 @@ export type SyntheticTransformResult = {
 export function buildSyntheticModuleForTest(
   framework: "astro" | "svelte",
   source: string,
+  options?: {
+    sourceName?: string;
+    syntheticName?: string;
+  },
 ): SyntheticModule {
   ensureWasmInitialized();
-  return buildSyntheticModule(framework, source) as SyntheticModule;
+  if (!options?.sourceName && !options?.syntheticName) {
+    return buildSyntheticModule(framework, source) as SyntheticModule;
+  }
+  return buildSyntheticModuleWithOptions({
+    framework,
+    source,
+    source_name: options.sourceName,
+    synthetic_name: options.syntheticName,
+  }) as SyntheticModule;
 }
 
 export function transformSyntheticModule(
@@ -98,10 +109,7 @@ export async function extractMessagesFromSyntheticModule(
 ): Promise<ExtractedMessage[]> {
   const extracted: ExtractedMessage[] = [];
   const sourceMaps = synthetic.source_map_json
-    ? normalizeSourceMap(
-        JSON.parse(synthetic.source_map_json) as ExtractorCtx["sourceMaps"],
-        filename,
-      )
+    ? (JSON.parse(synthetic.source_map_json) as ExtractorCtx["sourceMaps"])
     : undefined;
 
   await extractFromFileWithBabel(
@@ -163,17 +171,6 @@ function createLinguiConfig(): LinguiConfigNormalized {
     },
     extractorParserOptions: {},
   } as unknown as LinguiConfigNormalized;
-}
-
-function normalizeSourceMap(
-  map: NonNullable<ExtractorCtx["sourceMaps"]>,
-  filename: string,
-): NonNullable<ExtractorCtx["sourceMaps"]> {
-  return {
-    ...map,
-    file: filename,
-    sources: map.sources.map(() => filename),
-  };
 }
 
 function collectDeclarationInitializers(

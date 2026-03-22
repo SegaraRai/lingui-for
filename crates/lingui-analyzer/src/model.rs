@@ -78,6 +78,14 @@ pub struct SyntheticModule {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SyntheticModuleOptions {
+    pub framework: String,
+    pub source: String,
+    pub source_name: Option<String>,
+    pub synthetic_name: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SyntheticMapping {
     pub declaration_id: String,
     pub original_span: Span,
