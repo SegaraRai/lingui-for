@@ -19,6 +19,7 @@ fn collects_svelte_script_macros_with_reactive_and_eager_flavors() {
     let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
     assert_eq!(analysis.scripts.len(), 1);
     assert!(analysis.template_expressions.is_empty());
+    assert!(analysis.template_components.is_empty());
 
     let script = &analysis.scripts[0];
     assert!(!script.is_module);
@@ -150,5 +151,45 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
     assert_eq!(
         analysis.template_expressions[0].candidates[0].imported_name,
         "t"
+    );
+}
+
+#[test]
+fn collects_template_components_with_scope_aware_shadowing() {
+    let source = indoc! {r#"
+        <script>
+          import { Trans as T } from "@lingui/react/macro";
+        </script>
+
+        <T id="root" />
+        {#each items as T}
+          <T id="shadowed" />
+        {/each}
+        <Widget let:T>
+          <T id="slot-shadowed" />
+        </Widget>
+        <T id="after-widget" />
+    "#};
+
+    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let summary = analysis
+        .template_components
+        .iter()
+        .map(|component| {
+            (
+                component.candidate.kind,
+                component.candidate.imported_name.as_str(),
+                component.candidate.local_name.as_str(),
+                component.shadowed_names.clone(),
+            )
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        summary,
+        vec![
+            (MacroCandidateKind::Component, "Trans", "T", vec![],),
+            (MacroCandidateKind::Component, "Trans", "T", vec![],),
+        ]
     );
 }

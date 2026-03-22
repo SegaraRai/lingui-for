@@ -17,6 +17,7 @@ use crate::{
 pub struct SvelteScriptAnalysis {
     pub scripts: Vec<SvelteScriptBlock>,
     pub template_expressions: Vec<SvelteTemplateExpression>,
+    pub template_components: Vec<SvelteTemplateComponent>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -32,6 +33,12 @@ pub struct SvelteTemplateExpression {
     pub outer_span: Span,
     pub inner_span: Span,
     pub candidates: Vec<MacroCandidate>,
+    pub shadowed_names: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SvelteTemplateComponent {
+    pub candidate: MacroCandidate,
     pub shadowed_names: Vec<String>,
 }
 
@@ -71,16 +78,19 @@ pub fn analyze_svelte(source: &str) -> Result<SvelteScriptAnalysis, AnalyzerErro
         .flat_map(|script| script.macro_imports.iter().cloned())
         .collect::<Vec<_>>();
     let mut template_expressions = Vec::new();
+    let mut template_components = Vec::new();
     collect_template_expressions(
         source,
         root,
         &template_imports,
         &mut Vec::new(),
         &mut template_expressions,
+        &mut template_components,
     )?;
     Ok(SvelteScriptAnalysis {
         scripts,
         template_expressions,
+        template_components,
     })
 }
 
@@ -152,6 +162,7 @@ fn collect_template_expressions(
     imports: &[MacroImport],
     scope_stack: &mut Vec<Vec<String>>,
     expressions: &mut Vec<SvelteTemplateExpression>,
+    components: &mut Vec<SvelteTemplateComponent>,
 ) -> Result<(), AnalyzerError> {
     match node.kind() {
         "script_element" | "style_element" => return Ok(()),
@@ -174,13 +185,20 @@ fn collect_template_expressions(
             scope_stack.push(Vec::new());
             let mut cursor = node.walk();
             for child in node.children(&mut cursor) {
-                collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+                collect_template_expressions(
+                    source,
+                    child,
+                    imports,
+                    scope_stack,
+                    expressions,
+                    components,
+                )?;
             }
             scope_stack.pop();
             return Ok(());
         }
         "each_statement" => {
-            visit_each_statement(source, node, imports, scope_stack, expressions)?;
+            visit_each_statement(source, node, imports, scope_stack, expressions, components)?;
             return Ok(());
         }
         "then_block" => {
@@ -190,6 +208,7 @@ fn collect_template_expressions(
                 imports,
                 scope_stack,
                 expressions,
+                components,
                 "then_start",
             )?;
             return Ok(());
@@ -201,16 +220,17 @@ fn collect_template_expressions(
                 imports,
                 scope_stack,
                 expressions,
+                components,
                 "catch_start",
             )?;
             return Ok(());
         }
         "snippet_statement" => {
-            visit_snippet_statement(source, node, imports, scope_stack, expressions)?;
+            visit_snippet_statement(source, node, imports, scope_stack, expressions, components)?;
             return Ok(());
         }
         "element" | "self_closing_tag" => {
-            visit_element_like(source, node, imports, scope_stack, expressions)?;
+            visit_element_like(source, node, imports, scope_stack, expressions, components)?;
             return Ok(());
         }
         _ => {}
@@ -218,7 +238,7 @@ fn collect_template_expressions(
 
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+        collect_template_expressions(source, child, imports, scope_stack, expressions, components)?;
     }
     Ok(())
 }
@@ -266,6 +286,7 @@ fn visit_each_statement(
     imports: &[MacroImport],
     scope_stack: &mut Vec<Vec<String>>,
     expressions: &mut Vec<SvelteTemplateExpression>,
+    components: &mut Vec<SvelteTemplateComponent>,
 ) -> Result<(), AnalyzerError> {
     let start = node
         .children(&mut node.walk())
@@ -281,7 +302,7 @@ fn visit_each_statement(
         if child.kind() == "each_start" || child.kind() == "each_end" {
             continue;
         }
-        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+        collect_template_expressions(source, child, imports, scope_stack, expressions, components)?;
     }
     scope_stack.pop();
     Ok(())
@@ -293,6 +314,7 @@ fn visit_named_block(
     imports: &[MacroImport],
     scope_stack: &mut Vec<Vec<String>>,
     expressions: &mut Vec<SvelteTemplateExpression>,
+    components: &mut Vec<SvelteTemplateComponent>,
     start_kind: &str,
 ) -> Result<(), AnalyzerError> {
     let start = node
@@ -312,7 +334,7 @@ fn visit_named_block(
         if child.kind() == start_kind {
             continue;
         }
-        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+        collect_template_expressions(source, child, imports, scope_stack, expressions, components)?;
     }
     scope_stack.pop();
     Ok(())
@@ -324,6 +346,7 @@ fn visit_snippet_statement(
     imports: &[MacroImport],
     scope_stack: &mut Vec<Vec<String>>,
     expressions: &mut Vec<SvelteTemplateExpression>,
+    components: &mut Vec<SvelteTemplateComponent>,
 ) -> Result<(), AnalyzerError> {
     let start = node
         .children(&mut node.walk())
@@ -342,7 +365,7 @@ fn visit_snippet_statement(
         if child.kind() == "snippet_start" || child.kind() == "snippet_end" {
             continue;
         }
-        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+        collect_template_expressions(source, child, imports, scope_stack, expressions, components)?;
     }
     scope_stack.pop();
     Ok(())
@@ -354,7 +377,12 @@ fn visit_element_like(
     imports: &[MacroImport],
     scope_stack: &mut Vec<Vec<String>>,
     expressions: &mut Vec<SvelteTemplateExpression>,
+    components: &mut Vec<SvelteTemplateComponent>,
 ) -> Result<(), AnalyzerError> {
+    if let Some(candidate) = component_candidate_from_element(source, node, imports, scope_stack) {
+        components.push(candidate);
+    }
+
     let let_bindings = let_bindings_from_element(source, node);
     let has_let_bindings = !let_bindings.is_empty();
     if has_let_bindings {
@@ -366,13 +394,59 @@ fn visit_element_like(
         if node.kind() == "element" && (child.kind() == "start_tag" || child.kind() == "end_tag") {
             continue;
         }
-        collect_template_expressions(source, child, imports, scope_stack, expressions)?;
+        collect_template_expressions(source, child, imports, scope_stack, expressions, components)?;
     }
 
     if has_let_bindings {
         scope_stack.pop();
     }
     Ok(())
+}
+
+fn component_candidate_from_element(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &[Vec<String>],
+) -> Option<SvelteTemplateComponent> {
+    let tag = match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag")?,
+        "self_closing_tag" => node,
+        _ => return None,
+    };
+    let tag_name_node = tag
+        .children(&mut tag.walk())
+        .find(|child| child.kind() == "tag_name")?;
+    let tag_name = text(source, tag_name_node);
+    if !is_component_tag_name(tag_name) {
+        return None;
+    }
+
+    let shadowed_names = scope_stack
+        .iter()
+        .flat_map(|frame| frame.iter().cloned())
+        .collect::<Vec<_>>();
+    if shadowed_names.iter().any(|name| name == tag_name) {
+        return None;
+    }
+
+    let import_decl = imports
+        .iter()
+        .find(|import_decl| import_decl.local_name == tag_name)?;
+    Some(SvelteTemplateComponent {
+        candidate: MacroCandidate {
+            kind: crate::MacroCandidateKind::Component,
+            imported_name: import_decl.imported_name.clone(),
+            local_name: import_decl.local_name.clone(),
+            flavor: crate::MacroFlavor::Direct,
+            outer_span: Span::from_node(node),
+            normalized_span: Span::from_node(node),
+            strip_spans: Vec::new(),
+        },
+        shadowed_names,
+    })
 }
 
 fn declared_names_from_const_tag(
@@ -439,6 +513,14 @@ fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<String> {
         }
     }
     names
+}
+
+fn is_component_tag_name(tag_name: &str) -> bool {
+    tag_name
+        .chars()
+        .next()
+        .map(|first| first.is_ascii_uppercase())
+        .unwrap_or(false)
 }
 
 fn collect_script_macro_imports(
