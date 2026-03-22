@@ -69,4 +69,13 @@ pub struct SyntheticModule {
     pub source: String,
     pub declaration_ids: Vec<String>,
     pub original_spans: BTreeMap<String, Span>,
+    pub generated_spans: BTreeMap<String, Span>,
+    pub mappings: Vec<SyntheticMapping>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SyntheticMapping {
+    pub declaration_id: String,
+    pub original_span: Span,
+    pub generated_span: Span,
 }

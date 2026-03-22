@@ -30,7 +30,7 @@ fn collects_aliased_frontmatter_macro_imports_and_candidates() {
     assert_eq!(imports, vec![("t", "tt"), ("plural", "plural")]);
 
     let candidates = analysis
-        .candidates
+        .frontmatter_candidates
         .iter()
         .map(|candidate| {
             (
@@ -67,7 +67,7 @@ fn ignores_shadowed_bindings_in_nested_scopes() {
     let analysis = AstroAdapter.analyze(source).expect("analysis succeeds");
 
     let candidates = analysis
-        .candidates
+        .frontmatter_candidates
         .iter()
         .map(|candidate| {
             (
@@ -97,4 +97,34 @@ fn marks_frontmatter_content_region() {
 
     assert!(extracted.contains("import { t } from"));
     assert!(extracted.contains("const message = t`Hello`;"));
+}
+
+#[test]
+fn collects_template_expression_candidates_from_frontmatter_imports() {
+    let source = indoc! {r#"
+        ---
+        import { t as tt } from "@lingui/core/macro";
+        ---
+
+        <div>{tt`Hello`}</div>
+        <div title={`x ${tt({ id: "msg" })}`}></div>
+        <div>{((tt) => tt`ignored`)(tt)}</div>
+    "#};
+
+    let analysis = AstroAdapter.analyze(source).expect("analysis succeeds");
+    let counts = analysis
+        .template_expressions
+        .iter()
+        .map(|expression| expression.candidates.len())
+        .collect::<Vec<_>>();
+
+    assert_eq!(counts, vec![1, 1, 0]);
+    assert_eq!(
+        analysis.template_expressions[0].candidates[0].kind,
+        MacroCandidateKind::TaggedTemplateExpression
+    );
+    assert_eq!(
+        analysis.template_expressions[1].candidates[0].kind,
+        MacroCandidateKind::CallExpression
+    );
 }

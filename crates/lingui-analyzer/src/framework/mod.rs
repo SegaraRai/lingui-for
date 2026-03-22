@@ -1,4 +1,5 @@
 pub mod astro;
+pub mod svelte;
 
 use crate::AnalyzerError;
 
