@@ -15,11 +15,18 @@ pub struct AstroTemplateExpression {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AstroTemplateComponent {
+    pub candidate: MacroCandidate,
+    pub shadowed_names: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AstroFrontmatterAnalysis {
     pub frontmatter: Option<EmbeddedScriptRegion>,
     pub macro_imports: Vec<MacroImport>,
     pub frontmatter_candidates: Vec<MacroCandidate>,
     pub template_expressions: Vec<AstroTemplateExpression>,
+    pub template_components: Vec<AstroTemplateComponent>,
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -56,13 +63,21 @@ pub fn analyze_astro(source: &str) -> Result<AstroFrontmatterAnalysis, AnalyzerE
     };
 
     let mut template_expressions = Vec::new();
-    collect_template_expressions(source, root, &macro_imports, &mut template_expressions)?;
+    let mut template_components = Vec::new();
+    collect_template_expressions(
+        source,
+        root,
+        &macro_imports,
+        &mut template_expressions,
+        &mut template_components,
+    )?;
 
     Ok(AstroFrontmatterAnalysis {
         frontmatter,
         macro_imports,
         frontmatter_candidates,
         template_expressions,
+        template_components,
     })
 }
 
@@ -157,6 +172,7 @@ fn collect_template_expressions(
     node: Node<'_>,
     imports: &[MacroImport],
     expressions: &mut Vec<AstroTemplateExpression>,
+    components: &mut Vec<AstroTemplateComponent>,
 ) -> Result<(), AnalyzerError> {
     match node.kind() {
         "html_interpolation" => {
@@ -167,6 +183,11 @@ fn collect_template_expressions(
                 imports,
                 expressions,
             )?;
+        }
+        "element" => {
+            if let Some(component) = component_candidate_from_element(source, node, imports) {
+                components.push(component);
+            }
         }
         "attribute_interpolation" => {
             let inner = node
@@ -191,7 +212,7 @@ fn collect_template_expressions(
 
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        collect_template_expressions(source, child, imports, expressions)?;
+        collect_template_expressions(source, child, imports, expressions, components)?;
     }
 
     Ok(())
@@ -219,6 +240,41 @@ fn push_template_expression(
         candidates,
     });
     Ok(())
+}
+
+fn component_candidate_from_element(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+) -> Option<AstroTemplateComponent> {
+    let mut cursor = node.walk();
+    let tag_node = node
+        .children(&mut cursor)
+        .find(|child| child.kind() == "start_tag" || child.kind() == "self_closing_tag")?;
+    let tag_name_node = tag_node
+        .children(&mut tag_node.walk())
+        .find(|child| child.kind() == "tag_name")?;
+    let tag_name = text(source, tag_name_node);
+    if !is_component_tag_name(tag_name) {
+        return None;
+    }
+
+    let import_decl = imports
+        .iter()
+        .find(|import_decl| import_decl.local_name == tag_name)?;
+
+    Some(AstroTemplateComponent {
+        candidate: MacroCandidate {
+            kind: crate::MacroCandidateKind::Component,
+            imported_name: import_decl.imported_name.clone(),
+            local_name: import_decl.local_name.clone(),
+            flavor: crate::MacroFlavor::Direct,
+            outer_span: Span::from_node(node),
+            normalized_span: Span::from_node(node),
+            strip_spans: Vec::new(),
+        },
+        shadowed_names: Vec::new(),
+    })
 }
 
 fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: usize) -> Span {
@@ -255,4 +311,12 @@ fn unquote(text: &str) -> Option<String> {
 
 fn is_macro_module_specifier(specifier: &str) -> bool {
     specifier.ends_with("/macro")
+}
+
+fn is_component_tag_name(tag_name: &str) -> bool {
+    tag_name
+        .chars()
+        .next()
+        .map(|first| first.is_ascii_uppercase())
+        .unwrap_or(false)
 }

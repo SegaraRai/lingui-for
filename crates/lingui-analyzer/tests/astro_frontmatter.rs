@@ -152,3 +152,39 @@ fn supports_typescript_syntax_in_frontmatter_and_template_expressions() {
         MacroCandidateKind::TaggedTemplateExpression
     );
 }
+
+#[test]
+fn collects_template_components_from_frontmatter_imports() {
+    let source = indoc! {r#"
+        ---
+        import { Trans as T } from "@lingui/react/macro";
+        ---
+
+        <T id="root" />
+        <div>
+          <T id="nested" />
+        </div>
+        <span />
+    "#};
+
+    let analysis = AstroAdapter.analyze(source).expect("analysis succeeds");
+    let summary = analysis
+        .template_components
+        .iter()
+        .map(|component| {
+            (
+                component.candidate.kind,
+                component.candidate.imported_name.as_str(),
+                component.candidate.local_name.as_str(),
+            )
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        summary,
+        vec![
+            (MacroCandidateKind::Component, "Trans", "T"),
+            (MacroCandidateKind::Component, "Trans", "T"),
+        ]
+    );
+}
