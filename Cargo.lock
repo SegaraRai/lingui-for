@@ -125,6 +125,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "lingui-analyzer"
+version = "0.0.0"
+dependencies = [
+ "indoc",
+ "thiserror",
+ "tree-sitter",
+ "tree-sitter-astro",
+ "tree-sitter-javascript",
+]
+
+[[package]]
 name = "memchr"
 version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -316,6 +327,16 @@ dependencies = [
 name = "tree-sitter-astro"
 version = "0.0.1"
 source = "git+https://github.com/SegaraRai/tree-sitter-astro.git#08c9f6a962e630aa881aee7842aaa1276e9eb047"
+dependencies = [
+ "cc",
+ "tree-sitter-language",
+]
+
+[[package]]
+name = "tree-sitter-javascript"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "68204f2abc0627a90bdf06e605f5c470aa26fdcb2081ea553a04bdad756693f5"
 dependencies = [
  "cc",
  "tree-sitter-language",
