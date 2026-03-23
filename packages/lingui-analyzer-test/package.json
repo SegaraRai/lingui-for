@@ -15,6 +15,7 @@
     "@babel/generator": "^7.29.1",
     "@babel/traverse": "^7.29.0",
     "@babel/types": "^7.29.0",
+    "@jridgewell/trace-mapping": "^0.3.31",
     "@lingui/babel-plugin-lingui-macro": "^5.9.3",
     "@lingui/cli": "^5.9.3",
     "@lingui/conf": "^5.9.3",

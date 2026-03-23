@@ -63,6 +63,7 @@ pub fn build_synthetic_module_with_names(
             declaration_id: id.clone(),
             original_span: original_spans[id],
             generated_span: generated_spans[id],
+            source_map_anchor: source_map_anchors[id],
         })
         .collect();
 

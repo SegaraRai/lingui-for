@@ -1,9 +1,11 @@
+import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
   buildSyntheticModuleForTest,
   extractMessagesFromSyntheticModule,
+  reinsertTransformedModule,
   transformSyntheticModule,
 } from "./wasm-lingui.ts";
 
@@ -201,4 +203,131 @@ describe("lingui-analyzer wasm contract", () => {
         ?.origin,
     ).toEqual([filename, 6, 13]);
   });
+
+  test("reinjects transformed Svelte expressions back into markup with sourcemaps", () => {
+    const filename = "/virtual/Roundtrip.svelte";
+    const source = dedent`
+      <script lang="ts">
+        import { t as translate } from "@lingui/core/macro";
+        const label = translate\`Script hello\`;
+        const name = "Ada";
+      </script>
+
+      <p>{$translate\`Markup hello \${name}\`}</p>
+      <p>{label}</p>
+    `;
+
+    const synthetic = buildSyntheticModuleForTest("svelte", source, {
+      sourceName: filename,
+      syntheticName: "/virtual/Roundtrip.synthetic.tsx",
+    });
+    const transformed = transformSyntheticModule(synthetic);
+    const reinserted = reinsertTransformedModule(
+      source,
+      synthetic,
+      transformed.declarations,
+      {
+        sourceName: filename,
+      },
+    );
+
+    expect(reinserted.code).toContain("const label = _i18n._(");
+    expect(reinserted.code).toContain("<p>{_i18n._(");
+
+    const origins = collectOriginalPositionsForNeedle(
+      reinserted.code,
+      reinserted.source_map_json ?? "",
+      "_i18n._(",
+    );
+    expect(origins).toEqual([
+      [filename, 3, 16],
+      [filename, 7, 4],
+    ]);
+  });
+
+  test("reinjects transformed Astro expressions back into markup with sourcemaps", () => {
+    const filename = "/virtual/Roundtrip.astro";
+    const source = dedent`
+      ---
+      import { t as translate } from "@lingui/core/macro";
+      const label = translate\`Frontmatter hello\`;
+      ---
+
+      <p>{translate\`Markup hello\`}</p>
+      <p>{label}</p>
+    `;
+
+    const synthetic = buildSyntheticModuleForTest("astro", source, {
+      sourceName: filename,
+      syntheticName: "/virtual/Roundtrip.synthetic.tsx",
+    });
+    const transformed = transformSyntheticModule(synthetic);
+    const reinserted = reinsertTransformedModule(
+      source,
+      synthetic,
+      transformed.declarations,
+      {
+        sourceName: filename,
+      },
+    );
+
+    expect(reinserted.code).toContain("const label = _i18n._(");
+    expect(reinserted.code).toContain("<p>{_i18n._(");
+
+    const origins = collectOriginalPositionsForNeedle(
+      reinserted.code,
+      reinserted.source_map_json ?? "",
+      "_i18n._(",
+    );
+    expect(origins).toEqual([
+      [filename, 3, 14],
+      [filename, 6, 4],
+    ]);
+  });
 });
+
+function collectOriginalPositionsForNeedle(
+  code: string,
+  sourceMapJson: string,
+  needle: string,
+): Array<[string, number, number]> {
+  const map = new TraceMap(sourceMapJson);
+  return findOffsets(code, needle).map((offset) => {
+    const generated = offsetToGeneratedPosition(code, offset);
+    const original = originalPositionFor(map, generated);
+    if (!original.source || original.line == null || original.column == null) {
+      throw new Error(`Missing original position for ${needle} at ${offset}`);
+    }
+    return [original.source, original.line, original.column];
+  });
+}
+
+function findOffsets(source: string, needle: string): number[] {
+  const offsets: number[] = [];
+  let searchStart = 0;
+  while (searchStart < source.length) {
+    const offset = source.indexOf(needle, searchStart);
+    if (offset === -1) {
+      break;
+    }
+    offsets.push(offset);
+    searchStart = offset + needle.length;
+  }
+  return offsets;
+}
+
+function offsetToGeneratedPosition(
+  source: string,
+  offset: number,
+): {
+  line: number;
+  column: number;
+} {
+  const bounded = Math.min(offset, source.length);
+  const lineStart = source.slice(0, bounded).lastIndexOf("\n") + 1;
+  const line = source.slice(0, bounded).split("\n").length;
+  return {
+    line,
+    column: bounded - lineStart,
+  };
+}

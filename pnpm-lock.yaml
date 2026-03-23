@@ -332,6 +332,9 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
+      '@jridgewell/trace-mapping':
+        specifier: ^0.3.31
+        version: 0.3.31
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)

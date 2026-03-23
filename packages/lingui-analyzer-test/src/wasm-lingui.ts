@@ -16,6 +16,7 @@ import {
   buildSyntheticModule,
   buildSyntheticModuleWithOptions,
   initSync,
+  reinsertTransformedDeclarations,
 } from "../../lingui-analyzer-wasm/dist/index.js";
 
 const require = createRequire(import.meta.url);
@@ -43,6 +44,12 @@ export type SyntheticTransformResult = {
   synthetic: SyntheticModule;
   code: string;
   declarations: Record<string, string>;
+};
+
+export type ReinsertedModule = {
+  code: string;
+  source_name: string;
+  source_map_json?: string | null;
 };
 
 export function buildSyntheticModuleForTest(
@@ -139,6 +146,23 @@ export async function extractMessagesFromSyntheticModule(
   );
 
   return extracted;
+}
+
+export function reinsertTransformedModule(
+  originalSource: string,
+  synthetic: SyntheticModule,
+  declarations: Record<string, string>,
+  options?: {
+    sourceName?: string;
+  },
+): ReinsertedModule {
+  ensureWasmInitialized();
+  return reinsertTransformedDeclarations({
+    original_source: originalSource,
+    source_name: options?.sourceName,
+    synthetic_module: synthetic,
+    transformed_declarations: declarations,
+  }) as ReinsertedModule;
 }
 
 function ensureWasmInitialized(): void {

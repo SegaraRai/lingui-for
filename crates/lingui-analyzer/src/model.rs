@@ -91,4 +91,20 @@ pub struct SyntheticMapping {
     pub declaration_id: String,
     pub original_span: Span,
     pub generated_span: Span,
+    pub source_map_anchor: Option<Span>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReinsertOptions {
+    pub original_source: String,
+    pub source_name: Option<String>,
+    pub synthetic_module: SyntheticModule,
+    pub transformed_declarations: BTreeMap<String, String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct ReinsertedModule {
+    pub code: String,
+    pub source_name: String,
+    pub source_map_json: Option<String>,
 }

@@ -4,6 +4,7 @@ pub mod framework;
 mod js;
 mod model;
 mod parse;
+mod reinsert;
 pub mod scope;
 pub mod synthetic;
 mod utf16;
@@ -11,12 +12,14 @@ mod utf16;
 use wasm_bindgen::prelude::*;
 
 use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
+use crate::reinsert::reinsert_transformed_declarations;
 use crate::synthetic::build_synthetic_module_with_names;
 
 pub use error::AnalyzerError;
 pub use model::{
     EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroCandidateKind, MacroFlavor,
-    MacroImport, Span, SyntheticMapping, SyntheticModule, SyntheticModuleOptions,
+    MacroImport, ReinsertOptions, ReinsertedModule, Span, SyntheticMapping, SyntheticModule,
+    SyntheticModuleOptions,
 };
 
 pub fn build_synthetic_module_for_framework(
@@ -126,4 +129,20 @@ pub fn wasm_build_synthetic_module_with_options(options: JsValue) -> Result<JsVa
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
     serde_wasm_bindgen::to_value(&module)
         .map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen(js_name = "reinsertTransformedDeclarations")]
+pub fn wasm_reinsert_transformed_declarations(options: JsValue) -> Result<JsValue, JsValue> {
+    console_error_panic_hook::set_once();
+
+    let options: ReinsertOptions = serde_wasm_bindgen::from_value(options)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let result = reinsert_transformed_declarations(
+        &options.original_source,
+        options.source_name.as_deref().unwrap_or("source"),
+        &options.synthetic_module,
+        &options.transformed_declarations,
+    )
+    .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
 }
