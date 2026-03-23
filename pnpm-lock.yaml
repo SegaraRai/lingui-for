@@ -455,6 +455,9 @@ importers:
       dedent:
         specifier: ^1.7.2
         version: 1.7.2
+      lingui-analyzer-wasm:
+        specifier: workspace:*
+        version: link:../lingui-analyzer-wasm
       lingui-for-shared:
         specifier: workspace:*
         version: link:../lingui-for-shared
@@ -594,6 +597,9 @@ importers:
       dedent:
         specifier: ^1.7.2
         version: 1.7.2
+      lingui-analyzer-wasm:
+        specifier: workspace:*
+        version: link:../lingui-analyzer-wasm
       lingui-for-shared:
         specifier: workspace:*
         version: link:../lingui-for-shared

@@ -88,9 +88,9 @@ const role = "admin";
         "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
     );
 
-    // Component macros map all generated positions to the component's start
-    // (ms.overwrite). <Trans> starts at line 14, column 0.
-    expect(nested?.origin).toEqual(["/virtual/nested-origin.astro", 14, 0]);
+    // Rust synthetic extraction anchors component-originated messages to the
+    // first non-whitespace child inside the component body.
+    expect(nested?.origin).toEqual(["/virtual/nested-origin.astro", 15, 2]);
   });
 
   test("preserves origins for deep component-macro ICU messages in stress page extraction", async () => {
