@@ -3,8 +3,7 @@ use std::io::Cursor;
 
 use crate::utf16::Utf16Index;
 use crate::{
-    MacroCandidate, MacroImport, Span, SyntheticMapping, SyntheticModule,
-    model::NormalizedSegment,
+    MacroCandidate, MacroImport, Span, SyntheticMapping, SyntheticModule, model::NormalizedSegment,
 };
 use sourcemap::SourceMapBuilder;
 

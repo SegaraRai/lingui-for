@@ -26,7 +26,9 @@ pub fn reinsert_transformed_declarations(
 
     for mapping in &mappings {
         if mapping.original_span.start < cursor {
-            return Err(AnalyzerError::OverlappingMappings(mapping.original_span.start));
+            return Err(AnalyzerError::OverlappingMappings(
+                mapping.original_span.start,
+            ));
         }
 
         if cursor < mapping.original_span.start {
@@ -43,18 +45,15 @@ pub fn reinsert_transformed_declarations(
 
         let replacement = transformed_declarations
             .get(&mapping.declaration_id)
-            .ok_or_else(|| AnalyzerError::MissingTransformedDeclaration(mapping.declaration_id.clone()))?;
+            .ok_or_else(|| {
+                AnalyzerError::MissingTransformedDeclaration(mapping.declaration_id.clone())
+            })?;
         let generated_start = code.len();
         code.push_str(replacement);
         let original_start = mapping
-            .source_map_anchor
-            .map(|anchor| anchor.start)
-            .or_else(|| {
-                mapping
-                    .normalized_segments
-                    .first()
-                    .map(|segment| segment.original_start)
-            })
+            .normalized_segments
+            .first()
+            .map(|segment| segment.original_start)
             .unwrap_or(mapping.original_span.start);
         let original_len = mapping.original_span.end.saturating_sub(original_start);
         segments.push(MappingSegment {
@@ -82,7 +81,12 @@ pub fn reinsert_transformed_declarations(
     Ok(ReinsertedModule {
         code: code.clone(),
         source_name: source_name.to_string(),
-        source_map_json: build_reinserted_source_map_json(original_source, source_name, &code, &segments),
+        source_map_json: build_reinserted_source_map_json(
+            original_source,
+            source_name,
+            &code,
+            &segments,
+        ),
     })
 }
 
@@ -110,11 +114,10 @@ fn build_reinserted_source_map_json(
     let generated_index = Utf16Index::new(generated_source, &generated_line_starts);
 
     for segment in segments {
-        for delta in 0..=segment.generated_len {
+        for delta in 0..segment.generated_len {
             let generated = generated_index.byte_to_line_utf16_col(segment.generated_start + delta);
-            let original = original_index.byte_to_line_utf16_col(
-                segment.original_start + delta.min(segment.original_len),
-            );
+            let original = original_index
+                .byte_to_line_utf16_col(segment.original_start + delta.min(segment.original_len));
             builder.add(
                 generated.0 as u32,
                 generated.1 as u32,
@@ -126,6 +129,18 @@ fn build_reinserted_source_map_json(
             );
         }
     }
+
+    let generated_end = generated_index.byte_to_line_utf16_col(generated_source.len());
+    let original_end = original_index.byte_to_line_utf16_col(original_source.len());
+    builder.add(
+        generated_end.0 as u32,
+        generated_end.1 as u32,
+        original_end.0 as u32,
+        original_end.1 as u32,
+        Some(source_name),
+        None,
+        false,
+    );
 
     let sourcemap = builder.into_sourcemap();
     let mut out = Cursor::new(Vec::new());

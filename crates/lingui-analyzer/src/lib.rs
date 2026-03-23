@@ -102,16 +102,12 @@ fn sort_candidates(candidates: &mut [MacroCandidate]) {
 }
 
 #[wasm_bindgen(js_name = "buildSyntheticModule")]
-pub fn wasm_build_synthetic_module(
-    framework: String,
-    source: String,
-) -> Result<JsValue, JsValue> {
+pub fn wasm_build_synthetic_module(framework: String, source: String) -> Result<JsValue, JsValue> {
     console_error_panic_hook::set_once();
 
     let module = build_synthetic_module_for_framework(&framework, &source)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&module)
-        .map_err(|error| JsValue::from_str(&error.to_string()))
+    serde_wasm_bindgen::to_value(&module).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
 #[wasm_bindgen(js_name = "buildSyntheticModuleWithOptions")]
@@ -127,8 +123,7 @@ pub fn wasm_build_synthetic_module_with_options(options: JsValue) -> Result<JsVa
         options.synthetic_name.as_deref().unwrap_or("synthetic.js"),
     )
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&module)
-        .map_err(|error| JsValue::from_str(&error.to_string()))
+    serde_wasm_bindgen::to_value(&module).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
 #[wasm_bindgen(js_name = "reinsertTransformedDeclarations")]

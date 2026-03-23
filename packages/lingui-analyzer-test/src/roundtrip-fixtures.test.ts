@@ -13,410 +13,496 @@ import {
 type Detection = {
   name: string;
   original: string | RegExp;
-  generated: string | RegExp;
+  generated?: string | RegExp;
+  extracted?: string | RegExp;
+  mapping?: "range" | "chars";
 };
 
-type ExtractDetection = {
+type DetectionFixture = {
   name: string;
-  original: string | RegExp;
-  extracted: string | RegExp;
+  framework: "astro" | "svelte";
+  filename: string;
+  source: string;
+  detections: readonly Detection[];
 };
 
 describe("lingui-analyzer roundtrip source map discipline", () => {
-  test.fails("maps transformed Svelte script expression ranges back to the original source", () => {
-    const filename = "/virtual/Fixture.svelte";
-    const source = dedent`
-      <script lang="ts">
-        import { t as translate } from "@lingui/core/macro";
-        import { Trans as Translation } from "@lingui/react/macro";
-        const label = translate\`Fixture script\`;
-        const name = "Ada";
-      </script>
-
-      <p class="keep">{$translate\`Fixture markup \${name}\`}</p>
-      <p>{label}</p>
-    `;
-    const detection: Detection = {
-      name: "script transform",
-      original: "const label = translate`Fixture script`;",
-      generated:
-        /const label = _i18n\._\([\s\S]*?message: "Fixture script"[\s\S]*?\)/,
-    };
-
-    const synthetic = buildSyntheticModuleForTest("svelte", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/Fixture.synthetic.tsx",
-    });
-    const transformed = transformSyntheticModule(synthetic);
-    const reinserted = reinsertTransformedModule(
-      source,
-      synthetic,
-      transformed.declarations,
-      { sourceName: filename },
-    );
-    const consumer = new TraceMap(reinserted.source_map_json ?? "");
-
-    assertRangeMapping(consumer, reinserted.code, source, detection, filename);
-  });
-
-  test.fails("maps transformed Svelte markup expression ranges back to the original source", () => {
-    const filename = "/virtual/Fixture.svelte";
-    const source = dedent`
-      <script lang="ts">
-        import { t as translate } from "@lingui/core/macro";
-        import { Trans as Translation } from "@lingui/react/macro";
-        const label = translate\`Fixture script\`;
-        const name = "Ada";
-      </script>
-
-      <p class="keep">{$translate\`Fixture markup \${name}\`}</p>
-      <p>{label}</p>
-    `;
-    const detections: Detection[] = [
-      {
-        name: "markup transform",
-        original: "$translate`Fixture markup ${name}`",
-        generated:
-          /<p class="keep">\{_i18n\._\([\s\S]*?message: "Fixture markup \{name\}"[\s\S]*?\)/,
-      },
-      {
-        name: "kept wrapper",
-        original: '<p class="keep">{',
-        generated: '<p class="keep">{',
-      },
-    ];
-
-    const synthetic = buildSyntheticModuleForTest("svelte", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/Fixture.synthetic.tsx",
-    });
-    const transformed = transformSyntheticModule(synthetic);
-    const reinserted = reinsertTransformedModule(
-      source,
-      synthetic,
-      transformed.declarations,
-      { sourceName: filename },
-    );
-    const consumer = new TraceMap(reinserted.source_map_json ?? "");
-
-    detections.forEach((detection) => {
-      assertRangeMapping(
-        consumer,
-        reinserted.code,
-        source,
-        detection,
-        filename,
-      );
-    });
-  });
-
-  test("maps extracted Svelte messages back to the original source", async () => {
-    const filename = "/virtual/Fixture.svelte";
-    const source = dedent`
-      <script lang="ts">
-        import { t as translate } from "@lingui/core/macro";
-        const label = translate\`Fixture script\`;
-        const name = "Ada";
-      </script>
-
-      <p>{$translate\`Fixture markup \${name}\`}</p>
-      <Translation>Fixture component {name}</Translation>
-      <p>{label}</p>
-    `;
-    const detections: ExtractDetection[] = [
-      {
-        name: "script extraction",
-        original: "translate`Fixture script`",
-        extracted: "Fixture script",
-      },
-      {
-        name: "markup extraction",
-        original: "translate`Fixture markup ${name}`",
-        extracted: "Fixture markup {name}",
-      },
-    ];
-
-    const synthetic = buildSyntheticModuleForTest("svelte", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/Fixture.synthetic.tsx",
-    });
-    const messages = await extractMessagesFromSyntheticModule(
-      filename,
-      synthetic,
-    );
-
-    detections.forEach((detection) => {
-      assertExtractionOrigin(messages, source, detection, filename);
-    });
-  });
-
-  test.fails("maps extracted Svelte component messages back to the original source", async () => {
-    const filename = "/virtual/Fixture.svelte";
-    const source = dedent`
-      <script lang="ts">
-        import { t as translate } from "@lingui/core/macro";
-        import { Trans as Translation } from "@lingui/react/macro";
-        const label = translate\`Fixture script\`;
-        const name = "Ada";
-      </script>
-
-      <p>{$translate\`Fixture markup \${name}\`}</p>
-      <Translation>Fixture component {name}</Translation>
-      <p>{label}</p>
-    `;
-
-    const synthetic = buildSyntheticModuleForTest("svelte", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/Fixture.synthetic.tsx",
-    });
-    const messages = await extractMessagesFromSyntheticModule(
-      filename,
-      synthetic,
-    );
-
-    assertExtractionOrigin(
-      messages,
-      source,
-      {
-        name: "component extraction",
-        original: "Fixture component ",
-        extracted: "Fixture component {name}",
-      },
-      filename,
-    );
-  });
-
-  test("maps transformed Svelte component replacement boundaries back to the original source", () => {
-    const filename = "/virtual/ComponentBoundary.svelte";
-    const source = dedent`
-        <script lang="ts">
-          import { Trans as Translation } from "@lingui/react/macro";
-          const name = "Ada";
-        </script>
-
-        <Translation>Boundary component {name}</Translation>
-      `;
-    const detection: Detection = {
-      name: "component transform boundary",
-      original: "<Translation>Boundary component {name}</Translation>",
-      generated: /<_Trans\b[\s\S]*?\/>/,
-    };
-
-    const synthetic = buildSyntheticModuleForTest("svelte", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/ComponentBoundary.synthetic.tsx",
-    });
-    const transformed = transformSyntheticModule(synthetic);
-    const reinserted = reinsertTransformedModule(
-      source,
-      synthetic,
-      transformed.declarations,
-      { sourceName: filename },
-    );
-    const consumer = new TraceMap(reinserted.source_map_json ?? "");
-
-    assertRangeMapping(consumer, reinserted.code, source, detection, filename);
-  });
-
-  test.fails("maps transformed Astro frontmatter expression ranges back to the original source", () => {
-    const filename = "/virtual/Fixture.astro";
-    const source = dedent`
-      ---
+  const svelteExpressionFilename = "/virtual/Fixture.svelte";
+  const svelteExpressionSource = dedent`
+    <script lang="ts">
       import { t as translate } from "@lingui/core/macro";
-      const label = translate\`Fixture frontmatter\`;
-      ---
+      import { Trans as Translation } from "@lingui/react/macro";
+      const reactiveLabel = $translate\`Fixture reactive script\`;
+      const eagerLabel = translate.eager\`Fixture eager script\`;
+      const name = "Ada";
+    </script>
 
-      <p class="keep">{translate\`Fixture markup\`}</p>
-      <p>{label}</p>
-    `;
-    const detection: Detection = {
+    <p class="keep">{$translate\`Fixture markup \${name}\`}</p>
+    <section class="outer"><p class="nested">{$translate\`Fixture nested markup \${name}\`}</p></section>
+    <p>{reactiveLabel}</p>
+    <p>{eagerLabel}</p>
+  `;
+  const svelteExpressionDetections: Detection[] = [
+    {
+      name: "eager script prefix",
+      original: "const eagerLabel = ",
+      generated: "const eagerLabel = ",
+    },
+    {
+      name: "reactive script transform",
+      original: "translate`Fixture reactive script`",
+      generated:
+        /_i18n\._\([\s\S]*?message: "Fixture reactive script"[\s\S]*?\)/,
+      extracted: "Fixture reactive script",
+    },
+    {
+      name: "eager script transform",
+      original: /translate\.eager`Fixture eager script`/,
+      generated:
+        /(?<=const eagerLabel = )_i18n\._\([\s\S]*?message: "Fixture eager script"[\s\S]*?\)/,
+      extracted: "Fixture eager script",
+    },
+    {
+      name: "markup transform",
+      original: "translate`Fixture markup ${name}`",
+      generated:
+        /(?<=<p class="keep">\{)_i18n\._\([\s\S]*?message: "Fixture markup \{name\}"[\s\S]*?\)/,
+      extracted: "Fixture markup {name}",
+    },
+    {
+      name: "nested markup transform",
+      original: "translate`Fixture nested markup ${name}`",
+      generated:
+        /(?<=<section class="outer"><p class="nested">\{)_i18n\._\([\s\S]*?message: "Fixture nested markup \{name\}"[\s\S]*?\)/,
+      extracted: "Fixture nested markup {name}",
+    },
+    {
+      name: "kept wrapper",
+      original: '<p class="keep">',
+      generated: '<p class="keep">',
+    },
+    {
+      name: "kept wrapper close",
+      original: /<\/p>(?=\n<section class="outer">)/,
+      generated: /<\/p>(?=\n<section class="outer">)/,
+    },
+    {
+      name: "reactive script prefix",
+      original: "const reactiveLabel = ",
+      generated: "const reactiveLabel = ",
+      mapping: "chars",
+    },
+    {
+      name: "kept wrapper with brace",
+      original: '<p class="keep">{',
+      generated: '<p class="keep">{',
+    },
+    {
+      name: "kept wrapper close with brace",
+      original: /\}<\/p>(?=\n<section class="outer">)/,
+      generated: /\}<\/p>(?=\n<section class="outer">)/,
+      mapping: "chars",
+    },
+    {
+      name: "nested wrapper open",
+      original: '<section class="outer"><p class="nested">{',
+      generated: '<section class="outer"><p class="nested">{',
+      mapping: "chars",
+    },
+    {
+      name: "nested wrapper close",
+      original: /\}<\/p><\/section>(?=\n<p>\{reactiveLabel\}<\/p>)/,
+      generated: /\}<\/p><\/section>(?=\n<p>\{reactiveLabel\}<\/p>)/,
+      mapping: "chars",
+    },
+  ];
+
+  const svelteComponentFilename = "/virtual/ComponentBoundary.svelte";
+  const svelteComponentSource = dedent`
+    <script lang="ts">
+      import { Trans as Translation } from "@lingui/react/macro";
+      const name = "Ada";
+    </script>
+
+    <Translation>Boundary component {name}</Translation>
+  `;
+  const svelteComponentDetection: Detection = {
+    name: "component boundary",
+    original: "<Translation>Boundary component {name}</Translation>",
+    generated: /<_Trans\b[\s\S]*?\/>/,
+  };
+  const svelteComponentExtractDetection: Detection = {
+    name: "component extraction",
+    original: "Boundary component ",
+    extracted: "Boundary component {name}",
+  };
+
+  const svelteWhitespaceComponentFilename =
+    "/virtual/ComponentWhitespace.svelte";
+  const svelteWhitespaceComponentSource = dedent`
+    <script lang="ts">
+      import { Trans as Translation } from "@lingui/react/macro";
+      const name = "Ada";
+    </script>
+
+    <Translation>
+      Boundary component {name}
+    </Translation>
+  `;
+  const svelteWhitespaceComponentExtractDetection: Detection = {
+    name: "component extraction with surrounding whitespace",
+    original: "Boundary component ",
+    extracted: "Boundary component {name}",
+  };
+
+  const svelteNestedComponentFilename = "/virtual/ComponentNested.svelte";
+  const svelteNestedComponentSource = dedent`
+    <script lang="ts">
+      import { t as translate } from "@lingui/core/macro";
+      import { Trans as Translation } from "@lingui/react/macro";
+      const name = "Ada";
+    </script>
+
+    <Translation>
+      Nested <strong>{name}</strong> component
+    </Translation>
+
+    <p>{  $translate\`Whitespace markup \${name}\`  }</p>
+    <button title={$translate\`Button title \${name}\`}>Trigger</button>
+  `;
+  const svelteNestedComponentDetections: Detection[] = [
+    {
+      name: "nested component boundary",
+      original:
+        /<Translation>\n  Nested <strong>\{name\}<\/strong> component\n<\/Translation>/,
+      generated: /<_Trans\b[\s\S]*?\/>/,
+    },
+    {
+      name: "nested component extraction",
+      original: "Nested ",
+      extracted: "Nested <0>{name}</0> component",
+    },
+    {
+      name: "whitespace markup transform",
+      original: "translate`Whitespace markup ${name}`",
+      generated:
+        /(?<=<p>\{  )_i18n\._\([\s\S]*?message: "Whitespace markup \{name\}"[\s\S]*?\)(?=  \}<\/p>)/,
+      extracted: "Whitespace markup {name}",
+    },
+    {
+      name: "whitespace wrapper open",
+      original: "<p>{  ",
+      generated: "<p>{  ",
+      mapping: "chars",
+    },
+    {
+      name: "whitespace wrapper close",
+      original: /  \}<\/p>(?=\n<button title=\{)/,
+      generated: /  \}<\/p>(?=\n<button title=\{)/,
+      mapping: "chars",
+    },
+    {
+      name: "attribute macro transform",
+      original: "translate`Button title ${name}`",
+      generated:
+        /(?<=<button title=\{)_i18n\._\([\s\S]*?message: "Button title \{name\}"[\s\S]*?\)(?=\}>Trigger<\/button>)/,
+      extracted: "Button title {name}",
+    },
+    {
+      name: "attribute wrapper open",
+      original: "<button title={",
+      generated: "<button title={",
+      mapping: "chars",
+    },
+    {
+      name: "attribute wrapper close",
+      original: /}>Trigger<\/button>/,
+      generated: /}>Trigger<\/button>/,
+      mapping: "chars",
+    },
+  ];
+
+  const astroExpressionFilename = "/virtual/Fixture.astro";
+  const astroExpressionSource = dedent`
+    ---
+    import { t as translate } from "@lingui/core/macro";
+    import { Trans as Translation } from "@lingui/react/macro";
+    const label = translate\`Fixture frontmatter\`;
+    const name = "Ada";
+    ---
+
+    <p class="keep">{translate\`Fixture markup\`}</p>
+    <section class="outer"><p class="nested">{translate\`Fixture nested markup\`}</p></section>
+    <p>{label}</p>
+  `;
+  const astroExpressionDetections: Detection[] = [
+    {
+      name: "frontmatter prefix",
+      original: "const label = ",
+      generated: "const label = ",
+    },
+    {
       name: "frontmatter transform",
-      original: "const label = translate`Fixture frontmatter`;",
+      original: "translate`Fixture frontmatter`",
+      generated: /_i18n\._\([\s\S]*?message: "Fixture frontmatter"[\s\S]*?\)/,
+      extracted: "Fixture frontmatter",
+    },
+    {
+      name: "markup transform",
+      original: "translate`Fixture markup`",
       generated:
-        /const label = _i18n\._\([\s\S]*?message: "Fixture frontmatter"[\s\S]*?\)/,
-    };
+        /(?<=<p class="keep">\{)_i18n\._\([\s\S]*?message: "Fixture markup"[\s\S]*?\)/,
+      extracted: "Fixture markup",
+    },
+    {
+      name: "nested markup transform",
+      original: "translate`Fixture nested markup`",
+      generated:
+        /(?<=<section class="outer"><p class="nested">\{)_i18n\._\([\s\S]*?message: "Fixture nested markup"[\s\S]*?\)/,
+      extracted: "Fixture nested markup",
+    },
+    {
+      name: "kept wrapper",
+      original: '<p class="keep">',
+      generated: '<p class="keep">',
+    },
+    {
+      name: "kept wrapper with brace",
+      original: '<p class="keep">{',
+      generated: '<p class="keep">{',
+    },
+    {
+      name: "kept wrapper close",
+      original: /<\/p>(?=\n<section class="outer">)/,
+      generated: /<\/p>(?=\n<section class="outer">)/,
+    },
+    {
+      name: "kept wrapper close with brace",
+      original: /\}(?=<\/p>\n<section class="outer">)/,
+      generated: /\}(?=<\/p>\n<section class="outer">)/,
+    },
+    {
+      name: "nested wrapper open",
+      original: '<section class="outer"><p class="nested">{',
+      generated: '<section class="outer"><p class="nested">{',
+      mapping: "chars",
+    },
+    {
+      name: "nested wrapper close",
+      original: /\}<\/p><\/section>(?=\n<p>\{label\}<\/p>)/,
+      generated: /\}<\/p><\/section>(?=\n<p>\{label\}<\/p>)/,
+      mapping: "chars",
+    },
+  ];
 
-    const synthetic = buildSyntheticModuleForTest("astro", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/Fixture.synthetic.tsx",
-    });
-    const transformed = transformSyntheticModule(synthetic);
-    const reinserted = reinsertTransformedModule(
-      source,
-      synthetic,
-      transformed.declarations,
-      { sourceName: filename },
-    );
-    const consumer = new TraceMap(reinserted.source_map_json ?? "");
+  const astroComponentFilename = "/virtual/ComponentBoundary.astro";
+  const astroComponentSource = dedent`
+    ---
+    import { Trans as Translation } from "@lingui/react/macro";
+    const name = "Ada";
+    ---
 
-    assertRangeMapping(consumer, reinserted.code, source, detection, filename);
-  });
+    <Translation>Boundary component {name}</Translation>
+  `;
+  const astroComponentDetection: Detection = {
+    name: "component boundary",
+    original: "<Translation>Boundary component {name}</Translation>",
+    generated: /<_Trans\b[\s\S]*?\/>/,
+  };
+  const astroComponentExtractDetection: Detection = {
+    name: "component extraction",
+    original: "Boundary component ",
+    extracted: "Boundary component {name}",
+  };
 
-  test.fails("maps transformed Astro markup expression ranges back to the original source", () => {
-    const filename = "/virtual/Fixture.astro";
-    const source = dedent`
-      ---
-      import { t as translate } from "@lingui/core/macro";
-      const label = translate\`Fixture frontmatter\`;
-      ---
+  const astroWhitespaceComponentFilename = "/virtual/ComponentWhitespace.astro";
+  const astroWhitespaceComponentSource = dedent`
+    ---
+    import { Trans as Translation } from "@lingui/react/macro";
+    const name = "Ada";
+    ---
 
-      <p class="keep">{translate\`Fixture markup\`}</p>
-      <p>{label}</p>
-    `;
-    const detections: Detection[] = [
-      {
-        name: "markup transform",
-        original: "translate`Fixture markup`",
-        generated:
-          /<p class="keep">\{_i18n\._\([\s\S]*?message: "Fixture markup"[\s\S]*?\)/,
-      },
-      {
-        name: "kept wrapper",
-        original: '<p class="keep">{',
-        generated: '<p class="keep">{',
-      },
-    ];
+    <Translation>
+      Boundary component {name}
+    </Translation>
+  `;
+  const astroWhitespaceComponentExtractDetection: Detection = {
+    name: "component extraction with surrounding whitespace",
+    original: "Boundary component ",
+    extracted: "Boundary component {name}",
+  };
 
-    const synthetic = buildSyntheticModuleForTest("astro", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/Fixture.synthetic.tsx",
-    });
-    const transformed = transformSyntheticModule(synthetic);
-    const reinserted = reinsertTransformedModule(
-      source,
-      synthetic,
-      transformed.declarations,
-      { sourceName: filename },
-    );
-    const consumer = new TraceMap(reinserted.source_map_json ?? "");
+  const astroNestedComponentFilename = "/virtual/ComponentNested.astro";
+  const astroNestedComponentSource = dedent`
+    ---
+    import { t as translate } from "@lingui/core/macro";
+    import { Trans as Translation } from "@lingui/react/macro";
+    const name = "Ada";
+    ---
 
-    detections.forEach((detection) => {
-      assertRangeMapping(
-        consumer,
-        reinserted.code,
-        source,
-        detection,
-        filename,
-      );
-    });
-  });
+    <Translation>
+      Nested <strong>{name}</strong> component
+    </Translation>
 
-  test("maps extracted Astro messages back to the original source", async () => {
-    const filename = "/virtual/Fixture.astro";
-    const source = dedent`
-      ---
-      import { t as translate } from "@lingui/core/macro";
-      import { Trans as Translation } from "@lingui/react/macro";
-      const label = translate\`Fixture frontmatter\`;
-      const name = "Ada";
-      ---
-
-      <p>{translate\`Fixture markup\`}</p>
-      <Translation>Fixture component {name}</Translation>
-      <p>{label}</p>
-    `;
-    const detections: ExtractDetection[] = [
-      {
-        name: "frontmatter extraction",
-        original: "translate`Fixture frontmatter`",
-        extracted: "Fixture frontmatter",
-      },
-      {
-        name: "markup extraction",
-        original: "translate`Fixture markup`",
-        extracted: "Fixture markup",
-      },
-    ];
-
-    const synthetic = buildSyntheticModuleForTest("astro", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/Fixture.synthetic.tsx",
-    });
-    const messages = await extractMessagesFromSyntheticModule(
-      filename,
-      synthetic,
-    );
-
-    detections.forEach((detection) => {
-      assertExtractionOrigin(messages, source, detection, filename);
-    });
-  });
-
-  test.fails("maps extracted Astro component messages back to the original source", async () => {
-    const filename = "/virtual/Fixture.astro";
-    const source = dedent`
-      ---
-      import { t as translate } from "@lingui/core/macro";
-      import { Trans as Translation } from "@lingui/react/macro";
-      const label = translate\`Fixture frontmatter\`;
-      const name = "Ada";
-      ---
-
-      <p>{translate\`Fixture markup\`}</p>
-      <Translation>Fixture component {name}</Translation>
-      <p>{label}</p>
-    `;
-
-    const synthetic = buildSyntheticModuleForTest("astro", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/Fixture.synthetic.tsx",
-    });
-    const messages = await extractMessagesFromSyntheticModule(
-      filename,
-      synthetic,
-    );
-
-    assertExtractionOrigin(
-      messages,
-      source,
-      {
-        name: "component extraction",
-        original: "Fixture component ",
-        extracted: "Fixture component {name}",
-      },
-      filename,
-    );
-  });
-
-  test("maps transformed Astro component replacement boundaries back to the original source", () => {
-    const filename = "/virtual/ComponentBoundary.astro";
-    const source = dedent`
-        ---
-        import { Trans as Translation } from "@lingui/react/macro";
-        const name = "Ada";
-        ---
-
-        <Translation>Boundary component {name}</Translation>
-      `;
-    const detection: Detection = {
-      name: "component transform boundary",
-      original: "<Translation>Boundary component {name}</Translation>",
+    <p>{  translate\`Whitespace markup \${name}\`  }</p>
+    <button title={translate\`Button title \${name}\`}>Trigger</button>
+  `;
+  const astroNestedComponentDetections: Detection[] = [
+    {
+      name: "nested component boundary",
+      original:
+        /<Translation>\n  Nested <strong>\{name\}<\/strong> component\n<\/Translation>/,
       generated: /<_Trans\b[\s\S]*?\/>/,
-    };
+    },
+    {
+      name: "nested component extraction",
+      original: "Nested ",
+      extracted: "Nested <0>{name}</0> component",
+    },
+    {
+      name: "whitespace markup transform",
+      original: "translate`Whitespace markup ${name}`",
+      generated:
+        /(?<=<p>\{  )_i18n\._\([\s\S]*?message: "Whitespace markup \{name\}"[\s\S]*?\)(?=  \}<\/p>)/,
+      extracted: "Whitespace markup {name}",
+    },
+    {
+      name: "whitespace wrapper open",
+      original: "<p>{  ",
+      generated: "<p>{  ",
+      mapping: "chars",
+    },
+    {
+      name: "whitespace wrapper close",
+      original: /  \}<\/p>(?=\n<button title=\{)/,
+      generated: /  \}<\/p>(?=\n<button title=\{)/,
+      mapping: "chars",
+    },
+    {
+      name: "attribute macro transform",
+      original: "translate`Button title ${name}`",
+      generated:
+        /(?<=<button title=\{)_i18n\._\([\s\S]*?message: "Button title \{name\}"[\s\S]*?\)(?=\}>Trigger<\/button>)/,
+      extracted: "Button title {name}",
+    },
+    {
+      name: "attribute wrapper open",
+      original: "<button title={",
+      generated: "<button title={",
+      mapping: "chars",
+    },
+    {
+      name: "attribute wrapper close",
+      original: /}>Trigger<\/button>/,
+      generated: /}>Trigger<\/button>/,
+      mapping: "chars",
+    },
+  ];
 
-    const synthetic = buildSyntheticModuleForTest("astro", source, {
-      sourceName: filename,
-      syntheticName: "/virtual/ComponentBoundary.synthetic.tsx",
-    });
-    const transformed = transformSyntheticModule(synthetic);
-    const reinserted = reinsertTransformedModule(
-      source,
-      synthetic,
-      transformed.declarations,
-      { sourceName: filename },
-    );
-    const consumer = new TraceMap(reinserted.source_map_json ?? "");
+  const fixtures: DetectionFixture[] = [
+    {
+      name: "Svelte expression contracts",
+      framework: "svelte",
+      filename: svelteExpressionFilename,
+      source: svelteExpressionSource,
+      detections: svelteExpressionDetections,
+    },
+    {
+      name: "Svelte component boundary contracts",
+      framework: "svelte",
+      filename: svelteComponentFilename,
+      source: svelteComponentSource,
+      detections: [svelteComponentDetection, svelteComponentExtractDetection],
+    },
+    {
+      name: "Svelte whitespace component extract contracts",
+      framework: "svelte",
+      filename: svelteWhitespaceComponentFilename,
+      source: svelteWhitespaceComponentSource,
+      detections: [svelteWhitespaceComponentExtractDetection],
+    },
+    {
+      name: "Svelte nested component and attribute contracts",
+      framework: "svelte",
+      filename: svelteNestedComponentFilename,
+      source: svelteNestedComponentSource,
+      detections: svelteNestedComponentDetections,
+    },
+    {
+      name: "Astro expression contracts",
+      framework: "astro",
+      filename: astroExpressionFilename,
+      source: astroExpressionSource,
+      detections: astroExpressionDetections,
+    },
+    {
+      name: "Astro component boundary contracts",
+      framework: "astro",
+      filename: astroComponentFilename,
+      source: astroComponentSource,
+      detections: [astroComponentDetection, astroComponentExtractDetection],
+    },
+    {
+      name: "Astro whitespace component extract contracts",
+      framework: "astro",
+      filename: astroWhitespaceComponentFilename,
+      source: astroWhitespaceComponentSource,
+      detections: [astroWhitespaceComponentExtractDetection],
+    },
+    {
+      name: "Astro nested component and attribute contracts",
+      framework: "astro",
+      filename: astroNestedComponentFilename,
+      source: astroNestedComponentSource,
+      detections: astroNestedComponentDetections,
+    },
+  ];
 
-    assertRangeMapping(consumer, reinserted.code, source, detection, filename);
+  test.for(fixtures)("$name", async (fixture) => {
+    await assertDetections(fixture);
   });
 });
 
+async function assertDetections(fixture: DetectionFixture): Promise<void> {
+  const { detections, filename, framework, source } = fixture;
+  const synthetic = buildSyntheticModuleForTest(framework, source, {
+    sourceName: filename,
+    syntheticName: filename.replace(/\.(astro|svelte)$/, ".synthetic.tsx"),
+  });
+  const transformed = transformSyntheticModule(synthetic);
+  const reinserted = reinsertTransformedModule(
+    source,
+    synthetic,
+    transformed.declarations,
+    { sourceName: filename },
+  );
+  const consumer = new TraceMap(reinserted.source_map_json ?? "");
+  const messages = await extractMessagesFromSyntheticModule(
+    filename,
+    synthetic,
+  );
+
+  detections.forEach((detection) => {
+    if (detection.generated == null) {
+      return assertExtractionOrigin(messages, source, detection, filename);
+    }
+    assertRangeMapping(consumer, reinserted.code, source, detection, filename);
+    if (detection.extracted != null) {
+      assertExtractionOrigin(messages, source, detection, filename);
+    }
+  });
+}
+
 function assertExtractionOrigin(
-  messages: ExtractedMessage[],
+  messages: readonly ExtractedMessage[],
   source: string,
-  detection: ExtractDetection,
+  detection: Detection,
   filename: string,
 ): void {
+  if (detection.extracted == null) {
+    throw new Error(`Missing extracted matcher: ${detection.name}`);
+  }
+
   const original = findUniqueRange(source, detection.original);
   const originalStart = offsetToLocation(source, original.start);
   const message = findUniqueMessage(messages, detection.extracted);
@@ -428,7 +514,7 @@ function assertExtractionOrigin(
 }
 
 function findUniqueMessage(
-  messages: ExtractedMessage[],
+  messages: readonly ExtractedMessage[],
   needle: string | RegExp,
 ) {
   const matched = messages.filter((message) => {
@@ -455,8 +541,34 @@ function assertRangeMapping(
   detection: Detection,
   filename: string,
 ): void {
+  if (detection.generated == null) {
+    throw new Error(`Missing generated matcher: ${detection.name}`);
+  }
+
   const generated = findUniqueRange(generatedSource, detection.generated);
   const original = findUniqueRange(originalSource, detection.original);
+
+  const mapping =
+    detection.mapping ??
+    (typeof detection.original === "string" &&
+    typeof detection.generated === "string" &&
+    detection.original === detection.generated
+      ? "chars"
+      : "range");
+
+  if (mapping === "chars") {
+    assertCharacterMapping(
+      consumer,
+      generatedSource,
+      originalSource,
+      detection,
+      filename,
+      generated,
+      original,
+    );
+    return;
+  }
+
   const generatedStart = offsetToLocation(generatedSource, generated.start);
   const generatedEnd = offsetToLocation(generatedSource, generated.end);
   const originalStart = offsetToLocation(originalSource, original.start);
@@ -487,6 +599,67 @@ function assertRangeMapping(
   expect(mappedEnd.column, `${detection.name}: end column`).toBe(
     originalEnd.column,
   );
+}
+
+function assertCharacterMapping(
+  consumer: TraceMap,
+  generatedSource: string,
+  originalSource: string,
+  detection: Detection,
+  filename: string,
+  generatedRange?: {
+    start: number;
+    end: number;
+  },
+  originalRange?: {
+    start: number;
+    end: number;
+  },
+): void {
+  const generated =
+    generatedRange ??
+    (detection.generated == null
+      ? undefined
+      : findUniqueRange(generatedSource, detection.generated));
+  const original =
+    originalRange ?? findUniqueRange(originalSource, detection.original);
+
+  if (!generated) {
+    throw new Error(`Missing generated matcher: ${detection.name}`);
+  }
+
+  const generatedLength = generated.end - generated.start;
+  const originalLength = original.end - original.start;
+
+  expect(generatedLength, `${detection.name}: range lengths differ`).toBe(
+    originalLength,
+  );
+
+  for (let offset = 0; offset < generatedLength; offset += 1) {
+    const generatedPoint = offsetToLocation(
+      generatedSource,
+      generated.start + offset,
+    );
+    const originalPoint = offsetToLocation(
+      originalSource,
+      original.start + offset,
+    );
+    const mapped = originalPositionFor(consumer, {
+      line: generatedPoint.line,
+      column: generatedPoint.column,
+    });
+
+    expect(
+      mapped.source,
+      `${detection.name}: char ${offset} missing source`,
+    ).toBe(filename);
+    expect(mapped.line, `${detection.name}: char ${offset} line`).toBe(
+      originalPoint.line,
+    );
+    expect(mapped.column, `${detection.name}: char ${offset} column`).toBe(
+      originalPoint.column,
+    );
+  }
 }
 
 function findUniqueRange(

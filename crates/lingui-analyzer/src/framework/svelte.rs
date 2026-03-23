@@ -471,7 +471,7 @@ fn visit_element_like(
 
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        if node.kind() == "element" && (child.kind() == "start_tag" || child.kind() == "end_tag") {
+        if node.kind() == "element" && child.kind() == "end_tag" {
             continue;
         }
         collect_template_expressions(source, child, imports, scope_stack, expressions, components)?;

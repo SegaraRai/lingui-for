@@ -241,7 +241,7 @@ describe("lingui-analyzer wasm contract", () => {
     );
     expect(origins).toEqual([
       [filename, 3, 16],
-      [filename, 7, 4],
+      [filename, 7, 5],
     ]);
   });
 
@@ -318,7 +318,7 @@ describe("lingui-analyzer wasm contract", () => {
       reinserted.source_map_json ?? "",
       "_Trans",
     );
-    expect(origins).toEqual([[filename, 6, 14]]);
+    expect(origins).toEqual([[filename, 6, 1]]);
   });
 
   test("reinjects transformed Astro component macros back into markup with sourcemaps", () => {
@@ -354,7 +354,7 @@ describe("lingui-analyzer wasm contract", () => {
       reinserted.source_map_json ?? "",
       "_Trans",
     );
-    expect(origins).toEqual([[filename, 6, 14]]);
+    expect(origins).toEqual([[filename, 6, 1]]);
   });
 });
 

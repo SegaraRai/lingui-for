@@ -281,7 +281,10 @@ fn component_candidate_from_element(
 fn component_source_map_anchor(source: &str, node: Node<'_>) -> Option<Span> {
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        if child.kind() == "start_tag" || child.kind() == "self_closing_tag" || child.kind() == "end_tag" {
+        if child.kind() == "start_tag"
+            || child.kind() == "self_closing_tag"
+            || child.kind() == "end_tag"
+        {
             continue;
         }
 
