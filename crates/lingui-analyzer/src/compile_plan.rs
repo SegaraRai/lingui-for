@@ -1,20 +1,27 @@
 use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
 use crate::model::{
-    CompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
-    CompileTranslationMode, MacroCandidate, RuntimeRequirements, SyntheticModule,
+    CompilePlan, CompileRuntimeBindings, CompileScriptRegion, CompileTarget, CompileTargetContext,
+    CompileTargetOutputKind, CompileTranslationMode, MacroCandidate, RuntimeRequirements, Span,
+    SyntheticModule,
 };
 use crate::synthetic::build_synthetic_module_with_names;
-use crate::{AnalyzerError, MacroCandidateKind};
+use crate::validation::validate_svelte_compile_targets;
+use crate::{AnalyzerError, EmbeddedScriptRegion, MacroCandidateKind};
 
 const SVELTE_REACTIVE_WRAPPER: &str = "__lingui_for_svelte_reactive_translation__";
 const SVELTE_EAGER_WRAPPER: &str = "__lingui_for_svelte_eager_translation__";
+const SVELTE_BINDING_CREATE_LINGUI_ACCESSORS: &str = "createLinguiAccessors";
+const SVELTE_BINDING_CONTEXT: &str = "__l4s_ctx";
+const SVELTE_BINDING_GET_I18N: &str = "__l4s_getI18n";
+const SVELTE_BINDING_TRANSLATE: &str = "__l4s_translate";
+const SVELTE_BINDING_RUNTIME_TRANS: &str = "L4sRuntimeTrans";
 
 #[derive(Debug, Clone)]
-struct CompileTargetPrototype {
-    candidate: MacroCandidate,
-    context: CompileTargetContext,
-    output_kind: CompileTargetOutputKind,
-    translation_mode: CompileTranslationMode,
+pub(crate) struct CompileTargetPrototype {
+    pub(crate) candidate: MacroCandidate,
+    pub(crate) context: CompileTargetContext,
+    pub(crate) output_kind: CompileTargetOutputKind,
+    pub(crate) translation_mode: CompileTranslationMode,
 }
 
 pub fn build_compile_plan_for_framework(
@@ -53,6 +60,21 @@ fn build_svelte_compile_plan(
         .iter()
         .flat_map(|script| script.macro_imports.iter().cloned())
         .collect::<Vec<_>>();
+    let import_removals = analysis
+        .scripts
+        .iter()
+        .flat_map(|script| script.macro_import_statement_spans.iter().copied())
+        .collect::<Vec<_>>();
+    let instance_script = analysis
+        .scripts
+        .iter()
+        .find(|script| !script.is_module)
+        .map(|script| compile_script_region(&script.region, script.is_typescript));
+    let module_script = analysis
+        .scripts
+        .iter()
+        .find(|script| script.is_module)
+        .map(|script| compile_script_region(&script.region, script.is_typescript));
     let mut prototypes = Vec::new();
 
     for script in &analysis.scripts {
@@ -101,6 +123,8 @@ fn build_svelte_compile_plan(
             }),
     );
 
+    validate_svelte_compile_targets(&prototypes)?;
+
     build_compile_plan(
         "svelte",
         source,
@@ -108,9 +132,21 @@ fn build_svelte_compile_plan(
         synthetic_name,
         &imports,
         prototypes,
+        SvelteCompileMetadata {
+            import_removals,
+            runtime_bindings: Some(create_svelte_runtime_bindings(
+                analysis
+                    .scripts
+                    .iter()
+                    .find(|script| !script.is_module)
+                    .map(|script| script.declared_names.as_slice())
+                    .unwrap_or(&[]),
+            )),
+            instance_script,
+            module_script,
+        },
     )
 }
-
 fn build_astro_compile_plan(
     source: &str,
     source_name: &str,
@@ -161,7 +197,16 @@ fn build_astro_compile_plan(
         synthetic_name,
         &analysis.macro_imports,
         prototypes,
+        SvelteCompileMetadata::default(),
     )
+}
+
+#[derive(Debug, Clone, Default)]
+struct SvelteCompileMetadata {
+    import_removals: Vec<Span>,
+    runtime_bindings: Option<CompileRuntimeBindings>,
+    instance_script: Option<CompileScriptRegion>,
+    module_script: Option<CompileScriptRegion>,
 }
 
 fn build_compile_plan(
@@ -171,6 +216,7 @@ fn build_compile_plan(
     synthetic_name: &str,
     imports: &[crate::MacroImport],
     mut prototypes: Vec<CompileTargetPrototype>,
+    metadata: SvelteCompileMetadata,
 ) -> Result<CompilePlan, AnalyzerError> {
     prototypes.sort_by_key(|prototype| {
         (
@@ -216,10 +262,32 @@ fn build_compile_plan(
         source_name: source_name.to_string(),
         synthetic_name: synthetic_name.to_string(),
         synthetic_source,
+        synthetic_lang: compile_synthetic_lang(framework, &metadata),
         declaration_ids,
         targets,
         runtime_requirements,
+        runtime_bindings: metadata.runtime_bindings,
+        import_removals: metadata.import_removals,
+        instance_script: metadata.instance_script,
+        module_script: metadata.module_script,
     })
+}
+
+fn compile_synthetic_lang(framework: &str, metadata: &SvelteCompileMetadata) -> String {
+    if framework == "svelte" {
+        if let Some(instance_script) = &metadata.instance_script {
+            return script_region_lang(instance_script).to_string();
+        }
+        if let Some(module_script) = &metadata.module_script {
+            return script_region_lang(module_script).to_string();
+        }
+    }
+
+    "ts".to_string()
+}
+
+fn script_region_lang(_region: &CompileScriptRegion) -> &'static str {
+    if _region.lang == "js" { "js" } else { "ts" }
 }
 
 fn build_compile_synthetic_source(
@@ -307,6 +375,7 @@ fn compute_runtime_requirements(framework: &str, targets: &[CompileTarget]) -> R
             "svelte" => {
                 target.translation_mode == CompileTranslationMode::SvelteContext
                     && target.output_kind == CompileTargetOutputKind::Expression
+                    && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
             }
             _ => false,
         }),
@@ -322,5 +391,46 @@ fn classify_output_kind(kind: MacroCandidateKind) -> CompileTargetOutputKind {
         MacroCandidateKind::CallExpression | MacroCandidateKind::TaggedTemplateExpression => {
             CompileTargetOutputKind::Expression
         }
+    }
+}
+
+fn compile_script_region(region: &EmbeddedScriptRegion, is_typescript: bool) -> CompileScriptRegion {
+    CompileScriptRegion {
+        outer_span: region.outer_span,
+        content_span: region.inner_span,
+        lang: if is_typescript { "ts" } else { "js" }.to_string(),
+    }
+}
+
+fn create_svelte_runtime_bindings(declared_names: &[String]) -> CompileRuntimeBindings {
+    let mut used = declared_names.iter().cloned().collect::<std::collections::BTreeSet<_>>();
+
+    CompileRuntimeBindings {
+        create_lingui_accessors: allocate_unique_binding_name(
+            &mut used,
+            SVELTE_BINDING_CREATE_LINGUI_ACCESSORS,
+        ),
+        context: allocate_unique_binding_name(&mut used, SVELTE_BINDING_CONTEXT),
+        get_i18n: allocate_unique_binding_name(&mut used, SVELTE_BINDING_GET_I18N),
+        translate: allocate_unique_binding_name(&mut used, SVELTE_BINDING_TRANSLATE),
+        trans_component: allocate_unique_binding_name(&mut used, SVELTE_BINDING_RUNTIME_TRANS),
+    }
+}
+
+fn allocate_unique_binding_name(
+    used: &mut std::collections::BTreeSet<String>,
+    preferred: &str,
+) -> String {
+    if used.insert(preferred.to_string()) {
+        return preferred.to_string();
+    }
+
+    let mut index = 1usize;
+    loop {
+        let candidate = format!("{preferred}_{index}");
+        if used.insert(candidate.clone()) {
+            return candidate;
+        }
+        index += 1;
     }
 }

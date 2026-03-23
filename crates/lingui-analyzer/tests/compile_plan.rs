@@ -155,3 +155,24 @@ const status = translate(msg`Status summary: active`);
             && target.output_kind == CompileTargetOutputKind::Component
     }));
 }
+
+#[test]
+fn rejects_bare_direct_t_in_svelte_scripts() {
+    let source = r#"
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+
+  const label = t`Hello`;
+</script>
+"#;
+
+    let error = build_compile_plan_for_framework_with_names(
+        "svelte",
+        source,
+        "/virtual/App.svelte",
+        "/virtual/App.svelte?compile.tsx",
+    )
+    .expect_err("bare direct t should be rejected in svelte scripts");
+
+    assert!(error.to_string().contains("Bare `t` in `.svelte` files is not allowed"));
+}

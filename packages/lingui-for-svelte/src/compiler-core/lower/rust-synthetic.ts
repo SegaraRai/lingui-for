@@ -1,53 +1,56 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import generateModule from "@babel/generator";
 import type { NodePath } from "@babel/core";
-import traverseModule from "@babel/traverse";
+import generateModule from "@babel/generator";
 import type { File, VariableDeclarator } from "@babel/types";
-import { buildCompilePlanWithOptions, initSync } from "lingui-analyzer-wasm";
 import {
-  GenMapping,
-  addMapping,
-  setSourceContent,
-  toEncodedMap,
-} from "@jridgewell/gen-mapping";
+  buildCompilePlanWithOptions,
+  finishCompileWithOptions,
+  initSync,
+} from "lingui-analyzer-wasm";
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
-import { createOffsetToPosition } from "lingui-for-shared/compiler";
+import { babelTraverse } from "lingui-for-shared/compiler";
 
-import type { SveltePlan } from "../plan/svelte-plan.ts";
-import type { RuntimeBindingsForTransform } from "./types.ts";
+import type { LinguiConfigNormalized } from "@lingui/conf";
 import { transformProgram } from "./babel-transform.ts";
 
-const generate = generateModule as typeof import("@babel/generator").default;
-const traverse = traverseModule as typeof import("@babel/traverse").default;
+const generate = getBabelGenerate();
 
-type NormalizedSegment = {
-  original_start: number;
-  generated_start: number;
-  len: number;
+type CompileRuntimeBindings = {
+  create_lingui_accessors: string;
+  context: string;
+  get_i18n: string;
+  translate: string;
+  trans_component: string;
 };
 
 type CompileTarget = {
   declaration_id: string;
-  original_span: { start: number; end: number };
-  normalized_span: { start: number; end: number };
-  source_map_anchor?: { start: number; end: number } | null;
-  local_name: string;
-  imported_name: string;
-  flavor: "Direct" | "Reactive" | "Eager";
-  context: "ModuleScript" | "InstanceScript" | "Frontmatter" | "Template";
-  output_kind: "Expression" | "Component";
   translation_mode: "Raw" | "SvelteContext" | "AstroContext";
-  normalized_segments: NormalizedSegment[];
+  output_kind: "Expression" | "Component";
 };
 
 type CompilePlan = {
+  source_name: string;
   synthetic_source: string;
   synthetic_name: string;
+  synthetic_lang: "js" | "ts";
   declaration_ids: readonly string[];
   targets: CompileTarget[];
+  runtime_bindings?: CompileRuntimeBindings | null;
+};
+
+type FinishedCompileReplacement = {
+  start: number;
+  end: number;
+  code: string;
+  source_map_json?: string | null;
+};
+
+type FinishedCompile = {
+  replacements: FinishedCompileReplacement[];
 };
 
 type RustReplacement = {
@@ -60,83 +63,81 @@ type RustReplacement = {
 let wasmInitialized = false;
 
 export function lowerSvelteWithRustSynthetic(
-  plan: SveltePlan,
-  runtimeBindings: RuntimeBindingsForTransform,
+  source: string,
+  filename: string,
+  linguiConfig: LinguiConfigNormalized,
 ): RustReplacement[] {
-  const compilePlan = buildCompilePlan(plan);
+  const compilePlan = buildCompilePlan(source, filename);
   if (compilePlan.declaration_ids.length === 0) {
     return [];
   }
 
+  const runtimeBindings = compilePlan.runtime_bindings
+    ? {
+        createLinguiAccessors:
+          compilePlan.runtime_bindings.create_lingui_accessors,
+        context: compilePlan.runtime_bindings.context,
+        getI18n: compilePlan.runtime_bindings.get_i18n,
+        translate: compilePlan.runtime_bindings.translate,
+      }
+    : undefined;
   const raw = transformProgram(compilePlan.synthetic_source, {
     extract: false,
     filename: `${compilePlan.synthetic_name}?raw`,
-    lang: plan.expressionLang,
-    linguiConfig: plan.linguiConfig,
+    lang: compilePlan.synthetic_lang,
+    linguiConfig,
     translationMode: "raw",
     allowBareSyntheticDirectMacros: true,
   });
   const svelteContext = transformProgram(compilePlan.synthetic_source, {
     extract: false,
     filename: `${compilePlan.synthetic_name}?svelte-context`,
-    lang: plan.expressionLang,
-    linguiConfig: plan.linguiConfig,
+    lang: compilePlan.synthetic_lang,
+    linguiConfig,
     translationMode: "svelte-context",
     allowBareSyntheticDirectMacros: true,
-    runtimeBindings,
+    ...(runtimeBindings ? { runtimeBindings } : {}),
   });
 
-  const rawDeclarations = collectDeclarationInitializers(
-    raw.ast,
-    compilePlan.declaration_ids,
-  );
-  const svelteContextDeclarations = collectDeclarationInitializers(
-    svelteContext.ast,
-    compilePlan.declaration_ids,
-  );
+  const transformedDeclarations = Object.fromEntries(
+    compilePlan.targets.flatMap((target) => {
+      const transformed =
+        target.translation_mode === "Raw" ? raw : svelteContext;
 
-  return compilePlan.targets
-    .filter((target) => target.output_kind === "Expression")
-    .flatMap((target) => {
-      const declaration =
-        target.translation_mode === "Raw"
-          ? rawDeclarations[target.declaration_id]
-          : target.translation_mode === "SvelteContext"
-            ? svelteContextDeclarations[target.declaration_id]
-            : undefined;
-
-      if (declaration == null) {
-        return [];
-      }
-
-      const code = indentMultilineReplacement(
-        declaration,
-        getSourceLineIndent(plan.source, target.original_span.start),
+      const declaration = collectDeclarationInitializer(
+        transformed.ast,
+        target.declaration_id,
       );
+      return declaration == null
+        ? []
+        : [[target.declaration_id, declaration] as const];
+    }),
+  );
 
-      return [
-        {
-          start: target.original_span.start,
-          end: target.original_span.end,
-          code,
-          map: createReplacementChunkMap(
-            plan.source,
-            plan.filename,
-            code,
-            target,
-          ),
-        },
-      ];
-    });
+  const finished = finishCompileWithOptions({
+    plan: compilePlan,
+    source,
+    transformed_declarations: transformedDeclarations,
+  }) as FinishedCompile;
+
+  return finished.replacements.map((replacement) => ({
+    start: replacement.start,
+    end: replacement.end,
+    code: replacement.code,
+    map:
+      replacement.source_map_json != null
+        ? (JSON.parse(replacement.source_map_json) as EncodedSourceMap)
+        : null,
+  }));
 }
 
-function buildCompilePlan(plan: SveltePlan): CompilePlan {
+function buildCompilePlan(source: string, filename: string): CompilePlan {
   ensureWasmInitialized();
   return buildCompilePlanWithOptions({
     framework: "svelte",
-    source: plan.source,
-    source_name: plan.filename,
-    synthetic_name: `${plan.filename}?rust-compile.tsx`,
+    source,
+    source_name: filename,
+    synthetic_name: `${filename}?rust-compile.tsx`,
   }) as CompilePlan;
 }
 
@@ -152,91 +153,53 @@ function ensureWasmInitialized(): void {
   wasmInitialized = true;
 }
 
-function collectDeclarationInitializers(
+function collectDeclarationInitializer(
   ast: File,
-  declarationIds: readonly string[],
-): Record<string, string> {
-  const found: Record<string, string> = {};
+  declarationId: string,
+): string | null {
+  let found: string | null = null;
 
-  traverse(ast, {
+  babelTraverse(ast, {
     VariableDeclarator(path: NodePath<VariableDeclarator>) {
       if (path.node.id.type !== "Identifier" || !path.node.init) {
         return;
       }
-      if (!declarationIds.includes(path.node.id.name)) {
+      if (path.node.id.name !== declarationId) {
         return;
       }
 
-      found[path.node.id.name] = generate(path.node.init).code;
+      found = generateInitializer(path.node.init);
+      path.stop();
     },
   });
 
   return found;
 }
 
-function createReplacementChunkMap(
-  source: string,
-  filename: string,
-  replacement: string,
-  target: CompileTarget,
-): EncodedSourceMap | null {
-  if (replacement.length === 0) {
-    return null;
-  }
-
-  const originalStart =
-    target.normalized_segments[0]?.original_start ??
-    target.source_map_anchor?.start ??
-    target.original_span.start;
-  const originalEnd =
-    target.normalized_segments.length > 0
-      ? endOfNormalizedSegment(
-          target.normalized_segments[target.normalized_segments.length - 1]!,
-        )
-      : target.original_span.end;
-  const originalLength = Math.max(0, originalEnd - originalStart);
-  const gen = new GenMapping({ file: filename });
-  const toGeneratedPosition = createOffsetToPosition(replacement);
-  const toOriginalPosition = createOffsetToPosition(source);
-
-  for (let index = 0; index <= replacement.length; index += 1) {
-    addMapping(gen, {
-      generated: toGeneratedPosition(index),
-      original: toOriginalPosition(
-        originalStart + Math.min(index, originalLength),
-      ),
-      source: filename,
-    });
-  }
-
-  setSourceContent(gen, filename, source);
-  return toEncodedMap(gen);
+function generateInitializer(node: VariableDeclarator["init"]): string {
+  return node == null ? "" : generate(node).code;
 }
 
-function endOfNormalizedSegment(segment: NormalizedSegment): number {
-  return segment.original_start + segment.len;
-}
+function getBabelGenerate(): typeof import("@babel/generator").default {
+  const moduleValue = generateModule as unknown as {
+    default?:
+      | typeof import("@babel/generator").default
+      | { default?: typeof import("@babel/generator").default };
+  };
 
-function getSourceLineIndent(source: string, offset: number): string {
-  const lineStart = source.lastIndexOf("\n", Math.max(0, offset - 1)) + 1;
-  let index = lineStart;
-
-  while (source[index] === " " || source[index] === "\t") {
-    index += 1;
+  if (typeof moduleValue === "function") {
+    return moduleValue as typeof import("@babel/generator").default;
   }
 
-  return source.slice(lineStart, index);
-}
-
-function indentMultilineReplacement(code: string, indent: string): string {
-  if (indent.length === 0 || !code.includes("\n")) {
-    return code;
+  if (typeof moduleValue.default === "function") {
+    return moduleValue.default;
   }
 
-  const lines = code.split("\n");
-  return lines
-    .map((line, index) =>
-      index === 0 || line.length === 0 ? line : `${indent}${line}`,
-    )
-    .join("\n");
+  if (typeof moduleValue.default?.default === "function") {
+    return moduleValue.default.default;
+  }
+
+  throw new TypeError(
+    "Unable to resolve @babel/generator default export at runtime.",
+  );
 }

@@ -1,6 +1,9 @@
 mod alloc;
+mod compile_emit;
 mod compile_plan;
+mod component_lowering;
 mod error;
+mod finish_compile;
 pub mod framework;
 mod js;
 mod model;
@@ -9,9 +12,11 @@ mod reinsert;
 pub mod scope;
 pub mod synthetic;
 mod utf16;
+mod validation;
 
 use wasm_bindgen::prelude::*;
 
+use crate::finish_compile::finish_compile;
 use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
 use crate::reinsert::reinsert_transformed_declarations;
 use crate::synthetic::build_synthetic_module_with_names;
@@ -21,11 +26,12 @@ pub use compile_plan::{
 };
 pub use error::AnalyzerError;
 pub use model::{
-    CompilePlan, CompilePlanOptions, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
-    CompileTranslationMode, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate,
-    MacroCandidateKind, MacroFlavor, MacroImport, NormalizedSegment, ReinsertOptions,
-    ReinsertedModule, ReplacementChunk, RuntimeRequirements, Span, SyntheticMapping,
-    SyntheticModule, SyntheticModuleOptions,
+    CompilePlan, CompilePlanOptions, CompileReplacement, CompileRuntimeBindings,
+    CompileScriptRegion, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
+    CompileTranslationMode, EmbeddedScriptKind, EmbeddedScriptRegion, FinishCompileOptions,
+    FinishedCompile, MacroCandidate, MacroCandidateKind, MacroFlavor, MacroImport,
+    NormalizedSegment, ReinsertOptions, ReinsertedModule, ReplacementChunk,
+    RuntimeRequirements, Span, SyntheticMapping, SyntheticModule, SyntheticModuleOptions,
 };
 
 pub fn build_synthetic_module_for_framework(
@@ -161,6 +167,21 @@ pub fn wasm_reinsert_transformed_declarations(options: JsValue) -> Result<JsValu
         &options.original_source,
         options.source_name.as_deref().unwrap_or("source"),
         &options.synthetic_module,
+        &options.transformed_declarations,
+    )
+    .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen(js_name = "finishCompileWithOptions")]
+pub fn wasm_finish_compile_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+    console_error_panic_hook::set_once();
+
+    let options: FinishCompileOptions = serde_wasm_bindgen::from_value(options)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let result = finish_compile(
+        &options.plan,
+        &options.source,
         &options.transformed_declarations,
     )
     .map_err(|error| JsValue::from_str(&error.to_string()))?;

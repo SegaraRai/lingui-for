@@ -8,9 +8,9 @@ use crate::{
     framework::FrameworkAdapter,
     js::{
         BindingParseMode, JsLikeLanguage, JsMacroSyntax,
-        collect_top_level_declared_names_in_javascript,
         collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
         collect_macro_candidates_in_javascript_with_shadowing,
+        collect_top_level_declared_names_in_javascript,
     },
     parse,
 };
@@ -26,8 +26,10 @@ pub struct SvelteScriptAnalysis {
 pub struct SvelteScriptBlock {
     pub region: EmbeddedScriptRegion,
     pub is_module: bool,
+    pub is_typescript: bool,
     pub declared_names: Vec<String>,
     pub macro_imports: Vec<MacroImport>,
+    pub macro_import_statement_spans: Vec<Span>,
     pub candidates: Vec<MacroCandidate>,
 }
 
@@ -85,7 +87,11 @@ pub fn analyze_svelte(source: &str) -> Result<SvelteScriptAnalysis, AnalyzerErro
         .iter()
         .filter(|script| !script.is_module)
         .flat_map(|script| script.declared_names.iter().cloned())
-        .filter(|name| !template_imports.iter().any(|import_decl| import_decl.local_name == *name))
+        .filter(|name| {
+            !template_imports
+                .iter()
+                .any(|import_decl| import_decl.local_name == *name)
+        })
         .collect::<Vec<_>>();
     template_shadowed_names.sort();
     template_shadowed_names.dedup();
@@ -151,26 +157,39 @@ fn analyze_script_block(
     };
 
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
-    let declared_names =
-        collect_top_level_declared_names_in_javascript(script_source, script_language(source, start_tag))?;
+    let language = script_language(source, start_tag);
+    let declared_names = collect_top_level_declared_names_in_javascript(
+        script_source,
+        language,
+    )?;
     let macro_imports = collect_script_macro_imports(
         script_source,
         content_region.inner_span.start,
-        script_language(source, start_tag),
+        language,
     )?;
+    let macro_import_statement_spans = collect_script_macro_import_statement_spans(
+        script_source,
+        content_region.inner_span.start,
+        language,
+    )?
+    .into_iter()
+    .map(|span| expand_import_removal_span_in_source(source, span))
+    .collect();
     let candidates = collect_macro_candidates_in_javascript(
         script_source,
         &macro_imports,
         content_region.inner_span.start,
         JsMacroSyntax::Svelte,
-        script_language(source, start_tag),
+        language,
     )?;
 
     Ok(Some(SvelteScriptBlock {
         region: content_region,
         is_module: start_tag_has_context_module(source, start_tag),
+        is_typescript: language == JsLikeLanguage::TypeScript,
         declared_names,
         macro_imports,
+        macro_import_statement_spans,
         candidates,
     }))
 }
@@ -982,6 +1001,64 @@ fn collect_script_macro_imports(
     }
 
     Ok(imports)
+}
+
+fn collect_script_macro_import_statement_spans(
+    source: &str,
+    base_offset: usize,
+    language: JsLikeLanguage,
+) -> Result<Vec<Span>, AnalyzerError> {
+    let js_tree = match language {
+        JsLikeLanguage::JavaScript => parse::parse_javascript(source)?,
+        JsLikeLanguage::TypeScript => parse::parse_typescript(source)?,
+    };
+    let root = js_tree.root_node();
+    let mut spans = Vec::new();
+    let mut cursor = root.walk();
+
+    for child in root.children(&mut cursor) {
+        if child.kind() != "import_statement" {
+            continue;
+        }
+
+        let Some(source_node) = child.child_by_field_name("source") else {
+            continue;
+        };
+        let Some(module_specifier) = unquote(text(source, source_node)) else {
+            continue;
+        };
+        if !is_macro_module_specifier(&module_specifier) {
+            continue;
+        }
+
+        spans.push(shift_span(Span::from_node(child), base_offset));
+    }
+
+    Ok(spans)
+}
+
+fn expand_import_removal_span_in_source(source: &str, span: Span) -> Span {
+    let mut start = span.start;
+    let mut end = span.end;
+    let bytes = source.as_bytes();
+
+    while start > 0 && bytes[start - 1] != b'\n' {
+        start -= 1;
+    }
+
+    if bytes.get(end) == Some(&b'\r') && bytes.get(end + 1) == Some(&b'\n') {
+        end += 2;
+    } else if bytes.get(end) == Some(&b'\n') {
+        end += 1;
+    }
+
+    if bytes.get(end) == Some(&b'\r') && bytes.get(end + 1) == Some(&b'\n') {
+        end += 2;
+    } else if bytes.get(end) == Some(&b'\n') {
+        end += 1;
+    }
+
+    Span::new(start, end)
 }
 
 fn collect_import_specifiers_from_node(

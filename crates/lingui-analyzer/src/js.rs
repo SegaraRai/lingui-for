@@ -125,9 +125,7 @@ pub fn collect_top_level_declared_names_in_javascript(
                     }
                 }
             }
-            "function_declaration"
-            | "generator_function_declaration"
-            | "class_declaration" => {
+            "function_declaration" | "generator_function_declaration" | "class_declaration" => {
                 if let Some(name) = child.child_by_field_name("name") {
                     collect_pattern_names(name, source, &mut names);
                 }
