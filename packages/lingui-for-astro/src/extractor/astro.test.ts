@@ -347,4 +347,130 @@ const role = "admin";
       )?.origin,
     ).toEqual([filename, 14, 6]);
   });
+
+  test("extracts e2e-derived frontmatter ternaries and template interpolations", async () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+
+      interface Props {
+        clientRouter: boolean;
+        pageLabel: string;
+      }
+
+      const { clientRouter, pageLabel } = Astro.props;
+      const modeBadge = clientRouter ? t\`ClientRouter enabled\` : t\`Full reload mode\`;
+      const modeHeading = clientRouter
+        ? t\`ClientRouter can preserve island state while locale and page props change.\`
+        : t\`Without ClientRouter, every navigation reloads the document.\`;
+      ---
+
+      <section>
+        <p>{modeBadge}</p>
+        <h1>{modeHeading}</h1>
+        <p>{t\`Current demo: \${pageLabel}\`}</p>
+      </section>
+    `;
+    const messages: ExtractedMessage[] = [];
+
+    await astroExtractor.extract(
+      "/virtual/transition-showcase.astro",
+      source,
+      (message) => {
+        messages.push(message);
+      },
+      { linguiConfig },
+    );
+
+    expect(
+      messages.some((message) => message.message === "ClientRouter enabled"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => message.message === "Full reload mode"),
+    ).toBe(true);
+    expect(
+      messages.some(
+        (message) =>
+          message.message ===
+          "ClientRouter can preserve island state while locale and page props change.",
+      ),
+    ).toBe(true);
+    expect(
+      messages.some(
+        (message) =>
+          message.message ===
+          "Without ClientRouter, every navigation reloads the document.",
+      ),
+    ).toBe(true);
+    expect(
+      messages.some(
+        (message) => message.message === "Current demo: {pageLabel}",
+      ),
+    ).toBe(true);
+  });
+
+  test("extracts e2e-derived mapped navigation labels in Astro frontmatter", async () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+
+      const pathname = "/formats";
+      const navItems = [
+        { href: "/", label: t\`Home\` },
+        { href: "/server", label: t\`Server\` },
+        { href: "/islands", label: t\`Islands\` },
+        { href: "/rich-text", label: t\`Rich text\` },
+        { href: "/formats", label: t\`Formats\` },
+        { href: "/routing/alpha", label: t\`Routing\` },
+        { href: "/settings", label: t\`Settings\` },
+        { href: "/transitions", label: t\`Transitions\` },
+      ].map((item) => ({
+        ...item,
+        active:
+          item.href === "/"
+            ? pathname === "/"
+            : pathname === item.href || pathname.startsWith(\`\${item.href}/\`),
+      }));
+      ---
+
+      <nav>
+        {
+          navItems.map((item) => (
+            <a href={item.href}>{item.label}</a>
+          ))
+        }
+      </nav>
+    `;
+    const messages: ExtractedMessage[] = [];
+
+    await astroExtractor.extract(
+      "/virtual/app-layout.astro",
+      source,
+      (message) => {
+        messages.push(message);
+      },
+      { linguiConfig },
+    );
+
+    expect(messages.some((message) => message.message === "Home")).toBe(true);
+    expect(messages.some((message) => message.message === "Server")).toBe(true);
+    expect(messages.some((message) => message.message === "Islands")).toBe(
+      true,
+    );
+    expect(messages.some((message) => message.message === "Rich text")).toBe(
+      true,
+    );
+    expect(messages.some((message) => message.message === "Formats")).toBe(
+      true,
+    );
+    expect(messages.some((message) => message.message === "Routing")).toBe(
+      true,
+    );
+    expect(messages.some((message) => message.message === "Settings")).toBe(
+      true,
+    );
+    expect(messages.some((message) => message.message === "Transitions")).toBe(
+      true,
+    );
+  });
 });

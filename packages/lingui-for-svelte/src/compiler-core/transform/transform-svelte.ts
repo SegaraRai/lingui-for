@@ -7,6 +7,7 @@ import {
 
 import {
   lowerComponentMacro,
+  lowerSvelteWithRustSynthetic,
   lowerScriptExpression,
   lowerTemplateExpression,
 } from "../lower/index.ts";
@@ -45,6 +46,7 @@ export function transformSvelte(
   );
   const mapFile = stripQuery(plan.filename);
   const replacements: ReplacementChunk[] = [];
+  const rustReplacements = lowerSvelteWithRustSynthetic(plan, runtimeBindings);
 
   const moduleExpressions = plan.moduleMacros.expressions.map(
     (expression, index) =>
@@ -87,30 +89,9 @@ export function transformSvelte(
     });
   });
 
-  plan.moduleMacros.expressions.forEach((expression, index) => {
-    const replacement = moduleExpressions[index];
-    if (!replacement) {
-      return;
-    }
-
-    replacements.push({
-      start: expression.start,
-      end: expression.end,
-      code: replacement.code,
-    });
-  });
-
-  if (analysis.instance) {
-    plan.instanceMacros.imports.forEach((range) => {
-      replacements.push({
-        start: range.start,
-        end: range.end,
-        code: "",
-      });
-    });
-
-    plan.instanceMacros.expressions.forEach((expression, index) => {
-      const replacement = instanceExpressions[index];
+  if (rustReplacements.length === 0) {
+    plan.moduleMacros.expressions.forEach((expression, index) => {
+      const replacement = moduleExpressions[index];
       if (!replacement) {
         return;
       }
@@ -123,18 +104,47 @@ export function transformSvelte(
     });
   }
 
-  analysis.expressions.forEach((expression, index) => {
-    const replacement = templateExpressions[index];
-    if (!replacement) {
-      return;
-    }
-
-    replacements.push({
-      start: expression.start,
-      end: expression.end,
-      code: replacement.code,
+  if (analysis.instance) {
+    plan.instanceMacros.imports.forEach((range) => {
+      replacements.push({
+        start: range.start,
+        end: range.end,
+        code: "",
+      });
     });
-  });
+
+    if (rustReplacements.length === 0) {
+      plan.instanceMacros.expressions.forEach((expression, index) => {
+        const replacement = instanceExpressions[index];
+        if (!replacement) {
+          return;
+        }
+
+        replacements.push({
+          start: expression.start,
+          end: expression.end,
+          code: replacement.code,
+        });
+      });
+    }
+  }
+
+  if (rustReplacements.length === 0) {
+    analysis.expressions.forEach((expression, index) => {
+      const replacement = templateExpressions[index];
+      if (!replacement) {
+        return;
+      }
+
+      replacements.push({
+        start: expression.start,
+        end: expression.end,
+        code: replacement.code,
+      });
+    });
+  } else {
+    replacements.push(...rustReplacements);
+  }
 
   analysis.components.forEach((component, index) => {
     const replacement = components[index];

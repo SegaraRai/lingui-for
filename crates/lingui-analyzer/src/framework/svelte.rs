@@ -8,6 +8,7 @@ use crate::{
     framework::FrameworkAdapter,
     js::{
         BindingParseMode, JsLikeLanguage, JsMacroSyntax,
+        collect_top_level_declared_names_in_javascript,
         collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
         collect_macro_candidates_in_javascript_with_shadowing,
     },
@@ -25,6 +26,7 @@ pub struct SvelteScriptAnalysis {
 pub struct SvelteScriptBlock {
     pub region: EmbeddedScriptRegion,
     pub is_module: bool,
+    pub declared_names: Vec<String>,
     pub macro_imports: Vec<MacroImport>,
     pub candidates: Vec<MacroCandidate>,
 }
@@ -79,13 +81,21 @@ pub fn analyze_svelte(source: &str) -> Result<SvelteScriptAnalysis, AnalyzerErro
         .filter(|script| !script.is_module)
         .flat_map(|script| script.macro_imports.iter().cloned())
         .collect::<Vec<_>>();
+    let mut template_shadowed_names = scripts
+        .iter()
+        .filter(|script| !script.is_module)
+        .flat_map(|script| script.declared_names.iter().cloned())
+        .filter(|name| !template_imports.iter().any(|import_decl| import_decl.local_name == *name))
+        .collect::<Vec<_>>();
+    template_shadowed_names.sort();
+    template_shadowed_names.dedup();
     let mut template_expressions = Vec::new();
     let mut template_components = Vec::new();
     collect_template_expressions(
         source,
         root,
         &template_imports,
-        &mut Vec::new(),
+        &mut vec![template_shadowed_names],
         &mut template_expressions,
         &mut template_components,
     )?;
@@ -141,6 +151,8 @@ fn analyze_script_block(
     };
 
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
+    let declared_names =
+        collect_top_level_declared_names_in_javascript(script_source, script_language(source, start_tag))?;
     let macro_imports = collect_script_macro_imports(
         script_source,
         content_region.inner_span.start,
@@ -157,6 +169,7 @@ fn analyze_script_block(
     Ok(Some(SvelteScriptBlock {
         region: content_region,
         is_module: start_tag_has_context_module(source, start_tag),
+        declared_names,
         macro_imports,
         candidates,
     }))
@@ -561,10 +574,22 @@ fn collect_component_strip_spans_inner(
             return Ok(());
         }
         "html_tag" | "render_tag" | "key_start" | "await_start" | "if_start" | "else_if_start" => {
-            append_raw_text_expression_strip_spans(source, node, imports, scope_stack, strip_spans)?;
+            append_raw_text_expression_strip_spans(
+                source,
+                node,
+                imports,
+                scope_stack,
+                strip_spans,
+            )?;
         }
         "const_tag" => {
-            append_raw_text_expression_strip_spans(source, node, imports, scope_stack, strip_spans)?;
+            append_raw_text_expression_strip_spans(
+                source,
+                node,
+                imports,
+                scope_stack,
+                strip_spans,
+            )?;
             let names = declared_names_from_const_tag(source, node)?;
             if !names.is_empty() {
                 if let Some(frame) = scope_stack.last_mut() {
@@ -1047,7 +1072,14 @@ fn unquote(text: &str) -> Option<String> {
 }
 
 fn is_macro_module_specifier(specifier: &str) -> bool {
-    specifier.ends_with("/macro")
+    matches!(
+        specifier,
+        "@lingui/macro"
+            | "@lingui/core/macro"
+            | "@lingui/react/macro"
+            | "lingui-for-svelte/macro"
+            | "lingui-for-astro/macro"
+    )
 }
 
 fn find_first_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {

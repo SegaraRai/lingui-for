@@ -1,4 +1,5 @@
 mod alloc;
+mod compile_plan;
 mod error;
 pub mod framework;
 mod js;
@@ -15,11 +16,16 @@ use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdap
 use crate::reinsert::reinsert_transformed_declarations;
 use crate::synthetic::build_synthetic_module_with_names;
 
+pub use compile_plan::{
+    build_compile_plan_for_framework, build_compile_plan_for_framework_with_names,
+};
 pub use error::AnalyzerError;
 pub use model::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroCandidateKind, MacroFlavor,
-    MacroImport, NormalizedSegment, ReinsertOptions, ReinsertedModule, ReplacementChunk, Span,
-    SyntheticMapping, SyntheticModule, SyntheticModuleOptions,
+    CompilePlan, CompilePlanOptions, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
+    CompileTranslationMode, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate,
+    MacroCandidateKind, MacroFlavor, MacroImport, NormalizedSegment, ReinsertOptions,
+    ReinsertedModule, ReplacementChunk, RuntimeRequirements, Span, SyntheticMapping,
+    SyntheticModule, SyntheticModuleOptions,
 };
 
 pub fn build_synthetic_module_for_framework(
@@ -124,6 +130,25 @@ pub fn wasm_build_synthetic_module_with_options(options: JsValue) -> Result<JsVa
     )
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
     serde_wasm_bindgen::to_value(&module).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen(js_name = "buildCompilePlanWithOptions")]
+pub fn wasm_build_compile_plan_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+    console_error_panic_hook::set_once();
+
+    let options: CompilePlanOptions = serde_wasm_bindgen::from_value(options)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let plan = build_compile_plan_for_framework_with_names(
+        &options.framework,
+        &options.source,
+        options.source_name.as_deref().unwrap_or("source"),
+        options
+            .synthetic_name
+            .as_deref()
+            .unwrap_or("synthetic-compile.tsx"),
+    )
+    .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    serde_wasm_bindgen::to_value(&plan).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
 #[wasm_bindgen(js_name = "reinsertTransformedDeclarations")]

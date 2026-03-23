@@ -185,6 +185,44 @@ export function lowerSyntheticComponentDeclaration<TMap>(
   throw new Error("Expected a lowered RuntimeTrans JSX declaration");
 }
 
+export function lowerNamedSyntheticComponentDeclaration<TMap>(
+  transformed: ProgramTransformLike<TMap>,
+  runtimeTransComponentName: string,
+  declarationName: string,
+  options: {
+    compact?: boolean;
+  } = {},
+): string {
+  for (const statement of transformed.ast.program.body) {
+    if (
+      !t.isVariableDeclaration(statement) ||
+      statement.declarations.length !== 1
+    ) {
+      continue;
+    }
+
+    const [declaration] = statement.declarations;
+    if (
+      !declaration ||
+      !t.isIdentifier(declaration.id, { name: declarationName }) ||
+      !declaration.init ||
+      !t.isJSXElement(declaration.init)
+    ) {
+      continue;
+    }
+
+    return convertRuntimeTransJsxToMarkup(
+      declaration.init,
+      runtimeTransComponentName,
+      options.compact ?? false,
+    );
+  }
+
+  throw new Error(
+    `Expected a lowered RuntimeTrans JSX declaration for "${declarationName}"`,
+  );
+}
+
 export function stripRuntimeTransImports(
   program: t.Program,
   runtimePackageName: string,

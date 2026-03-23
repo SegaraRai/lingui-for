@@ -292,7 +292,12 @@ function assertAllowedDirectStringMacroUsage(
   path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
   localName: string,
   state: MacroRewriteState,
+  allowBareSyntheticDirectMacros = false,
 ): void {
+  if (allowBareSyntheticDirectMacros) {
+    return;
+  }
+
   if (localName !== "t" && isAllowedDescriptorContext(path, state)) {
     return;
   }
@@ -455,7 +460,9 @@ function removeRuntimeI18nImports(
  * and `selectOrdinal`, then rewrites `$t(...)` / `$t\`...\`` and friends into a temporary
  * wrapper call so the following Lingui pass can preserve enough information for postprocessing.
  */
-export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
+export function createMacroPreprocessPlugin(
+  request?: Pick<ProgramTransformRequest, "allowBareSyntheticDirectMacros">,
+): PluginObj<MacroRewriteState> {
   return {
     name: "lingui-for-svelte-macro-preprocess",
     pre() {
@@ -509,7 +516,12 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
             state.directStringLocals,
           );
           if (directLocalName) {
-            assertAllowedDirectStringMacroUsage(path, directLocalName, state);
+            assertAllowedDirectStringMacroUsage(
+              path,
+              directLocalName,
+              state,
+              request?.allowBareSyntheticDirectMacros,
+            );
           }
           return;
         }
@@ -539,7 +551,12 @@ export function createMacroPreprocessPlugin(): PluginObj<MacroRewriteState> {
             state.directStringLocals,
           );
           if (directLocalName) {
-            assertAllowedDirectStringMacroUsage(path, directLocalName, state);
+            assertAllowedDirectStringMacroUsage(
+              path,
+              directLocalName,
+              state,
+              request?.allowBareSyntheticDirectMacros,
+            );
           }
           return;
         }

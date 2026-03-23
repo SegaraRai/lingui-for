@@ -1,7 +1,10 @@
 use indoc::indoc;
 use lingui_analyzer::{
     MacroCandidateKind, MacroFlavor,
-    framework::{FrameworkAdapter, svelte::{SvelteAdapter, analyze_svelte}},
+    framework::{
+        FrameworkAdapter,
+        svelte::{SvelteAdapter, analyze_svelte},
+    },
 };
 
 #[test]
@@ -173,6 +176,34 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
 }
 
 #[test]
+fn treats_instance_script_non_macro_bindings_as_template_shadowing() {
+    let source = indoc! {r#"
+        <script lang="ts">
+          import { t } from "./macro";
+          const label = t`Hello from another module`;
+        </script>
+
+        <p>{$t`Reactive from markup without a macro import`}</p>
+    "#};
+
+    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+
+    assert_eq!(analysis.scripts[0].macro_imports.len(), 0);
+    assert_eq!(
+        analysis.template_expressions[0]
+            .shadowed_names
+            .iter()
+            .filter(|name| name.as_str() == "t")
+            .count(),
+        1
+    );
+    assert!(
+        analysis.template_expressions[0].candidates.is_empty(),
+        "template $t should stay inactive when t comes from a non-macro import"
+    );
+}
+
+#[test]
 fn collects_macro_candidates_from_const_tag_initializers() {
     let source = r#"
 <script lang="ts">
@@ -308,5 +339,8 @@ fn keeps_outer_macro_when_javascript_macros_are_nested() {
 
     assert_eq!(script.candidates.len(), 1);
     assert_eq!(script.candidates[0].imported_name, "t");
-    assert_eq!(script.candidates[0].kind, MacroCandidateKind::CallExpression);
+    assert_eq!(
+        script.candidates[0].kind,
+        MacroCandidateKind::CallExpression
+    );
 }

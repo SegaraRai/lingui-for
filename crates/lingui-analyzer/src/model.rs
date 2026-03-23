@@ -91,6 +91,9 @@ pub struct SyntheticMapping {
     pub declaration_id: String,
     pub original_span: Span,
     pub generated_span: Span,
+    pub local_name: String,
+    pub imported_name: String,
+    pub flavor: MacroFlavor,
     pub source_map_anchor: Option<Span>,
     pub normalized_segments: Vec<NormalizedSegment>,
 }
@@ -124,4 +127,65 @@ pub struct ReinsertedModule {
     pub code: String,
     pub source_name: String,
     pub source_map_json: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CompileTargetContext {
+    ModuleScript,
+    InstanceScript,
+    Frontmatter,
+    Template,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CompileTargetOutputKind {
+    Expression,
+    Component,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CompileTranslationMode {
+    Raw,
+    SvelteContext,
+    AstroContext,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CompileTarget {
+    pub declaration_id: String,
+    pub original_span: Span,
+    pub normalized_span: Span,
+    pub source_map_anchor: Option<Span>,
+    pub local_name: String,
+    pub imported_name: String,
+    pub flavor: MacroFlavor,
+    pub context: CompileTargetContext,
+    pub output_kind: CompileTargetOutputKind,
+    pub translation_mode: CompileTranslationMode,
+    pub normalized_segments: Vec<NormalizedSegment>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct RuntimeRequirements {
+    pub needs_runtime_i18n_binding: bool,
+    pub needs_runtime_trans_component: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct CompilePlan {
+    pub framework: String,
+    pub source_name: String,
+    pub synthetic_name: String,
+    pub synthetic_source: String,
+    pub declaration_ids: Vec<String>,
+    pub targets: Vec<CompileTarget>,
+    pub runtime_requirements: RuntimeRequirements,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CompilePlanOptions {
+    pub framework: String,
+    pub source: String,
+    pub source_name: Option<String>,
+    pub synthetic_name: Option<String>,
 }

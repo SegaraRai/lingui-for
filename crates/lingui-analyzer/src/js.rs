@@ -99,6 +99,48 @@ pub fn collect_declared_names_from_binding_source(
     Ok(names)
 }
 
+pub fn collect_top_level_declared_names_in_javascript(
+    source: &str,
+    language: JsLikeLanguage,
+) -> Result<Vec<String>, crate::AnalyzerError> {
+    let tree = match language {
+        JsLikeLanguage::JavaScript => parse::parse_javascript(source)?,
+        JsLikeLanguage::TypeScript => parse::parse_typescript(source)?,
+    };
+    let root = tree.root_node();
+    let mut names = Vec::new();
+    let mut cursor = root.walk();
+
+    for child in root.children(&mut cursor) {
+        match child.kind() {
+            "import_statement" => collect_import_declared_names(child, source, &mut names),
+            "lexical_declaration" | "variable_declaration" => {
+                let mut decl_cursor = child.walk();
+                for declarator in child.children(&mut decl_cursor) {
+                    if declarator.kind() != "variable_declarator" {
+                        continue;
+                    }
+                    if let Some(name) = declarator.child_by_field_name("name") {
+                        collect_pattern_names(name, source, &mut names);
+                    }
+                }
+            }
+            "function_declaration"
+            | "generator_function_declaration"
+            | "class_declaration" => {
+                if let Some(name) = child.child_by_field_name("name") {
+                    collect_pattern_names(name, source, &mut names);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    names.sort();
+    names.dedup();
+    Ok(names)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BindingParseMode {
     VariableDeclarator,
@@ -442,6 +484,35 @@ fn collect_declared_names(node: Node<'_>, source: &str, names: &mut Vec<String>)
             for child in node.children(&mut cursor) {
                 collect_declared_names(child, source, names);
             }
+        }
+    }
+}
+
+fn collect_import_declared_names(node: Node<'_>, source: &str, names: &mut Vec<String>) {
+    match node.kind() {
+        "import_specifier" => {
+            if let Some(alias) = node.child_by_field_name("alias") {
+                collect_pattern_names(alias, source, names);
+            } else if let Some(name) = node.child_by_field_name("name") {
+                collect_pattern_names(name, source, names);
+            }
+            return;
+        }
+        "namespace_import" => {
+            if let Some(name) = node.child_by_field_name("name") {
+                collect_pattern_names(name, source, names);
+            }
+            return;
+        }
+        _ => {}
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == "identifier" && node.kind() == "import_clause" {
+            collect_pattern_names(child, source, names);
+        } else {
+            collect_import_declared_names(child, source, names);
         }
     }
 }

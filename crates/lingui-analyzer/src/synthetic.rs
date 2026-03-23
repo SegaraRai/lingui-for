@@ -61,19 +61,26 @@ pub fn build_synthetic_module_with_names(
 
     let mappings = declaration_ids
         .iter()
-        .map(|id| SyntheticMapping {
-            declaration_id: id.clone(),
-            original_span: original_spans[id],
-            generated_span: generated_spans[id],
-            source_map_anchor: source_map_anchors[id],
-            normalized_segments: normalized_segments[id]
-                .iter()
-                .map(|segment| NormalizedSegment {
-                    original_start: segment.original_start,
-                    generated_start: segment.generated_start,
-                    len: segment.len,
-                })
-                .collect(),
+        .enumerate()
+        .map(|(index, id)| {
+            let candidate = &candidates[index];
+            SyntheticMapping {
+                declaration_id: id.clone(),
+                original_span: original_spans[id],
+                generated_span: generated_spans[id],
+                local_name: candidate.local_name.clone(),
+                imported_name: candidate.imported_name.clone(),
+                flavor: candidate.flavor,
+                source_map_anchor: source_map_anchors[id],
+                normalized_segments: normalized_segments[id]
+                    .iter()
+                    .map(|segment| NormalizedSegment {
+                        original_start: segment.original_start,
+                        generated_start: segment.generated_start,
+                        len: segment.len,
+                    })
+                    .collect(),
+            }
         })
         .collect();
 
@@ -230,8 +237,7 @@ fn build_source_map_json(
             let declaration_len = declaration_length(declaration_id, normalized_segments);
             for delta in 0..=declaration_len {
                 let generated = generated_index.byte_to_line_utf16_col(*generated_start + delta);
-                let original =
-                    original_index.byte_to_line_utf16_col(anchor.start);
+                let original = original_index.byte_to_line_utf16_col(anchor.start);
                 builder.add(
                     generated.0 as u32,
                     generated.1 as u32,

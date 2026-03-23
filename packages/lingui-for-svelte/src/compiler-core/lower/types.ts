@@ -32,5 +32,6 @@ export type ProgramTransformRequest = {
   linguiConfig: LinguiConfigNormalized;
   extract: boolean;
   translationMode: "extract" | "raw" | "svelte-context";
+  allowBareSyntheticDirectMacros?: boolean | undefined;
   runtimeBindings?: RuntimeBindingsForTransform | undefined;
 };

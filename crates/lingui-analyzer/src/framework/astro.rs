@@ -334,7 +334,14 @@ fn unquote(text: &str) -> Option<String> {
 }
 
 fn is_macro_module_specifier(specifier: &str) -> bool {
-    specifier.ends_with("/macro")
+    matches!(
+        specifier,
+        "@lingui/macro"
+            | "@lingui/core/macro"
+            | "@lingui/react/macro"
+            | "lingui-for-svelte/macro"
+            | "lingui-for-astro/macro"
+    )
 }
 
 fn is_component_tag_name(tag_name: &str) -> bool {
