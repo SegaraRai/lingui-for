@@ -8,6 +8,8 @@ import {
   offsetToLocation,
   type Detection,
 } from "lingui-for-shared/test-helpers";
+import { lowerSvelteWithRustSynthetic } from "../lower/index.ts";
+import { normalizeLinguiConfig } from "../shared/config.ts";
 import { transformSvelte } from "./transform-svelte.ts";
 
 function compact(value: string): string {
@@ -19,6 +21,41 @@ function expectNoExcessBlankLines(value: string): void {
   expect(value).not.toMatch(/\r?\n[ \t]+\r?\n/);
   expect(value).not.toMatch(/\r?\n\r?\n\r?\n+/);
 }
+
+const preloadedInitPageSource = dedent`
+  <script lang="ts">
+    import { setupI18n } from "@lingui/core";
+    import { setLinguiContext } from "lingui-for-svelte";
+    import { plural, t } from "lingui-for-svelte/macro";
+
+    import { messages as en } from "$lib/i18n/locales/en";
+    import { messages as ja } from "$lib/i18n/locales/ja";
+
+    const i18n = setupI18n({
+      locale: "en",
+      messages: { en, ja },
+    });
+    setLinguiContext(i18n);
+
+    let locale = $state<"en" | "ja">("en");
+    let count = $state(3);
+
+    function toggle() {
+      locale = locale === "en" ? "ja" : "en";
+      i18n.activate(locale);
+    }
+  </script>
+
+  <section class="card">
+    <p>{$t\`Hello from the preloaded init pattern.\`}</p>
+    <p>
+      {$plural(count, {
+        one: "# item in the list.",
+        other: "# items in the list.",
+      })}
+    </p>
+  </section>
+`;
 
 describe("transformSvelte", () => {
   test("keeps msg descriptors pure inside user-authored $derived", () => {
@@ -581,6 +618,66 @@ describe("transformSvelte", () => {
     `);
   });
 
+  test("rewrites reactive markup plural without leaving source fragments behind", () => {
+    const result = transformSvelte(
+      dedent`
+        <script lang="ts">
+          import { plural } from "lingui-for-svelte/macro";
+
+          let count = $state(3);
+        </script>
+
+        <p>
+          {$plural(count, {
+            one: "# item in the list.",
+            other: "# items in the list.",
+          })}
+        </p>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(result.code).not.toContain("{$p$__l4s_translate(");
+    expect(result.code).toContain("{$__l4s_translate(");
+    expect(result.code).toContain(
+      'message: "{count, plural, one {# item in the list.} other {# items in the list.}}"',
+    );
+  });
+
+  test("rewrites the e2e preloaded page without leaving plural source fragments behind", () => {
+    const result = transformSvelte(preloadedInitPageSource, {
+      filename: "/virtual/+page.svelte",
+    });
+
+    expect(result.code).not.toContain("{$p$__l4s_translate(");
+    expect(result.code).toContain("{$__l4s_translate(");
+  });
+
+  test("builds full-span replacements for later e2e template expressions", () => {
+    const source = preloadedInitPageSource;
+    const replacements = lowerSvelteWithRustSynthetic(
+      source,
+      "/virtual/+page.svelte",
+      normalizeLinguiConfig(),
+    );
+    const templateReplacements = replacements.filter(
+      (replacement) => replacement.start > source.indexOf("</script>"),
+    );
+
+    expect(
+      templateReplacements.some((replacement) =>
+        source
+          .slice(replacement.start, replacement.end)
+          .startsWith("$t`Hello from the preloaded init pattern.`"),
+      ),
+    ).toBe(true);
+    expect(
+      templateReplacements.some((replacement) =>
+        source.slice(replacement.start, replacement.end).startsWith("$plural("),
+      ),
+    ).toBe(true);
+  });
+
   test("supports exact-number ICU branches in core and component macros", () => {
     const result = transformSvelte(
       dedent`
@@ -787,14 +884,14 @@ describe("transformSvelte", () => {
     	    name: name
     	  },
     	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "a",
-    	      props: {
-    	        href: "/docs"
-    	      }
+    	  0: {
+    	    kind: "element",
+    	    tag: "a",
+    	    props: {
+    	      href: "/docs"
     	    }
     	  }
+    	}
     	}} />"
     `);
   });
@@ -832,19 +929,19 @@ describe("transformSvelte", () => {
     	    name: name
     	  },
     	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "strong",
-    	      props: {}
-    	    },
-    	    1: {
-    	      kind: "component",
-    	      component: DocLink,
-    	      props: {
-    	        href: "/docs"
-    	      }
+    	  0: {
+    	    kind: "element",
+    	    tag: "strong",
+    	    props: {}
+    	  },
+    	  1: {
+    	    kind: "component",
+    	    component: DocLink,
+    	    props: {
+    	      href: "/docs"
     	    }
     	  }
+    	}
     	}} />"
     `);
   });
@@ -873,14 +970,14 @@ describe("transformSvelte", () => {
     	  id: "demo.docs",
     	  message: "Read the <0>docs</0>.",
     	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "a",
-    	      props: {
-    	        href: "/docs"
-    	      }
+    	  0: {
+    	    kind: "element",
+    	    tag: "a",
+    	    props: {
+    	      href: "/docs"
     	    }
     	  }
+    	}
     	}} />"
     `);
   });

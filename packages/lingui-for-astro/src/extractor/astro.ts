@@ -13,6 +13,7 @@ import {
 } from "lingui-for-shared/compiler";
 
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
+import { transformProgram } from "../compiler-core/lower/babel-transform.ts";
 
 type SyntheticExtractionUnit = {
   source: string;
@@ -79,17 +80,24 @@ export const astroExtractor: ExtractorType = {
   async extract(filename, source, onMessageExtracted, ctx) {
     const extractorCtx = createExtractorContext(ctx);
     const synthetic = buildSyntheticExtractionUnit(filename, source);
+    const transformed = transformProgram(synthetic.source, {
+      translationMode: "extract",
+      filename: filename.replace(/\.astro$/, ".synthetic.tsx"),
+      linguiConfig: extractorCtx.linguiConfig,
+      runtimeBinding: null,
+      inputSourceMap: synthetic.source_map_json
+        ? (JSON.parse(synthetic.source_map_json) as NonNullable<
+            ExtractorCtx["sourceMaps"]
+          >)
+        : null,
+    });
 
     await runBabelExtractionUnits(
       filename,
       [
         {
-          code: synthetic.source,
-          map: synthetic.source_map_json
-            ? (JSON.parse(synthetic.source_map_json) as NonNullable<
-                ExtractorCtx["sourceMaps"]
-              >)
-            : undefined,
+          code: transformed.code,
+          map: transformed.map ?? undefined,
         },
       ],
       onMessageExtracted,

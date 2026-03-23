@@ -12,7 +12,10 @@ export {
   lowerScriptExpression,
   lowerTemplateExpression,
 } from "./snippet-lowering.ts";
-export { lowerSvelteWithRustSynthetic } from "./rust-synthetic.ts";
+export {
+  buildCompilePlan,
+  lowerSvelteWithRustSynthetic,
+} from "./rust-synthetic.ts";
 export { buildCombinedProgram } from "./synthetic-program.ts";
 export type {
   MappedCodeFragment,

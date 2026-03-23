@@ -12,6 +12,8 @@
     "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "allowArbitraryExtensions": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.svelte"]

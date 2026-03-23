@@ -73,7 +73,11 @@ fn convert_jsx_spread_attribute(source: &str, node: Node<'_>) -> Result<String, 
 
     if let Some((prefix, object_text)) = split_prefixed_object_expression(after_spread) {
         let lowered_argument = lower_object_expression_text(object_text)?;
-        return Ok(format!(" {{...{}{}}}", prefix.trim_start(), lowered_argument));
+        return Ok(format!(
+            " {{...{}{}}}",
+            prefix.trim_start(),
+            lowered_argument
+        ));
     }
 
     Ok(format!(" {{{raw_inner}}}"))
@@ -140,9 +144,7 @@ fn lower_object_expression_text(text: &str) -> Result<String, AnalyzerError> {
         )
     })?;
     let value = declarator.child_by_field_name("value").ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed(
-            "missing object expression initializer".to_string(),
-        )
+        AnalyzerError::ComponentLoweringFailed("missing object expression initializer".to_string())
     })?;
     let object = if value.kind() == "parenthesized_expression" {
         first_named_child(value).unwrap_or(value)
@@ -181,14 +183,10 @@ fn convert_object_expression(
         match child.kind() {
             "pair" => {
                 let key = child.child_by_field_name("key").ok_or_else(|| {
-                    AnalyzerError::ComponentLoweringFailed(
-                        "missing object pair key".to_string(),
-                    )
+                    AnalyzerError::ComponentLoweringFailed("missing object pair key".to_string())
                 })?;
                 let value = child.child_by_field_name("value").ok_or_else(|| {
-                    AnalyzerError::ComponentLoweringFailed(
-                        "missing object pair value".to_string(),
-                    )
+                    AnalyzerError::ComponentLoweringFailed("missing object pair value".to_string())
                 })?;
                 let key_text = source_slice(source, key);
                 let key_name = key_name(source, key);
@@ -321,13 +319,17 @@ fn convert_jsx_attributes_to_object(
                     Some(node) if node.kind() == "string" => source_slice(source, node).to_string(),
                     Some(node) if node.kind() == "jsx_expression" => {
                         match first_named_child(node) {
-                            Some(inner) => {
-                                convert_expression_for_runtime_trans(source, inner, indent_level + 1)?
-                            }
+                            Some(inner) => convert_expression_for_runtime_trans(
+                                source,
+                                inner,
+                                indent_level + 1,
+                            )?,
                             None => String::new(),
                         }
                     }
-                    Some(node) if matches!(node.kind(), "jsx_element" | "jsx_self_closing_element") => {
+                    Some(node)
+                        if matches!(node.kind(), "jsx_element" | "jsx_self_closing_element") =>
+                    {
                         convert_jsx_element_descriptor(source, node, indent_level + 1)?
                     }
                     Some(other) => {

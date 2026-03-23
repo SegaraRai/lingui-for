@@ -85,7 +85,8 @@ fn append_svelte_runtime_injection_replacements(
             needs_lingui_context,
             needs_trans_component,
         );
-        let insertion_start = get_script_insertion_start(source, instance_script.content_span.start);
+        let insertion_start =
+            get_script_insertion_start(source, instance_script.content_span.start);
 
         if !injections.prelude.is_empty() {
             replacements.push(CompileReplacement {

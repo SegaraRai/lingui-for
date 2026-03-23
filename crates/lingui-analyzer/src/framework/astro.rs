@@ -1,7 +1,8 @@
 use tree_sitter::Node;
 
 use crate::{
-    AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroImport, Span,
+    AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate,
+    MacroCandidateStrategy, MacroImport, Span,
     framework::FrameworkAdapter,
     js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript},
     parse,
@@ -266,6 +267,7 @@ fn component_candidate_from_element(
 
     Some(AstroTemplateComponent {
         candidate: MacroCandidate {
+            id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
             kind: crate::MacroCandidateKind::Component,
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),
@@ -274,6 +276,8 @@ fn component_candidate_from_element(
             normalized_span: Span::from_node(node),
             strip_spans: Vec::new(),
             source_map_anchor: component_source_map_anchor(source, node),
+            owner_id: None,
+            strategy: MacroCandidateStrategy::Standalone,
         },
         shadowed_names: Vec::new(),
     })

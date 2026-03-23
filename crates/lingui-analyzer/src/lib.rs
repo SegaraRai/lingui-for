@@ -20,6 +20,7 @@ use crate::finish_compile::finish_compile;
 use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
 use crate::reinsert::reinsert_transformed_declarations;
 use crate::synthetic::build_synthetic_module_with_names;
+use crate::validation::validate_svelte_extract_candidates;
 
 pub use compile_plan::{
     build_compile_plan_for_framework, build_compile_plan_for_framework_with_names,
@@ -29,8 +30,8 @@ pub use model::{
     CompilePlan, CompilePlanOptions, CompileReplacement, CompileRuntimeBindings,
     CompileScriptRegion, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
     CompileTranslationMode, EmbeddedScriptKind, EmbeddedScriptRegion, FinishCompileOptions,
-    FinishedCompile, MacroCandidate, MacroCandidateKind, MacroFlavor, MacroImport,
-    NormalizedSegment, ReinsertOptions, ReinsertedModule, ReplacementChunk,
+    FinishedCompile, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+    MacroImport, NormalizedSegment, ReinsertOptions, ReinsertedModule, ReplacementChunk,
     RuntimeRequirements, Span, SyntheticMapping, SyntheticModule, SyntheticModuleOptions,
 };
 
@@ -63,6 +64,7 @@ pub fn build_synthetic_module_for_framework_with_names(
                     .into_iter()
                     .map(|component| component.candidate),
             );
+            retain_standalone_candidates(&mut candidates);
             sort_candidates(&mut candidates);
             Ok(build_synthetic_module_with_names(
                 source,
@@ -96,6 +98,8 @@ pub fn build_synthetic_module_for_framework_with_names(
                     .into_iter()
                     .map(|component| component.candidate),
             );
+            validate_svelte_extract_candidates(&candidates)?;
+            retain_standalone_candidates(&mut candidates);
             sort_candidates(&mut candidates);
             Ok(build_synthetic_module_with_names(
                 source,
@@ -111,6 +115,10 @@ pub fn build_synthetic_module_for_framework_with_names(
 
 fn sort_candidates(candidates: &mut [MacroCandidate]) {
     candidates.sort_by_key(|candidate| (candidate.outer_span.start, candidate.outer_span.end));
+}
+
+fn retain_standalone_candidates(candidates: &mut Vec<MacroCandidate>) {
+    candidates.retain(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone);
 }
 
 #[wasm_bindgen(js_name = "buildSyntheticModule")]
@@ -144,7 +152,7 @@ pub fn wasm_build_compile_plan_with_options(options: JsValue) -> Result<JsValue,
 
     let options: CompilePlanOptions = serde_wasm_bindgen::from_value(options)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let plan = build_compile_plan_for_framework_with_names(
+    let mut plan = build_compile_plan_for_framework_with_names(
         &options.framework,
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
@@ -154,6 +162,7 @@ pub fn wasm_build_compile_plan_with_options(options: JsValue) -> Result<JsValue,
             .unwrap_or("synthetic-compile.tsx"),
     )
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    compile_plan::repair_compile_plan_for_export(&options.source, &mut plan);
     serde_wasm_bindgen::to_value(&plan).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 

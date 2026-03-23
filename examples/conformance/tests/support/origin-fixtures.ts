@@ -38,7 +38,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "Component origin message",
-        needle: "<Trans>Component origin message</Trans>",
+        needle: "Component origin message",
       },
     ],
   },
@@ -67,7 +67,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "Component origin message",
-        needle: "<Trans>Component origin message</Trans>",
+        needle: "Component origin message",
       },
     ],
   },

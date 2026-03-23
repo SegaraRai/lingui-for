@@ -13,6 +13,7 @@ import {
   normalizeLinguiConfig,
   type LinguiSvelteTransformOptions,
 } from "../compiler-core/index.ts";
+import { transformProgram } from "../compiler-core/lower/babel-transform.ts";
 
 type SyntheticExtractionUnit = {
   source: string;
@@ -74,16 +75,30 @@ export const svelteExtractor: ExtractorType = {
     });
     const synthetic = buildSyntheticExtractionUnit(filename, source);
 
+    if (synthetic.source.trim().length === 0) {
+      return;
+    }
+
+    const transformed = transformProgram(synthetic.source, {
+      filename: filename.replace(/\.svelte$/, ".synthetic.tsx"),
+      lang: "ts",
+      linguiConfig: extractorCtx.linguiConfig,
+      extract: true,
+      translationMode: "extract",
+      allowBareSyntheticDirectMacros: true,
+      inputSourceMap: synthetic.source_map_json
+        ? (JSON.parse(synthetic.source_map_json) as NonNullable<
+            ExtractorCtx["sourceMaps"]
+          >)
+        : null,
+    });
+
     await runBabelExtractionUnits(
       filename,
       [
         {
-          code: synthetic.source,
-          map: synthetic.source_map_json
-            ? (JSON.parse(synthetic.source_map_json) as NonNullable<
-                ExtractorCtx["sourceMaps"]
-              >)
-            : undefined,
+          code: transformed.code,
+          map: transformed.map ?? undefined,
         },
       ],
       onMessageExtracted,

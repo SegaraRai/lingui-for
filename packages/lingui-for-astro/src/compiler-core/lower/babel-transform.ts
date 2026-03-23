@@ -102,6 +102,7 @@ export function transformProgram(
     code: true,
     configFile: false,
     filename: request.filename,
+    inputSourceMap: request.inputSourceMap ?? undefined,
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(),
@@ -117,6 +118,7 @@ export function transformProgram(
       ],
       createAstroContextPostprocessPlugin(request),
     ],
+    sourceMaps: true,
   });
 
   if (!result?.ast || result.code == null) {
@@ -126,5 +128,6 @@ export function transformProgram(
   return {
     code: result.code,
     ast: result.ast,
+    map: (result.map as ProgramTransform["map"]) ?? null,
   };
 }

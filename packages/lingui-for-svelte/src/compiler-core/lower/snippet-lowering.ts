@@ -67,7 +67,7 @@ export function lowerTemplateExpression(
   const translationMode: "extract" | "svelte-context" = options.extract
     ? "extract"
     : "svelte-context";
-  const lowered = lowerScriptLikeExpression(source, start, plan, {
+  const lowered = lowerScriptLikeExpression(source, plan, {
     extract: options.extract,
     translationMode,
     filenameSuffix: options.extract ? "?extract-expression" : "?expression",
@@ -99,7 +99,7 @@ export function lowerScriptExpression(
     macroBindings?: MacroBindings;
   },
 ): MappedCodeFragment {
-  const lowered = lowerScriptLikeExpression(source, start, plan, options);
+  const lowered = lowerScriptLikeExpression(source, plan, options);
 
   return options.extract
     ? lowered
@@ -114,7 +114,6 @@ export function lowerScriptExpression(
 
 function lowerScriptLikeExpression(
   source: string,
-  start: number,
   plan: SveltePlan,
   options: {
     extract: boolean;

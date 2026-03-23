@@ -54,8 +54,15 @@ pub enum MacroFlavor {
     Eager,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum MacroCandidateStrategy {
+    Standalone,
+    OwnedByParent,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MacroCandidate {
+    pub id: String,
     pub kind: MacroCandidateKind,
     pub imported_name: String,
     pub local_name: String,
@@ -64,6 +71,8 @@ pub struct MacroCandidate {
     pub normalized_span: Span,
     pub strip_spans: Vec<Span>,
     pub source_map_anchor: Option<Span>,
+    pub owner_id: Option<String>,
+    pub strategy: MacroCandidateStrategy,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]

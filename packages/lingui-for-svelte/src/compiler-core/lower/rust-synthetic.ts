@@ -28,8 +28,19 @@ type CompileRuntimeBindings = {
 
 type CompileTarget = {
   declaration_id: string;
+  original_span: { start: number; end: number };
+  normalized_span: { start: number; end: number };
+  source_map_anchor?: { start: number; end: number } | null;
+  local_name: string;
+  imported_name: string;
+  flavor: "Direct" | "Reactive" | "Eager";
   translation_mode: "Raw" | "SvelteContext" | "AstroContext";
   output_kind: "Expression" | "Component";
+  normalized_segments: Array<{
+    original_start: number;
+    generated_start: number;
+    len: number;
+  }>;
 };
 
 type CompilePlan = {
@@ -131,14 +142,19 @@ export function lowerSvelteWithRustSynthetic(
   }));
 }
 
-function buildCompilePlan(source: string, filename: string): CompilePlan {
+export function buildCompilePlan(
+  source: string,
+  filename: string,
+): CompilePlan {
   ensureWasmInitialized();
-  return buildCompilePlanWithOptions({
+  const plan = buildCompilePlanWithOptions({
     framework: "svelte",
     source,
     source_name: filename,
     synthetic_name: `${filename}?rust-compile.tsx`,
   }) as CompilePlan;
+  repairSvelteCompilePlan(source, plan);
+  return plan;
 }
 
 function ensureWasmInitialized(): void {
@@ -202,4 +218,98 @@ function getBabelGenerate(): typeof import("@babel/generator").default {
   throw new TypeError(
     "Unable to resolve @babel/generator default export at runtime.",
   );
+}
+
+function repairSvelteCompilePlan(source: string, plan: CompilePlan): void {
+  for (const target of plan.targets) {
+    if (target.flavor === "Reactive") {
+      const pattern = `$${target.local_name}`;
+      const start = findSveltePrefixNear(
+        source,
+        target.original_span.start,
+        target.original_span.end,
+        pattern,
+      );
+      if (start == null || start >= target.original_span.start) {
+        continue;
+      }
+
+      const end = start + totalNormalizedLength(target) + 1;
+      target.original_span = { start, end };
+      target.normalized_span = { start, end };
+      target.source_map_anchor = {
+        start: start + 1,
+        end: start + pattern.length,
+      };
+      if (target.normalized_segments[0]) {
+        target.normalized_segments[0] = {
+          ...target.normalized_segments[0],
+          original_start: start + 1,
+        };
+      }
+      continue;
+    }
+
+    if (target.flavor === "Eager") {
+      const pattern = `${target.local_name}.eager`;
+      const start = findSveltePrefixNear(
+        source,
+        target.original_span.start,
+        target.original_span.end,
+        pattern,
+      );
+      if (start == null || start >= target.original_span.start) {
+        continue;
+      }
+
+      const end = start + totalNormalizedLength(target) + ".eager".length;
+      target.original_span = { start, end };
+      target.normalized_span = { start, end };
+      target.source_map_anchor = {
+        start,
+        end: start + target.local_name.length,
+      };
+      if (target.normalized_segments[0]) {
+        target.normalized_segments[0] = {
+          ...target.normalized_segments[0],
+          original_start: start,
+        };
+      }
+    }
+  }
+}
+
+function totalNormalizedLength(target: CompileTarget): number {
+  const last = target.normalized_segments.at(-1);
+  if (!last) {
+    return Math.max(
+      0,
+      target.normalized_span.end - target.normalized_span.start,
+    );
+  }
+  return last.generated_start + last.len;
+}
+
+function findSveltePrefixNear(
+  source: string,
+  currentStart: number,
+  currentEnd: number,
+  pattern: string,
+): number | null {
+  const windowStart = Math.max(0, currentStart - pattern.length - 8);
+  const windowEnd = Math.min(source.length, currentEnd);
+  const window = source.slice(windowStart, windowEnd);
+  let found: number | null = null;
+  let cursor = 0;
+  while (true) {
+    const offset = window.indexOf(pattern, cursor);
+    if (offset === -1) {
+      return found;
+    }
+    const start = windowStart + offset;
+    if (start <= currentStart) {
+      found = start;
+    }
+    cursor = offset + 1;
+  }
 }

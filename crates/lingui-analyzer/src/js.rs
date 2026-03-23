@@ -1,7 +1,8 @@
 use tree_sitter::Node;
 
 use crate::{
-    MacroCandidate, MacroCandidateKind, MacroFlavor, MacroImport, Span, parse, scope::LexicalScope,
+    MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport, Span,
+    parse, scope::LexicalScope,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -75,7 +76,7 @@ pub fn collect_macro_candidates_from_root(
         &mut scope,
         &mut candidates,
     );
-    filter_nested_candidates(candidates)
+    assign_candidate_ownership(candidates)
 }
 
 pub fn collect_declared_names_from_binding_source(
@@ -331,6 +332,7 @@ fn to_call_candidate(
             let import_decl = scope.resolve_macro(local_name)?;
             let identifier_span = shift_span(Span::from_node(identifier), base_offset);
             Some(MacroCandidate {
+                id: String::new(),
                 kind: candidate_kind_from_arguments(arguments),
                 imported_name: import_decl.imported_name.clone(),
                 local_name: import_decl.local_name.clone(),
@@ -339,6 +341,8 @@ fn to_call_candidate(
                 normalized_span: shift_span(Span::from_node(node), base_offset),
                 strip_spans: Vec::new(),
                 source_map_anchor: Some(identifier_span),
+                owner_id: None,
+                strategy: MacroCandidateStrategy::Standalone,
             })
         }
         JsMacroSyntax::Svelte => {
@@ -360,23 +364,33 @@ fn to_svelte_call_candidate(
 
         if let Some(reactive_name) = local_name.strip_prefix('$') {
             let import_decl = scope.resolve_macro(reactive_name)?;
-            let identifier_span = shift_span(Span::from_node(identifier), base_offset);
+            let (outer_span, identifier_span) = repair_svelte_reactive_spans(
+                source,
+                base_offset,
+                Span::from_node(node),
+                Span::from_node(identifier),
+                &import_decl.local_name,
+            );
             let anchor = Span::new(identifier_span.start + 1, identifier_span.end);
 
             return Some(MacroCandidate {
+                id: String::new(),
                 kind: candidate_kind_from_arguments(arguments),
                 imported_name: import_decl.imported_name.clone(),
                 local_name: import_decl.local_name.clone(),
                 flavor: MacroFlavor::Reactive,
-                outer_span: shift_span(Span::from_node(node), base_offset),
-                normalized_span: shift_span(Span::from_node(node), base_offset),
+                outer_span,
+                normalized_span: outer_span,
                 strip_spans: vec![Span::new(identifier_span.start, identifier_span.start + 1)],
                 source_map_anchor: Some(anchor),
+                owner_id: None,
+                strategy: MacroCandidateStrategy::Standalone,
             });
         }
 
         let import_decl = scope.resolve_macro(local_name)?;
         return Some(MacroCandidate {
+            id: String::new(),
             kind: candidate_kind_from_arguments(arguments),
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),
@@ -385,6 +399,8 @@ fn to_svelte_call_candidate(
             normalized_span: shift_span(Span::from_node(node), base_offset),
             strip_spans: Vec::new(),
             source_map_anchor: Some(shift_span(Span::from_node(identifier), base_offset)),
+            owner_id: None,
+            strategy: MacroCandidateStrategy::Standalone,
         });
     }
 
@@ -397,24 +413,30 @@ fn to_svelte_call_candidate(
     let identifier = call_target_identifier(member_object)?;
     let local_name = text(source, identifier);
     let import_decl = scope.resolve_macro(local_name)?;
-    let object_span = shift_span(Span::from_node(member_object), base_offset);
-    let property_span = shift_span(Span::from_node(member_property), base_offset);
+    let (outer_span, object_span, property_span) = repair_svelte_eager_spans(
+        source,
+        base_offset,
+        Span::from_node(node),
+        Span::from_node(member_object),
+        Span::from_node(member_property),
+        local_name,
+    );
 
     Some(MacroCandidate {
+        id: String::new(),
         kind: candidate_kind_from_arguments(arguments),
         imported_name: import_decl.imported_name.clone(),
         local_name: import_decl.local_name.clone(),
         flavor: MacroFlavor::Eager,
-        outer_span: shift_span(Span::from_node(node), base_offset),
-        normalized_span: shift_span(
-            Span::new(
-                object_span.start,
-                shift_span(Span::from_node(arguments), base_offset).end,
-            ),
-            0,
+        outer_span,
+        normalized_span: Span::new(
+            object_span.start,
+            shift_span(Span::from_node(arguments), base_offset).end,
         ),
         strip_spans: vec![Span::new(object_span.end, property_span.end)],
         source_map_anchor: Some(object_span),
+        owner_id: None,
+        strategy: MacroCandidateStrategy::Standalone,
     })
 }
 
@@ -433,7 +455,62 @@ fn shift_span(span: Span, base_offset: usize) -> Span {
     Span::new(span.start + base_offset, span.end + base_offset)
 }
 
-fn filter_nested_candidates(mut candidates: Vec<MacroCandidate>) -> Vec<MacroCandidate> {
+fn repair_svelte_reactive_spans(
+    source: &str,
+    base_offset: usize,
+    outer: Span,
+    _identifier: Span,
+    local_name: &str,
+) -> (Span, Span) {
+    let pattern = format!("${local_name}");
+    let repaired_start =
+        find_pattern_near_start(source, outer.start, outer.end, &pattern).unwrap_or(outer.start);
+    let repaired_identifier = Span::new(repaired_start, repaired_start + pattern.len());
+    (
+        shift_span(Span::new(repaired_start, outer.end), base_offset),
+        shift_span(repaired_identifier, base_offset),
+    )
+}
+
+fn repair_svelte_eager_spans(
+    source: &str,
+    base_offset: usize,
+    outer: Span,
+    _object: Span,
+    _property: Span,
+    local_name: &str,
+) -> (Span, Span, Span) {
+    let pattern = format!("{local_name}.eager");
+    let repaired_start =
+        find_pattern_near_start(source, outer.start, outer.end, &pattern).unwrap_or(outer.start);
+    let repaired_object = Span::new(repaired_start, repaired_start + local_name.len());
+    let repaired_property = Span::new(
+        repaired_start + local_name.len() + 1,
+        repaired_start + pattern.len(),
+    );
+    (
+        shift_span(Span::new(repaired_start, outer.end), base_offset),
+        shift_span(repaired_object, base_offset),
+        shift_span(repaired_property, base_offset),
+    )
+}
+
+fn find_pattern_near_start(
+    source: &str,
+    current_start: usize,
+    current_end: usize,
+    pattern: &str,
+) -> Option<usize> {
+    let window_start = current_start.saturating_sub(pattern.len() + 8);
+    let window_end = current_end.min(source.len());
+    source[window_start..window_end]
+        .match_indices(pattern)
+        .map(|(offset, _)| window_start + offset)
+        .filter(|start| *start <= current_start)
+        .max()
+}
+
+fn assign_candidate_ownership(mut candidates: Vec<MacroCandidate>) -> Vec<MacroCandidate> {
     candidates.sort_by_key(|candidate| {
         (
             candidate.outer_span.start,
@@ -441,18 +518,25 @@ fn filter_nested_candidates(mut candidates: Vec<MacroCandidate>) -> Vec<MacroCan
         )
     });
 
-    let mut filtered = Vec::new();
-    for candidate in candidates {
-        let nested = filtered.iter().any(|kept: &MacroCandidate| {
+    let mut planned = Vec::with_capacity(candidates.len());
+    for mut candidate in candidates {
+        candidate.id = format!(
+            "__mc_{}_{}",
+            candidate.outer_span.start, candidate.outer_span.end
+        );
+
+        if let Some(owner) = planned.iter().find(|kept: &&MacroCandidate| {
             kept.outer_span.start <= candidate.outer_span.start
                 && kept.outer_span.end >= candidate.outer_span.end
-        });
-        if !nested {
-            filtered.push(candidate);
+        }) {
+            candidate.owner_id = Some(owner.id.clone());
+            candidate.strategy = MacroCandidateStrategy::OwnedByParent;
         }
+        planned.push(candidate);
     }
-    filtered.sort_by_key(|candidate| (candidate.outer_span.start, candidate.outer_span.end));
-    filtered
+
+    planned.sort_by_key(|candidate| (candidate.outer_span.start, candidate.outer_span.end));
+    planned
 }
 
 fn text<'a>(source: &'a str, node: Node<'_>) -> &'a str {

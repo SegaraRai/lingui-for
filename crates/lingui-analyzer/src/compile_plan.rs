@@ -1,8 +1,8 @@
 use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
 use crate::model::{
     CompilePlan, CompileRuntimeBindings, CompileScriptRegion, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTranslationMode, MacroCandidate, RuntimeRequirements, Span,
-    SyntheticModule,
+    CompileTargetOutputKind, CompileTranslationMode, MacroCandidate, MacroCandidateStrategy,
+    RuntimeRequirements, Span, SyntheticModule,
 };
 use crate::synthetic::build_synthetic_module_with_names;
 use crate::validation::validate_svelte_compile_targets;
@@ -46,6 +46,12 @@ pub fn build_compile_plan_for_framework_with_names(
         "astro" => build_astro_compile_plan(source, source_name, synthetic_name),
         "svelte" => build_svelte_compile_plan(source, source_name, synthetic_name),
         _ => Err(AnalyzerError::UnsupportedFramework(framework.to_string())),
+    }
+}
+
+pub(crate) fn repair_compile_plan_for_export(source: &str, plan: &mut CompilePlan) {
+    if plan.framework == "svelte" {
+        repair_svelte_compile_targets(source, &mut plan.targets);
     }
 }
 
@@ -224,6 +230,8 @@ fn build_compile_plan(
             prototype.candidate.outer_span.end,
         )
     });
+    prototypes
+        .retain(|prototype| prototype.candidate.strategy == MacroCandidateStrategy::Standalone);
     let candidates = prototypes
         .iter()
         .map(|prototype| prototype.candidate.clone())
@@ -238,7 +246,7 @@ fn build_compile_plan(
     let synthetic_source =
         build_compile_synthetic_source(framework, &extract_synthetic, source, &prototypes);
     let declaration_ids = extract_synthetic.declaration_ids.clone();
-    let targets = prototypes
+    let mut targets = prototypes
         .into_iter()
         .zip(extract_synthetic.mappings.iter())
         .map(|(prototype, mapping)| CompileTarget {
@@ -255,6 +263,9 @@ fn build_compile_plan(
             normalized_segments: mapping.normalized_segments.clone(),
         })
         .collect::<Vec<_>>();
+    if framework == "svelte" {
+        repair_svelte_compile_targets(source, &mut targets);
+    }
     let runtime_requirements = compute_runtime_requirements(framework, &targets);
 
     Ok(CompilePlan {
@@ -394,7 +405,75 @@ fn classify_output_kind(kind: MacroCandidateKind) -> CompileTargetOutputKind {
     }
 }
 
-fn compile_script_region(region: &EmbeddedScriptRegion, is_typescript: bool) -> CompileScriptRegion {
+fn repair_svelte_compile_targets(source: &str, targets: &mut [CompileTarget]) {
+    for target in targets {
+        match target.flavor {
+            crate::MacroFlavor::Reactive => {
+                let pattern = format!("${}", target.local_name);
+                let Some(start) = find_svelte_prefix_near(
+                    source,
+                    target.original_span.start,
+                    target.original_span.end,
+                    &pattern,
+                ) else {
+                    continue;
+                };
+                if start >= target.original_span.start {
+                    continue;
+                }
+
+                target.original_span = Span::new(start, target.original_span.end);
+                target.normalized_span = target.original_span;
+                target.source_map_anchor = Some(Span::new(start + 1, start + pattern.len()));
+                if let Some(first) = target.normalized_segments.first_mut() {
+                    first.original_start = start + 1;
+                }
+            }
+            crate::MacroFlavor::Eager => {
+                let pattern = format!("{}.eager", target.local_name);
+                let Some(start) = find_svelte_prefix_near(
+                    source,
+                    target.original_span.start,
+                    target.original_span.end,
+                    &pattern,
+                ) else {
+                    continue;
+                };
+                if start >= target.original_span.start {
+                    continue;
+                }
+
+                target.original_span = Span::new(start, target.original_span.end);
+                target.normalized_span = Span::new(start, target.normalized_span.end);
+                target.source_map_anchor = Some(Span::new(start, start + target.local_name.len()));
+                if let Some(first) = target.normalized_segments.first_mut() {
+                    first.original_start = start;
+                }
+            }
+            crate::MacroFlavor::Direct => {}
+        }
+    }
+}
+
+fn find_svelte_prefix_near(
+    source: &str,
+    current_start: usize,
+    current_end: usize,
+    pattern: &str,
+) -> Option<usize> {
+    let window_start = current_start.saturating_sub(pattern.len() + 8);
+    let window_end = current_end.min(source.len());
+    source[window_start..window_end]
+        .match_indices(pattern)
+        .map(|(offset, _)| window_start + offset)
+        .filter(|start| *start <= current_start)
+        .max()
+}
+
+fn compile_script_region(
+    region: &EmbeddedScriptRegion,
+    is_typescript: bool,
+) -> CompileScriptRegion {
     CompileScriptRegion {
         outer_span: region.outer_span,
         content_span: region.inner_span,
@@ -403,7 +482,10 @@ fn compile_script_region(region: &EmbeddedScriptRegion, is_typescript: bool) -> 
 }
 
 fn create_svelte_runtime_bindings(declared_names: &[String]) -> CompileRuntimeBindings {
-    let mut used = declared_names.iter().cloned().collect::<std::collections::BTreeSet<_>>();
+    let mut used = declared_names
+        .iter()
+        .cloned()
+        .collect::<std::collections::BTreeSet<_>>();
 
     CompileRuntimeBindings {
         create_lingui_accessors: allocate_unique_binding_name(

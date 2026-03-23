@@ -1,7 +1,9 @@
 use lingui_analyzer::{
     CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-    build_compile_plan_for_framework_with_names,
+    build_compile_plan_for_framework_with_names, build_synthetic_module_for_framework_with_names,
 };
+use std::fs::read_to_string;
+use std::path::PathBuf;
 
 #[test]
 fn builds_common_svelte_compile_plan_with_runtime_metadata() {
@@ -174,5 +176,78 @@ fn rejects_bare_direct_t_in_svelte_scripts() {
     )
     .expect_err("bare direct t should be rejected in svelte scripts");
 
-    assert!(error.to_string().contains("Bare `t` in `.svelte` files is not allowed"));
+    assert!(
+        error
+            .to_string()
+            .contains("Bare `t` in `.svelte` files is not allowed")
+    );
+}
+
+#[test]
+fn rejects_bare_direct_plural_in_svelte_extract_synthetic_builds() {
+    let source = r##"
+<script lang="ts">
+  import { plural } from "lingui-for-svelte/macro";
+
+  let count = $state(1);
+  const label = plural(count, {
+    one: "# Book",
+    other: "# Books",
+  });
+</script>
+"##;
+
+    let error = build_synthetic_module_for_framework_with_names(
+        "svelte",
+        source,
+        "/virtual/App.svelte",
+        "/virtual/App.svelte?extract.tsx",
+    )
+    .expect_err("bare direct plural should be rejected in svelte extraction");
+
+    assert!(
+        error
+            .to_string()
+            .contains("Bare `plural` in `.svelte` files is only allowed")
+    );
+}
+
+#[test]
+fn keeps_full_template_target_spans_for_the_e2e_preloaded_page() {
+    let source = read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../examples/e2e-svelte/src/routes/playground/init-preloaded/+page.svelte"),
+    )
+    .expect("e2e fixture source should load");
+
+    let plan = build_compile_plan_for_framework_with_names(
+        "svelte",
+        &source,
+        "/virtual/+page.svelte",
+        "/virtual/+page.svelte?compile.tsx",
+    )
+    .expect("svelte compile plan should build");
+
+    let template_targets = plan
+        .targets
+        .iter()
+        .filter(|target| {
+            target.context == CompileTargetContext::Template
+                && target.output_kind == CompileTargetOutputKind::Expression
+        })
+        .collect::<Vec<_>>();
+
+    assert!(
+        template_targets.iter().any(|target| {
+            source[target.original_span.start..target.original_span.end]
+                .starts_with("$t`Hello from the preloaded init pattern.`")
+        }),
+        "expected a full-span target for the later template t expression"
+    );
+    assert!(
+        template_targets.iter().any(|target| {
+            source[target.original_span.start..target.original_span.end].starts_with("$plural(")
+        }),
+        "expected a full-span target for the later template plural expression"
+    );
 }

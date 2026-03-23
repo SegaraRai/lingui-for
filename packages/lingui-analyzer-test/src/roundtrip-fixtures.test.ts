@@ -452,11 +452,6 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       original: "Before",
       extracted: /Before[\s\S]*After/,
     },
-    {
-      name: "plural other extraction",
-      original: "Before",
-      extracted: "Plural loaded {count} items.",
-    },
   ];
 
   const astroComplexFilename = "/virtual/ComplexScenario.astro";
@@ -512,11 +507,6 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "nested plural extracted message",
       original: "Before",
       extracted: /Before[\s\S]*After/,
-    },
-    {
-      name: "plural other extraction",
-      original: "Before",
-      extracted: "Plural loaded {count} items.",
     },
   ];
 

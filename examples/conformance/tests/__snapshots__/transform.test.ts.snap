@@ -212,22 +212,22 @@ exports[`NODE_ENV=development > 'deep-rich-text-trans' > svelte transform 1`] = 
     action: action
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    },
-    1: {
-      kind: "element",
-      tag: "em",
-      props: {}
-    },
-    2: {
-      kind: "element",
-      tag: "code",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
+  },
+  1: {
+    kind: "element",
+    tag: "em",
+    props: {}
+  },
+  2: {
+    kind: "element",
+    tag: "code",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -445,12 +445,12 @@ exports[`NODE_ENV=development > 'rich-text-trans' > svelte transform 1`] = `
     name: name
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -612,12 +612,12 @@ exports[`NODE_ENV=development > 'trans-with-deeply-nested-component-icu' > svelt
     count: count
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -683,12 +683,12 @@ exports[`NODE_ENV=development > 'trans-with-plural' > svelte transform 1`] = `
     count: count
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -1389,22 +1389,22 @@ exports[`NODE_ENV=production > 'deep-rich-text-trans' > svelte transform 1`] = `
     action: action
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    },
-    1: {
-      kind: "element",
-      tag: "em",
-      props: {}
-    },
-    2: {
-      kind: "element",
-      tag: "code",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
+  },
+  1: {
+    kind: "element",
+    tag: "em",
+    props: {}
+  },
+  2: {
+    kind: "element",
+    tag: "code",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -1610,12 +1610,12 @@ exports[`NODE_ENV=production > 'rich-text-trans' > svelte transform 1`] = `
     name: name
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -1765,12 +1765,12 @@ exports[`NODE_ENV=production > 'trans-with-deeply-nested-component-icu' > svelte
     count: count
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -1833,12 +1833,12 @@ exports[`NODE_ENV=production > 'trans-with-plural' > svelte transform 1`] = `
     count: count
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 

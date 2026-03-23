@@ -29,6 +29,7 @@ pub fn build_synthetic_module_with_names(
     let mut generated_initializer_offsets = BTreeMap::new();
     let mut normalized_segments = BTreeMap::new();
     let mut source_map_anchors = BTreeMap::new();
+    let mut candidate_kinds = BTreeMap::new();
     let import_line = render_import_line(imports);
 
     if let Some(line) = import_line {
@@ -57,9 +58,10 @@ pub fn build_synthetic_module_with_names(
         generated_initializer_offsets.insert(declaration_id.clone(), generated_initializer_start);
         normalized_segments.insert(declaration_id.clone(), normalized.segments);
         source_map_anchors.insert(declaration_id.clone(), candidate.source_map_anchor);
+        candidate_kinds.insert(declaration_id.clone(), candidate.kind);
     }
 
-    let mappings = declaration_ids
+    let mappings: Vec<SyntheticMapping> = declaration_ids
         .iter()
         .enumerate()
         .map(|(index, id)| {
@@ -93,6 +95,7 @@ pub fn build_synthetic_module_with_names(
         &generated_initializer_offsets,
         &normalized_segments,
         &source_map_anchors,
+        &candidate_kinds,
     );
 
     SyntheticModule {
@@ -218,6 +221,7 @@ fn build_source_map_json(
     generated_initializer_offsets: &BTreeMap<String, usize>,
     normalized_segments: &BTreeMap<String, Vec<RetainedSegment>>,
     source_map_anchors: &BTreeMap<String, Option<Span>>,
+    candidate_kinds: &BTreeMap<String, crate::MacroCandidateKind>,
 ) -> Option<String> {
     let mut builder = SourceMapBuilder::new(Some(synthetic_name));
     let src_id = builder.add_source(source_name);
@@ -232,23 +236,52 @@ fn build_source_map_json(
         let Some(generated_start) = generated_initializer_offsets.get(declaration_id) else {
             continue;
         };
-
-        if let Some(Some(anchor)) = source_map_anchors.get(declaration_id) {
-            let declaration_len = declaration_length(declaration_id, normalized_segments);
-            for delta in 0..=declaration_len {
-                let generated = generated_index.byte_to_line_utf16_col(*generated_start + delta);
-                let original = original_index.byte_to_line_utf16_col(anchor.start);
-                builder.add(
-                    generated.0 as u32,
-                    generated.1 as u32,
-                    original.0 as u32,
-                    original.1 as u32,
-                    Some(source_name),
-                    None,
-                    false,
-                );
-            }
+        let Some(candidate_kind) = candidate_kinds.get(declaration_id) else {
             continue;
+        };
+
+        let mut component_prefix_override = 0usize;
+        if let Some(Some(anchor)) = source_map_anchors.get(declaration_id) {
+            if *candidate_kind == crate::MacroCandidateKind::Component {
+                if let Some(first_segment) = normalized_segments
+                    .get(declaration_id)
+                    .and_then(|segments| segments.first())
+                {
+                    let prefix_len = anchor.start.saturating_sub(first_segment.original_start);
+                    component_prefix_override = prefix_len;
+                    for delta in 0..=prefix_len {
+                        let generated =
+                            generated_index.byte_to_line_utf16_col(*generated_start + delta);
+                        let original = original_index.byte_to_line_utf16_col(anchor.start);
+                        builder.add(
+                            generated.0 as u32,
+                            generated.1 as u32,
+                            original.0 as u32,
+                            original.1 as u32,
+                            Some(source_name),
+                            None,
+                            false,
+                        );
+                    }
+                }
+            } else {
+                let declaration_len = declaration_length(declaration_id, normalized_segments);
+                for delta in 0..=declaration_len {
+                    let generated =
+                        generated_index.byte_to_line_utf16_col(*generated_start + delta);
+                    let original = original_index.byte_to_line_utf16_col(anchor.start);
+                    builder.add(
+                        generated.0 as u32,
+                        generated.1 as u32,
+                        original.0 as u32,
+                        original.1 as u32,
+                        Some(source_name),
+                        None,
+                        false,
+                    );
+                }
+                continue;
+            }
         }
 
         let Some(segments) = normalized_segments.get(declaration_id) else {
@@ -256,7 +289,14 @@ fn build_source_map_json(
         };
 
         for segment in segments {
-            for delta in 0..=segment.len {
+            let skip = if *candidate_kind == crate::MacroCandidateKind::Component
+                && segment.generated_start == 0
+            {
+                component_prefix_override.min(segment.len + 1)
+            } else {
+                0
+            };
+            for delta in skip..=segment.len {
                 let generated = generated_index
                     .byte_to_line_utf16_col(generated_start + segment.generated_start + delta);
                 let original =

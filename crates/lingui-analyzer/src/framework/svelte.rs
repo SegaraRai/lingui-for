@@ -3,7 +3,8 @@ use std::cell::RefCell;
 use tree_sitter::{Language, Node, Parser};
 
 use crate::{
-    AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroImport, Span,
+    AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate,
+    MacroCandidateStrategy, MacroImport, Span,
     alloc::ensure_tree_sitter_allocator,
     framework::FrameworkAdapter,
     js::{
@@ -105,6 +106,12 @@ pub fn analyze_svelte(source: &str) -> Result<SvelteScriptAnalysis, AnalyzerErro
         &mut template_expressions,
         &mut template_components,
     )?;
+    for script in &mut scripts {
+        repair_svelte_candidates(source, &mut script.candidates);
+    }
+    for expression in &mut template_expressions {
+        repair_svelte_candidates(source, &mut expression.candidates);
+    }
     Ok(SvelteScriptAnalysis {
         scripts,
         template_expressions,
@@ -158,15 +165,9 @@ fn analyze_script_block(
 
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
     let language = script_language(source, start_tag);
-    let declared_names = collect_top_level_declared_names_in_javascript(
-        script_source,
-        language,
-    )?;
-    let macro_imports = collect_script_macro_imports(
-        script_source,
-        content_region.inner_span.start,
-        language,
-    )?;
+    let declared_names = collect_top_level_declared_names_in_javascript(script_source, language)?;
+    let macro_imports =
+        collect_script_macro_imports(script_source, content_region.inner_span.start, language)?;
     let macro_import_statement_spans = collect_script_macro_import_statement_spans(
         script_source,
         content_region.inner_span.start,
@@ -298,8 +299,7 @@ fn push_expression(
     else {
         return Ok(());
     };
-
-    let inner_span = Span::from_node(raw_text);
+    let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
     let outer_span = Span::from_node(node);
     let expression_source = &source[inner_span.start..inner_span.end];
     let shadowed_names = scope_stack
@@ -335,7 +335,7 @@ fn push_raw_text_expression(
         return Ok(());
     };
 
-    let inner_span = Span::from_node(raw_text);
+    let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
     let shadowed_names = scope_stack
         .iter()
         .flat_map(|frame| frame.iter().cloned())
@@ -555,6 +555,7 @@ fn component_candidate_from_element(
     strip_spans.dedup();
     Some(SvelteTemplateComponent {
         candidate: MacroCandidate {
+            id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
             kind: crate::MacroCandidateKind::Component,
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),
@@ -563,6 +564,8 @@ fn component_candidate_from_element(
             normalized_span: Span::from_node(node),
             strip_spans,
             source_map_anchor: component_source_map_anchor(source, node),
+            owner_id: None,
+            strategy: MacroCandidateStrategy::Standalone,
         },
         shadowed_names,
     })
@@ -691,15 +694,16 @@ fn append_expression_strip_spans(
     else {
         return Ok(());
     };
+    let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
 
     let shadowed_names = scope_stack
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
     let candidates = collect_macro_candidates_in_javascript_with_shadowing(
-        text(source, raw_text),
+        &source[inner_span.start..inner_span.end],
         imports,
-        raw_text.start_byte(),
+        inner_span.start,
         JsMacroSyntax::Svelte,
         JsLikeLanguage::TypeScript,
         &shadowed_names,
@@ -727,10 +731,11 @@ fn append_raw_text_expression_strip_spans(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
+    let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
     let candidates = collect_macro_candidates_in_javascript_with_shadowing(
-        text(source, raw_text),
+        &source[inner_span.start..inner_span.end],
         imports,
-        raw_text.start_byte(),
+        inner_span.start,
         JsMacroSyntax::Svelte,
         JsLikeLanguage::TypeScript,
         &shadowed_names,
@@ -1172,4 +1177,100 @@ fn find_first_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
     }
 
     None
+}
+
+fn repair_svelte_expression_inner_span(source: &str, node: Node<'_>, raw_span: Span) -> Span {
+    if node.kind() != "expression" {
+        return repair_svelte_raw_expression_span(source, raw_span);
+    }
+
+    repair_svelte_raw_expression_span(source, raw_span)
+}
+
+fn repair_svelte_raw_expression_span(source: &str, raw_span: Span) -> Span {
+    let mut start = raw_span.start;
+    if start >= 2
+        && source.as_bytes()[start - 2] == b'$'
+        && is_js_identifier_byte(source.as_bytes()[start - 1])
+    {
+        start -= 2;
+    } else if start >= 1 && source.as_bytes()[start - 1] == b'$' {
+        start -= 1;
+    }
+
+    Span::new(start, raw_span.end)
+}
+
+fn is_js_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
+}
+
+fn repair_svelte_candidates(source: &str, candidates: &mut [MacroCandidate]) {
+    for candidate in candidates {
+        repair_svelte_candidate(source, candidate);
+    }
+}
+
+fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
+    match candidate.flavor {
+        crate::MacroFlavor::Reactive => {
+            let pattern = format!("${}", candidate.local_name);
+            let Some(start) = find_svelte_prefix_near(
+                source,
+                candidate.outer_span.start,
+                candidate.outer_span.end,
+                &pattern,
+            ) else {
+                return;
+            };
+            if start >= candidate.outer_span.start {
+                return;
+            }
+
+            candidate.outer_span = Span::new(start, candidate.outer_span.end);
+            candidate.normalized_span = candidate.outer_span;
+            candidate.strip_spans = vec![Span::new(start, start + 1)];
+            candidate.source_map_anchor = Some(Span::new(start + 1, start + pattern.len()));
+        }
+        crate::MacroFlavor::Eager => {
+            let pattern = format!("{}.eager", candidate.local_name);
+            let Some(start) = find_svelte_prefix_near(
+                source,
+                candidate.outer_span.start,
+                candidate.outer_span.end,
+                &pattern,
+            ) else {
+                return;
+            };
+            if start >= candidate.outer_span.start {
+                return;
+            }
+
+            let object_end = start + candidate.local_name.len();
+            let property_end = start + pattern.len();
+            candidate.outer_span = Span::new(start, candidate.outer_span.end);
+            candidate.normalized_span = Span::new(
+                object_end - candidate.local_name.len(),
+                candidate.normalized_span.end,
+            );
+            candidate.strip_spans = vec![Span::new(object_end, property_end)];
+            candidate.source_map_anchor = Some(Span::new(start, object_end));
+        }
+        crate::MacroFlavor::Direct => {}
+    }
+}
+
+fn find_svelte_prefix_near(
+    source: &str,
+    current_start: usize,
+    current_end: usize,
+    pattern: &str,
+) -> Option<usize> {
+    let window_start = current_start.saturating_sub(pattern.len() + 8);
+    let window_end = current_end.min(source.len());
+    source[window_start..window_end]
+        .match_indices(pattern)
+        .map(|(offset, _)| window_start + offset)
+        .filter(|start| *start <= current_start)
+        .max()
 }

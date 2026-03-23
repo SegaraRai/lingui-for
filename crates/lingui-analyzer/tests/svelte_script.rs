@@ -1,6 +1,6 @@
 use indoc::indoc;
 use lingui_analyzer::{
-    MacroCandidateKind, MacroFlavor,
+    MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
     framework::{
         FrameworkAdapter,
         svelte::{SvelteAdapter, analyze_svelte},
@@ -337,10 +337,126 @@ fn keeps_outer_macro_when_javascript_macros_are_nested() {
     let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
     let script = &analysis.scripts[0];
 
-    assert_eq!(script.candidates.len(), 1);
+    assert_eq!(script.candidates.len(), 2);
     assert_eq!(script.candidates[0].imported_name, "t");
+    assert_eq!(
+        script.candidates[0].strategy,
+        MacroCandidateStrategy::Standalone
+    );
     assert_eq!(
         script.candidates[0].kind,
         MacroCandidateKind::CallExpression
     );
+    assert_eq!(script.candidates[1].imported_name, "msg");
+    assert_eq!(
+        script.candidates[1].strategy,
+        MacroCandidateStrategy::OwnedByParent
+    );
+    assert_eq!(
+        script.candidates[1].owner_id,
+        Some(script.candidates[0].id.clone())
+    );
+}
+
+#[test]
+fn marks_deeply_nested_script_core_macros_as_owned_by_the_outer_reactive_macro() {
+    let source = indoc! {r#"
+        <script lang="ts">
+          import { plural, select, selectOrdinal, t } from "lingui-for-svelte/macro";
+
+          let count = $state(0);
+          let rank = $state(1);
+          let role = $state("admin");
+
+          const deepCore = $derived($t({
+            message: plural(count, {
+              0: selectOrdinal(rank, {
+                1: select(role, {
+                  admin: "core zero first admin",
+                  other: "core zero first other",
+                }),
+                other: select(role, {
+                  admin: "core zero later admin",
+                  other: "core zero later other",
+                }),
+              }),
+              other: selectOrdinal(rank, {
+                1: select(role, {
+                  admin: "core many first admin",
+                  other: "core many first other",
+                }),
+                other: select(role, {
+                  admin: "core many later admin",
+                  other: "core many later other",
+                }),
+              }),
+            }),
+          }));
+        </script>
+    "#};
+
+    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let script = &analysis.scripts[0];
+    let standalone = script
+        .candidates
+        .iter()
+        .filter(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone)
+        .collect::<Vec<_>>();
+    let owned = script
+        .candidates
+        .iter()
+        .filter(|candidate| candidate.strategy == MacroCandidateStrategy::OwnedByParent)
+        .collect::<Vec<_>>();
+
+    assert_eq!(standalone.len(), 1);
+    assert_eq!(standalone[0].imported_name, "t");
+    assert!(
+        owned
+            .iter()
+            .any(|candidate| candidate.imported_name == "plural")
+    );
+    assert!(
+        owned
+            .iter()
+            .any(|candidate| candidate.imported_name == "selectOrdinal")
+    );
+    assert!(
+        owned
+            .iter()
+            .any(|candidate| candidate.imported_name == "select")
+    );
+}
+
+#[test]
+fn keeps_full_outer_span_for_later_reactive_plural_template_expressions() {
+    let source = indoc! {r##"
+        <script lang="ts">
+          import { plural, t } from "lingui-for-svelte/macro";
+
+          let locale = $state("en");
+          let count = $state(3);
+        </script>
+
+        <p>{$t`Init: Preloaded`}</p>
+        <h1>{$t`All locales preloaded at init`}</h1>
+        <p>{$plural(count, {
+          one: "# item in the list.",
+          other: "# items in the list.",
+        })}</p>
+    "##};
+
+    let analysis = analyze_svelte(source).expect("svelte analysis should succeed");
+    let plural_expression = analysis
+        .template_expressions
+        .iter()
+        .flat_map(|expression| expression.candidates.iter())
+        .find(|candidate| candidate.imported_name == "plural")
+        .expect("plural candidate exists");
+
+    let outer = &source[plural_expression.outer_span.start..plural_expression.outer_span.end];
+    let normalized =
+        &source[plural_expression.normalized_span.start..plural_expression.normalized_span.end];
+
+    assert!(outer.starts_with("$plural("));
+    assert!(normalized.starts_with("$plural("));
 }

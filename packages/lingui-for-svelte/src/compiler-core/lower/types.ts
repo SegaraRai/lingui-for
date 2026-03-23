@@ -1,8 +1,11 @@
+import type { TransformOptions } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
 import type { ScriptLang } from "../shared/types.ts";
+
+type BabelInputSourceMap = TransformOptions["inputSourceMap"];
 
 export type SourcePosition = {
   line: number;
@@ -12,6 +15,7 @@ export type SourcePosition = {
 export type ProgramTransform = {
   code: string;
   ast: BabelTypes.File;
+  map?: EncodedSourceMap | null;
 };
 
 export type MappedCodeFragment = {
@@ -32,6 +36,7 @@ export type ProgramTransformRequest = {
   linguiConfig: LinguiConfigNormalized;
   extract: boolean;
   translationMode: "extract" | "raw" | "svelte-context";
+  inputSourceMap?: BabelInputSourceMap;
   allowBareSyntheticDirectMacros?: boolean | undefined;
   runtimeBindings?: RuntimeBindingsForTransform | undefined;
 };

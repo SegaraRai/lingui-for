@@ -14,7 +14,7 @@ describe("lingui-analyzer wasm contract", () => {
     const source = dedent`
       <script lang="ts">
         import { t as translate } from "@lingui/core/macro";
-        const label = translate\`Script hello\`;
+        const label = translate.eager\`Script hello\`;
         const name = "Ada";
       </script>
 
@@ -62,7 +62,7 @@ describe("lingui-analyzer wasm contract", () => {
     const source = dedent`
       <script lang="ts">
         import { t as translate } from "@lingui/core/macro";
-        const label = translate\`Script origin\`;
+        const label = translate.eager\`Script origin\`;
       </script>
 
       <p>{$translate\`Markup origin\`}</p>
@@ -209,7 +209,7 @@ describe("lingui-analyzer wasm contract", () => {
     const source = dedent`
       <script lang="ts">
         import { t as translate } from "@lingui/core/macro";
-        const label = translate\`Script hello\`;
+        const label = translate.eager\`Script hello\`;
         const name = "Ada";
       </script>
 

@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 type WasmTarget = {
@@ -64,6 +64,13 @@ function buildWasm(
   target: WasmTarget,
   isDebug: boolean,
 ): void {
+  const absoluteOutputDir = resolve(target.crateDir, target.outputDir);
+
+  // wasm-pack reuses files in the output directory and can choke on its own
+  // previously generated package.json, so rebuild the directory from scratch.
+  rmSync(absoluteOutputDir, { recursive: true, force: true });
+  mkdirSync(absoluteOutputDir, { recursive: true });
+
   const result = spawnSync(
     resolveWasmPack(rootDir),
     [
