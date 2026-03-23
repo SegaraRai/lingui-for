@@ -225,23 +225,29 @@ fn build_source_map_json(
         let Some(generated_start) = generated_initializer_offsets.get(declaration_id) else {
             continue;
         };
+
+        if let Some(Some(anchor)) = source_map_anchors.get(declaration_id) {
+            let declaration_len = declaration_length(declaration_id, normalized_segments);
+            for delta in 0..=declaration_len {
+                let generated = generated_index.byte_to_line_utf16_col(*generated_start + delta);
+                let original =
+                    original_index.byte_to_line_utf16_col(anchor.start);
+                builder.add(
+                    generated.0 as u32,
+                    generated.1 as u32,
+                    original.0 as u32,
+                    original.1 as u32,
+                    Some(source_name),
+                    None,
+                    false,
+                );
+            }
+            continue;
+        }
+
         let Some(segments) = normalized_segments.get(declaration_id) else {
             continue;
         };
-
-        if let Some(Some(anchor)) = source_map_anchors.get(declaration_id) {
-            let generated = generated_index.byte_to_line_utf16_col(*generated_start);
-            let original = original_index.byte_to_line_utf16_col(anchor.start);
-            builder.add(
-                generated.0 as u32,
-                generated.1 as u32,
-                original.0 as u32,
-                original.1 as u32,
-                Some(source_name),
-                None,
-                false,
-            );
-        }
 
         for segment in segments {
             for delta in 0..=segment.len {
@@ -266,6 +272,17 @@ fn build_source_map_json(
     let mut out = Cursor::new(Vec::new());
     sourcemap.to_writer(&mut out).ok()?;
     String::from_utf8(out.into_inner()).ok()
+}
+
+fn declaration_length(
+    declaration_id: &str,
+    normalized_segments: &BTreeMap<String, Vec<RetainedSegment>>,
+) -> usize {
+    normalized_segments
+        .get(declaration_id)
+        .and_then(|segments| segments.last())
+        .map(|segment| segment.generated_start + segment.len)
+        .unwrap_or(0)
 }
 
 fn compute_line_starts(source: &str) -> Vec<usize> {

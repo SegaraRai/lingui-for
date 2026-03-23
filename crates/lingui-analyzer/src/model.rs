@@ -103,6 +103,15 @@ pub struct NormalizedSegment {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReplacementChunk {
+    pub declaration_id: String,
+    pub original_span: Span,
+    pub replacement: String,
+    pub source_map_anchor: Option<Span>,
+    pub normalized_segments: Vec<NormalizedSegment>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ReinsertOptions {
     pub original_source: String,
     pub source_name: Option<String>,

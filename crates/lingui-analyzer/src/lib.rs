@@ -18,8 +18,8 @@ use crate::synthetic::build_synthetic_module_with_names;
 pub use error::AnalyzerError;
 pub use model::{
     EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate, MacroCandidateKind, MacroFlavor,
-    MacroImport, ReinsertOptions, ReinsertedModule, Span, SyntheticMapping, SyntheticModule,
-    SyntheticModuleOptions,
+    MacroImport, NormalizedSegment, ReinsertOptions, ReinsertedModule, ReplacementChunk, Span,
+    SyntheticMapping, SyntheticModule, SyntheticModuleOptions,
 };
 
 pub fn build_synthetic_module_for_framework(

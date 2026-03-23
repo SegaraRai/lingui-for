@@ -461,6 +461,7 @@ fn visit_element_like(
 ) -> Result<(), AnalyzerError> {
     if let Some(candidate) = component_candidate_from_element(source, node, imports, scope_stack) {
         components.push(candidate);
+        return Ok(());
     }
 
     let let_bindings = let_bindings_from_element(source, node);
@@ -515,6 +516,10 @@ fn component_candidate_from_element(
     let import_decl = imports
         .iter()
         .find(|import_decl| import_decl.local_name == tag_name)?;
+    let mut strip_spans = Vec::new();
+    collect_component_strip_spans(source, node, imports, scope_stack, &mut strip_spans).ok()?;
+    strip_spans.sort_by_key(|span| (span.start, span.end));
+    strip_spans.dedup();
     Some(SvelteTemplateComponent {
         candidate: MacroCandidate {
             kind: crate::MacroCandidateKind::Component,
@@ -523,11 +528,291 @@ fn component_candidate_from_element(
             flavor: crate::MacroFlavor::Direct,
             outer_span: Span::from_node(node),
             normalized_span: Span::from_node(node),
-            strip_spans: Vec::new(),
+            strip_spans,
             source_map_anchor: component_source_map_anchor(source, node),
         },
         shadowed_names,
     })
+}
+
+fn collect_component_strip_spans(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &[Vec<String>],
+    strip_spans: &mut Vec<Span>,
+) -> Result<(), AnalyzerError> {
+    let mut local_scope_stack = scope_stack.to_vec();
+    collect_component_strip_spans_inner(source, node, imports, &mut local_scope_stack, strip_spans)
+}
+
+fn collect_component_strip_spans_inner(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    strip_spans: &mut Vec<Span>,
+) -> Result<(), AnalyzerError> {
+    match node.kind() {
+        "script_element" | "style_element" => return Ok(()),
+        "expression" => {
+            append_expression_strip_spans(source, node, imports, scope_stack, strip_spans)?;
+            return Ok(());
+        }
+        "html_tag" | "render_tag" | "key_start" | "await_start" | "if_start" | "else_if_start" => {
+            append_raw_text_expression_strip_spans(source, node, imports, scope_stack, strip_spans)?;
+        }
+        "const_tag" => {
+            let names = declared_names_from_const_tag(source, node)?;
+            if !names.is_empty() {
+                if let Some(frame) = scope_stack.last_mut() {
+                    frame.extend(names);
+                } else {
+                    scope_stack.push(names);
+                }
+            }
+            return Ok(());
+        }
+        "if_statement" | "else_block" | "else_if_block" | "key_statement" => {
+            scope_stack.push(Vec::new());
+            let mut cursor = node.walk();
+            for child in node.children(&mut cursor) {
+                collect_component_strip_spans_inner(
+                    source,
+                    child,
+                    imports,
+                    scope_stack,
+                    strip_spans,
+                )?;
+            }
+            scope_stack.pop();
+            return Ok(());
+        }
+        "each_statement" => {
+            visit_component_each_statement(source, node, imports, scope_stack, strip_spans)?;
+            return Ok(());
+        }
+        "then_block" => {
+            visit_component_named_block(
+                source,
+                node,
+                imports,
+                scope_stack,
+                strip_spans,
+                "then_start",
+            )?;
+            return Ok(());
+        }
+        "catch_block" => {
+            visit_component_named_block(
+                source,
+                node,
+                imports,
+                scope_stack,
+                strip_spans,
+                "catch_start",
+            )?;
+            return Ok(());
+        }
+        "snippet_statement" => {
+            visit_component_snippet_statement(source, node, imports, scope_stack, strip_spans)?;
+            return Ok(());
+        }
+        "element" | "self_closing_tag" => {
+            visit_component_element_like(source, node, imports, scope_stack, strip_spans)?;
+            return Ok(());
+        }
+        _ => {}
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        collect_component_strip_spans_inner(source, child, imports, scope_stack, strip_spans)?;
+    }
+    Ok(())
+}
+
+fn append_expression_strip_spans(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &[Vec<String>],
+    strip_spans: &mut Vec<Span>,
+) -> Result<(), AnalyzerError> {
+    let Some(raw_text) = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == "svelte_raw_text")
+    else {
+        return Ok(());
+    };
+
+    let shadowed_names = scope_stack
+        .iter()
+        .flat_map(|frame| frame.iter().cloned())
+        .collect::<Vec<_>>();
+    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+        text(source, raw_text),
+        imports,
+        raw_text.start_byte(),
+        JsMacroSyntax::Svelte,
+        JsLikeLanguage::TypeScript,
+        &shadowed_names,
+    )?;
+    strip_spans.extend(
+        candidates
+            .into_iter()
+            .flat_map(|candidate| candidate.strip_spans.into_iter()),
+    );
+    Ok(())
+}
+
+fn append_raw_text_expression_strip_spans(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &[Vec<String>],
+    strip_spans: &mut Vec<Span>,
+) -> Result<(), AnalyzerError> {
+    let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
+        return Ok(());
+    };
+
+    let shadowed_names = scope_stack
+        .iter()
+        .flat_map(|frame| frame.iter().cloned())
+        .collect::<Vec<_>>();
+    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+        text(source, raw_text),
+        imports,
+        raw_text.start_byte(),
+        JsMacroSyntax::Svelte,
+        JsLikeLanguage::TypeScript,
+        &shadowed_names,
+    )?;
+    strip_spans.extend(
+        candidates
+            .into_iter()
+            .flat_map(|candidate| candidate.strip_spans.into_iter()),
+    );
+    Ok(())
+}
+
+fn visit_component_each_statement(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    strip_spans: &mut Vec<Span>,
+) -> Result<(), AnalyzerError> {
+    let start = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == "each_start");
+    if let Some(start) = start {
+        append_raw_text_expression_strip_spans(source, start, imports, scope_stack, strip_spans)?;
+    }
+    let frame = start
+        .map(|start| declared_names_from_each_start(source, start))
+        .transpose()?
+        .unwrap_or_default();
+
+    scope_stack.push(frame);
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == "each_start" || child.kind() == "each_end" {
+            continue;
+        }
+        collect_component_strip_spans_inner(source, child, imports, scope_stack, strip_spans)?;
+    }
+    scope_stack.pop();
+    Ok(())
+}
+
+fn visit_component_named_block(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    strip_spans: &mut Vec<Span>,
+    start_kind: &str,
+) -> Result<(), AnalyzerError> {
+    let start = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == start_kind);
+    let frame = start
+        .map(|start| {
+            declared_names_from_optional_raw_text(source, start, BindingParseMode::SingleParam)
+        })
+        .transpose()?
+        .flatten()
+        .unwrap_or_default();
+
+    scope_stack.push(frame);
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == start_kind {
+            continue;
+        }
+        collect_component_strip_spans_inner(source, child, imports, scope_stack, strip_spans)?;
+    }
+    scope_stack.pop();
+    Ok(())
+}
+
+fn visit_component_snippet_statement(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    strip_spans: &mut Vec<Span>,
+) -> Result<(), AnalyzerError> {
+    let start = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == "snippet_start");
+    let frame = start
+        .map(|start| {
+            declared_names_from_optional_raw_text(source, start, BindingParseMode::FunctionParams)
+        })
+        .transpose()?
+        .flatten()
+        .unwrap_or_default();
+
+    scope_stack.push(frame);
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == "snippet_start" || child.kind() == "snippet_end" {
+            continue;
+        }
+        collect_component_strip_spans_inner(source, child, imports, scope_stack, strip_spans)?;
+    }
+    scope_stack.pop();
+    Ok(())
+}
+
+fn visit_component_element_like(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    scope_stack: &mut Vec<Vec<String>>,
+    strip_spans: &mut Vec<Span>,
+) -> Result<(), AnalyzerError> {
+    let let_bindings = let_bindings_from_element(source, node);
+    let has_let_bindings = !let_bindings.is_empty();
+    if has_let_bindings {
+        scope_stack.push(let_bindings);
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if node.kind() == "element" && child.kind() == "end_tag" {
+            continue;
+        }
+        collect_component_strip_spans_inner(source, child, imports, scope_stack, strip_spans)?;
+    }
+
+    if has_let_bindings {
+        scope_stack.pop();
+    }
+    Ok(())
 }
 
 fn component_source_map_anchor(source: &str, node: Node<'_>) -> Option<Span> {

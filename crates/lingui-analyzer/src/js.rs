@@ -75,7 +75,7 @@ pub fn collect_macro_candidates_from_root(
         &mut scope,
         &mut candidates,
     );
-    candidates
+    filter_nested_candidates(candidates)
 }
 
 pub fn collect_declared_names_from_binding_source(
@@ -289,6 +289,7 @@ fn to_call_candidate(
             let identifier = call_target_identifier(function)?;
             let local_name = text(source, identifier);
             let import_decl = scope.resolve_macro(local_name)?;
+            let identifier_span = shift_span(Span::from_node(identifier), base_offset);
             Some(MacroCandidate {
                 kind: candidate_kind_from_arguments(arguments),
                 imported_name: import_decl.imported_name.clone(),
@@ -297,7 +298,7 @@ fn to_call_candidate(
                 outer_span: shift_span(Span::from_node(node), base_offset),
                 normalized_span: shift_span(Span::from_node(node), base_offset),
                 strip_spans: Vec::new(),
-                source_map_anchor: None,
+                source_map_anchor: Some(identifier_span),
             })
         }
         JsMacroSyntax::Svelte => {
@@ -320,6 +321,7 @@ fn to_svelte_call_candidate(
         if let Some(reactive_name) = local_name.strip_prefix('$') {
             let import_decl = scope.resolve_macro(reactive_name)?;
             let identifier_span = shift_span(Span::from_node(identifier), base_offset);
+            let anchor = Span::new(identifier_span.start + 1, identifier_span.end);
 
             return Some(MacroCandidate {
                 kind: candidate_kind_from_arguments(arguments),
@@ -329,7 +331,7 @@ fn to_svelte_call_candidate(
                 outer_span: shift_span(Span::from_node(node), base_offset),
                 normalized_span: shift_span(Span::from_node(node), base_offset),
                 strip_spans: vec![Span::new(identifier_span.start, identifier_span.start + 1)],
-                source_map_anchor: None,
+                source_map_anchor: Some(anchor),
             });
         }
 
@@ -342,7 +344,7 @@ fn to_svelte_call_candidate(
             outer_span: shift_span(Span::from_node(node), base_offset),
             normalized_span: shift_span(Span::from_node(node), base_offset),
             strip_spans: Vec::new(),
-            source_map_anchor: None,
+            source_map_anchor: Some(shift_span(Span::from_node(identifier), base_offset)),
         });
     }
 
@@ -372,7 +374,7 @@ fn to_svelte_call_candidate(
             0,
         ),
         strip_spans: vec![Span::new(object_span.end, property_span.end)],
-        source_map_anchor: None,
+        source_map_anchor: Some(object_span),
     })
 }
 
@@ -389,6 +391,28 @@ fn call_target_identifier(node: Node<'_>) -> Option<Node<'_>> {
 
 fn shift_span(span: Span, base_offset: usize) -> Span {
     Span::new(span.start + base_offset, span.end + base_offset)
+}
+
+fn filter_nested_candidates(mut candidates: Vec<MacroCandidate>) -> Vec<MacroCandidate> {
+    candidates.sort_by_key(|candidate| {
+        (
+            candidate.outer_span.start,
+            std::cmp::Reverse(candidate.outer_span.end),
+        )
+    });
+
+    let mut filtered = Vec::new();
+    for candidate in candidates {
+        let nested = filtered.iter().any(|kept: &MacroCandidate| {
+            kept.outer_span.start <= candidate.outer_span.start
+                && kept.outer_span.end >= candidate.outer_span.end
+        });
+        if !nested {
+            filtered.push(candidate);
+        }
+    }
+    filtered.sort_by_key(|candidate| (candidate.outer_span.start, candidate.outer_span.end));
+    filtered
 }
 
 fn text<'a>(source: &'a str, node: Node<'_>) -> &'a str {

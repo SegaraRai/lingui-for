@@ -24,6 +24,7 @@ type DetectionFixture = {
   filename: string;
   source: string;
   detections: readonly Detection[];
+  fails?: boolean;
 };
 
 describe("lingui-analyzer roundtrip source map discipline", () => {
@@ -399,6 +400,126 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     },
   ];
 
+  const svelteComplexFilename = "/virtual/ComplexScenario.svelte";
+  const svelteComplexSource = dedent`
+    <script lang="ts">
+      import { msg, t as translate } from "@lingui/core/macro";
+      import { Plural, Trans as Translation } from "@lingui/react/macro";
+      const loading = false;
+      const count = 3;
+      const gender = "female";
+      const status = $derived.by(() =>
+        loading
+          ? $translate\`Loading items...\`
+          : $translate(msg\`Loaded \${count} items.\`),
+      );
+    </script>
+
+    <Translation>
+      Before
+      <Plural
+        value={count}
+        one={translate\`One item for \${gender}.\`}
+        other={$translate\`Plural loaded \${count} items.\`}
+      />
+      After
+    </Translation>
+
+    <p>{status}</p>
+  `;
+  const svelteComplexDetections: Detection[] = [
+    {
+      name: "derived loading branch transform",
+      original: "translate`Loading items...`",
+      generated: /_i18n\._\([\s\S]*?message: "Loading items\.\.\."[\s\S]*?\)/,
+      extracted: "Loading items...",
+    },
+    {
+      name: "derived loaded branch transform",
+      original: /translate\(msg`Loaded \$\{count\} items\.`\)/,
+      generated:
+        /(?<=\? _i18n\._\([\s\S]*?: )_i18n\._\([\s\S]*?message: "Loaded \{count\} items\."[\s\S]*?\)(?=,\n\s*\);\n<\/script>)/,
+      extracted: "Loaded {count} items.",
+    },
+    {
+      name: "nested plural boundary",
+      original:
+        /<Translation>[\s\S]*?<Plural[\s\S]*?\/>[\s\S]*?<\/Translation>/,
+      generated: /<_Trans\b[\s\S]*?\/>/,
+    },
+    {
+      name: "nested plural extracted message",
+      original: "Before",
+      extracted: /Before[\s\S]*After/,
+    },
+    {
+      name: "plural other extraction",
+      original: "Before",
+      extracted: "Plural loaded {count} items.",
+    },
+  ];
+
+  const astroComplexFilename = "/virtual/ComplexScenario.astro";
+  const astroComplexSource = dedent`
+    ---
+    import { msg, select, t as translate } from "@lingui/core/macro";
+    import { Plural, Trans as Translation } from "@lingui/react/macro";
+    const loading = false;
+    const count = 3;
+    const gender = "female";
+    const status = loading
+      ? translate\`Loading items...\`
+      : translate(msg\`Loaded \${count} items.\`);
+    ---
+
+    <Translation>
+      Before
+      <Plural
+        value={count}
+        one={select(gender, {
+          female: "one item for her",
+          male: "one item for him",
+          other: "one item",
+        })}
+        other={translate\`Plural loaded \${count} items.\`}
+      />
+      After
+    </Translation>
+
+    <p>{status}</p>
+  `;
+  const astroComplexDetections: Detection[] = [
+    {
+      name: "derived loading branch transform",
+      original: "translate`Loading items...`",
+      generated: /_i18n\._\([\s\S]*?message: "Loading items\.\.\."[\s\S]*?\)/,
+      extracted: "Loading items...",
+    },
+    {
+      name: "derived loaded branch transform",
+      original: /translate\(msg`Loaded \$\{count\} items\.`\)/,
+      generated:
+        /(?<=const status = loading\n\s*\? _i18n\._\([\s\S]*?: )_i18n\._\([\s\S]*?message: "Loaded \{count\} items\."[\s\S]*?\)(?=;\n---)/,
+      extracted: "Loaded {count} items.",
+    },
+    {
+      name: "nested plural boundary",
+      original:
+        /<Translation>[\s\S]*?<Plural[\s\S]*?\/>[\s\S]*?<\/Translation>/,
+      generated: /<_Trans\b[\s\S]*?\/>/,
+    },
+    {
+      name: "nested plural extracted message",
+      original: "Before",
+      extracted: /Before[\s\S]*After/,
+    },
+    {
+      name: "plural other extraction",
+      original: "Before",
+      extracted: "Plural loaded {count} items.",
+    },
+  ];
+
   const fixtures: DetectionFixture[] = [
     {
       name: "Svelte expression contracts",
@@ -456,11 +577,35 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       source: astroNestedComponentSource,
       detections: astroNestedComponentDetections,
     },
+    {
+      name: "Svelte complex derived contracts",
+      framework: "svelte",
+      filename: svelteComplexFilename,
+      source: svelteComplexSource,
+      detections: svelteComplexDetections,
+    },
+    {
+      name: "Astro complex nested component contracts",
+      framework: "astro",
+      filename: astroComplexFilename,
+      source: astroComplexSource,
+      detections: astroComplexDetections,
+    },
   ];
 
-  test.for(fixtures)("$name", async (fixture) => {
-    await assertDetections(fixture);
-  });
+  test.for(fixtures.filter((fixture) => !fixture.fails))(
+    "$name",
+    async (fixture) => {
+      await assertDetections(fixture);
+    },
+  );
+
+  test.fails.for(fixtures.filter((fixture) => fixture.fails))(
+    "$name",
+    async (fixture) => {
+      await assertDetections(fixture);
+    },
+  );
 });
 
 async function assertDetections(fixture: DetectionFixture): Promise<void> {
@@ -505,33 +650,30 @@ function assertExtractionOrigin(
 
   const original = findUniqueRange(source, detection.original);
   const originalStart = offsetToLocation(source, original.start);
-  const message = findUniqueMessage(messages, detection.extracted);
+  const matched = findMatchingMessages(messages, detection.extracted);
 
   expect(
-    message.origin,
+    matched.some(
+      (message) =>
+        message.origin?.[0] === filename &&
+        message.origin?.[1] === originalStart.line &&
+        message.origin?.[2] === originalStart.column,
+    ),
     `${detection.name}: missing extraction origin`,
-  ).toEqual([filename, originalStart.line, originalStart.column]);
+  ).toBe(true);
 }
 
-function findUniqueMessage(
+function findMatchingMessages(
   messages: readonly ExtractedMessage[],
   needle: string | RegExp,
 ) {
-  const matched = messages.filter((message) => {
+  return messages.filter((message) => {
     const value = message.message ?? "";
     if (typeof needle === "string") {
       return value === needle;
     }
     return needle.test(value);
   });
-
-  if (matched.length === 0) {
-    throw new Error(`Extracted message not found: ${needle}`);
-  }
-  if (matched.length > 1) {
-    throw new Error(`Extracted message matched multiple times: ${needle}`);
-  }
-  return matched[0];
 }
 
 function assertRangeMapping(

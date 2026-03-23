@@ -257,3 +257,21 @@ fn collects_extended_svelte_template_expression_sites() {
             .all(|expression| expression.candidates[0].imported_name == "t")
     );
 }
+
+#[test]
+fn keeps_outer_macro_when_javascript_macros_are_nested() {
+    let source = indoc! {r#"
+        <script lang="ts">
+          import { msg, t } from "@lingui/core/macro";
+
+          const loaded = t(msg`Loaded ${count} items.`);
+        </script>
+    "#};
+
+    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let script = &analysis.scripts[0];
+
+    assert_eq!(script.candidates.len(), 1);
+    assert_eq!(script.candidates[0].imported_name, "t");
+    assert_eq!(script.candidates[0].kind, MacroCandidateKind::CallExpression);
+}

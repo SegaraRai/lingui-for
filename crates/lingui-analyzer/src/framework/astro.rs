@@ -187,6 +187,7 @@ fn collect_template_expressions(
         "element" => {
             if let Some(component) = component_candidate_from_element(source, node, imports) {
                 components.push(component);
+                return Ok(());
             }
         }
         "attribute_interpolation" => {

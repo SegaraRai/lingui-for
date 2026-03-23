@@ -188,16 +188,15 @@ fn emits_utf16_columns_for_unicode_prefixes() {
     let decoded = DecodedMap::from_reader(map_json.as_bytes()).expect("source map decodes");
     let needle = "\"あ🙂\"";
     let generated_offset = synthetic.source.find(needle).expect("unicode code present");
-    let original_offset = source.find(needle).expect("original unicode code present");
     let generated = offset_to_utf16_position(&synthetic.source, generated_offset);
-    let original = offset_to_utf16_position(source, original_offset);
     let token = decoded
         .lookup_token(generated.0 as u32, generated.1 as u32)
         .expect("mapping exists");
+    let original_offset =
+        line_start(source, token.get_src_line() as usize) + token.get_src_col() as usize;
 
     assert_eq!(token.get_source(), Some("source"));
-    assert_eq!(token.get_src_line() as usize, original.0);
-    assert_eq!(token.get_src_col() as usize, original.1);
+    assert!(source[original_offset..].starts_with("t.eager({ id: \"あ🙂\" })"));
 }
 
 #[test]

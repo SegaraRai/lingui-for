@@ -1,93 +1,168 @@
+use std::collections::BTreeMap;
 use std::io::Cursor;
 
 use sourcemap::SourceMapBuilder;
 
 use crate::utf16::Utf16Index;
-use crate::{AnalyzerError, ReinsertedModule, SyntheticModule};
+use crate::{
+    AnalyzerError, NormalizedSegment, ReinsertedModule, ReplacementChunk, Span, SyntheticModule,
+};
 
 pub fn reinsert_transformed_declarations(
     original_source: &str,
     source_name: &str,
     synthetic_module: &SyntheticModule,
-    transformed_declarations: &std::collections::BTreeMap<String, String>,
+    transformed_declarations: &BTreeMap<String, String>,
 ) -> Result<ReinsertedModule, AnalyzerError> {
-    let mut mappings = synthetic_module.mappings.clone();
-    mappings.sort_by_key(|mapping| {
+    let mut chunks =
+        build_replacement_chunks(&synthetic_module.mappings, transformed_declarations)?;
+    chunks.sort_by_key(|chunk| {
         (
-            mapping.original_span.start,
-            mapping.original_span.end,
-            mapping.declaration_id.clone(),
+            chunk.original_span.start,
+            chunk.original_span.end,
+            chunk.declaration_id.clone(),
         )
     });
 
-    let mut code = String::new();
-    let mut segments = Vec::new();
-    let mut cursor = 0usize;
-
-    for mapping in &mappings {
-        if mapping.original_span.start < cursor {
-            return Err(AnalyzerError::OverlappingMappings(
-                mapping.original_span.start,
-            ));
-        }
-
-        if cursor < mapping.original_span.start {
-            let unchanged = &original_source[cursor..mapping.original_span.start];
-            let generated_start = code.len();
-            code.push_str(unchanged);
-            segments.push(MappingSegment {
-                generated_start,
-                generated_len: unchanged.len(),
-                original_start: cursor,
-                original_len: unchanged.len(),
-            });
-        }
-
-        let replacement = transformed_declarations
-            .get(&mapping.declaration_id)
-            .ok_or_else(|| {
-                AnalyzerError::MissingTransformedDeclaration(mapping.declaration_id.clone())
-            })?;
-        let generated_start = code.len();
-        code.push_str(replacement);
-        let original_start = mapping
-            .normalized_segments
-            .first()
-            .map(|segment| segment.original_start)
-            .unwrap_or(mapping.original_span.start);
-        let original_len = mapping.original_span.end.saturating_sub(original_start);
-        segments.push(MappingSegment {
-            generated_start,
-            generated_len: replacement.len(),
-            original_start,
-            original_len,
-        });
-
-        cursor = mapping.original_span.end;
-    }
-
-    if cursor < original_source.len() {
-        let tail = &original_source[cursor..];
-        let generated_start = code.len();
-        code.push_str(tail);
-        segments.push(MappingSegment {
-            generated_start,
-            generated_len: tail.len(),
-            original_start: cursor,
-            original_len: tail.len(),
-        });
-    }
+    let assembly = assemble_reinserted_output(original_source, &chunks)?;
 
     Ok(ReinsertedModule {
-        code: code.clone(),
+        code: assembly.code.clone(),
         source_name: source_name.to_string(),
         source_map_json: build_reinserted_source_map_json(
             original_source,
             source_name,
-            &code,
-            &segments,
+            &assembly.code,
+            &assembly.mapping_segments,
         ),
     })
+}
+
+fn build_replacement_chunks(
+    mappings: &[crate::SyntheticMapping],
+    transformed_declarations: &BTreeMap<String, String>,
+) -> Result<Vec<ReplacementChunk>, AnalyzerError> {
+    mappings
+        .iter()
+        .map(|mapping| {
+            let replacement = transformed_declarations
+                .get(&mapping.declaration_id)
+                .ok_or_else(|| {
+                    AnalyzerError::MissingTransformedDeclaration(mapping.declaration_id.clone())
+                })?
+                .clone();
+
+            Ok(ReplacementChunk {
+                declaration_id: mapping.declaration_id.clone(),
+                original_span: mapping.original_span,
+                replacement,
+                source_map_anchor: mapping.source_map_anchor,
+                normalized_segments: mapping.normalized_segments.clone(),
+            })
+        })
+        .collect()
+}
+
+fn assemble_reinserted_output(
+    original_source: &str,
+    chunks: &[ReplacementChunk],
+) -> Result<ReinsertedAssembly, AnalyzerError> {
+    let mut code = String::new();
+    let mut mapping_segments = Vec::new();
+    let mut cursor = 0usize;
+
+    for chunk in chunks {
+        if chunk.original_span.start < cursor {
+            return Err(AnalyzerError::OverlappingMappings(
+                chunk.original_span.start,
+            ));
+        }
+
+        if cursor < chunk.original_span.start {
+            push_unchanged_chunk(
+                original_source,
+                Span::new(cursor, chunk.original_span.start),
+                &mut code,
+                &mut mapping_segments,
+            );
+        }
+
+        push_replacement_chunk(chunk, &mut code, &mut mapping_segments);
+        cursor = chunk.original_span.end;
+    }
+
+    if cursor < original_source.len() {
+        push_unchanged_chunk(
+            original_source,
+            Span::new(cursor, original_source.len()),
+            &mut code,
+            &mut mapping_segments,
+        );
+    }
+
+    Ok(ReinsertedAssembly {
+        code,
+        mapping_segments,
+    })
+}
+
+fn push_unchanged_chunk(
+    original_source: &str,
+    span: Span,
+    code: &mut String,
+    mapping_segments: &mut Vec<MappingSegment>,
+) {
+    let unchanged = &original_source[span.start..span.end];
+    let generated_start = code.len();
+    code.push_str(unchanged);
+    mapping_segments.push(MappingSegment {
+        generated_start,
+        generated_len: unchanged.len(),
+        original_start: span.start,
+        original_len: unchanged.len(),
+    });
+}
+
+fn push_replacement_chunk(
+    chunk: &ReplacementChunk,
+    code: &mut String,
+    mapping_segments: &mut Vec<MappingSegment>,
+) {
+    let generated_start = code.len();
+    code.push_str(&chunk.replacement);
+    let original_start = chunk
+        .normalized_segments
+        .first()
+        .map(|segment| segment.original_start)
+        .or_else(|| chunk.source_map_anchor.map(|anchor| anchor.start))
+        .unwrap_or(chunk.original_span.start);
+    let original_len = original_length_for_chunk(chunk, original_start);
+
+    mapping_segments.push(MappingSegment {
+        generated_start,
+        generated_len: chunk.replacement.len(),
+        original_start,
+        original_len,
+    });
+}
+
+fn original_length_for_chunk(chunk: &ReplacementChunk, original_start: usize) -> usize {
+    chunk
+        .normalized_segments
+        .last()
+        .map(end_of_normalized_segment)
+        .unwrap_or(chunk.original_span.end)
+        .saturating_sub(original_start)
+}
+
+fn end_of_normalized_segment(segment: &NormalizedSegment) -> usize {
+    segment.original_start + segment.len
+}
+
+#[derive(Debug, Clone)]
+struct ReinsertedAssembly {
+    code: String,
+    mapping_segments: Vec<MappingSegment>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -156,4 +231,40 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
         }
     }
     starts
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn replacement_chunks_use_normalized_segments_before_outer_span() {
+        let chunk = ReplacementChunk {
+            declaration_id: "__lf_0".to_string(),
+            original_span: Span::new(10, 30),
+            replacement: "runtime()".to_string(),
+            source_map_anchor: None,
+            normalized_segments: vec![
+                NormalizedSegment {
+                    original_start: 11,
+                    generated_start: 0,
+                    len: 9,
+                },
+                NormalizedSegment {
+                    original_start: 25,
+                    generated_start: 9,
+                    len: 2,
+                },
+            ],
+        };
+
+        let mut code = String::new();
+        let mut mapping_segments = Vec::new();
+        push_replacement_chunk(&chunk, &mut code, &mut mapping_segments);
+
+        assert_eq!(code, "runtime()");
+        assert_eq!(mapping_segments.len(), 1);
+        assert_eq!(mapping_segments[0].original_start, 11);
+        assert_eq!(mapping_segments[0].original_len, 16);
+    }
 }

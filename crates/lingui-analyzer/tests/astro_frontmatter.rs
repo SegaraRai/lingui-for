@@ -154,6 +154,30 @@ fn supports_typescript_syntax_in_frontmatter_and_template_expressions() {
 }
 
 #[test]
+fn anchors_frontmatter_translate_msg_candidates_to_the_outer_callee() {
+    let source = indoc! {r#"
+        ---
+        import { msg, t as translate } from "@lingui/core/macro";
+
+        const status = translate(msg`Loaded ${count} items.`);
+        ---
+    "#};
+
+    let analysis = AstroAdapter.analyze(source).expect("analysis succeeds");
+    let candidate = analysis
+        .frontmatter_candidates
+        .first()
+        .expect("candidate exists");
+    let anchor = candidate.source_map_anchor.expect("anchor exists");
+
+    assert_eq!(
+        &source[anchor.start..anchor.end],
+        "translate",
+        "direct frontmatter calls should anchor to the runtime callee",
+    );
+}
+
+#[test]
 fn collects_template_components_from_frontmatter_imports() {
     let source = indoc! {r#"
         ---
