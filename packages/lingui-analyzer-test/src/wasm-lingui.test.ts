@@ -284,6 +284,78 @@ describe("lingui-analyzer wasm contract", () => {
       [filename, 6, 4],
     ]);
   });
+
+  test("reinjects transformed Svelte component macros back into markup with sourcemaps", () => {
+    const filename = "/virtual/ComponentRoundtrip.svelte";
+    const source = dedent`
+      <script lang="ts">
+        import { Trans as Translation } from "@lingui/react/macro";
+        const name = "Ada";
+      </script>
+
+      <Translation>Component hello {name}</Translation>
+    `;
+
+    const synthetic = buildSyntheticModuleForTest("svelte", source, {
+      sourceName: filename,
+      syntheticName: "/virtual/ComponentRoundtrip.synthetic.tsx",
+    });
+    const transformed = transformSyntheticModule(synthetic);
+    const reinserted = reinsertTransformedModule(
+      source,
+      synthetic,
+      transformed.declarations,
+      {
+        sourceName: filename,
+      },
+    );
+
+    expect(reinserted.code).toContain("<_Trans");
+    expect(reinserted.code).toContain('"Component hello {name}"');
+
+    const origins = collectOriginalPositionsForNeedle(
+      reinserted.code,
+      reinserted.source_map_json ?? "",
+      "_Trans",
+    );
+    expect(origins).toEqual([[filename, 6, 14]]);
+  });
+
+  test("reinjects transformed Astro component macros back into markup with sourcemaps", () => {
+    const filename = "/virtual/ComponentRoundtrip.astro";
+    const source = dedent`
+      ---
+      import { Trans as Translation } from "@lingui/react/macro";
+      const name = "Ada";
+      ---
+
+      <Translation>Component hello {name}</Translation>
+    `;
+
+    const synthetic = buildSyntheticModuleForTest("astro", source, {
+      sourceName: filename,
+      syntheticName: "/virtual/ComponentRoundtrip.synthetic.tsx",
+    });
+    const transformed = transformSyntheticModule(synthetic);
+    const reinserted = reinsertTransformedModule(
+      source,
+      synthetic,
+      transformed.declarations,
+      {
+        sourceName: filename,
+      },
+    );
+
+    expect(reinserted.code).toContain("<_Trans");
+    expect(reinserted.code).toContain('"Component hello {name}"');
+
+    const origins = collectOriginalPositionsForNeedle(
+      reinserted.code,
+      reinserted.source_map_json ?? "",
+      "_Trans",
+    );
+    expect(origins).toEqual([[filename, 6, 14]]);
+  });
 });
 
 function collectOriginalPositionsForNeedle(
