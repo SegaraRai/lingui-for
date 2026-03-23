@@ -47,9 +47,11 @@ pub fn reinsert_transformed_declarations(
         let generated_start = code.len();
         code.push_str(replacement);
         let original_start = mapping
-            .source_map_anchor
-            .unwrap_or(mapping.original_span)
-            .start;
+            .normalized_segments
+            .first()
+            .map(|segment| segment.original_start)
+            .or_else(|| mapping.source_map_anchor.map(|anchor| anchor.start))
+            .unwrap_or(mapping.original_span.start);
         let original_len = mapping.original_span.end.saturating_sub(original_start);
         segments.push(MappingSegment {
             generated_start,

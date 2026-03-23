@@ -2,7 +2,10 @@ use std::collections::BTreeMap;
 use std::io::Cursor;
 
 use crate::utf16::Utf16Index;
-use crate::{MacroCandidate, MacroImport, Span, SyntheticMapping, SyntheticModule};
+use crate::{
+    MacroCandidate, MacroImport, Span, SyntheticMapping, SyntheticModule,
+    model::NormalizedSegment,
+};
 use sourcemap::SourceMapBuilder;
 
 pub fn build_synthetic_module(
@@ -64,6 +67,14 @@ pub fn build_synthetic_module_with_names(
             original_span: original_spans[id],
             generated_span: generated_spans[id],
             source_map_anchor: source_map_anchors[id],
+            normalized_segments: normalized_segments[id]
+                .iter()
+                .map(|segment| NormalizedSegment {
+                    original_start: segment.original_start,
+                    generated_start: segment.generated_start,
+                    len: segment.len,
+                })
+                .collect(),
         })
         .collect();
 

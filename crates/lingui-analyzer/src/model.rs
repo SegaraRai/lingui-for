@@ -92,6 +92,14 @@ pub struct SyntheticMapping {
     pub original_span: Span,
     pub generated_span: Span,
     pub source_map_anchor: Option<Span>,
+    pub normalized_segments: Vec<NormalizedSegment>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct NormalizedSegment {
+    pub original_start: usize,
+    pub generated_start: usize,
+    pub len: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
