@@ -14,8 +14,8 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: 3
-#: src/components/astro/AstroFormats.astro:52
 #: src/components/astro/AstroFormats.astro:25
+#: src/components/astro/AstroFormats.astro:52
 msgid "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
 msgstr "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
 
@@ -25,14 +25,14 @@ msgid "{0, plural, one {# React format sample} other {# React format samples}}"
 msgstr "{0, plural, one {# React format sample} other {# React format samples}}"
 
 #. placeholder {0}: 3
-#: src/components/svelte/SvelteFormatsIsland.svelte:54
 #: src/components/svelte/SvelteFormatsIsland.svelte:29
+#: src/components/svelte/SvelteFormatsIsland.svelte:54
 msgid "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}"
 msgstr "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}"
 
 #. placeholder {0}: "excited"
-#: src/components/astro/AstroFormats.astro:60
 #: src/components/astro/AstroFormats.astro:32
+#: src/components/astro/AstroFormats.astro:60
 msgid "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
 msgstr "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
 
@@ -42,14 +42,14 @@ msgid "{0, select, calm {React select says calm.} excited {React select says exc
 msgstr "{0, select, calm {React select says calm.} excited {React select says excited.} other {React select says unknown.}}"
 
 #. placeholder {0}: "excited"
-#: src/components/svelte/SvelteFormatsIsland.svelte:60
 #: src/components/svelte/SvelteFormatsIsland.svelte:36
+#: src/components/svelte/SvelteFormatsIsland.svelte:60
 msgid "{0, select, calm {Svelte select says calm.} excited {Svelte select says excited.} other {Svelte select says unknown.}}"
 msgstr "{0, select, calm {Svelte select says calm.} excited {Svelte select says excited.} other {Svelte select says unknown.}}"
 
 #. placeholder {0}: 2
-#: src/components/astro/AstroFormats.astro:69
 #: src/components/astro/AstroFormats.astro:40
+#: src/components/astro/AstroFormats.astro:69
 msgid "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
 msgstr "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
 
@@ -59,14 +59,14 @@ msgid "{0, selectordinal, one {React finished #st.} two {React finished #nd.} fe
 msgstr "{0, selectordinal, one {React finished #st.} two {React finished #nd.} few {React finished #rd.} other {React finished #th.}}"
 
 #. placeholder {0}: 2
-#: src/components/svelte/SvelteFormatsIsland.svelte:67
 #: src/components/svelte/SvelteFormatsIsland.svelte:44
+#: src/components/svelte/SvelteFormatsIsland.svelte:67
 msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 msgstr "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 
-#. placeholder {0}: __l4a_i18n._(/*i18n*/ { id: "SMt/JO", message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}", values: { rank: rank, role: role } })
-#. placeholder {1}: __l4a_i18n._(/*i18n*/ { id: "IN7jEl", message: "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}", values: { rank: rank, role: role } })
-#. placeholder {2}: __l4a_i18n._(/*i18n*/ { id: "MTuVZ1", message: "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}", values: { rank: rank, role: role } })
+#. placeholder {0}: import { Plural, plural, SelectOrdinal, selectOrdinal, select, t } from "lingui-for-astro/macro"; const __lf_0 = t`Stress page`; const __lf_1 = t({ message: plural(count, { 0: selectOrdinal(rank, { 1: select(role, { admin: "core zero first admin", other: "core zero first other", }), 2: select(role, { admin: "core zero second admin", other: "core zero second other", }), other: select(role, { admin: "core zero later admin", other: "core zero later other", }), }), 2: selectOrdinal(rank, { 1: select(role, { admin: "core two first admin", other: "core two first other", }), 2: select(role, { admin: "core two second admin", other: "core two second other", }), other: select(role, { admin: "core two later admin", other: "core two later other", }), }), other: selectOrdinal(rank, { 1: select(role, { admin: "core many first admin", other: "core many first other", }), 2: select(role, { admin: "core many second admin", other: "core many second other", }), other: select(role, { admin: "core many later admin", other: "core many later other", }), }), }), }); const __lf_2 = t`Macro stress page`; const __lf_3 = t`Stress`; const __lf_4 = t`Exact-number branches and deep macro trees`; const __lf_5 = t`Use query params to drive exact-number branches and nested macro output.`; const __lf_6 = plural(count, { 0: "no queued builds", 2: "exactly two queued builds", other: "# queued builds", }); const __lf_7 = selectOrdinal(rank, { 1: "take the shortcut", 2: "take the scenic route", other: "finish in #th place", }); const __lf_8 = <Plural value={count} _0="no queued builds" _2="exactly two queued builds" other="# queued builds" />; const __lf_9 = <SelectOrdinal value={rank} _1="take the shortcut" _2="take the scenic route" other="finish in #th place" />; const __lf_10 = <Plural value={count} _0={selectOrdinal(rank, { 1: select(role, { admin: "component zero first admin", other: "component zero first other", }), 2: select(role, { admin: "component zero second admin", other: "component zero second other", }), other: select(role, { admin: "component zero later admin", other: "component zero later other", }), })} _2={selectOrdinal(rank, { 1: select(role, { admin: "component two first admin", other: "component two first other", }), 2: select(role, { admin: "component two second admin", other: "component two second other", }), other: select(role, { admin: "component two later admin", other: "component two later other", }), })} other={selectOrdinal(rank, { 1: select(role, { admin: "component many first admin", other: "component many first other", }), 2: select(role, { admin: "component many second admin", other: "component many second other", }), other: select(role, { admin: "component many later admin", other: "component many later other", }), })} />; 
+#. placeholder {1}: import { Plural, plural, SelectOrdinal, selectOrdinal, select, t } from "lingui-for-astro/macro"; const __lf_0 = t`Stress page`; const __lf_1 = t({ message: plural(count, { 0: selectOrdinal(rank, { 1: select(role, { admin: "core zero first admin", other: "core zero first other", }), 2: select(role, { admin: "core zero second admin", other: "core zero second other", }), other: select(role, { admin: "core zero later admin", other: "core zero later other", }), }), 2: selectOrdinal(rank, { 1: select(role, { admin: "core two first admin", other: "core two first other", }), 2: select(role, { admin: "core two second admin", other: "core two second other", }), other: select(role, { admin: "core two later admin", other: "core two later other", }), }), other: selectOrdinal(rank, { 1: select(role, { admin: "core many first admin", other: "core many first other", }), 2: select(role, { admin: "core many second admin", other: "core many second other", }), other: select(role, { admin: "core many later admin", other: "core many later other", }), }), }), }); const __lf_2 = t`Macro stress page`; const __lf_3 = t`Stress`; const __lf_4 = t`Exact-number branches and deep macro trees`; const __lf_5 = t`Use query params to drive exact-number branches and nested macro output.`; const __lf_6 = plural(count, { 0: "no queued builds", 2: "exactly two queued builds", other: "# queued builds", }); const __lf_7 = selectOrdinal(rank, { 1: "take the shortcut", 2: "take the scenic route", other: "finish in #th place", }); const __lf_8 = <Plural value={count} _0="no queued builds" _2="exactly two queued builds" other="# queued builds" />; const __lf_9 = <SelectOrdinal value={rank} _1="take the shortcut" _2="take the scenic route" other="finish in #th place" />; const __lf_10 = <Plural value={count} _0={selectOrdinal(rank, { 1: select(role, { admin: "component zero first admin", other: "component zero first other", }), 2: select(role, { admin: "component zero second admin", other: "component zero second other", }), other: select(role, { admin: "component zero later admin", other: "component zero later other", }), })} _2={selectOrdinal(rank, { 1: select(role, { admin: "component two first admin", other: "component two first other", }), 2: select(role, { admin: "component two second admin", other: "component two second other", }), other: select(role, { admin: "component two later admin", other: "component two later other", }), })} other={selectOrdinal(rank, { 1: select(role, { admin: "component many first admin", other: "component many first other", }), 2: select(role, { admin: "component many second admin", other: "component many second other", }), other: select(role, { admin: "component many later admin", other: "component many later other", }), })} />; 
+#. placeholder {2}: import { Plural, plural, SelectOrdinal, selectOrdinal, select, t } from "lingui-for-astro/macro"; const __lf_0 = t`Stress page`; const __lf_1 = t({ message: plural(count, { 0: selectOrdinal(rank, { 1: select(role, { admin: "core zero first admin", other: "core zero first other", }), 2: select(role, { admin: "core zero second admin", other: "core zero second other", }), other: select(role, { admin: "core zero later admin", other: "core zero later other", }), }), 2: selectOrdinal(rank, { 1: select(role, { admin: "core two first admin", other: "core two first other", }), 2: select(role, { admin: "core two second admin", other: "core two second other", }), other: select(role, { admin: "core two later admin", other: "core two later other", }), }), other: selectOrdinal(rank, { 1: select(role, { admin: "core many first admin", other: "core many first other", }), 2: select(role, { admin: "core many second admin", other: "core many second other", }), other: select(role, { admin: "core many later admin", other: "core many later other", }), }), }), }); const __lf_2 = t`Macro stress page`; const __lf_3 = t`Stress`; const __lf_4 = t`Exact-number branches and deep macro trees`; const __lf_5 = t`Use query params to drive exact-number branches and nested macro output.`; const __lf_6 = plural(count, { 0: "no queued builds", 2: "exactly two queued builds", other: "# queued builds", }); const __lf_7 = selectOrdinal(rank, { 1: "take the shortcut", 2: "take the scenic route", other: "finish in #th place", }); const __lf_8 = <Plural value={count} _0="no queued builds" _2="exactly two queued builds" other="# queued builds" />; const __lf_9 = <SelectOrdinal value={rank} _1="take the shortcut" _2="take the scenic route" other="finish in #th place" />; const __lf_10 = <Plural value={count} _0={selectOrdinal(rank, { 1: select(role, { admin: "component zero first admin", other: "component zero first other", }), 2: select(role, { admin: "component zero second admin", other: "component zero second other", }), other: select(role, { admin: "component zero later admin", other: "component zero later other", }), })} _2={selectOrdinal(rank, { 1: select(role, { admin: "component two first admin", other: "component two first other", }), 2: select(role, { admin: "component two second admin", other: "component two second other", }), other: select(role, { admin: "component two later admin", other: "component two later other", }), })} other={selectOrdinal(rank, { 1: select(role, { admin: "component many first admin", other: "component many first other", }), 2: select(role, { admin: "component many second admin", other: "component many second other", }), other: select(role, { admin: "component many later admin", other: "component many later other", }), })} />; 
 #: src/pages/stress.astro:132
 msgid "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
 msgstr "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
@@ -121,7 +121,7 @@ msgstr "2. Switch between English and Japanese in the header and watch the local
 msgid "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 msgstr "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 
-#: src/components/astro/AstroRichText.astro:21
+#: src/components/astro/AstroRichText.astro:22
 msgid "Astro can preserve <0>strong emphasis</0> in translated output."
 msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 
@@ -129,7 +129,7 @@ msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 msgid "Astro formats"
 msgstr "Astro formats"
 
-#: src/components/astro/AstroRichText.astro:14
+#: src/components/astro/AstroRichText.astro:15
 msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Astro keeps the <0>settings link</0> inside a translated sentence."
 
@@ -450,7 +450,7 @@ msgstr "Render stamp: {renderStamp}"
 msgid "Render Svelte and React islands with the same locale."
 msgstr "Render Svelte and React islands with the same locale."
 
-#: src/pages/settings.astro:35
+#: src/pages/settings.astro:36
 msgid "Return to the <0>home page</0> when you are done."
 msgstr "Return to the <0>home page</0> when you are done."
 
@@ -544,7 +544,7 @@ msgstr "Svelte activates Lingui inside its island."
 msgid "Svelte and React islands read the same active locale."
 msgstr "Svelte and React islands read the same active locale."
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:28
+#: src/components/svelte/SvelteRichTextIsland.svelte:29
 msgid "Svelte can preserve <0>strong emphasis</0> in translated output."
 msgstr "Svelte can preserve <0>strong emphasis</0> in translated output."
 
@@ -560,7 +560,7 @@ msgstr "Svelte island"
 msgid "Svelte islands"
 msgstr "Svelte islands"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:21
+#: src/components/svelte/SvelteRichTextIsland.svelte:22
 msgid "Svelte keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Svelte keeps the <0>settings link</0> inside a translated sentence."
 
@@ -588,11 +588,11 @@ msgstr "Svelte runs plural, select, and selectOrdinal macros in component code."
 msgid "Svelte sees locale {localeLabel}."
 msgstr "Svelte sees locale {localeLabel}."
 
-#: src/pages/routing/[slug].astro:37
+#: src/pages/routing/[slug].astro:38
 msgid "Switch to the <0>second route</0> without dropping the locale."
 msgstr "Switch to the <0>second route</0> without dropping the locale."
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:27
+#: src/components/svelte/SvelteLinguiIsland.svelte:28
 msgid "The active <0>Lingui context</0> is created inside the Svelte island."
 msgstr "The active <0>Lingui context</0> is created inside the Svelte island."
 

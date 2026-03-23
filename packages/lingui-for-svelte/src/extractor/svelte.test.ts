@@ -297,4 +297,52 @@ describe("svelteExtractor", () => {
       ),
     ).toBe(true);
   });
+
+  test("extracts messages from @const ternaries and each-block row summaries", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+
+        let syntaxState = $state({
+          mode: "idle" as "idle" | "active",
+          items: ["placeholder"],
+        });
+      </script>
+
+      {#if true}
+        {@const statusSummary =
+          syntaxState.mode === "idle"
+            ? $t\`Status summary: idle\`
+            : $t\`Status summary: active\`}
+
+        <p>{statusSummary}</p>
+      {/if}
+
+      {#each syntaxState.items as item, index (item)}
+        {@const rowSummary = $t\`Row \${index + 1}: \${item}\`}
+        <span>{rowSummary}</span>
+      {/each}
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        svelteExtractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(
+      messages.some((message) => message.message === "Status summary: idle"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => message.message === "Status summary: active"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => message.message === "Row {0}: {item}"),
+    ).toBe(true);
+  });
 });

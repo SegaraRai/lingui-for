@@ -180,6 +180,7 @@ fn collect_template_expressions(
             push_raw_text_expression(source, node, imports, scope_stack, expressions)?;
         }
         "const_tag" => {
+            push_raw_text_expression(source, node, imports, scope_stack, expressions)?;
             let names = declared_names_from_const_tag(source, node)?;
             if !names.is_empty() {
                 if let Some(frame) = scope_stack.last_mut() {
@@ -563,6 +564,7 @@ fn collect_component_strip_spans_inner(
             append_raw_text_expression_strip_spans(source, node, imports, scope_stack, strip_spans)?;
         }
         "const_tag" => {
+            append_raw_text_expression_strip_spans(source, node, imports, scope_stack, strip_spans)?;
             let names = declared_names_from_const_tag(source, node)?;
             if !names.is_empty() {
                 if let Some(frame) = scope_stack.last_mut() {

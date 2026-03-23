@@ -76,7 +76,7 @@ msgstr "その他"
 msgid "Place"
 msgstr "順位"
 
-#: src/demos/macros/trans-component/Demo.svelte:19
+#: src/demos/macros/trans-component/Demo.svelte:20
 msgid "Say hello to <0>{name}</0>."
 msgstr "<0>{name}</0>に挨拶しましょう。"
 

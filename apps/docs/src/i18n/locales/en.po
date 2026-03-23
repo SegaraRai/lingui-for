@@ -76,7 +76,7 @@ msgstr "Other"
 msgid "Place"
 msgstr "Place"
 
-#: src/demos/macros/trans-component/Demo.svelte:19
+#: src/demos/macros/trans-component/Demo.svelte:20
 msgid "Say hello to <0>{name}</0>."
 msgstr "Say hello to <0>{name}</0>."
 

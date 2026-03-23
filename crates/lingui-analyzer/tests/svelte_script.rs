@@ -1,7 +1,7 @@
 use indoc::indoc;
 use lingui_analyzer::{
     MacroCandidateKind, MacroFlavor,
-    framework::{FrameworkAdapter, svelte::SvelteAdapter},
+    framework::{FrameworkAdapter, svelte::{SvelteAdapter, analyze_svelte}},
 };
 
 #[test]
@@ -170,6 +170,41 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
             .imported_name,
         "t"
     );
+}
+
+#[test]
+fn collects_macro_candidates_from_const_tag_initializers() {
+    let source = r#"
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+  let mode = "idle";
+  let items = ["placeholder"];
+</script>
+
+{#if true}
+  {@const statusSummary =
+    mode === "idle"
+      ? $t`Status summary: idle`
+      : $t`Status summary: active`}
+
+  <p>{statusSummary}</p>
+{/if}
+
+{#each items as item, index (item)}
+  {@const rowSummary = $t`Row ${index + 1}: ${item}`}
+  <span>{rowSummary}</span>
+{/each}
+"#;
+
+    let analysis = analyze_svelte(source).expect("svelte analysis should succeed");
+    let messages = analysis
+        .template_expressions
+        .iter()
+        .flat_map(|expression| expression.candidates.iter())
+        .map(|candidate| &candidate.local_name)
+        .collect::<Vec<_>>();
+
+    assert_eq!(messages.iter().filter(|name| **name == "t").count(), 3);
 }
 
 #[test]
