@@ -200,6 +200,37 @@ fn emits_utf16_columns_for_unicode_prefixes() {
     assert_eq!(token.get_src_col() as usize, original.1);
 }
 
+#[test]
+fn maps_component_declaration_start_to_component_message_anchor() {
+    let source = indoc! {r#"
+        <script>
+          import { Trans as T } from "@lingui/react/macro";
+          const name = "Ada";
+        </script>
+
+        <T>Component origin {name}</T>
+    "#};
+
+    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let candidates = analysis
+        .template_components
+        .iter()
+        .map(|component| component.candidate.clone())
+        .collect::<Vec<_>>();
+    let synthetic = build_synthetic_module(source, &analysis.scripts[0].macro_imports, &candidates);
+    let map_json = synthetic.source_map_json.as_ref().expect("map exists");
+    let decoded = DecodedMap::from_reader(map_json.as_bytes()).expect("source map decodes");
+    let generated_offset = synthetic.source.find("<T>").expect("component present");
+    let generated = offset_to_utf16_position(&synthetic.source, generated_offset);
+    let token = decoded
+        .lookup_token(generated.0 as u32, generated.1 as u32)
+        .expect("mapping exists");
+    let original_offset =
+        line_start(source, token.get_src_line() as usize) + token.get_src_col() as usize;
+
+    assert!(source[original_offset..].starts_with("Component origin "));
+}
+
 fn offset_to_position(source: &str, offset: usize) -> (usize, usize) {
     let bounded = offset.min(source.len());
     let line_start = source[..bounded].rfind('\n').map_or(0, |index| index + 1);

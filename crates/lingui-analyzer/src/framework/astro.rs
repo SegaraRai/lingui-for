@@ -272,9 +272,29 @@ fn component_candidate_from_element(
             outer_span: Span::from_node(node),
             normalized_span: Span::from_node(node),
             strip_spans: Vec::new(),
+            source_map_anchor: component_source_map_anchor(source, node),
         },
         shadowed_names: Vec::new(),
     })
+}
+
+fn component_source_map_anchor(source: &str, node: Node<'_>) -> Option<Span> {
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if child.kind() == "start_tag" || child.kind() == "self_closing_tag" || child.kind() == "end_tag" {
+            continue;
+        }
+
+        let child_text = text(source, child);
+        if let Some(trimmed_start) = child_text.find(|char: char| !char.is_whitespace()) {
+            return Some(Span::new(
+                child.start_byte() + trimmed_start,
+                child.end_byte(),
+            ));
+        }
+    }
+
+    Some(Span::from_node(node))
 }
 
 fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: usize) -> Span {

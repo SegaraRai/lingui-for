@@ -297,6 +297,7 @@ fn to_call_candidate(
                 outer_span: shift_span(Span::from_node(node), base_offset),
                 normalized_span: shift_span(Span::from_node(node), base_offset),
                 strip_spans: Vec::new(),
+                source_map_anchor: None,
             })
         }
         JsMacroSyntax::Svelte => {
@@ -328,6 +329,7 @@ fn to_svelte_call_candidate(
                 outer_span: shift_span(Span::from_node(node), base_offset),
                 normalized_span: shift_span(Span::from_node(node), base_offset),
                 strip_spans: vec![Span::new(identifier_span.start, identifier_span.start + 1)],
+                source_map_anchor: None,
             });
         }
 
@@ -340,6 +342,7 @@ fn to_svelte_call_candidate(
             outer_span: shift_span(Span::from_node(node), base_offset),
             normalized_span: shift_span(Span::from_node(node), base_offset),
             strip_spans: Vec::new(),
+            source_map_anchor: None,
         });
     }
 
@@ -369,6 +372,7 @@ fn to_svelte_call_candidate(
             0,
         ),
         strip_spans: vec![Span::new(object_span.end, property_span.end)],
+        source_map_anchor: None,
     })
 }
 

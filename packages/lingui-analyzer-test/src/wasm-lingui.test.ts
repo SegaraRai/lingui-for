@@ -150,7 +150,7 @@ describe("lingui-analyzer wasm contract", () => {
     expect(result.declarations.__lf_0).toContain('"Astro component {name}"');
   });
 
-  test.fails("preserves Svelte component extraction origins through Rust sourcemaps", async () => {
+  test("preserves Svelte component extraction origins through Rust sourcemaps", async () => {
     const filename = "/virtual/Component.svelte";
     const source = dedent`
       <script lang="ts">
@@ -173,10 +173,10 @@ describe("lingui-analyzer wasm contract", () => {
     expect(
       messages.find((message) => message.message === "Component origin {name}")
         ?.origin,
-    ).toEqual([filename, 6, 31]);
+    ).toEqual([filename, 6, 13]);
   });
 
-  test.fails("preserves Astro component extraction origins through Rust sourcemaps", async () => {
+  test("preserves Astro component extraction origins through Rust sourcemaps", async () => {
     const filename = "/virtual/Component.astro";
     const source = dedent`
       ---
@@ -199,6 +199,6 @@ describe("lingui-analyzer wasm contract", () => {
     expect(
       messages.find((message) => message.message === "Component origin {name}")
         ?.origin,
-    ).toEqual([filename, 6, 29]);
+    ).toEqual([filename, 6, 13]);
   });
 });

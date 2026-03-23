@@ -63,6 +63,7 @@ pub struct MacroCandidate {
     pub outer_span: Span,
     pub normalized_span: Span,
     pub strip_spans: Vec<Span>,
+    pub source_map_anchor: Option<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]

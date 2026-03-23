@@ -26,6 +26,7 @@ pub fn build_synthetic_module_with_names(
     let mut generated_spans = BTreeMap::new();
     let mut generated_initializer_offsets = BTreeMap::new();
     let mut normalized_segments = BTreeMap::new();
+    let mut source_map_anchors = BTreeMap::new();
     let import_line = render_import_line(imports);
 
     if let Some(line) = import_line {
@@ -53,6 +54,7 @@ pub fn build_synthetic_module_with_names(
         );
         generated_initializer_offsets.insert(declaration_id.clone(), generated_initializer_start);
         normalized_segments.insert(declaration_id.clone(), normalized.segments);
+        source_map_anchors.insert(declaration_id.clone(), candidate.source_map_anchor);
     }
 
     let mappings = declaration_ids
@@ -72,6 +74,7 @@ pub fn build_synthetic_module_with_names(
         &declaration_ids,
         &generated_initializer_offsets,
         &normalized_segments,
+        &source_map_anchors,
     );
 
     SyntheticModule {
@@ -196,6 +199,7 @@ fn build_source_map_json(
     declaration_ids: &[String],
     generated_initializer_offsets: &BTreeMap<String, usize>,
     normalized_segments: &BTreeMap<String, Vec<RetainedSegment>>,
+    source_map_anchors: &BTreeMap<String, Option<Span>>,
 ) -> Option<String> {
     let mut builder = SourceMapBuilder::new(Some(synthetic_name));
     let src_id = builder.add_source(source_name);
@@ -213,6 +217,20 @@ fn build_source_map_json(
         let Some(segments) = normalized_segments.get(declaration_id) else {
             continue;
         };
+
+        if let Some(Some(anchor)) = source_map_anchors.get(declaration_id) {
+            let generated = generated_index.byte_to_line_utf16_col(*generated_start);
+            let original = original_index.byte_to_line_utf16_col(anchor.start);
+            builder.add(
+                generated.0 as u32,
+                generated.1 as u32,
+                original.0 as u32,
+                original.1 as u32,
+                Some(source_name),
+                None,
+                false,
+            );
+        }
 
         for segment in segments {
             for delta in 0..=segment.len {
