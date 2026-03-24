@@ -77,7 +77,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .expect("instance expression target");
     assert_eq!(
         instance_target.translation_mode,
-        CompileTranslationMode::SvelteContext
+        CompileTranslationMode::Context
     );
 
     let template_expression_target = plan
@@ -90,7 +90,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .expect("template expression target");
     assert_eq!(
         template_expression_target.translation_mode,
-        CompileTranslationMode::SvelteContext
+        CompileTranslationMode::Context
     );
 
     let component_target = plan
@@ -101,7 +101,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     assert_eq!(component_target.context, CompileTargetContext::Template);
     assert_eq!(
         component_target.translation_mode,
-        CompileTranslationMode::SvelteContext
+        CompileTranslationMode::Context
     );
 }
 
@@ -141,7 +141,7 @@ const status = translate(msg`Status summary: active`);
     assert!(
         plan.targets
             .iter()
-            .all(|target| { target.translation_mode == CompileTranslationMode::AstroContext })
+            .all(|target| { target.translation_mode == CompileTranslationMode::Context })
     );
     assert!(
         plan.targets

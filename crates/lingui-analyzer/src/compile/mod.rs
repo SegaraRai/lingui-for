@@ -1,4 +1,4 @@
-pub mod component;
+mod adapters;
 pub mod emit;
 pub mod lower;
 pub mod plan;
@@ -26,8 +26,7 @@ pub enum CompileTargetOutputKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum CompileTranslationMode {
     Raw,
-    SvelteContext,
-    AstroContext,
+    Context,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -119,10 +118,8 @@ pub struct FinishedCompile {
 pub struct TransformedPrograms {
     pub raw_code: Option<String>,
     pub raw_source_map_json: Option<String>,
-    pub svelte_context_code: Option<String>,
-    pub svelte_context_source_map_json: Option<String>,
-    pub astro_context_code: Option<String>,
-    pub astro_context_source_map_json: Option<String>,
+    pub context_code: Option<String>,
+    pub context_source_map_json: Option<String>,
 }
 
 #[derive(Debug, Clone)]

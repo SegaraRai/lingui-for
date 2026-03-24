@@ -5,14 +5,12 @@ use sourcemap::{SourceMap, SourceMapBuilder};
 
 use crate::AnalyzerError;
 use crate::common::Utf16Index;
-use crate::compile::{
-    CompilePlan, CompileReplacement, CompileRuntimeBindings, CompileTarget, FinishedCompile,
-};
+use crate::compile::adapters::FrameworkCompileAdapter;
+use crate::compile::{CompilePlan, CompileReplacement, CompileTarget, FinishedCompile};
 use crate::synthetic::NormalizedSegment;
 
-const SVELTE_RUNTIME_PACKAGE: &str = "lingui-for-svelte/runtime";
-
-pub fn collect_compile_replacements(
+pub(crate) fn collect_compile_replacements(
+    adapter: &dyn FrameworkCompileAdapter,
     plan: &CompilePlan,
     source: &str,
     transformed_declarations: &BTreeMap<String, String>,
@@ -50,9 +48,7 @@ pub fn collect_compile_replacements(
         });
     }
 
-    if plan.framework == "svelte" {
-        append_svelte_runtime_injection_replacements(plan, source, &mut replacements);
-    }
+    adapter.append_runtime_injection_replacements(plan, source, &mut replacements)?;
 
     replacements.sort_by_key(|replacement| (replacement.start, replacement.end));
     Ok(replacements)
@@ -302,144 +298,6 @@ fn add_boundary_replacement_mappings(
     );
 }
 
-fn append_svelte_runtime_injection_replacements(
-    plan: &CompilePlan,
-    source: &str,
-    replacements: &mut Vec<CompileReplacement>,
-) {
-    let Some(runtime_bindings) = &plan.runtime_bindings else {
-        return;
-    };
-
-    let needs_lingui_context = plan.runtime_requirements.needs_runtime_i18n_binding;
-    let needs_trans_component = plan.runtime_requirements.needs_runtime_trans_component;
-    if !needs_lingui_context && !needs_trans_component {
-        return;
-    }
-
-    if let Some(instance_script) = &plan.instance_script {
-        let original_script_content =
-            &source[instance_script.content_span.start..instance_script.content_span.end];
-        let injections = create_runtime_binding_insertions(
-            original_script_content,
-            runtime_bindings,
-            needs_lingui_context,
-            needs_trans_component,
-        );
-        let insertion_start =
-            get_script_insertion_start(source, instance_script.content_span.start);
-
-        if !injections.prelude.is_empty() {
-            replacements.push(CompileReplacement {
-                declaration_id: "__runtime_prelude".to_string(),
-                start: insertion_start,
-                end: insertion_start,
-                code: injections.prelude,
-                source_map_json: None,
-            });
-        }
-
-        if !injections.suffix.is_empty() {
-            replacements.push(CompileReplacement {
-                declaration_id: "__runtime_suffix".to_string(),
-                start: instance_script.content_span.end,
-                end: instance_script.content_span.end,
-                code: injections.suffix,
-                source_map_json: None,
-            });
-        }
-
-        return;
-    }
-
-    let injected = create_runtime_binding_insertions(
-        "",
-        runtime_bindings,
-        needs_lingui_context,
-        needs_trans_component,
-    );
-    let block = format!("<script>\n{}{}</script>", injected.prelude, injected.suffix);
-    let insertion_start = plan
-        .module_script
-        .as_ref()
-        .map(|region| region.outer_span.end)
-        .unwrap_or(0);
-    let code = if plan.module_script.is_some() {
-        format!("\n\n{block}")
-    } else {
-        format!("{block}\n\n")
-    };
-
-    replacements.push(CompileReplacement {
-        declaration_id: "__runtime_script_block".to_string(),
-        start: insertion_start,
-        end: insertion_start,
-        code,
-        source_map_json: None,
-    });
-}
-
-fn create_runtime_binding_insertions(
-    original_script_content: &str,
-    runtime_bindings: &CompileRuntimeBindings,
-    include_lingui_context: bool,
-    include_trans_component: bool,
-) -> RuntimeInsertions {
-    let mut prelude = String::new();
-    let mut suffix = String::new();
-
-    if include_lingui_context && include_trans_component {
-        prelude.push_str(&format!(
-            "import {{ RuntimeTrans as {}, createLinguiAccessors as {} }} from \"{}\";\n",
-            runtime_bindings.trans_component,
-            runtime_bindings.create_lingui_accessors,
-            SVELTE_RUNTIME_PACKAGE
-        ));
-    } else if include_lingui_context {
-        prelude.push_str(&format!(
-            "import {{ createLinguiAccessors as {} }} from \"{}\";\n",
-            runtime_bindings.create_lingui_accessors, SVELTE_RUNTIME_PACKAGE
-        ));
-    } else if include_trans_component {
-        prelude.push_str(&format!(
-            "import {{ RuntimeTrans as {} }} from \"{}\";\n",
-            runtime_bindings.trans_component, SVELTE_RUNTIME_PACKAGE
-        ));
-    }
-
-    if include_lingui_context {
-        prelude.push_str(&format!(
-            "const {} = {}();\nconst {} = {}.getI18n;\nconst {} = {}._;\n",
-            runtime_bindings.context,
-            runtime_bindings.create_lingui_accessors,
-            runtime_bindings.get_i18n,
-            runtime_bindings.context,
-            runtime_bindings.translate,
-            runtime_bindings.context
-        ));
-        suffix.push_str(&format!("{}.prime();\n", runtime_bindings.context));
-    }
-
-    let indent = detect_script_indent(original_script_content);
-    RuntimeInsertions {
-        prelude: if prelude.is_empty() {
-            String::new()
-        } else {
-            format_inserted_script(&prelude, &indent, false, false)
-        },
-        suffix: if suffix.is_empty() {
-            String::new()
-        } else {
-            format_inserted_script(&suffix, &indent, true, false)
-        },
-    }
-}
-
-struct RuntimeInsertions {
-    prelude: String,
-    suffix: String,
-}
-
 #[derive(Debug, Clone, Copy, Default)]
 struct GeneratedOffset {
     line: u32,
@@ -511,53 +369,6 @@ fn get_source_line_indent(source: &str, offset: usize) -> &str {
     }
 
     &source[line_start..index]
-}
-
-fn detect_script_indent(content: &str) -> String {
-    for line in content.lines() {
-        if line.trim().is_empty() {
-            continue;
-        }
-        return line
-            .chars()
-            .take_while(|char| matches!(char, ' ' | '\t'))
-            .collect();
-    }
-    String::new()
-}
-
-fn get_script_insertion_start(source: &str, content_start: usize) -> usize {
-    match (
-        source.as_bytes().get(content_start),
-        source.as_bytes().get(content_start + 1),
-    ) {
-        (Some(b'\r'), Some(b'\n')) => content_start + 2,
-        (Some(b'\n'), _) => content_start + 1,
-        _ => content_start,
-    }
-}
-
-fn format_inserted_script(
-    code: &str,
-    indent: &str,
-    leading_newline: bool,
-    trailing_blank_line: bool,
-) -> String {
-    let body = code
-        .trim_end_matches('\n')
-        .split('\n')
-        .map(|line| {
-            if line.is_empty() {
-                line.to_string()
-            } else {
-                format!("{indent}{line}")
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
-    let leading = if leading_newline { "\n" } else { "" };
-    let trailing = if trailing_blank_line { "\n\n" } else { "\n" };
-    format!("{leading}{body}{trailing}")
 }
 
 fn indent_multiline_replacement(code: &str, indent: &str) -> String {

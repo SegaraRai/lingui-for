@@ -10,7 +10,11 @@ use wasm_bindgen::prelude::*;
 
 use crate::compile::finish_compile;
 use crate::extract::{build_synthetic_module_with_names, reinsert_transformed_declarations};
-use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
+use crate::framework::{
+    FrameworkAdapter,
+    astro::AstroAdapter,
+    svelte::{SvelteAdapter, validate_svelte_extract_candidates},
+};
 
 pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
@@ -116,34 +120,6 @@ fn retain_standalone_candidates(candidates: &mut Vec<MacroCandidate>) {
     candidates.retain(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone);
 }
 
-fn validate_svelte_extract_candidates(candidates: &[MacroCandidate]) -> Result<(), AnalyzerError> {
-    let offending_macro = candidates
-        .iter()
-        .find(|candidate| {
-            candidate.strategy == MacroCandidateStrategy::Standalone
-                && candidate.flavor == MacroFlavor::Direct
-                && matches!(
-                    candidate.imported_name.as_str(),
-                    "t" | "plural" | "select" | "selectOrdinal"
-                )
-        })
-        .map(|candidate| candidate.imported_name.as_str());
-
-    if let Some(imported_name) = offending_macro {
-        return Err(AnalyzerError::InvalidMacroUsage(match imported_name {
-            "t" => {
-                "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()
-            }
-            "plural" | "select" | "selectOrdinal" => format!(
-                "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
-            ),
-            other => format!("Unsupported bare direct macro `{other}` in `.svelte` files."),
-        }));
-    }
-
-    Ok(())
-}
-
 #[wasm_bindgen(js_name = "buildSyntheticModule")]
 pub fn wasm_build_synthetic_module(framework: String, source: String) -> Result<JsValue, JsValue> {
     console_error_panic_hook::set_once();
@@ -175,7 +151,7 @@ pub fn wasm_build_compile_plan_with_options(options: JsValue) -> Result<JsValue,
 
     let options: CompilePlanOptions = serde_wasm_bindgen::from_value(options)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let mut plan = crate::compile::build_compile_plan_for_framework_with_names(
+    let plan = crate::compile::build_compile_plan_for_framework_with_names(
         &options.framework,
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
@@ -185,7 +161,6 @@ pub fn wasm_build_compile_plan_with_options(options: JsValue) -> Result<JsValue,
             .unwrap_or("synthetic-compile.tsx"),
     )
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    repair_compile_plan_for_export(&options.source, &mut plan);
     serde_wasm_bindgen::to_value(&plan).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
@@ -219,4 +194,3 @@ pub fn wasm_finish_compile_with_options(options: JsValue) -> Result<JsValue, JsV
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
     serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
 }
-use crate::compile::plan::repair_compile_plan_for_export;

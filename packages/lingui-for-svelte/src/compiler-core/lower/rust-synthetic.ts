@@ -54,10 +54,8 @@ type SvelteRustLoweredResult = SvelteTransformResult & {
 type TransformedPrograms = {
   raw_code?: string;
   raw_source_map_json?: string | null;
-  svelte_context_code?: string;
-  svelte_context_source_map_json?: string | null;
-  astro_context_code?: string;
-  astro_context_source_map_json?: string | null;
+  context_code?: string;
+  context_source_map_json?: string | null;
 };
 
 let wasmInitialized = false;
@@ -100,8 +98,8 @@ export function lowerSvelteWithRustSynthetic(
   const transformedPrograms: TransformedPrograms = {
     raw_code: raw.code,
     raw_source_map_json: raw.map != null ? JSON.stringify(raw.map) : null,
-    svelte_context_code: svelteContext.code,
-    svelte_context_source_map_json:
+    context_code: svelteContext.code,
+    context_source_map_json:
       svelteContext.map != null ? JSON.stringify(svelteContext.map) : null,
   };
 

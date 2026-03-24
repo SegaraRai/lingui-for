@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use crate::AnalyzerError;
-use crate::compile::component::lower_svelte_runtime_component_markup;
+use crate::compile::adapters::compile_adapter_for_framework;
 use crate::compile::emit::{collect_compile_replacements, finish_compile_from_replacements};
 use crate::compile::{
     CompilePlan, CompileTargetOutputKind, CompileTranslationMode, FinishedCompile,
@@ -14,8 +14,9 @@ pub fn finish_compile(
     source: &str,
     transformed_programs: &TransformedPrograms,
 ) -> Result<FinishedCompile, AnalyzerError> {
+    let adapter = compile_adapter_for_framework(&plan.framework)?;
     let lowered_declarations = lower_transformed_declarations(plan, transformed_programs)?;
-    let replacements = collect_compile_replacements(plan, source, &lowered_declarations)?;
+    let replacements = collect_compile_replacements(adapter, plan, source, &lowered_declarations)?;
     finish_compile_from_replacements(source, &plan.source_name, replacements)
 }
 
@@ -23,6 +24,7 @@ fn lower_transformed_declarations(
     plan: &CompilePlan,
     transformed_programs: &TransformedPrograms,
 ) -> Result<BTreeMap<String, String>, AnalyzerError> {
+    let adapter = compile_adapter_for_framework(&plan.framework)?;
     let declaration_sets = collect_transformed_declarations(transformed_programs)?;
     let runtime_component_name = plan
         .runtime_bindings
@@ -40,7 +42,7 @@ fn lower_transformed_declarations(
         };
 
         let finalized = if target.output_kind == CompileTargetOutputKind::Component {
-            lower_svelte_runtime_component_markup(code, runtime_component_name)?
+            adapter.lower_runtime_component_markup(code, Some(runtime_component_name))?
         } else {
             code.clone()
         };
@@ -61,15 +63,9 @@ fn collect_transformed_declarations(
             collect_declarations_from_program(code)?,
         );
     }
-    if let Some(code) = &programs.svelte_context_code {
+    if let Some(code) = &programs.context_code {
         declarations.insert(
-            CompileTranslationMode::SvelteContext,
-            collect_declarations_from_program(code)?,
-        );
-    }
-    if let Some(code) = &programs.astro_context_code {
-        declarations.insert(
-            CompileTranslationMode::AstroContext,
+            CompileTranslationMode::Context,
             collect_declarations_from_program(code)?,
         );
     }
@@ -167,7 +163,7 @@ mod tests {
                 flavor: MacroFlavor::Reactive,
                 context: CompileTargetContext::Template,
                 output_kind: CompileTargetOutputKind::Expression,
-                translation_mode: CompileTranslationMode::SvelteContext,
+                translation_mode: CompileTranslationMode::Context,
                 normalized_segments: vec![NormalizedSegment {
                     original_start: 8,
                     generated_start: 0,
@@ -195,7 +191,7 @@ mod tests {
         };
         let source = "<script>\n  let x = 1;\n</script>\n<p>\n  {$t`hello`}\n</p>";
         let transformed = TransformedPrograms {
-            svelte_context_code: Some(
+            context_code: Some(
                 "const __lf_0 = __l4s_translate({id:\"a\",message:\"hello\"});".to_string(),
             ),
             ..TransformedPrograms::default()
