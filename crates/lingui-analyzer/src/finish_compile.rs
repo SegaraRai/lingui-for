@@ -2,22 +2,27 @@ use std::collections::BTreeMap;
 
 use crate::compile_emit::{collect_compile_replacements, finish_compile_from_replacements};
 use crate::component_lowering::lower_svelte_runtime_component_markup;
-use crate::{AnalyzerError, CompilePlan, CompileTargetOutputKind, FinishedCompile};
+use crate::parse;
+use crate::{
+    AnalyzerError, CompilePlan, CompileTargetOutputKind, CompileTranslationMode, FinishedCompile,
+    TransformedPrograms,
+};
 
 pub fn finish_compile(
     plan: &CompilePlan,
     source: &str,
-    transformed_declarations: &BTreeMap<String, String>,
+    transformed_programs: &TransformedPrograms,
 ) -> Result<FinishedCompile, AnalyzerError> {
-    let lowered_declarations = lower_transformed_declarations(plan, transformed_declarations)?;
+    let lowered_declarations = lower_transformed_declarations(plan, transformed_programs)?;
     let replacements = collect_compile_replacements(plan, source, &lowered_declarations)?;
     Ok(finish_compile_from_replacements(replacements))
 }
 
 fn lower_transformed_declarations(
     plan: &CompilePlan,
-    transformed_declarations: &BTreeMap<String, String>,
+    transformed_programs: &TransformedPrograms,
 ) -> Result<BTreeMap<String, String>, AnalyzerError> {
+    let declaration_sets = collect_transformed_declarations(transformed_programs)?;
     let runtime_component_name = plan
         .runtime_bindings
         .as_ref()
@@ -26,7 +31,10 @@ fn lower_transformed_declarations(
     let mut lowered = BTreeMap::new();
 
     for target in &plan.targets {
-        let Some(code) = transformed_declarations.get(&target.declaration_id) else {
+        let Some(code) = declaration_sets
+            .get(&target.translation_mode)
+            .and_then(|declarations| declarations.get(&target.declaration_id))
+        else {
             continue;
         };
 
@@ -41,14 +49,98 @@ fn lower_transformed_declarations(
     Ok(lowered)
 }
 
+fn collect_transformed_declarations(
+    programs: &TransformedPrograms,
+) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, String>>, AnalyzerError> {
+    let mut declarations = BTreeMap::new();
+
+    if let Some(code) = &programs.raw_code {
+        declarations.insert(
+            CompileTranslationMode::Raw,
+            collect_declarations_from_program(code)?,
+        );
+    }
+    if let Some(code) = &programs.svelte_context_code {
+        declarations.insert(
+            CompileTranslationMode::SvelteContext,
+            collect_declarations_from_program(code)?,
+        );
+    }
+    if let Some(code) = &programs.astro_context_code {
+        declarations.insert(
+            CompileTranslationMode::AstroContext,
+            collect_declarations_from_program(code)?,
+        );
+    }
+
+    Ok(declarations)
+}
+
+fn collect_declarations_from_program(source: &str) -> Result<BTreeMap<String, String>, AnalyzerError> {
+    let tree = parse::parse_tsx(source)?;
+    let root = tree.root_node();
+    let mut declarations = BTreeMap::new();
+    let mut cursor = root.walk();
+
+    for child in root.children(&mut cursor) {
+        if child.kind() != "variable_declaration" && child.kind() != "lexical_declaration" {
+            continue;
+        }
+
+        let mut decl_cursor = child.walk();
+        for declarator in child.children(&mut decl_cursor) {
+            if declarator.kind() != "variable_declarator" {
+                continue;
+            }
+
+            let Some(name) = declarator.child_by_field_name("name") else {
+                continue;
+            };
+            if name.kind() != "identifier" {
+                continue;
+            }
+            let Some(value) = declarator.child_by_field_name("value") else {
+                continue;
+            };
+            let value_start = extend_start_for_leading_comments(source, value.start_byte());
+
+            declarations.insert(
+                source[name.start_byte()..name.end_byte()].to_string(),
+                source[value_start..value.end_byte()].to_string(),
+            );
+        }
+    }
+
+    Ok(declarations)
+}
+
+fn extend_start_for_leading_comments(source: &str, start: usize) -> usize {
+    let bytes = source.as_bytes();
+    let mut current = start;
+
+    loop {
+        let mut cursor = current;
+        while cursor > 0 && bytes[cursor - 1].is_ascii_whitespace() {
+            cursor -= 1;
+        }
+
+        if cursor < 2 || &source[cursor - 2..cursor] != "*/" {
+            return current;
+        }
+
+        let Some(comment_start) = source[..cursor - 2].rfind("/*") else {
+            return current;
+        };
+        current = comment_start;
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use crate::{
         CompilePlan, CompileRuntimeBindings, CompileScriptRegion, CompileTarget,
         CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode, MacroFlavor,
-        NormalizedSegment, RuntimeRequirements, Span,
+        NormalizedSegment, RuntimeRequirements, Span, TransformedPrograms,
     };
 
     use super::finish_compile;
@@ -99,10 +191,12 @@ mod tests {
             module_script: None,
         };
         let source = "<script>\n  let x = 1;\n</script>\n<p>\n  {$t`hello`}\n</p>";
-        let transformed = BTreeMap::from([(
-            "__lf_0".to_string(),
-            "__l4s_translate({id:\"a\",message:\"hello\"})".to_string(),
-        )]);
+        let transformed = TransformedPrograms {
+            svelte_context_code: Some(
+                "const __lf_0 = __l4s_translate({id:\"a\",message:\"hello\"});".to_string(),
+            ),
+            ..TransformedPrograms::default()
+        };
 
         let finished = finish_compile(&plan, source, &transformed).expect("finish succeeds");
 

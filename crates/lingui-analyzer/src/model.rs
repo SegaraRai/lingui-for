@@ -152,7 +152,9 @@ pub enum CompileTargetOutputKind {
     Component,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize,
+)]
 pub enum CompileTranslationMode {
     Raw,
     SvelteContext,
@@ -233,10 +235,20 @@ pub struct CompileReplacement {
 pub struct FinishCompileOptions {
     pub plan: CompilePlan,
     pub source: String,
-    pub transformed_declarations: BTreeMap<String, String>,
+    pub transformed_programs: TransformedPrograms,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct FinishedCompile {
     pub replacements: Vec<CompileReplacement>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct TransformedPrograms {
+    pub raw_code: Option<String>,
+    pub raw_source_map_json: Option<String>,
+    pub svelte_context_code: Option<String>,
+    pub svelte_context_source_map_json: Option<String>,
+    pub astro_context_code: Option<String>,
+    pub astro_context_source_map_json: Option<String>,
 }

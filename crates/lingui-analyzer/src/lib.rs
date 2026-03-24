@@ -33,6 +33,7 @@ pub use model::{
     FinishedCompile, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
     MacroImport, NormalizedSegment, ReinsertOptions, ReinsertedModule, ReplacementChunk,
     RuntimeRequirements, Span, SyntheticMapping, SyntheticModule, SyntheticModuleOptions,
+    TransformedPrograms,
 };
 
 pub fn build_synthetic_module_for_framework(
@@ -191,7 +192,7 @@ pub fn wasm_finish_compile_with_options(options: JsValue) -> Result<JsValue, JsV
     let result = finish_compile(
         &options.plan,
         &options.source,
-        &options.transformed_declarations,
+        &options.transformed_programs,
     )
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
     serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))

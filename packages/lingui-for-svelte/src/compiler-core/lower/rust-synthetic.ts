@@ -1,9 +1,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import type { NodePath } from "@babel/core";
-import generateModule from "@babel/generator";
-import type { File, VariableDeclarator } from "@babel/types";
 import {
   buildCompilePlanWithOptions,
   finishCompileWithOptions,
@@ -11,12 +8,8 @@ import {
 } from "lingui-analyzer-wasm";
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
-import { babelTraverse } from "lingui-for-shared/compiler";
-
 import type { LinguiConfigNormalized } from "@lingui/conf";
 import { transformProgram } from "./babel-transform.ts";
-
-const generate = getBabelGenerate();
 
 type CompileRuntimeBindings = {
   create_lingui_accessors: string;
@@ -62,6 +55,15 @@ type FinishedCompileReplacement = {
 
 type FinishedCompile = {
   replacements: FinishedCompileReplacement[];
+};
+
+type TransformedPrograms = {
+  raw_code?: string;
+  raw_source_map_json?: string | null;
+  svelte_context_code?: string;
+  svelte_context_source_map_json?: string | null;
+  astro_context_code?: string;
+  astro_context_source_map_json?: string | null;
 };
 
 type RustReplacement = {
@@ -110,25 +112,18 @@ export function lowerSvelteWithRustSynthetic(
     ...(runtimeBindings ? { runtimeBindings } : {}),
   });
 
-  const transformedDeclarations = Object.fromEntries(
-    compilePlan.targets.flatMap((target) => {
-      const transformed =
-        target.translation_mode === "Raw" ? raw : svelteContext;
-
-      const declaration = collectDeclarationInitializer(
-        transformed.ast,
-        target.declaration_id,
-      );
-      return declaration == null
-        ? []
-        : [[target.declaration_id, declaration] as const];
-    }),
-  );
+  const transformedPrograms: TransformedPrograms = {
+    raw_code: raw.code,
+    raw_source_map_json: raw.map != null ? JSON.stringify(raw.map) : null,
+    svelte_context_code: svelteContext.code,
+    svelte_context_source_map_json:
+      svelteContext.map != null ? JSON.stringify(svelteContext.map) : null,
+  };
 
   const finished = finishCompileWithOptions({
     plan: compilePlan,
     source,
-    transformed_declarations: transformedDeclarations,
+    transformed_programs: transformedPrograms,
   }) as FinishedCompile;
 
   return finished.replacements.map((replacement) => ({
@@ -167,57 +162,6 @@ function ensureWasmInitialized(): void {
   );
   initSync({ module: readFileSync(wasmPath) });
   wasmInitialized = true;
-}
-
-function collectDeclarationInitializer(
-  ast: File,
-  declarationId: string,
-): string | null {
-  let found: string | null = null;
-
-  babelTraverse(ast, {
-    VariableDeclarator(path: NodePath<VariableDeclarator>) {
-      if (path.node.id.type !== "Identifier" || !path.node.init) {
-        return;
-      }
-      if (path.node.id.name !== declarationId) {
-        return;
-      }
-
-      found = generateInitializer(path.node.init);
-      path.stop();
-    },
-  });
-
-  return found;
-}
-
-function generateInitializer(node: VariableDeclarator["init"]): string {
-  return node == null ? "" : generate(node).code;
-}
-
-function getBabelGenerate(): typeof import("@babel/generator").default {
-  const moduleValue = generateModule as unknown as {
-    default?:
-      | typeof import("@babel/generator").default
-      | { default?: typeof import("@babel/generator").default };
-  };
-
-  if (typeof moduleValue === "function") {
-    return moduleValue as typeof import("@babel/generator").default;
-  }
-
-  if (typeof moduleValue.default === "function") {
-    return moduleValue.default;
-  }
-
-  if (typeof moduleValue.default?.default === "function") {
-    return moduleValue.default.default;
-  }
-
-  throw new TypeError(
-    "Unable to resolve @babel/generator default export at runtime.",
-  );
 }
 
 function repairSvelteCompilePlan(source: string, plan: CompilePlan): void {
