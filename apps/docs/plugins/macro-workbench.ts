@@ -78,12 +78,11 @@ export function macroWorkbenchPlugin({
       );
       const ids = messages.map((message) => message.id);
       const sourceSnippet = extractSnippet(source);
-      const transformedSource = extractSnippet(
-        transformSvelte(source, {
-          filename: demoFile,
-          linguiConfig: normalizedLinguiConfig,
-        }).code,
-      );
+      const transformed = transformSvelte(source, {
+        filename: demoFile,
+        linguiConfig: normalizedLinguiConfig,
+      });
+      const transformedSource = extractSnippet(transformed?.code ?? source);
       const poCatalogs = await buildPoCatalogArtifacts(
         projectRoot,
         demoOriginPath,
