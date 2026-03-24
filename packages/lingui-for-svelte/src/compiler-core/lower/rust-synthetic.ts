@@ -42,7 +42,7 @@ type FinishedCompile = {
   }>;
 };
 
-export type SvelteRustLoweredResult = SvelteTransformResult & {
+type SvelteRustLoweredResult = SvelteTransformResult & {
   replacements: Array<{
     start: number;
     end: number;

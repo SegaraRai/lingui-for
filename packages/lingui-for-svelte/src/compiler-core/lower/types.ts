@@ -7,19 +7,9 @@ import type { ScriptLang } from "../shared/types.ts";
 
 type BabelInputSourceMap = TransformOptions["inputSourceMap"];
 
-export type SourcePosition = {
-  line: number;
-  column: number;
-};
-
 export type ProgramTransform = {
   code: string;
   ast: BabelTypes.File;
-  map?: EncodedSourceMap | null;
-};
-
-export type MappedCodeFragment = {
-  code: string;
   map?: EncodedSourceMap | null;
 };
 
