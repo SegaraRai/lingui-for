@@ -2,10 +2,7 @@ import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
 import { getParserPlugins } from "../shared/config.ts";
-import {
-  createMacroPostprocessPlugin,
-  createMacroPreprocessPlugin,
-} from "./macro-rewrite.ts";
+import { createMacroPostprocessPlugin } from "./macro-rewrite.ts";
 import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
 
 /**
@@ -16,41 +13,21 @@ import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
  * extraction mode, translation mode, and runtime bindings.
  * @returns A {@link ProgramTransform} containing transformed code and transformed AST.
  *
- * The pipeline has three stages:
- * 1. preprocess custom reactive syntax such as `$t`
- * 2. run the official Lingui Babel macro plugin
- * 3. postprocess Lingui's output into this project's raw, extract, or Svelte-context form
+ * The pipeline has two stages:
+ * 1. run the official Lingui Babel macro plugin on Rust-prepared synthetic code
+ * 2. postprocess Lingui's output into this project's raw, extract, or Svelte-context form
  */
 export function transformProgram(
   code: string,
   request: ProgramTransformRequest,
 ): ProgramTransform {
-  const preprocessed = transformSync(code, {
-    ast: false,
-    babelrc: false,
-    code: true,
-    configFile: false,
-    filename: request.filename,
-    inputSourceMap: request.inputSourceMap ?? undefined,
-    parserOpts: {
-      sourceType: "module",
-      plugins: getParserPlugins(request.lang),
-    },
-    plugins: [createMacroPreprocessPlugin(request)],
-    sourceMaps: true,
-  });
-
-  if (!preprocessed?.code) {
-    throw new Error(`Failed to preprocess ${request.filename}`);
-  }
-
-  const result = transformSync(preprocessed.code, {
+  const result = transformSync(code, {
     ast: true,
     babelrc: false,
     code: true,
     configFile: false,
     filename: request.filename,
-    inputSourceMap: preprocessed.map ?? undefined,
+    inputSourceMap: request.inputSourceMap ?? undefined,
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(request.lang),

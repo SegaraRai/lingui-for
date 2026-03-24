@@ -3,10 +3,7 @@ import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../shared/config.ts";
-import {
-  createMacroPostprocessPlugin,
-  createMacroPreprocessPlugin,
-} from "./macro-rewrite.ts";
+import { createMacroPostprocessPlugin } from "./macro-rewrite.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 
 function runWithPlugin(
@@ -46,67 +43,6 @@ function createRequest(
     ...overrides,
   };
 }
-
-describe("createMacroPreprocessPlugin", () => {
-  test("wraps reactive $-prefixed string macros when they are imported from the macro package", () => {
-    const code = runWithPlugin(
-      dedent`
-        import { t as translate, plural } from "lingui-for-svelte/macro";
-
-        const label = $translate\`Hello \${name}\`;
-        const books = $plural(count, { one: "# Book", other: "# Books" });
-      `,
-      createMacroPreprocessPlugin(),
-    );
-
-    expect(code).toMatchInlineSnapshot(`
-      "import { t as translate, plural } from "lingui-for-svelte/macro";
-      const label = __lingui_for_svelte_reactive_translation__(translate\`Hello \${name}\`, "translate");
-      const books = __lingui_for_svelte_reactive_translation__(plural(count, {
-        one: "# Book",
-        other: "# Books"
-      }), "plural");"
-    `);
-  });
-
-  test("does not rewrite $-prefixed calls without a Lingui macro import", () => {
-    const code = runWithPlugin(
-      "const label = $t`Hello ${name}`;",
-      createMacroPreprocessPlugin(),
-    );
-
-    expect(code).toBe("const label = $t`Hello ${name}`;");
-  });
-
-  test("wraps explicit eager direct translations", () => {
-    const code = runWithPlugin(
-      dedent`
-        import { t } from "lingui-for-svelte/macro";
-
-        const label = t.eager\`Hello \${name}\`;
-      `,
-      createMacroPreprocessPlugin(),
-    );
-
-    expect(code).toMatchInlineSnapshot(`
-      "import { t } from "lingui-for-svelte/macro";
-      const label = __lingui_for_svelte_eager_translation__(t\`Hello \${name}\`);"
-    `);
-  });
-
-  test("rejects bare direct t calls in strict Svelte mode", () => {
-    expect(() =>
-      runWithPlugin(
-        dedent`
-          import { t } from "lingui-for-svelte/macro";
-
-          const label = t\`Hello\`;
-        `,
-        createMacroPreprocessPlugin(),
-      ),
-    ).toThrow(/Bare `t` in `.svelte` files is not allowed/);
-  });
-});
 
 describe("createMacroPostprocessPlugin", () => {
   test("rewrites reactive wrappers to context-aware translator calls in svelte-context mode", () => {

@@ -85,7 +85,6 @@ export const svelteExtractor: ExtractorType = {
       linguiConfig: extractorCtx.linguiConfig,
       extract: true,
       translationMode: "extract",
-      allowBareSyntheticDirectMacros: true,
       inputSourceMap: synthetic.source_map_json
         ? (JSON.parse(synthetic.source_map_json) as NonNullable<
             ExtractorCtx["sourceMaps"]

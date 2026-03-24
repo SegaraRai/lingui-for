@@ -42,7 +42,7 @@ describe("transformProgram", () => {
       dedent`
         import { t } from "lingui-for-svelte/macro";
 
-        const __lingui_for_svelte_expr_0 = $t\`Hello \${name}\`;
+        const __lingui_for_svelte_expr_0 = __lingui_for_svelte_reactive_translation__(t\`Hello \${name}\`, "t");
       `,
       {
         extract: false,
@@ -79,7 +79,7 @@ describe("transformProgram", () => {
       dedent`
         import { t } from "lingui-for-svelte/macro";
 
-        const __lingui_for_svelte_expr_0 = $t({ id: "demo.save", message: "Save" });
+        const __lingui_for_svelte_expr_0 = __lingui_for_svelte_reactive_translation__(t({ id: "demo.save", message: "Save" }), "t");
       `,
       {
         extract: true,

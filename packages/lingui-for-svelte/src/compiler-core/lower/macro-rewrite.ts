@@ -8,35 +8,20 @@ import {
 } from "lingui-for-shared/compiler";
 
 import {
-  EAGER_TRANSLATION_PROPERTY,
   EAGER_TRANSLATION_WRAPPER,
-  PACKAGE_MACRO,
   PACKAGE_RUNTIME,
-  REACTIVE_MACRO_PREFIX,
   REACTIVE_TRANSLATION_WRAPPER,
 } from "../shared/constants.ts";
-import { collectMacroImportLocals } from "../shared/macro-bindings.ts";
-import { buildInvalidDirectMacroUsageMessage } from "../shared/macro-usage.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 
 type MacroRewriteState = {
-  descriptorComponentLocals: ReadonlySet<string>;
-  descriptorContainerLocals: ReadonlySet<string>;
-  directStringLocals: ReadonlySet<string>;
   runtimeTImports: Set<string>;
-  tLocals: ReadonlySet<string>;
-  reactiveStringLocals: ReadonlySet<string>;
   runtimeI18nLocals: ReadonlySet<string>;
 };
 
 function createInitialState(): MacroRewriteState {
   return {
-    descriptorComponentLocals: new Set<string>(),
-    descriptorContainerLocals: new Set<string>(),
-    directStringLocals: new Set<string>(),
     runtimeTImports: new Set<string>(),
-    tLocals: new Set<string>(),
-    reactiveStringLocals: new Set<string>(),
     runtimeI18nLocals: new Set<string>(),
   };
 }
@@ -66,104 +51,6 @@ function collectRuntimeI18nLocals(program: t.Program): Set<string> {
   return locals;
 }
 
-function isMacroImportBinding(
-  binding: ReturnType<NodePath<t.Identifier>["scope"]["getBinding"]>,
-  allowedLocals: ReadonlySet<string>,
-): boolean {
-  if (!binding || !allowedLocals.has(binding.identifier.name)) {
-    return false;
-  }
-
-  if (!binding.path.isImportSpecifier()) {
-    return false;
-  }
-
-  const importDeclaration = binding.path.parentPath;
-  return (
-    importDeclaration?.isImportDeclaration() === true &&
-    importDeclaration.node.source.value === PACKAGE_MACRO
-  );
-}
-
-function getImportedMacroLocalName(
-  expression: NodePath<t.Expression | t.V8IntrinsicIdentifier>,
-  allowedLocals: ReadonlySet<string>,
-): string | null {
-  if (!expression.isIdentifier()) {
-    return null;
-  }
-
-  const binding = expression.scope.getBinding(expression.node.name);
-  return isMacroImportBinding(binding, allowedLocals)
-    ? expression.node.name
-    : null;
-}
-
-function getReactiveLocalName(
-  expression: NodePath<t.Expression | t.V8IntrinsicIdentifier>,
-  reactiveStringLocals: ReadonlySet<string>,
-): string | null {
-  if (!expression.isIdentifier()) {
-    return null;
-  }
-
-  const { name } = expression.node;
-  if (
-    !name.startsWith(REACTIVE_MACRO_PREFIX) ||
-    expression.scope.hasBinding(name)
-  ) {
-    return null;
-  }
-
-  const localName = name.slice(REACTIVE_MACRO_PREFIX.length);
-  return isMacroImportBinding(
-    expression.scope.getBinding(localName),
-    reactiveStringLocals,
-  )
-    ? localName
-    : null;
-}
-
-function isWrappedReactiveCall(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-): boolean {
-  return (
-    path.parentPath.isCallExpression() &&
-    t.isIdentifier(path.parentPath.node.callee, {
-      name: REACTIVE_TRANSLATION_WRAPPER,
-    }) &&
-    path.parentPath.node.arguments[0] === path.node
-  );
-}
-
-function isWrappedImmediateTranslation(path: NodePath<t.Expression>): boolean {
-  return (
-    path.parentPath.isCallExpression() &&
-    t.isIdentifier(path.parentPath.node.callee, {
-      name: EAGER_TRANSLATION_WRAPPER,
-    }) &&
-    path.parentPath.node.arguments[0] === path.node
-  );
-}
-
-function wrapReactiveTranslation(
-  node: t.CallExpression | t.TaggedTemplateExpression,
-  localName: string,
-): t.CallExpression {
-  const inner = t.isCallExpression(node)
-    ? t.callExpression(t.identifier(localName), node.arguments)
-    : t.taggedTemplateExpression(t.identifier(localName), node.quasi);
-
-  return t.callExpression(t.identifier(REACTIVE_TRANSLATION_WRAPPER), [
-    inner,
-    t.stringLiteral(localName),
-  ]);
-}
-
-function wrapImmediateTranslation(node: t.Expression): t.CallExpression {
-  return t.callExpression(t.identifier(EAGER_TRANSLATION_WRAPPER), [node]);
-}
-
 function extractDescriptorArgument(
   expression: t.Expression | t.SpreadElement | t.ArgumentPlaceholder,
   localName: string,
@@ -191,154 +78,6 @@ function extractDescriptorArgument(
 
   const descriptor = expression.arguments[0];
   return descriptor && t.isExpression(descriptor) ? descriptor : null;
-}
-
-function getDirectStringLocalName(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-  directStringLocals: ReadonlySet<string>,
-): string | null {
-  if (path.isCallExpression()) {
-    return getImportedMacroLocalName(path.get("callee"), directStringLocals);
-  }
-
-  return getImportedMacroLocalName(path.get("tag"), directStringLocals);
-}
-
-function getEagerDirectStringLocalName(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-  directStringLocals: ReadonlySet<string>,
-): string | null {
-  const member = path.isCallExpression() ? path.get("callee") : path.get("tag");
-
-  if (!member.isMemberExpression() || member.node.computed) {
-    return null;
-  }
-
-  const property = member.get("property");
-  if (!property.isIdentifier({ name: EAGER_TRANSLATION_PROPERTY })) {
-    return null;
-  }
-
-  const object = member.get("object");
-  if (!object.isIdentifier()) {
-    return null;
-  }
-
-  return getImportedMacroLocalName(object, directStringLocals);
-}
-
-function isAllowedDescriptorContext(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-  state: Pick<
-    MacroRewriteState,
-    "descriptorComponentLocals" | "descriptorContainerLocals"
-  >,
-): boolean {
-  let current: NodePath<t.Node> | null = path.parentPath;
-
-  while (current) {
-    if (current.isObjectProperty()) {
-      const key = current.get("key");
-
-      if (
-        (!current.node.computed && key.isIdentifier({ name: "message" })) ||
-        key.isStringLiteral({ value: "message" })
-      ) {
-        return true;
-      }
-    }
-
-    if (current.isCallExpression() || current.isTaggedTemplateExpression()) {
-      const localName = getDirectStringLocalName(
-        current,
-        state.descriptorContainerLocals,
-      );
-
-      if (localName) {
-        return true;
-      }
-    }
-
-    if (current.isJSXAttribute()) {
-      const attributeName = current.get("name");
-      if (
-        attributeName.isJSXIdentifier() &&
-        !["comment", "context", "id", "offset", "value"].includes(
-          attributeName.node.name,
-        )
-      ) {
-        const openingElement = current.parentPath;
-        if (openingElement?.isJSXOpeningElement()) {
-          const elementName = openingElement.get("name");
-          if (elementName.isJSXIdentifier()) {
-            const binding = elementName.scope.getBinding(elementName.node.name);
-            if (
-              isMacroImportBinding(binding, state.descriptorComponentLocals)
-            ) {
-              return true;
-            }
-          }
-        }
-      }
-    }
-
-    current = current.parentPath;
-  }
-
-  return false;
-}
-
-function assertAllowedDirectStringMacroUsage(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-  localName: string,
-  state: MacroRewriteState,
-  allowBareSyntheticDirectMacros = false,
-): void {
-  if (allowBareSyntheticDirectMacros) {
-    return;
-  }
-
-  if (localName !== "t" && isAllowedDescriptorContext(path, state)) {
-    return;
-  }
-
-  throw path.buildCodeFrameError(
-    buildInvalidDirectMacroUsageMessage(localName),
-  );
-}
-
-function buildDirectStringMacroFromEager(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-  localName: string,
-): t.CallExpression | t.TaggedTemplateExpression {
-  if (path.isCallExpression()) {
-    return t.callExpression(t.identifier(localName), path.node.arguments);
-  }
-
-  if (!path.isTaggedTemplateExpression()) {
-    throw new Error("Expected an eager direct string macro expression.");
-  }
-
-  return t.taggedTemplateExpression(t.identifier(localName), path.node.quasi);
-}
-
-function wrapEagerDirectTranslation(
-  path: NodePath<t.CallExpression | t.TaggedTemplateExpression>,
-  state: MacroRewriteState,
-): boolean {
-  const localName = getEagerDirectStringLocalName(
-    path,
-    state.directStringLocals,
-  );
-  if (!localName) {
-    return false;
-  }
-
-  path.replaceWith(
-    wrapImmediateTranslation(buildDirectStringMacroFromEager(path, localName)),
-  );
-  path.skip();
-  return true;
 }
 
 function ensureRuntimeTImport(program: t.Program, localName: string): void {
@@ -451,132 +190,11 @@ function removeRuntimeI18nImports(
 }
 
 /**
- * Creates the Babel preprocessing plugin that marks reactive Lingui calls before the official
- * Lingui macro transform runs.
- *
- * @returns A Babel plugin object operating on the current program.
- *
- * The plugin collects imported reactive string macro locals such as `t`, `plural`, `select`,
- * and `selectOrdinal`, then rewrites `$t(...)` / `$t\`...\`` and friends into a temporary
- * wrapper call so the following Lingui pass can preserve enough information for postprocessing.
- */
-export function createMacroPreprocessPlugin(
-  request?: Pick<ProgramTransformRequest, "allowBareSyntheticDirectMacros">,
-): PluginObj<MacroRewriteState> {
-  return {
-    name: "lingui-for-svelte-macro-preprocess",
-    pre() {
-      Object.assign(this, createInitialState());
-    },
-    visitor: {
-      Program: {
-        enter(path, state) {
-          state.tLocals = collectMacroImportLocals(path.node, ["t"]);
-          state.directStringLocals = collectMacroImportLocals(path.node, [
-            "t",
-            "plural",
-            "select",
-            "selectOrdinal",
-          ]);
-          state.descriptorComponentLocals = collectMacroImportLocals(
-            path.node,
-            ["Plural", "Select", "SelectOrdinal"],
-          );
-          state.descriptorContainerLocals = collectMacroImportLocals(
-            path.node,
-            ["t", "msg", "defineMessage", "plural", "select", "selectOrdinal"],
-          );
-          state.reactiveStringLocals = collectMacroImportLocals(path.node, [
-            "t",
-            "plural",
-            "select",
-            "selectOrdinal",
-          ]);
-        },
-      },
-      CallExpression(path, state) {
-        if (
-          isWrappedReactiveCall(path) ||
-          isWrappedImmediateTranslation(path)
-        ) {
-          return;
-        }
-
-        if (wrapEagerDirectTranslation(path, state)) {
-          return;
-        }
-
-        const localName = getReactiveLocalName(
-          path.get("callee"),
-          state.reactiveStringLocals,
-        );
-        if (!localName) {
-          const directLocalName = getDirectStringLocalName(
-            path,
-            state.directStringLocals,
-          );
-          if (directLocalName) {
-            assertAllowedDirectStringMacroUsage(
-              path,
-              directLocalName,
-              state,
-              request?.allowBareSyntheticDirectMacros,
-            );
-          }
-          return;
-        }
-
-        path.replaceWith(wrapReactiveTranslation(path.node, localName));
-        path.skip();
-      },
-      TaggedTemplateExpression(path, state) {
-        if (
-          isWrappedReactiveCall(path) ||
-          isWrappedImmediateTranslation(path)
-        ) {
-          return;
-        }
-
-        if (wrapEagerDirectTranslation(path, state)) {
-          return;
-        }
-
-        const localName = getReactiveLocalName(
-          path.get("tag"),
-          state.reactiveStringLocals,
-        );
-        if (!localName) {
-          const directLocalName = getDirectStringLocalName(
-            path,
-            state.directStringLocals,
-          );
-          if (directLocalName) {
-            assertAllowedDirectStringMacroUsage(
-              path,
-              directLocalName,
-              state,
-              request?.allowBareSyntheticDirectMacros,
-            );
-          }
-          return;
-        }
-
-        path.replaceWith(wrapReactiveTranslation(path.node, localName));
-        path.skip();
-      },
-    },
-  };
-}
-
-/**
  * Creates the Babel postprocessing plugin that adapts Lingui's output to this project's target mode.
  *
- * @param request Transform request describing extraction/raw/Svelte-context mode and runtime bindings.
- * @returns A Babel plugin object operating on the transformed program.
- *
- * Depending on `request.translationMode`, this plugin unwraps the temporary reactive wrapper,
- * rewrites translations into extraction-safe, raw, or Svelte-context forms, and adjusts runtime
- * imports.
+ * Rust prepares the synthetic source before Babel runs. This plugin only unwraps the
+ * stable wrapper calls that survive Lingui and rewrites runtime access into the final
+ * Svelte-oriented form.
  */
 export function createMacroPostprocessPlugin(
   request: ProgramTransformRequest,
@@ -662,17 +280,16 @@ export function createMacroPostprocessPlugin(
           request.translationMode === "svelte-context" &&
           request.runtimeBindings
         ) {
-          const reactiveCall = t.callExpression(
-            t.identifier(`$${request.runtimeBindings.translate}`),
-            [t.cloneNode(descriptor)],
+          path.replaceWith(
+            t.callExpression(
+              t.identifier(`$${request.runtimeBindings.translate}`),
+              [t.cloneNode(descriptor)],
+            ),
           );
-
-          path.replaceWith(reactiveCall);
           return;
         }
 
         state.runtimeTImports.add(localName);
-
         path.replaceWith(
           t.callExpression(t.identifier(localName), [t.cloneNode(descriptor)]),
         );

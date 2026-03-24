@@ -37,6 +37,5 @@ export type ProgramTransformRequest = {
   extract: boolean;
   translationMode: "extract" | "raw" | "svelte-context";
   inputSourceMap?: BabelInputSourceMap;
-  allowBareSyntheticDirectMacros?: boolean | undefined;
   runtimeBindings?: RuntimeBindingsForTransform | undefined;
 };

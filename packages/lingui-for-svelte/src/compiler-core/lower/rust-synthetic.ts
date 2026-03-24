@@ -87,7 +87,6 @@ export function lowerSvelteWithRustSynthetic(
     lang: compilePlan.synthetic_lang,
     linguiConfig,
     translationMode: "raw",
-    allowBareSyntheticDirectMacros: true,
   });
   const svelteContext = transformProgram(compilePlan.synthetic_source, {
     extract: false,
@@ -95,7 +94,6 @@ export function lowerSvelteWithRustSynthetic(
     lang: compilePlan.synthetic_lang,
     linguiConfig,
     translationMode: "svelte-context",
-    allowBareSyntheticDirectMacros: true,
     ...(runtimeBindings ? { runtimeBindings } : {}),
   });
 
