@@ -128,10 +128,7 @@ export function lowerSvelteWithRustSynthetic(
   };
 }
 
-export function buildCompilePlan(
-  source: string,
-  filename: string,
-): CompilePlan {
+function buildCompilePlan(source: string, filename: string): CompilePlan {
   ensureWasmInitialized();
   return buildCompilePlanWithOptions({
     framework: "svelte",

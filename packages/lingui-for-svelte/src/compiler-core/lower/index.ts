@@ -3,10 +3,7 @@ export {
   createMacroPostprocessPlugin,
   createMacroPreprocessPlugin,
 } from "./macro-rewrite.ts";
-export {
-  buildCompilePlan,
-  lowerSvelteWithRustSynthetic,
-} from "./rust-synthetic.ts";
+export { lowerSvelteWithRustSynthetic } from "./rust-synthetic.ts";
 export type {
   MappedCodeFragment,
   ProgramTransform,

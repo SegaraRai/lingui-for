@@ -37,8 +37,8 @@ export const SYNTHETIC_PREFIX_EXPRESSION = "__lingui_for_svelte_expr_";
 /**
  * Prefix used for synthetic variables that stand in for component macros such as `Trans`.
  *
- * This is used during synthetic-program construction before component macro output is
- * lowered back into runtime Svelte components.
+ * This is used while building Rust-managed synthetic declarations for component macros
+ * before the transformed output is lowered back into runtime Svelte components.
  *
  * This is a prefix rather than a final fixed name. Real identifiers are formed by
  * appending an index and are later recognized by this prefix.
