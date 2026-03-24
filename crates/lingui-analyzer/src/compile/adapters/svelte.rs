@@ -2,19 +2,17 @@ use std::collections::BTreeSet;
 
 use tree_sitter::Node;
 
-use crate::{
-    AnalyzerError,
-    common::{EmbeddedScriptRegion, Span},
-    compile::{
-        CompilePlan, CompileReplacement, CompileRuntimeBindings, CompileScriptRegion,
-        CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
-    },
-    framework::{
-        MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, parse,
-        svelte::{analyze_svelte, bare_direct_macro_message},
-    },
+use crate::AnalyzerError;
+use crate::common::{EmbeddedScriptRegion, Span};
+use crate::framework::{
+    MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, parse,
+    svelte::{analyze_svelte, bare_direct_macro_message},
 };
 
+use super::super::{
+    CompilePlan, CompileReplacement, CompileRuntimeBindings, CompileScriptRegion, CompileTarget,
+    CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
+};
 use super::{FrameworkCompileAdapter, FrameworkCompileAnalysis};
 
 const SVELTE_REACTIVE_WRAPPER: &str = "__lingui_for_svelte_reactive_translation__";

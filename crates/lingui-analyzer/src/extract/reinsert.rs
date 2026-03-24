@@ -6,7 +6,7 @@ use sourcemap::SourceMapBuilder;
 use crate::AnalyzerError;
 use crate::common::{Span, Utf16Index};
 use crate::extract::{ReinsertedModule, ReplacementChunk, SyntheticModule};
-use crate::synthetic::NormalizedSegment;
+use crate::plan::NormalizedSegment;
 
 pub fn reinsert_transformed_declarations(
     original_source: &str,

@@ -1,11 +1,12 @@
 use std::collections::BTreeMap;
 use std::io::Cursor;
 
+use sourcemap::SourceMapBuilder;
+
 use crate::common::{Span, Utf16Index};
 use crate::extract::{SyntheticMapping, SyntheticModule};
 use crate::framework::{MacroCandidate, MacroCandidateKind, MacroImport};
-use crate::synthetic::{NormalizedSegment, SyntheticPlan, build_synthetic_plan};
-use sourcemap::SourceMapBuilder;
+use crate::plan::{NormalizedSegment, SyntheticPlan, build_synthetic_plan};
 
 pub fn build_synthetic_module(
     source: &str,

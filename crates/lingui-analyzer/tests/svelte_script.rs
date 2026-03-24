@@ -1,4 +1,5 @@
 use indoc::indoc;
+
 use lingui_analyzer::{
     MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
     framework::{

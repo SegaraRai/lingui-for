@@ -1,10 +1,11 @@
 use indoc::indoc;
+use sourcemap::DecodedMap;
+
 use lingui_analyzer::{
     MacroFlavor,
     extract::build_synthetic_module,
     framework::{FrameworkAdapter, svelte::SvelteAdapter},
 };
-use sourcemap::DecodedMap;
 
 #[test]
 fn builds_synthetic_module_with_normalized_svelte_macros() {

@@ -2,22 +2,20 @@ use std::cell::RefCell;
 
 use tree_sitter::{Language, Node, Parser};
 
-use crate::{
-    AnalyzerError,
-    common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span},
-    framework::{
-        FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
-        MacroImport,
-        js::{
-            BindingParseMode, JsLikeLanguage, JsMacroSyntax,
-            collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
-            collect_macro_candidates_in_javascript_with_shadowing,
-            collect_top_level_declared_names_in_javascript,
-        },
-        parse,
+use crate::AnalyzerError;
+use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
+use crate::framework::{
+    FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+    MacroImport,
+    js::{
+        BindingParseMode, JsLikeLanguage, JsMacroSyntax,
+        collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
+        collect_macro_candidates_in_javascript_with_shadowing,
+        collect_top_level_declared_names_in_javascript,
     },
-    wasm::alloc::ensure_tree_sitter_allocator,
+    parse,
 };
+use crate::wasm::alloc::ensure_tree_sitter_allocator;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SvelteScriptAnalysis {

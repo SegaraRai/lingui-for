@@ -1,12 +1,10 @@
-use crate::{
-    AnalyzerError,
-    compile::{
-        CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
-        CompileTranslationMode, RuntimeRequirements,
-    },
-    framework::astro::analyze_astro,
-};
+use crate::AnalyzerError;
+use crate::framework::astro::analyze_astro;
 
+use super::super::{
+    CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
+    CompileTranslationMode, RuntimeRequirements,
+};
 use super::{FrameworkCompileAdapter, FrameworkCompileAnalysis};
 
 #[derive(Debug, Default, Clone, Copy)]

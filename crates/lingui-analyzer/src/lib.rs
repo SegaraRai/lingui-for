@@ -3,7 +3,7 @@ pub mod compile;
 mod error;
 pub mod extract;
 pub mod framework;
-pub mod synthetic;
+pub mod plan;
 pub mod wasm;
 
 use wasm_bindgen::prelude::*;
@@ -32,7 +32,7 @@ pub use extract::{
 pub use framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
 };
-pub use synthetic::NormalizedSegment;
+pub use plan::NormalizedSegment;
 
 pub fn build_synthetic_module_for_framework(
     framework: &str,

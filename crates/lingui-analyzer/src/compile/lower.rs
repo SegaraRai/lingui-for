@@ -1,13 +1,14 @@
 use std::collections::BTreeMap;
 
 use crate::AnalyzerError;
-use crate::compile::adapters::compile_adapter_for_framework;
-use crate::compile::emit::{collect_compile_replacements, finish_compile_from_replacements};
-use crate::compile::{
+use crate::framework::parse;
+
+use super::adapters::compile_adapter_for_framework;
+use super::emit::{collect_compile_replacements, finish_compile_from_replacements};
+use super::{
     CompilePlan, CompileTargetOutputKind, CompileTranslationMode, FinishedCompile,
     TransformedPrograms,
 };
-use crate::framework::parse;
 
 pub fn finish_compile(
     plan: &CompilePlan,

@@ -1,14 +1,12 @@
 use tree_sitter::Node;
 
-use crate::{
-    AnalyzerError,
-    common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span},
-    framework::{
-        FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
-        MacroImport,
-        js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript},
-        parse,
-    },
+use crate::AnalyzerError;
+use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
+
+use super::js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript};
+use super::{
+    FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+    MacroImport, parse,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]

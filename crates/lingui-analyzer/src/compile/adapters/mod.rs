@@ -1,14 +1,11 @@
 mod astro;
 mod svelte;
 
-use crate::{
-    AnalyzerError,
-    common::Span,
-    compile::{
-        CompilePlan, CompileReplacement, CompileRuntimeBindings, CompileScriptRegion,
-        CompileTarget, CompileTargetPrototype, RuntimeRequirements,
-    },
-    framework::MacroImport,
+use crate::{AnalyzerError, common::Span, framework::MacroImport};
+
+use super::{
+    CompilePlan, CompileReplacement, CompileRuntimeBindings, CompileScriptRegion, CompileTarget,
+    CompileTargetPrototype, RuntimeRequirements,
 };
 
 pub(crate) use astro::AstroCompileAdapter;

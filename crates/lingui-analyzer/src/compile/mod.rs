@@ -1,13 +1,16 @@
 mod adapters;
-pub mod emit;
-pub mod lower;
-pub mod plan;
+mod emit;
+mod lower;
+mod plan;
 
 use serde::{Deserialize, Serialize};
 
 use crate::common::Span;
 use crate::framework::{MacroCandidate, MacroFlavor};
-use crate::synthetic::NormalizedSegment;
+use crate::plan::NormalizedSegment;
+
+pub use lower::finish_compile;
+pub use plan::{build_compile_plan_for_framework, build_compile_plan_for_framework_with_names};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CompileTargetContext {
@@ -129,6 +132,3 @@ pub(crate) struct CompileTargetPrototype {
     pub(crate) output_kind: CompileTargetOutputKind,
     pub(crate) translation_mode: CompileTranslationMode,
 }
-
-pub use lower::finish_compile;
-pub use plan::{build_compile_plan_for_framework, build_compile_plan_for_framework_with_names};

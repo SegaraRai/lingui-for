@@ -7,7 +7,7 @@ use crate::AnalyzerError;
 use crate::common::Utf16Index;
 use crate::compile::adapters::FrameworkCompileAdapter;
 use crate::compile::{CompilePlan, CompileReplacement, CompileTarget, FinishedCompile};
-use crate::synthetic::NormalizedSegment;
+use crate::plan::NormalizedSegment;
 
 pub(crate) fn collect_compile_replacements(
     adapter: &dyn FrameworkCompileAdapter,

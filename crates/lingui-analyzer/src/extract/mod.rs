@@ -1,5 +1,5 @@
-pub mod build;
-pub mod reinsert;
+mod build;
+mod reinsert;
 
 use std::collections::BTreeMap;
 
@@ -7,7 +7,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::Span;
 use crate::framework::MacroFlavor;
-use crate::synthetic::NormalizedSegment;
+use crate::plan::NormalizedSegment;
+
+pub use build::{build_synthetic_module, build_synthetic_module_with_names};
+pub use reinsert::reinsert_transformed_declarations;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct SyntheticModule {
@@ -64,6 +67,3 @@ pub struct ReinsertedModule {
     pub source_name: String,
     pub source_map_json: Option<String>,
 }
-
-pub use build::{build_synthetic_module, build_synthetic_module_with_names};
-pub use reinsert::reinsert_transformed_declarations;

@@ -70,9 +70,9 @@ impl LexicalScope {
 
 #[cfg(test)]
 mod tests {
-    use crate::{common::Span, framework::MacroImport};
+    use crate::common::Span;
 
-    use super::LexicalScope;
+    use super::{LexicalScope, MacroImport};
 
     fn import(local_name: &str, imported_name: &str) -> MacroImport {
         MacroImport {

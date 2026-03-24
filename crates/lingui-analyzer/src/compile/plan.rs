@@ -1,10 +1,11 @@
 use crate::AnalyzerError;
-use crate::compile::adapters::{
+use crate::framework::MacroCandidateStrategy;
+use crate::plan::{SyntheticPlan, build_synthetic_plan};
+
+use super::adapters::{
     FrameworkCompileAdapter, FrameworkCompileAnalysis, compile_adapter_for_framework,
 };
-use crate::compile::{CompilePlan, CompileTarget, CompileTargetPrototype};
-use crate::framework::MacroCandidateStrategy;
-use crate::synthetic::{SyntheticPlan, build_synthetic_plan};
+use super::{CompilePlan, CompileTarget, CompileTargetPrototype};
 
 pub fn build_compile_plan_for_framework(
     framework: &str,
