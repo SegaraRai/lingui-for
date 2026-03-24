@@ -1,10 +1,10 @@
 use std::collections::BTreeMap;
 use std::io::Cursor;
 
-use crate::utf16::Utf16Index;
-use crate::{
-    MacroCandidate, MacroImport, Span, SyntheticMapping, SyntheticModule, model::NormalizedSegment,
-};
+use crate::common::{Span, Utf16Index};
+use crate::extract::{SyntheticMapping, SyntheticModule};
+use crate::framework::{MacroCandidate, MacroCandidateKind, MacroImport};
+use crate::synthetic::{NormalizedSegment, SyntheticPlan, build_synthetic_plan};
 use sourcemap::SourceMapBuilder;
 
 pub fn build_synthetic_module(
@@ -12,7 +12,8 @@ pub fn build_synthetic_module(
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
 ) -> SyntheticModule {
-    build_synthetic_module_with_names(source, "source", "synthetic.js", imports, candidates)
+    let plan = build_synthetic_plan(source, imports, candidates);
+    build_synthetic_module_from_plan(source, "source", "synthetic.js", &plan)
 }
 
 pub fn build_synthetic_module_with_names(
@@ -22,6 +23,16 @@ pub fn build_synthetic_module_with_names(
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
 ) -> SyntheticModule {
+    let plan = build_synthetic_plan(source, imports, candidates);
+    build_synthetic_module_from_plan(source, source_name, synthetic_name, &plan)
+}
+
+pub fn build_synthetic_module_from_plan(
+    source: &str,
+    source_name: &str,
+    synthetic_name: &str,
+    plan: &SyntheticPlan,
+) -> SyntheticModule {
     let mut out = String::new();
     let mut declaration_ids = Vec::new();
     let mut original_spans = BTreeMap::new();
@@ -30,58 +41,53 @@ pub fn build_synthetic_module_with_names(
     let mut normalized_segments = BTreeMap::new();
     let mut source_map_anchors = BTreeMap::new();
     let mut candidate_kinds = BTreeMap::new();
-    let import_line = render_import_line(imports);
+    let import_line = render_import_line(&plan.imports);
 
     if let Some(line) = import_line {
         out.push_str(&line);
         out.push('\n');
     }
 
-    for (index, candidate) in candidates.iter().enumerate() {
-        let declaration_id = format!("__lf_{index}");
-        let normalized = normalize_candidate_source(source, candidate);
+    for target in &plan.targets {
+        let declaration_id = target.declaration_id.clone();
         let generated_start = out.len();
         out.push_str("const ");
         out.push_str(&declaration_id);
         out.push_str(" = ");
         let generated_initializer_start = out.len();
-        out.push_str(&normalized.code);
+        out.push_str(&target.normalized_code);
         out.push_str(";\n");
         let generated_end = out.len();
 
         declaration_ids.push(declaration_id.clone());
-        original_spans.insert(declaration_id.clone(), candidate.outer_span);
+        original_spans.insert(declaration_id.clone(), target.candidate.outer_span);
         generated_spans.insert(
             declaration_id.clone(),
             Span::new(generated_start, generated_end),
         );
         generated_initializer_offsets.insert(declaration_id.clone(), generated_initializer_start);
-        normalized_segments.insert(declaration_id.clone(), normalized.segments);
-        source_map_anchors.insert(declaration_id.clone(), candidate.source_map_anchor);
-        candidate_kinds.insert(declaration_id.clone(), candidate.kind);
+        normalized_segments.insert(declaration_id.clone(), target.normalized_segments.clone());
+        source_map_anchors.insert(declaration_id.clone(), target.candidate.source_map_anchor);
+        candidate_kinds.insert(declaration_id.clone(), target.candidate.kind);
     }
 
     let mappings: Vec<SyntheticMapping> = declaration_ids
         .iter()
-        .enumerate()
-        .map(|(index, id)| {
-            let candidate = &candidates[index];
+        .map(|id| {
+            let target = plan
+                .targets
+                .iter()
+                .find(|target| target.declaration_id == *id)
+                .expect("synthetic target should exist");
             SyntheticMapping {
                 declaration_id: id.clone(),
                 original_span: original_spans[id],
                 generated_span: generated_spans[id],
-                local_name: candidate.local_name.clone(),
-                imported_name: candidate.imported_name.clone(),
-                flavor: candidate.flavor,
+                local_name: target.candidate.local_name.clone(),
+                imported_name: target.candidate.imported_name.clone(),
+                flavor: target.candidate.flavor,
                 source_map_anchor: source_map_anchors[id],
-                normalized_segments: normalized_segments[id]
-                    .iter()
-                    .map(|segment| NormalizedSegment {
-                        original_start: segment.original_start,
-                        generated_start: segment.generated_start,
-                        len: segment.len,
-                    })
-                    .collect(),
+                normalized_segments: normalized_segments[id].clone(),
             }
         })
         .collect();
@@ -149,69 +155,6 @@ fn render_import_line(imports: &[MacroImport]) -> Option<String> {
     Some(lines)
 }
 
-#[derive(Debug, Clone)]
-struct NormalizedCandidate {
-    code: String,
-    segments: Vec<RetainedSegment>,
-}
-
-#[derive(Debug, Clone)]
-struct RetainedSegment {
-    original_start: usize,
-    generated_start: usize,
-    len: usize,
-}
-
-fn normalize_candidate_source(source: &str, candidate: &MacroCandidate) -> NormalizedCandidate {
-    let outer = &source[candidate.outer_span.start..candidate.outer_span.end];
-    if candidate.strip_spans.is_empty() {
-        return NormalizedCandidate {
-            code: outer.to_string(),
-            segments: vec![RetainedSegment {
-                original_start: candidate.outer_span.start,
-                generated_start: 0,
-                len: outer.len(),
-            }],
-        };
-    }
-
-    let mut output = String::new();
-    let mut segments = Vec::new();
-    let mut cursor = candidate.outer_span.start;
-    let mut generated_cursor = 0;
-    let mut strips = candidate.strip_spans.clone();
-    strips.sort_by_key(|span| span.start);
-
-    for strip in strips {
-        if cursor < strip.start {
-            let retained = &source[cursor..strip.start];
-            output.push_str(retained);
-            segments.push(RetainedSegment {
-                original_start: cursor,
-                generated_start: generated_cursor,
-                len: retained.len(),
-            });
-            generated_cursor += retained.len();
-        }
-        cursor = strip.end.max(cursor);
-    }
-
-    if cursor < candidate.outer_span.end {
-        let retained = &source[cursor..candidate.outer_span.end];
-        output.push_str(retained);
-        segments.push(RetainedSegment {
-            original_start: cursor,
-            generated_start: generated_cursor,
-            len: retained.len(),
-        });
-    }
-
-    NormalizedCandidate {
-        code: output,
-        segments,
-    }
-}
-
 fn build_source_map_json(
     source: &str,
     source_name: &str,
@@ -219,9 +162,9 @@ fn build_source_map_json(
     generated_source: &str,
     declaration_ids: &[String],
     generated_initializer_offsets: &BTreeMap<String, usize>,
-    normalized_segments: &BTreeMap<String, Vec<RetainedSegment>>,
+    normalized_segments: &BTreeMap<String, Vec<NormalizedSegment>>,
     source_map_anchors: &BTreeMap<String, Option<Span>>,
-    candidate_kinds: &BTreeMap<String, crate::MacroCandidateKind>,
+    candidate_kinds: &BTreeMap<String, MacroCandidateKind>,
 ) -> Option<String> {
     let mut builder = SourceMapBuilder::new(Some(synthetic_name));
     let src_id = builder.add_source(source_name);
@@ -242,7 +185,7 @@ fn build_source_map_json(
 
         let mut component_prefix_override = 0usize;
         if let Some(Some(anchor)) = source_map_anchors.get(declaration_id) {
-            if *candidate_kind == crate::MacroCandidateKind::Component {
+            if *candidate_kind == MacroCandidateKind::Component {
                 if let Some(first_segment) = normalized_segments
                     .get(declaration_id)
                     .and_then(|segments| segments.first())
@@ -289,7 +232,7 @@ fn build_source_map_json(
         };
 
         for segment in segments {
-            let skip = if *candidate_kind == crate::MacroCandidateKind::Component
+            let skip = if *candidate_kind == MacroCandidateKind::Component
                 && segment.generated_start == 0
             {
                 component_prefix_override.min(segment.len + 1)
@@ -322,7 +265,7 @@ fn build_source_map_json(
 
 fn declaration_length(
     declaration_id: &str,
-    normalized_segments: &BTreeMap<String, Vec<RetainedSegment>>,
+    normalized_segments: &BTreeMap<String, Vec<NormalizedSegment>>,
 ) -> usize {
     normalized_segments
         .get(declaration_id)

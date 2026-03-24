@@ -3,11 +3,12 @@ use std::io::Cursor;
 
 use sourcemap::{SourceMap, SourceMapBuilder};
 
-use crate::utf16::Utf16Index;
-use crate::{
-    AnalyzerError, CompilePlan, CompileReplacement, CompileRuntimeBindings, CompileTarget,
-    FinishedCompile, NormalizedSegment,
+use crate::AnalyzerError;
+use crate::common::Utf16Index;
+use crate::compile::{
+    CompilePlan, CompileReplacement, CompileRuntimeBindings, CompileTarget, FinishedCompile,
 };
+use crate::synthetic::NormalizedSegment;
 
 const SVELTE_RUNTIME_PACKAGE: &str = "lingui-for-svelte/runtime";
 

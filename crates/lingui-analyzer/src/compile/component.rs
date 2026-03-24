@@ -1,6 +1,6 @@
 use tree_sitter::Node;
 
-use crate::{AnalyzerError, parse};
+use crate::{AnalyzerError, framework::parse};
 
 pub fn lower_svelte_runtime_component_markup(
     declaration_code: &str,

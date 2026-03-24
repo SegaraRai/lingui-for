@@ -1,12 +1,13 @@
 use std::collections::BTreeMap;
 
-use crate::compile_emit::{collect_compile_replacements, finish_compile_from_replacements};
-use crate::component_lowering::lower_svelte_runtime_component_markup;
-use crate::parse;
-use crate::{
-    AnalyzerError, CompilePlan, CompileTargetOutputKind, CompileTranslationMode, FinishedCompile,
+use crate::AnalyzerError;
+use crate::compile::component::lower_svelte_runtime_component_markup;
+use crate::compile::emit::{collect_compile_replacements, finish_compile_from_replacements};
+use crate::compile::{
+    CompilePlan, CompileTargetOutputKind, CompileTranslationMode, FinishedCompile,
     TransformedPrograms,
 };
+use crate::framework::parse;
 
 pub fn finish_compile(
     plan: &CompilePlan,
@@ -76,7 +77,9 @@ fn collect_transformed_declarations(
     Ok(declarations)
 }
 
-fn collect_declarations_from_program(source: &str) -> Result<BTreeMap<String, String>, AnalyzerError> {
+fn collect_declarations_from_program(
+    source: &str,
+) -> Result<BTreeMap<String, String>, AnalyzerError> {
     let tree = parse::parse_tsx(source)?;
     let root = tree.root_node();
     let mut declarations = BTreeMap::new();
@@ -140,7 +143,7 @@ mod tests {
     use crate::{
         CompilePlan, CompileRuntimeBindings, CompileScriptRegion, CompileTarget,
         CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode, MacroFlavor,
-        NormalizedSegment, RuntimeRequirements, Span, TransformedPrograms,
+        NormalizedSegment, RuntimeRequirements, TransformedPrograms, common::Span,
     };
 
     use super::finish_compile;

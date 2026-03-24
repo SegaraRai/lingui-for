@@ -3,17 +3,20 @@ use std::cell::RefCell;
 use tree_sitter::{Language, Node, Parser};
 
 use crate::{
-    AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate,
-    MacroCandidateStrategy, MacroImport, Span,
-    alloc::ensure_tree_sitter_allocator,
-    framework::FrameworkAdapter,
-    js::{
-        BindingParseMode, JsLikeLanguage, JsMacroSyntax,
-        collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
-        collect_macro_candidates_in_javascript_with_shadowing,
-        collect_top_level_declared_names_in_javascript,
+    AnalyzerError,
+    common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span},
+    framework::{
+        FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+        MacroImport,
+        js::{
+            BindingParseMode, JsLikeLanguage, JsMacroSyntax,
+            collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
+            collect_macro_candidates_in_javascript_with_shadowing,
+            collect_top_level_declared_names_in_javascript,
+        },
+        parse,
     },
-    parse,
+    wasm::alloc::ensure_tree_sitter_allocator,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -556,10 +559,10 @@ fn component_candidate_from_element(
     Some(SvelteTemplateComponent {
         candidate: MacroCandidate {
             id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
-            kind: crate::MacroCandidateKind::Component,
+            kind: MacroCandidateKind::Component,
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),
-            flavor: crate::MacroFlavor::Direct,
+            flavor: MacroFlavor::Direct,
             outer_span: Span::from_node(node),
             normalized_span: Span::from_node(node),
             strip_spans,
@@ -1213,7 +1216,7 @@ fn repair_svelte_candidates(source: &str, candidates: &mut [MacroCandidate]) {
 
 fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
     match candidate.flavor {
-        crate::MacroFlavor::Reactive => {
+        MacroFlavor::Reactive => {
             let pattern = format!("${}", candidate.local_name);
             let Some(start) = find_svelte_prefix_near(
                 source,
@@ -1232,7 +1235,7 @@ fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
             candidate.strip_spans = vec![Span::new(start, start + 1)];
             candidate.source_map_anchor = Some(Span::new(start + 1, start + pattern.len()));
         }
-        crate::MacroFlavor::Eager => {
+        MacroFlavor::Eager => {
             let pattern = format!("{}.eager", candidate.local_name);
             let Some(start) = find_svelte_prefix_near(
                 source,
@@ -1256,7 +1259,7 @@ fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
             candidate.strip_spans = vec![Span::new(object_end, property_end)];
             candidate.source_map_anchor = Some(Span::new(start, object_end));
         }
-        crate::MacroFlavor::Direct => {}
+        MacroFlavor::Direct => {}
     }
 }
 

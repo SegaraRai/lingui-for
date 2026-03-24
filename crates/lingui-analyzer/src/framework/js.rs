@@ -1,8 +1,11 @@
 use tree_sitter::Node;
 
 use crate::{
-    MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport, Span,
-    parse, scope::LexicalScope,
+    common::Span,
+    framework::{
+        MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
+        parse, scope::LexicalScope,
+    },
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

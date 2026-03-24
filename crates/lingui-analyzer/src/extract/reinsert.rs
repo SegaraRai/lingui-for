@@ -3,10 +3,10 @@ use std::io::Cursor;
 
 use sourcemap::SourceMapBuilder;
 
-use crate::utf16::Utf16Index;
-use crate::{
-    AnalyzerError, NormalizedSegment, ReinsertedModule, ReplacementChunk, Span, SyntheticModule,
-};
+use crate::AnalyzerError;
+use crate::common::{Span, Utf16Index};
+use crate::extract::{ReinsertedModule, ReplacementChunk, SyntheticModule};
+use crate::synthetic::NormalizedSegment;
 
 pub fn reinsert_transformed_declarations(
     original_source: &str,
@@ -39,7 +39,7 @@ pub fn reinsert_transformed_declarations(
 }
 
 fn build_replacement_chunks(
-    mappings: &[crate::SyntheticMapping],
+    mappings: &[crate::extract::SyntheticMapping],
     transformed_declarations: &BTreeMap<String, String>,
 ) -> Result<Vec<ReplacementChunk>, AnalyzerError> {
     mappings

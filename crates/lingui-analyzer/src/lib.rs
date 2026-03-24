@@ -1,40 +1,34 @@
-mod alloc;
-mod compile_emit;
-mod compile_plan;
-mod component_lowering;
+pub mod common;
+pub mod compile;
 mod error;
-mod finish_compile;
+pub mod extract;
 pub mod framework;
-mod js;
-mod model;
-mod parse;
-mod reinsert;
-pub mod scope;
 pub mod synthetic;
-mod utf16;
-mod validation;
+pub mod wasm;
 
 use wasm_bindgen::prelude::*;
 
-use crate::finish_compile::finish_compile;
+use crate::compile::finish_compile;
+use crate::extract::{build_synthetic_module_with_names, reinsert_transformed_declarations};
 use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
-use crate::reinsert::reinsert_transformed_declarations;
-use crate::synthetic::build_synthetic_module_with_names;
-use crate::validation::validate_svelte_extract_candidates;
 
-pub use compile_plan::{
-    build_compile_plan_for_framework, build_compile_plan_for_framework_with_names,
-};
-pub use error::AnalyzerError;
-pub use model::{
+pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
+pub use compile::{
     CompilePlan, CompilePlanOptions, CompileReplacement, CompileRuntimeBindings,
     CompileScriptRegion, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
-    CompileTranslationMode, EmbeddedScriptKind, EmbeddedScriptRegion, FinishCompileOptions,
-    FinishedCompile, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
-    MacroImport, NormalizedSegment, ReinsertOptions, ReinsertedModule, ReplacementChunk,
-    RuntimeRequirements, Span, SyntheticMapping, SyntheticModule, SyntheticModuleOptions,
-    TransformedPrograms,
+    CompileTranslationMode, FinishCompileOptions, FinishedCompile, RuntimeRequirements,
+    TransformedPrograms, build_compile_plan_for_framework,
+    build_compile_plan_for_framework_with_names,
 };
+pub use error::AnalyzerError;
+pub use extract::{
+    ReinsertOptions, ReinsertedModule, ReplacementChunk, SyntheticMapping, SyntheticModule,
+    SyntheticModuleOptions,
+};
+pub use framework::{
+    MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
+};
+pub use synthetic::NormalizedSegment;
 
 pub fn build_synthetic_module_for_framework(
     framework: &str,
@@ -122,6 +116,34 @@ fn retain_standalone_candidates(candidates: &mut Vec<MacroCandidate>) {
     candidates.retain(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone);
 }
 
+fn validate_svelte_extract_candidates(candidates: &[MacroCandidate]) -> Result<(), AnalyzerError> {
+    let offending_macro = candidates
+        .iter()
+        .find(|candidate| {
+            candidate.strategy == MacroCandidateStrategy::Standalone
+                && candidate.flavor == MacroFlavor::Direct
+                && matches!(
+                    candidate.imported_name.as_str(),
+                    "t" | "plural" | "select" | "selectOrdinal"
+                )
+        })
+        .map(|candidate| candidate.imported_name.as_str());
+
+    if let Some(imported_name) = offending_macro {
+        return Err(AnalyzerError::InvalidMacroUsage(match imported_name {
+            "t" => {
+                "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()
+            }
+            "plural" | "select" | "selectOrdinal" => format!(
+                "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
+            ),
+            other => format!("Unsupported bare direct macro `{other}` in `.svelte` files."),
+        }));
+    }
+
+    Ok(())
+}
+
 #[wasm_bindgen(js_name = "buildSyntheticModule")]
 pub fn wasm_build_synthetic_module(framework: String, source: String) -> Result<JsValue, JsValue> {
     console_error_panic_hook::set_once();
@@ -153,7 +175,7 @@ pub fn wasm_build_compile_plan_with_options(options: JsValue) -> Result<JsValue,
 
     let options: CompilePlanOptions = serde_wasm_bindgen::from_value(options)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let mut plan = build_compile_plan_for_framework_with_names(
+    let mut plan = crate::compile::build_compile_plan_for_framework_with_names(
         &options.framework,
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
@@ -163,7 +185,7 @@ pub fn wasm_build_compile_plan_with_options(options: JsValue) -> Result<JsValue,
             .unwrap_or("synthetic-compile.tsx"),
     )
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    compile_plan::repair_compile_plan_for_export(&options.source, &mut plan);
+    repair_compile_plan_for_export(&options.source, &mut plan);
     serde_wasm_bindgen::to_value(&plan).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
@@ -197,3 +219,4 @@ pub fn wasm_finish_compile_with_options(options: JsValue) -> Result<JsValue, JsV
     .map_err(|error| JsValue::from_str(&error.to_string()))?;
     serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
 }
+use crate::compile::plan::repair_compile_plan_for_export;

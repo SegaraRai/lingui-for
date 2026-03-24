@@ -1,12 +1,14 @@
-use crate::framework::{FrameworkAdapter, astro::AstroAdapter, svelte::SvelteAdapter};
-use crate::model::{
+use crate::AnalyzerError;
+use crate::common::{EmbeddedScriptRegion, Span};
+use crate::compile::{
     CompilePlan, CompileRuntimeBindings, CompileScriptRegion, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTranslationMode, MacroCandidate, MacroCandidateStrategy,
-    RuntimeRequirements, Span, SyntheticModule,
+    CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode, RuntimeRequirements,
 };
-use crate::synthetic::build_synthetic_module_with_names;
-use crate::validation::validate_svelte_compile_targets;
-use crate::{AnalyzerError, EmbeddedScriptRegion, MacroCandidateKind};
+use crate::framework::{
+    FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+    MacroImport, astro::AstroAdapter, svelte::SvelteAdapter,
+};
+use crate::synthetic::{SyntheticPlan, build_synthetic_plan};
 
 const SVELTE_REACTIVE_WRAPPER: &str = "__lingui_for_svelte_reactive_translation__";
 const SVELTE_EAGER_WRAPPER: &str = "__lingui_for_svelte_eager_translation__";
@@ -15,14 +17,6 @@ const SVELTE_BINDING_CONTEXT: &str = "__l4s_ctx";
 const SVELTE_BINDING_GET_I18N: &str = "__l4s_getI18n";
 const SVELTE_BINDING_TRANSLATE: &str = "__l4s_translate";
 const SVELTE_BINDING_RUNTIME_TRANS: &str = "L4sRuntimeTrans";
-
-#[derive(Debug, Clone)]
-pub(crate) struct CompileTargetPrototype {
-    pub(crate) candidate: MacroCandidate,
-    pub(crate) context: CompileTargetContext,
-    pub(crate) output_kind: CompileTargetOutputKind,
-    pub(crate) translation_mode: CompileTranslationMode,
-}
 
 pub fn build_compile_plan_for_framework(
     framework: &str,
@@ -153,6 +147,7 @@ fn build_svelte_compile_plan(
         },
     )
 }
+
 fn build_astro_compile_plan(
     source: &str,
     source_name: &str,
@@ -220,7 +215,7 @@ fn build_compile_plan(
     source: &str,
     source_name: &str,
     synthetic_name: &str,
-    imports: &[crate::MacroImport],
+    imports: &[MacroImport],
     mut prototypes: Vec<CompileTargetPrototype>,
     metadata: SvelteCompileMetadata,
 ) -> Result<CompilePlan, AnalyzerError> {
@@ -236,36 +231,30 @@ fn build_compile_plan(
         .iter()
         .map(|prototype| prototype.candidate.clone())
         .collect::<Vec<_>>();
-    let extract_synthetic = build_synthetic_module_with_names(
-        source,
-        source_name,
-        synthetic_name,
-        imports,
-        &candidates,
-    );
-    let synthetic_source =
-        build_compile_synthetic_source(framework, &extract_synthetic, source, &prototypes);
-    let declaration_ids = extract_synthetic.declaration_ids.clone();
+    let synthetic_plan = build_synthetic_plan(source, imports, &candidates);
+    let synthetic_source = build_compile_synthetic_source(framework, &synthetic_plan, &prototypes);
+    let declaration_ids = synthetic_plan
+        .targets
+        .iter()
+        .map(|target| target.declaration_id.clone())
+        .collect::<Vec<_>>();
     let mut targets = prototypes
         .into_iter()
-        .zip(extract_synthetic.mappings.iter())
-        .map(|(prototype, mapping)| CompileTarget {
-            declaration_id: mapping.declaration_id.clone(),
-            original_span: mapping.original_span,
+        .zip(synthetic_plan.targets.iter())
+        .map(|(prototype, target)| CompileTarget {
+            declaration_id: target.declaration_id.clone(),
+            original_span: target.candidate.outer_span,
             normalized_span: prototype.candidate.normalized_span,
-            source_map_anchor: mapping.source_map_anchor,
-            local_name: mapping.local_name.clone(),
-            imported_name: mapping.imported_name.clone(),
-            flavor: mapping.flavor,
+            source_map_anchor: target.candidate.source_map_anchor,
+            local_name: target.candidate.local_name.clone(),
+            imported_name: target.candidate.imported_name.clone(),
+            flavor: target.candidate.flavor,
             context: prototype.context,
             output_kind: prototype.output_kind,
             translation_mode: prototype.translation_mode,
-            normalized_segments: mapping.normalized_segments.clone(),
+            normalized_segments: target.normalized_segments.clone(),
         })
         .collect::<Vec<_>>();
-    if framework == "svelte" {
-        repair_svelte_compile_targets(source, &mut targets);
-    }
     let runtime_requirements = compute_runtime_requirements(framework, &targets);
 
     Ok(CompilePlan {
@@ -275,12 +264,17 @@ fn build_compile_plan(
         synthetic_source,
         synthetic_lang: compile_synthetic_lang(framework, &metadata),
         declaration_ids,
-        targets,
         runtime_requirements,
         runtime_bindings: metadata.runtime_bindings,
         import_removals: metadata.import_removals,
         instance_script: metadata.instance_script,
         module_script: metadata.module_script,
+        targets: {
+            if framework == "svelte" {
+                repair_svelte_compile_targets(source, &mut targets);
+            }
+            targets
+        },
     })
 }
 
@@ -297,44 +291,35 @@ fn compile_synthetic_lang(framework: &str, metadata: &SvelteCompileMetadata) -> 
     "ts".to_string()
 }
 
-fn script_region_lang(_region: &CompileScriptRegion) -> &'static str {
-    if _region.lang == "js" { "js" } else { "ts" }
+fn script_region_lang(region: &CompileScriptRegion) -> &'static str {
+    if region.lang == "js" { "js" } else { "ts" }
 }
 
 fn build_compile_synthetic_source(
     framework: &str,
-    extract_synthetic: &SyntheticModule,
-    original_source: &str,
+    synthetic_plan: &SyntheticPlan,
     prototypes: &[CompileTargetPrototype],
 ) -> String {
-    let mut output = extract_synthetic.source.clone();
+    let mut output = String::new();
 
-    for (prototype, mapping) in prototypes
-        .iter()
-        .zip(extract_synthetic.mappings.iter())
-        .rev()
-    {
-        let normalized = build_normalized_source(mapping, original_source);
-        let compile_source = wrap_compile_source(framework, prototype, &normalized);
-        output = replace_synthetic_initializer(&output, &mapping.declaration_id, &compile_source);
+    if let Some(line) = render_import_line(&synthetic_plan.imports) {
+        output.push_str(&line);
+        output.push('\n');
+    }
+
+    for (prototype, target) in prototypes.iter().zip(synthetic_plan.targets.iter()) {
+        output.push_str("const ");
+        output.push_str(&target.declaration_id);
+        output.push_str(" = ");
+        output.push_str(&wrap_compile_source(
+            framework,
+            prototype,
+            &target.normalized_code,
+        ));
+        output.push_str(";\n");
     }
 
     output
-}
-
-fn build_normalized_source(mapping: &crate::SyntheticMapping, original_source: &str) -> String {
-    if mapping.normalized_segments.is_empty() {
-        return original_source[mapping.original_span.start..mapping.original_span.end].to_string();
-    }
-
-    mapping
-        .normalized_segments
-        .iter()
-        .map(|segment| {
-            original_source[segment.original_start..segment.original_start + segment.len]
-                .to_string()
-        })
-        .collect::<String>()
 }
 
 fn wrap_compile_source(
@@ -344,39 +329,20 @@ fn wrap_compile_source(
 ) -> String {
     if framework == "svelte" && prototype.output_kind == CompileTargetOutputKind::Expression {
         match prototype.candidate.flavor {
-            crate::MacroFlavor::Reactive => {
+            MacroFlavor::Reactive => {
                 return format!(
                     "{SVELTE_REACTIVE_WRAPPER}({normalized_source}, {:?})",
                     prototype.candidate.local_name
                 );
             }
-            crate::MacroFlavor::Eager => {
+            MacroFlavor::Eager => {
                 return format!("{SVELTE_EAGER_WRAPPER}({normalized_source})");
             }
-            crate::MacroFlavor::Direct => {}
+            MacroFlavor::Direct => {}
         }
     }
 
     normalized_source.to_string()
-}
-
-fn replace_synthetic_initializer(source: &str, declaration_id: &str, replacement: &str) -> String {
-    let prefix = format!("const {declaration_id} = ");
-    let Some(start) = source.find(&prefix) else {
-        return source.to_string();
-    };
-    let initializer_start = start + prefix.len();
-    let Some(initializer_end) = source[initializer_start..].find(";\n") else {
-        return source.to_string();
-    };
-    let initializer_end = initializer_start + initializer_end;
-
-    format!(
-        "{}{}{}",
-        &source[..initializer_start],
-        replacement,
-        &source[initializer_end..]
-    )
 }
 
 fn compute_runtime_requirements(framework: &str, targets: &[CompileTarget]) -> RuntimeRequirements {
@@ -408,7 +374,7 @@ fn classify_output_kind(kind: MacroCandidateKind) -> CompileTargetOutputKind {
 fn repair_svelte_compile_targets(source: &str, targets: &mut [CompileTarget]) {
     for target in targets {
         match target.flavor {
-            crate::MacroFlavor::Reactive => {
+            MacroFlavor::Reactive => {
                 let pattern = format!("${}", target.local_name);
                 let Some(start) = find_svelte_prefix_near(
                     source,
@@ -429,7 +395,7 @@ fn repair_svelte_compile_targets(source: &str, targets: &mut [CompileTarget]) {
                     first.original_start = start + 1;
                 }
             }
-            crate::MacroFlavor::Eager => {
+            MacroFlavor::Eager => {
                 let pattern = format!("{}.eager", target.local_name);
                 let Some(start) = find_svelte_prefix_near(
                     source,
@@ -450,7 +416,7 @@ fn repair_svelte_compile_targets(source: &str, targets: &mut [CompileTarget]) {
                     first.original_start = start;
                 }
             }
-            crate::MacroFlavor::Direct => {}
+            MacroFlavor::Direct => {}
         }
     }
 }
@@ -515,4 +481,85 @@ fn allocate_unique_binding_name(
         }
         index += 1;
     }
+}
+
+fn validate_svelte_compile_targets(
+    prototypes: &[CompileTargetPrototype],
+) -> Result<(), AnalyzerError> {
+    let offending_macro = prototypes.iter().find_map(|prototype| {
+        (matches!(
+            prototype.context,
+            CompileTargetContext::ModuleScript | CompileTargetContext::InstanceScript
+        ) && prototype.output_kind == CompileTargetOutputKind::Expression
+            && is_forbidden_bare_direct_svelte_macro(&prototype.candidate))
+        .then_some(prototype.candidate.imported_name.as_str())
+    });
+
+    if let Some(imported_name) = offending_macro {
+        return Err(AnalyzerError::InvalidMacroUsage(bare_direct_macro_message(
+            imported_name,
+        )));
+    }
+
+    Ok(())
+}
+
+fn is_forbidden_bare_direct_svelte_macro(candidate: &MacroCandidate) -> bool {
+    candidate.strategy == MacroCandidateStrategy::Standalone
+        && candidate.flavor == MacroFlavor::Direct
+        && matches!(
+            candidate.imported_name.as_str(),
+            "t" | "plural" | "select" | "selectOrdinal"
+        )
+}
+
+fn bare_direct_macro_message(imported_name: &str) -> String {
+    match imported_name {
+        "t" => {
+            "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()
+        }
+        "plural" | "select" | "selectOrdinal" => format!(
+            "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
+        ),
+        other => format!("Unsupported bare direct macro `{other}` in `.svelte` files."),
+    }
+}
+
+fn render_import_line(imports: &[MacroImport]) -> Option<String> {
+    let mut grouped = std::collections::BTreeMap::<&str, Vec<(&str, &str)>>::new();
+    for import_decl in imports {
+        let specifiers = grouped.entry(import_decl.source.as_str()).or_default();
+        let specifier = (
+            import_decl.imported_name.as_str(),
+            import_decl.local_name.as_str(),
+        );
+        if !specifiers.contains(&specifier) {
+            specifiers.push(specifier);
+        }
+    }
+
+    if grouped.is_empty() {
+        return None;
+    }
+
+    let lines = grouped
+        .into_iter()
+        .map(|(source, specifiers)| {
+            let rendered = specifiers
+                .into_iter()
+                .map(|(imported_name, local_name)| {
+                    if imported_name == local_name {
+                        local_name.to_string()
+                    } else {
+                        format!("{imported_name} as {local_name}")
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("import {{ {rendered} }} from \"{source}\";")
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    Some(lines)
 }

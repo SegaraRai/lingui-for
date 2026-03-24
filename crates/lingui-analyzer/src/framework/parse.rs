@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use tree_sitter::{Language, Parser, Tree};
 
-use crate::{AnalyzerError, alloc::ensure_tree_sitter_allocator};
+use crate::{AnalyzerError, wasm::alloc::ensure_tree_sitter_allocator};
 
 thread_local! {
     static ASTRO_PARSER: RefCell<Parser> = build_parser(tree_sitter_astro::LANGUAGE.into());

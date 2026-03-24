@@ -1,11 +1,14 @@
 use tree_sitter::Node;
 
 use crate::{
-    AnalyzerError, EmbeddedScriptKind, EmbeddedScriptRegion, MacroCandidate,
-    MacroCandidateStrategy, MacroImport, Span,
-    framework::FrameworkAdapter,
-    js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript},
-    parse,
+    AnalyzerError,
+    common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span},
+    framework::{
+        FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+        MacroImport,
+        js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript},
+        parse,
+    },
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -268,10 +271,10 @@ fn component_candidate_from_element(
     Some(AstroTemplateComponent {
         candidate: MacroCandidate {
             id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
-            kind: crate::MacroCandidateKind::Component,
+            kind: MacroCandidateKind::Component,
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),
-            flavor: crate::MacroFlavor::Direct,
+            flavor: MacroFlavor::Direct,
             outer_span: Span::from_node(node),
             normalized_span: Span::from_node(node),
             strip_spans: Vec::new(),

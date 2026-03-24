@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::MacroImport;
+use crate::framework::MacroImport;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 struct ScopeFrame {
@@ -70,7 +70,7 @@ impl LexicalScope {
 
 #[cfg(test)]
 mod tests {
-    use crate::{MacroImport, model::Span};
+    use crate::{common::Span, framework::MacroImport};
 
     use super::LexicalScope;
 

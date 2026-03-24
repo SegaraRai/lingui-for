@@ -1,8 +1,8 @@
 use indoc::indoc;
 use lingui_analyzer::{
     MacroFlavor,
+    extract::build_synthetic_module,
     framework::{FrameworkAdapter, svelte::SvelteAdapter},
-    synthetic::build_synthetic_module,
 };
 use sourcemap::DecodedMap;
 
