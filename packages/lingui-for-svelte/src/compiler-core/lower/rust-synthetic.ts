@@ -1,14 +1,16 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
+import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
+import type { LinguiConfigNormalized } from "@lingui/conf";
+
 import {
   buildCompilePlanWithOptions,
   finishCompileWithOptions,
   initSync,
 } from "lingui-analyzer-wasm";
-import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
-import type { LinguiConfigNormalized } from "@lingui/conf";
+import type { SvelteTransformResult } from "../transform/types.ts";
 import { transformProgram } from "./babel-transform.ts";
 
 type CompileRuntimeBindings = {
@@ -19,42 +21,34 @@ type CompileRuntimeBindings = {
   trans_component: string;
 };
 
-type CompileTarget = {
-  declaration_id: string;
-  original_span: { start: number; end: number };
-  normalized_span: { start: number; end: number };
-  source_map_anchor?: { start: number; end: number } | null;
-  local_name: string;
-  imported_name: string;
-  flavor: "Direct" | "Reactive" | "Eager";
-  translation_mode: "Raw" | "SvelteContext" | "AstroContext";
-  output_kind: "Expression" | "Component";
-  normalized_segments: Array<{
-    original_start: number;
-    generated_start: number;
-    len: number;
-  }>;
-};
-
 type CompilePlan = {
   source_name: string;
   synthetic_source: string;
   synthetic_name: string;
   synthetic_lang: "js" | "ts";
   declaration_ids: readonly string[];
-  targets: CompileTarget[];
   runtime_bindings?: CompileRuntimeBindings | null;
 };
 
-type FinishedCompileReplacement = {
-  start: number;
-  end: number;
+type FinishedCompile = {
   code: string;
+  source_name: string;
   source_map_json?: string | null;
+  replacements: Array<{
+    start: number;
+    end: number;
+    code: string;
+    source_map_json?: string | null;
+  }>;
 };
 
-type FinishedCompile = {
-  replacements: FinishedCompileReplacement[];
+export type SvelteRustLoweredResult = SvelteTransformResult & {
+  replacements: Array<{
+    start: number;
+    end: number;
+    code: string;
+    map: EncodedSourceMap | null;
+  }>;
 };
 
 type TransformedPrograms = {
@@ -66,23 +60,16 @@ type TransformedPrograms = {
   astro_context_source_map_json?: string | null;
 };
 
-type RustReplacement = {
-  start: number;
-  end: number;
-  code: string;
-  map: EncodedSourceMap | null;
-};
-
 let wasmInitialized = false;
 
 export function lowerSvelteWithRustSynthetic(
   source: string,
   filename: string,
   linguiConfig: LinguiConfigNormalized,
-): RustReplacement[] {
+): SvelteRustLoweredResult | null {
   const compilePlan = buildCompilePlan(source, filename);
   if (compilePlan.declaration_ids.length === 0) {
-    return [];
+    return null;
   }
 
   const runtimeBindings = compilePlan.runtime_bindings
@@ -126,15 +113,19 @@ export function lowerSvelteWithRustSynthetic(
     transformed_programs: transformedPrograms,
   }) as FinishedCompile;
 
-  return finished.replacements.map((replacement) => ({
-    start: replacement.start,
-    end: replacement.end,
-    code: replacement.code,
-    map:
-      replacement.source_map_json != null
-        ? (JSON.parse(replacement.source_map_json) as EncodedSourceMap)
-        : null,
-  }));
+  return {
+    code: finished.code,
+    map: JSON.parse(finished.source_map_json ?? "null") as EncodedSourceMap,
+    replacements: finished.replacements.map((replacement) => ({
+      start: replacement.start,
+      end: replacement.end,
+      code: replacement.code,
+      map:
+        replacement.source_map_json != null
+          ? (JSON.parse(replacement.source_map_json) as EncodedSourceMap)
+          : null,
+    })),
+  };
 }
 
 export function buildCompilePlan(
@@ -142,14 +133,12 @@ export function buildCompilePlan(
   filename: string,
 ): CompilePlan {
   ensureWasmInitialized();
-  const plan = buildCompilePlanWithOptions({
+  return buildCompilePlanWithOptions({
     framework: "svelte",
     source,
     source_name: filename,
     synthetic_name: `${filename}?rust-compile.tsx`,
   }) as CompilePlan;
-  repairSvelteCompilePlan(source, plan);
-  return plan;
 }
 
 function ensureWasmInitialized(): void {
@@ -162,98 +151,4 @@ function ensureWasmInitialized(): void {
   );
   initSync({ module: readFileSync(wasmPath) });
   wasmInitialized = true;
-}
-
-function repairSvelteCompilePlan(source: string, plan: CompilePlan): void {
-  for (const target of plan.targets) {
-    if (target.flavor === "Reactive") {
-      const pattern = `$${target.local_name}`;
-      const start = findSveltePrefixNear(
-        source,
-        target.original_span.start,
-        target.original_span.end,
-        pattern,
-      );
-      if (start == null || start >= target.original_span.start) {
-        continue;
-      }
-
-      const end = start + totalNormalizedLength(target) + 1;
-      target.original_span = { start, end };
-      target.normalized_span = { start, end };
-      target.source_map_anchor = {
-        start: start + 1,
-        end: start + pattern.length,
-      };
-      if (target.normalized_segments[0]) {
-        target.normalized_segments[0] = {
-          ...target.normalized_segments[0],
-          original_start: start + 1,
-        };
-      }
-      continue;
-    }
-
-    if (target.flavor === "Eager") {
-      const pattern = `${target.local_name}.eager`;
-      const start = findSveltePrefixNear(
-        source,
-        target.original_span.start,
-        target.original_span.end,
-        pattern,
-      );
-      if (start == null || start >= target.original_span.start) {
-        continue;
-      }
-
-      const end = start + totalNormalizedLength(target) + ".eager".length;
-      target.original_span = { start, end };
-      target.normalized_span = { start, end };
-      target.source_map_anchor = {
-        start,
-        end: start + target.local_name.length,
-      };
-      if (target.normalized_segments[0]) {
-        target.normalized_segments[0] = {
-          ...target.normalized_segments[0],
-          original_start: start,
-        };
-      }
-    }
-  }
-}
-
-function totalNormalizedLength(target: CompileTarget): number {
-  const last = target.normalized_segments.at(-1);
-  if (!last) {
-    return Math.max(
-      0,
-      target.normalized_span.end - target.normalized_span.start,
-    );
-  }
-  return last.generated_start + last.len;
-}
-
-function findSveltePrefixNear(
-  source: string,
-  currentStart: number,
-  currentEnd: number,
-  pattern: string,
-): number | null {
-  const windowStart = Math.max(0, currentStart - pattern.length - 8);
-  const windowEnd = Math.min(source.length, currentEnd);
-  const window = source.slice(windowStart, windowEnd);
-  let found: number | null = null;
-  let cursor = 0;
-  while (true) {
-    const offset = window.indexOf(pattern, cursor);
-    if (offset === -1) {
-      return found;
-    }
-    const start = windowStart + offset;
-    if (start <= currentStart) {
-      found = start;
-    }
-    cursor = offset + 1;
-  }
 }

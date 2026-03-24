@@ -38,6 +38,9 @@ export const unpluginFactory: UnpluginFactory<
         filename,
         linguiConfig: options?.linguiConfig,
       });
+      if (transformed == null) {
+        return null;
+      }
 
       return {
         code: transformed.code,

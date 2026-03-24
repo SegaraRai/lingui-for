@@ -12,4 +12,6 @@ pub enum AnalyzerError {
     MissingTransformedDeclaration(String),
     #[error("synthetic mappings overlap around byte {0}")]
     OverlappingMappings(usize),
+    #[error("invalid source map: {0}")]
+    InvalidSourceMap(String),
 }

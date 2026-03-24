@@ -15,7 +15,7 @@ pub fn finish_compile(
 ) -> Result<FinishedCompile, AnalyzerError> {
     let lowered_declarations = lower_transformed_declarations(plan, transformed_programs)?;
     let replacements = collect_compile_replacements(plan, source, &lowered_declarations)?;
-    Ok(finish_compile_from_replacements(replacements))
+    finish_compile_from_replacements(source, &plan.source_name, replacements)
 }
 
 fn lower_transformed_declarations(

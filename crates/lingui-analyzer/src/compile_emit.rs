@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::io::Cursor;
 
-use sourcemap::SourceMapBuilder;
+use sourcemap::{SourceMap, SourceMapBuilder};
 
 use crate::utf16::Utf16Index;
 use crate::{
@@ -57,8 +57,248 @@ pub fn collect_compile_replacements(
     Ok(replacements)
 }
 
-pub fn finish_compile_from_replacements(replacements: Vec<CompileReplacement>) -> FinishedCompile {
-    FinishedCompile { replacements }
+pub fn finish_compile_from_replacements(
+    source: &str,
+    source_name: &str,
+    replacements: Vec<CompileReplacement>,
+) -> Result<FinishedCompile, AnalyzerError> {
+    let (code, source_map_json) =
+        assemble_output_with_source_map(source, source_name, &replacements)?;
+
+    Ok(FinishedCompile {
+        code,
+        source_name: source_name.to_string(),
+        source_map_json: Some(source_map_json),
+        replacements,
+    })
+}
+
+fn assemble_output_with_source_map(
+    source: &str,
+    source_name: &str,
+    replacements: &[CompileReplacement],
+) -> Result<(String, String), AnalyzerError> {
+    let mut builder = SourceMapBuilder::new(Some(source_name));
+    builder.set_file(Some(source_name));
+    let src_id = builder.add_source(source_name);
+    builder.set_source_contents(src_id, Some(source));
+
+    let mut cursor = 0;
+    let mut code = String::new();
+    let mut offset = GeneratedOffset::default();
+
+    for replacement in replacements {
+        if replacement.start < cursor {
+            continue;
+        }
+
+        let untouched = &source[cursor..replacement.start];
+        code.push_str(untouched);
+        add_untouched_chunk_mappings(
+            &mut builder,
+            source_name,
+            source,
+            cursor,
+            replacement.start,
+            offset,
+        );
+        offset = advance_generated_offset(offset, untouched);
+
+        code.push_str(&replacement.code);
+        if let Some(map_json) = &replacement.source_map_json {
+            apply_chunk_mappings(&mut builder, map_json, offset)?;
+        } else {
+            add_boundary_replacement_mappings(
+                &mut builder,
+                source_name,
+                source,
+                replacement,
+                offset,
+            );
+        }
+        offset = advance_generated_offset(offset, &replacement.code);
+        cursor = replacement.end;
+    }
+
+    let tail = &source[cursor..];
+    code.push_str(tail);
+    add_untouched_chunk_mappings(
+        &mut builder,
+        source_name,
+        source,
+        cursor,
+        source.len(),
+        offset,
+    );
+
+    let sourcemap = builder.into_sourcemap();
+    let mut out = Cursor::new(Vec::new());
+    sourcemap
+        .to_writer(&mut out)
+        .map_err(|error| AnalyzerError::InvalidSourceMap(error.to_string()))?;
+    let json = String::from_utf8(out.into_inner())
+        .map_err(|error| AnalyzerError::InvalidSourceMap(error.to_string()))?;
+
+    Ok((code, json))
+}
+
+fn add_untouched_chunk_mappings(
+    builder: &mut SourceMapBuilder,
+    source_name: &str,
+    source: &str,
+    start: usize,
+    end: usize,
+    offset: GeneratedOffset,
+) {
+    if end <= start {
+        return;
+    }
+
+    let snippet = &source[start..end];
+    let original_line_starts = compute_line_starts(source);
+    let snippet_line_starts = compute_line_starts(snippet);
+    let original_index = Utf16Index::new(source, &original_line_starts);
+    let snippet_index = Utf16Index::new(snippet, &snippet_line_starts);
+
+    for snippet_offset in 0..=snippet.len() {
+        let generated = snippet_index.byte_to_line_utf16_col(snippet_offset);
+        let original = original_index.byte_to_line_utf16_col(start + snippet_offset);
+        builder.add(
+            generated.0 as u32 + offset.line,
+            if generated.0 == 0 {
+                generated.1 as u32 + offset.column
+            } else {
+                generated.1 as u32
+            },
+            original.0 as u32,
+            original.1 as u32,
+            Some(source_name),
+            None,
+            false,
+        );
+    }
+}
+
+fn apply_chunk_mappings(
+    builder: &mut SourceMapBuilder,
+    map_json: &str,
+    offset: GeneratedOffset,
+) -> Result<(), AnalyzerError> {
+    let map = SourceMap::from_slice(map_json.as_bytes())
+        .map_err(|error| AnalyzerError::InvalidSourceMap(error.to_string()))?;
+
+    for token in map.tokens() {
+        let Some(source) = token.get_source() else {
+            continue;
+        };
+        let generated_line = offset.line + token.get_dst_line();
+        let generated_col = if token.get_dst_line() == 0 {
+            offset.column + token.get_dst_col()
+        } else {
+            token.get_dst_col()
+        };
+
+        if let Some(name) = token.get_name() {
+            builder.add(
+                generated_line,
+                generated_col,
+                token.get_src_line(),
+                token.get_src_col(),
+                Some(source),
+                Some(name),
+                false,
+            );
+        } else {
+            builder.add(
+                generated_line,
+                generated_col,
+                token.get_src_line(),
+                token.get_src_col(),
+                Some(source),
+                None::<&str>,
+                false,
+            );
+        }
+    }
+
+    Ok(())
+}
+
+fn add_boundary_replacement_mappings(
+    builder: &mut SourceMapBuilder,
+    source_name: &str,
+    source: &str,
+    replacement: &CompileReplacement,
+    offset: GeneratedOffset,
+) {
+    if replacement.code.is_empty() && replacement.start == replacement.end {
+        return;
+    }
+
+    let original_line_starts = compute_line_starts(source);
+    let original_index = Utf16Index::new(source, &original_line_starts);
+    let generated_line_starts = compute_line_starts(&replacement.code);
+    let generated_index = Utf16Index::new(&replacement.code, &generated_line_starts);
+
+    if replacement.code.is_empty() {
+        let original = original_index.byte_to_line_utf16_col(replacement.end);
+        builder.add(
+            offset.line,
+            offset.column,
+            original.0 as u32,
+            original.1 as u32,
+            Some(source_name),
+            None,
+            false,
+        );
+        return;
+    }
+
+    let start_original = original_index.byte_to_line_utf16_col(replacement.start);
+    builder.add(
+        offset.line,
+        offset.column,
+        start_original.0 as u32,
+        start_original.1 as u32,
+        Some(source_name),
+        None,
+        false,
+    );
+
+    for (index, byte) in replacement.code.bytes().enumerate() {
+        if byte == b'\n' && index + 1 < replacement.code.len() {
+            let generated = generated_index.byte_to_line_utf16_col(index + 1);
+            builder.add(
+                generated.0 as u32 + offset.line,
+                if generated.0 == 0 {
+                    generated.1 as u32 + offset.column
+                } else {
+                    generated.1 as u32
+                },
+                start_original.0 as u32,
+                start_original.1 as u32,
+                Some(source_name),
+                None,
+                false,
+            );
+        }
+    }
+
+    let end_generated = generated_index.byte_to_line_utf16_col(replacement.code.len());
+    let end_original = original_index.byte_to_line_utf16_col(replacement.end);
+    builder.add(
+        end_generated.0 as u32 + offset.line,
+        if end_generated.0 == 0 {
+            end_generated.1 as u32 + offset.column
+        } else {
+            end_generated.1 as u32
+        },
+        end_original.0 as u32,
+        end_original.1 as u32,
+        Some(source_name),
+        None,
+        false,
+    );
 }
 
 fn append_svelte_runtime_injection_replacements(
@@ -197,6 +437,12 @@ fn create_runtime_binding_insertions(
 struct RuntimeInsertions {
     prelude: String,
     suffix: String,
+}
+
+#[derive(Debug, Clone, Copy, Default)]
+struct GeneratedOffset {
+    line: u32,
+    column: u32,
 }
 
 fn build_replacement_source_map_json(
@@ -343,4 +589,20 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
         }
     }
     starts
+}
+
+fn advance_generated_offset(current: GeneratedOffset, code: &str) -> GeneratedOffset {
+    let mut line = current.line;
+    let mut column = current.column;
+
+    for ch in code.chars() {
+        if ch == '\n' {
+            line += 1;
+            column = 0;
+        } else {
+            column += ch.len_utf16() as u32;
+        }
+    }
+
+    GeneratedOffset { line, column }
 }

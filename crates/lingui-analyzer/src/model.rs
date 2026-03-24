@@ -240,6 +240,9 @@ pub struct FinishCompileOptions {
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct FinishedCompile {
+    pub code: String,
+    pub source_name: String,
+    pub source_map_json: Option<String>,
     pub replacements: Vec<CompileReplacement>,
 }
 
