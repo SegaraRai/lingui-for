@@ -12,8 +12,8 @@ import {
   stripQuery,
 } from "lingui-for-shared/compiler";
 
-import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 import { transformProgram } from "../compiler-core/lower/babel-transform.ts";
+import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 
 type SyntheticExtractionUnit = {
   source: string;
@@ -86,9 +86,7 @@ export const astroExtractor: ExtractorType = {
       linguiConfig: extractorCtx.linguiConfig,
       runtimeBinding: null,
       inputSourceMap: synthetic.source_map_json
-        ? (JSON.parse(synthetic.source_map_json) as NonNullable<
-            ExtractorCtx["sourceMaps"]
-          >)
+        ? JSON.parse(synthetic.source_map_json)
         : null,
     });
 

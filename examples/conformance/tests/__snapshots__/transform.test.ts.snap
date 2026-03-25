@@ -145,22 +145,22 @@ const name = "Ada";
     action: action
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    },
-    1: {
-      kind: "element",
-      tag: "em",
-      props: {}
-    },
-    2: {
-      kind: "element",
-      tag: "code",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
+  },
+  1: {
+    kind: "element",
+    tag: "em",
+    props: {}
+  },
+  2: {
+    kind: "element",
+    tag: "code",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -400,12 +400,12 @@ const name = "Ada";
     name: name
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -470,7 +470,8 @@ const role = "admin";
   id: "Y5Pnrw",
   message: "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
   values: {
-    0: __l4a_i18n._(/*i18n*/
+    0: __l4a_i18n._(
+    /*i18n*/
     {
       id: "Ro3jDG",
       message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
@@ -479,7 +480,8 @@ const role = "admin";
         role: role
       }
     }),
-    1: __l4a_i18n._(/*i18n*/
+    1: __l4a_i18n._(
+    /*i18n*/
     {
       id: "/uwo4+",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
@@ -488,7 +490,8 @@ const role = "admin";
         role: role
       }
     }),
-    2: __l4a_i18n._(/*i18n*/
+    2: __l4a_i18n._(
+    /*i18n*/
     {
       id: "OsAInm",
       message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
@@ -500,12 +503,12 @@ const role = "admin";
     count: count
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -638,12 +641,12 @@ const count = 0;
     count: count
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -1324,22 +1327,22 @@ const name = "Ada";
     action: action
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    },
-    1: {
-      kind: "element",
-      tag: "em",
-      props: {}
-    },
-    2: {
-      kind: "element",
-      tag: "code",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
+  },
+  1: {
+    kind: "element",
+    tag: "em",
+    props: {}
+  },
+  2: {
+    kind: "element",
+    tag: "code",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -1567,12 +1570,12 @@ const name = "Ada";
     name: name
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -1634,7 +1637,8 @@ const role = "admin";
 {
   id: "Y5Pnrw",
   values: {
-    0: __l4a_i18n._(/*i18n*/
+    0: __l4a_i18n._(
+    /*i18n*/
     {
       id: "Ro3jDG",
       values: {
@@ -1642,7 +1646,8 @@ const role = "admin";
         role: role
       }
     }),
-    1: __l4a_i18n._(/*i18n*/
+    1: __l4a_i18n._(
+    /*i18n*/
     {
       id: "/uwo4+",
       values: {
@@ -1650,7 +1655,8 @@ const role = "admin";
         role: role
       }
     }),
-    2: __l4a_i18n._(/*i18n*/
+    2: __l4a_i18n._(
+    /*i18n*/
     {
       id: "OsAInm",
       values: {
@@ -1661,12 +1667,12 @@ const role = "admin";
     count: count
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 
@@ -1790,12 +1796,12 @@ const count = 0;
     count: count
   },
   components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
+  0: {
+    kind: "element",
+    tag: "strong",
+    props: {}
   }
+}
 }} />"
 `;
 

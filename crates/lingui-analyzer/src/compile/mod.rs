@@ -2,6 +2,7 @@ mod adapters;
 mod emit;
 mod lower;
 mod plan;
+mod runtime_component;
 
 use serde::{Deserialize, Serialize};
 

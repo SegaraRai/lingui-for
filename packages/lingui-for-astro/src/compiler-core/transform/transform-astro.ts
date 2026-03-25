@@ -1,9 +1,7 @@
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
-import { createAstroPlan } from "../plan/index.ts";
-import {
-  applyAstroReplacementPlan,
-  createAstroReplacementPlan,
-} from "./astro-transform-plan.ts";
+import { analyzeAstro, initWasmOnce } from "#astro-analyzer-wasm";
+import { lowerAstroWithRustSynthetic } from "../lower/index.ts";
+import { normalizeLinguiConfig } from "../shared/config.ts";
 import type { AstroTransformResult } from "./types.ts";
 
 /**
@@ -22,17 +20,17 @@ export function transformAstro(
   source: string,
   options: LinguiAstroTransformOptions,
 ): AstroTransformResult {
-  const plan = createAstroPlan(source, options);
-  const replacements = createAstroReplacementPlan(plan);
-  const output = applyAstroReplacementPlan(
+  initWasmOnce();
+  const analysis = analyzeAstro(source);
+  const output = lowerAstroWithRustSynthetic(
     source,
     options.filename,
-    replacements,
+    normalizeLinguiConfig(options.linguiConfig),
   );
 
   return {
-    code: output.code,
-    map: output.map,
-    analysis: plan.analysis,
+    code: output?.code ?? source,
+    map: output?.map ?? null,
+    analysis,
   };
 }
