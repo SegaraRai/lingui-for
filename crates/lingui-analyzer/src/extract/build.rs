@@ -99,10 +99,12 @@ pub fn build_synthetic_module_from_plan(
         synthetic_name,
         &out,
         &declaration_ids,
-        &generated_initializer_offsets,
-        &normalized_segments,
-        &source_map_anchors,
-        &candidate_kinds,
+        &SyntheticSourceMapContext {
+            generated_initializer_offsets,
+            normalized_segments,
+            source_map_anchors,
+            candidate_kinds,
+        },
     );
 
     SyntheticModule {
@@ -156,16 +158,20 @@ fn render_import_line(imports: &[MacroImport]) -> Option<String> {
     Some(lines)
 }
 
+struct SyntheticSourceMapContext {
+    generated_initializer_offsets: BTreeMap<String, usize>,
+    normalized_segments: BTreeMap<String, Vec<NormalizedSegment>>,
+    source_map_anchors: BTreeMap<String, Option<Span>>,
+    candidate_kinds: BTreeMap<String, MacroCandidateKind>,
+}
+
 fn build_source_map_json(
     source: &str,
     source_name: &str,
     synthetic_name: &str,
     generated_source: &str,
     declaration_ids: &[String],
-    generated_initializer_offsets: &BTreeMap<String, usize>,
-    normalized_segments: &BTreeMap<String, Vec<NormalizedSegment>>,
-    source_map_anchors: &BTreeMap<String, Option<Span>>,
-    candidate_kinds: &BTreeMap<String, MacroCandidateKind>,
+    context: &SyntheticSourceMapContext,
 ) -> Option<String> {
     let mut builder = SourceMapBuilder::new(Some(synthetic_name));
     let src_id = builder.add_source(source_name);
@@ -177,17 +183,19 @@ fn build_source_map_json(
     let generated_index = Utf16Index::new(generated_source, &generated_line_starts);
 
     for declaration_id in declaration_ids {
-        let Some(generated_start) = generated_initializer_offsets.get(declaration_id) else {
+        let Some(generated_start) = context.generated_initializer_offsets.get(declaration_id)
+        else {
             continue;
         };
-        let Some(candidate_kind) = candidate_kinds.get(declaration_id) else {
+        let Some(candidate_kind) = context.candidate_kinds.get(declaration_id) else {
             continue;
         };
 
         let mut component_prefix_override = 0usize;
-        if let Some(Some(anchor)) = source_map_anchors.get(declaration_id) {
+        if let Some(Some(anchor)) = context.source_map_anchors.get(declaration_id) {
             if *candidate_kind == MacroCandidateKind::Component {
-                if let Some(first_segment) = normalized_segments
+                if let Some(first_segment) = context
+                    .normalized_segments
                     .get(declaration_id)
                     .and_then(|segments| segments.first())
                 {
@@ -209,7 +217,8 @@ fn build_source_map_json(
                     }
                 }
             } else {
-                let declaration_len = declaration_length(declaration_id, normalized_segments);
+                let declaration_len =
+                    declaration_length(declaration_id, &context.normalized_segments);
                 for delta in 0..=declaration_len {
                     let generated =
                         generated_index.byte_to_line_utf16_col(*generated_start + delta);
@@ -228,7 +237,7 @@ fn build_source_map_json(
             }
         }
 
-        let Some(segments) = normalized_segments.get(declaration_id) else {
+        let Some(segments) = context.normalized_segments.get(declaration_id) else {
             continue;
         };
 
