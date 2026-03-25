@@ -1,21 +1,18 @@
-use std::cell::RefCell;
-
-use tree_sitter::{Language, Node, Parser};
+use tree_sitter::Node;
 
 use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
-use crate::framework::{
+
+use super::js::{
+    BindingParseMode, JsLikeLanguage, JsMacroSyntax, collect_declared_names_from_binding_source,
+    collect_macro_candidates_in_javascript, collect_macro_candidates_in_javascript_with_shadowing,
+    collect_top_level_declared_names_in_javascript,
+};
+use super::parse::{parse_javascript, parse_svelte, parse_typescript};
+use super::{
     FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
     MacroImport,
-    js::{
-        BindingParseMode, JsLikeLanguage, JsMacroSyntax,
-        collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
-        collect_macro_candidates_in_javascript_with_shadowing,
-        collect_top_level_declared_names_in_javascript,
-    },
-    parse,
 };
-use crate::wasm::alloc::ensure_tree_sitter_allocator;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SvelteScriptAnalysis {
@@ -60,23 +57,8 @@ impl FrameworkAdapter for SvelteAdapter {
     }
 }
 
-thread_local! {
-    static SVELTE_PARSER: RefCell<Parser> = build_parser(tree_sitter_svelte_ng::LANGUAGE.into());
-}
-
-fn build_parser(language: Language) -> RefCell<Parser> {
-    ensure_tree_sitter_allocator();
-    let mut parser = Parser::new();
-    parser
-        .set_language(&language)
-        .expect("tree-sitter svelte language load failed");
-    RefCell::new(parser)
-}
-
 pub fn analyze_svelte(source: &str) -> Result<SvelteScriptAnalysis, AnalyzerError> {
-    let tree = SVELTE_PARSER
-        .with(|parser| parser.borrow_mut().parse(source, None))
-        .ok_or(AnalyzerError::ParseFailed)?;
+    let tree = parse_svelte(source)?;
     let root = tree.root_node();
     let mut scripts = Vec::new();
     collect_script_blocks(source, root, &mut scripts)?;
@@ -975,8 +957,8 @@ fn collect_script_macro_imports(
     language: JsLikeLanguage,
 ) -> Result<Vec<MacroImport>, AnalyzerError> {
     let js_tree = match language {
-        JsLikeLanguage::JavaScript => parse::parse_javascript(source)?,
-        JsLikeLanguage::TypeScript => parse::parse_typescript(source)?,
+        JsLikeLanguage::JavaScript => parse_javascript(source)?,
+        JsLikeLanguage::TypeScript => parse_typescript(source)?,
     };
     let root = js_tree.root_node();
     let mut imports = Vec::new();
@@ -1015,8 +997,8 @@ fn collect_script_macro_import_statement_spans(
     language: JsLikeLanguage,
 ) -> Result<Vec<Span>, AnalyzerError> {
     let js_tree = match language {
-        JsLikeLanguage::JavaScript => parse::parse_javascript(source)?,
-        JsLikeLanguage::TypeScript => parse::parse_typescript(source)?,
+        JsLikeLanguage::JavaScript => parse_javascript(source)?,
+        JsLikeLanguage::TypeScript => parse_typescript(source)?,
     };
     let root = js_tree.root_node();
     let mut spans = Vec::new();

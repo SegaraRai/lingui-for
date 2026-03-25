@@ -4,9 +4,10 @@ use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 
 use super::js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript};
+use super::parse::{parse_astro, parse_typescript};
 use super::{
     FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
-    MacroImport, parse,
+    MacroImport,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -43,7 +44,7 @@ impl FrameworkAdapter for AstroAdapter {
 }
 
 pub fn analyze_astro(source: &str) -> Result<AstroFrontmatterAnalysis, AnalyzerError> {
-    let astro_tree = parse::parse_astro(source)?;
+    let astro_tree = parse_astro(source)?;
     let root = astro_tree.root_node();
     let frontmatter = find_frontmatter(root);
 
@@ -108,7 +109,7 @@ fn collect_macro_imports(
     source: &str,
     base_offset: usize,
 ) -> Result<Vec<MacroImport>, AnalyzerError> {
-    let js_tree = parse::parse_typescript(source)?;
+    let js_tree = parse_typescript(source)?;
     let root = js_tree.root_node();
     let mut imports = Vec::new();
     let mut cursor = root.walk();

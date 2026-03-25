@@ -1,12 +1,10 @@
 use tree_sitter::Node;
 
-use crate::{
-    common::Span,
-    framework::{
-        MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
-        parse, scope::LexicalScope,
-    },
-};
+use crate::common::Span;
+
+use super::parse::{parse_javascript, parse_typescript};
+use super::scope::LexicalScope;
+use super::{MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsMacroSyntax {
@@ -46,8 +44,8 @@ pub fn collect_macro_candidates_in_javascript_with_shadowing(
     shadowed_names: &[String],
 ) -> Result<Vec<MacroCandidate>, crate::AnalyzerError> {
     let js_tree = match language {
-        JsLikeLanguage::JavaScript => parse::parse_javascript(source)?,
-        JsLikeLanguage::TypeScript => parse::parse_typescript(source)?,
+        JsLikeLanguage::JavaScript => parse_javascript(source)?,
+        JsLikeLanguage::TypeScript => parse_typescript(source)?,
     };
     let js_root = js_tree.root_node();
     Ok(collect_macro_candidates_from_root(
@@ -94,8 +92,8 @@ pub fn collect_declared_names_from_binding_source(
     };
 
     let tree = match language {
-        JsLikeLanguage::JavaScript => parse::parse_javascript(&wrapped)?,
-        JsLikeLanguage::TypeScript => parse::parse_typescript(&wrapped)?,
+        JsLikeLanguage::JavaScript => parse_javascript(&wrapped)?,
+        JsLikeLanguage::TypeScript => parse_typescript(&wrapped)?,
     };
     let root = tree.root_node();
     let mut names = Vec::new();
@@ -108,8 +106,8 @@ pub fn collect_top_level_declared_names_in_javascript(
     language: JsLikeLanguage,
 ) -> Result<Vec<String>, crate::AnalyzerError> {
     let tree = match language {
-        JsLikeLanguage::JavaScript => parse::parse_javascript(source)?,
-        JsLikeLanguage::TypeScript => parse::parse_typescript(source)?,
+        JsLikeLanguage::JavaScript => parse_javascript(source)?,
+        JsLikeLanguage::TypeScript => parse_typescript(source)?,
     };
     let root = tree.root_node();
     let mut names = Vec::new();

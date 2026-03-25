@@ -2,10 +2,12 @@ use std::cell::RefCell;
 
 use tree_sitter::{Language, Parser, Tree};
 
-use crate::{AnalyzerError, wasm::alloc::ensure_tree_sitter_allocator};
+use crate::AnalyzerError;
+use crate::wasm::alloc::ensure_tree_sitter_allocator;
 
 thread_local! {
     static ASTRO_PARSER: RefCell<Parser> = build_parser(tree_sitter_astro::LANGUAGE.into());
+    static SVELTE_PARSER: RefCell<Parser> = build_parser(tree_sitter_svelte_ng::LANGUAGE.into());
     static JAVASCRIPT_PARSER: RefCell<Parser> = build_parser(tree_sitter_javascript::LANGUAGE.into());
     static TYPESCRIPT_PARSER: RefCell<Parser> = build_parser(tree_sitter_typescript::LANGUAGE_TYPESCRIPT.into());
     static TSX_PARSER: RefCell<Parser> = build_parser(tree_sitter_typescript::LANGUAGE_TSX.into());
@@ -13,6 +15,7 @@ thread_local! {
 
 fn build_parser(language: Language) -> RefCell<Parser> {
     ensure_tree_sitter_allocator();
+
     let mut parser = Parser::new();
     parser
         .set_language(&language)
@@ -22,6 +25,12 @@ fn build_parser(language: Language) -> RefCell<Parser> {
 
 pub fn parse_astro(source: &str) -> Result<Tree, AnalyzerError> {
     ASTRO_PARSER
+        .with(|parser| parser.borrow_mut().parse(source, None))
+        .ok_or(AnalyzerError::ParseFailed)
+}
+
+pub fn parse_svelte(source: &str) -> Result<Tree, AnalyzerError> {
+    SVELTE_PARSER
         .with(|parser| parser.borrow_mut().parse(source, None))
         .ok_or(AnalyzerError::ParseFailed)
 }
