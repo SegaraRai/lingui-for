@@ -1,5 +1,5 @@
 use crate::framework::MacroCandidateStrategy;
-use crate::plan::{SyntheticPlan, build_synthetic_plan};
+use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
 use super::{CommonCompilePlan, CompileTarget, CompileTargetPrototype, FrameworkCompilePlan};
 
@@ -17,7 +17,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         .iter()
         .map(|prototype| prototype.candidate.clone())
         .collect::<Vec<_>>();
-    let synthetic_plan = build_synthetic_plan(source, &common_analysis.imports, &candidates);
+    let synthetic_plan = build_synthesis_plan(source, &common_analysis.imports, &candidates);
     let synthetic_source = build_compile_synthetic_source(
         &synthetic_plan,
         &common_analysis.prototypes,
@@ -70,11 +70,12 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
             prototype.candidate.outer_span.end,
         )
     });
-    prototypes.retain(|prototype| prototype.candidate.strategy == MacroCandidateStrategy::Standalone);
+    prototypes
+        .retain(|prototype| prototype.candidate.strategy == MacroCandidateStrategy::Standalone);
 }
 
 fn build_compile_synthetic_source(
-    synthetic_plan: &SyntheticPlan,
+    synthetic_plan: &SynthesisPlan,
     prototypes: &[CompileTargetPrototype],
     wrap_compile_source: impl Fn(&CompileTargetPrototype, &str) -> String,
 ) -> String {

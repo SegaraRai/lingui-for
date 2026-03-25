@@ -6,14 +6,14 @@ use sourcemap::SourceMapBuilder;
 use crate::common::{Span, Utf16Index};
 use crate::extract::{SyntheticMapping, SyntheticModule};
 use crate::framework::{MacroCandidate, MacroCandidateKind, MacroImport};
-use crate::plan::{NormalizedSegment, SyntheticPlan, build_synthetic_plan};
+use crate::synthesis::{NormalizedSegment, SynthesisPlan, build_synthesis_plan};
 
 pub fn build_synthetic_module(
     source: &str,
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
 ) -> SyntheticModule {
-    let plan = build_synthetic_plan(source, imports, candidates);
+    let plan = build_synthesis_plan(source, imports, candidates);
     build_synthetic_module_from_plan(source, "source", "synthetic.js", &plan)
 }
 
@@ -24,7 +24,7 @@ pub fn build_synthetic_module_with_names(
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
 ) -> SyntheticModule {
-    let plan = build_synthetic_plan(source, imports, candidates);
+    let plan = build_synthesis_plan(source, imports, candidates);
     build_synthetic_module_from_plan(source, source_name, synthetic_name, &plan)
 }
 
@@ -32,7 +32,7 @@ pub fn build_synthetic_module_from_plan(
     source: &str,
     source_name: &str,
     synthetic_name: &str,
-    plan: &SyntheticPlan,
+    plan: &SynthesisPlan,
 ) -> SyntheticModule {
     let mut out = String::new();
     let mut declaration_ids = Vec::new();

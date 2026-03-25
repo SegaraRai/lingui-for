@@ -12,10 +12,9 @@ use crate::framework::{
 
 use super::super::{
     CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTargetPrototype, FrameworkCompilePlan,
-    RuntimeRequirements,
+    CompileTargetOutputKind, CompileTargetPrototype, FrameworkCompilePlan, RuntimeRequirements,
+    build_compile_plan_for_framework,
 };
-use crate::compile::plan::build_compile_plan_for_framework;
 use super::CommonFrameworkCompileAnalysis;
 
 const SVELTE_REACTIVE_WRAPPER: &str = "__lingui_for_svelte_reactive_translation__";
@@ -63,10 +62,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         &mut analysis.common
     }
 
-    fn wrap_compile_source(
-        prototype: &CompileTargetPrototype,
-        normalized_source: &str,
-    ) -> String {
+    fn wrap_compile_source(prototype: &CompileTargetPrototype, normalized_source: &str) -> String {
         wrap_compile_source(prototype, normalized_source)
     }
 

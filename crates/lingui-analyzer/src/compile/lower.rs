@@ -9,7 +9,7 @@ use super::{
     TransformedPrograms,
 };
 
-pub fn finish_compile_for_plan<P: FrameworkCompilePlan>(
+pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
     plan: &P,
     source: &str,
     transformed_programs: &TransformedPrograms,
@@ -130,15 +130,16 @@ fn extend_start_for_leading_comments(source: &str, start: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use crate::{
-        CommonCompilePlan, CompileTarget, CompileTargetContext,
-        CompileTargetOutputKind, CompileTranslationMode, MacroFlavor, NormalizedSegment,
-        RuntimeRequirements, TransformedPrograms, common::Span,
+        CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
+        CompileTranslationMode, MacroFlavor, NormalizedSegment, RuntimeRequirements,
+        TransformedPrograms,
+        common::Span,
         compile::adapters::{
             SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
         },
     };
 
-    use super::finish_compile_for_plan;
+    use super::finish_compile;
 
     #[test]
     fn finishes_expression_replacements_with_indented_maps() {
@@ -194,8 +195,7 @@ mod tests {
             ..TransformedPrograms::default()
         };
 
-        let finished =
-            finish_compile_for_plan(&plan, source, &transformed).expect("finish succeeds");
+        let finished = finish_compile(&plan, source, &transformed).expect("finish succeeds");
 
         assert!(finished.replacements.len() >= 2);
         assert!(

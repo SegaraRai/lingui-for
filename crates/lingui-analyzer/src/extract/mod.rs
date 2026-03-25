@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::Span;
 use crate::framework::MacroFlavor;
-use crate::plan::NormalizedSegment;
+use crate::synthesis::NormalizedSegment;
 
 pub use build::{build_synthetic_module, build_synthetic_module_with_names};
 pub use reinsert::reinsert_transformed_declarations;

@@ -3,7 +3,7 @@ pub mod compile;
 mod error;
 pub mod extract;
 pub mod framework;
-pub mod plan;
+pub mod synthesis;
 pub mod wasm;
 
 use serde::{Deserialize, Serialize};
@@ -18,10 +18,10 @@ use crate::framework::{
 
 pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
-    AstroCompilePlan, CommonCompilePlan, CompileReplacement, CompileTarget,
-    CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode, FinishedCompile,
-    RuntimeRequirements, SvelteCompilePlan, SvelteCompileRuntimeBindings,
-    SvelteCompileScriptRegion, TransformedPrograms,
+    AstroCompilePlan, CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
+    CompileTargetOutputKind, CompileTranslationMode, FinishedCompile, RuntimeRequirements,
+    SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
+    TransformedPrograms,
 };
 pub use error::AnalyzerError;
 pub use extract::{
@@ -31,7 +31,7 @@ pub use extract::{
 pub use framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
 };
-pub use plan::NormalizedSegment;
+pub use synthesis::NormalizedSegment;
 
 pub fn build_synthetic_module_for_framework(
     framework: &str,
@@ -223,7 +223,7 @@ pub fn wasm_finish_svelte_compile_with_options(options: JsValue) -> Result<JsVal
 
     let options: SvelteFinishCompileOptions = serde_wasm_bindgen::from_value(options)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let result = crate::compile::finish_compile_for_plan(
+    let result = crate::compile::finish_compile(
         &options.plan,
         &options.source,
         &options.transformed_programs,
@@ -238,7 +238,7 @@ pub fn wasm_finish_astro_compile_with_options(options: JsValue) -> Result<JsValu
 
     let options: AstroFinishCompileOptions = serde_wasm_bindgen::from_value(options)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let result = crate::compile::finish_compile_for_plan(
+    let result = crate::compile::finish_compile(
         &options.plan,
         &options.source,
         &options.transformed_programs,

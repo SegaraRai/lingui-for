@@ -5,10 +5,9 @@ use sourcemap::{SourceMap, SourceMapBuilder};
 
 use crate::AnalyzerError;
 use crate::common::Utf16Index;
-use crate::compile::{
-    CompileReplacement, CompileTarget, FinishedCompile, FrameworkCompilePlan,
-};
-use crate::plan::NormalizedSegment;
+use crate::synthesis::NormalizedSegment;
+
+use super::{CompileReplacement, CompileTarget, FinishedCompile, FrameworkCompilePlan};
 
 pub(crate) fn collect_compile_replacements<P: FrameworkCompilePlan>(
     plan: &P,

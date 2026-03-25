@@ -7,13 +7,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::Span;
 use crate::framework::{MacroCandidate, MacroFlavor};
-use crate::plan::NormalizedSegment;
+use crate::synthesis::NormalizedSegment;
+
+pub(crate) use lower::finish_compile;
+pub(crate) use plan::build_compile_plan_for_framework;
 
 pub use adapters::{
-    AstroCompilePlan, SvelteCompilePlan, SvelteCompileRuntimeBindings,
-    SvelteCompileScriptRegion,
+    AstroCompilePlan, SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
 };
-pub(crate) use lower::finish_compile_for_plan;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CompileTargetContext {

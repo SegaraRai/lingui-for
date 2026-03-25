@@ -1,8 +1,8 @@
 mod astro;
 mod svelte;
 
-use crate::{common::Span, framework::MacroImport};
 use crate::compile::CompileTargetPrototype;
+use crate::{common::Span, framework::MacroImport};
 
 pub use astro::AstroCompilePlan;
 pub use svelte::{SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion};

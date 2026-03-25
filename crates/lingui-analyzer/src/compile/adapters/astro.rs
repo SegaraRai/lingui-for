@@ -1,12 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 use crate::AnalyzerError;
-use crate::compile::plan::build_compile_plan_for_framework;
 use crate::framework::astro::analyze_astro;
 
 use super::super::{
     CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
     CompileTargetPrototype, CompileTranslationMode, FrameworkCompilePlan, RuntimeRequirements,
+    build_compile_plan_for_framework,
 };
 use super::CommonFrameworkCompileAnalysis;
 
@@ -27,10 +27,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         &mut analysis.common
     }
 
-    fn wrap_compile_source(
-        _prototype: &CompileTargetPrototype,
-        normalized_source: &str,
-    ) -> String {
+    fn wrap_compile_source(_prototype: &CompileTargetPrototype, normalized_source: &str) -> String {
         normalized_source.to_string()
     }
 
