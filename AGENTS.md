@@ -33,8 +33,6 @@ TIP: Run `vp run format` → `vp run check` → `vp run test` sequentially to en
 
 ## Project Dependencies
 
-- `crates/astro-analyzer` and `packages/astro-analyzer-wasm`
-  Build required for `packages/lingui-for-astro`, `examples/*`, and `apps/*`.
 - `packages/unplugin-markup-import`
   Build required for `packages/lingui-for-svelte`, `packages/lingui-for-astro`, `examples/*`, and `apps/*`.
 - `packages/lingui-for-astro`, `packages/lingui-for-svelte`, and `packages/unplugin-lingui-macro`

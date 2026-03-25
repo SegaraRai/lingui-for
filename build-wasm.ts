@@ -14,18 +14,6 @@ function main(): void {
   const rootDir = dirname(fileURLToPath(import.meta.url));
   const targets: WasmTarget[] = [
     {
-      crateDir: join(rootDir, "crates", "astro-analyzer"),
-      outputDir: "../../packages/astro-analyzer-wasm/dist",
-      outputName: "index",
-      expectedOutput: join(
-        rootDir,
-        "packages",
-        "astro-analyzer-wasm",
-        "dist",
-        "index_bg.wasm",
-      ),
-    },
-    {
       crateDir: join(rootDir, "crates", "lingui-analyzer"),
       outputDir: "../../packages/lingui-analyzer-wasm/dist",
       outputName: "index",

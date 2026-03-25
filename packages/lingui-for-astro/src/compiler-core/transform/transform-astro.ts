@@ -1,5 +1,4 @@
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
-import { analyzeAstro, initWasmOnce } from "#astro-analyzer-wasm";
 import { lowerAstroWithRustSynthetic } from "../lower/index.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import type { AstroTransformResult } from "./types.ts";
@@ -9,19 +8,15 @@ import type { AstroTransformResult } from "./types.ts";
  *
  * @param source Original `.astro` source.
  * @param options Transform options including filename and optional Lingui config.
- * @returns Rewritten source, source map, and the structural analysis used during the transform.
+ * @returns Rewritten source and source map.
  *
- * This is the main Astro entry point for runtime compilation. It analyzes frontmatter and template
- * expressions, rewrites function macros against the request-scoped `i18n` binding, lowers
- * component macros to `RuntimeTrans`, and injects only the frontmatter prelude actually needed by
- * the rewritten file.
+ * This is the main Astro entry point for runtime compilation. Rust handles analysis, planning, and
+ * final lowering; JS only runs Babel/Lingui and returns the finished code and source map.
  */
 export function transformAstro(
   source: string,
   options: LinguiAstroTransformOptions,
 ): AstroTransformResult {
-  initWasmOnce();
-  const analysis = analyzeAstro(source);
   const output = lowerAstroWithRustSynthetic(
     source,
     options.filename,
@@ -31,6 +26,5 @@ export function transformAstro(
   return {
     code: output?.code ?? source,
     map: output?.map ?? null,
-    analysis,
   };
 }
