@@ -5,27 +5,33 @@ use sourcemap::{SourceMap, SourceMapBuilder};
 
 use crate::AnalyzerError;
 use crate::common::Utf16Index;
-use crate::compile::adapters::FrameworkCompileAdapter;
-use crate::compile::{CompilePlan, CompileReplacement, CompileTarget, FinishedCompile};
+use crate::compile::{
+    CompileReplacement, CompileTarget, FinishedCompile, FrameworkCompilePlan,
+};
 use crate::plan::NormalizedSegment;
 
-pub(crate) fn collect_compile_replacements(
-    adapter: &dyn FrameworkCompileAdapter,
-    plan: &CompilePlan,
+pub(crate) fn collect_compile_replacements<P: FrameworkCompilePlan>(
+    plan: &P,
     source: &str,
     transformed_declarations: &BTreeMap<String, String>,
 ) -> Result<Vec<CompileReplacement>, AnalyzerError> {
     let mut replacements = Vec::new();
+    let common = plan.common();
 
-    replacements.extend(plan.import_removals.iter().map(|range| CompileReplacement {
-        declaration_id: format!("__import_remove_{}_{}", range.start, range.end),
-        start: range.start,
-        end: range.end,
-        code: String::new(),
-        source_map_json: None,
-    }));
+    replacements.extend(
+        common
+            .import_removals
+            .iter()
+            .map(|range| CompileReplacement {
+                declaration_id: format!("__import_remove_{}_{}", range.start, range.end),
+                start: range.start,
+                end: range.end,
+                code: String::new(),
+                source_map_json: None,
+            }),
+    );
 
-    for target in &plan.targets {
+    for target in &common.targets {
         let Some(code) = transformed_declarations.get(&target.declaration_id) else {
             continue;
         };
@@ -40,7 +46,7 @@ pub(crate) fn collect_compile_replacements(
             end: target.original_span.end,
             source_map_json: build_replacement_source_map_json(
                 source,
-                &plan.source_name,
+                &common.source_name,
                 &indented,
                 target,
             ),
@@ -48,7 +54,7 @@ pub(crate) fn collect_compile_replacements(
         });
     }
 
-    adapter.append_runtime_injection_replacements(plan, source, &mut replacements)?;
+    plan.append_runtime_injection_replacements(source, &mut replacements);
 
     replacements.sort_by_key(|replacement| (replacement.start, replacement.end));
     Ok(replacements)

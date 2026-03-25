@@ -1,19 +1,22 @@
 use std::collections::BTreeSet;
 
+use serde::{Deserialize, Serialize};
 use tree_sitter::Node;
 
 use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptRegion, Span};
+use crate::framework::svelte::{analyze_svelte, bare_direct_macro_message};
 use crate::framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, parse,
-    svelte::{analyze_svelte, bare_direct_macro_message},
 };
 
 use super::super::{
-    CompilePlan, CompileReplacement, CompileRuntimeBindings, CompileScriptRegion, CompileTarget,
-    CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
+    CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
+    CompileTargetOutputKind, CompileTargetPrototype, FrameworkCompilePlan,
+    RuntimeRequirements,
 };
-use super::{FrameworkCompileAdapter, FrameworkCompileAnalysis};
+use crate::compile::plan::build_compile_plan_for_framework;
+use super::CommonFrameworkCompileAnalysis;
 
 const SVELTE_REACTIVE_WRAPPER: &str = "__lingui_for_svelte_reactive_translation__";
 const SVELTE_EAGER_WRAPPER: &str = "__lingui_for_svelte_eager_translation__";
@@ -24,157 +27,209 @@ const SVELTE_BINDING_TRANSLATE: &str = "__l4s_translate";
 const SVELTE_BINDING_RUNTIME_TRANS: &str = "L4sRuntimeTrans";
 const SVELTE_RUNTIME_PACKAGE: &str = "lingui-for-svelte/runtime";
 
-#[derive(Debug, Default, Clone, Copy)]
-pub(crate) struct SvelteCompileAdapter;
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct SvelteCompileRuntimeBindings {
+    pub create_lingui_accessors: String,
+    pub context: String,
+    pub get_i18n: String,
+    pub translate: String,
+    pub trans_component: String,
+}
 
-impl FrameworkCompileAdapter for SvelteCompileAdapter {
-    fn framework_name(&self) -> &'static str {
-        "svelte"
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SvelteCompileScriptRegion {
+    pub outer_span: Span,
+    pub content_span: Span,
+    pub lang: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SvelteCompilePlan {
+    pub common: CommonCompilePlan,
+    pub runtime_requirements: RuntimeRequirements,
+    pub runtime_bindings: SvelteCompileRuntimeBindings,
+    pub instance_script: Option<SvelteCompileScriptRegion>,
+    pub module_script: Option<SvelteCompileScriptRegion>,
+}
+
+impl FrameworkCompilePlan for SvelteCompilePlan {
+    type Analysis = SvelteFrameworkCompileAnalysis;
+
+    fn analyze(source: &str) -> Result<Self::Analysis, AnalyzerError> {
+        analyze_svelte_compile(source)
     }
 
-    fn analyze_compile(&self, source: &str) -> Result<FrameworkCompileAnalysis, AnalyzerError> {
-        let analysis = analyze_svelte(source)?;
-        let imports = analysis
-            .scripts
-            .iter()
-            .flat_map(|script| script.macro_imports.iter().cloned())
-            .collect::<Vec<_>>();
-        let import_removals = analysis
-            .scripts
-            .iter()
-            .flat_map(|script| script.macro_import_statement_spans.iter().copied())
-            .collect::<Vec<_>>();
-        let instance_script = analysis
-            .scripts
-            .iter()
-            .find(|script| !script.is_module)
-            .map(|script| compile_script_region(&script.region, script.is_typescript));
-        let module_script = analysis
-            .scripts
-            .iter()
-            .find(|script| script.is_module)
-            .map(|script| compile_script_region(&script.region, script.is_typescript));
-        let mut prototypes = Vec::new();
-
-        for script in &analysis.scripts {
-            let context = if script.is_module {
-                CompileTargetContext::ModuleScript
-            } else {
-                CompileTargetContext::InstanceScript
-            };
-            let translation_mode = if script.is_module {
-                crate::compile::CompileTranslationMode::Raw
-            } else {
-                crate::compile::CompileTranslationMode::Context
-            };
-
-            prototypes.extend(script.candidates.iter().cloned().map(|candidate| {
-                CompileTargetPrototype {
-                    output_kind: classify_output_kind(candidate.kind),
-                    candidate,
-                    context,
-                    translation_mode,
-                }
-            }));
-        }
-
-        for expression in &analysis.template_expressions {
-            prototypes.extend(expression.candidates.iter().cloned().map(|candidate| {
-                CompileTargetPrototype {
-                    output_kind: CompileTargetOutputKind::Expression,
-                    candidate,
-                    context: CompileTargetContext::Template,
-                    translation_mode: crate::compile::CompileTranslationMode::Context,
-                }
-            }));
-        }
-
-        prototypes.extend(
-            analysis
-                .template_components
-                .iter()
-                .cloned()
-                .map(|component| CompileTargetPrototype {
-                    output_kind: CompileTargetOutputKind::Component,
-                    candidate: component.candidate,
-                    context: CompileTargetContext::Template,
-                    translation_mode: crate::compile::CompileTranslationMode::Context,
-                }),
-        );
-
-        validate_compile_targets(&prototypes)?;
-
-        Ok(FrameworkCompileAnalysis {
-            imports,
-            prototypes,
-            import_removals,
-            runtime_bindings: Some(create_runtime_bindings(
-                analysis
-                    .scripts
-                    .iter()
-                    .find(|script| !script.is_module)
-                    .map(|script| script.declared_names.as_slice())
-                    .unwrap_or(&[]),
-            )),
-            instance_script: instance_script.clone(),
-            module_script: module_script.clone(),
-            synthetic_lang: instance_script
-                .as_ref()
-                .map(script_region_lang)
-                .or_else(|| module_script.as_ref().map(script_region_lang))
-                .unwrap_or("ts")
-                .to_string(),
-        })
+    fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
+        &mut analysis.common
     }
 
     fn wrap_compile_source(
-        &self,
         prototype: &CompileTargetPrototype,
         normalized_source: &str,
     ) -> String {
         wrap_compile_source(prototype, normalized_source)
     }
 
-    fn compute_runtime_requirements(
-        &self,
-        targets: &[CompileTarget],
-    ) -> crate::compile::RuntimeRequirements {
-        crate::compile::RuntimeRequirements {
-            needs_runtime_i18n_binding: targets.iter().any(|target| {
-                target.translation_mode == crate::compile::CompileTranslationMode::Context
-                    && target.output_kind == CompileTargetOutputKind::Expression
-                    && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
-            }),
-            needs_runtime_trans_component: targets
-                .iter()
-                .any(|target| target.output_kind == CompileTargetOutputKind::Component),
+    fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]) {
+        repair_compile_targets(source, targets);
+    }
+
+    fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
+        compute_runtime_requirements(targets)
+    }
+
+    fn assemble_plan(
+        common: CommonCompilePlan,
+        runtime_requirements: RuntimeRequirements,
+        analysis: Self::Analysis,
+    ) -> Self {
+        Self {
+            common,
+            runtime_requirements,
+            runtime_bindings: analysis.runtime_bindings,
+            instance_script: analysis.instance_script,
+            module_script: analysis.module_script,
         }
     }
 
-    fn repair_compile_targets(&self, source: &str, targets: &mut [CompileTarget]) {
-        repair_compile_targets(source, targets);
+    fn common(&self) -> &CommonCompilePlan {
+        &self.common
     }
 
     fn lower_runtime_component_markup(
         &self,
         declaration_code: &str,
-        runtime_component_name: Option<&str>,
     ) -> Result<String, AnalyzerError> {
         lower_runtime_component_markup(
             declaration_code,
-            runtime_component_name.unwrap_or("L4sRuntimeTrans"),
+            self.runtime_bindings.trans_component.as_str(),
         )
     }
 
     fn append_runtime_injection_replacements(
         &self,
-        plan: &CompilePlan,
         source: &str,
         replacements: &mut Vec<CompileReplacement>,
-    ) -> Result<(), AnalyzerError> {
-        append_runtime_injection_replacements(plan, source, replacements);
-        Ok(())
+    ) {
+        append_runtime_injection_replacements(self, source, replacements);
     }
+}
+
+impl SvelteCompilePlan {
+    pub fn build(
+        source: &str,
+        source_name: &str,
+        synthetic_name: &str,
+    ) -> Result<Self, AnalyzerError> {
+        build_compile_plan_for_framework::<Self>(source, source_name, synthetic_name)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct SvelteFrameworkCompileAnalysis {
+    pub(crate) common: CommonFrameworkCompileAnalysis,
+    pub(crate) runtime_bindings: SvelteCompileRuntimeBindings,
+    pub(crate) instance_script: Option<SvelteCompileScriptRegion>,
+    pub(crate) module_script: Option<SvelteCompileScriptRegion>,
+}
+
+pub(crate) fn analyze_svelte_compile(
+    source: &str,
+) -> Result<SvelteFrameworkCompileAnalysis, AnalyzerError> {
+    let analysis = analyze_svelte(source)?;
+    let imports = analysis
+        .scripts
+        .iter()
+        .flat_map(|script| script.macro_imports.iter().cloned())
+        .collect::<Vec<_>>();
+    let import_removals = analysis
+        .scripts
+        .iter()
+        .flat_map(|script| script.macro_import_statement_spans.iter().copied())
+        .collect::<Vec<_>>();
+    let instance_script = analysis
+        .scripts
+        .iter()
+        .find(|script| !script.is_module)
+        .map(|script| compile_script_region(&script.region, script.is_typescript));
+    let module_script = analysis
+        .scripts
+        .iter()
+        .find(|script| script.is_module)
+        .map(|script| compile_script_region(&script.region, script.is_typescript));
+    let mut prototypes = Vec::new();
+
+    for script in &analysis.scripts {
+        let context = if script.is_module {
+            CompileTargetContext::ModuleScript
+        } else {
+            CompileTargetContext::InstanceScript
+        };
+        let translation_mode = if script.is_module {
+            crate::compile::CompileTranslationMode::Raw
+        } else {
+            crate::compile::CompileTranslationMode::Context
+        };
+
+        prototypes.extend(script.candidates.iter().cloned().map(|candidate| {
+            CompileTargetPrototype {
+                output_kind: classify_output_kind(candidate.kind),
+                candidate,
+                context,
+                translation_mode,
+            }
+        }));
+    }
+
+    for expression in &analysis.template_expressions {
+        prototypes.extend(expression.candidates.iter().cloned().map(|candidate| {
+            CompileTargetPrototype {
+                output_kind: CompileTargetOutputKind::Expression,
+                candidate,
+                context: CompileTargetContext::Template,
+                translation_mode: crate::compile::CompileTranslationMode::Context,
+            }
+        }));
+    }
+
+    prototypes.extend(
+        analysis
+            .template_components
+            .iter()
+            .cloned()
+            .map(|component| CompileTargetPrototype {
+                output_kind: CompileTargetOutputKind::Component,
+                candidate: component.candidate,
+                context: CompileTargetContext::Template,
+                translation_mode: crate::compile::CompileTranslationMode::Context,
+            }),
+    );
+
+    validate_compile_targets(&prototypes)?;
+
+    Ok(SvelteFrameworkCompileAnalysis {
+        common: CommonFrameworkCompileAnalysis {
+            imports,
+            prototypes,
+            import_removals,
+            synthetic_lang: instance_script
+                .as_ref()
+                .map(script_region_lang)
+                .or_else(|| module_script.as_ref().map(script_region_lang))
+                .unwrap_or("ts")
+                .to_string(),
+        },
+        runtime_bindings: create_runtime_bindings(
+            analysis
+                .scripts
+                .iter()
+                .find(|script| !script.is_module)
+                .map(|script| script.declared_names.as_slice())
+                .unwrap_or(&[]),
+        ),
+        instance_script: instance_script.clone(),
+        module_script: module_script.clone(),
+    })
 }
 
 pub(crate) fn classify_output_kind(kind: MacroCandidateKind) -> CompileTargetOutputKind {
@@ -189,15 +244,15 @@ pub(crate) fn classify_output_kind(kind: MacroCandidateKind) -> CompileTargetOut
 pub(crate) fn compile_script_region(
     region: &EmbeddedScriptRegion,
     is_typescript: bool,
-) -> CompileScriptRegion {
-    CompileScriptRegion {
+) -> SvelteCompileScriptRegion {
+    SvelteCompileScriptRegion {
         outer_span: region.outer_span,
         content_span: region.inner_span,
         lang: if is_typescript { "ts" } else { "js" }.to_string(),
     }
 }
 
-pub(crate) fn script_region_lang(region: &CompileScriptRegion) -> &'static str {
+pub(crate) fn script_region_lang(region: &SvelteCompileScriptRegion) -> &'static str {
     if region.lang == "js" { "js" } else { "ts" }
 }
 
@@ -223,10 +278,23 @@ pub(crate) fn wrap_compile_source(
     normalized_source.to_string()
 }
 
-pub(crate) fn create_runtime_bindings(declared_names: &[String]) -> CompileRuntimeBindings {
+pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
+    RuntimeRequirements {
+        needs_runtime_i18n_binding: targets.iter().any(|target| {
+            target.translation_mode == crate::compile::CompileTranslationMode::Context
+                && target.output_kind == CompileTargetOutputKind::Expression
+                && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
+        }),
+        needs_runtime_trans_component: targets
+            .iter()
+            .any(|target| target.output_kind == CompileTargetOutputKind::Component),
+    }
+}
+
+pub(crate) fn create_runtime_bindings(declared_names: &[String]) -> SvelteCompileRuntimeBindings {
     let mut used = declared_names.iter().cloned().collect::<BTreeSet<_>>();
 
-    CompileRuntimeBindings {
+    SvelteCompileRuntimeBindings {
         create_lingui_accessors: allocate_unique_binding_name(
             &mut used,
             SVELTE_BINDING_CREATE_LINGUI_ACCESSORS,
@@ -309,14 +377,12 @@ pub(crate) fn validate_compile_targets(
     Ok(())
 }
 
-pub(crate) fn append_runtime_injection_replacements(
-    plan: &CompilePlan,
+pub(super) fn append_runtime_injection_replacements(
+    plan: &SvelteCompilePlan,
     source: &str,
     replacements: &mut Vec<CompileReplacement>,
 ) {
-    let Some(runtime_bindings) = &plan.runtime_bindings else {
-        return;
-    };
+    let runtime_bindings = &plan.runtime_bindings;
 
     let needs_lingui_context = plan.runtime_requirements.needs_runtime_i18n_binding;
     let needs_trans_component = plan.runtime_requirements.needs_runtime_trans_component;
@@ -423,7 +489,7 @@ struct RuntimeInsertions {
 
 fn create_runtime_binding_insertions(
     original_script_content: &str,
-    runtime_bindings: &CompileRuntimeBindings,
+    runtime_bindings: &SvelteCompileRuntimeBindings,
     include_lingui_context: bool,
     include_trans_component: bool,
 ) -> RuntimeInsertions {

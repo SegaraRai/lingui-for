@@ -1,6 +1,6 @@
 use lingui_analyzer::{
-    CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-    build_compile_plan_for_framework_with_names, build_synthetic_module_for_framework_with_names,
+    AstroCompilePlan, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
+    SvelteCompilePlan, build_synthetic_module_for_framework_with_names,
 };
 use std::fs::read_to_string;
 use std::path::PathBuf;
@@ -25,38 +25,44 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
 <Trans>Hello <strong>{name}</strong></Trans>
 "#;
 
-    let plan = build_compile_plan_for_framework_with_names(
-        "svelte",
+    let plan = SvelteCompilePlan::build(
         source,
         "/virtual/App.svelte",
         "/virtual/App.svelte?compile.tsx",
     )
     .expect("svelte compile plan should build");
 
-    assert_eq!(plan.framework, "svelte");
-    assert_eq!(plan.source_name, "/virtual/App.svelte");
-    assert_eq!(plan.synthetic_name, "/virtual/App.svelte?compile.tsx");
-    assert_eq!(plan.targets.len(), 4);
+    assert_eq!(plan.common.source_name, "/virtual/App.svelte");
+    assert_eq!(
+        plan.common.synthetic_name,
+        "/virtual/App.svelte?compile.tsx"
+    );
+    assert_eq!(plan.common.targets.len(), 4);
     assert!(plan.runtime_requirements.needs_runtime_i18n_binding);
     assert!(plan.runtime_requirements.needs_runtime_trans_component);
     assert!(
-        plan.synthetic_source
+        plan.common
+            .synthetic_source
             .contains("__lingui_for_svelte_eager_translation__(t`Module label`)")
     );
     assert!(
-        plan.synthetic_source
+        plan.common
+            .synthetic_source
             .contains("__lingui_for_svelte_reactive_translation__(t`Hello ${name}`, \"t\")")
     );
     assert!(
-        plan.synthetic_source
+        plan.common
+            .synthetic_source
             .contains("__lingui_for_svelte_reactive_translation__(t`Markup ${name}`, \"t\")")
     );
     assert!(
-        plan.synthetic_source
+        plan.common
+            .synthetic_source
             .contains("<Trans>Hello <strong>{name}</strong></Trans>")
     );
 
     let module_target = plan
+        .common
         .targets
         .iter()
         .find(|target| target.context == CompileTargetContext::ModuleScript)
@@ -68,6 +74,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     );
 
     let instance_target = plan
+        .common
         .targets
         .iter()
         .find(|target| {
@@ -81,6 +88,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     );
 
     let template_expression_target = plan
+        .common
         .targets
         .iter()
         .find(|target| {
@@ -94,6 +102,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     );
 
     let component_target = plan
+        .common
         .targets
         .iter()
         .find(|target| target.output_kind == CompileTargetOutputKind::Component)
@@ -117,42 +126,48 @@ const status = translate(msg`Status summary: active`);
 <Trans>Before <strong>{name}</strong> After</Trans>
 "#;
 
-    let plan = build_compile_plan_for_framework_with_names(
-        "astro",
+    let plan = AstroCompilePlan::build(
         source,
         "/virtual/Page.astro",
         "/virtual/Page.astro?compile.tsx",
     )
     .expect("astro compile plan should build");
 
-    assert_eq!(plan.framework, "astro");
-    assert_eq!(plan.targets.len(), 3);
+    assert_eq!(plan.common.targets.len(), 3);
     assert!(plan.runtime_requirements.needs_runtime_i18n_binding);
     assert!(plan.runtime_requirements.needs_runtime_trans_component);
     assert!(
-        plan.synthetic_source
+        plan.common
+            .synthetic_source
             .contains("translate(msg`Status summary: active`)")
     );
-    assert!(plan.synthetic_source.contains("translate`Markup ${name}`"));
     assert!(
-        plan.synthetic_source
+        plan.common
+            .synthetic_source
+            .contains("translate`Markup ${name}`")
+    );
+    assert!(
+        plan.common
+            .synthetic_source
             .contains("<Trans>Before <strong>{name}</strong> After</Trans>")
     );
     assert!(
-        plan.targets
+        plan.common
+            .targets
             .iter()
             .all(|target| { target.translation_mode == CompileTranslationMode::Context })
     );
     assert!(
-        plan.targets
+        plan.common
+            .targets
             .iter()
             .any(|target| target.context == CompileTargetContext::Frontmatter)
     );
-    assert!(plan.targets.iter().any(|target| {
+    assert!(plan.common.targets.iter().any(|target| {
         target.context == CompileTargetContext::Template
             && target.output_kind == CompileTargetOutputKind::Expression
     }));
-    assert!(plan.targets.iter().any(|target| {
+    assert!(plan.common.targets.iter().any(|target| {
         target.context == CompileTargetContext::Template
             && target.output_kind == CompileTargetOutputKind::Component
     }));
@@ -168,8 +183,7 @@ fn rejects_bare_direct_t_in_svelte_scripts() {
 </script>
 "#;
 
-    let error = build_compile_plan_for_framework_with_names(
-        "svelte",
+    let error = SvelteCompilePlan::build(
         source,
         "/virtual/App.svelte",
         "/virtual/App.svelte?compile.tsx",
@@ -220,8 +234,7 @@ fn keeps_full_template_target_spans_for_the_e2e_preloaded_page() {
     )
     .expect("e2e fixture source should load");
 
-    let plan = build_compile_plan_for_framework_with_names(
-        "svelte",
+    let plan = SvelteCompilePlan::build(
         &source,
         "/virtual/+page.svelte",
         "/virtual/+page.svelte?compile.tsx",
@@ -229,6 +242,7 @@ fn keeps_full_template_target_spans_for_the_e2e_preloaded_page() {
     .expect("svelte compile plan should build");
 
     let template_targets = plan
+        .common
         .targets
         .iter()
         .filter(|target| {

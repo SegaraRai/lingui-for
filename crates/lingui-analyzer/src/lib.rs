@@ -6,9 +6,9 @@ pub mod framework;
 pub mod plan;
 pub mod wasm;
 
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-use crate::compile::finish_compile;
 use crate::extract::{build_synthetic_module_with_names, reinsert_transformed_declarations};
 use crate::framework::{
     FrameworkAdapter,
@@ -18,11 +18,10 @@ use crate::framework::{
 
 pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
-    CompilePlan, CompilePlanOptions, CompileReplacement, CompileRuntimeBindings,
-    CompileScriptRegion, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
-    CompileTranslationMode, FinishCompileOptions, FinishedCompile, RuntimeRequirements,
-    TransformedPrograms, build_compile_plan_for_framework,
-    build_compile_plan_for_framework_with_names,
+    AstroCompilePlan, CommonCompilePlan, CompileReplacement, CompileTarget,
+    CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode, FinishedCompile,
+    RuntimeRequirements, SvelteCompilePlan, SvelteCompileRuntimeBindings,
+    SvelteCompileScriptRegion, TransformedPrograms,
 };
 pub use error::AnalyzerError;
 pub use extract::{
@@ -145,14 +144,34 @@ pub fn wasm_build_synthetic_module_with_options(options: JsValue) -> Result<JsVa
     serde_wasm_bindgen::to_value(&module).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
-#[wasm_bindgen(js_name = "buildCompilePlanWithOptions")]
-pub fn wasm_build_compile_plan_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CompilePlanOptions {
+    pub source: String,
+    pub source_name: Option<String>,
+    pub synthetic_name: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SvelteFinishCompileOptions {
+    pub plan: SvelteCompilePlan,
+    pub source: String,
+    pub transformed_programs: TransformedPrograms,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AstroFinishCompileOptions {
+    pub plan: AstroCompilePlan,
+    pub source: String,
+    pub transformed_programs: TransformedPrograms,
+}
+
+#[wasm_bindgen(js_name = "buildSvelteCompilePlanWithOptions")]
+pub fn wasm_build_svelte_compile_plan_with_options(options: JsValue) -> Result<JsValue, JsValue> {
     console_error_panic_hook::set_once();
 
     let options: CompilePlanOptions = serde_wasm_bindgen::from_value(options)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let plan = crate::compile::build_compile_plan_for_framework_with_names(
-        &options.framework,
+    let plan = SvelteCompilePlan::build(
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
         options
@@ -180,13 +199,46 @@ pub fn wasm_reinsert_transformed_declarations(options: JsValue) -> Result<JsValu
     serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
 }
 
-#[wasm_bindgen(js_name = "finishCompileWithOptions")]
-pub fn wasm_finish_compile_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+#[wasm_bindgen(js_name = "buildAstroCompilePlanWithOptions")]
+pub fn wasm_build_astro_compile_plan_with_options(options: JsValue) -> Result<JsValue, JsValue> {
     console_error_panic_hook::set_once();
 
-    let options: FinishCompileOptions = serde_wasm_bindgen::from_value(options)
+    let options: CompilePlanOptions = serde_wasm_bindgen::from_value(options)
         .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let result = finish_compile(
+    let plan = AstroCompilePlan::build(
+        &options.source,
+        options.source_name.as_deref().unwrap_or("source"),
+        options
+            .synthetic_name
+            .as_deref()
+            .unwrap_or("synthetic-compile.tsx"),
+    )
+    .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    serde_wasm_bindgen::to_value(&plan).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen(js_name = "finishSvelteCompileWithOptions")]
+pub fn wasm_finish_svelte_compile_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+    console_error_panic_hook::set_once();
+
+    let options: SvelteFinishCompileOptions = serde_wasm_bindgen::from_value(options)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let result = crate::compile::finish_compile_for_plan(
+        &options.plan,
+        &options.source,
+        &options.transformed_programs,
+    )
+    .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
+}
+
+#[wasm_bindgen(js_name = "finishAstroCompileWithOptions")]
+pub fn wasm_finish_astro_compile_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+    console_error_panic_hook::set_once();
+
+    let options: AstroFinishCompileOptions = serde_wasm_bindgen::from_value(options)
+        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let result = crate::compile::finish_compile_for_plan(
         &options.plan,
         &options.source,
         &options.transformed_programs,

@@ -9,8 +9,11 @@ use crate::common::Span;
 use crate::framework::{MacroCandidate, MacroFlavor};
 use crate::plan::NormalizedSegment;
 
-pub use lower::finish_compile;
-pub use plan::{build_compile_plan_for_framework, build_compile_plan_for_framework_with_names};
+pub use adapters::{
+    AstroCompilePlan, SvelteCompilePlan, SvelteCompileRuntimeBindings,
+    SvelteCompileScriptRegion,
+};
+pub(crate) use lower::finish_compile_for_plan;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CompileTargetContext {
@@ -30,6 +33,17 @@ pub enum CompileTargetOutputKind {
 pub enum CompileTranslationMode {
     Raw,
     Context,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CommonCompilePlan {
+    pub source_name: String,
+    pub synthetic_name: String,
+    pub synthetic_source: String,
+    pub synthetic_lang: String,
+    pub declaration_ids: Vec<String>,
+    pub targets: Vec<CompileTarget>,
+    pub import_removals: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -53,44 +67,42 @@ pub struct RuntimeRequirements {
     pub needs_runtime_trans_component: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub struct CompileRuntimeBindings {
-    pub create_lingui_accessors: String,
-    pub context: String,
-    pub get_i18n: String,
-    pub translate: String,
-    pub trans_component: String,
-}
+pub(crate) trait FrameworkCompilePlan: Sized {
+    type Analysis;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct CompileScriptRegion {
-    pub outer_span: Span,
-    pub content_span: Span,
-    pub lang: String,
-}
+    fn analyze(source: &str) -> Result<Self::Analysis, crate::AnalyzerError>;
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
-pub struct CompilePlan {
-    pub framework: String,
-    pub source_name: String,
-    pub synthetic_name: String,
-    pub synthetic_source: String,
-    pub synthetic_lang: String,
-    pub declaration_ids: Vec<String>,
-    pub targets: Vec<CompileTarget>,
-    pub runtime_requirements: RuntimeRequirements,
-    pub runtime_bindings: Option<CompileRuntimeBindings>,
-    pub import_removals: Vec<Span>,
-    pub instance_script: Option<CompileScriptRegion>,
-    pub module_script: Option<CompileScriptRegion>,
-}
+    fn common_analysis(
+        analysis: &mut Self::Analysis,
+    ) -> &mut adapters::CommonFrameworkCompileAnalysis;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct CompilePlanOptions {
-    pub framework: String,
-    pub source: String,
-    pub source_name: Option<String>,
-    pub synthetic_name: Option<String>,
+    fn wrap_compile_source(prototype: &CompileTargetPrototype, normalized_source: &str) -> String;
+
+    fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]);
+
+    fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements;
+
+    fn assemble_plan(
+        common: CommonCompilePlan,
+        runtime_requirements: RuntimeRequirements,
+        analysis: Self::Analysis,
+    ) -> Self;
+
+    fn common(&self) -> &CommonCompilePlan;
+
+    fn lower_runtime_component_markup(
+        &self,
+        declaration_code: &str,
+    ) -> Result<String, crate::AnalyzerError> {
+        Ok(declaration_code.to_string())
+    }
+
+    fn append_runtime_injection_replacements(
+        &self,
+        _source: &str,
+        _replacements: &mut Vec<CompileReplacement>,
+    ) {
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -100,13 +112,6 @@ pub struct CompileReplacement {
     pub end: usize,
     pub code: String,
     pub source_map_json: Option<String>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct FinishCompileOptions {
-    pub plan: CompilePlan,
-    pub source: String,
-    pub transformed_programs: TransformedPrograms,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]

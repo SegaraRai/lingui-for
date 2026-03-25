@@ -5,8 +5,8 @@ import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
-  buildCompilePlanWithOptions,
-  finishCompileWithOptions,
+  buildSvelteCompilePlanWithOptions,
+  finishSvelteCompileWithOptions,
   initSync,
 } from "lingui-analyzer-wasm";
 
@@ -21,13 +21,17 @@ type CompileRuntimeBindings = {
   trans_component: string;
 };
 
-type CompilePlan = {
+type CommonCompilePlan = {
   source_name: string;
   synthetic_source: string;
   synthetic_name: string;
   synthetic_lang: "js" | "ts";
   declaration_ids: readonly string[];
-  runtime_bindings?: CompileRuntimeBindings | null;
+};
+
+type SvelteCompilePlan = {
+  common: CommonCompilePlan;
+  runtime_bindings: CompileRuntimeBindings;
 };
 
 type FinishedCompile = {
@@ -66,33 +70,30 @@ export function lowerSvelteWithRustSynthetic(
   linguiConfig: LinguiConfigNormalized,
 ): SvelteRustLoweredResult | null {
   const compilePlan = buildCompilePlan(source, filename);
-  if (compilePlan.declaration_ids.length === 0) {
+  if (compilePlan.common.declaration_ids.length === 0) {
     return null;
   }
 
-  const runtimeBindings = compilePlan.runtime_bindings
-    ? {
-        createLinguiAccessors:
-          compilePlan.runtime_bindings.create_lingui_accessors,
-        context: compilePlan.runtime_bindings.context,
-        getI18n: compilePlan.runtime_bindings.get_i18n,
-        translate: compilePlan.runtime_bindings.translate,
-      }
-    : undefined;
-  const raw = transformProgram(compilePlan.synthetic_source, {
+  const runtimeBindings = {
+    createLinguiAccessors: compilePlan.runtime_bindings.create_lingui_accessors,
+    context: compilePlan.runtime_bindings.context,
+    getI18n: compilePlan.runtime_bindings.get_i18n,
+    translate: compilePlan.runtime_bindings.translate,
+  };
+  const raw = transformProgram(compilePlan.common.synthetic_source, {
     extract: false,
-    filename: `${compilePlan.synthetic_name}?raw`,
-    lang: compilePlan.synthetic_lang,
+    filename: `${compilePlan.common.synthetic_name}?raw`,
+    lang: compilePlan.common.synthetic_lang,
     linguiConfig,
     translationMode: "raw",
   });
-  const svelteContext = transformProgram(compilePlan.synthetic_source, {
+  const svelteContext = transformProgram(compilePlan.common.synthetic_source, {
     extract: false,
-    filename: `${compilePlan.synthetic_name}?svelte-context`,
-    lang: compilePlan.synthetic_lang,
+    filename: `${compilePlan.common.synthetic_name}?svelte-context`,
+    lang: compilePlan.common.synthetic_lang,
     linguiConfig,
     translationMode: "svelte-context",
-    ...(runtimeBindings ? { runtimeBindings } : {}),
+    runtimeBindings,
   });
 
   const transformedPrograms: TransformedPrograms = {
@@ -103,7 +104,7 @@ export function lowerSvelteWithRustSynthetic(
       svelteContext.map != null ? JSON.stringify(svelteContext.map) : null,
   };
 
-  const finished = finishCompileWithOptions({
+  const finished = finishSvelteCompileWithOptions({
     plan: compilePlan,
     source,
     transformed_programs: transformedPrograms,
@@ -124,14 +125,14 @@ export function lowerSvelteWithRustSynthetic(
   };
 }
 
-function buildCompilePlan(source: string, filename: string): CompilePlan {
+function buildCompilePlan(source: string, filename: string): SvelteCompilePlan {
   ensureWasmInitialized();
-  return buildCompilePlanWithOptions({
-    framework: "svelte",
+  const plan = buildSvelteCompilePlanWithOptions({
     source,
     source_name: filename,
     synthetic_name: `${filename}?rust-compile.tsx`,
-  }) as CompilePlan;
+  }) as SvelteCompilePlan;
+  return plan;
 }
 
 function ensureWasmInitialized(): void {

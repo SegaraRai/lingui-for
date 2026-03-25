@@ -3,38 +3,30 @@ use std::collections::BTreeMap;
 use crate::AnalyzerError;
 use crate::framework::parse;
 
-use super::adapters::compile_adapter_for_framework;
 use super::emit::{collect_compile_replacements, finish_compile_from_replacements};
 use super::{
-    CompilePlan, CompileTargetOutputKind, CompileTranslationMode, FinishedCompile,
+    CompileTargetOutputKind, CompileTranslationMode, FinishedCompile, FrameworkCompilePlan,
     TransformedPrograms,
 };
 
-pub fn finish_compile(
-    plan: &CompilePlan,
+pub fn finish_compile_for_plan<P: FrameworkCompilePlan>(
+    plan: &P,
     source: &str,
     transformed_programs: &TransformedPrograms,
 ) -> Result<FinishedCompile, AnalyzerError> {
-    let adapter = compile_adapter_for_framework(&plan.framework)?;
     let lowered_declarations = lower_transformed_declarations(plan, transformed_programs)?;
-    let replacements = collect_compile_replacements(adapter, plan, source, &lowered_declarations)?;
-    finish_compile_from_replacements(source, &plan.source_name, replacements)
+    let replacements = collect_compile_replacements(plan, source, &lowered_declarations)?;
+    finish_compile_from_replacements(source, &plan.common().source_name, replacements)
 }
 
-fn lower_transformed_declarations(
-    plan: &CompilePlan,
+fn lower_transformed_declarations<P: FrameworkCompilePlan>(
+    plan: &P,
     transformed_programs: &TransformedPrograms,
 ) -> Result<BTreeMap<String, String>, AnalyzerError> {
-    let adapter = compile_adapter_for_framework(&plan.framework)?;
     let declaration_sets = collect_transformed_declarations(transformed_programs)?;
-    let runtime_component_name = plan
-        .runtime_bindings
-        .as_ref()
-        .map(|bindings| bindings.trans_component.as_str())
-        .unwrap_or("L4sRuntimeTrans");
     let mut lowered = BTreeMap::new();
 
-    for target in &plan.targets {
+    for target in &plan.common().targets {
         let Some(code) = declaration_sets
             .get(&target.translation_mode)
             .and_then(|declarations| declarations.get(&target.declaration_id))
@@ -43,7 +35,7 @@ fn lower_transformed_declarations(
         };
 
         let finalized = if target.output_kind == CompileTargetOutputKind::Component {
-            adapter.lower_runtime_component_markup(code, Some(runtime_component_name))?
+            plan.lower_runtime_component_markup(code)?
         } else {
             code.clone()
         };
@@ -138,52 +130,56 @@ fn extend_start_for_leading_comments(source: &str, start: usize) -> usize {
 #[cfg(test)]
 mod tests {
     use crate::{
-        CompilePlan, CompileRuntimeBindings, CompileScriptRegion, CompileTarget,
-        CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode, MacroFlavor,
-        NormalizedSegment, RuntimeRequirements, TransformedPrograms, common::Span,
+        CommonCompilePlan, CompileTarget, CompileTargetContext,
+        CompileTargetOutputKind, CompileTranslationMode, MacroFlavor, NormalizedSegment,
+        RuntimeRequirements, TransformedPrograms, common::Span,
+        compile::adapters::{
+            SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
+        },
     };
 
-    use super::finish_compile;
+    use super::finish_compile_for_plan;
 
     #[test]
     fn finishes_expression_replacements_with_indented_maps() {
-        let plan = CompilePlan {
-            framework: "svelte".to_string(),
-            source_name: "Component.svelte".to_string(),
-            synthetic_name: "Component.svelte?compile".to_string(),
-            synthetic_source: String::new(),
-            synthetic_lang: "ts".to_string(),
-            declaration_ids: vec!["__lf_0".to_string()],
-            targets: vec![CompileTarget {
-                declaration_id: "__lf_0".to_string(),
-                original_span: Span::new(7, 21),
-                normalized_span: Span::new(8, 21),
-                source_map_anchor: None,
-                local_name: "t".to_string(),
-                imported_name: "t".to_string(),
-                flavor: MacroFlavor::Reactive,
-                context: CompileTargetContext::Template,
-                output_kind: CompileTargetOutputKind::Expression,
-                translation_mode: CompileTranslationMode::Context,
-                normalized_segments: vec![NormalizedSegment {
-                    original_start: 8,
-                    generated_start: 0,
-                    len: 13,
+        let plan = SvelteCompilePlan {
+            common: CommonCompilePlan {
+                source_name: "Component.svelte".to_string(),
+                synthetic_name: "Component.svelte?compile".to_string(),
+                synthetic_source: String::new(),
+                synthetic_lang: "ts".to_string(),
+                declaration_ids: vec!["__lf_0".to_string()],
+                targets: vec![CompileTarget {
+                    declaration_id: "__lf_0".to_string(),
+                    original_span: Span::new(7, 21),
+                    normalized_span: Span::new(8, 21),
+                    source_map_anchor: None,
+                    local_name: "t".to_string(),
+                    imported_name: "t".to_string(),
+                    flavor: MacroFlavor::Reactive,
+                    context: CompileTargetContext::Template,
+                    output_kind: CompileTargetOutputKind::Expression,
+                    translation_mode: CompileTranslationMode::Context,
+                    normalized_segments: vec![NormalizedSegment {
+                        original_start: 8,
+                        generated_start: 0,
+                        len: 13,
+                    }],
                 }],
-            }],
+                import_removals: vec![],
+            },
             runtime_requirements: RuntimeRequirements {
                 needs_runtime_i18n_binding: true,
                 needs_runtime_trans_component: false,
             },
-            runtime_bindings: Some(CompileRuntimeBindings {
+            runtime_bindings: SvelteCompileRuntimeBindings {
                 create_lingui_accessors: "createLinguiAccessors".to_string(),
                 context: "__l4s_ctx".to_string(),
                 get_i18n: "__l4s_getI18n".to_string(),
                 translate: "__l4s_translate".to_string(),
                 trans_component: "L4sRuntimeTrans".to_string(),
-            }),
-            import_removals: vec![],
-            instance_script: Some(CompileScriptRegion {
+            },
+            instance_script: Some(SvelteCompileScriptRegion {
                 outer_span: Span::new(0, 30),
                 content_span: Span::new(9, 20),
                 lang: "ts".to_string(),
@@ -198,7 +194,8 @@ mod tests {
             ..TransformedPrograms::default()
         };
 
-        let finished = finish_compile(&plan, source, &transformed).expect("finish succeeds");
+        let finished =
+            finish_compile_for_plan(&plan, source, &transformed).expect("finish succeeds");
 
         assert!(finished.replacements.len() >= 2);
         assert!(
