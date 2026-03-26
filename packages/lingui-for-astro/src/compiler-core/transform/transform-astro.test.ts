@@ -13,8 +13,19 @@ function compact(value: string): string {
   return value.replaceAll(/\s+/g, " ").trim();
 }
 
+async function expectTransformed(
+  source: string,
+  options: { filename?: string } = {},
+) {
+  const result = await transformAstro(source, {
+    filename: options.filename ?? "/virtual/App.astro",
+  });
+  expect(result).not.toBeNull();
+  return result!;
+}
+
 describe("transformAstro", () => {
-  test("rewrites frontmatter and template expressions through request-scoped i18n", () => {
+  test("rewrites frontmatter and template expressions through request-scoped i18n", async () => {
     const source = dedent`
       ---
       import { t } from "lingui-for-astro/macro";
@@ -27,7 +38,7 @@ describe("transformAstro", () => {
       <span>{label}</span>
     `;
 
-    const result = transformAstro(source, {
+    const result = await expectTransformed(source, {
       filename: "/virtual/Page.astro",
     });
     const code = compact(result.code);
@@ -48,7 +59,7 @@ describe("transformAstro", () => {
     expect(code).toContain('message: "Hello {name}"');
   });
 
-  test("lowers component macros to the RuntimeTrans Astro component", () => {
+  test("lowers component macros to the RuntimeTrans Astro component", async () => {
     const source = dedent`
       ---
       import { Trans as LocalTrans } from "lingui-for-astro/macro";
@@ -59,7 +70,7 @@ describe("transformAstro", () => {
       <LocalTrans id="demo.docs">Read the <a href="/docs">docs</a>, {name}.</LocalTrans>
     `;
 
-    const result = transformAstro(source, {
+    const result = await expectTransformed(source, {
       filename: "/virtual/Page.astro",
     });
     const code = compact(result.code);
@@ -75,7 +86,7 @@ describe("transformAstro", () => {
     expect(code).toContain('href: "/docs"');
   });
 
-  test("supports exact-number ICU branches in core and component macros", () => {
+  test("supports exact-number ICU branches in core and component macros", async () => {
     const source = dedent`
       ---
       import {
@@ -113,7 +124,7 @@ describe("transformAstro", () => {
       />
     `;
 
-    const result = transformAstro(source, {
+    const result = await expectTransformed(source, {
       filename: "/virtual/Page.astro",
     });
     const code = compact(result.code);
@@ -124,7 +135,7 @@ describe("transformAstro", () => {
     expect(code).toContain("=2 {take the scenic route}");
   });
 
-  test("handles deeply nested core and component macro shapes", () => {
+  test("handles deeply nested core and component macro shapes", async () => {
     const source = dedent`
       ---
       import {
@@ -234,7 +245,7 @@ describe("transformAstro", () => {
       />
     `;
 
-    const result = transformAstro(source, {
+    const result = await expectTransformed(source, {
       filename: "/virtual/Page.astro",
     });
     const code = compact(result.code);
@@ -252,7 +263,7 @@ describe("transformAstro", () => {
     expect(code).toContain("component many later admin");
   });
 
-  test("leaves same-name non-macro components untouched", () => {
+  test("leaves same-name non-macro components untouched", async () => {
     const source = dedent`
       ---
       import Trans from "./Trans.astro";
@@ -261,16 +272,16 @@ describe("transformAstro", () => {
       <Trans id="demo.docs">Read the docs.</Trans>
     `;
 
-    const result = transformAstro(source, {
+    const result = await transformAstro(source, {
       filename: "/virtual/Page.astro",
     });
 
-    expect(result.code.trim()).toBe(source.trim());
+    expect(result).toBeNull();
   });
 });
 
 describe("transformAstro edit discipline", () => {
-  test("rewrites only macro-bearing regions and preserves untouched frontmatter and markup", () => {
+  test("rewrites only macro-bearing regions and preserves untouched frontmatter and markup", async () => {
     const source = dedent`
       ---
       import { t, Trans } from "lingui-for-astro/macro";
@@ -289,7 +300,7 @@ describe("transformAstro edit discipline", () => {
       </section>
     `;
 
-    const result = transformAstro(source, {
+    const result = await expectTransformed(source, {
       filename: "/virtual/Page.astro",
     });
 
@@ -383,8 +394,8 @@ describe("transformAstro source map discipline", () => {
     },
   ];
 
-  test("keeps file-level metadata and maps transformed and preserved ranges back to the original astro file", () => {
-    const result = transformAstro(source, {
+  test("keeps file-level metadata and maps transformed and preserved ranges back to the original astro file", async () => {
+    const result = await expectTransformed(source, {
       filename: "/virtual/Page.astro",
     });
     const map = result.map!;

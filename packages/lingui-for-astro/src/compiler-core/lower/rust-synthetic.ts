@@ -1,11 +1,6 @@
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import {
-  buildAstroCompilePlanWithOptions,
-  finishAstroCompileWithOptions,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-
 import { transformProgram } from "./babel-transform.ts";
 
 type CommonCompilePlan = {
@@ -43,12 +38,15 @@ type TransformedPrograms = {
   context_source_map_json?: string | null;
 };
 
-export function lowerAstroWithRustSynthetic(
+export async function lowerAstroWithRustSynthetic(
   source: string,
   filename: string,
   linguiConfig: LinguiConfigNormalized,
-): { code: string; map: EncodedSourceMap | null } | null {
-  const compilePlan = buildCompilePlan(source, filename);
+): Promise<{ code: string; map: EncodedSourceMap | null } | null> {
+  const { finishAstroCompileWithOptions } =
+    await import("@lingui-for/internal-lingui-analyzer-wasm");
+
+  const compilePlan = await buildCompilePlan(source, filename);
   if (compilePlan.common.declaration_ids.length === 0) {
     return null;
   }
@@ -72,11 +70,19 @@ export function lowerAstroWithRustSynthetic(
 
   return {
     code: finished.code,
-    map: JSON.parse(finished.source_map_json ?? "null") as EncodedSourceMap,
+    map: JSON.parse(
+      finished.source_map_json ?? "null",
+    ) as EncodedSourceMap | null,
   };
 }
 
-function buildCompilePlan(source: string, filename: string): AstroCompilePlan {
+async function buildCompilePlan(
+  source: string,
+  filename: string,
+): Promise<AstroCompilePlan> {
+  const { buildAstroCompilePlanWithOptions } =
+    await import("@lingui-for/internal-lingui-analyzer-wasm");
+
   return buildAstroCompilePlanWithOptions({
     source,
     source_name: filename,

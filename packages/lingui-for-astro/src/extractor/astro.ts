@@ -1,6 +1,5 @@
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
-import { buildSyntheticModuleWithOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { stripQuery } from "@lingui-for/internal-shared-common";
 import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
 
@@ -31,10 +30,13 @@ function normalizeExtractionSourceMap(
   };
 }
 
-function buildSyntheticExtractionUnit(
+async function buildSyntheticExtractionUnit(
   filename: string,
   source: string,
-): SyntheticExtractionUnit {
+): Promise<SyntheticExtractionUnit> {
+  const { buildSyntheticModuleWithOptions } =
+    await import("@lingui-for/internal-lingui-analyzer-wasm");
+
   return buildSyntheticModuleWithOptions({
     framework: "astro",
     source,
@@ -56,7 +58,7 @@ export const astroExtractor: ExtractorType = {
   },
   async extract(filename, source, onMessageExtracted, ctx) {
     const extractorCtx = createExtractorContext(ctx);
-    const synthetic = buildSyntheticExtractionUnit(filename, source);
+    const synthetic = await buildSyntheticExtractionUnit(filename, source);
     const transformed = transformProgram(synthetic.source, {
       translationMode: "extract",
       filename: filename.replace(/\.astro$/, ".synthetic.tsx"),

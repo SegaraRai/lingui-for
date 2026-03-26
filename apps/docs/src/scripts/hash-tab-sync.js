@@ -46,7 +46,7 @@
               "starlight-synced-tabs__" + syncKey,
               (newTab.textContent || "").trim(),
             );
-          } catch (_) {}
+          } catch {}
         }
       });
   }

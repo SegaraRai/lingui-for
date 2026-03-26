@@ -78,7 +78,7 @@ export function macroWorkbenchPlugin({
       );
       const ids = messages.map((message) => message.id);
       const sourceSnippet = extractSnippet(source);
-      const transformed = transformSvelte(source, {
+      const transformed = await transformSvelte(source, {
         filename: demoFile,
         linguiConfig: normalizedLinguiConfig,
       });

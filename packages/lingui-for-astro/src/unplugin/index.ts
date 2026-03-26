@@ -55,27 +55,26 @@ export const unpluginFactory: UnpluginFactory<
     }
 
     const filename = stripQuery(id);
-    if (filename !== id) {
+    if (
+      filename !== id ||
+      !filename.endsWith(".astro") ||
+      !mayContainLinguiMacroImport(code)
+    ) {
       return null;
     }
 
-    if (filename.endsWith(".astro")) {
-      if (!mayContainLinguiMacroImport(code)) {
-        return null;
-      }
-
-      const transformed = transformAstro(code, {
-        filename,
-        linguiConfig: options?.linguiConfig,
-      });
-
-      return {
-        code: transformed.code,
-        map: transformed.map ? toUnpluginSourceMap(transformed.map) : undefined,
-      };
+    const transformed = await transformAstro(code, {
+      filename,
+      linguiConfig: options?.linguiConfig,
+    });
+    if (transformed == null) {
+      return null;
     }
 
-    return null;
+    return {
+      code: transformed.code,
+      map: transformed.map && toUnpluginSourceMap(transformed.map),
+    };
   },
   vite: {
     configResolved(config) {

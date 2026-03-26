@@ -19,7 +19,7 @@ export const unpluginFactory: UnpluginFactory<
 > = (options) => ({
   name: "lingui-for-svelte",
   enforce: "pre",
-  transform(code, id) {
+  async transform(code, id) {
     if (id.startsWith("\0")) {
       return null;
     }
@@ -34,7 +34,7 @@ export const unpluginFactory: UnpluginFactory<
         return null;
       }
 
-      const transformed = transformSvelte(code, {
+      const transformed = await transformSvelte(code, {
         filename,
         linguiConfig: options?.linguiConfig,
       });

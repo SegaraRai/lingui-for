@@ -11,7 +11,6 @@ const linguiConfig: LinguiConfigNormalized = {
   compileNamespace: "cjs",
   extractorParserOptions: {},
   fallbackLocales: {},
-  format: undefined,
   locales: [],
   macro: {
     corePackage: ["@lingui/core/macro", "@lingui/macro"],
@@ -147,7 +146,10 @@ function normalizeOfficialMessageOrigin(
 
   return {
     ...message,
-    origin: [origin, message.origin[1], message.origin[2]],
+    origin:
+      message.origin[2] != null
+        ? [origin, message.origin[1], message.origin[2]]
+        : [origin, message.origin[1]],
   };
 }
 

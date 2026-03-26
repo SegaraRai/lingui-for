@@ -3,11 +3,11 @@ import { normalizeLinguiConfig } from "../shared/config.ts";
 import type { LinguiSvelteTransformOptions } from "../shared/types.ts";
 import type { SvelteTransformResult } from "./types.ts";
 
-export function transformSvelte(
+export async function transformSvelte(
   source: string,
   options: LinguiSvelteTransformOptions,
-): SvelteTransformResult | null {
-  return lowerSvelteWithRustSynthetic(
+): Promise<SvelteTransformResult | null> {
+  return await lowerSvelteWithRustSynthetic(
     source,
     options.filename,
     normalizeLinguiConfig(options.linguiConfig),
