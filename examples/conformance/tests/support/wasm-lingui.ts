@@ -10,6 +10,7 @@ import {
   buildSyntheticModuleWithOptions,
   reinsertTransformedDeclarations,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
+import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
   babelTraverse,
   getParserPlugins,
@@ -58,6 +59,8 @@ const LINGUI_CONFIG = {
 const EXTRACTOR_CONTEXT = {
   linguiConfig: LINGUI_CONFIG,
 } as unknown as ExtractorCtx;
+
+await initWasmOnce();
 
 export function buildSyntheticModuleForTest(
   framework: "astro" | "svelte",
