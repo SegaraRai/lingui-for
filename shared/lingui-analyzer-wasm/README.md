@@ -1,4 +1,4 @@
-# lingui-analyzer-wasm
+# @lingui-for/internal-lingui-analyzer-wasm
 
 Internal workspace package for the built WebAssembly bundle of `lingui-analyzer`.
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatRichTextTranslation } from "lingui-for-shared/runtime";
+  import { formatRichTextTranslation } from "@lingui-for/internal-shared-runtime";
 
   import { getLinguiContext } from "../core/context.ts";
   import RenderTransNodes from "./RenderTransNodes.svelte";

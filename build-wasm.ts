@@ -15,7 +15,7 @@ function main(): void {
   const targets: WasmTarget[] = [
     {
       crateDir: join(rootDir, "crates", "lingui-analyzer"),
-      outputDir: "../../packages/lingui-analyzer-wasm/dist",
+      outputDir: "../../shared/lingui-analyzer-wasm/dist",
       outputName: "index",
       expectedOutput: join(
         rootDir,

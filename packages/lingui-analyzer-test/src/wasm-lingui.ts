@@ -17,7 +17,7 @@ import {
   buildSyntheticModuleWithOptions,
   initSync,
   reinsertTransformedDeclarations,
-} from "../../lingui-analyzer-wasm/dist/index.js";
+} from "../../../shared/lingui-analyzer-wasm/dist/index.js";
 
 const require = createRequire(import.meta.url);
 const linguiMacroPlugin = require("@lingui/babel-plugin-lingui-macro") as
@@ -171,7 +171,10 @@ function ensureWasmInitialized(): void {
   }
 
   const wasmPath = fileURLToPath(
-    new URL("../../lingui-analyzer-wasm/dist/index_bg.wasm", import.meta.url),
+    new URL(
+      "../../../shared/lingui-analyzer-wasm/dist/index_bg.wasm",
+      import.meta.url,
+    ),
   );
   initSync({ module: readFileSync(wasmPath) });
   wasmInitialized = true;

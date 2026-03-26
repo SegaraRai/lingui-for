@@ -8,7 +8,7 @@ import {
   buildSvelteCompilePlanWithOptions,
   finishSvelteCompileWithOptions,
   initSync,
-} from "lingui-analyzer-wasm";
+} from "@lingui-for/internal-lingui-analyzer-wasm";
 
 import type { SvelteTransformResult } from "../transform/types.ts";
 import { transformProgram } from "./babel-transform.ts";

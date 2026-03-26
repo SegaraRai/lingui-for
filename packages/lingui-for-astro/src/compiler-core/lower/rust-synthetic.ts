@@ -8,7 +8,7 @@ import {
   buildAstroCompilePlanWithOptions,
   finishAstroCompileWithOptions,
   initSync,
-} from "lingui-analyzer-wasm";
+} from "@lingui-for/internal-lingui-analyzer-wasm";
 
 import { transformProgram } from "./babel-transform.ts";
 
@@ -97,7 +97,7 @@ function ensureWasmInitialized(): void {
   }
 
   const wasmPath = fileURLToPath(
-    import.meta.resolve("lingui-analyzer-wasm/wasm"),
+    import.meta.resolve("@lingui-for/internal-lingui-analyzer-wasm/wasm"),
   );
   initSync({ module: readFileSync(wasmPath) });
   wasmInitialized = true;

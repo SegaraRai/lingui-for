@@ -49,7 +49,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: wasm-package
-          path: packages/lingui-analyzer-wasm/dist/
+          path: shared/lingui-analyzer-wasm/dist/
           if-no-files-found: error
           retention-days: 1
 
@@ -73,7 +73,7 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: wasm-package
-          path: packages/lingui-analyzer-wasm/dist
+          path: shared/lingui-analyzer-wasm/dist
 
       - uses: voidzero-dev/setup-vp@v1
         with:
