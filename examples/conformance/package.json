@@ -25,7 +25,6 @@
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
     "react": "^19.2.4",
-    "rolldown-plugin-wasm": "^0.2.1",
     "svelte": "^5.55.0",
     "typescript": "catalog:",
     "vite": "catalog:",

@@ -9,6 +9,7 @@
     "dist/index.d.ts"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,9 +19,12 @@
       "default": "./dist/index.js"
     },
     "./loader": {
-      "vitest": "./loader/index-vite.ts",
       "types": "./loader/index.ts",
       "default": "./loader/index.ts"
+    },
+    "./loader-vite": {
+      "types": "./loader/index-vite.ts",
+      "default": "./loader/index-vite.ts"
     },
     "./wasm": "./dist/index_bg.wasm",
     "./package.json": "./package.json"

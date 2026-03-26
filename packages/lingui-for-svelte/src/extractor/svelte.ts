@@ -1,5 +1,7 @@
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
+import { buildSyntheticModuleWithOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
 
 import {
@@ -27,9 +29,6 @@ async function buildSyntheticExtractionUnit(
   filename: string,
   source: string,
 ): Promise<SyntheticExtractionUnit> {
-  const { buildSyntheticModuleWithOptions } =
-    await import("@lingui-for/internal-lingui-analyzer-wasm");
-
   return buildSyntheticModuleWithOptions({
     framework: "svelte",
     source,
@@ -50,6 +49,8 @@ export const svelteExtractor: ExtractorType = {
     return filename.endsWith(".svelte");
   },
   async extract(filename, source, onMessageExtracted, ctx) {
+    await initWasmOnce();
+
     const extractorCtx = createExtractorContext(ctx, {
       filename,
       linguiConfig: ctx?.linguiConfig,

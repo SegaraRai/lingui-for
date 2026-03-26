@@ -1,11 +1,13 @@
-import { defineProject } from "vite-plus";
+import { defineConfig } from "vite-plus";
 
-export default defineProject({
+export default defineConfig({
   resolve: {
     alias: {
       "@lingui-for/internal-lingui-analyzer-wasm/loader":
         "@lingui-for/internal-lingui-analyzer-wasm/loader-vite",
     },
   },
-  test: {},
+  test: {
+    projects: ["packages/*", "apps/*", "examples/*"],
+  },
 });

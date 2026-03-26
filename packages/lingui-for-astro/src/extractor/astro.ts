@@ -1,5 +1,7 @@
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
+import { buildSyntheticModuleWithOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import { stripQuery } from "@lingui-for/internal-shared-common";
 import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
 
@@ -34,9 +36,6 @@ async function buildSyntheticExtractionUnit(
   filename: string,
   source: string,
 ): Promise<SyntheticExtractionUnit> {
-  const { buildSyntheticModuleWithOptions } =
-    await import("@lingui-for/internal-lingui-analyzer-wasm");
-
   return buildSyntheticModuleWithOptions({
     framework: "astro",
     source,
@@ -57,6 +56,8 @@ export const astroExtractor: ExtractorType = {
     return filename.endsWith(".astro");
   },
   async extract(filename, source, onMessageExtracted, ctx) {
+    await initWasmOnce();
+
     const extractorCtx = createExtractorContext(ctx);
     const synthetic = await buildSyntheticExtractionUnit(filename, source);
     const transformed = transformProgram(synthetic.source, {

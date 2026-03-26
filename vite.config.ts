@@ -29,12 +29,6 @@ export default defineConfig({
       "pnpm-lock.yaml",
     ],
   },
-  test: {
-    projects: ["packages/*", "apps/*", "examples/*"],
-  },
-  resolve: {
-    externalConditions: ["node", "vitest"],
-  },
   run: {
     tasks: {
       build: {

@@ -1,6 +1,12 @@
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
+import {
+  buildSvelteCompilePlanWithOptions,
+  finishSvelteCompileWithOptions,
+} from "@lingui-for/internal-lingui-analyzer-wasm";
+import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
+
 import type { SvelteTransformResult } from "../transform/types.ts";
 import { transformProgram } from "./babel-transform.ts";
 
@@ -58,8 +64,7 @@ export async function lowerSvelteWithRustSynthetic(
   filename: string,
   linguiConfig: LinguiConfigNormalized,
 ): Promise<SvelteRustLoweredResult | null> {
-  const { finishSvelteCompileWithOptions } =
-    await import("@lingui-for/internal-lingui-analyzer-wasm");
+  await initWasmOnce();
 
   const compilePlan = await buildCompilePlan(source, filename);
   if (compilePlan.common.declaration_ids.length === 0) {
@@ -121,9 +126,6 @@ async function buildCompilePlan(
   source: string,
   filename: string,
 ): Promise<SvelteCompilePlan> {
-  const { buildSvelteCompilePlanWithOptions } =
-    await import("@lingui-for/internal-lingui-analyzer-wasm");
-
   const plan = buildSvelteCompilePlanWithOptions({
     source,
     source_name: filename,

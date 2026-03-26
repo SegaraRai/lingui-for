@@ -1,8 +1,6 @@
-import { wasm } from "rolldown-plugin-wasm";
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  plugins: [wasm()],
   run: {
     tasks: {
       check: {

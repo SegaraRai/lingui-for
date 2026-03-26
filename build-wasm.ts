@@ -64,7 +64,7 @@ function buildWasm(
     [
       "build",
       "--target",
-      "bundler",
+      "web",
       ...(isDebug ? ["--dev", "--no-opt"] : ["--release"]),
       "--out-dir",
       target.outputDir,

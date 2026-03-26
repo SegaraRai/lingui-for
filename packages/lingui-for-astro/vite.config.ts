@@ -4,7 +4,6 @@ import { defineConfig } from "vite-plus";
 import markupImport from "unplugin-markup-import/rolldown";
 
 export default defineConfig({
-  plugins: [wasm()],
   pack: {
     clean: true,
     dts: {

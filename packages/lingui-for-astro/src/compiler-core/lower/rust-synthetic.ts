@@ -1,6 +1,12 @@
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
+import {
+  buildAstroCompilePlanWithOptions,
+  finishAstroCompileWithOptions,
+} from "@lingui-for/internal-lingui-analyzer-wasm";
+import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
+
 import { transformProgram } from "./babel-transform.ts";
 
 type CommonCompilePlan = {
@@ -43,8 +49,7 @@ export async function lowerAstroWithRustSynthetic(
   filename: string,
   linguiConfig: LinguiConfigNormalized,
 ): Promise<{ code: string; map: EncodedSourceMap | null } | null> {
-  const { finishAstroCompileWithOptions } =
-    await import("@lingui-for/internal-lingui-analyzer-wasm");
+  await initWasmOnce();
 
   const compilePlan = await buildCompilePlan(source, filename);
   if (compilePlan.common.declaration_ids.length === 0) {
@@ -80,9 +85,6 @@ async function buildCompilePlan(
   source: string,
   filename: string,
 ): Promise<AstroCompilePlan> {
-  const { buildAstroCompilePlanWithOptions } =
-    await import("@lingui-for/internal-lingui-analyzer-wasm");
-
   return buildAstroCompilePlanWithOptions({
     source,
     source_name: filename,
