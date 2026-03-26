@@ -178,9 +178,7 @@ pub(crate) fn analyze_astro_compile(
             analysis
                 .frontmatter
                 .as_ref()
-                .map(|region| {
-                    &source[region.inner_span.start..region.inner_span.end]
-                })
+                .map(|region| &source[region.inner_span.start..region.inner_span.end])
                 .unwrap_or(""),
         )?,
         frontmatter,
@@ -199,9 +197,13 @@ pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> Runtime
 fn create_runtime_bindings(
     frontmatter_source: &str,
 ) -> Result<AstroCompileRuntimeBindings, AnalyzerError> {
-    let declared_names =
-        collect_top_level_declared_names_in_javascript(frontmatter_source, JsLikeLanguage::TypeScript)?;
-    let mut used = declared_names.into_iter().collect::<std::collections::BTreeSet<_>>();
+    let declared_names = collect_top_level_declared_names_in_javascript(
+        frontmatter_source,
+        JsLikeLanguage::TypeScript,
+    )?;
+    let mut used = declared_names
+        .into_iter()
+        .collect::<std::collections::BTreeSet<_>>();
 
     Ok(AstroCompileRuntimeBindings {
         create_i18n: allocate_unique_binding_name(&mut used, ASTRO_BINDING_CREATE_I18N),
@@ -333,10 +335,7 @@ fn compute_prelude_insert_point(source: &str, content_start: usize) -> usize {
     insert
 }
 
-fn compute_trailing_whitespace_range(
-    source: &str,
-    region: &EmbeddedScriptRegion,
-) -> Option<Span> {
+fn compute_trailing_whitespace_range(source: &str, region: &EmbeddedScriptRegion) -> Option<Span> {
     let outer_source = &source[region.outer_span.start..region.outer_span.end];
     let closing_fence_offset = outer_source.rfind("---")?;
     let closing_fence_start = region.outer_span.start + closing_fence_offset;
@@ -352,24 +351,26 @@ fn compute_trailing_whitespace_range(
     }
 }
 
-fn has_remaining_content_after_import_removal(
-    source: &str,
-    region: &EmbeddedScriptRegion,
-) -> bool {
+fn has_remaining_content_after_import_removal(source: &str, region: &EmbeddedScriptRegion) -> bool {
     let content = &source[region.inner_span.start..region.inner_span.end];
     let ranges = collect_macro_import_statement_spans(source, region).unwrap_or_default();
     let relative_ranges = ranges
         .into_iter()
-        .map(|span| Span::new(span.start - region.inner_span.start, span.end - region.inner_span.start))
+        .map(|span| {
+            Span::new(
+                span.start - region.inner_span.start,
+                span.end - region.inner_span.start,
+            )
+        })
         .collect::<Vec<_>>();
     let mut cursor = 0usize;
     for range in relative_ranges {
-        if content[cursor..range.start].trim().len() > 0 {
+        if !content[cursor..range.start].trim().is_empty() {
             return true;
         }
         cursor = range.end;
     }
-    content[cursor..].trim().len() > 0
+    !content[cursor..].trim().is_empty()
 }
 
 fn collect_macro_import_statement_spans(
@@ -389,7 +390,8 @@ fn collect_macro_import_statement_spans(
         let Some(source_node) = child.child_by_field_name("source") else {
             continue;
         };
-        let module_specifier = &frontmatter_source[source_node.start_byte() + 1..source_node.end_byte() - 1];
+        let module_specifier =
+            &frontmatter_source[source_node.start_byte() + 1..source_node.end_byte() - 1];
         if module_specifier != "lingui-for-astro/macro"
             && module_specifier != "@lingui/macro"
             && module_specifier != "@lingui/core/macro"
