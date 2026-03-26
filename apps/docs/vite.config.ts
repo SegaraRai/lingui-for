@@ -15,6 +15,8 @@ export default defineConfig({
           { auto: true },
           "!**/.vite-temp/**",
           "!**/.vite/deps/_metadata.json",
+          "!.astro/**",
+          "!dist/**",
         ],
       },
       dev: {
