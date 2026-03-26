@@ -1,12 +1,7 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-
-import {
-  buildSyntheticModuleWithOptions,
-  initSync,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+
+import { buildSyntheticModuleWithOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
 
 import {
   normalizeLinguiConfig,
@@ -19,8 +14,6 @@ type SyntheticExtractionUnit = {
   source_map_json?: string | null;
 };
 
-let wasmInitialized = false;
-
 function createExtractorContext(
   ctx: ExtractorCtx | undefined,
   options?: LinguiSvelteTransformOptions,
@@ -31,23 +24,10 @@ function createExtractorContext(
   return ctx ? { ...ctx, linguiConfig } : { linguiConfig };
 }
 
-function ensureWasmInitialized(): void {
-  if (wasmInitialized) {
-    return;
-  }
-
-  const wasmPath = fileURLToPath(
-    import.meta.resolve("@lingui-for/internal-lingui-analyzer-wasm/wasm"),
-  );
-  initSync({ module: readFileSync(wasmPath) });
-  wasmInitialized = true;
-}
-
 function buildSyntheticExtractionUnit(
   filename: string,
   source: string,
 ): SyntheticExtractionUnit {
-  ensureWasmInitialized();
   return buildSyntheticModuleWithOptions({
     framework: "svelte",
     source,

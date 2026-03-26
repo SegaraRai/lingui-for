@@ -1,36 +1,25 @@
-import { readFileSync } from "node:fs";
-import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
-
 import { transformSync } from "@babel/core";
-import generateModule from "@babel/generator";
-import traverseModule, { type NodePath } from "@babel/traverse";
+import { generate } from "@babel/generator";
+import { type NodePath } from "@babel/traverse";
 import type { File, VariableDeclarator } from "@babel/types";
-import { extractFromFileWithBabel } from "@lingui/cli/api";
-import type {
-  ExtractedMessage,
-  ExtractorCtx,
-  LinguiConfigNormalized,
-} from "@lingui/conf";
+import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
+import type { ExtractedMessage, ExtractorCtx } from "@lingui/conf";
+
 import {
   buildSyntheticModule,
   buildSyntheticModuleWithOptions,
-  initSync,
   reinsertTransformedDeclarations,
-} from "../../../shared/lingui-analyzer-wasm/dist/index.js";
-
-const require = createRequire(import.meta.url);
-const linguiMacroPlugin = require("@lingui/babel-plugin-lingui-macro") as
-  | typeof import("@lingui/babel-plugin-lingui-macro")
-  | { default: typeof import("@lingui/babel-plugin-lingui-macro") };
-const linguiMacroPluginFactory =
-  "default" in linguiMacroPlugin
-    ? linguiMacroPlugin.default
-    : linguiMacroPlugin;
-const generate = generateModule as typeof import("@babel/generator").default;
-const traverse = traverseModule as typeof import("@babel/traverse").default;
-let wasmInitialized = false;
-const linguiConfig = createLinguiConfig();
+} from "@lingui-for/internal-lingui-analyzer-wasm";
+import {
+  babelTraverse,
+  getParserPlugins,
+  LINGUI_CORE_MACRO_PACKAGE,
+  LINGUI_CORE_PACKAGE,
+  LINGUI_I18N_EXPORT,
+  LINGUI_MACRO_PACKAGE,
+  LINGUI_REACT_MACRO_PACKAGE,
+  runBabelExtractionUnits,
+} from "@lingui-for/internal-shared-compile";
 
 export type SyntheticModule = {
   source: string;
@@ -52,6 +41,24 @@ export type ReinsertedModule = {
   source_map_json?: string | null;
 };
 
+const SYNTHETIC_MODULE_PARSER_PLUGINS = getParserPlugins({ typescript: true });
+
+const LINGUI_CONFIG = {
+  macro: {
+    corePackage: [LINGUI_CORE_MACRO_PACKAGE, LINGUI_MACRO_PACKAGE],
+    jsxPackage: [LINGUI_REACT_MACRO_PACKAGE, LINGUI_MACRO_PACKAGE],
+  },
+  runtimeConfigModule: {
+    i18n: [LINGUI_CORE_PACKAGE, LINGUI_I18N_EXPORT],
+    Trans: ["@lingui/react", "Trans"],
+  },
+  extractorParserOptions: {},
+} as const;
+
+const EXTRACTOR_CONTEXT = {
+  linguiConfig: LINGUI_CONFIG,
+} as unknown as ExtractorCtx;
+
 export function buildSyntheticModuleForTest(
   framework: "astro" | "svelte",
   source: string,
@@ -60,10 +67,10 @@ export function buildSyntheticModuleForTest(
     syntheticName?: string;
   },
 ): SyntheticModule {
-  ensureWasmInitialized();
   if (!options?.sourceName && !options?.syntheticName) {
     return buildSyntheticModule(framework, source) as SyntheticModule;
   }
+
   return buildSyntheticModuleWithOptions({
     framework,
     source,
@@ -81,13 +88,13 @@ export function transformSyntheticModule(
     configFile: false,
     sourceType: "module",
     parserOpts: {
-      plugins: ["typescript", "jsx"],
+      plugins: SYNTHETIC_MODULE_PARSER_PLUGINS,
     },
     plugins: [
       [
-        linguiMacroPluginFactory,
+        linguiMacroPlugin,
         {
-          linguiConfig,
+          linguiConfig: LINGUI_CONFIG,
           stripMessageField: false,
         },
       ],
@@ -115,34 +122,19 @@ export async function extractMessagesFromSyntheticModule(
   synthetic: SyntheticModule,
 ): Promise<ExtractedMessage[]> {
   const extracted: ExtractedMessage[] = [];
-  const sourceMaps = synthetic.source_map_json
-    ? JSON.parse(synthetic.source_map_json)
-    : undefined;
 
-  await extractFromFileWithBabel(
+  await runBabelExtractionUnits(
     filename,
-    synthetic.source,
+    [
+      {
+        code: synthetic.source,
+        map: parseSourceMap(synthetic.source_map_json),
+      },
+    ],
     (message) => {
       extracted.push(message);
     },
-    sourceMaps
-      ? {
-          ...createExtractorContext(),
-          sourceMaps,
-        }
-      : createExtractorContext(),
-    {
-      plugins: [
-        "importAttributes",
-        "explicitResourceManagement",
-        "decoratorAutoAccessors",
-        "deferredImportEvaluation",
-        "typescript",
-        "jsx",
-        "decorators",
-      ],
-    },
-    !sourceMaps,
+    EXTRACTOR_CONTEXT,
   );
 
   return extracted;
@@ -156,7 +148,6 @@ export function reinsertTransformedModule(
     sourceName?: string;
   },
 ): ReinsertedModule {
-  ensureWasmInitialized();
   return reinsertTransformedDeclarations({
     original_source: originalSource,
     source_name: options?.sourceName,
@@ -165,39 +156,8 @@ export function reinsertTransformedModule(
   }) as ReinsertedModule;
 }
 
-function ensureWasmInitialized(): void {
-  if (wasmInitialized) {
-    return;
-  }
-
-  const wasmPath = fileURLToPath(
-    new URL(
-      "../../../shared/lingui-analyzer-wasm/dist/index_bg.wasm",
-      import.meta.url,
-    ),
-  );
-  initSync({ module: readFileSync(wasmPath) });
-  wasmInitialized = true;
-}
-
-function createExtractorContext(): ExtractorCtx {
-  return {
-    linguiConfig,
-  } as ExtractorCtx;
-}
-
-function createLinguiConfig(): LinguiConfigNormalized {
-  return {
-    macro: {
-      corePackage: ["@lingui/core/macro", "@lingui/macro"],
-      jsxPackage: ["@lingui/react/macro", "@lingui/macro"],
-    },
-    runtimeConfigModule: {
-      i18n: ["@lingui/core", "i18n"],
-      Trans: ["@lingui/react", "Trans"],
-    },
-    extractorParserOptions: {},
-  } as unknown as LinguiConfigNormalized;
+function parseSourceMap(sourceMapJson?: string | null) {
+  return sourceMapJson ? JSON.parse(sourceMapJson) : undefined;
 }
 
 function collectDeclarationInitializers(
@@ -205,15 +165,17 @@ function collectDeclarationInitializers(
   declarationIds: readonly string[],
 ): Record<string, string> {
   const found: Record<string, string> = {};
+  const declarationIdSet = new Set(declarationIds);
 
-  traverse(ast, {
+  babelTraverse(ast, {
     VariableDeclarator(path: NodePath<VariableDeclarator>) {
       if (path.node.id.type !== "Identifier" || !path.node.init) {
         return;
       }
-      if (!declarationIds.includes(path.node.id.name)) {
+      if (!declarationIdSet.has(path.node.id.name)) {
         return;
       }
+
       found[path.node.id.name] = generate(path.node.init).code;
     },
   });

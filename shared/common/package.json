@@ -22,8 +22,5 @@
     "@types/node": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
-  },
-  "peerDependencies": {
-    "vite-plus": "catalog:"
   }
 }

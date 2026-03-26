@@ -1,8 +1,10 @@
+import { wasm } from "rolldown-plugin-wasm";
 import { defineConfig } from "vite-plus";
 
 import markupImport from "unplugin-markup-import/rolldown";
 
 export default defineConfig({
+  plugins: [wasm()],
   pack: {
     clean: true,
     dts: {
@@ -28,6 +30,7 @@ export default defineConfig({
       markupImport({
         exclude: ["**/*.test.svelte"],
       }),
+      wasm(),
     ],
     attw: {
       profile: "esm-only",

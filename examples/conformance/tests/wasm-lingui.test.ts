@@ -7,7 +7,7 @@ import {
   extractMessagesFromSyntheticModule,
   reinsertTransformedModule,
   transformSyntheticModule,
-} from "./wasm-lingui.ts";
+} from "./support/wasm-lingui.ts";
 
 describe("lingui-analyzer wasm contract", () => {
   test("connects Svelte source to Lingui transform through Rust wasm", () => {

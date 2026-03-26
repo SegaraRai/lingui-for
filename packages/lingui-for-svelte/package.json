@@ -129,6 +129,7 @@
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
     "dedent": "^1.7.2",
+    "rolldown-plugin-wasm": "^0.2.1",
     "svelte": "^5.55.0",
     "svelte-check": "^4.4.5",
     "typescript": "catalog:",

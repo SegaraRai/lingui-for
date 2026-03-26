@@ -1,12 +1,6 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
-import {
-  buildSyntheticModuleWithOptions,
-  initSync,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
+import { buildSyntheticModuleWithOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { stripQuery } from "@lingui-for/internal-shared-common";
 import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
 
@@ -17,8 +11,6 @@ type SyntheticExtractionUnit = {
   source: string;
   source_map_json?: string | null;
 };
-
-let wasmInitialized = false;
 
 function createExtractorContext(ctx: ExtractorCtx | undefined): ExtractorCtx {
   const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig);
@@ -39,23 +31,10 @@ function normalizeExtractionSourceMap(
   };
 }
 
-function ensureWasmInitialized(): void {
-  if (wasmInitialized) {
-    return;
-  }
-
-  const wasmPath = fileURLToPath(
-    import.meta.resolve("@lingui-for/internal-lingui-analyzer-wasm/wasm"),
-  );
-  initSync({ module: readFileSync(wasmPath) });
-  wasmInitialized = true;
-}
-
 function buildSyntheticExtractionUnit(
   filename: string,
   source: string,
 ): SyntheticExtractionUnit {
-  ensureWasmInitialized();
   return buildSyntheticModuleWithOptions({
     framework: "astro",
     source,

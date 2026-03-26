@@ -32,6 +32,9 @@ export default defineConfig({
   test: {
     projects: ["packages/*", "apps/*", "examples/*"],
   },
+  resolve: {
+    externalConditions: ["node", "vitest"],
+  },
   run: {
     tasks: {
       build: {

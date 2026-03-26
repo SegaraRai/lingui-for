@@ -122,10 +122,31 @@ importers:
         version: 0.1.14(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(@voidzero-dev/vite-plus-core@0.1.13(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.2))(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.2)
 
   examples/conformance:
-    dependencies:
+    devDependencies:
       '@babel/core':
         specifier: ^7.29.0
         version: 7.29.0
+      '@babel/generator':
+        specifier: ^7.29.1
+        version: 7.29.1
+      '@babel/traverse':
+        specifier: ^7.29.0
+        version: 7.29.0
+      '@babel/types':
+        specifier: ^7.29.0
+        version: 7.29.0
+      '@jridgewell/trace-mapping':
+        specifier: ^0.3.31
+        version: 0.3.31
+      '@lingui-for/internal-lingui-analyzer-wasm':
+        specifier: workspace:*
+        version: link:../../shared/lingui-analyzer-wasm
+      '@lingui-for/internal-shared-compile':
+        specifier: workspace:*
+        version: link:../../shared/compile
+      '@lingui-for/internal-shared-test-helpers':
+        specifier: workspace:*
+        version: link:../../shared/test-helpers
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
@@ -141,9 +162,24 @@ importers:
       '@lingui/react':
         specifier: ^5.9.3
         version: 5.9.3(@lingui/babel-plugin-lingui-macro@5.9.3(typescript@5.9.3))(react@19.2.4)
+      '@types/babel__core':
+        specifier: ^7.20.5
+        version: 7.20.5
+      '@types/babel__generator':
+        specifier: ^7.27.0
+        version: 7.27.0
+      '@types/babel__traverse':
+        specifier: ^7.28.0
+        version: 7.28.0
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.5.0
       astro:
         specifier: ^6.0.8
         version: 6.0.8(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(jiti@2.6.1)(rollup@4.59.0)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.2)
+      dedent:
+        specifier: ^1.7.2
+        version: 1.7.2
       lingui-for-astro:
         specifier: workspace:*
         version: link:../../packages/lingui-for-astro
@@ -153,19 +189,12 @@ importers:
       react:
         specifier: ^19.2.4
         version: 19.2.4
+      rolldown-plugin-wasm:
+        specifier: ^0.2.1
+        version: 0.2.1(rolldown@1.0.0-rc.10)
       svelte:
         specifier: ^5.55.0
         version: 5.55.0
-    devDependencies:
-      '@types/babel__core':
-        specifier: ^7.20.5
-        version: 7.20.5
-      '@types/node':
-        specifier: 'catalog:'
-        version: 25.5.0
-      dedent:
-        specifier: ^1.7.2
-        version: 1.7.2
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -316,63 +345,6 @@ importers:
         specifier: 'catalog:'
         version: 0.1.14(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(@voidzero-dev/vite-plus-core@0.1.13(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.2))(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.2)
 
-  packages/lingui-analyzer-test:
-    devDependencies:
-      '@babel/core':
-        specifier: ^7.29.0
-        version: 7.29.0
-      '@babel/generator':
-        specifier: ^7.29.1
-        version: 7.29.1
-      '@babel/traverse':
-        specifier: ^7.29.0
-        version: 7.29.0
-      '@babel/types':
-        specifier: ^7.29.0
-        version: 7.29.0
-      '@jridgewell/trace-mapping':
-        specifier: ^0.3.31
-        version: 0.3.31
-      '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
-      '@lingui/cli':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
-      '@lingui/conf':
-        specifier: ^5.9.3
-        version: 5.9.3(typescript@5.9.3)
-      '@lingui/core':
-        specifier: ^5.9.3
-        version: 5.9.3(@lingui/babel-plugin-lingui-macro@5.9.3(typescript@5.9.3))
-      '@lingui/react':
-        specifier: ^5.9.3
-        version: 5.9.3(@lingui/babel-plugin-lingui-macro@5.9.3(typescript@5.9.3))(react@19.2.4)
-      '@types/babel__core':
-        specifier: ^7.20.5
-        version: 7.20.5
-      '@types/babel__generator':
-        specifier: ^7.27.0
-        version: 7.27.0
-      '@types/babel__traverse':
-        specifier: ^7.28.0
-        version: 7.28.0
-      '@types/node':
-        specifier: 'catalog:'
-        version: 25.5.0
-      dedent:
-        specifier: ^1.7.2
-        version: 1.7.2
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-      vite:
-        specifier: npm:@voidzero-dev/vite-plus-core@latest
-        version: '@voidzero-dev/vite-plus-core@0.1.13(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.2)'
-      vite-plus:
-        specifier: 'catalog:'
-        version: 0.1.14(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(@voidzero-dev/vite-plus-core@0.1.13(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.2))(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.2)
-
   packages/lingui-for-astro:
     dependencies:
       '@babel/core':
@@ -463,6 +435,9 @@ importers:
       dedent:
         specifier: ^1.7.2
         version: 1.7.2
+      rolldown-plugin-wasm:
+        specifier: ^0.2.1
+        version: 0.2.1(rolldown@1.0.0-rc.10)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -563,6 +538,9 @@ importers:
       dedent:
         specifier: ^1.7.2
         version: 1.7.2
+      rolldown-plugin-wasm:
+        specifier: ^0.2.1
+        version: 0.2.1(rolldown@1.0.0-rc.10)
       svelte:
         specifier: ^5.55.0
         version: 5.55.0
@@ -731,7 +709,17 @@ importers:
         specifier: 'catalog:'
         version: 0.1.14(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.2))(yaml@2.8.2)
 
-  shared/lingui-analyzer-wasm: {}
+  shared/lingui-analyzer-wasm:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.5.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite-plus:
+        specifier: 'catalog:'
+        version: 0.1.14(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(vite@8.0.1(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.2))(yaml@2.8.2)
 
   shared/runtime:
     devDependencies:
@@ -4866,6 +4854,12 @@ packages:
     resolution: {integrity: sha512-JZkJMZkAGFFPP2YqXZXPbMlMBgsxzE8ILs4lMIX/2o0L9UBw9O/Y3o6wFw/i9YLapcUJWwqbi3kdxIPdC62TIA==}
     deprecated: Rimraf versions prior to v4 are no longer supported
     hasBin: true
+
+  rolldown-plugin-wasm@0.2.1:
+    resolution: {integrity: sha512-nH5M9FAeyZM0SVN5BRiyHprZugeefhtTDe0nkb5lgANvW9s6koJCPjscGwli/06lkCnAyVdICaAS6xaiCJGstA==}
+    engines: {node: '>=20.19.0'}
+    peerDependencies:
+      rolldown: ^1.0.0-beta.58
 
   rolldown@1.0.0-rc.10:
     resolution: {integrity: sha512-q7j6vvarRFmKpgJUT8HCAUljkgzEp4LAhPlJUvQhA5LA1SUL36s5QCysMutErzL3EbNOZOkoziSx9iZC4FddKA==}
@@ -10017,6 +10011,10 @@ snapshots:
   rimraf@3.0.2:
     dependencies:
       glob: 7.2.3
+
+  rolldown-plugin-wasm@0.2.1(rolldown@1.0.0-rc.10):
+    dependencies:
+      rolldown: 1.0.0-rc.10
 
   rolldown@1.0.0-rc.10:
     dependencies:

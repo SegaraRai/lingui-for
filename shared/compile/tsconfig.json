@@ -1,7 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["node"],
+    "types": ["node"]
   },
-  "include": ["src", "../common/src/paths.test.ts", "../common/src/paths.ts"],
+  "include": ["src", "../lingui-analyzer-wasm/wasm"]
 }

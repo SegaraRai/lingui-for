@@ -1,13 +1,9 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
   buildSvelteCompilePlanWithOptions,
   finishSvelteCompileWithOptions,
-  initSync,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 
 import type { SvelteTransformResult } from "../transform/types.ts";
@@ -61,8 +57,6 @@ type TransformedPrograms = {
   context_code?: string;
   context_source_map_json?: string | null;
 };
-
-let wasmInitialized = false;
 
 export function lowerSvelteWithRustSynthetic(
   source: string,
@@ -126,23 +120,10 @@ export function lowerSvelteWithRustSynthetic(
 }
 
 function buildCompilePlan(source: string, filename: string): SvelteCompilePlan {
-  ensureWasmInitialized();
   const plan = buildSvelteCompilePlanWithOptions({
     source,
     source_name: filename,
     synthetic_name: `${filename}?rust-compile.tsx`,
   }) as SvelteCompilePlan;
   return plan;
-}
-
-function ensureWasmInitialized(): void {
-  if (wasmInitialized) {
-    return;
-  }
-
-  const wasmPath = fileURLToPath(
-    import.meta.resolve("@lingui-for/internal-lingui-analyzer-wasm/wasm"),
-  );
-  initSync({ module: readFileSync(wasmPath) });
-  wasmInitialized = true;
 }

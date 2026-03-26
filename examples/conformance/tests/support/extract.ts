@@ -73,8 +73,8 @@ function normalizeExtractedValue(value: unknown): unknown {
 
     const normalized = value
       .replaceAll("\r\n", "\n")
-      .replaceAll(/__l4a_i18n\._/g, "_i18n._")
-      .replaceAll(/__l4s_getI18n\(\)\._/g, "_i18n._")
+      .replaceAll("__l4a_i18n._", "_i18n._")
+      .replaceAll("__l4s_getI18n()._", "_i18n._")
       .replaceAll(/\(\s+\/\*i18n\*\//g, "(/*i18n*/")
       .replaceAll(/[ \t]+\n/g, "\n")
       .trim();

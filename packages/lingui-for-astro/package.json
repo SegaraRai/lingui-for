@@ -129,6 +129,7 @@
     "@types/node": "catalog:",
     "astro": "^6.0.8",
     "dedent": "^1.7.2",
+    "rolldown-plugin-wasm": "^0.2.1",
     "typescript": "catalog:",
     "unplugin-markup-import": "workspace:*",
     "vite-plus": "catalog:"

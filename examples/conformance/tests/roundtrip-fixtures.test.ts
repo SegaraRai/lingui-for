@@ -1,5 +1,10 @@
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import type { ExtractedMessage } from "@lingui/conf";
+import {
+  assertRangeMapping as assertSharedRangeMapping,
+  findUniqueRange,
+  offsetToLocation,
+} from "@lingui-for/internal-shared-test-helpers";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
@@ -8,7 +13,7 @@ import {
   extractMessagesFromSyntheticModule,
   reinsertTransformedModule,
   transformSyntheticModule,
-} from "./wasm-lingui.ts";
+} from "./support/wasm-lingui.ts";
 
 type Detection = {
   name: string;
@@ -621,7 +626,13 @@ async function assertDetections(fixture: DetectionFixture): Promise<void> {
     if (detection.generated == null) {
       return assertExtractionOrigin(messages, source, detection, filename);
     }
-    assertRangeMapping(consumer, reinserted.code, source, detection, filename);
+    assertContractRangeMapping(
+      consumer,
+      reinserted.code,
+      source,
+      detection,
+      filename,
+    );
     if (detection.extracted != null) {
       assertExtractionOrigin(messages, source, detection, filename);
     }
@@ -666,7 +677,7 @@ function findMatchingMessages(
   });
 }
 
-function assertRangeMapping(
+function assertContractRangeMapping(
   consumer: TraceMap,
   generatedSource: string,
   originalSource: string,
@@ -676,9 +687,6 @@ function assertRangeMapping(
   if (detection.generated == null) {
     throw new Error(`Missing generated matcher: ${detection.name}`);
   }
-
-  const generated = findUniqueRange(generatedSource, detection.generated);
-  const original = findUniqueRange(originalSource, detection.original);
 
   const mapping =
     detection.mapping ??
@@ -695,41 +703,21 @@ function assertRangeMapping(
       originalSource,
       detection,
       filename,
-      generated,
-      original,
     );
     return;
   }
 
-  const generatedStart = offsetToLocation(generatedSource, generated.start);
-  const generatedEnd = offsetToLocation(generatedSource, generated.end);
-  const originalStart = offsetToLocation(originalSource, original.start);
-  const originalEnd = offsetToLocation(originalSource, original.end);
-  const mappedStart = originalPositionFor(consumer, {
-    line: generatedStart.line,
-    column: generatedStart.column,
-  });
-  const mappedEnd = originalPositionFor(consumer, {
-    line: generatedEnd.line,
-    column: generatedEnd.column,
-  });
-
-  expect(
-    mappedStart.source,
-    `${detection.name}: missing source for start`,
-  ).toBe(filename);
-  expect(mappedStart.line, `${detection.name}: start line`).toBe(
-    originalStart.line,
-  );
-  expect(mappedStart.column, `${detection.name}: start column`).toBe(
-    originalStart.column,
-  );
-  expect(mappedEnd.source, `${detection.name}: missing source for end`).toBe(
+  assertSharedRangeMapping(
+    consumer,
+    generatedSource,
+    originalSource,
+    {
+      name: detection.name,
+      original: detection.original,
+      generated: detection.generated,
+    },
     filename,
-  );
-  expect(mappedEnd.line, `${detection.name}: end line`).toBe(originalEnd.line);
-  expect(mappedEnd.column, `${detection.name}: end column`).toBe(
-    originalEnd.column,
+    expect,
   );
 }
 
@@ -739,22 +727,12 @@ function assertCharacterMapping(
   originalSource: string,
   detection: Detection,
   filename: string,
-  generatedRange?: {
-    start: number;
-    end: number;
-  },
-  originalRange?: {
-    start: number;
-    end: number;
-  },
 ): void {
   const generated =
-    generatedRange ??
-    (detection.generated == null
+    detection.generated == null
       ? undefined
-      : findUniqueRange(generatedSource, detection.generated));
-  const original =
-    originalRange ?? findUniqueRange(originalSource, detection.original);
+      : findUniqueRange(generatedSource, detection.generated);
+  const original = findUniqueRange(originalSource, detection.original);
 
   if (!generated) {
     throw new Error(`Missing generated matcher: ${detection.name}`);
@@ -792,63 +770,4 @@ function assertCharacterMapping(
       originalPoint.column,
     );
   }
-}
-
-function findUniqueRange(
-  source: string,
-  needle: string | RegExp,
-): {
-  start: number;
-  end: number;
-} {
-  if (typeof needle === "string") {
-    const start = source.indexOf(needle);
-    if (start < 0) {
-      throw new Error(`Needle not found: ${needle}`);
-    }
-    const second = source.indexOf(needle, start + 1);
-    if (second >= 0) {
-      throw new Error(`Needle matched multiple times: ${needle}`);
-    }
-    return { start, end: start + needle.length };
-  }
-
-  const flags = needle.flags.includes("g") ? needle.flags : `${needle.flags}g`;
-  const expression = new RegExp(needle.source, flags);
-  const matches = [...source.matchAll(expression)];
-  if (matches.length === 0) {
-    throw new Error(`Pattern not found: ${needle}`);
-  }
-  if (matches.length > 1) {
-    throw new Error(`Pattern matched multiple times: ${needle}`);
-  }
-
-  const match = matches[0];
-  if (match.index == null) {
-    throw new Error(`Pattern did not provide a stable range: ${needle}`);
-  }
-  return {
-    start: match.index,
-    end: match.index + match[0].length,
-  };
-}
-
-function offsetToLocation(
-  source: string,
-  offset: number,
-): {
-  line: number;
-  column: number;
-} {
-  let line = 1;
-  let column = 0;
-  for (let index = 0; index < offset; index += 1) {
-    if (source[index] === "\n") {
-      line += 1;
-      column = 0;
-    } else {
-      column += 1;
-    }
-  }
-  return { line, column };
 }

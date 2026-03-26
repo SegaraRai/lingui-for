@@ -1,13 +1,9 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-
 import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
   buildAstroCompilePlanWithOptions,
   finishAstroCompileWithOptions,
-  initSync,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 
 import { transformProgram } from "./babel-transform.ts";
@@ -47,8 +43,6 @@ type TransformedPrograms = {
   context_source_map_json?: string | null;
 };
 
-let wasmInitialized = false;
-
 export function lowerAstroWithRustSynthetic(
   source: string,
   filename: string,
@@ -83,22 +77,9 @@ export function lowerAstroWithRustSynthetic(
 }
 
 function buildCompilePlan(source: string, filename: string): AstroCompilePlan {
-  ensureWasmInitialized();
   return buildAstroCompilePlanWithOptions({
     source,
     source_name: filename,
     synthetic_name: `${filename}?rust-compile.tsx`,
   }) as AstroCompilePlan;
-}
-
-function ensureWasmInitialized(): void {
-  if (wasmInitialized) {
-    return;
-  }
-
-  const wasmPath = fileURLToPath(
-    import.meta.resolve("@lingui-for/internal-lingui-analyzer-wasm/wasm"),
-  );
-  initSync({ module: readFileSync(wasmPath) });
-  wasmInitialized = true;
 }

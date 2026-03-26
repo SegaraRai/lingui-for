@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "types": [],
+    "types": []
   },
-  "include": [],
+  "include": []
 }

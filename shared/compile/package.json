@@ -42,7 +42,6 @@
     "@jridgewell/gen-mapping": "^0.3.0",
     "@jridgewell/trace-mapping": "^0.3.0",
     "@lingui/cli": "^5.0.0",
-    "@lingui/conf": "^5.0.0",
-    "vite-plus": "catalog:"
+    "@lingui/conf": "^5.0.0"
   }
 }
