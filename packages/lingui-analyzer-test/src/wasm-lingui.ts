@@ -6,12 +6,12 @@ import { transformSync } from "@babel/core";
 import generateModule from "@babel/generator";
 import traverseModule, { type NodePath } from "@babel/traverse";
 import type { File, VariableDeclarator } from "@babel/types";
+import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type {
   ExtractedMessage,
   ExtractorCtx,
   LinguiConfigNormalized,
 } from "@lingui/conf";
-import { extractFromFileWithBabel } from "@lingui/cli/api";
 import {
   buildSyntheticModule,
   buildSyntheticModuleWithOptions,
@@ -116,7 +116,7 @@ export async function extractMessagesFromSyntheticModule(
 ): Promise<ExtractedMessage[]> {
   const extracted: ExtractedMessage[] = [];
   const sourceMaps = synthetic.source_map_json
-    ? (JSON.parse(synthetic.source_map_json) as ExtractorCtx["sourceMaps"])
+    ? JSON.parse(synthetic.source_map_json)
     : undefined;
 
   await extractFromFileWithBabel(

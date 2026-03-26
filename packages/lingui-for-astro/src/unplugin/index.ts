@@ -4,7 +4,8 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import { stripQuery, toUnpluginSourceMap } from "lingui-for-shared/compiler";
+import { stripQuery } from "@lingui-for/internal-shared-common";
+import { toUnpluginSourceMap } from "@lingui-for/internal-shared-compile";
 
 import { mayContainLinguiMacroImport } from "../compiler-core/shared/macro-presence.ts";
 import { transformAstro } from "../compiler-core/transform/index.ts";
@@ -40,7 +41,7 @@ function reorderBeforeMatcher<
   }
 
   const [plugin] = plugins.splice(currentIndex, 1);
-  plugins.splice(targetIndex, 0, plugin!);
+  plugins.splice(targetIndex, 0, plugin);
 }
 
 export const unpluginFactory: UnpluginFactory<

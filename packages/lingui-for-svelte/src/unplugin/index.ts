@@ -4,11 +4,11 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
+import { stripQuery } from "@lingui-for/internal-shared-common";
 import {
   mayContainLinguiMacroImport,
-  stripQuery,
   toUnpluginSourceMap,
-} from "lingui-for-shared/compiler";
+} from "@lingui-for/internal-shared-compile";
 
 import { transformSvelte } from "../compiler-core/index.ts";
 import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";

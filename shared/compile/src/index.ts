@@ -5,7 +5,6 @@ export * from "./identifier-allocation.ts";
 export * from "./lingui-constants.ts";
 export * from "./macro-bindings.ts";
 export * from "./macro-presence.ts";
-export * from "./paths.ts";
 export * from "./replacement-map.ts";
 export * from "./runtime-trans-lowering.ts";
 export * from "./source-map.ts";

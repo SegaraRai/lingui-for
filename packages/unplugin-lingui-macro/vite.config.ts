@@ -23,7 +23,6 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
-        dependsOn: ["lingui-for-shared#build"],
       },
       check: {
         command: "vp check",

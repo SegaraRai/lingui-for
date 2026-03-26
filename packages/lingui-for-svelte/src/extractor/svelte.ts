@@ -1,13 +1,12 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 import {
   buildSyntheticModuleWithOptions,
   initSync,
-} from "lingui-analyzer-wasm";
-
-import { runBabelExtractionUnits } from "lingui-for-shared/compiler";
+} from "@lingui-for/internal-lingui-analyzer-wasm";
+import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
+import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
 import {
   normalizeLinguiConfig,

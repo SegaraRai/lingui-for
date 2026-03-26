@@ -115,6 +115,11 @@
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
+    "@lingui-for/internal-lingui-analyzer-wasm": "workspace:*",
+    "@lingui-for/internal-shared-common": "workspace:*",
+    "@lingui-for/internal-shared-compile": "workspace:*",
+    "@lingui-for/internal-shared-runtime": "workspace:*",
+    "@lingui-for/internal-shared-test-helpers": "workspace:*",
     "@lingui/cli": "^5.9.3",
     "@lingui/conf": "^5.9.3",
     "@lingui/core": "^5.9.3",
@@ -124,8 +129,6 @@
     "@types/node": "catalog:",
     "astro": "^6.0.7",
     "dedent": "^1.7.2",
-    "lingui-analyzer-wasm": "workspace:*",
-    "lingui-for-shared": "workspace:*",
     "typescript": "catalog:",
     "unplugin-markup-import": "workspace:*",
     "vite-plus": "catalog:"

@@ -4,7 +4,7 @@ import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 import {
   getParserPlugins as getSharedParserPlugins,
   normalizeLinguiConfig as normalizeSharedLinguiConfig,
-} from "lingui-for-shared/compiler";
+} from "@lingui-for/internal-shared-compile";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 

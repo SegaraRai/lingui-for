@@ -1,4 +1,4 @@
-import { mayContainLinguiMacroImport as mayContainMacroImport } from "lingui-for-shared/compiler";
+import { mayContainLinguiMacroImport as mayContainMacroImport } from "@lingui-for/internal-shared-compile";
 
 import { PACKAGE_MACRO } from "./constants.ts";
 

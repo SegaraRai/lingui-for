@@ -2,11 +2,12 @@ packages:
   - apps/*
   - examples/*
   - packages/*
+  - shared/*
 catalog:
   "@types/node": ^25.5.0
   typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vite-plus: ^0.1.13
+  vite-plus: ^0.1.14
 
 onlyBuiltDependencies:
   - esbuild

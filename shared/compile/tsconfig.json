@@ -1,8 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "types": ["node"],
   },
-  "include": ["src", "src/**/*.svelte"],
+  "include": ["src", "../common/src/paths.test.ts", "../common/src/paths.ts"],
 }

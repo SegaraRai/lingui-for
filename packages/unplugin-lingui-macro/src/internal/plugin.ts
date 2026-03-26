@@ -6,7 +6,7 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import { stripQuery } from "lingui-for-shared/compiler";
+import { stripQuery } from "@lingui-for/internal-shared-common";
 
 import type { LinguiMacroPluginOptions } from "../types.ts";
 import { hasImport } from "./imports.ts";

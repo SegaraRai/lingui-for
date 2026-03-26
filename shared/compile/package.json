@@ -1,33 +1,24 @@
 {
-  "name": "lingui-for-shared",
+  "name": "@lingui-for/internal-shared-compile",
   "version": "0.0.0",
   "private": true,
-  "description": "Internal shared helpers for lingui-for packages.",
+  "description": "Internal shared compile helper for lingui-for packages.",
   "files": [
-    "dist",
+    "src",
     "README.md"
   ],
   "type": "module",
   "sideEffects": false,
-  "main": "./dist/index.mjs",
-  "types": "./dist/index.d.mts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
-    "./compiler": {
-      "types": "./dist/compiler/index.d.mts",
-      "default": "./dist/compiler/index.mjs"
-    },
-    "./runtime": {
-      "types": "./dist/runtime/index.d.mts",
-      "default": "./dist/runtime/index.mjs"
-    },
-    "./test-helpers": {
-      "types": "./dist/test-helpers/index.d.mts",
-      "default": "./dist/test-helpers/index.mjs"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
     },
     "./package.json": "./package.json"
   },
   "devDependencies": {
-    "@arethetypeswrong/core": "^0.18.2",
     "@babel/core": "^7.29.0",
     "@babel/generator": "^7.29.1",
     "@babel/traverse": "^7.29.0",
@@ -40,7 +31,6 @@
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
-    "magic-string": "^0.30.21",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
@@ -53,7 +43,6 @@
     "@jridgewell/trace-mapping": "^0.3.0",
     "@lingui/cli": "^5.0.0",
     "@lingui/conf": "^5.0.0",
-    "magic-string": "^0.30.0",
     "vite-plus": "catalog:"
   }
 }

@@ -1,11 +1,11 @@
-import dedent from "dedent";
 import { TraceMap } from "@jridgewell/trace-mapping";
+import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import {
   assertRangeMapping,
   type Detection,
-} from "lingui-for-shared/test-helpers";
+} from "@lingui-for/internal-shared-test-helpers";
 
 import { transformAstro } from "./transform-astro.ts";
 

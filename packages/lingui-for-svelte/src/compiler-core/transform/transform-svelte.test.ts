@@ -7,7 +7,8 @@ import {
   findUniqueRange,
   offsetToLocation,
   type Detection,
-} from "lingui-for-shared/test-helpers";
+} from "@lingui-for/internal-shared-test-helpers";
+
 import { lowerSvelteWithRustSynthetic } from "../lower/index.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import { transformSvelte } from "./transform-svelte.ts";

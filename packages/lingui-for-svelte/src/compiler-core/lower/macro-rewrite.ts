@@ -5,7 +5,7 @@ import {
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
   LINGUI_TRANSLATE_METHOD,
-} from "lingui-for-shared/compiler";
+} from "@lingui-for/internal-shared-compile";
 
 import {
   EAGER_TRANSLATION_WRAPPER,

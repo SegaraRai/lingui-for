@@ -1,5 +1,5 @@
 {
-  "name": "lingui-analyzer-wasm",
+  "name": "@lingui-for/internal-lingui-analyzer-wasm",
   "version": "0.0.0",
   "private": true,
   "files": [
@@ -9,6 +9,7 @@
     "dist/index.d.ts"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "dist/index.js",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",

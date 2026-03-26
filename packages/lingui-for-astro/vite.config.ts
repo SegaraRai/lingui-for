@@ -39,7 +39,6 @@ export default defineConfig({
         command: "vp pack",
         dependsOn: [
           "lingui-for-workspace#build:wasm",
-          "lingui-for-shared#build",
           "unplugin-markup-import#build",
         ],
       },

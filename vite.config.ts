@@ -49,10 +49,7 @@ export default defineConfig({
       "build:lib": {
         command:
           "vp run build --filter lingui-for-svelte... --filter lingui-for-astro... --filter unplugin-lingui-macro...",
-        dependsOn: ["build:shared", "build:plugin", "build:wasm"],
-      },
-      "build:shared": {
-        command: "vp run build --filter lingui-for-shared...",
+        dependsOn: ["build:plugin", "build:wasm"],
       },
       "build:plugin": {
         command: "vp run build --filter unplugin-lingui-macro...",
