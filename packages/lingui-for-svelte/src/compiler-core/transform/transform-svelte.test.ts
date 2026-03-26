@@ -887,14 +887,14 @@ describe("transformSvelte", () => {
     	    name: name
     	  },
     	  components: {
-    	  0: {
-    	    kind: "element",
-    	    tag: "a",
-    	    props: {
-    	      href: "/docs"
+    	    0: {
+    	      kind: "element",
+    	      tag: "a",
+    	      props: {
+    	        href: "/docs"
+    	      }
     	    }
     	  }
-    	}
     	}} />"
     `);
   });
@@ -932,19 +932,19 @@ describe("transformSvelte", () => {
     	    name: name
     	  },
     	  components: {
-    	  0: {
-    	    kind: "element",
-    	    tag: "strong",
-    	    props: {}
-    	  },
-    	  1: {
-    	    kind: "component",
-    	    component: DocLink,
-    	    props: {
-    	      href: "/docs"
+    	    0: {
+    	      kind: "element",
+    	      tag: "strong",
+    	      props: {}
+    	    },
+    	    1: {
+    	      kind: "component",
+    	      component: DocLink,
+    	      props: {
+    	        href: "/docs"
+    	      }
     	    }
     	  }
-    	}
     	}} />"
     `);
   });
@@ -973,14 +973,14 @@ describe("transformSvelte", () => {
     	  id: "demo.docs",
     	  message: "Read the <0>docs</0>.",
     	  components: {
-    	  0: {
-    	    kind: "element",
-    	    tag: "a",
-    	    props: {
-    	      href: "/docs"
+    	    0: {
+    	      kind: "element",
+    	      tag: "a",
+    	      props: {
+    	        href: "/docs"
+    	      }
     	    }
     	  }
-    	}
     	}} />"
     `);
   });

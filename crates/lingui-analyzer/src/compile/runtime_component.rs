@@ -98,7 +98,7 @@ fn convert_jsx_named_attribute(source: &str, node: Node<'_>) -> Result<String, A
             let inner = first_named_child(node);
             match inner {
                 Some(expression) if name == "components" => {
-                    convert_components_expression(source, expression)?
+                    convert_components_expression(source, expression, 0)?
                 }
                 Some(expression) => {
                     let prefix = &source[node.start_byte() + 1..expression.start_byte()];
@@ -157,14 +157,18 @@ fn lower_object_expression_text(text: &str) -> Result<String, AnalyzerError> {
     convert_object_expression(&wrapped, object, false, 0)
 }
 
-fn convert_components_expression(source: &str, node: Node<'_>) -> Result<String, AnalyzerError> {
+fn convert_components_expression(
+    source: &str,
+    node: Node<'_>,
+    indent_level: usize,
+) -> Result<String, AnalyzerError> {
     if node.kind() != "object" {
         return Err(AnalyzerError::ComponentLoweringFailed(
             "Runtime Trans components must lower from an object expression".to_string(),
         ));
     }
 
-    convert_object_expression(source, node, true, 0)
+    convert_object_expression(source, node, true, indent_level)
 }
 
 fn convert_object_expression(
@@ -192,7 +196,7 @@ fn convert_object_expression(
                 let rendered_value = if components_mode {
                     convert_rich_text_component_value(source, value, indent_level + 1)?
                 } else if key_name.as_deref() == Some("components") {
-                    convert_components_expression(source, value)?
+                    convert_components_expression(source, value, indent_level + 1)?
                 } else {
                     convert_expression_for_runtime_trans(source, value, indent_level + 1)?
                 };
@@ -406,4 +410,36 @@ fn key_name(source: &str, key: Node<'_>) -> Option<String> {
 
 fn source_slice<'a>(source: &'a str, node: Node<'_>) -> &'a str {
     &source[node.start_byte()..node.end_byte()]
+}
+
+#[cfg(test)]
+mod tests {
+    use indoc::indoc;
+
+    use super::lower_runtime_component_markup;
+
+    #[test]
+    fn indents_nested_components_entries_under_components_field() {
+        let lowered = lower_runtime_component_markup(
+            indoc! {r#"
+                <LocalRuntimeTrans {...{
+                  id: "demo.docs",
+                  message: "Read the <0>docs</0>.",
+                  components: {
+                    0: <a href="/docs" />
+                  }
+                }} />
+            "#},
+            "RuntimeTransStable",
+        )
+        .expect("component lowers");
+
+        assert!(
+            lowered.contains(indoc! {r#"
+                components: {
+                    0: {
+            "#}),
+            "{lowered}"
+        );
+    }
 }
