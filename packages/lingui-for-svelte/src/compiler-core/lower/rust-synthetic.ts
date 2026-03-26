@@ -141,7 +141,7 @@ function ensureWasmInitialized(): void {
   }
 
   const wasmPath = fileURLToPath(
-    import.meta.resolve("lingui-analyzer-wasm/wasm"),
+    import.meta.resolve("@lingui-for/internal-lingui-analyzer-wasm/wasm"),
   );
   initSync({ module: readFileSync(wasmPath) });
   wasmInitialized = true;

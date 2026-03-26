@@ -19,7 +19,7 @@ function main(): void {
       outputName: "index",
       expectedOutput: join(
         rootDir,
-        "packages",
+        "shared",
         "lingui-analyzer-wasm",
         "dist",
         "index_bg.wasm",

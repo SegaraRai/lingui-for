@@ -46,9 +46,9 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@typescript-eslint/typescript-estree": "^8.57.1",
+    "@typescript-eslint/typescript-estree": "^8.57.2",
     "magic-string": "^0.30.21",
-    "svelte": "^5.54.0",
+    "svelte": "^5.55.0",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {

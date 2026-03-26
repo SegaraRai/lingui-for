@@ -1,13 +1,7 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "allowImportingTsExtensions": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "noEmit": true,
-    "strict": true,
-    "target": "ES2024",
-    "lib": ["Es2024"],
-    "types": ["node"]
+    "types": ["node"],
   },
-  "include": ["tests/**/*.ts"]
+  "include": ["tests/**/*.ts"],
 }

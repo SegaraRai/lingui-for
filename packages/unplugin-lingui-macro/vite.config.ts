@@ -23,6 +23,8 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
+        cache: true,
+        input: [{ auto: true }, "!**/.vite-temp/**", "!dist/**"],
       },
       check: {
         command: "vp check",

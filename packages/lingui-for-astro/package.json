@@ -127,7 +127,7 @@
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
-    "astro": "^6.0.7",
+    "astro": "^6.0.8",
     "dedent": "^1.7.2",
     "typescript": "catalog:",
     "unplugin-markup-import": "workspace:*",

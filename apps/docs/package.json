@@ -2,14 +2,14 @@
   "name": "docs",
   "type": "module",
   "dependencies": {
-    "@astrojs/starlight": "^0.38.1",
+    "@astrojs/starlight": "^0.38.2",
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@astrojs/svelte": "^8.0.3",
     "@lingui/core": "^5.9.3",
     "@tailwindcss/vite": "4.2.2",
-    "astro": "^6.0.7",
+    "astro": "^6.0.8",
     "sharp": "^0.34.5",
-    "svelte": "^5.54.0",
+    "svelte": "^5.55.0",
     "tailwindcss": "4.2.2"
   },
   "devDependencies": {

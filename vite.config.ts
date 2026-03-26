@@ -57,6 +57,11 @@ export default defineConfig({
       "build:wasm": {
         command: "node ./build-wasm.ts",
         cache: true,
+        input: [
+          { auto: true },
+          "!target/**",
+          "!shared/lingui-analyzer-wasm/dist/**",
+        ],
         env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
       },
       check: {

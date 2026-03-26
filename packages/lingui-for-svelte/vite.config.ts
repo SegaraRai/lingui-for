@@ -5,7 +5,9 @@ import markupImport from "unplugin-markup-import/rolldown";
 export default defineConfig({
   pack: {
     clean: true,
-    dts: true,
+    dts: {
+      eager: true,
+    },
     entry: {
       index: "src/index.ts",
       "__internal__/transform": "src/__internal__/transform.ts",
@@ -36,6 +38,13 @@ export default defineConfig({
       build: {
         command: "vp pack",
         dependsOn: ["unplugin-markup-import#build"],
+        cache: true,
+        input: [
+          { auto: true },
+          "!**/.vite-temp/**",
+          "!**/.unplugin-markup-import/**",
+          "!dist/**",
+        ],
       },
       check: {
         command: "vp check && vp run check:extra",

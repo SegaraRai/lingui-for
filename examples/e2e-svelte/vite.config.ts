@@ -17,6 +17,14 @@ export default defineConfig({
           "i18n:build",
           "sveltekit:sync",
         ],
+        cache: true,
+        input: [
+          { auto: true },
+          "!**/.vite-temp/**",
+          "!.svelte-kit/**",
+          "!.sveltekit-build/**",
+          "!dist/**",
+        ],
       },
       dev: {
         command: "vp dev",

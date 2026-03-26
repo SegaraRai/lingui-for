@@ -37,7 +37,7 @@ function ensureWasmInitialized(): void {
   }
 
   const wasmPath = fileURLToPath(
-    import.meta.resolve("lingui-analyzer-wasm/wasm"),
+    import.meta.resolve("@lingui-for/internal-lingui-analyzer-wasm/wasm"),
   );
   initSync({ module: readFileSync(wasmPath) });
   wasmInitialized = true;
@@ -85,9 +85,7 @@ export const svelteExtractor: ExtractorType = {
       extract: true,
       translationMode: "extract",
       inputSourceMap: synthetic.source_map_json
-        ? (JSON.parse(synthetic.source_map_json) as NonNullable<
-            ExtractorCtx["sourceMaps"]
-          >)
+        ? JSON.parse(synthetic.source_map_json)
         : null,
     });
 
