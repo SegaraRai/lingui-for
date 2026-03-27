@@ -1,0 +1,69 @@
+---
+title: Select
+description: ICU select 翻訳のコンポーネント形式マクロ
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import selectComponentWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select-component";
+
+`Select` は、コアマクロ [`select`](/ja/macros/select) に対応するコンポーネントマクロです。
+
+同じケース分岐ベースの ICU 選択ロジックを表しますが、ネストした関数呼び出しより、マークアップファイル内で自然に読める形で記述できます。
+
+独自ケース値（`other` 以外）は、`value` のような予約済みコンポーネントプロパティと区別するため、`_` 接頭辞を付けます。
+たとえば `formal` ケースは `_formal="..."` になります。
+`other` は ICU の必須キーワードであって独自値ではないため、接頭辞は付きません。
+
+フレームワークに依存しない Lingui の意味論については、[公式の `Select` リファレンス](https://lingui.dev/ref/macro#select-1) を参照してください。
+
+<MacroWorkbench workbench={selectComponentWorkbench} />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { Select } from "lingui-for-svelte/macro";
+
+  let tone = $state("casual");
+</script>
+
+<Select value={tone} _formal="Welcome" _casual="Hi" other="Hello" />
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { Select } from "lingui-for-astro/macro";
+
+const tone = "casual";
+---
+
+<Select value={tone} _formal="Welcome" _casual="Hi" other="Hello" />
+```
+
+  </TabItem>
+  <TabItem icon="seti:react" label="Official Lingui">
+
+```tsx
+import { Select } from "@lingui/react/macro";
+
+function Component() {
+  return <Select value={tone} _formal="Welcome" _casual="Hi" other="Hello" />;
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## `Select` が向いている場面
+
+- すでにファイル全体がマークアップ寄りである
+- select の分岐をコンポーネントプロパティとして書くほうが読みやすい
+- 基本の Lingui 意味論はそのままに、コンポーネント形式で書きたい

@@ -1,0 +1,87 @@
+---
+title: SelectOrdinal
+description: ICU 序数 select 翻訳のコンポーネント形式マクロ
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import selectOrdinalComponentWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select-ordinal-component";
+
+`SelectOrdinal` は、コアマクロ [`selectOrdinal`](/ja/macros/select-ordinal) に対応するコンポーネントマクロです。
+
+序数ケースをそのままテンプレートマークアップ内に書きたいときに便利で、関数呼び出しよりコンポーネント形式のほうが保守しやすい場合に向いています。
+
+標準の ICU 複数形カテゴリ（`one`、`two`、`few`、`many`、`other`）は、そのままプロパティ名として使います。
+完全一致にはアンダースコア付きの数値を使います。
+たとえば `_1="1st"` は `value` が 1 のときだけ完全一致し、カテゴリプロパティより優先されます。
+これは、あるロケールではカテゴリに素直に対応しない不規則な序数に便利です。
+
+フレームワークに依存しない Lingui の意味論については、[公式の `SelectOrdinal` リファレンス](https://lingui.dev/ref/macro#selectordinal-1) を参照してください。
+
+<MacroWorkbench workbench={selectOrdinalComponentWorkbench} />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { SelectOrdinal } from "lingui-for-svelte/macro";
+
+  let place = $state(1);
+</script>
+
+<SelectOrdinal value={place} one="#st" two="#nd" few="#rd" other="#th" />
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { SelectOrdinal } from "lingui-for-astro/macro";
+
+const place = 1;
+---
+
+<SelectOrdinal value={place} one="#st" two="#nd" few="#rd" other="#th" />
+```
+
+  </TabItem>
+  <TabItem icon="seti:react" label="Official Lingui">
+
+```tsx
+import { SelectOrdinal } from "@lingui/react/macro";
+
+function Component() {
+  return (
+    <SelectOrdinal value={place} one="#st" two="#nd" few="#rd" other="#th" />
+  );
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## 完全一致
+
+数値の前に `_` を付けると、その値に完全一致します。
+完全一致はカテゴリプロパティより優先されます。
+
+```svelte
+<SelectOrdinal value={place} _1="1st" _2="2nd" _3="3rd" other="#th" />
+```
+
+関数形式では、同じ効果を数値キーそのままで表します。
+
+```svelte
+<p>{$selectOrdinal(place, { 1: "1st", 2: "2nd", 3: "3rd", other: "#th" })}</p>
+```
+
+## `SelectOrdinal` が向いている場面
+
+- 序数分岐をテンプレートマークアップの中でそのまま書きたい
+- `selectOrdinal(...)` よりコンポーネント形式のほうが見通しがよい
+- `Plural` や `Select` と対称的な書き方にしたい

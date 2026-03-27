@@ -5,8 +5,8 @@ description: Component form of ICU plural translation.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import MacroWorkbench from "@components/MacroWorkbench.astro";
 import pluralComponentWorkbench from "virtual:macro-workbench?demo=src/demos/macros/plural-component";
-import MacroWorkbench from "../../../components/MacroWorkbench.astro";
 
 `Plural` is the Component Macro counterpart to the core [`plural`](/macros/plural) macro.
 
@@ -77,7 +77,7 @@ props.
 The function form uses a plain numeric key for the same effect:
 
 ```svelte
-<p>{$plural(count, { 0: 'No files', one: '# file', other: '# files' })}</p>
+<p>{$plural(count, { 0: "No files", one: "# file", other: "# files" })}</p>
 ```
 
 ## When `Plural` is a good fit

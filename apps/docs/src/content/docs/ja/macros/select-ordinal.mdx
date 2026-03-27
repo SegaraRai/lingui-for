@@ -1,0 +1,141 @@
+---
+title: selectOrdinal
+description: ICU の序数 select メッセージを組み立て、または翻訳するためのマクロ
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import selectOrdinalWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select-ordinal";
+
+`selectOrdinal` は、ICU の序数選択メッセージのためのコアマクロです。
+同じロジックには、コンポーネントマクロ形式の [`SelectOrdinal`](/ja/macros/select-ordinal-component) もあります。
+
+文言が `1st`、`2nd`、`3rd` のような序数カテゴリに依存する場合に使ってください。
+単独で翻訳済み文字列を生成することもできますし、序数部分がより大きなメッセージの一部であるなら `` t`...` `` テンプレートリテラルの中に埋め込むこともできます。
+
+フレームワークに依存しない Lingui の意味論については、[公式の `selectOrdinal` リファレンス](https://lingui.dev/ref/macro#selectordinal) を参照してください。
+
+<MacroWorkbench workbench={selectOrdinalWorkbench} />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { selectOrdinal, t } from "lingui-for-svelte/macro";
+
+  let place = $state(2);
+</script>
+
+<!-- 単独使用: 序数字符列を直接生成する -->
+<p>
+  {$selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })}
+</p>
+
+<!-- 埋め込み: selectOrdinal はより大きな翻訳単位の一部 -->
+<p>
+  {$t`Ranked ${selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })}`}
+</p>
+```
+
+`.svelte` ファイルでは、単独でリアクティブに使うなら `$selectOrdinal` を使います。
+`` $t`...` `` の中にネストする場合は、`$` 接頭辞なしの `selectOrdinal` を使います。
+
+完全な説明と `selectOrdinal.eager` というエスケープハッチについては [リアクティブマクロ](/ja/frameworks/svelte/reactive-macros) を参照してください。
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { selectOrdinal, t } from "lingui-for-astro/macro";
+
+const place = 2;
+---
+
+<!-- 単独使用: 序数字符列を直接生成する -->
+<p>
+  {
+    selectOrdinal(place, {
+      one: "#st",
+      two: "#nd",
+      few: "#rd",
+      other: "#th",
+    })
+  }
+</p>
+
+<!-- 埋め込み: selectOrdinal はより大きな翻訳単位の一部 -->
+<p>
+  {
+    t`Ranked ${selectOrdinal(place, {
+      one: "#st",
+      two: "#nd",
+      few: "#rd",
+      other: "#th",
+    })}`
+  }
+</p>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { selectOrdinal, t } from "@lingui/core/macro";
+
+// 単独使用
+const label: string = selectOrdinal(place, {
+  one: "#st",
+  two: "#nd",
+  few: "#rd",
+  other: "#th",
+});
+
+// 埋め込み
+const message: string = t`Ranked ${selectOrdinal(place, {
+  one: "#st",
+  two: "#nd",
+  few: "#rd",
+  other: "#th",
+})}`;
+```
+
+  </TabItem>
+</Tabs>
+
+## 完全一致
+
+厳密な値に一致させるには、数値キーをそのまま使います。
+完全一致はカテゴリキーより優先されます。
+
+```ts
+selectOrdinal(place, {
+  1: "1st",
+  2: "2nd",
+  3: "3rd",
+  other: "#th",
+});
+```
+
+コンポーネントマクロ [`SelectOrdinal`](/ja/macros/select-ordinal-component) では、同じ一致をアンダースコア付きプロパティ（`_1="1st"`）で表します。
+関数形式では数値キーをそのまま使うので、アンダースコアは不要です。
+
+## `selectOrdinal` が向いている場面
+
+- 出力が序数カテゴリに依存する
+- 現在のファイルではコンポーネントプロパティより関数形式のほうが読みやすい
+- 公式 Lingui Core と一貫した記述子意味論を使いたい

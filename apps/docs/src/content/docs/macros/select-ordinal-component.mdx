@@ -5,8 +5,8 @@ description: Component form of ICU ordinal-select translation.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import MacroWorkbench from "@components/MacroWorkbench.astro";
 import selectOrdinalComponentWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select-ordinal-component";
-import MacroWorkbench from "../../../components/MacroWorkbench.astro";
 
 `SelectOrdinal` is the Component Macro counterpart to the core [`selectOrdinal`](/macros/select-ordinal) macro.
 
@@ -79,7 +79,7 @@ props.
 The function form uses plain numeric keys for the same effect:
 
 ```svelte
-<p>{$selectOrdinal(place, { 1: '1st', 2: '2nd', 3: '3rd', other: '#th' })}</p>
+<p>{$selectOrdinal(place, { 1: "1st", 2: "2nd", 3: "3rd", other: "#th" })}</p>
 ```
 
 ## When `SelectOrdinal` is a good fit

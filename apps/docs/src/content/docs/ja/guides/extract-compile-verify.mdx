@@ -1,0 +1,70 @@
+---
+title: 抽出、コンパイル、検証
+description: ソースコードから描画結果に至るまでの翻訳パイプラインをどう捉えるかの説明と、各段階で何を確認すべきかのガイド
+---
+
+## パイプラインは 3 つの段階に分けて考える
+
+1. **抽出** (`lingui extract`)
+   - メッセージ記述子を見つけてカタログに書き出します
+2. **コンパイル** (`lingui compile`)
+   - カタログを実行時に使える形へ整えます
+3. **検証**
+   - アプリが期待どおりの翻訳結果を描画することを確認します
+
+この 3 つを分けて扱うと、問題の切り分けがかなり楽になります。
+
+## 変換と抽出は別の関心事
+
+Lingui マクロを使う各ファイル種別では、**2 つの設定をそれぞれ独立して**行う必要があります。
+
+- ビルド時にマクロ呼び出しを実行時呼び出しへコンパイルする **ビルド変換**
+- `lingui extract` がソースファイルからメッセージ記述子を見つけられるようにする **抽出器**
+
+これらは別の段階で動作します。ビルドが成功したからといって、抽出まで正しく動いているとは限りません。抽出器は Lingui CLI から別個に実行されるため、個別に設定しなければなりません。
+
+| ファイル種別                 | ビルド変換                        | 抽出器                                                       |
+| ---------------------------- | --------------------------------- | ------------------------------------------------------------ |
+| `.svelte`                    | `lingui-for-svelte/unplugin/vite` | `lingui-for-svelte/extractor`                                |
+| `.astro`                     | `lingui-for-astro/integration`    | `lingui-for-astro/extractor`                                 |
+| `.ts`, `.js`, `.tsx`, `.jsx` | `unplugin-lingui-macro/vite`      | `@lingui/cli/api/extractors/babel`（デフォルトエクスポート） |
+
+混在したプロジェクトでは、両方の抽出器を並べて指定する必要があります。たとえば、共通ユーティリティを素の TypeScript で持つ SvelteKit プロジェクトでは次のようになります。
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [svelteExtractor(), babelExtractor],
+});
+```
+
+`babelExtractor` を入れないと、`.ts` ファイル内の `t` 呼び出しはビルド時には正しくコンパイルされても、抽出されたカタログには現れません。
+
+フレームワーク変換に設定可能な振る舞いがある場合は、抽出器もそれに合わせてください。
+たとえば、リッチテキストのコンポーネントマクロにおける空白は、ビルド変換と `svelteExtractor(...)` または `astroExtractor(...)` の両方で同じ `whitespace` モードを使う必要があります。
+詳しくは [コンポーネントマクロにおける空白](/ja/guides/whitespace-in-component-macros) を参照してください。
+
+## どのツールが何を担当するか
+
+- `lingui-for-svelte` と `lingui-for-astro`
+  - フレームワーク構文への対応と、フレームワーク固有の抽出器
+- `unplugin-lingui-macro`
+  - 素の JS / TS における Lingui マクロ変換
+- Lingui CLI
+  - 抽出とカタログのコンパイル
+
+## おすすめの進め方
+
+新しい構文パターンを追加したら、次の 3 点を必ず確認してください。
+
+- ビルドできること
+- 抽出できること
+- 正しく描画されること
+
+ビルドが成功したからといって、抽出まで自動的に正しいとは考えないでください。

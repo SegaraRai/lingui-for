@@ -1,0 +1,81 @@
+---
+title: "Astro: アイランドを使う"
+description: Astro ページ、Svelte アイランド、React アイランドの責務をどう分けるべきか
+---
+
+## 1 つの Astro ページに複数の Lingui 統合を共存させられる
+
+Astro アプリには、同時に次の 3 つの記述面が存在することがよくあります。
+
+- `.astro` ページとレイアウト
+- Svelte アイランド
+- React アイランド
+
+これらすべてで同じパッケージを使うべきではありません。
+
+## 推奨される分担
+
+- `.astro` ファイルでは `lingui-for-astro` を使います
+- Svelte アイランド内では `lingui-for-svelte` を使います
+- React アイランド内では Lingui 公式パッケージを使います
+
+この分担は、各描画系が実際にどう実行されるかに対応しています。
+
+## なぜこの分担が重要か
+
+Astro ページは通常、静的 HTML として描画されるか、`server` / `hybrid` 出力を選んだときだけリクエスト依存になります。
+一方、Svelte と React のアイランドは、それぞれ独自のコンポーネント実行時とハイドレーションモデルを持っています。
+この 3 つに対して 1 つの実行時 API を無理に共通化しようとすると、使い勝手は良くなるどころか悪化します。
+
+## 共有できるもの
+
+安全に共有できるのは次のものです。
+
+- カタログ
+- ロケール選択ロジック
+- 素の TypeScript で定義したメッセージ記述子
+
+それでも、翻訳を呼び出す箇所では現在の描画系に合ったパッケージを使うべきです。
+
+## 実用的なパターン
+
+1. Astro アプリの境界（ミドルウェアまたはフロントマター）で有効なロケールを解決します。
+2. ページ描画に必要な正しいカタログを読み込みます。
+3. `.astro` は `lingui-for-astro` で描画します。
+4. 各アイランドへ `locale` をプロパティとして渡します。
+5. 各アイランドの内部で、そのロケールを使って `setLinguiContext` を呼びます。
+
+```astro title="src/pages/index.astro"
+---
+import { t } from "lingui-for-astro/macro";
+import MyIsland from "../components/MyIsland.svelte";
+
+// locale は middleware 内の setLinguiContext で設定済み
+const locale = Astro.locals.lingui?.i18n.locale ?? "en";
+---
+
+<h1>{t`Welcome`}</h1>
+
+<!-- ページと同じロケールをアイランドでも使うように渡す。 -->
+<MyIsland client:load {locale} />
+```
+
+```svelte title="src/components/MyIsland.svelte"
+<script lang="ts">
+  import { untrack } from "svelte";
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+  import { catalog } from "$lib/i18n/catalog";
+
+  const { locale = "en" } = $props();
+
+  const i18n = setupI18n({ locale: untrack(() => locale), messages: catalog });
+  setLinguiContext(i18n);
+</script>
+
+<p>{$t`Hello from a Svelte island`}</p>
+```
+
+アイランドには翻訳済み文字列ではなく `locale` を渡してください。
+そうすれば、アイランド自身が同じロケールでメッセージを翻訳でき、必要なら将来のロケール変更にも追従できます。

@@ -1,0 +1,45 @@
+---
+title: ファイルをまたいでメッセージを共有する
+description: Astro、Svelte、素の JavaScript / TypeScript の間でメッセージ記述子を共有する方法
+---
+
+## 共有する記述子は素の JavaScript / TypeScript に置く
+
+複数のレンダラーで再利用するメッセージは、公式 Lingui Core マクロを使って、素の JavaScript または TypeScript に記述子として定義してください。
+素の TypeScript ファイルに必要なビルド変換と抽出器の設定は [プレーンな JS/TS でのセットアップ](/ja/guides/plain-js-ts) を参照してください。
+
+```ts title="src/lib/messages.ts"
+import { msg } from "@lingui/core/macro";
+
+export const welcome = msg`Welcome back`;
+export const settingsLabel = msg`Open settings`;
+```
+
+そのうえで、描画系ごとのファイル側で翻訳します。
+
+```svelte title="Svelte"
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+  import { welcome } from "../lib/messages";
+</script>
+
+<p>{$t(welcome)}</p>
+```
+
+```astro title="Astro"
+---
+import { t } from "lingui-for-astro/macro";
+import { welcome } from "../lib/messages";
+---
+
+<p>{t(welcome)}</p>
+```
+
+## この方法がうまく機能する理由
+
+- 共有ファイルは公式 Lingui Core の意味論に従います。
+- フレームワーク固有パッケージは、フレームワーク構文だけを扱います。
+- 同じ記述子を Astro、Svelte、または `i18n._()` を呼べる任意のフレームワークから利用できます。
+
+React アイランドでも同じ考え方です。`useLingui()` が返す `i18n` インスタンスは `i18n._()` を通してメッセージ記述子を受け取れます。
+React 固有の API は Lingui 公式ドキュメントを参照してください。

@@ -1,0 +1,79 @@
+---
+title: Trans
+description: 埋め込みマークアップを含むリッチテキストを翻訳するためのコンポーネントマクロ
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import transWorkbench from "virtual:macro-workbench?demo=src/demos/macros/trans-component";
+
+`Trans` は、翻訳対象のマークアップコンテンツに使う、汎用的なコンポーネントマクロです。
+
+翻訳者がリンク、強調、そのほかの埋め込み構造を保つ必要がある場合に使ってください。
+リッチテキストではないメッセージにも使えますが、真価を発揮するのは、メッセージをマークアップとして書くのが自然な場面です。
+
+フレームワークに依存しない Lingui の意味論については、[公式の `Trans` リファレンス](https://lingui.dev/ref/macro#trans) を参照してください。
+
+<MacroWorkbench workbench={transWorkbench} />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { Trans } from "lingui-for-svelte/macro";
+</script>
+
+<Trans>
+  Read the <a href="/docs">documentation</a>.
+</Trans>
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { Trans } from "lingui-for-astro/macro";
+---
+
+<Trans>
+  Read the <a href="/docs">documentation</a>.
+</Trans>
+```
+
+  </TabItem>
+  <TabItem icon="seti:react" label="Official Lingui">
+
+```tsx
+import { Trans } from "@lingui/react/macro";
+
+function Component() {
+  return (
+    <Trans>
+      Read the <a href="/docs">documentation</a>.
+    </Trans>
+  );
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## `Trans` が向いている場面
+
+- 翻訳にリンクや強調を含める
+- 翻訳者にとって構造自体が重要である
+- 文字列テンプレートよりマークアップとして書くほうが自然である
+
+## 子ノード間の空白
+
+`Trans` は内部的には JSX 互換の仕組みで処理されますが、`.svelte` と `.astro` のテンプレートは JSX ではありません。
+そのため、子ノード間の空白が、本来そのフレームワークで扱われる形と異なって解釈される可能性があります。
+
+既定では、`lingui-for-svelte` と `lingui-for-astro` は、`Trans` とほかのコンポーネントマクロに対して、生の JSX の意味論ではなく、フレームワークを考慮した空白処理を行います。
+
+正確なルール、設定方法、例については [コンポーネントマクロにおける空白](/ja/guides/whitespace-in-component-macros) を参照してください。

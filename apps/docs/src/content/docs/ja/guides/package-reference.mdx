@@ -1,0 +1,39 @@
+---
+title: パッケージリファレンス
+description: 各 `lingui-for-*` エクスポートの用途と、利用者向けかどうかのガイド
+---
+
+## lingui-for-svelte
+
+| エクスポート                   | 内容                                                                                                           | 利用者向け |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- | ---------- |
+| `lingui-for-svelte`            | `setLinguiContext`, `getLinguiContext`                                                                         | ✓          |
+| `lingui-for-svelte/macro`      | `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage` | ✓          |
+| `lingui-for-svelte/extractor`  | `lingui.config.ts` 用の `svelteExtractor(options?)` ファクトリー                                               | ✓          |
+| `lingui-for-svelte/unplugin/*` | Vite、Rollup、Rolldown 用プラグイン                                                                            | ✓          |
+| `lingui-for-svelte/runtime`    | コンパイル済みマクロ出力から呼ばれる内部実行時                                                                 | ✗          |
+
+## lingui-for-astro
+
+| エクスポート                   | 内容                                                                                                           | 利用者向け |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- | ---------- |
+| `lingui-for-astro`             | `setLinguiContext`, `getLinguiContext`                                                                         | ✓          |
+| `lingui-for-astro/macro`       | `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage` | ✓          |
+| `lingui-for-astro/extractor`   | `lingui.config.ts` 用の `astroExtractor(options?)` ファクトリー                                                | ✓          |
+| `lingui-for-astro/integration` | `astro.config.ts` 用の Astro 統合                                                                              | ✓          |
+| `lingui-for-astro/unplugin/*`  | Vite、Rollup、Rolldown 用プラグイン                                                                            | ✓          |
+| `lingui-for-astro/runtime`     | コンパイル済みマクロ出力から呼ばれる内部実行時                                                                 | ✗          |
+
+## 補足
+
+### `*/runtime` は公開 API ではない
+
+`lingui-for-svelte/runtime` と `lingui-for-astro/runtime` には、コンパイル済みマクロ出力が実行時に呼び出す低レベルの補助関数が入っています。
+これらの API はメジャーバージョンを上げずに変更される可能性があります。
+これらのパスを直接インポートしないでください。
+
+### 素の JS / TS では別パッケージを使う
+
+素の `.js` と `.ts` ファイルでは、公式 Lingui の `@lingui/core/macro` を使い、ビルド変換には `unplugin-lingui-macro`、抽出には `@lingui/cli/api/extractors/babel` を使います。
+これらは `lingui-for-*` には含まれません。
+詳しくは [プレーンな JS/TS でのセットアップ](/ja/guides/plain-js-ts) を参照してください。

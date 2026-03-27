@@ -1,0 +1,132 @@
+---
+title: コンポーネントマクロにおける空白
+description: Trans、Plural、Select、SelectOrdinal におけるリッチテキストの空白正規化の挙動
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+コンポーネントマクロは内部的には JSX 互換の仕組みで処理されますが、Svelte と Astro のテンプレートは JSX ではありません。
+
+そのため、コンパイラが素の JSX のルールに従うと、子ノード間の空白が異なる形で解釈されることがあります。
+これは `Trans` のようなリッチテキストメッセージで特に重要で、空白が足りなかったり余分だったりすると、抽出されるメッセージテキストが変わってしまいます。
+
+`whitespace` オプションを使うと、こうした境界をどう扱うか選べます。
+通常はデフォルトの `auto` のままで問題ありません。
+これにより、コンポーネントマクロは生の JSX の意味論ではなく、フレームワークを考慮した空白の挙動に従います。
+
+## デフォルトの挙動
+
+`lingui-for-svelte` と `lingui-for-astro` では、`whitespace` の既定値は `auto` です。
+そのため、リッチテキストの子要素の境界では、明示的に `jsx` を選ばない限り、フレームワークに応じた空白処理が行われます。
+
+- Svelte では、`auto` は `svelte` に解決されます。
+- Astro では、`auto` は `astro` に解決されます。
+- JSX 形式の空白の意味論を明示的に使いたい場合だけ `jsx` を選んでください。
+
+## 何が変わるのか
+
+たとえば、次のように書いたとします。
+
+```svelte
+<Trans>
+  Read
+  <a href="/docs">docs</a>
+  now
+</Trans>
+```
+
+`whitespace: "auto"` では、抽出されるリッチテキストメッセージに単語境界の空白が保たれます。
+
+```text
+Read <0>docs</0> now
+```
+
+`whitespace: "jsx"` では、同じソースが JSX として正規化されるため、Svelte や Astro の利用者が残ると期待する空白が失われることがあります。
+
+## 明示的な空白が優先される
+
+すでに `{" "}` のような明示的な空白式を書いている場合は、それが優先されます。
+フレームワーク対応の空白処理が、その隣にさらに空白を追加することはありません。
+
+```svelte
+<Trans><strong>Read</strong>{" "}<em>carefully</em></Trans>
+```
+
+これは次と同等のままです。
+
+```text
+<0>Read</0> <1>carefully</1>
+```
+
+## 変換を設定する
+
+フレームワークファイルを変換するすべての場所で、同じ `whitespace` 設定を使ってください。
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+
+export default defineConfig({
+  plugins: [linguiForSvelte({ whitespace: "auto" })],
+});
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="astro.config.ts"
+import { defineConfig } from "astro/config";
+import linguiForAstro from "lingui-for-astro/integration";
+
+export default defineConfig({
+  integrations: [linguiForAstro({ whitespace: "auto" })],
+});
+```
+
+  </TabItem>
+</Tabs>
+
+## 抽出を設定する
+
+抽出でも、ビルド変換と同じ空白モードを使う必要があります。
+そうしないと、`lingui extract` が見たカタログメッセージと、コンパイル時に生成されるメッセージが食い違う可能性があります。
+
+フレームワーク用抽出器はファクトリーなので、`lingui.config.ts` で設定します。
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  extractors: [svelteExtractor({ whitespace: "auto" })],
+});
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  extractors: [astroExtractor({ whitespace: "auto" })],
+});
+```
+
+  </TabItem>
+</Tabs>
+
+## `jsx` を使うべき場面
+
+リッチテキストの子要素境界で JSX の意味論を維持しなければならない、はっきりした互換性要件がない限り、デフォルト設定のままにしてください。
+
+既存プロジェクトで `jsx` から `auto` に切り替えると、一部のコンポーネントマクロ呼び出しでは、抽出されるメッセージや生成される ID が変わる場合があります。
+
+ビルド変換と抽出設定を揃えるべきだという、より広い原則については [抽出、コンパイル、検証](/ja/guides/extract-compile-verify) を参照してください。

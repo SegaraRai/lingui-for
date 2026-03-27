@@ -1,0 +1,187 @@
+---
+title: "Svelte: リアクティブマクロ"
+description: Svelte コンポーネントで `$t`、`$plural`、`$select`、`$selectOrdinal` がどう動くかの説明と、非リアクティブな `*.eager` 形式との違いの説明
+---
+
+`lingui-for-svelte` は、Lingui コアマクロのリアクティブ形式を提供します。
+
+TL;DR: マークアップや `$derived` の中でリアクティブに使うなら `$t` などを使ってください。
+明示的に非リアクティブなスナップショットが欲しいなら `*.eager` を使います。
+素の形式は `$t` や `msg` の内側にネストするときだけ使います。
+
+| リアクティブ形式 | Eager（非リアクティブ） | コアマクロ      |
+| ---------------- | ----------------------- | --------------- |
+| `$t`             | `t.eager`               | `t`             |
+| `$plural`        | `plural.eager`          | `plural`        |
+| `$select`        | `select.eager`          | `select`        |
+| `$selectOrdinal` | `selectOrdinal.eager`   | `selectOrdinal` |
+
+## 単独で使う場合と埋め込む場合
+
+`$` 接頭辞は、リアクティブ形式のためのもので、単独で使用します。
+
+**単独:** マクロが式全体になる場合です。`$` 接頭辞を付けます。
+
+```svelte
+<p>{$t`Hello ${name}`}</p>
+<p>{$plural(count, { one: "# item", other: "# items" })}</p>
+<p>{$select(tone, { formal: "Welcome", casual: "Hi", other: "Hello" })}</p>
+```
+
+**`` $t`...` `` の中に埋め込む場合:** 外側の呼び出しがすでにリアクティブ購読を提供しているので、内側のマクロは素の形式を使います。
+
+```svelte
+<p>{$t`Cart: ${plural(count, { one: "# item", other: "# items" })}`}</p>
+<p>
+  {$t`Greeting: ${select(tone, { formal: "Welcome", casual: "Hi", other: "Hello" })}`}
+</p>
+```
+
+`` $t`...` `` の中で `$plural` を使う必要はありません。
+外側の `$t` が式全体を再評価します。
+
+## スクリプト内のリアクティブ値
+
+スクリプト変数に対して暗黙の `$derived` でのラップは行われません。
+スクリプト内でリアクティブな翻訳値が欲しいなら、自分でルーンを書く必要があります。
+
+```svelte
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+
+  let name = $state("Lingui");
+
+  const greeting = $derived($t`Hello ${name}`);
+</script>
+```
+
+このルールは単純です。
+Lingui はリアクティブなマクロ形式を提供し、その外側にどこで Svelte のルーンを使うかは利用側が決めます。
+
+## Eager（非リアクティブ）形式
+
+`t.eager`、`plural.eager`、`select.eager`、`selectOrdinal.eager` は**エスケープハッチ**です。
+現在のロケールでただちに翻訳済み文字列を生成し、ロケール変更には追従しません。
+
+非リアクティブな文脈でメッセージが必要な場合でも、推奨される方法は `msg` で記述子を定義し、描画時に `$t(descriptor)` で翻訳することです。
+
+```svelte
+<script lang="ts">
+  import { msg, t } from "lingui-for-svelte/macro";
+
+  // 記述子を定義するだけで、ここでは翻訳しない
+  const ariaLabel = msg`Submit`;
+</script>
+
+<!-- 描画時にリアクティブに翻訳する -->
+<button aria-label={$t(ariaLabel)}>{$t`Submit`}</button>
+```
+
+`*.eager` を使うのは、本当に初期化時点で翻訳済み文字列が必要で、かつ記述子パターンが合わない場合だけにしてください。
+たとえば、コンポーネント初期化時に 1 回だけ動く外部 API に翻訳済みラベルを渡し、その API が後で再描画できない場合です。
+
+```svelte
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+
+  // 再描画できない外部 API への一度きりの呼び出し
+  externalLib.setTitle(t.eager`My App`);
+</script>
+```
+
+素の `t`（`.eager` も `$` も付けない形）は、`.svelte` ファイルでは**コンパイル時エラー**です。
+ロケールへのリアクティブ性を黙って失うのを防ぐため、コンパイラが拒否します。
+
+素の `plural`、`select`、`selectOrdinal` も、単独の文字列生成として使うと拒否されます。
+一方で、`$t` や `msg` の中に埋め込む記述子としては有効です。
+
+```svelte
+<!-- 許可される: $t の中に埋め込まれた素の plural -->
+<p>{$t`Cart: ${plural(count, { one: "# item", other: "# items" })}`}</p>
+
+<!-- 許可されない: 単独の文字列生成として使う素の plural -->
+<!-- ✗ <p>{plural(count, { one: "# item", other: "# items" })}</p> -->
+<!--   代わりに $plural（リアクティブ）か plural.eager（非リアクティブ）を使う -->
+```
+
+`msg` の中に埋め込む場合も同じです。記述子を 1 回定義し、それを複数箇所でリアクティブに翻訳したいなら `msg` を使います。
+
+```svelte
+<script lang="ts">
+  import { msg, plural, t } from "lingui-for-svelte/macro";
+
+  let count = $state(0);
+
+  // plural を埋め込んだ記述子を 1 回だけ定義し、ここでは翻訳しない
+  const cartLabel = msg`Cart: ${plural(count, { one: "# item", other: "# items" })}`;
+</script>
+
+<!-- 必要な場所でリアクティブに翻訳する -->
+<p>{$t(cartLabel)}</p>
+<title>{$t(cartLabel)}</title>
+```
+
+## どう動くのか
+
+```svelte
+<!-- 利用側が書くコード -->
+<p>{$t`Hello ${name}`}</p>
+
+<!-- コンパイラが生成するコード -->
+<p>
+  {$__l4s_translate({ id: "...", message: "Hello {name}", values: { name } })}
+</p>
+```
+
+`__l4s_translate` は Svelte ストア（`Readable<Translate>`）です。
+Lingui 内部の `"change"` イベントを購読しています。
+`i18n.activate(locale)` がそのイベントを発火すると、ツリー内のすべての `$t` 式が再評価され、Svelte が影響範囲だけ再描画します。
+
+`$__l4s_translate` の `$` は、Svelte 標準のストア自動購読構文です。任意の Svelte コンポーネントで使う `$myStore` と同じ仕組みです。
+
+## `$` 接頭辞は Svelte 5 のルーンではない
+
+`$` が付いていても、これらは Svelte 5 のルーン（`$state`、`$derived` など）ではありません。
+実装は従来の Svelte ストア（`readable`、`derived`）を使っており、ルーンモードでも非ルーンモードでも設定なしで動作します。
+
+利用側が書く `$t` の `$` は、lingui-for-svelte のマクロ変換に対して、リアクティブなストア購読を生成するよう知らせる命名規則です。
+コンパイル後は、Svelte 自身の `$storeName` 自動購読構文に変換されます。
+
+## ロケール切り替えの例
+
+```svelte
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+
+  import { messages as enMessages } from "$lib/i18n/locales/en.js";
+  import { messages as jaMessages } from "$lib/i18n/locales/ja.js";
+
+  let locale = $state<"en" | "ja">("en");
+
+  const i18n = setupI18n({
+    locale: "en",
+    messages: {
+      en: enMessages,
+      ja: jaMessages,
+    },
+  });
+  setLinguiContext(i18n);
+
+  function toggle() {
+    const next = locale === "en" ? "ja" : "en";
+    i18n.activate(next);
+    locale = next;
+  }
+</script>
+
+<button onclick={toggle}>{$t`Switch language`}</button>
+
+<p>{$t`Hello`}</p>
+```
+
+`i18n.activate` が返ったあと、このツリー内のすべての `$t`、`$plural`、`$select`、`$selectOrdinal` 式は同期的に再描画されます。
+
+アクティブな Lingui インスタンスをコンポーネントツリーへどう設定するかは [i18n コンテキスト](/ja/frameworks/svelte/i18n-context) を参照してください。
+そのうえで、各マクロの正確な記述ルールが必要なら [マクロリファレンス](/ja/macros/core-macros) を参照してください。

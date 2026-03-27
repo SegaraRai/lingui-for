@@ -1,0 +1,98 @@
+---
+title: msg と defineMessage
+description: 後で翻訳するためのメッセージ記述子を定義するためのマクロ
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import msgAndDefineMessageWorkbench from "virtual:macro-workbench?demo=src/demos/macros/msg-and-define-message";
+
+`msg` と `defineMessage` は、すぐに翻訳せず、メッセージ記述子だけを定義します。
+`msg` は `defineMessage` の別名であり、機能は同一です。
+
+メッセージを保存したい場合、エクスポートしたい場合、複数ファイルで再利用したい場合、あるいは別のレンダラーやランタイム境界であとから翻訳したい場合に適しています。
+
+フレームワークに依存しない Lingui の意味論については、[公式の `msg` / `defineMessage` リファレンス](https://lingui.dev/ref/macro#definemessage) を参照してください。
+
+<MacroWorkbench workbench={msgAndDefineMessageWorkbench} />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { defineMessage, msg, t } from "lingui-for-svelte/macro";
+
+  const welcome = msg`Welcome back`;
+
+  const submitLabel = defineMessage({
+    id: "form.submit",
+    message: "Submit",
+  });
+</script>
+
+<p>{$t(welcome)}</p>
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { defineMessage, msg, t } from "lingui-for-astro/macro";
+
+const welcome = msg`Welcome back`;
+
+const submitLabel = defineMessage({
+  id: "form.submit",
+  message: "Submit",
+});
+---
+
+<p>{t(welcome)}</p>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { defineMessage, msg, t } from "@lingui/core/macro";
+
+const welcome = msg`Welcome back`;
+
+const submitLabel = defineMessage({
+  id: "form.submit",
+  message: "Submit",
+});
+
+const label = t(welcome);
+```
+
+  </TabItem>
+</Tabs>
+
+<Aside type="tip">
+
+記述子は別ファイルで定義してエクスポートすることもできます。
+素の JavaScript または TypeScript で使う場合は次のとおりに行います。
+
+- `@lingui/core/macro` からマクロをインポートする
+- `unplugin-lingui-macro` で変換する
+
+完全なセットアップと推奨される記述パターンは [プレーンな JS/TS でのセットアップ](/ja/guides/plain-js-ts) を参照してください。
+
+</Aside>
+
+## 向いている場面
+
+- 翻訳は定義時ではなく、あとで行いたい
+- 同じ記述子を複数ファイルや複数レンダラーで再利用する
+- 素の TypeScript / JavaScript を公式 Lingui Core の書き方に近づけたい
+
+## 推奨ルール
+
+素の `.js` と `.ts` ファイルでは、公式の `@lingui/core/macro` パッケージからインポートしてください。
+フレームワーク固有パッケージはフレームワーク構文向けであり、汎用的な記述子定義のためのものではありません。

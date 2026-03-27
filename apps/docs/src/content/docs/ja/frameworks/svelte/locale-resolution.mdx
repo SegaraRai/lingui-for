@@ -1,0 +1,206 @@
+---
+title: "Svelte: ロケール解決"
+description: SvelteKit アプリで有効なロケールを解決し、保持し、適用する方法
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+SvelteKit アプリでは、ロケール解決はサーバー側で行います。
+解決されたロケールは `locals` を通ってレイアウトへ渡され、そこで Lingui インスタンスに反映され、利用者のナビゲーション時にも再度有効化されます。
+
+全体の流れは次のとおりです。
+
+1. `hooks.server.ts` でロケールを解決します。
+2. それを `event.locals` に保存します。
+3. ルートレイアウトの `load` 関数から返します。
+4. ルートレイアウトで Lingui を初期化します。
+5. クライアント側ナビゲーションでロケールが変わったら再度 `activate` します。
+
+## サーバーでロケールを解決する
+
+`hooks.server.ts` は、使えるロケール手掛かりを読み取り、その中から 1 つ選ぶのに適した場所です。典型的な優先順位は次のとおりです。
+
+1. URL クエリパラメータ（明示的な上書き。例: `?lang=ja`）
+2. クッキー（前回セッションから記憶された値）
+3. `Accept-Language` リクエストヘッダー（ブラウザ設定）
+4. ソースロケールへフォールバック
+
+サーバーはそのリクエストに対して 1 つのロケールを選び、それを `event.locals` に保存して、アプリ全体へ引き渡します。
+
+```ts title="src/lib/i18n/locale.ts"
+import { catalog, type SupportedLocale } from "./catalog";
+
+export const LOCALE_COOKIE = "locale";
+
+const supportedLocaleSet: ReadonlySet<unknown> = new Set(Object.keys(catalog));
+
+export function isSupportedLocale(value: unknown): value is SupportedLocale {
+  return supportedLocaleSet.has(value);
+}
+
+export function resolveLocale(
+  urlParam: string | null,
+  cookie: string | undefined,
+  acceptLanguage: string | null,
+): SupportedLocale {
+  if (isSupportedLocale(urlParam)) return urlParam;
+  if (isSupportedLocale(cookie)) return cookie;
+  // 本番利用では、この単純な判定を @formatjs/intl-localematcher などのロケール交渉ライブラリに（Negotiator と併用して）置き換えてください
+  // Accept-Language ヘッダーを解釈し、最も近い対応ロケールを選べます
+  if (acceptLanguage?.toLowerCase().includes("ja")) return "ja";
+  return "en";
+}
+```
+
+<Aside>
+
+`catalog` は共有設定ファイルからエクスポートされる、ロケールをキーにしたオブジェクトです。
+このファイルの作り方と、全ロケールを最初からまとめてバンドルするか必要時に読み込むかの選び方は [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。
+
+</Aside>
+
+```ts title="src/hooks.server.ts"
+import type { Handle } from "@sveltejs/kit";
+import {
+  LOCALE_COOKIE,
+  isSupportedLocale,
+  resolveLocale,
+} from "$lib/i18n/locale";
+
+export const handle: Handle = async ({ event, resolve }) => {
+  const urlParam = event.url.searchParams.get("lang");
+  const cookie = event.cookies.get(LOCALE_COOKIE);
+  const acceptLanguage = event.request.headers.get("accept-language");
+
+  event.locals.locale = resolveLocale(urlParam, cookie, acceptLanguage);
+
+  // URL で明示された上書きを Cookie に保存する
+  if (isSupportedLocale(urlParam)) {
+    event.cookies.set(LOCALE_COOKIE, urlParam, {
+      path: "/",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 365,
+    });
+  }
+
+  // SEO と支援技術のために HTML の `lang` 属性も同期させる
+  return resolve(event, {
+    transformPageChunk: ({ html }) =>
+      html.replace(
+        /<html lang="[^"]*">/,
+        `<html lang="${event.locals.locale}">`,
+      ),
+  });
+};
+```
+
+`locals.locale` をアプリ型に登録します。
+
+```ts title="src/app.d.ts"
+import type { SupportedLocale } from "$lib/i18n/locale";
+
+declare global {
+  namespace App {
+    interface Locals {
+      locale: SupportedLocale;
+    }
+  }
+}
+```
+
+## `load` 関数経由でレイアウトへロケールを渡す
+
+ルートレイアウトのサーバー `load` 関数を使うと、解決済みロケールをページデータとして渡せます。
+
+ここで `lang` クエリパラメータを読むのが、小さいですが重要な工夫です。ロケールパラメータだけが変わるナビゲーションでも、この `load` 関数を SvelteKit に再実行させられます。
+
+```ts title="src/routes/+layout.server.ts"
+import type { LayoutServerLoad } from "./$types";
+
+export const load: LayoutServerLoad = ({ locals, url }) => {
+  // ロケールだけの遷移でも SvelteKit に `load` を再実行させる。
+  url.searchParams.get("lang");
+
+  return { locale: locals.locale };
+};
+```
+
+## レイアウトで Lingui を初期化する
+
+ルートレイアウトで Lingui インスタンスを作り、`setLinguiContext` で登録し、解決済みロケールを最初の描画に使います。
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { catalog, type SupportedLocale } from "$lib/i18n/catalog";
+
+  let { data, children } = $props();
+
+  const i18n = setupI18n({ locale: data.locale, messages: catalog });
+  setLinguiContext(i18n);
+
+  function ensureLocale(locale: SupportedLocale): void {
+    if (i18n.locale !== locale) {
+      i18n.activate(locale);
+    }
+  }
+
+  // 初回 SSR 描画では `$effect` が動かないため、ここで即時に呼ぶ。
+  ensureLocale(data.locale);
+
+  // 以後のクライアント側ナビゲーションでは `data.locale` の変化ごとに呼ばれる。
+  $effect(() => {
+    ensureLocale(data.locale);
+    document.documentElement.lang = data.locale;
+  });
+</script>
+
+{@render children()}
+```
+
+<Aside>
+
+ここでは `catalog` を通して全ロケールを最初から `setupI18n` に渡しているため、`activate()` だけで十分です。`load()` は不要です。
+遅延読み込みを選びたい場合は [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。
+
+</Aside>
+
+## ナビゲーション中もロケールを同期する
+
+クライアント側ナビゲーションでは、レイアウトコンポーネントを作り直さずに `data.locale` だけが変わる場合があります。
+前の例の `$effect` は、そのケースに対応するため、レイアウトデータが変わるたびに Lingui を再度 `activate` しています。
+
+これで考え方は単純になります。
+
+- サーバーが各リクエストのロケールを決める
+- レイアウトが初回描画でそのロケールを有効化する
+- クライアント側ナビゲーションで変わったら、レイアウトが再度有効化する
+
+## UI からロケールを切り替える
+
+利用者が明示的にロケールを切り替えられるようにするには、`?lang=` を付けた同じページへ遷移させます。
+サーバーフックがそのパラメータを拾ってクッキーを更新し、レイアウト側が再度 `activate` します。
+
+```svelte title="src/lib/LanguageSwitcher.svelte"
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+  import { goto } from "$app/navigation";
+  import { page } from "$app/state";
+  import type { SupportedLocale } from "$lib/i18n/locale";
+
+  function switchLocale(next: SupportedLocale): void {
+    const url = new URL(page.url);
+    url.searchParams.set("lang", next);
+    goto(url.toString());
+  }
+</script>
+
+<button onclick={() => switchLocale("ja")} type="button">{$t`Japanese`}</button>
+<button onclick={() => switchLocale("en")} type="button">{$t`English`}</button>
+```
+
+## ハイドレーション
+
+SvelteKit はレイアウトの `data` を直列化し、ハイドレーション時にクライアント側で再利用します。
+レイアウトはサーバー由来の `data.locale` を使っているため、クライアントも常にサーバーと同じロケールで開始します。追加の同期処理は不要です。
