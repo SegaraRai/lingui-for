@@ -602,6 +602,94 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     },
   ];
 
+  const svelteUnicodeCrlfFilename = "/virtual/UnicodeScenarioCrlf.svelte";
+  const svelteUnicodeCrlfSource = [
+    '<script lang="ts">',
+    '  import { t as translate } from "@lingui/core/macro";',
+    '  import { Trans as Translation } from "@lingui/react/macro";',
+    '  const name = "世界👨‍👩‍👧‍👦😀😃😄";',
+    "</script>",
+    "",
+    '<p class="frame">前置き🎌 {$translate`家族👨‍👩‍👧‍👦😀😃😄 ${name}`} 後置き🍣</p>',
+    "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
+  ].join("\r\n");
+  const svelteUnicodeCrlfDetections: Detection[] = [
+    {
+      name: "unicode crlf markup transform",
+      original: "translate`家族👨‍👩‍👧‍👦😀😃😄 ${name}`",
+      generated:
+        /(?<=<p class="frame">前置き🎌 \{)_i18n\._\([\s\S]*?\)(?=\} 後置き🍣<\/p>)/,
+      extracted: "家族👨‍👩‍👧‍👦😀😃😄 {name}",
+    },
+    {
+      name: "unicode crlf wrapper open",
+      original: '<p class="frame">前置き🎌 {',
+      generated: '<p class="frame">前置き🎌 {',
+      mapping: "chars",
+    },
+    {
+      name: "unicode crlf wrapper close",
+      original: /} 後置き🍣<\/p>(?=\r\n<Translation>)/,
+      generated: /} 後置き🍣<\/p>(?=\r\n<_Trans\b)/,
+      mapping: "chars",
+    },
+    {
+      name: "unicode crlf component boundary",
+      original:
+        "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
+      generated: /<_Trans\b[\s\S]*?\/>/,
+    },
+    {
+      name: "unicode crlf component extraction",
+      original: "ようこそ ",
+      extracted: "ようこそ <0>{name}</0> さん🎉",
+    },
+  ];
+
+  const astroUnicodeCrlfFilename = "/virtual/UnicodeScenarioCrlf.astro";
+  const astroUnicodeCrlfSource = [
+    "---",
+    'import { t as translate } from "@lingui/core/macro";',
+    'import { Trans as Translation } from "@lingui/react/macro";',
+    'const name = "世界👨‍👩‍👧‍👦😀😃😄";',
+    "---",
+    "",
+    '<p class="frame">前置き🎌 {translate`家族👨‍👩‍👧‍👦😀😃😄 ${name}`} 後置き🍣</p>',
+    "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
+  ].join("\r\n");
+  const astroUnicodeCrlfDetections: Detection[] = [
+    {
+      name: "unicode crlf markup transform",
+      original: "translate`家族👨‍👩‍👧‍👦😀😃😄 ${name}`",
+      generated:
+        /(?<=<p class="frame">前置き🎌 \{)_i18n\._\([\s\S]*?\)(?=\} 後置き🍣<\/p>)/,
+      extracted: "家族👨‍👩‍👧‍👦😀😃😄 {name}",
+    },
+    {
+      name: "unicode crlf wrapper open",
+      original: '<p class="frame">前置き🎌 {',
+      generated: '<p class="frame">前置き🎌 {',
+      mapping: "chars",
+    },
+    {
+      name: "unicode crlf wrapper close",
+      original: /} 後置き🍣<\/p>(?=\r\n<Translation>)/,
+      generated: /} 後置き🍣<\/p>(?=\r\n<_Trans\b)/,
+      mapping: "chars",
+    },
+    {
+      name: "unicode crlf component boundary",
+      original:
+        "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
+      generated: /<_Trans\b[\s\S]*?\/>/,
+    },
+    {
+      name: "unicode crlf component extraction",
+      original: "ようこそ ",
+      extracted: "ようこそ <0>{name}</0> さん🎉",
+    },
+  ];
+
   const fixtures: DetectionFixture[] = [
     {
       name: "Svelte expression contracts",
@@ -686,6 +774,20 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       filename: astroUnicodeFilename,
       source: astroUnicodeSource,
       detections: astroUnicodeDetections,
+    },
+    {
+      name: "Svelte unicode CRLF contracts",
+      framework: "svelte",
+      filename: svelteUnicodeCrlfFilename,
+      source: svelteUnicodeCrlfSource,
+      detections: svelteUnicodeCrlfDetections,
+    },
+    {
+      name: "Astro unicode CRLF contracts",
+      framework: "astro",
+      filename: astroUnicodeCrlfFilename,
+      source: astroUnicodeCrlfSource,
+      detections: astroUnicodeCrlfDetections,
     },
   ];
 

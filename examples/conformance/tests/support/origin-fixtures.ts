@@ -129,4 +129,62 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
     ],
   },
+  {
+    framework: "svelte",
+    name: "svelte unicode crlf origin mapping",
+    filename: "/virtual/extract-origin-unicode-crlf.svelte",
+    source: [
+      '<script lang="ts">',
+      '  import { t, Trans } from "lingui-for-svelte/macro";',
+      "",
+      "  const scriptLabel = t.eager`家族👨‍👩‍👧‍👦😀😃😄スクリプト`;",
+      "</script>",
+      "",
+      "<p>前置き🎌 {$t`家族👨‍👩‍👧‍👦😀😃😄テンプレート`} 後置き🍣</p>",
+      '<Trans>ようこそ <strong>{"世界👨‍👩‍👧‍👦😀😃😄"}</strong> さん🎉</Trans>',
+    ].join("\r\n"),
+    expectations: [
+      {
+        message: "家族👨‍👩‍👧‍👦😀😃😄スクリプト",
+        needle: "t.eager`家族👨‍👩‍👧‍👦😀😃😄スクリプト`",
+      },
+      {
+        message: "家族👨‍👩‍👧‍👦😀😃😄テンプレート",
+        needle: "t`家族👨‍👩‍👧‍👦😀😃😄テンプレート`",
+      },
+      {
+        message: "ようこそ <0>世界👨‍👩‍👧‍👦😀😃😄</0> さん🎉",
+        needle: "ようこそ ",
+      },
+    ],
+  },
+  {
+    framework: "astro",
+    name: "astro unicode crlf origin mapping",
+    filename: "/virtual/extract-origin-unicode-crlf.astro",
+    source: [
+      "---",
+      'import { t, Trans } from "lingui-for-astro/macro";',
+      "",
+      "const scriptLabel = t`家族👨‍👩‍👧‍👦😀😃😄フロントマター`;",
+      "---",
+      "",
+      "<p>前置き🎌 {t`家族👨‍👩‍👧‍👦😀😃😄テンプレート`} 後置き🍣</p>",
+      '<Trans>ようこそ <strong>{"世界👨‍👩‍👧‍👦😀😃😄"}</strong> さん🎉</Trans>',
+    ].join("\r\n"),
+    expectations: [
+      {
+        message: "家族👨‍👩‍👧‍👦😀😃😄フロントマター",
+        needle: "t`家族👨‍👩‍👧‍👦😀😃😄フロントマター`",
+      },
+      {
+        message: "家族👨‍👩‍👧‍👦😀😃😄テンプレート",
+        needle: "t`家族👨‍👩‍👧‍👦😀😃😄テンプレート`",
+      },
+      {
+        message: "ようこそ <0>世界👨‍👩‍👧‍👦😀😃😄</0> さん🎉",
+        needle: "ようこそ ",
+      },
+    ],
+  },
 ];

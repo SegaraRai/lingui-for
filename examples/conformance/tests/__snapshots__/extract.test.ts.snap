@@ -1044,6 +1044,63 @@ exports[`'unicode-adjacent-text' > svelte extraction 1`] = `
 ]
 `;
 
+exports[`'unicode-zwj-adjacent-text' > astro extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "jlsvLV",
+    "message": "家族👨‍👩‍👧‍👦 <0>{name}</0> 終端🚀🎉",
+    "origin": [
+      "/virtual/unicode-zwj-adjacent-text.astro",
+      9,
+      9,
+    ],
+    "placeholders": {
+      "name": "name",
+    },
+  },
+]
+`;
+
+exports[`'unicode-zwj-adjacent-text' > official react extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "jlsvLV",
+    "message": "家族👨‍👩‍👧‍👦 <0>{name}</0> 終端🚀🎉",
+    "origin": [
+      "/virtual/unicode-zwj-adjacent-text.reference.tsx",
+      11,
+      4,
+    ],
+    "placeholders": {
+      "name": "name",
+    },
+  },
+]
+`;
+
+exports[`'unicode-zwj-adjacent-text' > svelte extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "jlsvLV",
+    "message": "家族👨‍👩‍👧‍👦 <0>{name}</0> 終端🚀🎉",
+    "origin": [
+      "/virtual/unicode-zwj-adjacent-text.svelte",
+      9,
+      9,
+    ],
+    "placeholders": {
+      "name": "name",
+    },
+  },
+]
+`;
+
 exports[`'with-id-context-comment-component' > astro extraction 1`] = `
 [
   {

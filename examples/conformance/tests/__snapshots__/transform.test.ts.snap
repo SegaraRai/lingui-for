@@ -902,6 +902,89 @@ exports[`NODE_ENV=development > 'unicode-adjacent-text' > svelte transform 1`] =
 </section>"
 `;
 
+exports[`NODE_ENV=development > 'unicode-zwj-adjacent-text' > astro transform 1`] = `
+"---
+import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+const __l4a_i18n = __l4a_createI18n(Astro.locals);
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+
+const name = "世界";
+---
+
+<section>
+  先頭😀😃😄
+  <L4aRuntimeTrans {.../*i18n*/
+  {
+    id: "jlsvLV",
+    message: "\\u5BB6\\u65CF\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67\\u200D\\uD83D\\uDC66 <0>{name}</0> \\u7D42\\u7AEF\\uD83D\\uDE80\\uD83C\\uDF89",
+    values: {
+      name: name
+    },
+    components: {
+      0: {
+        kind: "element",
+        tag: "strong",
+        props: {}
+      }
+    }
+  }} />
+  末尾🍣🍜
+</section>"
+`;
+
+exports[`NODE_ENV=development > 'unicode-zwj-adjacent-text' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+export function Example({
+  name
+}: {
+  name: string;
+}) {
+  return <section>
+      先頭😀😃😄
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "jlsvLV",
+      message: "\\u5BB6\\u65CF\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67\\u200D\\uD83D\\uDC66 <0>{name}</0> \\u7D42\\u7AEF\\uD83D\\uDE80\\uD83C\\uDF89",
+      values: {
+        name: name
+      },
+      components: {
+        0: <strong />
+      }
+    }} />
+      末尾🍣🍜
+    </section>;
+}"
+`;
+
+exports[`NODE_ENV=development > 'unicode-zwj-adjacent-text' > svelte transform 1`] = `
+"<script lang="ts">
+  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+  let name = $state("世界");
+</script>
+
+<section>
+  先頭😀😃😄
+  <L4sRuntimeTrans {.../*i18n*/
+  {
+    id: "jlsvLV",
+    message: "\\u5BB6\\u65CF\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67\\u200D\\uD83D\\uDC66 <0>{name}</0> \\u7D42\\u7AEF\\uD83D\\uDE80\\uD83C\\uDF89",
+    values: {
+      name: name
+    },
+    components: {
+      0: {
+        kind: "element",
+        tag: "strong",
+        props: {}
+      }
+    }
+  }} />
+  末尾🍣🍜
+</section>"
+`;
+
 exports[`NODE_ENV=development > 'with-id-context-comment-component' > astro transform 1`] = `
 "---
 import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
@@ -2244,6 +2327,86 @@ exports[`NODE_ENV=production > 'unicode-adjacent-text' > svelte transform 1`] = 
     }
   }} />
   後置き🎉
+</section>"
+`;
+
+exports[`NODE_ENV=production > 'unicode-zwj-adjacent-text' > astro transform 1`] = `
+"---
+import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+const __l4a_i18n = __l4a_createI18n(Astro.locals);
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+
+const name = "世界";
+---
+
+<section>
+  先頭😀😃😄
+  <L4aRuntimeTrans {.../*i18n*/
+  {
+    id: "jlsvLV",
+    values: {
+      name: name
+    },
+    components: {
+      0: {
+        kind: "element",
+        tag: "strong",
+        props: {}
+      }
+    }
+  }} />
+  末尾🍣🍜
+</section>"
+`;
+
+exports[`NODE_ENV=production > 'unicode-zwj-adjacent-text' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+export function Example({
+  name
+}: {
+  name: string;
+}) {
+  return <section>
+      先頭😀😃😄
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "jlsvLV",
+      values: {
+        name: name
+      },
+      components: {
+        0: <strong />
+      }
+    }} />
+      末尾🍣🍜
+    </section>;
+}"
+`;
+
+exports[`NODE_ENV=production > 'unicode-zwj-adjacent-text' > svelte transform 1`] = `
+"<script lang="ts">
+  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+  let name = $state("世界");
+</script>
+
+<section>
+  先頭😀😃😄
+  <L4sRuntimeTrans {.../*i18n*/
+  {
+    id: "jlsvLV",
+    values: {
+      name: name
+    },
+    components: {
+      0: {
+        kind: "element",
+        tag: "strong",
+        props: {}
+      }
+    }
+  }} />
+  末尾🍣🍜
 </section>"
 `;
 

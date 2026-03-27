@@ -918,4 +918,46 @@ export const conformanceFixtures: readonly ConformanceFixture[] = [
       </section>
     `,
   },
+  {
+    name: "unicode-zwj-adjacent-text",
+    officialReact: dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      export function Example({ name }: { name: string }) {
+        return (
+          <section>
+            先頭😀😃😄
+            <Trans>家族👨‍👩‍👧‍👦 <strong>{name}</strong> 終端🚀🎉</Trans>
+            末尾🍣🍜
+          </section>
+        );
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+
+        let name = $state("世界");
+      </script>
+
+      <section>
+        先頭😀😃😄
+        <Trans>家族👨‍👩‍👧‍👦 <strong>{name}</strong> 終端🚀🎉</Trans>
+        末尾🍣🍜
+      </section>
+    `,
+    astro: dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+
+      const name = "世界";
+      ---
+
+      <section>
+        先頭😀😃😄
+        <Trans>家族👨‍👩‍👧‍👦 <strong>{name}</strong> 終端🚀🎉</Trans>
+        末尾🍣🍜
+      </section>
+    `,
+  },
 ];
