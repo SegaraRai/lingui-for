@@ -73,16 +73,8 @@ fn analyze_astro(
         (Vec::new(), Vec::new())
     };
 
-    let mut template_expressions = Vec::new();
-    let mut template_components = Vec::new();
-    collect_template_expressions(
-        source,
-        root,
-        &macro_imports,
-        options.whitespace,
-        &mut template_expressions,
-        &mut template_components,
-    )?;
+    let (template_expressions, template_components) =
+        collect_template_expressions(source, root, &macro_imports, options)?;
 
     Ok(AstroFrontmatterAnalysis {
         frontmatter,
@@ -183,62 +175,87 @@ fn collect_template_expressions(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    expressions: &mut Vec<AstroTemplateExpression>,
-    components: &mut Vec<AstroTemplateComponent>,
-) -> Result<(), AnalyzerError> {
-    match node.kind() {
-        "html_interpolation" => {
-            push_template_expression(
-                source,
-                Span::from_node(node),
-                inner_range_from_delimiters(node, 1, 1),
-                imports,
-                expressions,
-            )?;
-        }
-        "element" => {
-            if let Some(component) =
-                component_candidate_from_element(source, node, imports, whitespace_mode)
-            {
-                components.push(component);
-                return Ok(());
+    options: &AnalyzeOptions,
+) -> Result<(Vec<AstroTemplateExpression>, Vec<AstroTemplateComponent>), AnalyzerError> {
+    fn collect_template_expressions_impl(
+        source: &str,
+        node: Node<'_>,
+        imports: &[MacroImport],
+        options: &AnalyzeOptions,
+        expressions: &mut Vec<AstroTemplateExpression>,
+        components: &mut Vec<AstroTemplateComponent>,
+    ) -> Result<(), AnalyzerError> {
+        match node.kind() {
+            "html_interpolation" => {
+                push_template_expression(
+                    source,
+                    Span::from_node(node),
+                    inner_range_from_delimiters(node, 1, 1),
+                    imports,
+                    expressions,
+                )?;
             }
+            "element" => {
+                if let Some(component) =
+                    component_candidate_from_element(source, node, imports, options)
+                {
+                    components.push(component);
+                    return Ok(());
+                }
+            }
+            "attribute_interpolation" => {
+                let inner = node
+                    .children(&mut node.walk())
+                    .find(|child| child.kind() == "attribute_js_expr")
+                    .map(Span::from_node)
+                    .unwrap_or_else(|| inner_range_from_delimiters(node, 1, 1));
+                push_template_expression(
+                    source,
+                    Span::from_node(node),
+                    inner,
+                    imports,
+                    expressions,
+                )?;
+            }
+            "attribute_backtick_string" => {
+                push_template_expression(
+                    source,
+                    Span::from_node(node),
+                    inner_range_from_delimiters(node, 1, 1),
+                    imports,
+                    expressions,
+                )?;
+            }
+            "frontmatter_js_block" => return Ok(()),
+            _ => {}
         }
-        "attribute_interpolation" => {
-            let inner = node
-                .children(&mut node.walk())
-                .find(|child| child.kind() == "attribute_js_expr")
-                .map(Span::from_node)
-                .unwrap_or_else(|| inner_range_from_delimiters(node, 1, 1));
-            push_template_expression(source, Span::from_node(node), inner, imports, expressions)?;
-        }
-        "attribute_backtick_string" => {
-            push_template_expression(
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            collect_template_expressions_impl(
                 source,
-                Span::from_node(node),
-                inner_range_from_delimiters(node, 1, 1),
+                child,
                 imports,
+                options,
                 expressions,
+                components,
             )?;
         }
-        "frontmatter_js_block" => return Ok(()),
-        _ => {}
+
+        Ok(())
     }
 
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_template_expressions(
-            source,
-            child,
-            imports,
-            whitespace_mode,
-            expressions,
-            components,
-        )?;
-    }
-
-    Ok(())
+    let mut expressions = Vec::new();
+    let mut components = Vec::new();
+    collect_template_expressions_impl(
+        source,
+        node,
+        imports,
+        options,
+        &mut expressions,
+        &mut components,
+    )?;
+    Ok((expressions, components))
 }
 
 fn push_template_expression(
@@ -269,7 +286,7 @@ fn component_candidate_from_element(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
+    options: &AnalyzeOptions,
 ) -> Option<AstroTemplateComponent> {
     let mut cursor = node.walk();
     let tag_node = node
@@ -286,8 +303,7 @@ fn component_candidate_from_element(
     let import_decl = imports
         .iter()
         .find(|import_decl| import_decl.local_name == tag_name)?;
-    let normalization_edits =
-        collect_component_normalization_edits(source, node, imports, whitespace_mode);
+    let normalization_edits = collect_component_normalization_edits(source, node, imports, options);
 
     Some(AstroTemplateComponent {
         candidate: MacroCandidate {
@@ -384,11 +400,10 @@ fn collect_component_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
+    options: &AnalyzeOptions,
 ) -> Vec<NormalizationEdit> {
-    let mut edits =
-        collect_nested_component_normalization_edits(source, node, imports, whitespace_mode);
-    edits.extend(component_whitespace_edits(source, node, whitespace_mode));
+    let mut edits = collect_nested_component_normalization_edits(source, node, imports, options);
+    edits.extend(component_whitespace_edits(source, node, options));
     sort_and_dedup_normalization_edits(&mut edits);
     edits
 }
@@ -397,7 +412,7 @@ fn collect_nested_component_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
+    options: &AnalyzeOptions,
 ) -> Vec<NormalizationEdit> {
     let mut edits = Vec::new();
     let mut cursor = node.walk();
@@ -453,24 +468,18 @@ fn collect_nested_component_normalization_edits(
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, child, imports, whitespace_mode)
+                    component_candidate_from_element(source, child, imports, options)
                 {
                     edits.extend(component.candidate.normalization_edits);
                     continue;
                 }
                 edits.extend(collect_nested_component_normalization_edits(
-                    source,
-                    child,
-                    imports,
-                    whitespace_mode,
+                    source, child, imports, options,
                 ));
             }
             _ => {
                 edits.extend(collect_nested_component_normalization_edits(
-                    source,
-                    child,
-                    imports,
-                    whitespace_mode,
+                    source, child, imports, options,
                 ));
             }
         }
@@ -482,9 +491,9 @@ fn collect_nested_component_normalization_edits(
 fn component_whitespace_edits(
     source: &str,
     node: Node<'_>,
-    whitespace_mode: WhitespaceMode,
+    options: &AnalyzeOptions,
 ) -> Vec<NormalizationEdit> {
-    if whitespace_mode == WhitespaceMode::Jsx {
+    if options.whitespace == WhitespaceMode::Jsx {
         return Vec::new();
     }
 

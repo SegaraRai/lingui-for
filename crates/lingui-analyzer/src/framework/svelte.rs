@@ -68,8 +68,7 @@ fn analyze_svelte(
 ) -> Result<SvelteScriptAnalysis, AnalyzerError> {
     let tree = parse_svelte(source)?;
     let root = tree.root_node();
-    let mut scripts = Vec::new();
-    collect_script_blocks(source, root, &mut scripts)?;
+    let mut scripts = collect_script_blocks(source, root)?;
     let template_imports = scripts
         .iter()
         .filter(|script| !script.is_module)
@@ -87,47 +86,52 @@ fn analyze_svelte(
         .collect::<Vec<_>>();
     template_shadowed_names.sort();
     template_shadowed_names.dedup();
-    let mut template_expressions = Vec::new();
-    let mut template_components = Vec::new();
-    collect_template_expressions(
-        source,
-        root,
-        &template_imports,
-        options.whitespace,
-        &mut vec![template_shadowed_names],
-        &mut template_expressions,
-        &mut template_components,
-    )?;
+    let mut context = CollectContext {
+        scope_stack: vec![template_shadowed_names],
+        expressions: Vec::new(),
+        components: Vec::new(),
+    };
+    collect_template_expressions(source, root, &template_imports, options, &mut context)?;
     for script in &mut scripts {
         repair_svelte_candidates(source, &mut script.candidates);
     }
-    for expression in &mut template_expressions {
+    for expression in &mut context.expressions {
         repair_svelte_candidates(source, &mut expression.candidates);
     }
     Ok(SvelteScriptAnalysis {
         scripts,
-        template_expressions,
-        template_components,
+        template_expressions: context.expressions,
+        template_components: context.components,
     })
 }
 
 fn collect_script_blocks(
     source: &str,
     node: Node<'_>,
-    scripts: &mut Vec<SvelteScriptBlock>,
-) -> Result<(), AnalyzerError> {
-    if node.kind() == "script_element" {
-        if let Some(script) = analyze_script_block(source, node)? {
-            scripts.push(script);
+) -> Result<Vec<SvelteScriptBlock>, AnalyzerError> {
+    fn collect_script_blocks_impl(
+        source: &str,
+        node: Node<'_>,
+        scripts: &mut Vec<SvelteScriptBlock>,
+    ) -> Result<(), AnalyzerError> {
+        if node.kind() == "script_element" {
+            if let Some(script) = analyze_script_block(source, node)? {
+                scripts.push(script);
+            }
+            return Ok(());
         }
-        return Ok(());
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            collect_script_blocks_impl(source, child, scripts)?;
+        }
+        Ok(())
     }
 
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_script_blocks(source, child, scripts)?;
-    }
-    Ok(())
+    let mut scripts = Vec::new();
+    collect_script_blocks_impl(source, node, &mut scripts)?;
+
+    Ok(scripts)
 }
 
 fn analyze_script_block(
@@ -187,113 +191,67 @@ fn analyze_script_block(
     }))
 }
 
+struct CollectContext {
+    scope_stack: Vec<Vec<String>>,
+    expressions: Vec<SvelteTemplateExpression>,
+    components: Vec<SvelteTemplateComponent>,
+}
+
 fn collect_template_expressions(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
-    expressions: &mut Vec<SvelteTemplateExpression>,
-    components: &mut Vec<SvelteTemplateComponent>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
 ) -> Result<(), AnalyzerError> {
     match node.kind() {
         "script_element" | "style_element" => return Ok(()),
         "expression" => {
-            push_expression(source, node, imports, scope_stack, expressions)?;
+            push_expression(source, node, imports, context)?;
             return Ok(());
         }
         "html_tag" | "render_tag" | "key_start" | "await_start" | "if_start" | "else_if_start" => {
-            push_raw_text_expression(source, node, imports, scope_stack, expressions)?;
+            push_raw_text_expression(source, node, imports, context)?;
         }
         "const_tag" => {
-            push_raw_text_expression(source, node, imports, scope_stack, expressions)?;
+            push_raw_text_expression(source, node, imports, context)?;
             let names = declared_names_from_const_tag(source, node)?;
             if !names.is_empty() {
-                if let Some(frame) = scope_stack.last_mut() {
+                if let Some(frame) = context.scope_stack.last_mut() {
                     frame.extend(names);
                 } else {
-                    scope_stack.push(names);
+                    context.scope_stack.push(names);
                 }
             }
             return Ok(());
         }
         "if_statement" | "else_block" | "else_if_block" | "key_statement" => {
-            scope_stack.push(Vec::new());
+            context.scope_stack.push(Vec::new());
             let mut cursor = node.walk();
             for child in node.children(&mut cursor) {
-                collect_template_expressions(
-                    source,
-                    child,
-                    imports,
-                    whitespace_mode,
-                    scope_stack,
-                    expressions,
-                    components,
-                )?;
+                collect_template_expressions(source, child, imports, options, context)?;
             }
-            scope_stack.pop();
+            context.scope_stack.pop();
             return Ok(());
         }
         "each_statement" => {
-            visit_each_statement(
-                source,
-                node,
-                imports,
-                whitespace_mode,
-                scope_stack,
-                expressions,
-                components,
-            )?;
+            visit_each_statement(source, node, imports, options, context)?;
             return Ok(());
         }
         "then_block" => {
-            visit_named_block(
-                source,
-                node,
-                imports,
-                whitespace_mode,
-                scope_stack,
-                expressions,
-                components,
-                "then_start",
-            )?;
+            visit_named_block(source, node, imports, options, context, "then_start")?;
             return Ok(());
         }
         "catch_block" => {
-            visit_named_block(
-                source,
-                node,
-                imports,
-                whitespace_mode,
-                scope_stack,
-                expressions,
-                components,
-                "catch_start",
-            )?;
+            visit_named_block(source, node, imports, options, context, "catch_start")?;
             return Ok(());
         }
         "snippet_statement" => {
-            visit_snippet_statement(
-                source,
-                node,
-                imports,
-                whitespace_mode,
-                scope_stack,
-                expressions,
-                components,
-            )?;
+            visit_snippet_statement(source, node, imports, options, context)?;
             return Ok(());
         }
         "element" | "self_closing_tag" => {
-            visit_element_like(
-                source,
-                node,
-                imports,
-                whitespace_mode,
-                scope_stack,
-                expressions,
-                components,
-            )?;
+            visit_element_like(source, node, imports, options, context)?;
             return Ok(());
         }
         _ => {}
@@ -301,15 +259,7 @@ fn collect_template_expressions(
 
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        collect_template_expressions(
-            source,
-            child,
-            imports,
-            whitespace_mode,
-            scope_stack,
-            expressions,
-            components,
-        )?;
+        collect_template_expressions(source, child, imports, options, context)?;
     }
     Ok(())
 }
@@ -318,8 +268,7 @@ fn push_expression(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    scope_stack: &[Vec<String>],
-    expressions: &mut Vec<SvelteTemplateExpression>,
+    context: &mut CollectContext,
 ) -> Result<(), AnalyzerError> {
     let Some(raw_text) = node
         .children(&mut node.walk())
@@ -330,7 +279,8 @@ fn push_expression(
     let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
     let outer_span = Span::from_node(node);
     let expression_source = &source[inner_span.start..inner_span.end];
-    let shadowed_names = scope_stack
+    let shadowed_names = context
+        .scope_stack
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
@@ -343,7 +293,7 @@ fn push_expression(
         JsLikeLanguage::TypeScript,
         &shadowed_names,
     )?;
-    expressions.push(SvelteTemplateExpression {
+    context.expressions.push(SvelteTemplateExpression {
         outer_span,
         inner_span,
         candidates,
@@ -356,15 +306,15 @@ fn push_raw_text_expression(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    scope_stack: &[Vec<String>],
-    expressions: &mut Vec<SvelteTemplateExpression>,
+    context: &mut CollectContext,
 ) -> Result<(), AnalyzerError> {
     let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
         return Ok(());
     };
 
     let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
-    let shadowed_names = scope_stack
+    let shadowed_names = context
+        .scope_stack
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
@@ -376,7 +326,7 @@ fn push_raw_text_expression(
         JsLikeLanguage::TypeScript,
         &shadowed_names,
     )?;
-    expressions.push(SvelteTemplateExpression {
+    context.expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(node),
         inner_span,
         candidates,
@@ -389,39 +339,29 @@ fn visit_each_statement(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
-    expressions: &mut Vec<SvelteTemplateExpression>,
-    components: &mut Vec<SvelteTemplateComponent>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
 ) -> Result<(), AnalyzerError> {
     let start = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "each_start");
     if let Some(start) = start {
-        push_each_start_expression(source, start, imports, scope_stack, expressions)?;
+        push_each_start_expression(source, start, imports, context)?;
     }
     let frame = start
         .map(|start| declared_names_from_each_start(source, start))
         .transpose()?
         .unwrap_or_default();
 
-    scope_stack.push(frame);
+    context.scope_stack.push(frame);
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         if child.kind() == "each_start" || child.kind() == "each_end" {
             continue;
         }
-        collect_template_expressions(
-            source,
-            child,
-            imports,
-            whitespace_mode,
-            scope_stack,
-            expressions,
-            components,
-        )?;
+        collect_template_expressions(source, child, imports, options, context)?;
     }
-    scope_stack.pop();
+    context.scope_stack.pop();
     Ok(())
 }
 
@@ -429,15 +369,15 @@ fn push_each_start_expression(
     source: &str,
     each_start: Node<'_>,
     imports: &[MacroImport],
-    scope_stack: &[Vec<String>],
-    expressions: &mut Vec<SvelteTemplateExpression>,
+    context: &mut CollectContext,
 ) -> Result<(), AnalyzerError> {
     let Some(identifier) = each_start.child_by_field_name("identifier") else {
         return Ok(());
     };
 
     let inner_span = Span::from_node(identifier);
-    let shadowed_names = scope_stack
+    let shadowed_names = context
+        .scope_stack
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
@@ -449,7 +389,7 @@ fn push_each_start_expression(
         JsLikeLanguage::TypeScript,
         &shadowed_names,
     )?;
-    expressions.push(SvelteTemplateExpression {
+    context.expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(each_start),
         inner_span,
         candidates,
@@ -462,10 +402,8 @@ fn visit_named_block(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
-    expressions: &mut Vec<SvelteTemplateExpression>,
-    components: &mut Vec<SvelteTemplateComponent>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
     start_kind: &str,
 ) -> Result<(), AnalyzerError> {
     let start = node
@@ -479,23 +417,15 @@ fn visit_named_block(
         .flatten()
         .unwrap_or_default();
 
-    scope_stack.push(frame);
+    context.scope_stack.push(frame);
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         if child.kind() == start_kind {
             continue;
         }
-        collect_template_expressions(
-            source,
-            child,
-            imports,
-            whitespace_mode,
-            scope_stack,
-            expressions,
-            components,
-        )?;
+        collect_template_expressions(source, child, imports, options, context)?;
     }
-    scope_stack.pop();
+    context.scope_stack.pop();
     Ok(())
 }
 
@@ -503,10 +433,8 @@ fn visit_snippet_statement(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
-    expressions: &mut Vec<SvelteTemplateExpression>,
-    components: &mut Vec<SvelteTemplateComponent>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
 ) -> Result<(), AnalyzerError> {
     let start = node
         .children(&mut node.walk())
@@ -519,23 +447,15 @@ fn visit_snippet_statement(
         .flatten()
         .unwrap_or_default();
 
-    scope_stack.push(frame);
+    context.scope_stack.push(frame);
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         if child.kind() == "snippet_start" || child.kind() == "snippet_end" {
             continue;
         }
-        collect_template_expressions(
-            source,
-            child,
-            imports,
-            whitespace_mode,
-            scope_stack,
-            expressions,
-            components,
-        )?;
+        collect_template_expressions(source, child, imports, options, context)?;
     }
-    scope_stack.pop();
+    context.scope_stack.pop();
     Ok(())
 }
 
@@ -543,22 +463,20 @@ fn visit_element_like(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
-    expressions: &mut Vec<SvelteTemplateExpression>,
-    components: &mut Vec<SvelteTemplateComponent>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
 ) -> Result<(), AnalyzerError> {
     if let Some(candidate) =
-        component_candidate_from_element(source, node, imports, whitespace_mode, scope_stack)
+        component_candidate_from_element(source, node, imports, options, context)
     {
-        components.push(candidate);
+        context.components.push(candidate);
         return Ok(());
     }
 
     let let_bindings = let_bindings_from_element(source, node);
     let has_let_bindings = !let_bindings.is_empty();
     if has_let_bindings {
-        scope_stack.push(let_bindings);
+        context.scope_stack.push(let_bindings);
     }
 
     let mut cursor = node.walk();
@@ -566,19 +484,11 @@ fn visit_element_like(
         if node.kind() == "element" && child.kind() == "end_tag" {
             continue;
         }
-        collect_template_expressions(
-            source,
-            child,
-            imports,
-            whitespace_mode,
-            scope_stack,
-            expressions,
-            components,
-        )?;
+        collect_template_expressions(source, child, imports, options, context)?;
     }
 
     if has_let_bindings {
-        scope_stack.pop();
+        context.scope_stack.pop();
     }
     Ok(())
 }
@@ -587,8 +497,8 @@ fn component_candidate_from_element(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &[Vec<String>],
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
 ) -> Option<SvelteTemplateComponent> {
     let tag = match node.kind() {
         "element" => node
@@ -605,7 +515,8 @@ fn component_candidate_from_element(
         return None;
     }
 
-    let shadowed_names = scope_stack
+    let shadowed_names = context
+        .scope_stack
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
@@ -621,8 +532,8 @@ fn component_candidate_from_element(
         source,
         node,
         imports,
-        whitespace_mode,
-        scope_stack,
+        options,
+        context,
         &mut normalization_edits,
     )
     .ok()?;
@@ -649,23 +560,27 @@ fn collect_component_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &[Vec<String>],
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), AnalyzerError> {
-    let mut local_scope_stack = scope_stack.to_vec();
+    // Restore the original scope stack after walking this component because
+    // `{#const ...}` mutates the current frame; without this, names declared
+    // inside the component would incorrectly shadow imports in later siblings.
+    let org_scope_stack = context.scope_stack.clone();
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         collect_component_normalization_edits_inner(
             source,
             child,
             imports,
-            whitespace_mode,
-            &mut local_scope_stack,
+            options,
+            context,
             normalization_edits,
         )?;
     }
-    normalization_edits.extend(component_whitespace_edits(source, node, whitespace_mode));
+    context.scope_stack = org_scope_stack;
+    normalization_edits.extend(component_whitespace_edits(source, node, options));
     Ok(())
 }
 
@@ -673,8 +588,8 @@ fn collect_component_normalization_edits_inner(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), AnalyzerError> {
     match node.kind() {
@@ -684,7 +599,7 @@ fn collect_component_normalization_edits_inner(
                 source,
                 node,
                 imports,
-                scope_stack,
+                context,
                 normalization_edits,
             )?;
             return Ok(());
@@ -694,7 +609,7 @@ fn collect_component_normalization_edits_inner(
                 source,
                 node,
                 imports,
-                scope_stack,
+                context,
                 normalization_edits,
             )?;
         }
@@ -703,33 +618,33 @@ fn collect_component_normalization_edits_inner(
                 source,
                 node,
                 imports,
-                scope_stack,
+                context,
                 normalization_edits,
             )?;
             let names = declared_names_from_const_tag(source, node)?;
             if !names.is_empty() {
-                if let Some(frame) = scope_stack.last_mut() {
+                if let Some(frame) = context.scope_stack.last_mut() {
                     frame.extend(names);
                 } else {
-                    scope_stack.push(names);
+                    context.scope_stack.push(names);
                 }
             }
             return Ok(());
         }
         "if_statement" | "else_block" | "else_if_block" | "key_statement" => {
-            scope_stack.push(Vec::new());
+            context.scope_stack.push(Vec::new());
             let mut cursor = node.walk();
             for child in node.children(&mut cursor) {
                 collect_component_normalization_edits_inner(
                     source,
                     child,
                     imports,
-                    whitespace_mode,
-                    scope_stack,
+                    options,
+                    context,
                     normalization_edits,
                 )?;
             }
-            scope_stack.pop();
+            context.scope_stack.pop();
             return Ok(());
         }
         "each_statement" => {
@@ -737,8 +652,8 @@ fn collect_component_normalization_edits_inner(
                 source,
                 node,
                 imports,
-                whitespace_mode,
-                scope_stack,
+                options,
+                context,
                 normalization_edits,
             )?;
             return Ok(());
@@ -748,8 +663,8 @@ fn collect_component_normalization_edits_inner(
                 source,
                 node,
                 imports,
-                whitespace_mode,
-                scope_stack,
+                options,
+                context,
                 normalization_edits,
                 "then_start",
             )?;
@@ -760,8 +675,8 @@ fn collect_component_normalization_edits_inner(
                 source,
                 node,
                 imports,
-                whitespace_mode,
-                scope_stack,
+                options,
+                context,
                 normalization_edits,
                 "catch_start",
             )?;
@@ -772,8 +687,8 @@ fn collect_component_normalization_edits_inner(
                 source,
                 node,
                 imports,
-                whitespace_mode,
-                scope_stack,
+                options,
+                context,
                 normalization_edits,
             )?;
             return Ok(());
@@ -783,8 +698,8 @@ fn collect_component_normalization_edits_inner(
                 source,
                 node,
                 imports,
-                whitespace_mode,
-                scope_stack,
+                options,
+                context,
                 normalization_edits,
             )?;
             return Ok(());
@@ -798,8 +713,8 @@ fn collect_component_normalization_edits_inner(
             source,
             child,
             imports,
-            whitespace_mode,
-            scope_stack,
+            options,
+            context,
             normalization_edits,
         )?;
     }
@@ -810,7 +725,7 @@ fn append_expression_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    scope_stack: &[Vec<String>],
+    context: &CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), AnalyzerError> {
     let Some(raw_text) = node
@@ -821,7 +736,8 @@ fn append_expression_normalization_edits(
     };
     let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
 
-    let shadowed_names = scope_stack
+    let shadowed_names = context
+        .scope_stack
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
@@ -845,14 +761,15 @@ fn append_raw_text_expression_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    scope_stack: &[Vec<String>],
+    context: &CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), AnalyzerError> {
     let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
         return Ok(());
     };
 
-    let shadowed_names = scope_stack
+    let shadowed_names = context
+        .scope_stack
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
@@ -877,8 +794,8 @@ fn visit_component_each_statement(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), AnalyzerError> {
     let start = node
@@ -889,7 +806,7 @@ fn visit_component_each_statement(
             source,
             start,
             imports,
-            scope_stack,
+            context,
             normalization_edits,
         )?;
     }
@@ -898,7 +815,7 @@ fn visit_component_each_statement(
         .transpose()?
         .unwrap_or_default();
 
-    scope_stack.push(frame);
+    context.scope_stack.push(frame);
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         if child.kind() == "each_start" || child.kind() == "each_end" {
@@ -908,12 +825,12 @@ fn visit_component_each_statement(
             source,
             child,
             imports,
-            whitespace_mode,
-            scope_stack,
+            options,
+            context,
             normalization_edits,
         )?;
     }
-    scope_stack.pop();
+    context.scope_stack.pop();
     Ok(())
 }
 
@@ -921,8 +838,8 @@ fn visit_component_named_block(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
     start_kind: &str,
 ) -> Result<(), AnalyzerError> {
@@ -937,7 +854,7 @@ fn visit_component_named_block(
         .flatten()
         .unwrap_or_default();
 
-    scope_stack.push(frame);
+    context.scope_stack.push(frame);
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         if child.kind() == start_kind {
@@ -947,12 +864,12 @@ fn visit_component_named_block(
             source,
             child,
             imports,
-            whitespace_mode,
-            scope_stack,
+            options,
+            context,
             normalization_edits,
         )?;
     }
-    scope_stack.pop();
+    context.scope_stack.pop();
     Ok(())
 }
 
@@ -960,8 +877,8 @@ fn visit_component_snippet_statement(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), AnalyzerError> {
     let start = node
@@ -975,7 +892,7 @@ fn visit_component_snippet_statement(
         .flatten()
         .unwrap_or_default();
 
-    scope_stack.push(frame);
+    context.scope_stack.push(frame);
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         if child.kind() == "snippet_start" || child.kind() == "snippet_end" {
@@ -985,12 +902,12 @@ fn visit_component_snippet_statement(
             source,
             child,
             imports,
-            whitespace_mode,
-            scope_stack,
+            options,
+            context,
             normalization_edits,
         )?;
     }
-    scope_stack.pop();
+    context.scope_stack.pop();
     Ok(())
 }
 
@@ -998,12 +915,12 @@ fn visit_component_element_like(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    whitespace_mode: WhitespaceMode,
-    scope_stack: &mut Vec<Vec<String>>,
+    options: &AnalyzeOptions,
+    context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), AnalyzerError> {
     if let Some(candidate) =
-        component_candidate_from_element(source, node, imports, whitespace_mode, scope_stack)
+        component_candidate_from_element(source, node, imports, options, context)
     {
         normalization_edits.extend(candidate.candidate.normalization_edits);
         return Ok(());
@@ -1012,7 +929,7 @@ fn visit_component_element_like(
     let let_bindings = let_bindings_from_element(source, node);
     let has_let_bindings = !let_bindings.is_empty();
     if has_let_bindings {
-        scope_stack.push(let_bindings);
+        context.scope_stack.push(let_bindings);
     }
 
     let mut cursor = node.walk();
@@ -1024,14 +941,14 @@ fn visit_component_element_like(
             source,
             child,
             imports,
-            whitespace_mode,
-            scope_stack,
+            options,
+            context,
             normalization_edits,
         )?;
     }
 
     if has_let_bindings {
-        scope_stack.pop();
+        context.scope_stack.pop();
     }
     Ok(())
 }
@@ -1062,9 +979,9 @@ fn component_source_map_anchor(source: &str, node: Node<'_>) -> Option<Span> {
 fn component_whitespace_edits(
     source: &str,
     node: Node<'_>,
-    whitespace_mode: WhitespaceMode,
+    options: &AnalyzeOptions,
 ) -> Vec<NormalizationEdit> {
-    if whitespace_mode == WhitespaceMode::Jsx || node.kind() != "element" {
+    if options.whitespace == WhitespaceMode::Jsx || node.kind() != "element" {
         return Vec::new();
     }
 
