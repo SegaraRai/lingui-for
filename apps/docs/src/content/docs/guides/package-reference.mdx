@@ -5,26 +5,24 @@ description: What each lingui-for-* export is for and which ones are user-facing
 
 ## lingui-for-svelte
 
-| Export                                | What it contains                                                                                               | User-facing |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------- |
-| `lingui-for-svelte`                   | `setLinguiContext`, `getLinguiContext`                                                                         | ✓           |
-| `lingui-for-svelte/macro`             | `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage` | ✓           |
-| `lingui-for-svelte/extractor`         | `svelteExtractor(options?)` factory for `lingui.config.ts`                                                     | ✓           |
-| `lingui-for-svelte/unplugin/vite`     | Vite plugin                                                                                                    | ✓           |
-| `lingui-for-svelte/unplugin/rollup`   | Rollup plugin                                                                                                  | ✓           |
-| `lingui-for-svelte/unplugin/rolldown` | Rolldown plugin                                                                                                | ✓           |
-| `lingui-for-svelte/runtime`           | Internal runtime called by compiled macro output                                                               | ✗           |
+| Export                         | What it contains                                                                                               | User-facing |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- | ----------- |
+| `lingui-for-svelte`            | `setLinguiContext`, `getLinguiContext`                                                                         | ✓           |
+| `lingui-for-svelte/macro`      | `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage` | ✓           |
+| `lingui-for-svelte/extractor`  | `svelteExtractor(options?)` factory for `lingui.config.ts`                                                     | ✓           |
+| `lingui-for-svelte/unplugin/*` | Vite, Rollup, and Rolldown plugins                                                                             | ✓           |
+| `lingui-for-svelte/runtime`    | Internal runtime called by compiled macro output                                                               | ✗           |
 
 ## lingui-for-astro
 
-| Export                           | What it contains                                                                                               | User-facing |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------- |
-| `lingui-for-astro`               | `setLinguiContext`, `getLinguiContext`                                                                         | ✓           |
-| `lingui-for-astro/macro`         | `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage` | ✓           |
-| `lingui-for-astro/extractor`     | `astroExtractor(options?)` factory for `lingui.config.ts`                                                      | ✓           |
-| `lingui-for-astro/integration`   | Astro integration for `astro.config.ts`                                                                        | ✓           |
-| `lingui-for-astro/unplugin/vite` | Vite plugin (used internally by the integration)                                                               | ✓           |
-| `lingui-for-astro/runtime`       | Internal runtime called by compiled macro output                                                               | ✗           |
+| Export                         | What it contains                                                                                               | User-facing |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------- | ----------- |
+| `lingui-for-astro`             | `setLinguiContext`, `getLinguiContext`                                                                         | ✓           |
+| `lingui-for-astro/macro`       | `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage` | ✓           |
+| `lingui-for-astro/extractor`   | `astroExtractor(options?)` factory for `lingui.config.ts`                                                      | ✓           |
+| `lingui-for-astro/integration` | Astro integration for `astro.config.ts`                                                                        | ✓           |
+| `lingui-for-astro/unplugin/*`  | Vite, Rollup, and Rolldown plugins                                                                             | ✓           |
+| `lingui-for-astro/runtime`     | Internal runtime called by compiled macro output                                                               | ✗           |
 
 ## Notes
 
@@ -33,9 +31,6 @@ description: What each lingui-for-* export is for and which ones are user-facing
 `lingui-for-svelte/runtime` and `lingui-for-astro/runtime` contain the low-level helpers that
 compiled macro output calls at runtime. Their API surface may change without a major version bump.
 Do not import from these paths directly.
-
-The name may change to `*/__internal__/runtime` in a future release to make the boundary more
-explicit.
 
 ### Plain JS/TS uses a different package
 

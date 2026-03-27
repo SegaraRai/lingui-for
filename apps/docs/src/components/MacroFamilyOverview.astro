@@ -37,7 +37,7 @@ const initialIndex = 0;
               items.map((item, index) => (
                 <button
                   type="button"
-                  class="border-r border-b border-(--sl-color-gray-5) px-4 py-3 text-left transition-colors last:border-r-0 aria-pressed:bg-(--sl-color-accent-low) aria-pressed:text-(--sl-color-white) lg:border-r-0 lg:last:border-b-0"
+                  class="border-r border-b border-(--sl-color-gray-5) px-4 py-3 text-left transition-colors last:border-r-0 enabled:cursor-pointer aria-pressed:bg-(--sl-color-accent-low) aria-pressed:text-(--sl-color-white) lg:border-r-0 lg:last:border-b-0"
                   tabindex={index === initialIndex ? 0 : -1}
                   aria-pressed={index === initialIndex ? "true" : "false"}
                   data-family-tab

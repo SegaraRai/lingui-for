@@ -3,6 +3,8 @@ title: Whitespace in Component Macros
 description: How rich-text whitespace is normalized for Trans, Plural, Select, and SelectOrdinal.
 ---
 
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
 Component Macros are processed internally through JSX-compatible machinery, but Svelte and Astro
 templates are not JSX.
 
@@ -63,6 +65,9 @@ This stays equivalent to:
 
 Use the same `whitespace` setting everywhere that transforms framework files.
 
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
 ```ts title="vite.config.ts"
 import { defineConfig } from "vite";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
@@ -71,6 +76,9 @@ export default defineConfig({
   plugins: [linguiForSvelte({ whitespace: "auto" })],
 });
 ```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
 
 ```ts title="astro.config.ts"
 import { defineConfig } from "astro/config";
@@ -81,12 +89,18 @@ export default defineConfig({
 });
 ```
 
+  </TabItem>
+</Tabs>
+
 ## Configure extraction
 
 Extraction must use the same whitespace mode as the build transform. Otherwise the catalog message
 seen by `lingui extract` can diverge from the message produced during compilation.
 
 The framework extractors are factories, so configure them in `lingui.config.ts`:
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
 
 ```ts title="lingui.config.ts"
 import { defineConfig } from "@lingui/conf";
@@ -97,6 +111,9 @@ export default defineConfig({
 });
 ```
 
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
 ```ts title="lingui.config.ts"
 import { defineConfig } from "@lingui/conf";
 import { astroExtractor } from "lingui-for-astro/extractor";
@@ -105,6 +122,9 @@ export default defineConfig({
   extractors: [astroExtractor({ whitespace: "auto" })],
 });
 ```
+
+  </TabItem>
+</Tabs>
 
 ## When to use `jsx`
 
