@@ -1,15 +1,15 @@
 ---
-type TabItem = {
+interface TabItem {
   label: string;
   selected: boolean;
   value: string;
-};
+}
 
-type Props = {
+interface Props {
   ariaLabel: string;
   group: string;
   tabs: readonly TabItem[];
-};
+}
 
 const { ariaLabel, group, tabs } = Astro.props;
 ---

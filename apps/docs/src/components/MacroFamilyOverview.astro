@@ -4,12 +4,12 @@ import { Code } from "astro/components";
 import { sourceCodeThemes } from "../lib/code-themes.ts";
 import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
 
-type Props = {
+interface Props {
   items: readonly MacroFamilyOverviewItem[];
   title: string;
-};
+}
 
-const { items, title } = Astro.props as Props;
+const { items, title } = Astro.props;
 
 const initialIndex = 0;
 ---

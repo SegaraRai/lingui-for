@@ -3,11 +3,11 @@ import { t } from "lingui-for-astro/macro";
 
 import type { MacroWorkbenchControl } from "../lib/macro-workbench.ts";
 
-type Props = {
+interface Props {
   control: MacroWorkbenchControl;
-};
+}
 
-const { control } = Astro.props as Props;
+const { control } = Astro.props;
 ---
 
 <div class="flex items-center gap-3">
@@ -51,11 +51,13 @@ const { control } = Astro.props as Props;
         aria-pressed={control.initial ? "true" : "false"}
         data-control-id={control.id}
         data-control-type="boolean"
+        data-on-label={t(control.onLabel)}
+        data-off-label={t(control.offLabel)}
         type="button"
         name={control.id}
         class="rounded-lg border border-(--demo-control-field-border) px-3 py-1.5 text-sm transition-colors aria-pressed:bg-(--demo-control-field-active-background) aria-pressed:text-(--demo-control-field-active-text) aria-[pressed=false]:text-(--demo-control-field-text)"
       >
-        {control.initial ? "On" : "Off"}
+        {t(control.initial ? control.onLabel : control.offLabel)}
       </button>
     ) : (
       <select

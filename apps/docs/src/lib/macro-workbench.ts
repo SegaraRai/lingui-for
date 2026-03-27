@@ -1,13 +1,14 @@
 import type { MessageDescriptor } from "@lingui/core";
+import { msg } from "@lingui/core/macro";
 
 export const WORKBENCH_LOCALE_REGISTRY = {
   en: {
     code: "en",
-    label: "EN",
+    label: msg`EN`,
   },
   ja: {
     code: "ja",
-    label: "JA",
+    label: msg`JA`,
   },
 } as const;
 
@@ -15,7 +16,7 @@ export type MacroWorkbenchLocaleCode = keyof typeof WORKBENCH_LOCALE_REGISTRY;
 
 export type MacroWorkbenchLocaleOption = {
   code: MacroWorkbenchLocaleCode;
-  label: string;
+  label: MessageDescriptor;
 };
 
 export type MacroWorkbenchScalar = boolean | number | string;
@@ -74,7 +75,10 @@ export type MacroWorkbenchSelectControl = MacroWorkbenchBaseControl<
 export type MacroWorkbenchBooleanControl = MacroWorkbenchBaseControl<
   "boolean",
   boolean
->;
+> & {
+  onLabel: MessageDescriptor;
+  offLabel: MessageDescriptor;
+};
 
 export type MacroWorkbenchControl =
   | MacroWorkbenchBooleanControl

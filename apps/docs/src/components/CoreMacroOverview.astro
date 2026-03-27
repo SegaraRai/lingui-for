@@ -1,38 +1,49 @@
 ---
+import { t } from "lingui-for-astro/macro";
+
+import { ensureDocsLinguiContext, type DocsLocale } from "../lib/docs-i18n";
+import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
 import MacroFamilyOverview from "./MacroFamilyOverview.astro";
 
-import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
+interface Props {
+  language?: DocsLocale;
+  hrefPrefix?: string;
+}
+
+const { language = "en", hrefPrefix = "" } = Astro.props;
+
+ensureDocsLinguiContext(Astro.locals, language);
 
 const items = [
   {
     value: "t",
-    label: "t",
-    description: "Translate a message immediately and return a string.",
-    preview: "Hello Lingui",
+    label: t`t`,
+    description: t`Translate a message immediately and return a string.`,
+    preview: t`Hello Lingui`,
     snippet: String.raw`<p>{
   $t\`Hello \${name}\`
 }</p>`,
     snippetLang: "svelte",
-    href: "/macros/t",
+    href: `${hrefPrefix}/macros/t`,
   },
   {
     value: "msg",
-    label: "msg / defineMessage",
-    description: "Define a descriptor now and translate it later.",
-    preview: "Welcome back, Lingui",
+    label: t`msg / defineMessage`,
+    description: t`Define a descriptor now and translate it later.`,
+    preview: t`Welcome back, Lingui`,
     snippet: String.raw`<script lang="ts">
   let welcome = $derived(msg\`Welcome back, \${name}\`);
 </script>
 
 <p>{$t(welcome)}</p>`,
     snippetLang: "svelte",
-    href: "/macros/msg-and-define-message",
+    href: `${hrefPrefix}/macros/msg-and-define-message`,
   },
   {
     value: "plural",
-    label: "plural",
-    description: "Pick text from plural categories based on a numeric count.",
-    preview: "3 items",
+    label: t`plural`,
+    description: t`Pick text from plural categories based on a numeric count.`,
+    preview: t`3 items`,
     snippet: String.raw`<p>{
   $plural(count, {
     one: "# item",
@@ -40,13 +51,13 @@ const items = [
   })
 }</p>`,
     snippetLang: "svelte",
-    href: "/macros/plural",
+    href: `${hrefPrefix}/macros/plural`,
   },
   {
     value: "select",
-    label: "select",
-    description: "Switch text by a named case such as tone or status.",
-    preview: "Welcome",
+    label: t`select`,
+    description: t`Switch text by a named case such as tone or status.`,
+    preview: t`Welcome`,
     snippet: String.raw`<p>{
   $select(tone, {
     formal: "Welcome",
@@ -55,13 +66,13 @@ const items = [
   })
 }</p>`,
     snippetLang: "svelte",
-    href: "/macros/select",
+    href: `${hrefPrefix}/macros/select`,
   },
   {
     value: "select-ordinal",
-    label: "selectOrdinal",
-    description: "Choose ordinal text such as 1st, 2nd, or 3rd.",
-    preview: "2nd",
+    label: t`selectOrdinal`,
+    description: t`Choose ordinal text such as 1st, 2nd, or 3rd.`,
+    preview: t`2nd`,
     snippet: String.raw`<p>{
   $selectOrdinal(place, {
     one: "#st",
@@ -71,9 +82,9 @@ const items = [
   })
 }</p>`,
     snippetLang: "svelte",
-    href: "/macros/select-ordinal",
+    href: `${hrefPrefix}/macros/select-ordinal`,
   },
 ] satisfies readonly MacroFamilyOverviewItem[];
 ---
 
-<MacroFamilyOverview title="Core Macro Overview" items={items} />
+<MacroFamilyOverview title={t`Core Macro Overview`} items={items} />

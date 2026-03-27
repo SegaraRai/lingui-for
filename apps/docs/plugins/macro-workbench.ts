@@ -192,10 +192,7 @@ async function buildPoCatalogArtifacts(
     localeCodes.map(async (locale) => {
       const poCatalogPath = resolve(
         projectRoot,
-        "src",
-        "i18n",
-        "locales",
-        `${locale}.po`,
+        `src/i18n/locales/demos/${locale}.po`,
       );
       const poCatalog = (await poFormatter.parse(
         await readFile(poCatalogPath, "utf8"),
@@ -250,10 +247,7 @@ async function buildCompiledCatalogArtifacts(
     localeCodes.map(async (locale) => {
       const compiledCatalogPath = resolve(
         projectRoot,
-        "src",
-        "i18n",
-        "locales",
-        `${locale}.ts`,
+        `src/i18n/locales/demos/${locale}.ts`,
       );
       const compiledSource = await readFile(compiledCatalogPath, "utf8");
       const catalog = readCompiledCatalog(compiledSource);

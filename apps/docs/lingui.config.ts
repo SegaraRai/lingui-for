@@ -1,6 +1,7 @@
 import babelExtractor from "@lingui/cli/api/extractors/babel";
 import { defineConfig } from "@lingui/conf";
 
+import { astroExtractor } from "lingui-for-astro/extractor";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default defineConfig({
@@ -12,10 +13,14 @@ export default defineConfig({
   compileNamespace: "ts",
   catalogs: [
     {
-      path: "src/i18n/locales/{locale}",
+      path: "src/i18n/locales/docs/{locale}",
       include: ["src"],
-      exclude: ["src/i18n/locales/**"],
+      exclude: ["src/demos/**/*.svelte", "src/i18n/locales/**"],
+    },
+    {
+      path: "src/i18n/locales/demos/{locale}",
+      include: ["src/demos/**/*.svelte"],
     },
   ],
-  extractors: [svelteExtractor(), babelExtractor],
+  extractors: [astroExtractor(), svelteExtractor(), babelExtractor],
 });

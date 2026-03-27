@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2026-03-18 00:47+0900\n"
+"POT-Creation-Date: 2026-03-28 00:08+0900\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -31,27 +31,6 @@ msgstr "{place, selectordinal, one {#st} two {#nd} few {#rd} other {#th}}"
 msgid "{tone, select, formal {Welcome} casual {Hi} other {Hello}}"
 msgstr "{tone, select, formal {Welcome} casual {Hi} other {Hello}}"
 
-#: src/demos/macros/select-component/workbench.ts:21
-#: src/demos/macros/select/workbench.ts:21
-msgid "Casual"
-msgstr "Casual"
-
-#: src/demos/macros/plural-component/workbench.ts:14
-#: src/demos/macros/plural/workbench.ts:14
-msgid "Count"
-msgstr "Count"
-
-#: src/demos/macros/msg-and-define-message/workbench.ts:15
-#: src/demos/macros/t/workbench.ts:15
-#: src/demos/macros/trans-component/workbench.ts:15
-msgid "Enter a name"
-msgstr "Enter a name"
-
-#: src/demos/macros/select-component/workbench.ts:17
-#: src/demos/macros/select/workbench.ts:17
-msgid "Formal"
-msgstr "Formal"
-
 #: src/demos/macros/t/Demo.svelte:19
 msgid "Hello {name}"
 msgstr "Hello {name}"
@@ -59,22 +38,6 @@ msgstr "Hello {name}"
 #: src/demos/macros/t/Demo.svelte:19
 msgid "Hi there!"
 msgstr "Hi there!"
-
-#: src/demos/macros/msg-and-define-message/workbench.ts:14
-#: src/demos/macros/t/workbench.ts:14
-#: src/demos/macros/trans-component/workbench.ts:14
-msgid "Name"
-msgstr "Name"
-
-#: src/demos/macros/select-component/workbench.ts:25
-#: src/demos/macros/select/workbench.ts:25
-msgid "Other"
-msgstr "Other"
-
-#: src/demos/macros/select-ordinal-component/workbench.ts:14
-#: src/demos/macros/select-ordinal/workbench.ts:14
-msgid "Place"
-msgstr "Place"
 
 #: src/demos/macros/trans-component/Demo.svelte:20
 msgid "Say hello to <0>{name}</0>."
@@ -84,11 +47,6 @@ msgstr "Say hello to <0>{name}</0>."
 #: src/demos/macros/msg-and-define-message/Demo.svelte:17
 msgid "form.submit"
 msgstr "Submit"
-
-#: src/demos/macros/select-component/workbench.ts:14
-#: src/demos/macros/select/workbench.ts:14
-msgid "Tone"
-msgstr "Tone"
 
 #: src/demos/macros/msg-and-define-message/Demo.svelte:21
 msgid "Welcome back, {name}"
