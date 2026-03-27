@@ -5,11 +5,14 @@ pub mod scope;
 pub mod svelte;
 
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
 
 use crate::AnalyzerError;
 use crate::common::Span;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct MacroImport {
     pub source: String,
     pub imported_name: String,
@@ -17,27 +20,35 @@ pub struct MacroImport {
     pub span: Span,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub enum MacroCandidateKind {
     CallExpression,
     TaggedTemplateExpression,
     Component,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub enum MacroFlavor {
     Direct,
     Reactive,
     Eager,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub enum MacroCandidateStrategy {
     Standalone,
     OwnedByParent,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct MacroCandidate {
     pub id: String,
     pub kind: MacroCandidateKind,

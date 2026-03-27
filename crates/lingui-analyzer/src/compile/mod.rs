@@ -5,8 +5,9 @@ mod plan;
 mod runtime_component;
 
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
 
-use crate::common::Span;
+use crate::common::{ScriptLang, Span};
 use crate::framework::{MacroCandidate, MacroFlavor};
 use crate::synthesis::NormalizedSegment;
 
@@ -17,7 +18,9 @@ pub use adapters::{
     AstroCompilePlan, SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
 };
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub enum CompileTargetContext {
     ModuleScript,
     InstanceScript,
@@ -25,30 +28,38 @@ pub enum CompileTargetContext {
     Template,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub enum CompileTargetOutputKind {
     Expression,
     Component,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub enum CompileTranslationMode {
     Raw,
     Context,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct CommonCompilePlan {
     pub source_name: String,
     pub synthetic_name: String,
     pub synthetic_source: String,
-    pub synthetic_lang: String,
+    pub synthetic_lang: ScriptLang,
     pub declaration_ids: Vec<String>,
     pub targets: Vec<CompileTarget>,
     pub import_removals: Vec<Span>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct CompileTarget {
     pub declaration_id: String,
     pub original_span: Span,
@@ -63,7 +74,9 @@ pub struct CompileTarget {
     pub normalized_segments: Vec<NormalizedSegment>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct RuntimeRequirements {
     pub needs_runtime_i18n_binding: bool,
     pub needs_runtime_trans_component: bool,
@@ -107,7 +120,9 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct CompileReplacement {
     pub declaration_id: String,
     pub start: usize,
@@ -116,7 +131,9 @@ pub struct CompileReplacement {
     pub source_map_json: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct FinishedCompile {
     pub code: String,
     pub source_name: String,
@@ -124,7 +141,9 @@ pub struct FinishedCompile {
     pub replacements: Vec<CompileReplacement>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct TransformedPrograms {
     pub raw_code: Option<String>,
     pub raw_source_map_json: Option<String>,

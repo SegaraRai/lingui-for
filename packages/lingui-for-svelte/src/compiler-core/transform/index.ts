@@ -1,2 +1,4 @@
-export { transformSvelte } from "./transform-svelte.ts";
-export type { SvelteTransformResult } from "./types.ts";
+export {
+  transformSvelte,
+  type SvelteTransformResult,
+} from "./transform-svelte.ts";

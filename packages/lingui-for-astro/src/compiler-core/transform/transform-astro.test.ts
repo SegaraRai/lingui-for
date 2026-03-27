@@ -404,7 +404,7 @@ describe("transformAstro source map discipline", () => {
     expect(map.sources).toEqual(["/virtual/Page.astro"]);
     expect(map.sourcesContent).toEqual([source]);
 
-    const consumer = new TraceMap(map);
+    const consumer = new TraceMap(JSON.stringify(map));
     detections.forEach((detection) => {
       assertRangeMapping(
         consumer,

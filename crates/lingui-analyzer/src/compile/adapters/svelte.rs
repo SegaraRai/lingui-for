@@ -1,9 +1,11 @@
 use std::collections::BTreeSet;
 
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
 
 use crate::AnalyzerError;
-use crate::common::{EmbeddedScriptRegion, Span};
+use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
+use crate::compile::CompileTranslationMode;
 use crate::framework::svelte::{analyze_svelte, bare_direct_macro_message};
 use crate::framework::{MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor};
 
@@ -23,7 +25,9 @@ const SVELTE_BINDING_TRANSLATE: &str = "__l4s_translate";
 const SVELTE_BINDING_RUNTIME_TRANS: &str = "L4sRuntimeTrans";
 const SVELTE_RUNTIME_PACKAGE: &str = "lingui-for-svelte/runtime";
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct SvelteCompileRuntimeBindings {
     pub create_lingui_accessors: String,
     pub context: String,
@@ -32,14 +36,18 @@ pub struct SvelteCompileRuntimeBindings {
     pub trans_component: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct SvelteCompileScriptRegion {
     pub outer_span: Span,
     pub content_span: Span,
-    pub lang: String,
+    pub lang: ScriptLang,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct SvelteCompilePlan {
     pub common: CommonCompilePlan,
     pub runtime_requirements: RuntimeRequirements,
@@ -159,9 +167,9 @@ pub(crate) fn analyze_svelte_compile(
             CompileTargetContext::InstanceScript
         };
         let translation_mode = if script.is_module {
-            crate::compile::CompileTranslationMode::Raw
+            CompileTranslationMode::Raw
         } else {
-            crate::compile::CompileTranslationMode::Context
+            CompileTranslationMode::Context
         };
 
         prototypes.extend(script.candidates.iter().cloned().map(|candidate| {
@@ -180,7 +188,7 @@ pub(crate) fn analyze_svelte_compile(
                 output_kind: CompileTargetOutputKind::Expression,
                 candidate,
                 context: CompileTargetContext::Template,
-                translation_mode: crate::compile::CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Context,
             }
         }));
     }
@@ -194,7 +202,7 @@ pub(crate) fn analyze_svelte_compile(
                 output_kind: CompileTargetOutputKind::Component,
                 candidate: component.candidate,
                 context: CompileTargetContext::Template,
-                translation_mode: crate::compile::CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Context,
             }),
     );
 
@@ -207,10 +215,9 @@ pub(crate) fn analyze_svelte_compile(
             import_removals,
             synthetic_lang: instance_script
                 .as_ref()
-                .map(script_region_lang)
-                .or_else(|| module_script.as_ref().map(script_region_lang))
-                .unwrap_or("ts")
-                .to_string(),
+                .map(|script| script.lang)
+                .or_else(|| module_script.as_ref().map(|script| script.lang))
+                .unwrap_or(ScriptLang::Ts),
         },
         runtime_bindings: create_runtime_bindings(
             analysis
@@ -241,12 +248,12 @@ pub(crate) fn compile_script_region(
     SvelteCompileScriptRegion {
         outer_span: region.outer_span,
         content_span: region.inner_span,
-        lang: if is_typescript { "ts" } else { "js" }.to_string(),
+        lang: if is_typescript {
+            ScriptLang::Ts
+        } else {
+            ScriptLang::Js
+        },
     }
-}
-
-pub(crate) fn script_region_lang(region: &SvelteCompileScriptRegion) -> &'static str {
-    if region.lang == "js" { "js" } else { "ts" }
 }
 
 pub(crate) fn wrap_compile_source(

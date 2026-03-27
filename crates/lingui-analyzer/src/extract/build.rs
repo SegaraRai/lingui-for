@@ -10,15 +10,6 @@ use crate::synthesis::{NormalizedSegment, SynthesisPlan, build_synthesis_plan};
 
 pub fn build_synthetic_module(
     source: &str,
-    imports: &[MacroImport],
-    candidates: &[MacroCandidate],
-) -> SyntheticModule {
-    let plan = build_synthesis_plan(source, imports, candidates);
-    build_synthetic_module_from_plan(source, "source", "synthetic.js", &plan)
-}
-
-pub fn build_synthetic_module_with_names(
-    source: &str,
     source_name: &str,
     synthetic_name: &str,
     imports: &[MacroImport],

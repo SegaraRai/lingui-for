@@ -21,7 +21,13 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
 
     let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
     let script = &analysis.scripts[0];
-    let synthetic = build_synthetic_module(source, &script.macro_imports, &script.candidates);
+    let synthetic = build_synthetic_module(
+        source,
+        "source",
+        "synthetic.js",
+        &script.macro_imports,
+        &script.candidates,
+    );
 
     assert!(
         synthetic
@@ -77,7 +83,13 @@ fn builds_synthetic_module_for_svelte_template_components() {
         .iter()
         .map(|component| component.candidate.clone())
         .collect::<Vec<_>>();
-    let synthetic = build_synthetic_module(source, &analysis.scripts[0].macro_imports, &candidates);
+    let synthetic = build_synthetic_module(
+        source,
+        "source",
+        "synthetic.js",
+        &analysis.scripts[0].macro_imports,
+        &candidates,
+    );
 
     assert!(
         synthetic
@@ -117,7 +129,13 @@ fn groups_synthetic_imports_by_source() {
             .iter()
             .map(|component| component.candidate.clone()),
     );
-    let synthetic = build_synthetic_module(source, &analysis.scripts[0].macro_imports, &candidates);
+    let synthetic = build_synthetic_module(
+        source,
+        "source",
+        "synthetic.js",
+        &analysis.scripts[0].macro_imports,
+        &candidates,
+    );
 
     assert!(
         synthetic
@@ -149,6 +167,8 @@ fn emits_lookupable_sourcemap_for_normalized_segments() {
     let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
     let synthetic = build_synthetic_module(
         source,
+        "source",
+        "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &analysis.scripts[0].candidates,
     );
@@ -182,6 +202,8 @@ fn emits_utf16_columns_for_unicode_prefixes() {
     let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
     let synthetic = build_synthetic_module(
         source,
+        "source",
+        "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &analysis.scripts[0].candidates,
     );
@@ -217,7 +239,13 @@ fn maps_component_declaration_start_to_component_message_anchor() {
         .iter()
         .map(|component| component.candidate.clone())
         .collect::<Vec<_>>();
-    let synthetic = build_synthetic_module(source, &analysis.scripts[0].macro_imports, &candidates);
+    let synthetic = build_synthetic_module(
+        source,
+        "source",
+        "synthetic.js",
+        &analysis.scripts[0].macro_imports,
+        &candidates,
+    );
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
     let decoded = DecodedMap::from_reader(map_json.as_bytes()).expect("source map decodes");
     let generated_offset = synthetic.source.find("<T>").expect("component present");

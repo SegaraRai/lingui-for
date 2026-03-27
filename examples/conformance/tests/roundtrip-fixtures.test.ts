@@ -1,10 +1,10 @@
 import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
-import type { ExtractedMessage } from "@lingui/conf";
 import {
   assertRangeMapping as assertSharedRangeMapping,
   findUniqueRange,
   offsetToLocation,
 } from "@lingui-for/internal-shared-test-helpers";
+import type { ExtractedMessage } from "@lingui/conf";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
@@ -616,7 +616,7 @@ async function assertDetections(fixture: DetectionFixture): Promise<void> {
     transformed.declarations,
     { sourceName: filename },
   );
-  const consumer = new TraceMap(reinserted.source_map_json ?? "");
+  const consumer = new TraceMap(reinserted.sourceMapJson ?? "");
   const messages = await extractMessagesFromSyntheticModule(
     filename,
     synthetic,

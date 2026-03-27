@@ -1,19 +1,21 @@
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
-import { buildSyntheticModuleWithOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import {
+  buildSyntheticModule,
+  type SyntheticModule,
+} from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
-import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
+import {
+  parseCanonicalSourceMap,
+  runBabelExtractionUnits,
+  toBabelSourceMap,
+} from "@lingui-for/internal-shared-compile";
 
 import {
   normalizeLinguiConfig,
   type LinguiSvelteTransformOptions,
 } from "../compiler-core/index.ts";
 import { transformProgram } from "../compiler-core/lower/babel-transform.ts";
-
-type SyntheticExtractionUnit = {
-  source: string;
-  source_map_json?: string | null;
-};
 
 function createExtractorContext(
   ctx: ExtractorCtx | undefined,
@@ -22,19 +24,19 @@ function createExtractorContext(
   const linguiConfig = normalizeLinguiConfig(
     ctx?.linguiConfig ?? options?.linguiConfig,
   );
-  return ctx ? { ...ctx, linguiConfig } : { linguiConfig };
+  return { ...ctx, linguiConfig };
 }
 
 async function buildSyntheticExtractionUnit(
   filename: string,
   source: string,
-): Promise<SyntheticExtractionUnit> {
-  return buildSyntheticModuleWithOptions({
+): Promise<SyntheticModule> {
+  return buildSyntheticModule({
     framework: "svelte",
     source,
-    source_name: filename,
-    synthetic_name: filename.replace(/\.svelte$/, ".synthetic.tsx"),
-  }) as SyntheticExtractionUnit;
+    sourceName: filename,
+    syntheticName: filename.replace(/\.svelte$/, ".synthetic.tsx"),
+  });
 }
 
 /**
@@ -66,9 +68,9 @@ export const svelteExtractor: ExtractorType = {
       linguiConfig: extractorCtx.linguiConfig,
       extract: true,
       translationMode: "extract",
-      inputSourceMap: synthetic.source_map_json
-        ? JSON.parse(synthetic.source_map_json)
-        : null,
+      inputSourceMap: toBabelSourceMap(
+        parseCanonicalSourceMap(synthetic.sourceMapJson),
+      ),
     });
 
     await runBabelExtractionUnits(

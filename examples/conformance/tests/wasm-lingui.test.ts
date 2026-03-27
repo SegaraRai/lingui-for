@@ -236,7 +236,7 @@ describe("lingui-analyzer wasm contract", () => {
 
     const origins = collectOriginalPositionsForNeedle(
       reinserted.code,
-      reinserted.source_map_json ?? "",
+      reinserted.sourceMapJson ?? "",
       "_i18n._(",
     );
     expect(origins).toEqual([
@@ -276,7 +276,7 @@ describe("lingui-analyzer wasm contract", () => {
 
     const origins = collectOriginalPositionsForNeedle(
       reinserted.code,
-      reinserted.source_map_json ?? "",
+      reinserted.sourceMapJson ?? "",
       "_i18n._(",
     );
     expect(origins).toEqual([
@@ -315,7 +315,7 @@ describe("lingui-analyzer wasm contract", () => {
 
     const origins = collectOriginalPositionsForNeedle(
       reinserted.code,
-      reinserted.source_map_json ?? "",
+      reinserted.sourceMapJson ?? "",
       "_Trans",
     );
     expect(origins).toEqual([[filename, 6, 1]]);
@@ -351,7 +351,7 @@ describe("lingui-analyzer wasm contract", () => {
 
     const origins = collectOriginalPositionsForNeedle(
       reinserted.code,
-      reinserted.source_map_json ?? "",
+      reinserted.sourceMapJson ?? "",
       "_Trans",
     );
     expect(origins).toEqual([[filename, 6, 1]]);

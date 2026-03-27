@@ -189,9 +189,6 @@ importers:
       react:
         specifier: ^19.2.4
         version: 19.2.4
-      rolldown-plugin-wasm:
-        specifier: ^0.2.1
-        version: 0.2.1(rolldown@1.0.0-rc.10)
       svelte:
         specifier: ^5.55.0
         version: 5.55.0
@@ -359,12 +356,6 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
-      '@jridgewell/gen-mapping':
-        specifier: ^0.3.13
-        version: 0.3.13
-      '@jridgewell/trace-mapping':
-        specifier: ^0.3.31
-        version: 0.3.31
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
@@ -393,6 +384,9 @@ importers:
       '@arethetypeswrong/core':
         specifier: ^0.18.2
         version: 0.18.2
+      '@jridgewell/trace-mapping':
+        specifier: ^0.3.31
+        version: 0.3.31
       '@lingui-for/internal-lingui-analyzer-wasm':
         specifier: workspace:*
         version: link:../../shared/lingui-analyzer-wasm
@@ -462,12 +456,6 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
-      '@jridgewell/gen-mapping':
-        specifier: ^0.3.13
-        version: 0.3.13
-      '@jridgewell/trace-mapping':
-        specifier: ^0.3.31
-        version: 0.3.31
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)
@@ -496,6 +484,9 @@ importers:
       '@arethetypeswrong/core':
         specifier: ^0.18.2
         version: 0.18.2
+      '@jridgewell/trace-mapping':
+        specifier: ^0.3.31
+        version: 0.3.31
       '@lingui-for/internal-lingui-analyzer-wasm':
         specifier: workspace:*
         version: link:../../shared/lingui-analyzer-wasm
@@ -678,12 +669,6 @@ importers:
       '@babel/types':
         specifier: ^7.29.0
         version: 7.29.0
-      '@jridgewell/gen-mapping':
-        specifier: ^0.3.13
-        version: 0.3.13
-      '@jridgewell/trace-mapping':
-        specifier: ^0.3.31
-        version: 0.3.31
       '@lingui/cli':
         specifier: ^5.9.3
         version: 5.9.3(typescript@5.9.3)

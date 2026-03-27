@@ -133,7 +133,7 @@ mod tests {
         CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
         CompileTranslationMode, MacroFlavor, NormalizedSegment, RuntimeRequirements,
         TransformedPrograms,
-        common::Span,
+        common::{ScriptLang, Span},
         compile::adapters::{
             SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
         },
@@ -148,7 +148,7 @@ mod tests {
                 source_name: "Component.svelte".to_string(),
                 synthetic_name: "Component.svelte?compile".to_string(),
                 synthetic_source: String::new(),
-                synthetic_lang: "ts".to_string(),
+                synthetic_lang: ScriptLang::Ts,
                 declaration_ids: vec!["__lf_0".to_string()],
                 targets: vec![CompileTarget {
                     declaration_id: "__lf_0".to_string(),
@@ -183,7 +183,7 @@ mod tests {
             instance_script: Some(SvelteCompileScriptRegion {
                 outer_span: Span::new(0, 30),
                 content_span: Span::new(9, 20),
-                lang: "ts".to_string(),
+                lang: ScriptLang::Ts,
             }),
             module_script: None,
         };

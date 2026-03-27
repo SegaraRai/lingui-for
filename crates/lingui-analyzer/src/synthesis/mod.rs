@@ -1,3 +1,6 @@
+use serde::{Deserialize, Serialize};
+use tsify::Tsify;
+
 use crate::framework::{MacroCandidate, MacroImport};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -14,7 +17,9 @@ pub struct SynthesisTarget {
     pub normalized_segments: Vec<NormalizedSegment>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct NormalizedSegment {
     pub original_start: usize,
     pub generated_start: usize,

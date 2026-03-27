@@ -1,13 +1,13 @@
 import type { ParserOptions } from "@babel/core";
 import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 
+import type { ScriptLang } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   getParserPlugins as getSharedParserPlugins,
   normalizeLinguiConfig as normalizeSharedLinguiConfig,
 } from "@lingui-for/internal-shared-compile";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
-import type { ScriptLang } from "./types.ts";
 
 /**
  * Normalizes a partial Lingui configuration for use by the compiler-core pipeline.
@@ -40,5 +40,7 @@ export function normalizeLinguiConfig(
 export function getParserPlugins(
   lang: ScriptLang,
 ): NonNullable<ParserOptions["plugins"]> {
-  return getSharedParserPlugins({ typescript: lang === "ts" });
+  return getSharedParserPlugins({
+    typescript: lang === "ts" || lang === "tsx",
+  });
 }

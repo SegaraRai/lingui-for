@@ -1,7 +1,22 @@
+import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
+
 import { lowerAstroWithRustSynthetic } from "../lower/index.ts";
 import { normalizeLinguiConfig } from "../shared/config.ts";
 import type { LinguiAstroTransformOptions } from "../shared/types.ts";
-import type { AstroTransformResult } from "./types.ts";
+
+/**
+ * Result returned by `transformAstro`.
+ */
+export interface AstroTransformResult {
+  /**
+   * Transformed `.astro` source.
+   */
+  code: string;
+  /**
+   * Source map for the transformed file, or `null` when none is generated.
+   */
+  map: CanonicalSourceMap | null;
+}
 
 /**
  * Transforms one `.astro` source file in place for runtime use.

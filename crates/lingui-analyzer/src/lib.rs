@@ -7,9 +7,12 @@ pub mod synthesis;
 pub mod wasm;
 
 use serde::{Deserialize, Serialize};
+use tsify::{Ts, Tsify};
+use wasm_bindgen::JsError;
 use wasm_bindgen::prelude::*;
 
-use crate::extract::{build_synthetic_module_with_names, reinsert_transformed_declarations};
+use crate::compile::finish_compile;
+use crate::extract::{build_synthetic_module, reinsert_transformed_declarations};
 use crate::framework::{
     FrameworkAdapter,
     astro::AstroAdapter,
@@ -36,13 +39,6 @@ pub use synthesis::NormalizedSegment;
 pub fn build_synthetic_module_for_framework(
     framework: &str,
     source: &str,
-) -> Result<SyntheticModule, AnalyzerError> {
-    build_synthetic_module_for_framework_with_names(framework, source, "source", "synthetic.js")
-}
-
-pub fn build_synthetic_module_for_framework_with_names(
-    framework: &str,
-    source: &str,
     source_name: &str,
     synthetic_name: &str,
 ) -> Result<SyntheticModule, AnalyzerError> {
@@ -64,7 +60,7 @@ pub fn build_synthetic_module_for_framework_with_names(
             );
             retain_standalone_candidates(&mut candidates);
             sort_candidates(&mut candidates);
-            Ok(build_synthetic_module_with_names(
+            Ok(build_synthetic_module(
                 source,
                 source_name,
                 synthetic_name,
@@ -99,7 +95,7 @@ pub fn build_synthetic_module_for_framework_with_names(
             validate_svelte_extract_candidates(&candidates)?;
             retain_standalone_candidates(&mut candidates);
             sort_candidates(&mut candidates);
-            Ok(build_synthetic_module_with_names(
+            Ok(build_synthetic_module(
                 source,
                 source_name,
                 synthetic_name,
@@ -120,129 +116,128 @@ fn retain_standalone_candidates(candidates: &mut Vec<MacroCandidate>) {
 }
 
 #[wasm_bindgen(js_name = "buildSyntheticModule")]
-pub fn wasm_build_synthetic_module(framework: String, source: String) -> Result<JsValue, JsValue> {
+pub fn wasm_build_synthetic_module(
+    options: Ts<SyntheticModuleOptions>,
+) -> Result<Ts<SyntheticModule>, JsError> {
     console_error_panic_hook::set_once();
 
-    let module = build_synthetic_module_for_framework(&framework, &source)
-        .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&module).map_err(|error| JsValue::from_str(&error.to_string()))
-}
-
-#[wasm_bindgen(js_name = "buildSyntheticModuleWithOptions")]
-pub fn wasm_build_synthetic_module_with_options(options: JsValue) -> Result<JsValue, JsValue> {
-    console_error_panic_hook::set_once();
-
-    let options: SyntheticModuleOptions = serde_wasm_bindgen::from_value(options)
-        .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let module = build_synthetic_module_for_framework_with_names(
+    let options = options.to_rust()?;
+    let result = build_synthetic_module_for_framework(
         &options.framework,
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
         options.synthetic_name.as_deref().unwrap_or("synthetic.js"),
-    )
-    .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&module).map_err(|error| JsValue::from_str(&error.to_string()))
+    )?;
+    Ok(result.into_ts()?)
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct CompilePlanOptions {
     pub source: String,
+    #[tsify(optional)]
     pub source_name: Option<String>,
+    #[tsify(optional)]
     pub synthetic_name: Option<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct SvelteFinishCompileOptions {
     pub plan: SvelteCompilePlan,
     pub source: String,
     pub transformed_programs: TransformedPrograms,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct AstroFinishCompileOptions {
     pub plan: AstroCompilePlan,
     pub source: String,
     pub transformed_programs: TransformedPrograms,
 }
 
-#[wasm_bindgen(js_name = "buildSvelteCompilePlanWithOptions")]
-pub fn wasm_build_svelte_compile_plan_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+#[wasm_bindgen(js_name = "buildSvelteCompilePlan")]
+pub fn wasm_build_svelte_compile_plan(
+    options: Ts<CompilePlanOptions>,
+) -> Result<Ts<SvelteCompilePlan>, JsError> {
     console_error_panic_hook::set_once();
 
-    let options: CompilePlanOptions = serde_wasm_bindgen::from_value(options)
-        .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let plan = SvelteCompilePlan::build(
+    let options = options.to_rust()?;
+    let result = SvelteCompilePlan::build(
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
         options
             .synthetic_name
             .as_deref()
             .unwrap_or("synthetic-compile.tsx"),
-    )
-    .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&plan).map_err(|error| JsValue::from_str(&error.to_string()))
+    )?;
+    Ok(result.into_ts()?)
 }
 
 #[wasm_bindgen(js_name = "reinsertTransformedDeclarations")]
-pub fn wasm_reinsert_transformed_declarations(options: JsValue) -> Result<JsValue, JsValue> {
+pub fn wasm_reinsert_transformed_declarations(
+    options: Ts<ReinsertOptions>,
+) -> Result<Ts<ReinsertedModule>, JsError> {
     console_error_panic_hook::set_once();
 
-    let options: ReinsertOptions = serde_wasm_bindgen::from_value(options)
-        .map_err(|error| JsValue::from_str(&error.to_string()))?;
+    let options = options.to_rust()?;
     let result = reinsert_transformed_declarations(
         &options.original_source,
         options.source_name.as_deref().unwrap_or("source"),
         &options.synthetic_module,
         &options.transformed_declarations,
-    )
-    .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
+    )?;
+    Ok(result.into_ts()?)
 }
 
-#[wasm_bindgen(js_name = "buildAstroCompilePlanWithOptions")]
-pub fn wasm_build_astro_compile_plan_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+#[wasm_bindgen(js_name = "buildAstroCompilePlan")]
+pub fn wasm_build_astro_compile_plan(
+    options: Ts<CompilePlanOptions>,
+) -> Result<Ts<AstroCompilePlan>, JsError> {
     console_error_panic_hook::set_once();
 
-    let options: CompilePlanOptions = serde_wasm_bindgen::from_value(options)
-        .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let plan = AstroCompilePlan::build(
+    let options = options.to_rust()?;
+    let result = AstroCompilePlan::build(
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
         options
             .synthetic_name
             .as_deref()
             .unwrap_or("synthetic-compile.tsx"),
-    )
-    .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&plan).map_err(|error| JsValue::from_str(&error.to_string()))
+    )?;
+    Ok(result.into_ts()?)
 }
 
-#[wasm_bindgen(js_name = "finishSvelteCompileWithOptions")]
-pub fn wasm_finish_svelte_compile_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+#[wasm_bindgen(js_name = "finishSvelteCompile")]
+pub fn wasm_finish_svelte_compile(
+    options: Ts<SvelteFinishCompileOptions>,
+) -> Result<Ts<FinishedCompile>, JsError> {
     console_error_panic_hook::set_once();
 
-    let options: SvelteFinishCompileOptions = serde_wasm_bindgen::from_value(options)
-        .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let result = crate::compile::finish_compile(
+    let options = options.to_rust()?;
+    let result = finish_compile(
         &options.plan,
         &options.source,
         &options.transformed_programs,
-    )
-    .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
+    )?;
+    Ok(result.into_ts()?)
 }
 
-#[wasm_bindgen(js_name = "finishAstroCompileWithOptions")]
-pub fn wasm_finish_astro_compile_with_options(options: JsValue) -> Result<JsValue, JsValue> {
+#[wasm_bindgen(js_name = "finishAstroCompile")]
+pub fn wasm_finish_astro_compile(
+    options: Ts<AstroFinishCompileOptions>,
+) -> Result<Ts<FinishedCompile>, JsError> {
     console_error_panic_hook::set_once();
 
-    let options: AstroFinishCompileOptions = serde_wasm_bindgen::from_value(options)
-        .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    let result = crate::compile::finish_compile(
+    let options = options.to_rust()?;
+    let result = finish_compile(
         &options.plan,
         &options.source,
         &options.transformed_programs,
-    )
-    .map_err(|error| JsValue::from_str(&error.to_string()))?;
-    serde_wasm_bindgen::to_value(&result).map_err(|error| JsValue::from_str(&error.to_string()))
+    )?;
+    Ok(result.into_ts()?)
 }

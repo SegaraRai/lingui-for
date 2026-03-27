@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
+use tsify::Tsify;
 
 use crate::AnalyzerError;
-use crate::common::{EmbeddedScriptRegion, Span};
+use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
 use crate::framework::astro::analyze_astro;
 use crate::framework::js::{JsLikeLanguage, collect_top_level_declared_names_in_javascript};
 use crate::framework::parse::parse_typescript;
@@ -18,7 +19,9 @@ const ASTRO_BINDING_I18N: &str = "__l4a_i18n";
 const ASTRO_BINDING_RUNTIME_TRANS: &str = "L4aRuntimeTrans";
 const ASTRO_RUNTIME_PACKAGE: &str = "lingui-for-astro/runtime";
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct AstroCompilePlan {
     pub common: CommonCompilePlan,
     pub runtime_requirements: RuntimeRequirements,
@@ -26,14 +29,18 @@ pub struct AstroCompilePlan {
     pub frontmatter: Option<AstroCompileFrontmatterRegion>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct AstroCompileRuntimeBindings {
     pub create_i18n: String,
     pub i18n: String,
     pub runtime_trans: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct AstroCompileFrontmatterRegion {
     pub outer_span: Span,
     pub content_span: Span,
@@ -172,7 +179,7 @@ pub(crate) fn analyze_astro_compile(
             imports: analysis.macro_imports,
             prototypes,
             import_removals,
-            synthetic_lang: "ts".to_string(),
+            synthetic_lang: ScriptLang::Ts,
         },
         runtime_bindings: create_runtime_bindings(
             analysis

@@ -1,10 +1,6 @@
 export * from "./babel-traverse.ts";
 export * from "./config.ts";
-export * from "./extractor.ts";
-export * from "./identifier-allocation.ts";
+export { runBabelExtractionUnits } from "./extractor.ts";
 export * from "./lingui-constants.ts";
-export * from "./macro-bindings.ts";
 export * from "./macro-presence.ts";
-export * from "./replacement-map.ts";
-export * from "./runtime-trans-lowering.ts";
-export * from "./source-map.ts";
+export * from "./ourcemap-types.ts";

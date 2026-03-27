@@ -1,6 +1,7 @@
 import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
+import { fromBabelSourceMap } from "@lingui-for/internal-shared-compile";
 import { getParserPlugins } from "../shared/config.ts";
 import { createMacroPostprocessPlugin } from "./macro-rewrite.ts";
 import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
@@ -53,6 +54,6 @@ export function transformProgram(
   return {
     code: result.code,
     ast: result.ast,
-    map: (result.map as ProgramTransform["map"]) ?? null,
+    map: fromBabelSourceMap(result.map),
   };
 }

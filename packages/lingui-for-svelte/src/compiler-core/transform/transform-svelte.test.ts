@@ -1316,9 +1316,10 @@ describe("transformSvelte source map discipline", () => {
     expect(result.code).toContain("<p>{keepBefore}</p>");
     expect(result.code).toContain("<p>{keepAfter}</p>");
 
-    expect(result.map.file).toBe("/virtual/App.svelte");
-    expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
-    expect(result.map.sourcesContent).toEqual([source]);
+    expect(result.map).not.toBeNull();
+    expect(result.map?.file).toBe("/virtual/App.svelte");
+    expect(result.map?.sources).toEqual(["/virtual/App.svelte"]);
+    expect(result.map?.sourcesContent).toEqual([source]);
   });
 
   test("maps unchanged script lines back to their original locations instead of the rewritten script prelude", async () => {
@@ -1342,9 +1343,9 @@ describe("transformSvelte source map discipline", () => {
       source,
       findUniqueRange(source, "<p>{keepAfter}</p>").start,
     );
-    const mappedSource = result.map.sources[0] ?? result.map.file;
+    const mappedSource = result.map?.sources[0] ?? result.map?.file;
 
-    const consumer = new TraceMap(result.map);
+    const consumer = new TraceMap(JSON.stringify(result.map));
     expect(
       originalPositionFor(consumer, {
         line: generatedScript.line,
@@ -1400,9 +1401,10 @@ describe("transformSvelte source map discipline", () => {
     expect(result.code).toContain("<p>{keepBefore}</p>");
     expect(result.code).toContain("<p>{keepAfter}</p>");
 
-    expect(result.map.file).toBe("/virtual/App.svelte");
-    expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
-    expect(result.map.sourcesContent).toEqual([source]);
+    expect(result.map).not.toBeNull();
+    expect(result.map?.file).toBe("/virtual/App.svelte");
+    expect(result.map?.sources).toEqual(["/virtual/App.svelte"]);
+    expect(result.map?.sourcesContent).toEqual([source]);
   });
 
   test("maps unchanged script lines back to their original locations instead of the rewritten script prelude", async () => {
@@ -1426,9 +1428,9 @@ describe("transformSvelte source map discipline", () => {
       source,
       findUniqueRange(source, "<p>{keepAfter}</p>").start,
     );
-    const mappedSource = result.map.sources[0] ?? result.map.file;
+    const mappedSource = result.map?.sources[0] ?? result.map?.file;
 
-    const consumer = new TraceMap(result.map);
+    const consumer = new TraceMap(JSON.stringify(result.map));
     expect(
       originalPositionFor(consumer, {
         line: generatedScript.line,
@@ -1535,11 +1537,12 @@ describe("transformSvelte source map discipline", () => {
       filename: "/virtual/App.svelte",
     });
 
-    expect(result.map.file).toBe("/virtual/App.svelte");
-    expect(result.map.sources).toEqual(["/virtual/App.svelte"]);
-    expect(result.map.sourcesContent).toEqual([rangeSource]);
+    expect(result.map).not.toBeNull();
+    expect(result.map?.file).toBe("/virtual/App.svelte");
+    expect(result.map?.sources).toEqual(["/virtual/App.svelte"]);
+    expect(result.map?.sourcesContent).toEqual([rangeSource]);
 
-    const consumer = new TraceMap(result.map);
+    const consumer = new TraceMap(JSON.stringify(result.map));
     detections.forEach((detection) => {
       assertRangeMapping(
         consumer,

@@ -1,93 +1,59 @@
-import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
-  buildAstroCompilePlanWithOptions,
-  finishAstroCompileWithOptions,
+  buildAstroCompilePlan,
+  finishAstroCompile,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
+import {
+  parseCanonicalSourceMap,
+  type CanonicalSourceMap,
+} from "@lingui-for/internal-shared-compile";
 
 import { transformProgram } from "./babel-transform.ts";
 
-type CommonCompilePlan = {
-  source_name: string;
-  synthetic_source: string;
-  synthetic_name: string;
-  synthetic_lang: "js" | "ts";
-  declaration_ids: readonly string[];
-};
-
-type CompileRuntimeBindings = {
-  create_i18n: string;
-  i18n: string;
-  runtime_trans: string;
-};
-
-type AstroCompilePlan = {
-  common: CommonCompilePlan;
-  runtime_requirements: {
-    needs_runtime_i18n_binding: boolean;
-    needs_runtime_trans_component: boolean;
-  };
-  runtime_bindings: CompileRuntimeBindings;
-  frontmatter?: unknown;
-};
-
-type FinishedCompile = {
+export interface AstroLowerResult {
   code: string;
-  source_name: string;
-  source_map_json?: string | null;
-};
-
-type TransformedPrograms = {
-  context_code?: string;
-  context_source_map_json?: string | null;
-};
+  map: CanonicalSourceMap | null;
+}
 
 export async function lowerAstroWithRustSynthetic(
   source: string,
   filename: string,
   linguiConfig: LinguiConfigNormalized,
-): Promise<{ code: string; map: EncodedSourceMap | null } | null> {
+): Promise<AstroLowerResult | null> {
   await initWasmOnce();
 
-  const compilePlan = await buildCompilePlan(source, filename);
-  if (compilePlan.common.declaration_ids.length === 0) {
+  const compilePlan = buildAstroCompilePlan({
+    source,
+    sourceName: filename,
+    syntheticName: `${filename}?rust-compile.tsx`,
+  });
+  if (compilePlan.common.declarationIds.length === 0) {
     return null;
   }
 
-  const context = transformProgram(compilePlan.common.synthetic_source, {
+  const context = transformProgram(compilePlan.common.syntheticSource, {
     translationMode: "astro-context",
-    filename: `${compilePlan.common.synthetic_name}?astro-context`,
+    filename: `${compilePlan.common.syntheticName}?astro-context`,
     linguiConfig,
-    runtimeBinding: compilePlan.runtime_bindings.i18n,
+    runtimeBinding: compilePlan.runtimeBindings.i18n,
   });
 
-  const finished = finishAstroCompileWithOptions({
+  const finished = finishAstroCompile({
     plan: compilePlan,
     source,
-    transformed_programs: {
-      context_code: context.code,
-      context_source_map_json:
-        context.map != null ? JSON.stringify(context.map) : null,
-    } satisfies TransformedPrograms,
-  }) as FinishedCompile;
+    transformedPrograms: {
+      contextCode: context.code,
+      contextSourceMapJson:
+        context.map != null ? JSON.stringify(context.map) : undefined,
+      rawCode: undefined,
+      rawSourceMapJson: undefined,
+    },
+  });
 
   return {
     code: finished.code,
-    map: JSON.parse(
-      finished.source_map_json ?? "null",
-    ) as EncodedSourceMap | null,
+    map: parseCanonicalSourceMap(finished.sourceMapJson),
   };
-}
-
-async function buildCompilePlan(
-  source: string,
-  filename: string,
-): Promise<AstroCompilePlan> {
-  return buildAstroCompilePlanWithOptions({
-    source,
-    source_name: filename,
-    synthetic_name: `${filename}?rust-compile.tsx`,
-  }) as AstroCompilePlan;
 }

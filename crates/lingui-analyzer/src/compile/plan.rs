@@ -1,4 +1,6 @@
-use crate::framework::MacroCandidateStrategy;
+use std::collections::BTreeMap;
+
+use crate::framework::{MacroCandidateStrategy, MacroImport};
 use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
 use super::{CommonCompilePlan, CompileTarget, CompileTargetPrototype, FrameworkCompilePlan};
@@ -97,8 +99,8 @@ fn build_compile_synthetic_source(
     output
 }
 
-fn render_import_line(imports: &[crate::framework::MacroImport]) -> Option<String> {
-    let mut grouped = std::collections::BTreeMap::<&str, Vec<(&str, &str)>>::new();
+fn render_import_line(imports: &[MacroImport]) -> Option<String> {
+    let mut grouped = BTreeMap::<&str, Vec<(&str, &str)>>::new();
     for import_decl in imports {
         let specifiers = grouped.entry(import_decl.source.as_str()).or_default();
         let specifier = (

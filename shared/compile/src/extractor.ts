@@ -1,6 +1,7 @@
 import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+import type { CanonicalSourceMap } from "./ourcemap-types";
 
 export type ExtractionUnit = {
   code: string;
@@ -31,30 +32,25 @@ export async function runBabelExtractionUnits(
   onMessageExtracted: Parameters<ExtractorType["extract"]>[2],
   ctx: ExtractorCtx,
   options?: {
-    normalizeSourceMap?: (
-      map: NonNullable<ExtractorCtx["sourceMaps"]>,
-    ) => ExtractorCtx["sourceMaps"];
+    normalizeSourceMap?: (map: CanonicalSourceMap) => CanonicalSourceMap;
   },
 ): Promise<void> {
   const parserPlugins = getLinguiExtractorParserPlugins(ctx);
 
   for (const unit of units) {
-    const sourceMaps = unit.map
-      ? options?.normalizeSourceMap
-        ? options.normalizeSourceMap(unit.map)
-        : unit.map
-      : undefined;
+    const sourceMaps =
+      unit.map != null
+        ? (options?.normalizeSourceMap?.(unit.map) ?? unit.map)
+        : null;
 
     await extractFromFileWithBabel(
       filename,
       unit.code,
       onMessageExtracted,
-      sourceMaps
-        ? {
-            ...ctx,
-            sourceMaps,
-          }
-        : ctx,
+      {
+        ...ctx,
+        sourceMaps,
+      },
       {
         plugins: parserPlugins,
       },

@@ -1,6 +1,6 @@
 use lingui_analyzer::{
     AstroCompilePlan, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-    SvelteCompilePlan, build_synthetic_module_for_framework_with_names,
+    SvelteCompilePlan, build_synthetic_module_for_framework,
 };
 use std::fs::read_to_string;
 use std::path::PathBuf;
@@ -211,7 +211,7 @@ fn rejects_bare_direct_plural_in_svelte_extract_synthetic_builds() {
 </script>
 "##;
 
-    let error = build_synthetic_module_for_framework_with_names(
+    let error = build_synthetic_module_for_framework(
         "svelte",
         source,
         "/virtual/App.svelte",

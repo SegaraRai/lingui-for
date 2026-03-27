@@ -1,14 +1,14 @@
 import type { TransformOptions } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
+import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
 import type { LinguiConfigNormalized } from "@lingui/conf";
-import type { EncodedSourceMap } from "@jridgewell/gen-mapping";
 
 type BabelInputSourceMap = TransformOptions["inputSourceMap"];
 
 export interface ProgramTransform {
   code: string;
   ast: BabelTypes.File;
-  map?: EncodedSourceMap | null;
+  map: CanonicalSourceMap | null;
 }
 
 export type ProgramTransformRequest =

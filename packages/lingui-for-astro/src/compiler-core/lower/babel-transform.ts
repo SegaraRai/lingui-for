@@ -4,6 +4,7 @@ import * as t from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
 import {
+  fromBabelSourceMap,
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
   LINGUI_TRANSLATE_METHOD,
@@ -128,6 +129,6 @@ export function transformProgram(
   return {
     code: result.code,
     ast: result.ast,
-    map: (result.map as ProgramTransform["map"]) ?? null,
+    map: fromBabelSourceMap(result.map),
   };
 }

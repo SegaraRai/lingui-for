@@ -73,7 +73,8 @@ export const unpluginFactory: UnpluginFactory<
 
     return {
       code: transformed.code,
-      map: transformed.map && toUnpluginSourceMap(transformed.map),
+      map:
+        transformed.map != null ? toUnpluginSourceMap(transformed.map) : null,
     };
   },
   vite: {

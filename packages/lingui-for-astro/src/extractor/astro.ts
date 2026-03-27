@@ -1,30 +1,29 @@
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
-import { buildSyntheticModuleWithOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import {
+  buildSyntheticModule,
+  type SyntheticModule,
+} from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import { stripQuery } from "@lingui-for/internal-shared-common";
-import { runBabelExtractionUnits } from "@lingui-for/internal-shared-compile";
+import {
+  parseCanonicalSourceMap,
+  runBabelExtractionUnits,
+  toBabelSourceMap,
+  type CanonicalSourceMap,
+} from "@lingui-for/internal-shared-compile";
 
 import { transformProgram } from "../compiler-core/lower/babel-transform.ts";
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 
-type SyntheticExtractionUnit = {
-  source: string;
-  source_map_json?: string | null;
-};
-
 function createExtractorContext(ctx: ExtractorCtx | undefined): ExtractorCtx {
   const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig);
-  return ctx ? { ...ctx, linguiConfig } : { linguiConfig };
+  return { ...ctx, linguiConfig };
 }
 
 function normalizeExtractionSourceMap(
-  map: ExtractorCtx["sourceMaps"],
-): ExtractorCtx["sourceMaps"] {
-  if (!map) {
-    return map;
-  }
-
+  map: CanonicalSourceMap,
+): CanonicalSourceMap {
   return {
     ...map,
     file: map.file ? stripQuery(map.file) : map.file,
@@ -35,13 +34,13 @@ function normalizeExtractionSourceMap(
 async function buildSyntheticExtractionUnit(
   filename: string,
   source: string,
-): Promise<SyntheticExtractionUnit> {
-  return buildSyntheticModuleWithOptions({
+): Promise<SyntheticModule> {
+  return buildSyntheticModule({
     framework: "astro",
     source,
-    source_name: filename,
-    synthetic_name: filename.replace(/\.astro$/, ".synthetic.tsx"),
-  }) as SyntheticExtractionUnit;
+    sourceName: filename,
+    syntheticName: filename.replace(/\.astro$/, ".synthetic.tsx"),
+  });
 }
 
 /**
@@ -65,9 +64,9 @@ export const astroExtractor: ExtractorType = {
       filename: filename.replace(/\.astro$/, ".synthetic.tsx"),
       linguiConfig: extractorCtx.linguiConfig,
       runtimeBinding: null,
-      inputSourceMap: synthetic.source_map_json
-        ? JSON.parse(synthetic.source_map_json)
-        : null,
+      inputSourceMap: toBabelSourceMap(
+        parseCanonicalSourceMap(synthetic.sourceMapJson),
+      ),
     });
 
     await runBabelExtractionUnits(

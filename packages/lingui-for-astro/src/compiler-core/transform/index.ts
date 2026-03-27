@@ -1,2 +1,4 @@
-export { transformAstro } from "./transform-astro.ts";
-export type { AstroTransformResult } from "./types.ts";
+export {
+  transformAstro,
+  type AstroTransformResult,
+} from "./transform-astro.ts";

@@ -7,8 +7,9 @@ import type { ExtractedMessage, ExtractorCtx } from "@lingui/conf";
 
 import {
   buildSyntheticModule,
-  buildSyntheticModuleWithOptions,
   reinsertTransformedDeclarations,
+  type ReinsertedModule,
+  type SyntheticModule,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
@@ -22,24 +23,10 @@ import {
   runBabelExtractionUnits,
 } from "@lingui-for/internal-shared-compile";
 
-export type SyntheticModule = {
-  source: string;
-  source_name: string;
-  synthetic_name: string;
-  source_map_json?: string | null;
-  declaration_ids: readonly string[];
-};
-
 export type SyntheticTransformResult = {
   synthetic: SyntheticModule;
   code: string;
   declarations: Record<string, string>;
-};
-
-export type ReinsertedModule = {
-  code: string;
-  source_name: string;
-  source_map_json?: string | null;
 };
 
 const SYNTHETIC_MODULE_PARSER_PLUGINS = getParserPlugins({ typescript: true });
@@ -70,23 +57,19 @@ export function buildSyntheticModuleForTest(
     syntheticName?: string;
   },
 ): SyntheticModule {
-  if (!options?.sourceName && !options?.syntheticName) {
-    return buildSyntheticModule(framework, source) as SyntheticModule;
-  }
-
-  return buildSyntheticModuleWithOptions({
+  return buildSyntheticModule({
     framework,
     source,
-    source_name: options.sourceName,
-    synthetic_name: options.syntheticName,
-  }) as SyntheticModule;
+    sourceName: options?.sourceName,
+    syntheticName: options?.syntheticName,
+  });
 }
 
 export function transformSyntheticModule(
   synthetic: SyntheticModule,
 ): SyntheticTransformResult {
   const transformed = transformSync(synthetic.source, {
-    filename: synthetic.synthetic_name,
+    filename: synthetic.syntheticName,
     babelrc: false,
     configFile: false,
     sourceType: "module",
@@ -115,7 +98,7 @@ export function transformSyntheticModule(
     code: transformed.code,
     declarations: collectDeclarationInitializers(
       transformed.ast,
-      synthetic.declaration_ids,
+      synthetic.declarationIds,
     ),
   };
 }
@@ -131,7 +114,7 @@ export async function extractMessagesFromSyntheticModule(
     [
       {
         code: synthetic.source,
-        map: parseSourceMap(synthetic.source_map_json),
+        map: parseSourceMap(synthetic.sourceMapJson),
       },
     ],
     (message) => {
@@ -152,11 +135,11 @@ export function reinsertTransformedModule(
   },
 ): ReinsertedModule {
   return reinsertTransformedDeclarations({
-    original_source: originalSource,
-    source_name: options?.sourceName,
-    synthetic_module: synthetic,
-    transformed_declarations: declarations,
-  }) as ReinsertedModule;
+    originalSource: originalSource,
+    sourceName: options?.sourceName,
+    syntheticModule: synthetic,
+    transformedDeclarations: new Map(Object.entries(declarations)),
+  });
 }
 
 function parseSourceMap(sourceMapJson?: string | null) {
