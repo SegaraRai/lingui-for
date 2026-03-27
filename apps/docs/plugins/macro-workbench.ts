@@ -15,9 +15,9 @@ import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 import linguiConfig from "../lingui.config.ts";
 import {
-  WORKBENCH_LOCALE_REGISTRY,
+  WORKBENCH_LOCALE_CODES,
   type MacroWorkbenchLocaleCode,
-} from "../src/lib/macro-workbench.ts";
+} from "../src/lib/macro-workbench/common.ts";
 
 const VIRTUAL_PREFIX = "virtual:macro-workbench?";
 const workbenchSvelteExtractor = svelteExtractor();
@@ -37,9 +37,6 @@ export function macroWorkbenchPlugin({
     },
     { skipValidation: true },
   );
-  const localeCodes = Object.keys(
-    WORKBENCH_LOCALE_REGISTRY,
-  ) as MacroWorkbenchLocaleCode[];
 
   return {
     name: "docs-macro-workbench",
@@ -88,19 +85,19 @@ export function macroWorkbenchPlugin({
         projectRoot,
         demoOriginPath,
         ids,
-        localeCodes,
+        WORKBENCH_LOCALE_CODES,
         poFormatter,
       );
       const compiledCatalogs = await buildCompiledCatalogArtifacts(
         projectRoot,
         ids,
-        localeCodes,
+        WORKBENCH_LOCALE_CODES,
       );
 
       return [
         `import { resolveMacroWorkbenchSpec } from ${JSON.stringify(
           toFsImportPath(
-            resolve(projectRoot, "src", "lib", "macro-workbench.ts"),
+            resolve(projectRoot, "src/lib/macro-workbench/spec.ts"),
           ),
         )};`,
         existsSync(workbenchFile)

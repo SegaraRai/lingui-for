@@ -67,7 +67,7 @@ msgstr "記述子を定義し、後で翻訳します"
 msgid "Demo.svelte"
 msgstr "Demo.svelte"
 
-#: src/lib/macro-workbench.ts:7
+#: src/lib/macro-workbench/spec.ts:15
 msgid "EN"
 msgstr "EN"
 
@@ -90,7 +90,7 @@ msgstr "こんにちは、Lingui"
 msgid "Hi"
 msgstr "やあ"
 
-#: src/lib/macro-workbench.ts:11
+#: src/lib/macro-workbench/spec.ts:16
 msgid "JA"
 msgstr "JA"
 

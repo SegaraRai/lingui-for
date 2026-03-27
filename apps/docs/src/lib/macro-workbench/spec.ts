@@ -1,18 +1,20 @@
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
 
-export const WORKBENCH_LOCALE_REGISTRY = {
-  en: {
-    code: "en",
-    label: msg`EN`,
-  },
-  ja: {
-    code: "ja",
-    label: msg`JA`,
-  },
-} as const;
+import {
+  WORKBENCH_LOCALE_CODES,
+  type MacroWorkbenchLocaleCode,
+} from "./common.ts";
 
-export type MacroWorkbenchLocaleCode = keyof typeof WORKBENCH_LOCALE_REGISTRY;
+const DEFAULT_INITIAL_VIEW: Required<MacroWorkbenchInitialView> = {
+  result: "preview",
+  source: "demo",
+};
+
+const WORKBENCH_LOCALE_LABELS = {
+  en: msg`EN`,
+  ja: msg`JA`,
+} as const satisfies Record<MacroWorkbenchLocaleCode, MessageDescriptor>;
 
 export type MacroWorkbenchLocaleOption = {
   code: MacroWorkbenchLocaleCode;
@@ -133,39 +135,28 @@ export type MacroWorkbenchResolvedDefinition = {
   source: MacroWorkbenchSourceArtifacts;
 };
 
-type MacroWorkbenchPluginArtifacts = {
-  id: string;
-  result: MacroWorkbenchResultArtifacts;
-  source: MacroWorkbenchSourceArtifacts;
-};
-
-const DEFAULT_INITIAL_VIEW: Required<MacroWorkbenchInitialView> = {
-  result: "preview",
-  source: "demo",
-};
-
 export function defineMacroWorkbench(
   spec: MacroWorkbenchAuthorSpec,
 ): MacroWorkbenchAuthorSpec {
   return spec;
 }
 
+type MacroWorkbenchPluginArtifacts = {
+  id: string;
+  result: MacroWorkbenchResultArtifacts;
+  source: MacroWorkbenchSourceArtifacts;
+};
+
 export function getWorkbenchLocaleOptions(
   supported?: readonly MacroWorkbenchLocaleCode[],
 ): readonly MacroWorkbenchLocaleOption[] {
   const codes =
-    supported && supported.length > 0
-      ? supported
-      : (Object.keys(WORKBENCH_LOCALE_REGISTRY) as MacroWorkbenchLocaleCode[]);
+    supported && supported.length > 0 ? supported : WORKBENCH_LOCALE_CODES;
 
-  return codes.map((code) => {
-    const locale = WORKBENCH_LOCALE_REGISTRY[code];
-
-    return {
-      code,
-      label: locale.label,
-    };
-  });
+  return codes.map((code) => ({
+    code,
+    label: WORKBENCH_LOCALE_LABELS[code],
+  }));
 }
 
 export function resolveMacroWorkbenchSpec(
