@@ -1,7 +1,7 @@
 use indoc::indoc;
 
 use lingui_analyzer::{
-    MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+    MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, SvelteCompilePlan,
     framework::{
         FrameworkAdapter,
         svelte::{SvelteAdapter, analyze_svelte},
@@ -83,6 +83,38 @@ fn supports_typescript_syntax_in_svelte_script() {
 
     assert_eq!(script.candidates.len(), 1);
     assert_eq!(script.candidates[0].imported_name, "t");
+}
+
+#[test]
+fn allocates_unique_runtime_bindings_for_svelte_compile() {
+    let source = indoc! {r#"
+        <script lang="ts">
+          import { t } from "@lingui/core/macro";
+          import { Trans } from "@lingui/react/macro";
+
+          const createLinguiAccessors = "taken";
+          const __l4s_ctx = "taken";
+          const __l4s_getI18n = "taken";
+          const __l4s_translate = "taken";
+          const L4sRuntimeTrans = "taken";
+
+          const greeting = t.eager({ id: "hello", message: "Hello" });
+        </script>
+
+        <Trans id="welcome" message="Welcome" />
+    "#};
+
+    let plan = SvelteCompilePlan::build(source, "Component.svelte", "Component.svelte?compile")
+        .expect("compile plan succeeds");
+
+    assert_eq!(
+        plan.runtime_bindings.create_lingui_accessors,
+        "createLinguiAccessors_1"
+    );
+    assert_eq!(plan.runtime_bindings.context, "__l4s_ctx_1");
+    assert_eq!(plan.runtime_bindings.get_i18n, "__l4s_getI18n_1");
+    assert_eq!(plan.runtime_bindings.translate, "__l4s_translate_1");
+    assert_eq!(plan.runtime_bindings.trans_component, "L4sRuntimeTrans_1");
 }
 
 #[test]

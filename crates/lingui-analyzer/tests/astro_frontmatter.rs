@@ -1,6 +1,7 @@
 use indoc::indoc;
+
 use lingui_analyzer::{
-    MacroCandidateKind,
+    AstroCompilePlan, MacroCandidateKind,
     framework::{FrameworkAdapter, astro::AstroAdapter},
 };
 
@@ -47,6 +48,31 @@ fn collects_aliased_frontmatter_macro_imports_and_candidates() {
             (MacroCandidateKind::CallExpression, "plural", "plural"),
         ]
     );
+}
+
+#[test]
+fn allocates_unique_runtime_bindings_for_astro_compile() {
+    let source = indoc! {r#"
+        ---
+        import { t, Trans } from "@lingui/core/macro";
+
+        const __l4a_createI18n = "taken";
+        const __l4a_i18n = "taken";
+        const L4aRuntimeTrans = "taken";
+
+        const message = t`Hello`;
+        ---
+
+        <Trans id="welcome" message="Welcome" />
+        <p>{message}</p>
+    "#};
+
+    let plan = AstroCompilePlan::build(source, "Page.astro", "Page.astro?compile")
+        .expect("compile plan succeeds");
+
+    assert_eq!(plan.runtime_bindings.create_i18n, "__l4a_createI18n_1");
+    assert_eq!(plan.runtime_bindings.i18n, "__l4a_i18n_1");
+    assert_eq!(plan.runtime_bindings.runtime_trans, "L4aRuntimeTrans_1");
 }
 
 #[test]

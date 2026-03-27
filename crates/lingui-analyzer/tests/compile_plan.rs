@@ -1,9 +1,10 @@
+use std::fs::read_to_string;
+use std::path::PathBuf;
+
 use lingui_analyzer::{
     AstroCompilePlan, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
     SvelteCompilePlan, build_synthetic_module_for_framework,
 };
-use std::fs::read_to_string;
-use std::path::PathBuf;
 
 #[test]
 fn builds_common_svelte_compile_plan_with_runtime_metadata() {
