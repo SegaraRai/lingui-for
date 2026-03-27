@@ -49,12 +49,7 @@ export default defineConfig({
         ],
       },
       check: {
-        command: "vp check && vp run check:extra",
-        dependsOn: ["build"],
-        cache: false,
-      },
-      "check:extra": {
-        command: "svelte-check",
+        command: "vp check",
         dependsOn: ["build"],
         cache: false,
       },

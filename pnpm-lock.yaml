@@ -535,9 +535,6 @@ importers:
       svelte:
         specifier: ^5.55.0
         version: 5.55.0
-      svelte-check:
-        specifier: ^4.4.5
-        version: 4.4.5(picomatch@4.0.3)(svelte@5.55.0)(typescript@5.9.3)
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
