@@ -3,6 +3,7 @@ use tree_sitter::Node;
 use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 
+use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript};
 use super::parse::{parse_astro, parse_typescript};
 use super::{
@@ -539,7 +540,7 @@ fn whitespace_replacement_edits(source: &str, children: &[Node<'_>]) -> Vec<Norm
 fn is_explicit_space_expression(source: &str, node: Node<'_>) -> bool {
     let span = Span::from_node(node);
     let text = source[span.start..span.end].trim();
-    matches!(text, "{\" \"}" | "{' '}" | "{ \" \" }" | "{ ' ' }")
+    is_explicit_whitespace_string_expression(text)
 }
 
 fn sort_and_dedup_normalization_edits(edits: &mut Vec<NormalizationEdit>) {

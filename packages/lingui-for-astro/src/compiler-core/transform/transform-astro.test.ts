@@ -150,6 +150,26 @@ describe("transformAstro", () => {
     );
   });
 
+  test("treats escaped-whitespace string expressions as explicit spacing", async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans><strong>Read</strong> {"\\n"} <em>carefully</em></Trans>
+      `,
+      { filename: "/virtual/Page.astro" },
+    );
+
+    expect(compact(result.code)).toContain(
+      'message: "<0>Read</0> <1>carefully</1>"',
+    );
+    expect(compact(result.code)).not.toContain(
+      'message: "<0>Read</0>  <1>carefully</1>"',
+    );
+  });
+
   test("supports exact-number ICU branches in core and component macros", async () => {
     const source = dedent`
       ---

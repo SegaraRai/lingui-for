@@ -209,6 +209,26 @@ describe("transformSvelte", () => {
     );
   });
 
+  test("treats escaped-whitespace string expressions as explicit spacing", async () => {
+    const result = await expectTransformed(
+      dedent`
+        <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+        </script>
+
+        <Trans><strong>Read</strong> {"\\n"} <em>carefully</em></Trans>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(compact(result.code)).toContain(
+      'message: "<0>Read</0> <1>carefully</1>"',
+    );
+    expect(compact(result.code)).not.toContain(
+      'message: "<0>Read</0>  <1>carefully</1>"',
+    );
+  });
+
   test("keeps $t inside script initializers as direct translator reads", async () => {
     const result = await expectTransformed(
       dedent`
