@@ -56,7 +56,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         source_name: source_name.to_string(),
         synthetic_name: synthetic_name.to_string(),
         synthetic_source,
-        synthetic_lang: common_analysis.synthetic_lang.clone(),
+        synthetic_lang: common_analysis.synthetic_lang,
         declaration_ids,
         targets,
         import_removals: common_analysis.import_removals.clone(),
