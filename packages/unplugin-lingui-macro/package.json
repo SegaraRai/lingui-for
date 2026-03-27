@@ -74,14 +74,14 @@
   },
   "dependencies": {
     "@babel/core": "^7.29.0",
-    "@lingui/babel-plugin-lingui-macro": "^5.9.3",
+    "@lingui/babel-plugin-lingui-macro": "^5.9.4",
     "oxc-parser": "^0.121.0",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
     "@lingui-for/internal-shared-common": "workspace:*",
-    "@lingui/conf": "^5.9.3",
+    "@lingui/conf": "^5.9.4",
     "@types/babel__core": "^7.20.5",
     "@types/node": "catalog:",
     "dedent": "^1.7.2",

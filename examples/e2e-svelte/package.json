@@ -3,13 +3,13 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@lingui/core": "^5.9.3",
+    "@lingui/core": "^5.9.4",
     "lingui-for-svelte": "workspace:*",
     "svelte": "^5.55.0"
   },
   "devDependencies": {
-    "@lingui/cli": "^5.9.3",
-    "@lingui/conf": "^5.9.3",
+    "@lingui/cli": "^5.9.4",
+    "@lingui/conf": "^5.9.4",
     "@sveltejs/adapter-node": "^5.5.4",
     "@sveltejs/kit": "^2.55.0",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
