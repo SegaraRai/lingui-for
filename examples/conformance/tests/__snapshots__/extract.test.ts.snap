@@ -987,6 +987,63 @@ exports[`'trans-with-plural' > svelte extraction 1`] = `
 ]
 `;
 
+exports[`'unicode-adjacent-text' > astro extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "5u37ZP",
+    "message": "ようこそ <0>{name}</0> さん🚀",
+    "origin": [
+      "/virtual/unicode-adjacent-text.astro",
+      9,
+      9,
+    ],
+    "placeholders": {
+      "name": "name",
+    },
+  },
+]
+`;
+
+exports[`'unicode-adjacent-text' > official react extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "5u37ZP",
+    "message": "ようこそ <0>{name}</0> さん🚀",
+    "origin": [
+      "/virtual/unicode-adjacent-text.reference.tsx",
+      11,
+      4,
+    ],
+    "placeholders": {
+      "name": "name",
+    },
+  },
+]
+`;
+
+exports[`'unicode-adjacent-text' > svelte extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "5u37ZP",
+    "message": "ようこそ <0>{name}</0> さん🚀",
+    "origin": [
+      "/virtual/unicode-adjacent-text.svelte",
+      9,
+      9,
+    ],
+    "placeholders": {
+      "name": "name",
+    },
+  },
+]
+`;
+
 exports[`'with-id-context-comment-component' > astro extraction 1`] = `
 [
   {

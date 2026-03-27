@@ -67,19 +67,30 @@ export function offsetToLocation(
   source: string,
   offset: number,
 ): SourceLocation {
+  const bounded = Math.min(offset, source.length);
   let line = 1;
   let column = 0;
 
-  for (let index = 0; index < offset; index += 1) {
-    if (source[index] === "\n") {
+  for (const char of source.slice(0, bounded)) {
+    if (char === "\n") {
       line += 1;
       column = 0;
     } else {
-      column += 1;
+      column += char.length;
     }
   }
 
   return { line, column };
+}
+
+export function nextCodePointOffset(source: string, offset: number): number {
+  const bounded = Math.min(offset, source.length);
+  const codePoint = source.codePointAt(bounded);
+  if (codePoint == null) {
+    return bounded;
+  }
+
+  return bounded + (codePoint > 0xffff ? 2 : 1);
 }
 
 export function assertRangeMapping(

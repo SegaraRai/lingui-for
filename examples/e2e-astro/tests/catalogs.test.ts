@@ -33,6 +33,8 @@ describe("lingui extract and compile outputs", () => {
     expect(enPo).toContain(
       "Svelte runs plural, select, and selectOrdinal macros in component code.",
     );
+    expect(enPo).toContain("テンプレートこんにちは😀 {name}");
+    expect(enPo).toContain("ようこそ <0>{name}</0> さん🚀");
     expect(enPo).toContain("Now viewing the slug {slug}.");
     expect(enPo).toContain("Persisted-props React island");
   });
@@ -44,6 +46,8 @@ describe("lingui extract and compile outputs", () => {
     expect(jaCatalog).toContain("サーバー翻訳の確認");
     expect(jaCatalog).toContain("動的ルートの確認");
     expect(jaCatalog).toContain("クライアント遷移の確認");
+    expect(jaCatalog).toContain("テンプレートこんにちは😀 ");
+    expect(jaCatalog).toContain("ようこそ <0>");
     expect(jaCatalog).toContain(
       "素の TypeScript から import した共有ディスクリプタです。",
     );

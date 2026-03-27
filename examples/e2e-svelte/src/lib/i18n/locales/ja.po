@@ -653,3 +653,11 @@ msgstr "状態分岐を切り替える"
 #: src/routes/playground/syntax/+page.svelte:44
 msgid "Type to filter syntax examples"
 msgstr "入力して構文例を絞り込む"
+
+#: src/lib/i18n/unicode-fixture.svelte:5
+msgid "テンプレートこんにちは😀 {name}"
+msgstr "テンプレートこんにちは😀 {name}"
+
+#: src/lib/i18n/unicode-fixture.svelte:11
+msgid "ようこそ <0>{name}</0> さん🚀"
+msgstr "ようこそ <0>{name}</0> さん🚀"

@@ -740,3 +740,11 @@ msgstr "Without ClientRouter"
 #: src/components/TransitionShowcase.astro:24
 msgid "Without ClientRouter, every navigation reloads the document."
 msgstr "Without ClientRouter, every navigation reloads the document."
+
+#: src/components/astro/UnicodeFixture.astro:5
+msgid "テンプレートこんにちは😀 {name}"
+msgstr "テンプレートこんにちは😀 {name}"
+
+#: src/components/astro/UnicodeFixture.astro:9
+msgid "ようこそ <0>{name}</0> さん🚀"
+msgstr "ようこそ <0>{name}</0> さん🚀"

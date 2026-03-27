@@ -71,4 +71,62 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
     ],
   },
+  {
+    framework: "svelte",
+    name: "svelte unicode origin mapping",
+    filename: "/virtual/extract-origin-unicode.svelte",
+    source: dedent`
+      <script lang="ts">
+        import { t, Trans } from "lingui-for-svelte/macro";
+
+        const scriptLabel = t.eager\`スクリプト😀メッセージ\`;
+      </script>
+
+      <p>前置き🎌 {$t\`テンプレート🚀メッセージ\`} 後置き🍣</p>
+      <Trans>ようこそ <strong>{"世界😀"}</strong> さん🎉</Trans>
+    `,
+    expectations: [
+      {
+        message: "スクリプト😀メッセージ",
+        needle: "t.eager`スクリプト😀メッセージ`",
+      },
+      {
+        message: "テンプレート🚀メッセージ",
+        needle: "t`テンプレート🚀メッセージ`",
+      },
+      {
+        message: "ようこそ <0>世界😀</0> さん🎉",
+        needle: "ようこそ ",
+      },
+    ],
+  },
+  {
+    framework: "astro",
+    name: "astro unicode origin mapping",
+    filename: "/virtual/extract-origin-unicode.astro",
+    source: dedent`
+      ---
+      import { t, Trans } from "lingui-for-astro/macro";
+
+      const scriptLabel = t\`フロントマター😀メッセージ\`;
+      ---
+
+      <p>前置き🎌 {t\`テンプレート🚀メッセージ\`} 後置き🍣</p>
+      <Trans>ようこそ <strong>{"世界😀"}</strong> さん🎉</Trans>
+    `,
+    expectations: [
+      {
+        message: "フロントマター😀メッセージ",
+        needle: "t`フロントマター😀メッセージ`",
+      },
+      {
+        message: "テンプレート🚀メッセージ",
+        needle: "t`テンプレート🚀メッセージ`",
+      },
+      {
+        message: "ようこそ <0>世界😀</0> さん🎉",
+        needle: "ようこそ ",
+      },
+    ],
+  },
 ];

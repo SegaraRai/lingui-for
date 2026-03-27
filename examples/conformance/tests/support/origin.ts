@@ -16,12 +16,12 @@ export function findSourceLocation(
   let line = 1;
   let column = 0;
 
-  for (let index = 0; index < start; index += 1) {
-    if (source[index] === "\n") {
+  for (const char of source.slice(0, start)) {
+    if (char === "\n") {
       line += 1;
       column = 0;
     } else {
-      column += 1;
+      column += char.length;
     }
   }
 

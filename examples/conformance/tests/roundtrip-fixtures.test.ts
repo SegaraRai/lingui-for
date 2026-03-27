@@ -2,6 +2,7 @@ import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import {
   assertRangeMapping as assertSharedRangeMapping,
   findUniqueRange,
+  nextCodePointOffset,
   offsetToLocation,
 } from "@lingui-for/internal-shared-test-helpers";
 import type { ExtractedMessage } from "@lingui/conf";
@@ -515,6 +516,92 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     },
   ];
 
+  const svelteUnicodeFilename = "/virtual/UnicodeScenario.svelte";
+  const svelteUnicodeSource = dedent`
+    <script lang="ts">
+      import { t as translate } from "@lingui/core/macro";
+      import { Trans as Translation } from "@lingui/react/macro";
+      const name = "世界😀";
+    </script>
+
+    <p class="frame">前置き🎌 {$translate\`テンプレート🚀 \${name}\`} 後置き🍣</p>
+    <Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>
+  `;
+  const svelteUnicodeDetections: Detection[] = [
+    {
+      name: "unicode markup transform",
+      original: "translate`テンプレート🚀 ${name}`",
+      generated:
+        /(?<=<p class="frame">前置き🎌 \{)_i18n\._\([\s\S]*?\)(?=\} 後置き🍣<\/p>)/,
+      extracted: "テンプレート🚀 {name}",
+    },
+    {
+      name: "unicode wrapper open",
+      original: '<p class="frame">前置き🎌 {',
+      generated: '<p class="frame">前置き🎌 {',
+      mapping: "chars",
+    },
+    {
+      name: "unicode wrapper close",
+      original: /} 後置き🍣<\/p>(?=\n<Translation>)/,
+      generated: /} 後置き🍣<\/p>(?=\n<_Trans\b)/,
+    },
+    {
+      name: "unicode component boundary",
+      original:
+        "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
+      generated: /<_Trans\b[\s\S]*?\/>/,
+    },
+    {
+      name: "unicode component extraction",
+      original: "ようこそ ",
+      extracted: "ようこそ <0>{name}</0> さん🎉",
+    },
+  ];
+
+  const astroUnicodeFilename = "/virtual/UnicodeScenario.astro";
+  const astroUnicodeSource = dedent`
+    ---
+    import { t as translate } from "@lingui/core/macro";
+    import { Trans as Translation } from "@lingui/react/macro";
+    const name = "世界😀";
+    ---
+
+    <p class="frame">前置き🎌 {translate\`テンプレート🚀 \${name}\`} 後置き🍣</p>
+    <Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>
+  `;
+  const astroUnicodeDetections: Detection[] = [
+    {
+      name: "unicode markup transform",
+      original: "translate`テンプレート🚀 ${name}`",
+      generated:
+        /(?<=<p class="frame">前置き🎌 \{)_i18n\._\([\s\S]*?\)(?=\} 後置き🍣<\/p>)/,
+      extracted: "テンプレート🚀 {name}",
+    },
+    {
+      name: "unicode wrapper open",
+      original: '<p class="frame">前置き🎌 {',
+      generated: '<p class="frame">前置き🎌 {',
+      mapping: "chars",
+    },
+    {
+      name: "unicode wrapper close",
+      original: /} 後置き🍣<\/p>(?=\n<Translation>)/,
+      generated: /} 後置き🍣<\/p>(?=\n<_Trans\b)/,
+    },
+    {
+      name: "unicode component boundary",
+      original:
+        "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
+      generated: /<_Trans\b[\s\S]*?\/>/,
+    },
+    {
+      name: "unicode component extraction",
+      original: "ようこそ ",
+      extracted: "ようこそ <0>{name}</0> さん🎉",
+    },
+  ];
+
   const fixtures: DetectionFixture[] = [
     {
       name: "Svelte expression contracts",
@@ -585,6 +672,20 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       filename: astroComplexFilename,
       source: astroComplexSource,
       detections: astroComplexDetections,
+    },
+    {
+      name: "Svelte unicode contracts",
+      framework: "svelte",
+      filename: svelteUnicodeFilename,
+      source: svelteUnicodeSource,
+      detections: svelteUnicodeDetections,
+    },
+    {
+      name: "Astro unicode contracts",
+      framework: "astro",
+      filename: astroUnicodeFilename,
+      source: astroUnicodeSource,
+      detections: astroUnicodeDetections,
     },
   ];
 
@@ -738,22 +839,12 @@ function assertCharacterMapping(
     throw new Error(`Missing generated matcher: ${detection.name}`);
   }
 
-  const generatedLength = generated.end - generated.start;
-  const originalLength = original.end - original.start;
+  let generatedOffset = generated.start;
+  let originalOffset = original.start;
 
-  expect(generatedLength, `${detection.name}: range lengths differ`).toBe(
-    originalLength,
-  );
-
-  for (let offset = 0; offset < generatedLength; offset += 1) {
-    const generatedPoint = offsetToLocation(
-      generatedSource,
-      generated.start + offset,
-    );
-    const originalPoint = offsetToLocation(
-      originalSource,
-      original.start + offset,
-    );
+  while (generatedOffset < generated.end && originalOffset < original.end) {
+    const generatedPoint = offsetToLocation(generatedSource, generatedOffset);
+    const originalPoint = offsetToLocation(originalSource, originalOffset);
     const mapped = originalPositionFor(consumer, {
       line: generatedPoint.line,
       column: generatedPoint.column,
@@ -761,13 +852,27 @@ function assertCharacterMapping(
 
     expect(
       mapped.source,
-      `${detection.name}: char ${offset} missing source`,
+      `${detection.name}: offset ${generatedOffset - generated.start} missing source`,
     ).toBe(filename);
-    expect(mapped.line, `${detection.name}: char ${offset} line`).toBe(
-      originalPoint.line,
-    );
-    expect(mapped.column, `${detection.name}: char ${offset} column`).toBe(
-      originalPoint.column,
-    );
+    expect(
+      mapped.line,
+      `${detection.name}: offset ${generatedOffset - generated.start} line`,
+    ).toBe(originalPoint.line);
+    expect(
+      mapped.column,
+      `${detection.name}: offset ${generatedOffset - generated.start} column`,
+    ).toBe(originalPoint.column);
+
+    generatedOffset = nextCodePointOffset(generatedSource, generatedOffset);
+    originalOffset = nextCodePointOffset(originalSource, originalOffset);
   }
+
+  expect(
+    generatedOffset,
+    `${detection.name}: generated range lengths differ`,
+  ).toBe(generated.end);
+  expect(
+    originalOffset,
+    `${detection.name}: original range lengths differ`,
+  ).toBe(original.end);
 }
