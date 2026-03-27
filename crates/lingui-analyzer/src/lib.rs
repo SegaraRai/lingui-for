@@ -13,11 +13,9 @@ use wasm_bindgen::prelude::*;
 
 use crate::compile::finish_compile;
 use crate::extract::{build_synthetic_module, reinsert_transformed_declarations};
-use crate::framework::{
-    FrameworkAdapter,
-    astro::AstroAdapter,
-    svelte::{SvelteAdapter, validate_svelte_extract_candidates},
-};
+use crate::framework::astro::AstroAdapter;
+use crate::framework::svelte::{SvelteAdapter, validate_svelte_extract_candidates};
+use crate::framework::{AnalyzeOptions, FrameworkAdapter};
 
 pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
@@ -33,6 +31,7 @@ pub use extract::{
 };
 pub use framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
+    NormalizationEdit, WhitespaceMode,
 };
 pub use synthesis::NormalizedSegment;
 
@@ -41,10 +40,16 @@ pub fn build_synthetic_module_for_framework(
     source: &str,
     source_name: &str,
     synthetic_name: &str,
+    whitespace: Option<WhitespaceMode>,
 ) -> Result<SyntheticModule, AnalyzerError> {
     match framework {
         "astro" => {
-            let analysis = AstroAdapter.analyze(source)?;
+            let analysis = AstroAdapter.analyze(
+                source,
+                &AnalyzeOptions {
+                    whitespace: whitespace.unwrap_or(WhitespaceMode::Astro),
+                },
+            )?;
             let mut candidates = analysis.frontmatter_candidates;
             candidates.extend(
                 analysis
@@ -69,7 +74,12 @@ pub fn build_synthetic_module_for_framework(
             ))
         }
         "svelte" => {
-            let analysis = SvelteAdapter.analyze(source)?;
+            let analysis = SvelteAdapter.analyze(
+                source,
+                &AnalyzeOptions {
+                    whitespace: whitespace.unwrap_or(WhitespaceMode::Svelte),
+                },
+            )?;
             let imports = analysis
                 .scripts
                 .iter()
@@ -127,6 +137,7 @@ pub fn wasm_build_synthetic_module(
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
         options.synthetic_name.as_deref().unwrap_or("synthetic.js"),
+        options.whitespace,
     )?;
     Ok(result.into_ts()?)
 }
@@ -140,6 +151,8 @@ pub struct CompilePlanOptions {
     pub source_name: Option<String>,
     #[tsify(optional)]
     pub synthetic_name: Option<String>,
+    #[tsify(optional)]
+    pub whitespace: Option<WhitespaceMode>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -167,13 +180,14 @@ pub fn wasm_build_svelte_compile_plan(
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = SvelteCompilePlan::build(
+    let result = SvelteCompilePlan::build_with_whitespace(
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
         options
             .synthetic_name
             .as_deref()
             .unwrap_or("synthetic-compile.tsx"),
+        options.whitespace.unwrap_or(WhitespaceMode::Svelte),
     )?;
     Ok(result.into_ts()?)
 }
@@ -201,13 +215,14 @@ pub fn wasm_build_astro_compile_plan(
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = AstroCompilePlan::build(
+    let result = AstroCompilePlan::build_with_whitespace(
         &options.source,
         options.source_name.as_deref().unwrap_or("source"),
         options
             .synthetic_name
             .as_deref()
             .unwrap_or("synthetic-compile.tsx"),
+        options.whitespace.unwrap_or(WhitespaceMode::Astro),
     )?;
     Ok(result.into_ts()?)
 }

@@ -17,5 +17,5 @@ export default defineConfig({
       exclude: ["src/i18n/locales/**"],
     },
   ],
-  extractors: [svelteExtractor, babelExtractor],
+  extractors: [svelteExtractor(), babelExtractor],
 });

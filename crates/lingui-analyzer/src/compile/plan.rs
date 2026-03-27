@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use crate::framework::{MacroCandidateStrategy, MacroImport};
+use crate::framework::{MacroCandidateStrategy, MacroImport, WhitespaceMode};
 use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
 use super::{CommonCompilePlan, CompileTarget, CompileTargetPrototype, FrameworkCompilePlan};
@@ -9,8 +9,9 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     source: &str,
     source_name: &str,
     synthetic_name: &str,
+    whitespace_mode: WhitespaceMode,
 ) -> Result<P, crate::AnalyzerError> {
-    let mut analysis = P::analyze(source)?;
+    let mut analysis = P::analyze(source, whitespace_mode)?;
     let common_analysis = P::common_analysis(&mut analysis);
     retain_standalone_prototypes(&mut common_analysis.prototypes);
 

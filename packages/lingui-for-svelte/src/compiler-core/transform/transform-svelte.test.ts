@@ -25,10 +25,14 @@ function expectNoExcessBlankLines(value: string): void {
 
 async function expectTransformed(
   source: string,
-  options: { filename?: string } = {},
+  options: {
+    filename?: string;
+    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+  } = {},
 ) {
   const result = await transformSvelte(source, {
     filename: options.filename ?? "/virtual/App.svelte",
+    whitespace: options.whitespace,
   });
   expect(result).not.toBeNull();
   return result!;
@@ -143,6 +147,66 @@ describe("transformSvelte", () => {
     	<h1>{$__l4s_translate(heading)}</h1>
     	<p>{label}</p>"
     `);
+  });
+
+  test("defaults rich-text whitespace handling to framework-aware spacing", async () => {
+    const result = await expectTransformed(
+      dedent`
+        <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+        </script>
+
+        <Trans>
+          <strong>Read</strong>
+          <em>carefully</em>
+        </Trans>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(compact(result.code)).toContain(
+      'message: "<0>Read</0> <1>carefully</1>"',
+    );
+  });
+
+  test("supports opting rich-text whitespace handling back to jsx semantics", async () => {
+    const result = await expectTransformed(
+      dedent`
+        <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+        </script>
+
+        <Trans>
+          <strong>Read</strong>
+          <em>carefully</em>
+        </Trans>
+      `,
+      { filename: "/virtual/App.svelte", whitespace: "jsx" },
+    );
+
+    expect(compact(result.code)).toContain(
+      'message: "<0>Read</0><1>carefully</1>"',
+    );
+  });
+
+  test('does not duplicate explicit {" "} rich-text spacing', async () => {
+    const result = await expectTransformed(
+      dedent`
+        <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+        </script>
+
+        <Trans><strong>Read</strong> {" "} <em>carefully</em></Trans>
+      `,
+      { filename: "/virtual/App.svelte" },
+    );
+
+    expect(compact(result.code)).toContain(
+      'message: "<0>Read</0> <1>carefully</1>"',
+    );
+    expect(compact(result.code)).not.toContain(
+      'message: "<0>Read</0>  <1>carefully</1>"',
+    );
   });
 
   test("keeps $t inside script initializers as direct translator reads", async () => {

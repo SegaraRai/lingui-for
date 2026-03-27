@@ -6,6 +6,7 @@ import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 import { astroExtractor } from "./astro.ts";
 
 const linguiConfig = normalizeLinguiConfig();
+const extractor = astroExtractor();
 
 describe("astroExtractor", () => {
   test("preserves original origins without query suffixes for indexed source maps", async () => {
@@ -19,7 +20,7 @@ const label = t\`Frontmatter origin message\`;
 `;
     const messages: ExtractedMessage[] = [];
 
-    await astroExtractor.extract(
+    await extractor.extract(
       "/virtual/origin-check.astro",
       source,
       (message) => {
@@ -73,7 +74,7 @@ const role = "admin";
 `;
     const messages: ExtractedMessage[] = [];
 
-    await astroExtractor.extract(
+    await extractor.extract(
       "/virtual/nested-origin.astro",
       source,
       (message) => {
@@ -150,7 +151,7 @@ const role = "admin";
     const messages: ExtractedMessage[] = [];
     const filename = "/virtual/stress-origin.astro";
 
-    await astroExtractor.extract(
+    await extractor.extract(
       filename,
       source,
       (message) => {
@@ -182,6 +183,35 @@ const role = "admin";
           "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}",
       )?.origin,
     ).toEqual([filename, 39, 9]);
+  });
+
+  test("uses framework-aware whitespace for Trans rich-text extraction", async () => {
+    const source = dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>
+        <strong>Read</strong>
+        <em>carefully</em>
+      </Trans>
+    `;
+    const messages: ExtractedMessage[] = [];
+
+    await extractor.extract(
+      "/virtual/whitespace.astro",
+      source,
+      (message) => {
+        messages.push(message);
+      },
+      { linguiConfig },
+    );
+
+    expect(
+      messages.some(
+        (message) => message.message === "<0>Read</0> <1>carefully</1>",
+      ),
+    ).toBe(true);
   });
 
   test("keeps origins for core macro template expressions in Astro component markup", async () => {
@@ -252,7 +282,7 @@ const role = "admin";
     const messages: ExtractedMessage[] = [];
     const filename = "/virtual/astro-formats-origin.astro";
 
-    await astroExtractor.extract(
+    await extractor.extract(
       filename,
       source,
       (message) => {
@@ -317,7 +347,7 @@ const role = "admin";
     const messages: ExtractedMessage[] = [];
     const filename = "/virtual/transition-showcase-origin.astro";
 
-    await astroExtractor.extract(
+    await extractor.extract(
       filename,
       source,
       (message) => {
@@ -368,7 +398,7 @@ const role = "admin";
     `;
     const messages: ExtractedMessage[] = [];
 
-    await astroExtractor.extract(
+    await extractor.extract(
       "/virtual/transition-showcase.astro",
       source,
       (message) => {
@@ -438,7 +468,7 @@ const role = "admin";
     `;
     const messages: ExtractedMessage[] = [];
 
-    await astroExtractor.extract(
+    await extractor.extract(
       "/virtual/app-layout.astro",
       source,
       (message) => {

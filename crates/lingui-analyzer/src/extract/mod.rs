@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::Span;
-use crate::framework::MacroFlavor;
+use crate::framework::{MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
 
 pub use build::build_synthetic_module;
@@ -49,6 +49,7 @@ pub struct SyntheticModuleOptions {
     pub source: String,
     pub source_name: Option<String>,
     pub synthetic_name: Option<String>,
+    pub whitespace: Option<WhitespaceMode>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]

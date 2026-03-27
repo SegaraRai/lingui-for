@@ -183,6 +183,189 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
 ]
 `;
 
+exports[`'component-whitespacing-auto' > astro extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.astro",
+      6,
+      2,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.astro",
+      11,
+      2,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.astro",
+      16,
+      2,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "INRnBm",
+    "message": " Before  {value}  After ",
+    "origin": [
+      "/virtual/component-whitespacing-auto.astro",
+      19,
+      2,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+]
+`;
+
+exports[`'component-whitespacing-auto' > official react extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.reference.tsx",
+      6,
+      4,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.reference.tsx",
+      15,
+      4,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.reference.tsx",
+      24,
+      4,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "INRnBm",
+    "message": " Before  {value}  After ",
+    "origin": [
+      "/virtual/component-whitespacing-auto.reference.tsx",
+      33,
+      4,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+]
+`;
+
+exports[`'component-whitespacing-auto' > svelte extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.svelte",
+      6,
+      2,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.svelte",
+      11,
+      2,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "/txFeF",
+    "message": "Before {value} After",
+    "origin": [
+      "/virtual/component-whitespacing-auto.svelte",
+      16,
+      2,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "INRnBm",
+    "message": " Before  {value}  After ",
+    "origin": [
+      "/virtual/component-whitespacing-auto.svelte",
+      19,
+      2,
+    ],
+    "placeholders": {
+      "value": "value",
+    },
+  },
+]
+`;
+
 exports[`'deep-rich-text-trans' > astro extraction 1`] = `
 [
   {

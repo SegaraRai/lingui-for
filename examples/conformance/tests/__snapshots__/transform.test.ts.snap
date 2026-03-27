@@ -124,6 +124,130 @@ exports[`NODE_ENV=development > 'component-whitespacing' > svelte transform 1`] 
 }} />"
 `;
 
+exports[`NODE_ENV=development > 'component-whitespacing-auto' > astro transform 1`] = `
+"---
+import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+const __l4a_i18n = __l4a_createI18n(Astro.locals);
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+---
+
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "INRnBm",
+  message: " Before  {value}  After ",
+  values: {
+    value: value
+  }
+}} />"
+`;
+
+exports[`NODE_ENV=development > 'component-whitespacing-auto' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+function Example() {
+  return <>
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      message: "Before {value} After",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      message: "Before {value} After",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      message: "Before {value} After",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "INRnBm",
+      message: " Before  {value}  After ",
+      values: {
+        value: value
+      }
+    }} />
+    </>;
+}"
+`;
+
+exports[`NODE_ENV=development > 'component-whitespacing-auto' > svelte transform 1`] = `
+"<script lang="ts">
+  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+</script>
+
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  message: "Before {value} After",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "INRnBm",
+  message: " Before  {value}  After ",
+  values: {
+    value: value
+  }
+}} />"
+`;
+
 exports[`NODE_ENV=development > 'deep-rich-text-trans' > astro transform 1`] = `
 "---
 import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
@@ -1287,6 +1411,118 @@ exports[`NODE_ENV=production > 'component-whitespacing' > svelte transform 1`] =
 <L4sRuntimeTrans {.../*i18n*/
 {
   id: "DFZbAv",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "INRnBm",
+  values: {
+    value: value
+  }
+}} />"
+`;
+
+exports[`NODE_ENV=production > 'component-whitespacing-auto' > astro transform 1`] = `
+"---
+import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+const __l4a_i18n = __l4a_createI18n(Astro.locals);
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+---
+
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4aRuntimeTrans {.../*i18n*/
+{
+  id: "INRnBm",
+  values: {
+    value: value
+  }
+}} />"
+`;
+
+exports[`NODE_ENV=production > 'component-whitespacing-auto' > official react transform 1`] = `
+"import { Trans as _Trans } from "@lingui/react";
+function Example() {
+  return <>
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "/txFeF",
+      values: {
+        value: value
+      }
+    }} />
+      <_Trans {...
+    /*i18n*/
+    {
+      id: "INRnBm",
+      values: {
+        value: value
+      }
+    }} />
+    </>;
+}"
+`;
+
+exports[`NODE_ENV=production > 'component-whitespacing-auto' > svelte transform 1`] = `
+"<script lang="ts">
+  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+</script>
+
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
+  values: {
+    value: value
+  }
+}} />
+<L4sRuntimeTrans {.../*i18n*/
+{
+  id: "/txFeF",
   values: {
     value: value
   }

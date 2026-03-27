@@ -34,54 +34,71 @@ function normalizeExtractionSourceMap(
 async function buildSyntheticExtractionUnit(
   filename: string,
   source: string,
+  whitespace: "jsx" | "astro" | "svelte",
 ): Promise<SyntheticModule> {
   return buildSyntheticModule({
     framework: "astro",
     source,
     sourceName: filename,
     syntheticName: filename.replace(/\.astro$/, ".synthetic.tsx"),
+    whitespace,
   });
 }
 
+export interface AstroExtractorOptions {
+  whitespace?: "jsx" | "auto" | "astro" | "svelte";
+}
+
 /**
- * Lingui extractor for `.astro` source files.
+ * Lingui extractor factory for `.astro` source files.
  *
  * It matches Astro files, lowers macro-bearing syntax into a Rust-generated
  * synthetic module, and forwards the extracted messages to Lingui's Babel
  * extractor pipeline.
  */
-export const astroExtractor: ExtractorType = {
-  match(filename) {
-    return filename.endsWith(".astro");
-  },
-  async extract(filename, source, onMessageExtracted, ctx) {
-    await initWasmOnce();
+export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
+  const whitespace =
+    options?.whitespace == null || options.whitespace === "auto"
+      ? "astro"
+      : options.whitespace;
 
-    const extractorCtx = createExtractorContext(ctx);
-    const synthetic = await buildSyntheticExtractionUnit(filename, source);
-    const transformed = transformProgram(synthetic.source, {
-      translationMode: "extract",
-      filename: filename.replace(/\.astro$/, ".synthetic.tsx"),
-      linguiConfig: extractorCtx.linguiConfig,
-      runtimeBinding: null,
-      inputSourceMap: toBabelSourceMap(
-        parseCanonicalSourceMap(synthetic.sourceMapJson),
-      ),
-    });
+  return {
+    match(filename) {
+      return filename.endsWith(".astro");
+    },
+    async extract(filename, source, onMessageExtracted, ctx) {
+      await initWasmOnce();
 
-    await runBabelExtractionUnits(
-      filename,
-      [
+      const extractorCtx = createExtractorContext(ctx);
+      const synthetic = await buildSyntheticExtractionUnit(
+        filename,
+        source,
+        whitespace,
+      );
+      const transformed = transformProgram(synthetic.source, {
+        translationMode: "extract",
+        filename: filename.replace(/\.astro$/, ".synthetic.tsx"),
+        linguiConfig: extractorCtx.linguiConfig,
+        runtimeBinding: null,
+        inputSourceMap: toBabelSourceMap(
+          parseCanonicalSourceMap(synthetic.sourceMapJson),
+        ),
+      });
+
+      await runBabelExtractionUnits(
+        filename,
+        [
+          {
+            code: transformed.code,
+            map: transformed.map ?? undefined,
+          },
+        ],
+        onMessageExtracted,
+        extractorCtx,
         {
-          code: transformed.code,
-          map: transformed.map ?? undefined,
+          normalizeSourceMap: normalizeExtractionSourceMap,
         },
-      ],
-      onMessageExtracted,
-      extractorCtx,
-      {
-        normalizeSourceMap: normalizeExtractionSourceMap,
-      },
-    );
-  },
-};
+      );
+    },
+  };
+}

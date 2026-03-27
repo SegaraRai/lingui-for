@@ -4,7 +4,10 @@ use crate::common::Span;
 
 use super::parse::{parse_javascript, parse_typescript};
 use super::scope::LexicalScope;
-use super::{MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport};
+use super::{
+    MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
+    NormalizationEdit,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsMacroSyntax {
@@ -340,7 +343,7 @@ fn to_call_candidate(
                 flavor: MacroFlavor::Direct,
                 outer_span: shift_span(Span::from_node(node), base_offset),
                 normalized_span: shift_span(Span::from_node(node), base_offset),
-                strip_spans: Vec::new(),
+                normalization_edits: Vec::new(),
                 source_map_anchor: Some(identifier_span),
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
@@ -382,7 +385,9 @@ fn to_svelte_call_candidate(
                 flavor: MacroFlavor::Reactive,
                 outer_span,
                 normalized_span: outer_span,
-                strip_spans: vec![Span::new(identifier_span.start, identifier_span.start + 1)],
+                normalization_edits: vec![NormalizationEdit::Delete {
+                    span: Span::new(identifier_span.start, identifier_span.start + 1),
+                }],
                 source_map_anchor: Some(anchor),
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
@@ -398,7 +403,7 @@ fn to_svelte_call_candidate(
             flavor: MacroFlavor::Direct,
             outer_span: shift_span(Span::from_node(node), base_offset),
             normalized_span: shift_span(Span::from_node(node), base_offset),
-            strip_spans: Vec::new(),
+            normalization_edits: Vec::new(),
             source_map_anchor: Some(shift_span(Span::from_node(identifier), base_offset)),
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
@@ -434,7 +439,9 @@ fn to_svelte_call_candidate(
             object_span.start,
             shift_span(Span::from_node(arguments), base_offset).end,
         ),
-        strip_spans: vec![Span::new(object_span.end, property_span.end)],
+        normalization_edits: vec![NormalizationEdit::Delete {
+            span: Span::new(object_span.end, property_span.end),
+        }],
         source_map_anchor: Some(object_span),
         owner_id: None,
         strategy: MacroCandidateStrategy::Standalone,

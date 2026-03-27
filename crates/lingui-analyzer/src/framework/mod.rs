@@ -48,6 +48,23 @@ pub enum MacroCandidateStrategy {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum NormalizationEdit {
+    Delete { span: Span },
+    Insert { at: usize, text: String },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub enum WhitespaceMode {
+    Jsx,
+    Astro,
+    Svelte,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct MacroCandidate {
     pub id: String,
@@ -57,14 +74,25 @@ pub struct MacroCandidate {
     pub flavor: MacroFlavor,
     pub outer_span: Span,
     pub normalized_span: Span,
-    pub strip_spans: Vec<Span>,
+    pub normalization_edits: Vec<NormalizationEdit>,
     pub source_map_anchor: Option<Span>,
     pub owner_id: Option<String>,
     pub strategy: MacroCandidateStrategy,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct AnalyzeOptions {
+    pub whitespace: WhitespaceMode,
+}
+
 pub trait FrameworkAdapter {
     type Analysis;
 
-    fn analyze(&self, source: &str) -> Result<Self::Analysis, AnalyzerError>;
+    fn analyze(
+        &self,
+        source: &str,
+        options: &AnalyzeOptions,
+    ) -> Result<Self::Analysis, AnalyzerError>;
 }

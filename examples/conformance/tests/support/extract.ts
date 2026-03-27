@@ -6,6 +6,8 @@ import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 import { transformOfficialCore, transformOfficialReact } from "./transforms.ts";
 
+type FixtureWhitespace = "auto" | "jsx";
+
 const linguiConfig: LinguiConfigNormalized = {
   catalogs: [],
   compileNamespace: "cjs",
@@ -176,13 +178,15 @@ export async function extractOfficialReact(
 export async function extractSvelteFixture(
   source: string,
   fixtureName = "conformance",
+  whitespace: FixtureWhitespace = "jsx",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
   const filename = fixtureName.endsWith(".svelte")
     ? fixtureName
     : `/virtual/${fixtureName}.svelte`;
+  const extractor = svelteExtractor({ whitespace });
 
-  await svelteExtractor.extract(
+  await extractor.extract(
     filename,
     source,
     (message) => {
@@ -197,13 +201,15 @@ export async function extractSvelteFixture(
 export async function extractAstroFixture(
   source: string,
   fixtureName = "conformance",
+  whitespace: FixtureWhitespace = "jsx",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
   const filename = fixtureName.endsWith(".astro")
     ? fixtureName
     : `/virtual/${fixtureName}.astro`;
+  const extractor = astroExtractor({ whitespace });
 
-  await astroExtractor.extract(
+  await extractor.extract(
     filename,
     source,
     (message) => {

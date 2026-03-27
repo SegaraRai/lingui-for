@@ -1,4 +1,5 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
+import type { RichTextWhitespaceMode } from "../shared/types.ts";
 
 import {
   buildAstroCompilePlan,
@@ -21,6 +22,7 @@ export async function lowerAstroWithRustSynthetic(
   source: string,
   filename: string,
   linguiConfig: LinguiConfigNormalized,
+  whitespace: RichTextWhitespaceMode = "auto",
 ): Promise<AstroLowerResult | null> {
   await initWasmOnce();
 
@@ -28,6 +30,7 @@ export async function lowerAstroWithRustSynthetic(
     source,
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
+    whitespace: resolveAstroWhitespace(whitespace),
   });
   if (compilePlan.common.declarationIds.length === 0) {
     return null;
@@ -56,4 +59,10 @@ export async function lowerAstroWithRustSynthetic(
     code: finished.code,
     map: parseCanonicalSourceMap(finished.sourceMapJson),
   };
+}
+
+function resolveAstroWhitespace(
+  whitespace: RichTextWhitespaceMode,
+): "jsx" | "svelte" | "astro" {
+  return whitespace === "auto" ? "astro" : whitespace;
 }

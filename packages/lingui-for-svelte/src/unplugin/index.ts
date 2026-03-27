@@ -37,6 +37,7 @@ export const unpluginFactory: UnpluginFactory<
       const transformed = await transformSvelte(code, {
         filename,
         linguiConfig: options?.linguiConfig,
+        whitespace: options?.whitespace,
       });
       if (transformed == null) {
         return null;

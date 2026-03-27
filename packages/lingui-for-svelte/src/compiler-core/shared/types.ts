@@ -16,6 +16,8 @@ export type ScriptLang = "js" | "ts";
  */
 export type ScriptKind = "instance" | "module";
 
+export type RichTextWhitespaceMode = "jsx" | "auto" | "astro" | "svelte";
+
 /**
  * Common options accepted by compiler-core transform and extraction entry points.
  */
@@ -29,4 +31,9 @@ export type LinguiSvelteTransformOptions = {
    * transforming or extracting messages.
    */
   linguiConfig?: Partial<LinguiConfig> | undefined;
+  /**
+   * Controls how whitespace between rich-text child nodes in component macros is normalized before
+   * the synthetic JSX pass runs.
+   */
+  whitespace?: RichTextWhitespaceMode | undefined;
 };

@@ -2,9 +2,9 @@ use indoc::indoc;
 use sourcemap::DecodedMap;
 
 use lingui_analyzer::{
-    MacroFlavor,
+    MacroFlavor, WhitespaceMode,
     extract::build_synthetic_module,
-    framework::{FrameworkAdapter, svelte::SvelteAdapter},
+    framework::{AnalyzeOptions, FrameworkAdapter, svelte::SvelteAdapter},
 };
 
 #[test]
@@ -19,7 +19,14 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
         </script>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let script = &analysis.scripts[0];
     let synthetic = build_synthetic_module(
         source,
@@ -77,7 +84,14 @@ fn builds_synthetic_module_for_svelte_template_components() {
         <T id="second">Hello</T>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let candidates = analysis
         .template_components
         .iter()
@@ -121,7 +135,14 @@ fn groups_synthetic_imports_by_source() {
         <T id="root" />
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let mut candidates = analysis.scripts[0].candidates.clone();
     candidates.extend(
         analysis
@@ -164,7 +185,14 @@ fn emits_lookupable_sourcemap_for_normalized_segments() {
         </script>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let synthetic = build_synthetic_module(
         source,
         "source",
@@ -199,7 +227,14 @@ fn emits_utf16_columns_for_unicode_prefixes() {
         </script>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let synthetic = build_synthetic_module(
         source,
         "source",
@@ -233,7 +268,14 @@ fn maps_component_declaration_start_to_component_message_anchor() {
         <T>Component origin {name}</T>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let candidates = analysis
         .template_components
         .iter()

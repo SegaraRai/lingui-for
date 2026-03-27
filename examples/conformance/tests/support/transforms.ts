@@ -15,6 +15,8 @@ const linguiConfig = {
   },
 };
 
+type FixtureWhitespace = "auto" | "jsx";
+
 function transformOfficial(code: string, filename: string): string {
   const result = transformSync(code, {
     ast: false,
@@ -78,10 +80,11 @@ async function runPluginTransform(
 
 async function runFixtureTransform(
   factory: TestTransformFactory,
+  options: unknown,
   code: string,
   id: string,
 ): Promise<string> {
-  return await runPluginTransform(factory, undefined, code, id);
+  return await runPluginTransform(factory, options, code, id);
 }
 
 export function transformOfficialCore(code: string): string {
@@ -92,17 +95,25 @@ export function transformOfficialReact(code: string): string {
   return transformOfficial(code, "/virtual/conformance-react.tsx");
 }
 
-export async function transformSvelteFixture(source: string): Promise<string> {
+export async function transformSvelteFixture(
+  source: string,
+  whitespace: FixtureWhitespace = "jsx",
+): Promise<string> {
   return await runFixtureTransform(
     svelteUnpluginFactory as unknown as TestTransformFactory,
+    { whitespace },
     source,
     "/virtual/Conformance.svelte",
   );
 }
 
-export async function transformAstroFixture(source: string): Promise<string> {
+export async function transformAstroFixture(
+  source: string,
+  whitespace: FixtureWhitespace = "jsx",
+): Promise<string> {
   return await runFixtureTransform(
     astroUnpluginFactory as unknown as TestTransformFactory,
+    { whitespace },
     source,
     "/virtual/Conformance.astro",
   );

@@ -59,8 +59,9 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     assert!(
         plan.common
             .synthetic_source
-            .contains("<Trans>Hello <strong>{name}</strong></Trans>")
+            .contains("<strong>{name}</strong>")
     );
+    assert!(plan.common.synthetic_source.contains("Hello"));
 
     let module_target = plan
         .common
@@ -150,8 +151,10 @@ const status = translate(msg`Status summary: active`);
     assert!(
         plan.common
             .synthetic_source
-            .contains("<Trans>Before <strong>{name}</strong> After</Trans>")
+            .contains("<strong>{name}</strong>")
     );
+    assert!(plan.common.synthetic_source.contains("Before"));
+    assert!(plan.common.synthetic_source.contains("After"));
     assert!(
         plan.common
             .targets
@@ -217,6 +220,7 @@ fn rejects_bare_direct_plural_in_svelte_extract_synthetic_builds() {
         source,
         "/virtual/App.svelte",
         "/virtual/App.svelte?extract.tsx",
+        None,
     )
     .expect_err("bare direct plural should be rejected in svelte extraction");
 

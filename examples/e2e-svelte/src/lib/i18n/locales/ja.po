@@ -433,8 +433,8 @@ msgid "Reactivity"
 msgstr "リアクティビティ"
 
 #: src/routes/playground/rich-text/+page.svelte:22
-msgid "Read the <0>settings page</0>and look for the <1>cookie-backed locale</1> behavior."
-msgstr "<0>設定ページ</0> を開いて、<1>クッキーで保持されるロケール</1>の挙動を確認してください。"
+msgid "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
+msgstr "<0>設定ページ</0>を開いて、<1>クッキーで保持されるロケール</1>の挙動を確認してください。"
 
 #: src/routes/+page.svelte:9
 msgid "Real app"

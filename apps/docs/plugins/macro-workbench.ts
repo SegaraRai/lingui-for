@@ -20,6 +20,7 @@ import {
 } from "../src/lib/macro-workbench.ts";
 
 const VIRTUAL_PREFIX = "virtual:macro-workbench?";
+const workbenchSvelteExtractor = svelteExtractor();
 
 type MacroWorkbenchPluginOptions = {
   projectRoot: string;
@@ -147,7 +148,7 @@ async function collectMessages(
 ): Promise<ExtractedMessage[]> {
   const extracted: ExtractedMessage[] = [];
 
-  await svelteExtractor.extract(
+  await workbenchSvelteExtractor.extract(
     filename,
     source,
     (message) => {

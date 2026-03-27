@@ -40,7 +40,11 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
       return;
     }
 
-    const extracted = await extractSvelteFixture(fixture.svelte, fixture.name);
+    const extracted = await extractSvelteFixture(
+      fixture.svelte,
+      fixture.name,
+      fixture.whitespace,
+    );
     expect(extracted).toMatchSnapshot();
 
     const normalized = normalizeExtractedMessages(extracted);
@@ -53,7 +57,11 @@ describe.for(conformanceFixtures)("$name", (fixture) => {
       return;
     }
 
-    const extracted = await extractAstroFixture(fixture.astro, fixture.name);
+    const extracted = await extractAstroFixture(
+      fixture.astro,
+      fixture.name,
+      fixture.whitespace,
+    );
     expect(extracted).toMatchSnapshot();
 
     const normalized = normalizeExtractedMessages(extracted);

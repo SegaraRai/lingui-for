@@ -6,8 +6,8 @@ use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 use super::js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript};
 use super::parse::{parse_astro, parse_typescript};
 use super::{
-    FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
-    MacroImport,
+    AnalyzeOptions, FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy,
+    MacroFlavor, MacroImport, NormalizationEdit, WhitespaceMode,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -38,12 +38,19 @@ pub struct AstroAdapter;
 impl FrameworkAdapter for AstroAdapter {
     type Analysis = AstroFrontmatterAnalysis;
 
-    fn analyze(&self, source: &str) -> Result<Self::Analysis, AnalyzerError> {
-        analyze_astro(source)
+    fn analyze(
+        &self,
+        source: &str,
+        options: &AnalyzeOptions,
+    ) -> Result<Self::Analysis, AnalyzerError> {
+        analyze_astro(source, options)
     }
 }
 
-pub fn analyze_astro(source: &str) -> Result<AstroFrontmatterAnalysis, AnalyzerError> {
+fn analyze_astro(
+    source: &str,
+    options: &AnalyzeOptions,
+) -> Result<AstroFrontmatterAnalysis, AnalyzerError> {
     let astro_tree = parse_astro(source)?;
     let root = astro_tree.root_node();
     let frontmatter = find_frontmatter(root);
@@ -71,6 +78,7 @@ pub fn analyze_astro(source: &str) -> Result<AstroFrontmatterAnalysis, AnalyzerE
         source,
         root,
         &macro_imports,
+        options.whitespace,
         &mut template_expressions,
         &mut template_components,
     )?;
@@ -174,6 +182,7 @@ fn collect_template_expressions(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
+    whitespace_mode: WhitespaceMode,
     expressions: &mut Vec<AstroTemplateExpression>,
     components: &mut Vec<AstroTemplateComponent>,
 ) -> Result<(), AnalyzerError> {
@@ -188,7 +197,9 @@ fn collect_template_expressions(
             )?;
         }
         "element" => {
-            if let Some(component) = component_candidate_from_element(source, node, imports) {
+            if let Some(component) =
+                component_candidate_from_element(source, node, imports, whitespace_mode)
+            {
                 components.push(component);
                 return Ok(());
             }
@@ -216,7 +227,14 @@ fn collect_template_expressions(
 
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        collect_template_expressions(source, child, imports, expressions, components)?;
+        collect_template_expressions(
+            source,
+            child,
+            imports,
+            whitespace_mode,
+            expressions,
+            components,
+        )?;
     }
 
     Ok(())
@@ -250,6 +268,7 @@ fn component_candidate_from_element(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
+    whitespace_mode: WhitespaceMode,
 ) -> Option<AstroTemplateComponent> {
     let mut cursor = node.walk();
     let tag_node = node
@@ -266,6 +285,8 @@ fn component_candidate_from_element(
     let import_decl = imports
         .iter()
         .find(|import_decl| import_decl.local_name == tag_name)?;
+    let normalization_edits =
+        collect_component_normalization_edits(source, node, imports, whitespace_mode);
 
     Some(AstroTemplateComponent {
         candidate: MacroCandidate {
@@ -276,7 +297,7 @@ fn component_candidate_from_element(
             flavor: MacroFlavor::Direct,
             outer_span: Span::from_node(node),
             normalized_span: Span::from_node(node),
-            strip_spans: Vec::new(),
+            normalization_edits,
             source_map_anchor: component_source_map_anchor(source, node),
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
@@ -356,4 +377,179 @@ fn is_component_tag_name(tag_name: &str) -> bool {
         .next()
         .map(|first| first.is_ascii_uppercase())
         .unwrap_or(false)
+}
+
+fn collect_component_normalization_edits(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    whitespace_mode: WhitespaceMode,
+) -> Vec<NormalizationEdit> {
+    let mut edits =
+        collect_nested_component_normalization_edits(source, node, imports, whitespace_mode);
+    edits.extend(component_whitespace_edits(source, node, whitespace_mode));
+    sort_and_dedup_normalization_edits(&mut edits);
+    edits
+}
+
+fn collect_nested_component_normalization_edits(
+    source: &str,
+    node: Node<'_>,
+    imports: &[MacroImport],
+    whitespace_mode: WhitespaceMode,
+) -> Vec<NormalizationEdit> {
+    let mut edits = Vec::new();
+    let mut cursor = node.walk();
+
+    for child in node.children(&mut cursor) {
+        match child.kind() {
+            "frontmatter_js_block" => {}
+            "html_interpolation" => {
+                let inner = inner_range_from_delimiters(child, 1, 1);
+                if let Ok(candidates) = collect_macro_candidates_in_javascript(
+                    &source[inner.start..inner.end],
+                    imports,
+                    inner.start,
+                    JsMacroSyntax::Standard,
+                    JsLikeLanguage::TypeScript,
+                ) {
+                    for candidate in candidates {
+                        edits.extend(candidate.normalization_edits);
+                    }
+                }
+            }
+            "attribute_interpolation" => {
+                let inner = child
+                    .children(&mut child.walk())
+                    .find(|grandchild| grandchild.kind() == "attribute_js_expr")
+                    .map(Span::from_node)
+                    .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
+                if let Ok(candidates) = collect_macro_candidates_in_javascript(
+                    &source[inner.start..inner.end],
+                    imports,
+                    inner.start,
+                    JsMacroSyntax::Standard,
+                    JsLikeLanguage::TypeScript,
+                ) {
+                    for candidate in candidates {
+                        edits.extend(candidate.normalization_edits);
+                    }
+                }
+            }
+            "attribute_backtick_string" => {
+                let inner = inner_range_from_delimiters(child, 1, 1);
+                if let Ok(candidates) = collect_macro_candidates_in_javascript(
+                    &source[inner.start..inner.end],
+                    imports,
+                    inner.start,
+                    JsMacroSyntax::Standard,
+                    JsLikeLanguage::TypeScript,
+                ) {
+                    for candidate in candidates {
+                        edits.extend(candidate.normalization_edits);
+                    }
+                }
+            }
+            "element" => {
+                if let Some(component) =
+                    component_candidate_from_element(source, child, imports, whitespace_mode)
+                {
+                    edits.extend(component.candidate.normalization_edits);
+                    continue;
+                }
+                edits.extend(collect_nested_component_normalization_edits(
+                    source,
+                    child,
+                    imports,
+                    whitespace_mode,
+                ));
+            }
+            _ => {
+                edits.extend(collect_nested_component_normalization_edits(
+                    source,
+                    child,
+                    imports,
+                    whitespace_mode,
+                ));
+            }
+        }
+    }
+
+    edits
+}
+
+fn component_whitespace_edits(
+    source: &str,
+    node: Node<'_>,
+    whitespace_mode: WhitespaceMode,
+) -> Vec<NormalizationEdit> {
+    if whitespace_mode == WhitespaceMode::Jsx {
+        return Vec::new();
+    }
+
+    let mut content_children = Vec::new();
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        if matches!(child.kind(), "start_tag" | "self_closing_tag" | "end_tag") {
+            continue;
+        }
+        content_children.push(child);
+    }
+
+    whitespace_replacement_edits(source, &content_children)
+}
+
+fn whitespace_replacement_edits(source: &str, children: &[Node<'_>]) -> Vec<NormalizationEdit> {
+    let mut edits = Vec::new();
+    let meaningful_children = children
+        .iter()
+        .copied()
+        .filter(|child| {
+            let span = Span::from_node(*child);
+            !source[span.start..span.end].trim().is_empty()
+        })
+        .collect::<Vec<_>>();
+
+    for pair in meaningful_children.windows(2) {
+        let previous = pair[0];
+        let next = pair[1];
+        if is_explicit_space_expression(source, previous)
+            || is_explicit_space_expression(source, next)
+        {
+            continue;
+        }
+        let gap = Span::new(previous.end_byte(), next.start_byte());
+        if gap.start >= gap.end {
+            continue;
+        }
+        if !source[gap.start..gap.end].trim().is_empty() {
+            continue;
+        }
+
+        edits.push(NormalizationEdit::Delete { span: gap });
+        edits.push(NormalizationEdit::Insert {
+            at: gap.start,
+            text: "{\" \"}".to_string(),
+        });
+    }
+
+    edits
+}
+
+fn is_explicit_space_expression(source: &str, node: Node<'_>) -> bool {
+    let span = Span::from_node(node);
+    let text = source[span.start..span.end].trim();
+    matches!(text, "{\" \"}" | "{' '}" | "{ \" \" }" | "{ ' ' }")
+}
+
+fn sort_and_dedup_normalization_edits(edits: &mut Vec<NormalizationEdit>) {
+    edits.sort_by_key(normalization_edit_sort_key);
+    edits.dedup();
+}
+
+fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, String) {
+    match edit {
+        NormalizationEdit::Delete { span } => (span.start, span.end, 0, String::new()),
+        NormalizationEdit::Insert { at, text } => (*at, *at, 1, text.clone()),
+    }
 }

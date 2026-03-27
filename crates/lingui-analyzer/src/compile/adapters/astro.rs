@@ -3,9 +3,10 @@ use tsify::Tsify;
 
 use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
-use crate::framework::astro::analyze_astro;
+use crate::framework::astro::AstroAdapter;
 use crate::framework::js::{JsLikeLanguage, collect_top_level_declared_names_in_javascript};
 use crate::framework::parse::parse_typescript;
+use crate::framework::{AnalyzeOptions, FrameworkAdapter, WhitespaceMode};
 
 use super::super::{
     CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
@@ -52,8 +53,11 @@ pub struct AstroCompileFrontmatterRegion {
 impl FrameworkCompilePlan for AstroCompilePlan {
     type Analysis = AstroFrameworkCompileAnalysis;
 
-    fn analyze(source: &str) -> Result<Self::Analysis, AnalyzerError> {
-        analyze_astro_compile(source)
+    fn analyze(
+        source: &str,
+        whitespace_mode: WhitespaceMode,
+    ) -> Result<Self::Analysis, AnalyzerError> {
+        analyze_astro_compile(source, whitespace_mode)
     }
 
     fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
@@ -112,7 +116,21 @@ impl AstroCompilePlan {
         source_name: &str,
         synthetic_name: &str,
     ) -> Result<Self, AnalyzerError> {
-        build_compile_plan_for_framework::<Self>(source, source_name, synthetic_name)
+        Self::build_with_whitespace(source, source_name, synthetic_name, WhitespaceMode::Astro)
+    }
+
+    pub fn build_with_whitespace(
+        source: &str,
+        source_name: &str,
+        synthetic_name: &str,
+        whitespace_mode: WhitespaceMode,
+    ) -> Result<Self, AnalyzerError> {
+        build_compile_plan_for_framework::<Self>(
+            source,
+            source_name,
+            synthetic_name,
+            whitespace_mode,
+        )
     }
 }
 
@@ -125,8 +143,9 @@ pub(crate) struct AstroFrameworkCompileAnalysis {
 
 pub(crate) fn analyze_astro_compile(
     source: &str,
+    whitespace: WhitespaceMode,
 ) -> Result<AstroFrameworkCompileAnalysis, AnalyzerError> {
-    let analysis = analyze_astro(source)?;
+    let analysis = AstroAdapter.analyze(source, &AnalyzeOptions { whitespace })?;
     let frontmatter = analysis
         .frontmatter
         .as_ref()

@@ -26,5 +26,6 @@ export async function transformSvelte(
     source,
     options.filename,
     normalizeLinguiConfig(options.linguiConfig),
+    options.whitespace,
   );
 }

@@ -1,4 +1,5 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
+import type { RichTextWhitespaceMode } from "../shared/types.ts";
 
 import {
   buildSvelteCompilePlan,
@@ -27,6 +28,7 @@ export async function lowerSvelteWithRustSynthetic(
   source: string,
   filename: string,
   linguiConfig: LinguiConfigNormalized,
+  whitespace: RichTextWhitespaceMode = "auto",
 ): Promise<SvelteLowerResult | null> {
   await initWasmOnce();
 
@@ -34,6 +36,7 @@ export async function lowerSvelteWithRustSynthetic(
     source,
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
+    whitespace: resolveSvelteWhitespace(whitespace),
   });
   if (compilePlan.common.declarationIds.length === 0) {
     return null;
@@ -85,4 +88,10 @@ export async function lowerSvelteWithRustSynthetic(
       map: parseCanonicalSourceMap(replacement.sourceMapJson),
     })),
   };
+}
+
+function resolveSvelteWhitespace(
+  whitespace: RichTextWhitespaceMode,
+): "jsx" | "svelte" | "astro" {
+  return whitespace === "auto" ? "svelte" : whitespace;
 }

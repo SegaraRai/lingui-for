@@ -3,6 +3,7 @@ import dedent from "dedent";
 export type ConformanceFixture =
   | {
       name: string;
+      whitespace?: "auto" | "jsx";
       officialCore: string;
       officialReact?: string;
       astro?: string;
@@ -10,6 +11,7 @@ export type ConformanceFixture =
     }
   | {
       name: string;
+      whitespace?: "auto" | "jsx";
       officialCore?: string;
       officialReact: string;
       astro?: string;
@@ -716,6 +718,7 @@ export const conformanceFixtures: readonly ConformanceFixture[] = [
   },
   {
     name: "component-whitespacing",
+    whitespace: "jsx",
     officialReact: dedent`
       import { Trans } from "@lingui/react/macro";
 
@@ -730,6 +733,86 @@ export const conformanceFixtures: readonly ConformanceFixture[] = [
             <Trans>
               Before
               {value}
+              After
+            </Trans>
+            <Trans>
+              Before {value} After
+            </Trans>
+            <Trans>
+              {" "}Before{" "}
+              {" "}{value}{" "}
+              {" "}After{" "}
+            </Trans>
+          </>
+        );
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+      </script>
+
+      <Trans>
+        Before{" "}
+        {value}{" "}
+        After
+      </Trans>
+      <Trans>
+        Before
+        {value}
+        After
+      </Trans>
+      <Trans>
+        Before {value} After
+      </Trans>
+      <Trans>
+        {" "}Before{" "}
+        {" "}{value}{" "}
+        {" "}After{" "}
+      </Trans>
+    `,
+    astro: dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>
+        Before{" "}
+        {value}{" "}
+        After
+      </Trans>
+      <Trans>
+        Before
+        {value}
+        After
+      </Trans>
+      <Trans>
+        Before {value} After
+      </Trans>
+      <Trans>
+        {" "}Before{" "}
+        {" "}{value}{" "}
+        {" "}After{" "}
+      </Trans>
+    `,
+  },
+  {
+    name: "component-whitespacing-auto",
+    whitespace: "auto",
+    officialReact: dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      function Example() {
+        return (
+          <>
+            <Trans>
+              Before{" "}
+              {value}{" "}
+              After
+            </Trans>
+            <Trans>
+              Before{" "}
+              {value}{" "}
               After
             </Trans>
             <Trans>

@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{ScriptLang, Span};
-use crate::framework::{MacroCandidate, MacroFlavor};
+use crate::framework::{MacroCandidate, MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
 
 pub(crate) use lower::finish_compile;
@@ -85,7 +85,10 @@ pub struct RuntimeRequirements {
 pub(crate) trait FrameworkCompilePlan: Sized {
     type Analysis;
 
-    fn analyze(source: &str) -> Result<Self::Analysis, crate::AnalyzerError>;
+    fn analyze(
+        source: &str,
+        whitespace_mode: WhitespaceMode,
+    ) -> Result<Self::Analysis, crate::AnalyzerError>;
 
     fn common_analysis(
         analysis: &mut Self::Analysis,

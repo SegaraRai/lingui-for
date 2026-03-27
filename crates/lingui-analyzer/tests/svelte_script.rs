@@ -1,11 +1,8 @@
 use indoc::indoc;
 
 use lingui_analyzer::{
-    MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, SvelteCompilePlan,
-    framework::{
-        FrameworkAdapter,
-        svelte::{SvelteAdapter, analyze_svelte},
-    },
+    MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, SvelteCompilePlan, WhitespaceMode,
+    framework::{AnalyzeOptions, FrameworkAdapter, svelte::SvelteAdapter},
 };
 
 #[test]
@@ -20,7 +17,14 @@ fn collects_svelte_script_macros_with_reactive_and_eager_flavors() {
         </script>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     assert_eq!(analysis.scripts.len(), 1);
     assert!(analysis.template_expressions.is_empty());
     assert!(analysis.template_components.is_empty());
@@ -78,7 +82,14 @@ fn supports_typescript_syntax_in_svelte_script() {
         </script>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let script = &analysis.scripts[0];
 
     assert_eq!(script.candidates.len(), 1);
@@ -131,7 +142,14 @@ fn ignores_shadowed_names_in_svelte_script() {
         </script>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let script = &analysis.scripts[0];
 
     assert!(script.is_module);
@@ -172,7 +190,14 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
         {t`after-widget`}
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let summary = analysis
         .template_expressions
         .iter()
@@ -219,7 +244,14 @@ fn treats_instance_script_non_macro_bindings_as_template_shadowing() {
         <p>{$t`Reactive from markup without a macro import`}</p>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
 
     assert_eq!(analysis.scripts[0].macro_imports.len(), 0);
     assert_eq!(
@@ -260,7 +292,14 @@ fn collects_macro_candidates_from_const_tag_initializers() {
 {/each}
 "#;
 
-    let analysis = analyze_svelte(source).expect("svelte analysis should succeed");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("svelte analysis should succeed");
     let messages = analysis
         .template_expressions
         .iter()
@@ -288,7 +327,14 @@ fn collects_template_components_with_scope_aware_shadowing() {
         <T id="after-widget" />
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let summary = analysis
         .template_components
         .iter()
@@ -341,7 +387,14 @@ fn collects_extended_svelte_template_expression_sites() {
         {@render t`render-source`}
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let kinds = analysis
         .template_expressions
         .iter()
@@ -367,7 +420,14 @@ fn keeps_outer_macro_when_javascript_macros_are_nested() {
         </script>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let script = &analysis.scripts[0];
 
     assert_eq!(script.candidates.len(), 2);
@@ -428,7 +488,14 @@ fn marks_deeply_nested_script_core_macros_as_owned_by_the_outer_reactive_macro()
         </script>
     "#};
 
-    let analysis = SvelteAdapter.analyze(source).expect("analysis succeeds");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("analysis succeeds");
     let script = &analysis.scripts[0];
     let standalone = script
         .candidates
@@ -478,7 +545,14 @@ fn keeps_full_outer_span_for_later_reactive_plural_template_expressions() {
         })}</p>
     "##};
 
-    let analysis = analyze_svelte(source).expect("svelte analysis should succeed");
+    let analysis = SvelteAdapter
+        .analyze(
+            source,
+            &AnalyzeOptions {
+                whitespace: WhitespaceMode::Svelte,
+            },
+        )
+        .expect("svelte analysis should succeed");
     let plural_expression = analysis
         .template_expressions
         .iter()

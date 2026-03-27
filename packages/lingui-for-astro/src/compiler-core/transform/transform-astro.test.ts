@@ -15,10 +15,14 @@ function compact(value: string): string {
 
 async function expectTransformed(
   source: string,
-  options: { filename?: string } = {},
+  options: {
+    filename?: string;
+    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+  } = {},
 ) {
   const result = await transformAstro(source, {
     filename: options.filename ?? "/virtual/App.astro",
+    whitespace: options.whitespace,
   });
   expect(result).not.toBeNull();
   return result!;
@@ -84,6 +88,66 @@ describe("transformAstro", () => {
     expect(code).toContain('kind: "element"');
     expect(code).toContain('tag: "a"');
     expect(code).toContain('href: "/docs"');
+  });
+
+  test("defaults rich-text whitespace handling to framework-aware spacing", async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans>
+          <strong>Read</strong>
+          <em>carefully</em>
+        </Trans>
+      `,
+      { filename: "/virtual/Page.astro" },
+    );
+
+    expect(compact(result.code)).toContain(
+      'message: "<0>Read</0> <1>carefully</1>"',
+    );
+  });
+
+  test("supports opting rich-text whitespace handling back to jsx semantics", async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans>
+          <strong>Read</strong>
+          <em>carefully</em>
+        </Trans>
+      `,
+      { filename: "/virtual/Page.astro", whitespace: "jsx" },
+    );
+
+    expect(compact(result.code)).toContain(
+      'message: "<0>Read</0><1>carefully</1>"',
+    );
+  });
+
+  test('does not duplicate explicit {" "} rich-text spacing', async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans><strong>Read</strong> {" "} <em>carefully</em></Trans>
+      `,
+      { filename: "/virtual/Page.astro" },
+    );
+
+    expect(compact(result.code)).toContain(
+      'message: "<0>Read</0> <1>carefully</1>"',
+    );
+    expect(compact(result.code)).not.toContain(
+      'message: "<0>Read</0>  <1>carefully</1>"',
+    );
   });
 
   test("supports exact-number ICU branches in core and component macros", async () => {

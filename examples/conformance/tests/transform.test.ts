@@ -48,7 +48,10 @@ describe.for(["development", "production"])("NODE_ENV=%s", (envValue) => {
         return;
       }
 
-      const transformed = await transformSvelteFixture(fixture.svelte);
+      const transformed = await transformSvelteFixture(
+        fixture.svelte,
+        fixture.whitespace,
+      );
       expect(transformed).toMatchSnapshot();
 
       const reference = getReference();
@@ -67,7 +70,10 @@ describe.for(["development", "production"])("NODE_ENV=%s", (envValue) => {
         return;
       }
 
-      const transformed = await transformAstroFixture(fixture.astro);
+      const transformed = await transformAstroFixture(
+        fixture.astro,
+        fixture.whitespace,
+      );
       expect(transformed).toMatchSnapshot();
 
       const reference = getReference();

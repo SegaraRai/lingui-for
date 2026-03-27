@@ -66,6 +66,7 @@ export const unpluginFactory: UnpluginFactory<
     const transformed = await transformAstro(code, {
       filename,
       linguiConfig: options?.linguiConfig,
+      whitespace: options?.whitespace,
     });
     if (transformed == null) {
       return null;

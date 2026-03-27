@@ -5,6 +5,8 @@ import { describe, expect, test } from "vite-plus/test";
 import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
 import { svelteExtractor } from "./svelte.ts";
 
+const extractor = svelteExtractor();
+
 function createExtractorContext(): { linguiConfig: LinguiConfigNormalized } {
   return {
     linguiConfig: normalizeLinguiConfig(),
@@ -41,7 +43,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -77,7 +79,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -100,7 +102,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -123,7 +125,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -148,7 +150,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -178,7 +180,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -203,7 +205,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -234,7 +236,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -246,6 +248,36 @@ describe("svelteExtractor", () => {
     expect(
       messages.some(
         (message) => message.message === "Read <0><1>{name}</1></0> carefully.",
+      ),
+    ).toBe(true);
+  });
+
+  test("uses framework-aware whitespace for Trans rich-text extraction", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+      </script>
+
+      <Trans>
+        <strong>Read</strong>
+        <em>carefully</em>
+      </Trans>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        extractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(
+      messages.some(
+        (message) => message.message === "<0>Read</0> <1>carefully</1>",
       ),
     ).toBe(true);
   });
@@ -269,7 +301,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
@@ -326,7 +358,7 @@ describe("svelteExtractor", () => {
 
     const messages = await collectMessages((onMessageExtracted) =>
       Promise.resolve(
-        svelteExtractor.extract(
+        extractor.extract(
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
