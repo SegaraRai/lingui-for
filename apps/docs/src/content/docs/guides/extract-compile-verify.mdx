@@ -42,12 +42,17 @@ export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
-  extractors: [svelteExtractor, babelExtractor],
+  extractors: [svelteExtractor(), babelExtractor],
 });
 ```
 
 Without `babelExtractor`, any `t` call in a `.ts` file will compile correctly at build time but
 will not appear in the extracted catalog.
+
+When a framework transform has configurable behavior, keep the extractor aligned with it. For
+example, rich-text Component Macro whitespace should use the same `whitespace` mode in both the
+build transform and `svelteExtractor(...)` or `astroExtractor(...)`. See
+[Whitespace in Component Macros](/guides/whitespace-in-component-macros).
 
 ## Which tools are responsible for what
 

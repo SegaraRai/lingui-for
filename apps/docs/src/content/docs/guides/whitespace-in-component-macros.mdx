@@ -1,0 +1,118 @@
+---
+title: Whitespace in Component Macros
+description: How rich-text whitespace is normalized for Trans, Plural, Select, and SelectOrdinal.
+---
+
+Component Macros are processed internally through JSX-compatible machinery, but Svelte and Astro
+templates are not JSX.
+
+Because of that, whitespace between child nodes can be interpreted differently if the compiler uses
+plain JSX rules. This especially matters for rich-text messages such as `Trans`, where missing or
+extra spaces can change the extracted message text.
+
+The `whitespace` option lets you choose how those boundaries are handled. In normal use you should
+leave it at the default, `auto`, which makes Component Macros follow framework-aware whitespace
+behavior instead of raw JSX semantics.
+
+## Default behavior
+
+`lingui-for-svelte` and `lingui-for-astro` default `whitespace` to `auto`, so rich-text child
+boundaries follow framework-aware whitespace handling unless you opt into `jsx`.
+
+- In Svelte, `auto` resolves to `svelte`.
+- In Astro, `auto` resolves to `astro`.
+- Use `jsx` only when you explicitly want JSX-style whitespace semantics instead.
+
+## What changes
+
+Consider this authoring:
+
+```svelte
+<Trans>
+  Read
+  <a href="/docs">docs</a>
+  now
+</Trans>
+```
+
+With `whitespace: "auto"`, the extracted rich-text message keeps the word boundaries:
+
+```text
+Read <0>docs</0> now
+```
+
+With `whitespace: "jsx"`, the same source is normalized as JSX instead, which can remove spaces
+that Svelte or Astro authors expect to keep.
+
+## Explicit whitespace takes precedence
+
+If you already wrote an explicit space expression such as `{" "}`, that is treated as authoritative.
+The framework-aware whitespace pass does not add another space next to it.
+
+```svelte
+<Trans><strong>Read</strong>{" "}<em>carefully</em></Trans>
+```
+
+This stays equivalent to:
+
+```text
+<0>Read</0> <1>carefully</1>
+```
+
+## Configure the transform
+
+Use the same `whitespace` setting everywhere that transforms framework files.
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+
+export default defineConfig({
+  plugins: [linguiForSvelte({ whitespace: "auto" })],
+});
+```
+
+```ts title="astro.config.ts"
+import { defineConfig } from "astro/config";
+import linguiForAstro from "lingui-for-astro/integration";
+
+export default defineConfig({
+  integrations: [linguiForAstro({ whitespace: "auto" })],
+});
+```
+
+## Configure extraction
+
+Extraction must use the same whitespace mode as the build transform. Otherwise the catalog message
+seen by `lingui extract` can diverge from the message produced during compilation.
+
+The framework extractors are factories, so configure them in `lingui.config.ts`:
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  extractors: [svelteExtractor({ whitespace: "auto" })],
+});
+```
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  extractors: [astroExtractor({ whitespace: "auto" })],
+});
+```
+
+## When to use `jsx`
+
+Stay with the default unless you have a specific compatibility reason to keep JSX semantics for
+rich-text child boundaries.
+
+If you switch an existing project from `jsx` to `auto`, extracted messages and generated IDs may
+change for some Component Macro calls.
+
+See [Extract, Compile, and Verify](/guides/extract-compile-verify) for the broader rule that build
+transform and extraction settings must match.

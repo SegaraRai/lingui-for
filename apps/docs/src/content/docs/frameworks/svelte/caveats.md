@@ -29,6 +29,12 @@ The runtime layer (`lingui-for-svelte/runtime`) is the compilation target for ma
 change without a major version bump. Prefer `lingui-for-svelte/macro` unless you are working on
 the integration itself.
 
+## Component macro whitespace is framework-aware by default
+
+Rich-text Component Macros use framework-aware whitespace handling by default instead of raw JSX
+semantics. See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) if your
+project needs to force `jsx` behavior or keep extraction and transform settings aligned.
+
 ## Plain `.js`, `.ts`, `.svelte.js`, and `.svelte.ts`
 
 Plain JavaScript and TypeScript files (including `.svelte.js` and `.svelte.ts`) go through the

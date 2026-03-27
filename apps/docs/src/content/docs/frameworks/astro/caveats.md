@@ -19,6 +19,12 @@ The runtime (`lingui-for-astro/runtime`) is the compilation target for macros. I
 without a major version bump. Prefer `lingui-for-astro/macro` unless you are implementing tooling
 or debugging the transform itself.
 
+## Component macro whitespace is framework-aware by default
+
+Rich-text Component Macros use framework-aware whitespace handling by default instead of raw JSX
+semantics. See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) if your
+project needs to force `jsx` behavior or keep extraction and transform settings aligned.
+
 ## MDX is not supported
 
 `.mdx` files in Astro are compiled through a Remark/Rehype pipeline that is separate from the

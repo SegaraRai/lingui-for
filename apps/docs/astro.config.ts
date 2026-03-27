@@ -183,6 +183,10 @@ export default defineConfig({
               slug: "guides/rich-text-and-structured-messages",
             },
             {
+              label: "Whitespace in Component Macros",
+              slug: "guides/whitespace-in-component-macros",
+            },
+            {
               label: "Package Reference",
               slug: "guides/package-reference",
             },

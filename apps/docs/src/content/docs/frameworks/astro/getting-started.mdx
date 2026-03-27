@@ -86,7 +86,7 @@ export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
-  extractors: [astroExtractor, babelExtractor],
+  extractors: [astroExtractor(), babelExtractor],
 });
 ```
 
