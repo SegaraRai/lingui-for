@@ -119,10 +119,9 @@ impl Utf16LineIndex {
 
         while cur_byte < clamped {
             let rel = cur_byte - self.start;
-            if rel >= line.len() {
+            let Some(ch) = line[rel..].chars().next() else {
                 break;
-            }
-            let ch = line[rel..].chars().next().unwrap();
+            };
             let next_byte = cur_byte + ch.len_utf8();
             if next_byte <= clamped {
                 cur_utf16 += ch.len_utf16();
