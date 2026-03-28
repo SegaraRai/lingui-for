@@ -1,4 +1,4 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, MacroImport, WhitespaceMode};
@@ -114,16 +114,14 @@ fn build_compile_synthetic_source(
 }
 
 fn render_import_line(imports: &[MacroImport]) -> Option<String> {
-    let mut grouped = BTreeMap::<&str, Vec<(&str, &str)>>::new();
+    let mut grouped = BTreeMap::<&str, BTreeSet<(&str, &str)>>::new();
     for import_decl in imports {
         let specifiers = grouped.entry(import_decl.source.as_str()).or_default();
         let specifier = (
             import_decl.imported_name.as_str(),
             import_decl.local_name.as_str(),
         );
-        if !specifiers.contains(&specifier) {
-            specifiers.push(specifier);
-        }
+        specifiers.insert(specifier);
     }
 
     if grouped.is_empty() {
@@ -150,4 +148,73 @@ fn render_import_line(imports: &[MacroImport]) -> Option<String> {
         .join("\n");
 
     Some(lines)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::render_import_line;
+    use crate::common::Span;
+    use crate::framework::MacroImport;
+
+    fn import(source: &str, imported_name: &str, local_name: &str) -> MacroImport {
+        MacroImport {
+            source: source.to_string(),
+            imported_name: imported_name.to_string(),
+            local_name: local_name.to_string(),
+            span: Span::new(0, 0),
+        }
+    }
+
+    #[test]
+    fn renders_import_specifiers_in_stable_sorted_order() {
+        let imports = vec![
+            import("pkg", "zeta", "zLocal"),
+            import("pkg", "alpha", "alpha"),
+            import("pkg", "beta", "bLocal"),
+        ];
+
+        assert_eq!(
+            render_import_line(&imports),
+            Some("import { alpha, beta as bLocal, zeta as zLocal } from \"pkg\";".to_string())
+        );
+    }
+
+    #[test]
+    fn de_dupes_and_ignores_input_order_for_import_specifiers() {
+        let ordered = vec![
+            import("pkg", "zeta", "zLocal"),
+            import("pkg", "alpha", "alpha"),
+            import("pkg", "alpha", "alpha"),
+            import("pkg", "beta", "bLocal"),
+        ];
+        let reversed = vec![
+            import("pkg", "beta", "bLocal"),
+            import("pkg", "alpha", "alpha"),
+            import("pkg", "zeta", "zLocal"),
+            import("pkg", "alpha", "alpha"),
+        ];
+
+        let rendered =
+            Some("import { alpha, beta as bLocal, zeta as zLocal } from \"pkg\";".to_string());
+
+        assert_eq!(render_import_line(&ordered), rendered);
+        assert_eq!(render_import_line(&reversed), rendered);
+    }
+
+    #[test]
+    fn keeps_sources_sorted_independently_from_specifier_order() {
+        let imports = vec![
+            import("z-pkg", "beta", "beta"),
+            import("a-pkg", "zeta", "zLocal"),
+            import("a-pkg", "alpha", "alpha"),
+        ];
+
+        assert_eq!(
+            render_import_line(&imports),
+            Some(
+                "import { alpha, zeta as zLocal } from \"a-pkg\";\nimport { beta } from \"z-pkg\";"
+                    .to_string()
+            )
+        );
+    }
 }
