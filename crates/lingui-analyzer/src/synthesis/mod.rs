@@ -211,8 +211,8 @@ mod tests {
 
     #[test]
     fn applies_insertions_at_outer_span_boundaries() {
-        let source = "prefixVALUEsuffix";
-        let outer_start = "prefix".len();
+        let source = "prefix<VALUE>suffix";
+        let outer_start = "prefix<".len();
         let outer_end = outer_start + "VALUE".len();
         let candidate = candidate(
             Span::new(outer_start, outer_end),
