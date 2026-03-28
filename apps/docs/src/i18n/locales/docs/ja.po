@@ -130,6 +130,7 @@ msgstr "plural"
 msgid "Plural"
 msgstr "Plural"
 
+#: src/components/MacroFamilyOverview.astro:84
 #: src/components/MacroWorkbench.astro:59
 msgid "Preview"
 msgstr "プレビュー"
@@ -146,6 +147,10 @@ msgstr "結果タブ"
 msgid "Say hello to Lingui."
 msgstr "Linguiに挨拶する"
 
+#: src/components/MacroFamilyOverview.astro:115
+msgid "See full demo"
+msgstr "完全なデモを見る"
+
 #: src/components/CoreMacroOverview.astro:58
 msgid "select"
 msgstr "select"
@@ -161,6 +166,10 @@ msgstr "selectOrdinal"
 #: src/components/ComponentMacroOverview.astro:58
 msgid "SelectOrdinal"
 msgstr "SelectOrdinal"
+
+#: src/components/MacroFamilyOverview.astro:95
+msgid "Snippet"
+msgstr "スニペット"
 
 #: src/components/MacroWorkbench.astro:100
 msgid "Source"

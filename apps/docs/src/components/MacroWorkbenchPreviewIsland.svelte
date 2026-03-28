@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount, untrack } from "svelte";
 
-  import type { MacroWorkbenchScalar } from "../lib/macro-workbench.ts";
+  import type { MacroWorkbenchScalar } from "../lib/macro-workbench/spec.ts";
 
   type WorkbenchUpdateDetail = {
     values: Record<string, MacroWorkbenchScalar>;

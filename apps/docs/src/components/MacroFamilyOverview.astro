@@ -1,15 +1,20 @@
 ---
 import { Code } from "astro/components";
+import { Trans } from "lingui-for-astro/macro";
 
+import { ensureDocsLinguiContext, type DocsLocale } from "../lib/docs-i18n";
 import { sourceCodeThemes } from "../lib/code-themes.ts";
 import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
 
 interface Props {
+  language: DocsLocale;
   items: readonly MacroFamilyOverviewItem[];
   title: string;
 }
 
-const { items, title } = Astro.props;
+const { language, items, title } = Astro.props;
+
+ensureDocsLinguiContext(Astro.locals, language);
 
 const initialIndex = 0;
 ---
@@ -76,7 +81,7 @@ const initialIndex = 0;
                 <div class="flex h-full flex-col border-b border-(--sl-color-gray-5) lg:border-r lg:border-b-0">
                   <div class="border-b border-(--sl-color-gray-5) px-5 py-3">
                     <div class="text-[0.7rem] font-medium tracking-[0.08em] text-(--sl-color-gray-2) uppercase">
-                      Preview
+                      <Trans>Preview</Trans>
                     </div>
                   </div>
                   <div class="flex-1 p-5 text-base leading-7 text-(--sl-color-white)">
@@ -87,7 +92,7 @@ const initialIndex = 0;
                 <div class="flex h-full min-h-0 flex-col bg-(--sl-color-black)">
                   <div class="border-b border-(--sl-color-gray-5) px-5 py-3">
                     <div class="text-[0.7rem] font-medium tracking-[0.08em] text-(--sl-color-gray-2) uppercase">
-                      Snippet
+                      <Trans>Snippet</Trans>
                     </div>
                   </div>
                   <div class="demo-code-block grid flex-1">
@@ -107,7 +112,7 @@ const initialIndex = 0;
                   class="text-sm font-medium text-(--sl-color-text-accent) hover:underline"
                   href={item.href}
                 >
-                  See full demo
+                  <Trans>See full demo</Trans>
                 </a>
               </div>
             </article>
