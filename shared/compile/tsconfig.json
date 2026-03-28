@@ -3,5 +3,5 @@
   "compilerOptions": {
     "types": ["node"]
   },
-  "include": ["src", "../lingui-analyzer-wasm/wasm"]
+  "include": ["src"]
 }

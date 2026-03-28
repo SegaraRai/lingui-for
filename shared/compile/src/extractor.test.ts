@@ -45,6 +45,7 @@ describe("extractor helpers", () => {
       [
         {
           code: "/*i18n*/ const a = 1;",
+          map: null,
         },
         {
           code: "/*i18n*/ const b = 2;",
