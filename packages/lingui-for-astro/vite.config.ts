@@ -1,3 +1,4 @@
+import { wasm } from "rolldown-plugin-wasm";
 import { defineConfig } from "vite-plus";
 
 import markupImport from "unplugin-markup-import/rolldown";
@@ -5,12 +6,14 @@ import markupImport from "unplugin-markup-import/rolldown";
 export default defineConfig({
   pack: {
     clean: true,
-    dts: true,
+    dts: {
+      eager: true,
+    },
     entry: {
       index: "src/index.ts",
-      "__internal__/transform": "src/__internal__/transform.ts",
-      "extractor/index": "src/extractor/index.ts",
-      "macro/index": "src/macro/index.ts",
+      transform: "src/transform.ts",
+      extractor: "src/extractor.ts",
+      macro: "src/macro.ts",
       "runtime/index": "src/runtime/index.ts",
       "integration/index": "src/integration/index.ts",
       "unplugin/index": "src/unplugin/index.ts",
@@ -23,12 +26,12 @@ export default defineConfig({
       "unplugin/vite": "src/unplugin/vite.ts",
       "unplugin/webpack": "src/unplugin/webpack.ts",
     },
-    plugins: [markupImport({ frameworks: ["astro"] })],
-    inputOptions: {
-      moduleTypes: {
-        ".wasm": "asset",
-      },
-    },
+    plugins: [
+      markupImport({
+        frameworks: ["astro"],
+      }),
+      wasm(),
+    ],
     attw: {
       profile: "esm-only",
     },
@@ -39,8 +42,15 @@ export default defineConfig({
         command: "vp pack",
         dependsOn: [
           "lingui-for-workspace#build:wasm",
-          "lingui-for-shared#build",
           "unplugin-markup-import#build",
+        ],
+        cache: true,
+        input: [
+          { auto: true },
+          "!**/.vite-temp/**",
+          "!**/.unplugin-markup-import/**",
+          "!.astro/**",
+          "!dist/**",
         ],
       },
       check: {

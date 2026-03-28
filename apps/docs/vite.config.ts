@@ -11,7 +11,13 @@ export default defineConfig({
           "unplugin-lingui-macro#build",
           "i18n:build",
         ],
-        input: [{ auto: true }, "!**/.vite/deps/_metadata.json"],
+        input: [
+          { auto: true },
+          "!**/.vite-temp/**",
+          "!**/.vite/deps/_metadata.json",
+          "!.astro/**",
+          "!dist/**",
+        ],
       },
       dev: {
         command: "astro dev",

@@ -11,6 +11,7 @@ export default defineConfig({
       "**/.svelte-kit",
       "**/.sveltekit-build",
       "**/.unplugin-markup-import",
+      "**/vendor",
       "**/dist",
     ],
   },
@@ -24,11 +25,9 @@ export default defineConfig({
       "**/.sveltekit-build",
       "**/.unplugin-markup-import",
       "**/dist",
+      "**/vendor",
       "pnpm-lock.yaml",
     ],
-  },
-  test: {
-    projects: ["packages/*", "apps/*", "examples/*"],
   },
   run: {
     tasks: {
@@ -47,10 +46,7 @@ export default defineConfig({
       "build:lib": {
         command:
           "vp run build --filter lingui-for-svelte... --filter lingui-for-astro... --filter unplugin-lingui-macro...",
-        dependsOn: ["build:shared", "build:plugin", "build:wasm"],
-      },
-      "build:shared": {
-        command: "vp run build --filter lingui-for-shared...",
+        dependsOn: ["build:plugin", "build:wasm"],
       },
       "build:plugin": {
         command: "vp run build --filter unplugin-lingui-macro...",
@@ -58,6 +54,11 @@ export default defineConfig({
       "build:wasm": {
         command: "node ./build-wasm.ts",
         cache: true,
+        input: [
+          { auto: true },
+          "!target/**",
+          "!shared/lingui-analyzer-wasm/dist/**",
+        ],
         env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
       },
       check: {
@@ -65,7 +66,7 @@ export default defineConfig({
         cache: false,
       },
       format: {
-        command: "prettier -w **/*.{astro,svelte} && vp fmt .",
+        command: "prettier -w **/*.{astro,svelte,mdx} && vp fmt .",
         cache: false,
       },
       test: {

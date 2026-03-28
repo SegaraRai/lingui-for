@@ -39,25 +39,22 @@
   ],
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
-  "imports": {
-    "#astro-analyzer-wasm": "./src/compiler-core/analysis/wasm.ts"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
     },
-    "./__internal__/transform": {
-      "types": "./dist/__internal__/transform.d.mts",
-      "default": "./dist/__internal__/transform.mjs"
+    "./transform": {
+      "types": "./dist/transform.d.mts",
+      "default": "./dist/transform.mjs"
     },
     "./extractor": {
-      "types": "./dist/extractor/index.d.mts",
-      "default": "./dist/extractor/index.mjs"
+      "types": "./dist/extractor.d.mts",
+      "default": "./dist/extractor.mjs"
     },
     "./macro": {
-      "types": "./dist/macro/index.d.mts",
-      "default": "./dist/macro/index.mjs"
+      "types": "./dist/macro.d.mts",
+      "default": "./dist/macro.mjs"
     },
     "./runtime": {
       "types": "./dist/runtime/index.d.mts",
@@ -107,27 +104,28 @@
   },
   "dependencies": {
     "@babel/core": "^7.29.0",
-    "@babel/generator": "^7.29.1",
     "@babel/traverse": "^7.29.0",
     "@babel/types": "^7.29.0",
-    "@lingui/babel-plugin-lingui-macro": "^5.9.3",
-    "magic-string": "^0.30.21",
-    "source-map": "^0.7.6",
+    "@lingui/babel-plugin-lingui-macro": "^5.9.4",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
-    "@lingui/cli": "^5.9.3",
-    "@lingui/conf": "^5.9.3",
-    "@lingui/core": "^5.9.3",
+    "@jridgewell/trace-mapping": "^0.3.31",
+    "@lingui-for/internal-lingui-analyzer-wasm": "workspace:*",
+    "@lingui-for/internal-shared-common": "workspace:*",
+    "@lingui-for/internal-shared-compile": "workspace:*",
+    "@lingui-for/internal-shared-runtime": "workspace:*",
+    "@lingui-for/internal-shared-test-helpers": "workspace:*",
+    "@lingui/cli": "^5.9.4",
+    "@lingui/conf": "^5.9.4",
+    "@lingui/core": "^5.9.4",
     "@types/babel__core": "^7.20.5",
-    "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
-    "astro": "^6.0.7",
-    "astro-analyzer-wasm": "workspace:*",
+    "astro": "^6.1.1",
     "dedent": "^1.7.2",
-    "lingui-for-shared": "workspace:*",
+    "rolldown-plugin-wasm": "^0.2.1",
     "typescript": "catalog:",
     "unplugin-markup-import": "workspace:*",
     "vite-plus": "catalog:"

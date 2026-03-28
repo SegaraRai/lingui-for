@@ -4,13 +4,14 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
+import { stripQuery } from "@lingui-for/internal-shared-common";
 import {
   mayContainLinguiMacroImport,
-  stripQuery,
-} from "lingui-for-shared/compiler";
+  toUnpluginSourceMap,
+} from "@lingui-for/internal-shared-compile";
 
-import { transformSvelte } from "../compiler-core/index.ts";
-import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";
+import { PACKAGE_MACRO } from "../compile/common/constants.ts";
+import { transformSvelte } from "../compile/transform/index.ts";
 import type { LinguiSveltePluginOptions } from "./types.ts";
 
 export const unpluginFactory: UnpluginFactory<
@@ -18,33 +19,34 @@ export const unpluginFactory: UnpluginFactory<
 > = (options) => ({
   name: "lingui-for-svelte",
   enforce: "pre",
-  transform(code, id) {
+  async transform(code, id) {
     if (id.startsWith("\0")) {
       return null;
     }
 
     const filename = stripQuery(id);
-    if (filename !== id) {
+    if (
+      filename !== id ||
+      !filename.endsWith(".svelte") ||
+      !mayContainLinguiMacroImport(code, PACKAGE_MACRO)
+    ) {
       return null;
     }
 
-    if (filename.endsWith(".svelte")) {
-      if (!mayContainLinguiMacroImport(code, PACKAGE_MACRO)) {
-        return null;
-      }
-
-      const transformed = transformSvelte(code, {
-        filename,
-        linguiConfig: options?.linguiConfig,
-      });
-
-      return {
-        code: transformed.code,
-        map: transformed.map,
-      };
+    const transformed = await transformSvelte(code, {
+      filename,
+      linguiConfig: options?.linguiConfig,
+      whitespace: options?.whitespace,
+    });
+    if (transformed == null) {
+      return null;
     }
 
-    return null;
+    return {
+      code: transformed.code,
+      map:
+        transformed.map != null ? toUnpluginSourceMap(transformed.map) : null,
+    };
   },
 });
 

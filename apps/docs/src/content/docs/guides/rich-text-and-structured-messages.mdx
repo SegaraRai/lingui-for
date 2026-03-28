@@ -45,7 +45,9 @@ official semantics.
 <Plural value={count} one="# file selected" other="# files selected" />
 
 <!-- Function form: equivalent, but reads more naturally inside a sentence. -->
-<p>{$t`You have ${$plural(count, { one: "# message", other: "# messages" })}.`}</p>
+<p>
+  {$t`You have ${$plural(count, { one: "# message", other: "# messages" })}.`}
+</p>
 ```
 
 ## Renderer differences still matter

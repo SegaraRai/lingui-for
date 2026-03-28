@@ -4,12 +4,12 @@ import { Code } from "astro/components";
 import { sourceCodeThemes } from "../lib/code-themes.ts";
 import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
 
-type Props = {
+interface Props {
   items: readonly MacroFamilyOverviewItem[];
   title: string;
-};
+}
 
-const { items, title } = Astro.props as Props;
+const { items, title } = Astro.props;
 
 const initialIndex = 0;
 ---
@@ -31,13 +31,13 @@ const initialIndex = 0;
       <aside
         class="overflow-hidden border-b border-(--sl-color-gray-5) bg-(--sl-color-bg-sidebar) lg:border-r lg:border-b-0"
       >
-        <div class="overflow-x-auto lg:overflow-visible">
+        <div class="overflow-x-auto overscroll-x-contain lg:overflow-visible">
           <div class="flex min-w-max flex-row lg:min-w-0 lg:flex-col">
             {
               items.map((item, index) => (
                 <button
                   type="button"
-                  class="border-r border-b border-(--sl-color-gray-5) px-4 py-3 text-left transition-colors last:border-r-0 aria-pressed:bg-(--sl-color-accent-low) aria-pressed:text-(--sl-color-white) lg:border-r-0 lg:last:border-b-0"
+                  class="border-r border-b border-(--sl-color-gray-5) px-4 py-3 text-left transition-colors last:border-r-0 enabled:cursor-pointer aria-pressed:bg-(--sl-color-accent-low) aria-pressed:text-(--sl-color-white) lg:border-r-0 lg:last:border-b-0"
                   tabindex={index === initialIndex ? 0 : -1}
                   aria-pressed={index === initialIndex ? "true" : "false"}
                   data-family-tab

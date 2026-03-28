@@ -10,14 +10,21 @@ Astro does not have a built-in component reactivity model for `.astro` files.
 translation stores. Once a page renders, translated strings are fixed: there is no equivalent of
 Svelte's `$t` that re-evaluates when the locale changes on the client.
 
-Initialize Lingui in middleware (recommended for all output modes) or in page frontmatter for
-simple static sites. See [i18n Context](/frameworks/astro/i18n-context) for details.
+Initialize Lingui in middleware. If you need a minimal page-level setup for a simple static page,
+page frontmatter also works, but treat it as an escape hatch rather than the default pattern. See
+[i18n Context](/frameworks/astro/i18n-context) for details.
 
 ## Runtime helpers are not the primary API
 
 The runtime (`lingui-for-astro/runtime`) is the compilation target for macros. Its API may change
 without a major version bump. Prefer `lingui-for-astro/macro` unless you are implementing tooling
 or debugging the transform itself.
+
+## Component macro whitespace is framework-aware by default
+
+Rich-text Component Macros use framework-aware whitespace handling by default instead of raw JSX
+semantics. See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) if your
+project needs to force `jsx` behavior or keep extraction and transform settings aligned.
 
 ## MDX is not supported
 

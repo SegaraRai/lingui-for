@@ -1,0 +1,37 @@
+{
+  "name": "@lingui-for/internal-lingui-analyzer-wasm",
+  "version": "0.0.0",
+  "private": true,
+  "files": [
+    "dist/index_bg.wasm",
+    "dist/index_bg.wasm.d.ts",
+    "dist/index.js",
+    "dist/index.d.ts"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./loader": {
+      "types": "./loader/index.ts",
+      "default": "./loader/index.ts"
+    },
+    "./loader-vite": {
+      "types": "./loader/index-vite.ts",
+      "default": "./loader/index-vite.ts"
+    },
+    "./wasm": "./dist/index_bg.wasm",
+    "./package.json": "./package.json"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

@@ -1,3 +1,4 @@
+import { wasm } from "rolldown-plugin-wasm";
 import { defineConfig } from "vite-plus";
 
 import markupImport from "unplugin-markup-import/rolldown";
@@ -5,12 +6,14 @@ import markupImport from "unplugin-markup-import/rolldown";
 export default defineConfig({
   pack: {
     clean: true,
-    dts: true,
+    dts: {
+      eager: true,
+    },
     entry: {
       index: "src/index.ts",
-      "__internal__/transform": "src/__internal__/transform.ts",
-      "extractor/index": "src/extractor/index.ts",
-      "macro/index": "src/macro/index.ts",
+      transform: "src/transform.ts",
+      extractor: "src/extractor.ts",
+      macro: "src/macro.ts",
       "runtime/index": "src/runtime/index.ts",
       "unplugin/index": "src/unplugin/index.ts",
       "unplugin/types": "src/unplugin/types.ts",
@@ -26,6 +29,7 @@ export default defineConfig({
       markupImport({
         exclude: ["**/*.test.svelte"],
       }),
+      wasm(),
     ],
     attw: {
       profile: "esm-only",
@@ -35,15 +39,17 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
-        dependsOn: ["lingui-for-shared#build", "unplugin-markup-import#build"],
+        dependsOn: ["unplugin-markup-import#build"],
+        cache: true,
+        input: [
+          { auto: true },
+          "!**/.vite-temp/**",
+          "!**/.unplugin-markup-import/**",
+          "!dist/**",
+        ],
       },
       check: {
-        command: "vp check && vp run check:extra",
-        dependsOn: ["build"],
-        cache: false,
-      },
-      "check:extra": {
-        command: "svelte-check",
+        command: "vp check",
         dependsOn: ["build"],
         cache: false,
       },

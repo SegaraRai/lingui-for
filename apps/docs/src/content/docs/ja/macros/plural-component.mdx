@@ -1,0 +1,84 @@
+---
+title: Plural
+description: ICU 複数形翻訳のコンポーネント形式マクロ
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import pluralComponentWorkbench from "virtual:macro-workbench?demo=src/demos/macros/plural-component";
+
+`Plural` は、コアマクロ [`plural`](/ja/macros/plural) に対応するコンポーネントマクロです。
+
+同じ ICU 複数形ロジックを表しますが、マークアップ内でコンポーネントプロパティとして記述します。
+周囲のファイルがすでにテンプレート中心で、関数呼び出しよりコンポーネント形式のほうが見通しやすい場合に便利です。
+
+標準の ICU 複数形カテゴリ（`zero`、`one`、`two`、`few`、`many`、`other`）は、そのままプロパティ名として使います。
+完全一致にはアンダースコア付きの数値を使います。たとえば `_0="No items"` は、`value` が 0 のときだけ完全一致し、カテゴリプロパティより優先されます。
+
+フレームワークに依存しない Lingui の意味論については、[公式の `Plural` リファレンス](https://lingui.dev/ref/macro#plural-1) を参照してください。
+
+<MacroWorkbench workbench={pluralComponentWorkbench} language="ja" />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { Plural } from "lingui-for-svelte/macro";
+
+  let count = $state(3);
+</script>
+
+<Plural value={count} one="# file" other="# files" />
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { Plural } from "lingui-for-astro/macro";
+
+const count = 3;
+---
+
+<Plural value={count} one="# file" other="# files" />
+```
+
+  </TabItem>
+  <TabItem icon="seti:react" label="Official Lingui">
+
+```tsx
+import { Plural } from "@lingui/react/macro";
+
+function Component() {
+  return <Plural value={count} one="# file" other="# files" />;
+}
+```
+
+  </TabItem>
+</Tabs>
+
+## 完全一致
+
+数値の前に `_` を付けると、その値に完全一致します。
+完全一致はカテゴリプロパティより優先されます。
+
+```svelte
+<Plural value={count} _0="No files" one="# file" other="# files" />
+```
+
+関数形式では、数値キーそのままで表します。
+
+```svelte
+<p>{$plural(count, { 0: "No files", one: "# file", other: "# files" })}</p>
+```
+
+## `Plural` が向いている場面
+
+- すでにマークアップ中心で書いており、その場で複数形分岐を書きたい
+- `plural(...)` よりコンポーネント形式のほうが読みやすい
+- コアマクロと同じ複数形意味論を使いたい

@@ -3,8 +3,8 @@ import { setupI18n } from "@lingui/core";
 import { setLinguiContext } from "lingui-for-svelte";
 
 const catalog = {
-  en: (await import("../../i18n/locales/en.ts")).messages,
-  ja: (await import("../../i18n/locales/ja.ts")).messages,
+  en: (await import("../../i18n/locales/demos/en.ts")).messages,
+  ja: (await import("../../i18n/locales/demos/ja.ts")).messages,
 };
 
 export type Locale = "en" | "ja";

@@ -3,6 +3,7 @@ import dedent from "dedent";
 export type ConformanceFixture =
   | {
       name: string;
+      whitespace?: "auto" | "jsx";
       officialCore: string;
       officialReact?: string;
       astro?: string;
@@ -10,6 +11,7 @@ export type ConformanceFixture =
     }
   | {
       name: string;
+      whitespace?: "auto" | "jsx";
       officialCore?: string;
       officialReact: string;
       astro?: string;
@@ -716,6 +718,7 @@ export const conformanceFixtures: readonly ConformanceFixture[] = [
   },
   {
     name: "component-whitespacing",
+    whitespace: "jsx",
     officialReact: dedent`
       import { Trans } from "@lingui/react/macro";
 
@@ -791,6 +794,170 @@ export const conformanceFixtures: readonly ConformanceFixture[] = [
         {" "}{value}{" "}
         {" "}After{" "}
       </Trans>
+    `,
+  },
+  {
+    name: "component-whitespacing-auto",
+    whitespace: "auto",
+    officialReact: dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      function Example() {
+        return (
+          <>
+            <Trans>
+              Before{" "}
+              {value}{" "}
+              After
+            </Trans>
+            <Trans>
+              Before{" "}
+              {value}{" "}
+              After
+            </Trans>
+            <Trans>
+              Before {value} After
+            </Trans>
+            <Trans>
+              {" "}Before{" "}
+              {" "}{value}{" "}
+              {" "}After{" "}
+            </Trans>
+          </>
+        );
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+      </script>
+
+      <Trans>
+        Before{" "}
+        {value}{" "}
+        After
+      </Trans>
+      <Trans>
+        Before
+        {value}
+        After
+      </Trans>
+      <Trans>
+        Before {value} After
+      </Trans>
+      <Trans>
+        {" "}Before{" "}
+        {" "}{value}{" "}
+        {" "}After{" "}
+      </Trans>
+    `,
+    astro: dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>
+        Before{" "}
+        {value}{" "}
+        After
+      </Trans>
+      <Trans>
+        Before
+        {value}
+        After
+      </Trans>
+      <Trans>
+        Before {value} After
+      </Trans>
+      <Trans>
+        {" "}Before{" "}
+        {" "}{value}{" "}
+        {" "}After{" "}
+      </Trans>
+    `,
+  },
+  {
+    name: "unicode-adjacent-text",
+    officialReact: dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      export function Example({ name }: { name: string }) {
+        return (
+          <section>
+            前置き😀
+            <Trans>ようこそ <strong>{name}</strong> さん🚀</Trans>
+            後置き🎉
+          </section>
+        );
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+
+        let name = $state("世界");
+      </script>
+
+      <section>
+        前置き😀
+        <Trans>ようこそ <strong>{name}</strong> さん🚀</Trans>
+        後置き🎉
+      </section>
+    `,
+    astro: dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+
+      const name = "世界";
+      ---
+
+      <section>
+        前置き😀
+        <Trans>ようこそ <strong>{name}</strong> さん🚀</Trans>
+        後置き🎉
+      </section>
+    `,
+  },
+  {
+    name: "unicode-zwj-adjacent-text",
+    officialReact: dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      export function Example({ name }: { name: string }) {
+        return (
+          <section>
+            先頭😀😃😄
+            <Trans>家族👨‍👩‍👧‍👦 <strong>{name}</strong> 終端🚀🎉</Trans>
+            末尾🍣🍜
+          </section>
+        );
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+
+        let name = $state("世界");
+      </script>
+
+      <section>
+        先頭😀😃😄
+        <Trans>家族👨‍👩‍👧‍👦 <strong>{name}</strong> 終端🚀🎉</Trans>
+        末尾🍣🍜
+      </section>
+    `,
+    astro: dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+
+      const name = "世界";
+      ---
+
+      <section>
+        先頭😀😃😄
+        <Trans>家族👨‍👩‍👧‍👦 <strong>{name}</strong> 終端🚀🎉</Trans>
+        末尾🍣🍜
+      </section>
     `,
   },
 ];

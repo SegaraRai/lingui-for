@@ -3,7 +3,7 @@ import { msg } from "@lingui/core/macro";
 import {
   defineMacroWorkbench,
   type MacroWorkbenchAuthorSpec,
-} from "../../../lib/macro-workbench.ts";
+} from "../../../lib/macro-workbench/spec.ts";
 
 const workbench = defineMacroWorkbench({
   controls: [

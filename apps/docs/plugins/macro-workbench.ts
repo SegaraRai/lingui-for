@@ -10,16 +10,17 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
-import { transformSvelte } from "lingui-for-svelte/__internal__/transform";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
+import { unstable_transformSvelte } from "lingui-for-svelte/transform";
 
 import linguiConfig from "../lingui.config.ts";
 import {
-  WORKBENCH_LOCALE_REGISTRY,
+  WORKBENCH_LOCALE_CODES,
   type MacroWorkbenchLocaleCode,
-} from "../src/lib/macro-workbench.ts";
+} from "../src/lib/macro-workbench/common.ts";
 
 const VIRTUAL_PREFIX = "virtual:macro-workbench?";
+const workbenchSvelteExtractor = svelteExtractor();
 
 type MacroWorkbenchPluginOptions = {
   projectRoot: string;
@@ -36,9 +37,6 @@ export function macroWorkbenchPlugin({
     },
     { skipValidation: true },
   );
-  const localeCodes = Object.keys(
-    WORKBENCH_LOCALE_REGISTRY,
-  ) as MacroWorkbenchLocaleCode[];
 
   return {
     name: "docs-macro-workbench",
@@ -78,29 +76,33 @@ export function macroWorkbenchPlugin({
       );
       const ids = messages.map((message) => message.id);
       const sourceSnippet = extractSnippet(source);
-      const transformedSource = extractSnippet(
-        transformSvelte(source, {
-          filename: demoFile,
-          linguiConfig: normalizedLinguiConfig,
-        }).code,
-      );
+      const transformed = await unstable_transformSvelte(source, {
+        filename: demoFile,
+        linguiConfig: normalizedLinguiConfig,
+      });
+      if (!transformed) {
+        throw new Error(
+          `unstable_transformSvelte returned no code for ${demoFile}. This indicates no transformation was applied, which is unexpected for a file containing localizable messages.`,
+        );
+      }
+      const transformedSource = extractSnippet(transformed.code);
       const poCatalogs = await buildPoCatalogArtifacts(
         projectRoot,
         demoOriginPath,
         ids,
-        localeCodes,
+        WORKBENCH_LOCALE_CODES,
         poFormatter,
       );
       const compiledCatalogs = await buildCompiledCatalogArtifacts(
         projectRoot,
         ids,
-        localeCodes,
+        WORKBENCH_LOCALE_CODES,
       );
 
       return [
         `import { resolveMacroWorkbenchSpec } from ${JSON.stringify(
           toFsImportPath(
-            resolve(projectRoot, "src", "lib", "macro-workbench.ts"),
+            resolve(projectRoot, "src/lib/macro-workbench/spec.ts"),
           ),
         )};`,
         existsSync(workbenchFile)
@@ -148,7 +150,7 @@ async function collectMessages(
 ): Promise<ExtractedMessage[]> {
   const extracted: ExtractedMessage[] = [];
 
-  await svelteExtractor.extract(
+  await workbenchSvelteExtractor.extract(
     filename,
     source,
     (message) => {
@@ -192,10 +194,7 @@ async function buildPoCatalogArtifacts(
     localeCodes.map(async (locale) => {
       const poCatalogPath = resolve(
         projectRoot,
-        "src",
-        "i18n",
-        "locales",
-        `${locale}.po`,
+        `src/i18n/locales/demos/${locale}.po`,
       );
       const poCatalog = (await poFormatter.parse(
         await readFile(poCatalogPath, "utf8"),
@@ -250,10 +249,7 @@ async function buildCompiledCatalogArtifacts(
     localeCodes.map(async (locale) => {
       const compiledCatalogPath = resolve(
         projectRoot,
-        "src",
-        "i18n",
-        "locales",
-        `${locale}.ts`,
+        `src/i18n/locales/demos/${locale}.ts`,
       );
       const compiledSource = await readFile(compiledCatalogPath, "utf8");
       const catalog = readCompiledCatalog(compiledSource);

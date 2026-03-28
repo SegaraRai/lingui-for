@@ -1,0 +1,128 @@
+---
+title: plural
+description: ICU の複数形メッセージを組み立て、または翻訳するためのマクロ
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import pluralWorkbench from "virtual:macro-workbench?demo=src/demos/macros/plural";
+
+`plural` は、ICU 複数形メッセージのためのコアマクロです。
+同じロジックには、コンポーネントマクロ形式の [`Plural`](/ja/macros/plural-component) もあります。
+
+主な課題が、複数形カテゴリに応じて文言を選ぶことなら、これを使ってください。
+単独で翻訳済み文字列を生成することもできますし、複数形がより大きなメッセージの一部であるなら `` t`...` `` テンプレートリテラルの中に埋め込むこともできます。
+
+フレームワークに依存しない Lingui の意味論については、[公式の `plural` リファレンス](https://lingui.dev/ref/macro#plural) を参照してください。
+
+<MacroWorkbench workbench={pluralWorkbench} language="ja" />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { plural, t } from "lingui-for-svelte/macro";
+
+  let count = $state(2);
+</script>
+
+<!-- 単独使用: 複数形文字列を直接生成する -->
+<p>
+  {$plural(count, {
+    one: "# item",
+    other: "# items",
+  })}
+</p>
+
+<!-- 埋め込み: plural はより大きな翻訳単位の一部 -->
+<p>
+  {$t`Cart: ${plural(count, {
+    one: "# item",
+    other: "# items",
+  })}`}
+</p>
+```
+
+`.svelte` ファイルでは、単独でリアクティブに使うなら `$plural` を使います。
+`` $t`...` `` の中にネストする場合は、`$` 接頭辞なしの `plural` を使います。
+
+完全な説明と `plural.eager` というエスケープハッチについては [リアクティブマクロ](/ja/frameworks/svelte/reactive-macros) を参照してください。
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { plural, t } from "lingui-for-astro/macro";
+
+const count = 2;
+---
+
+<!-- 単独使用: 複数形文字列を直接生成する -->
+<p>
+  {
+    plural(count, {
+      one: "# item",
+      other: "# items",
+    })
+  }
+</p>
+
+<!-- 埋め込み: plural はより大きな翻訳単位の一部 -->
+<p>
+  {
+    t`Cart: ${plural(count, {
+      one: "# item",
+      other: "# items",
+    })}`
+  }
+</p>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { plural, t } from "@lingui/core/macro";
+
+// 単独使用
+const label: string = plural(count, {
+  one: "# item",
+  other: "# items",
+});
+
+// 埋め込み
+const message: string = t`Cart: ${plural(count, {
+  one: "# item",
+  other: "# items",
+})}`;
+```
+
+  </TabItem>
+</Tabs>
+
+## 完全一致
+
+厳密な件数に一致させるには、数値キーをそのまま使います。
+完全一致は、カテゴリキーより優先されます。
+
+```ts
+plural(count, {
+  0: "No items",
+  one: "# item",
+  other: "# items",
+});
+```
+
+コンポーネントマクロ [`Plural`](/ja/macros/plural-component) では、同じ一致をアンダースコア付きプロパティ（`_0="No items"`）で表します。
+関数形式では数値キーをそのまま使うので、アンダースコアは不要です。
+
+## `plural` が向いている場面
+
+- メッセージが数値件数に依存する
+- ICU 複数形の標準的な振る舞いを使いたい
+- 現在のファイルでは関数形式のほうが自然に読める

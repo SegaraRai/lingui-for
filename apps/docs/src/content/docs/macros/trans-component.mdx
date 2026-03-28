@@ -5,8 +5,8 @@ description: Translate rich text content with embedded markup.
 
 import { TabItem, Tabs } from "@astrojs/starlight/components";
 
+import MacroWorkbench from "@components/MacroWorkbench.astro";
 import transWorkbench from "virtual:macro-workbench?demo=src/demos/macros/trans-component";
-import MacroWorkbench from "../../../components/MacroWorkbench.astro";
 
 `Trans` is the general-purpose Component Macro for translated markup content.
 
@@ -70,3 +70,15 @@ function Component() {
 - the translation includes links or emphasis
 - the structure matters to translators
 - the message reads more naturally as markup than as a string template
+
+## Whitespace between child nodes
+
+`Trans` is processed internally through JSX-compatible machinery, but `.svelte` and `.astro`
+templates are not JSX. Because of that, whitespace between child nodes can otherwise be interpreted
+differently from what the framework would normally do.
+
+By default, `lingui-for-svelte` and `lingui-for-astro` use framework-aware whitespace handling for
+`Trans` and the other Component Macros instead of raw JSX semantics.
+
+See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) for the exact rules,
+configuration, and examples.

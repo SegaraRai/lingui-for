@@ -1,0 +1,148 @@
+---
+title: プレーンな JS/TS でのセットアップ
+description: 素の JavaScript / TypeScript ファイルで Lingui マクロを使う方法
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+素の `.js`、`.ts`、`.jsx`、`.tsx` ファイルでは、ビルド変換に `unplugin-lingui-macro` を組み合わせた `@lingui/core/macro` を使い、抽出には `@lingui/cli/api/extractors/babel` を使います。
+
+これは `.svelte.js` と `.svelte.ts` にも当てはまります。
+これらは Svelte 構文変換ではなく、素の JS / TS 用パイプラインを通ります。
+
+## インストール
+
+<Tabs syncKey="package-manager">
+  <TabItem label="Vite+">
+
+```sh
+vp add -D unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```sh
+npm install -D unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```sh
+pnpm add -D unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="yarn">
+
+```sh
+yarn add -D unplugin-lingui-macro
+```
+
+  </TabItem>
+</Tabs>
+
+抽出とカタログのコンパイルには `@lingui/cli` と `@lingui/conf` が必要です。
+フレームワーク向けの入門ガイドをすでに進めているなら、これらはインストール済みです。
+
+## ビルド変換を設定する
+
+Vite のプラグインに `linguiMacro()` を追加します。
+フレームワークプロジェクトでは、フレームワークプラグインより前に置いてください。
+
+```ts title="vite.config.ts"
+import linguiMacro from "unplugin-lingui-macro/vite";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    linguiMacro(),
+    // sveltekit(), svelte(), など
+  ],
+});
+```
+
+Astro では、`astro.config.ts` の `vite.plugins` に追加します。
+
+## 抽出を設定する
+
+`lingui.config.ts` に Babel 抽出器を追加します。
+すでにフレームワーク用抽出器があるプロジェクトでは、両方を並べて指定します。
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "@lingui/conf";
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+// import { svelteExtractor } from "lingui-for-svelte/extractor";
+// import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [
+    babelExtractor,
+    // svelteExtractor,
+    // astroExtractor,
+  ],
+});
+```
+
+<Aside>
+
+`babelExtractor` がないと、`.ts` / `.js` ファイル内のマクロはビルド時には正しくコンパイルされても、メッセージは抽出カタログに現れません。
+
+</Aside>
+
+## 翻訳済み文字列ではなく、メッセージ記述子を定義する
+
+素の JS / TS では、`t` や `plural` は Svelte や Astro 側で `setLinguiContext` によって登録されたインスタンスではなく、`@lingui/core` の**グローバルな** i18n インスタンスを通して解決されます。
+フレームワークアプリでこのグローバルインスタンスを設定していない場合、`.ts` ファイル内で `t` を直接呼ぶと失敗するか、誤ったロケールで翻訳される可能性があります。
+
+推奨される方法は、`msg` または `defineMessage` で **メッセージ記述子** を定義し、i18n コンテキストが使えるフレームワークコード側で翻訳することです。
+これは Lingui の [Lazy Translations](https://lingui.dev/guides/lazy-translations) パターンに沿っています。
+
+```ts title="src/lib/labels.ts"
+import { defineMessage, msg } from "@lingui/core/macro";
+
+// ここでは記述子だけを定義し、翻訳は行わない
+export const labels = {
+  greeting: msg`Hello`,
+  submit: msg`Submit`,
+} as const;
+
+export const welcomeMessage = defineMessage({
+  id: "welcome",
+  message: "Welcome back",
+});
+```
+
+その後、コンテキストが設定されたフレームワークコード側で記述子を翻訳します。
+
+```svelte title="src/lib/MyComponent.svelte"
+<script lang="ts">
+  import { t } from "lingui-for-svelte/macro";
+  import { labels } from "./labels";
+</script>
+
+<p>{$t(labels.greeting)}</p>
+<button>{$t(labels.submit)}</button>
+```
+
+```astro title="src/pages/index.astro"
+---
+import { t } from "lingui-for-astro/macro";
+import { labels } from "../lib/labels";
+---
+
+<p>{t(labels.greeting)}</p>
+```
+
+さらに詳しいパターンは [ファイルをまたいでメッセージを共有する](/ja/guides/share-messages-across-files)、記述子 API 全体については [msg と defineMessage](/ja/macros/msg-and-define-message) を参照してください。
+
+## 関連ガイド
+
+- [抽出、コンパイル、検証](/ja/guides/extract-compile-verify) - 変換と抽出が別物であり、両方を設定する必要がある理由
+- [ファイルをまたいでメッセージを共有する](/ja/guides/share-messages-across-files) - ファイル間・フレームワーク間で再利用するための記述子パターン
+- [Svelte: Getting Started](/ja/frameworks/svelte/getting-started) - Svelte 固有のセットアップ
+- [Astro: Getting Started](/ja/frameworks/astro/getting-started) - Astro 固有のセットアップ

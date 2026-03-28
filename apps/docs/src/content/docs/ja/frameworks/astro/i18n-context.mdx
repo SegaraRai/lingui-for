@@ -1,0 +1,149 @@
+---
+title: "Astro: i18n コンテキスト"
+description: Lingui の i18n インスタンスを Astro.locals に設定し、`.astro` ファイルから利用する方法
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+初期化場所としては、出力モードに関係なくミドルウェアが推奨されます。
+Astro は `server` / `hybrid` 出力では各リクエストで、`static` 出力では静的ビルド中に各ページごとでミドルウェアを実行します。
+いずれの場合も、`setLinguiContext` はページ描画前に実行されます。
+
+`lingui-for-astro` は、すべてのケースで `Astro.locals` をコンテキストの受け渡し先として使います。
+
+## ミドルウェア（すべての出力モード）
+
+翻訳付きコンテンツが描画される前に、ページごとに 1 回だけ動くよう、ミドルウェアで `setLinguiContext` を呼びます。
+
+```ts title="src/middleware.ts"
+import { defineMiddleware } from "astro:middleware";
+import { setupI18n } from "@lingui/core";
+import { setLinguiContext } from "lingui-for-astro";
+import { catalog } from "./lib/i18n/catalog";
+
+export const onRequest = defineMiddleware((context, next) => {
+  const locale = resolveLocale(context); // 独自のロケール解決ロジック
+  const i18n = setupI18n({ locale, messages: catalog });
+  setLinguiContext(context.locals, i18n);
+  return next();
+});
+```
+
+そのリクエスト（またはビルド）中に描画されるすべてのものは、同じ `i18n` インスタンスを読めます。
+追加のプロパティや手動のコンテキスト受け渡しは不要です。
+
+## ページのフロントマター（単純な静的ページ向けのエスケープハッチ）
+
+固定ロケールで動き、ページごとのロケールロジックを持たない単純な静的ページであれば、ページのフロントマターで Lingui を初期化することもできます。
+これはページ単位のエスケープハッチであり、再利用可能な Astro コンポーネントや共通の描画ヘルパーで使う通常の手法としては扱わないでください。
+
+```astro title="src/pages/index.astro"
+---
+import { setupI18n } from "@lingui/core";
+import { setLinguiContext } from "lingui-for-astro";
+import { t } from "lingui-for-astro/macro";
+import { catalog } from "../lib/i18n/catalog";
+
+const locale = "en"; // あるいは Astro.params や静的パス設定などから導出
+const i18n = setupI18n({ locale, messages: catalog });
+setLinguiContext(Astro.locals, i18n);
+---
+
+<h1>{t`Hello`}</h1>
+```
+
+## `.astro` のマクロがコンテキストを使う仕組み
+
+`.astro` ファイルでは、マクロ変換が `Astro.locals` から Lingui インスタンスを自動で読み取ります。
+利用側は通常どおりマクロを書くだけで構いません。
+
+```astro
+---
+import { t, Trans } from "lingui-for-astro/macro";
+---
+
+<h1>{t`Hello`}</h1>
+<p><Trans>Welcome to the site.</Trans></p>
+```
+
+通常の `.astro` テンプレートなら、これだけで十分です。
+
+## フロントマター補助関数でインスタンスへアクセスする
+
+フロントマターから呼ぶ素の TypeScript 補助関数で `I18n` インスタンスが必要な場合は、`Astro.locals` を明示的に渡してください。
+
+```ts title="src/lib/buildPageMeta.ts"
+import { msg } from "@lingui/core/macro";
+import { getLinguiContext } from "lingui-for-astro";
+
+const pageTitle = msg({ id: "page.title", message: "My Site" });
+
+export function buildPageMeta(locals: App.Locals) {
+  const { i18n } = getLinguiContext(locals);
+  return {
+    title: i18n._(pageTitle),
+  };
+}
+```
+
+```astro
+---
+import { buildPageMeta } from "../lib/buildPageMeta";
+
+const meta = buildPageMeta(Astro.locals);
+---
+
+<title>{meta.title}</title>
+```
+
+<Aside>
+
+ページ数が多い場合は、まずミドルウェアでの初期化を検討してください。
+どうしてもフロントマターで初期化するなら、再利用コンポーネントではなくページまたはレイアウト境界に置いてください。
+
+</Aside>
+
+## 関数リファレンス
+
+### `setLinguiContext`
+
+```ts
+import { setLinguiContext } from "lingui-for-astro";
+
+function setLinguiContext(locals: object, instance: I18n): LinguiContext;
+```
+
+リクエストごとの locals オブジェクトへ Lingui インスタンスを設定します。
+第 1 引数には、既定の初期化パターンであるミドルウェアでは `context.locals` を渡します。
+単純なページ単位の初期化では `Astro.locals` も使えます。
+翻訳を行う Astro コンテンツが描画される前に呼んでください。
+
+### `getLinguiContext`
+
+```ts
+import { getLinguiContext } from "lingui-for-astro";
+
+function getLinguiContext(locals: object): LinguiContext;
+```
+
+`Astro.locals`（またはミドルウェア内の `context.locals`）から Lingui コンテキストを読み取ります。
+`setLinguiContext` と対になる関数です。
+
+`.astro` ファイル内のコンパイル済みマクロ出力は内部でこれを自動的に呼びます。
+必要になるのは、`Astro.locals` を受け取る素の TypeScript 補助関数から `i18n` へアクセスしたい場合だけです。
+
+### `LinguiContext`
+
+```ts
+import type { LinguiContext } from "lingui-for-astro";
+
+type LinguiContext = {
+  i18n: I18n;
+};
+```
+
+両方の関数が返す値です。
+命令的に Lingui インスタンスを使いたいときは `.i18n` にアクセスしてください。
+`i18n._()` はメッセージ記述子を直接受け取る低レベル翻訳関数です。
+正しく抽出されるよう、記述子の定義には `@lingui/core/macro` の `msg` を使うことを推奨します。
+詳しくは上の例と [プレーンな JS/TS でのセットアップ](/ja/guides/plain-js-ts) を参照してください。

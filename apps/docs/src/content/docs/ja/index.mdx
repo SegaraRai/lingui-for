@@ -1,0 +1,45 @@
+---
+title: lingui-for
+description: 公式統合の対象外となるフレームワーク向けに、マクロファーストで公式ファーストの Lingui 統合を提供します
+template: splash
+hero:
+  tagline: 独自の構文を持つフレームワークや言語向けに、コミュニティで保守されている Lingui 統合
+  actions:
+    - text: Svelte から始める
+      link: /ja/frameworks/svelte/getting-started
+      icon: right-arrow
+    - text: Astro から始める
+      link: /ja/frameworks/astro/getting-started
+      icon: right-arrow
+    - text: コンセプトを読む
+      link: /ja/concepts
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+## lingui-for が目指していること
+
+lingui-for は、Lingui の公式マクロモデルと、独自の記述構文を持つフレームワークとのあいだにある隔たりを埋めるために存在します。
+
+このプロジェクトは、次の 2 つの制約を軸に組み立てられています。
+
+- **マクロファースト**: 利用者が `t`、`msg`、`Trans`、`Plural` などを、フレームワーク本来の自然な構文でそのまま書けるようにすること
+- **公式ファースト**: 独自の並行した翻訳モデルを作るのではなく、公式 Lingui Core と React の意味論にできる限り揃えること
+
+## ドキュメントの全体像
+
+<CardGrid stagger>
+  <Card title="コンセプト" icon="open-book">
+    セットアップに入る前に、設計上の制約、目標、フレームワーク対応の境界を把握したいならここから始めてください。
+  </Card>
+  <Card title="フレームワークガイド" icon="seti:config">
+    対応している各フレームワークごとに、導入手順と注意点を用意しています。フレームワーク固有の実行時メモもここにまとまっています。
+  </Card>
+  <Card title="マクロリファレンス" icon="seti:html">
+    各マクロには個別ページがあります。コアマクロとコンポーネントマクロを分けて説明しており、フレームワーク別の例は同期タブで切り替えられます。
+  </Card>
+  <Card title="ガイド" icon="pencil">
+    導入、ロケール追加、記述子共有、抽出パイプラインの確認といった、作業の流れに沿った解説をまとめています。
+  </Card>
+</CardGrid>

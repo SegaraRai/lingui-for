@@ -5,7 +5,7 @@
 
 Bundler plugin for compiling Lingui macros in plain JavaScript and TypeScript modules.
 
-**Requirements:** `@lingui/core` `^5.0.0`, Node.js 18+
+**Requirements:** `@lingui/core` `^5.0.0`, Node.js 22+
 
 This package is useful when your app uses Lingui macros outside framework-owned files such as `.svelte` or `.astro`.
 

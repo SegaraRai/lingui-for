@@ -7,5 +7,11 @@ export default defineProject({
       configFile: false,
     }),
   ],
+  resolve: {
+    alias: {
+      "@lingui-for/internal-lingui-analyzer-wasm/loader":
+        "@lingui-for/internal-lingui-analyzer-wasm/loader-vite",
+    },
+  },
   test: {},
 });

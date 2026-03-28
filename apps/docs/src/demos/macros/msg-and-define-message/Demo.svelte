@@ -25,6 +25,9 @@
   {$t(welcome)}
 </p>
 
-<button type="button" class="rounded bg-blue-500 px-4 py-2 text-white">
+<button
+  type="button"
+  class="rounded bg-blue-500 px-4 py-2 text-white enabled:hover:bg-blue-600"
+>
   {$t(submitLabel)}
 </button>

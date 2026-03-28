@@ -1,0 +1,179 @@
+---
+title: コンパイル済みカタログの読み込み
+description: カタログのインポートをどう構成し、バンドル同梱と遅延読み込みのどちらを選ぶかのガイド
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+`lingui compile` を実行すると、各ロケールごとにコンパイル済みカタログファイル（`.ts` または `.js`）が生成されます。
+このガイドでは、それらのファイルをどうインポートし、Lingui の実行時へどう接続するかを説明します。
+
+## 推奨するカタログ設定ファイル
+
+すべてのロケールのインポートと `SupportedLocale` 型を 1 か所にまとめます。
+
+```ts title="src/lib/i18n/catalog.ts"
+import { messages as en } from "./locales/en";
+import { messages as ja } from "./locales/ja";
+
+export const catalog = {
+  en,
+  ja,
+} as const;
+
+export type SupportedLocale = keyof typeof catalog;
+```
+
+`SupportedLocale` 型はオブジェクトのキーから導出されるため、ロケールを追加、削除すると型も自動で更新されます。
+`lingui.config` と別にロケール一覧を同期し続ける必要はありません。
+
+## 静的インポート
+
+静的インポートは最も単純な方法です。
+すべてのカタログファイルが初期バンドルに含まれ、切り替えも同期的に行えます。
+
+### 初期化時に全ロケールをまとめてバンドルする
+
+完全なカタログマップを `setupI18n` に渡します。すべてのメッセージがすぐ利用可能になります。
+切り替えには `activate()` を使います。`load()` を呼ぶ必要はありません。
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="src/lib/i18n/instance.ts"
+import { setupI18n } from "@lingui/core";
+import { catalog, type SupportedLocale } from "./catalog";
+
+export const i18n = setupI18n({
+  locale: "en",
+  messages: catalog,
+});
+
+export function switchLocale(next: SupportedLocale): void {
+  i18n.activate(next);
+}
+```
+
+この共有インスタンスをルートレイアウトでインポートし、`setLinguiContext` に渡します。
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { i18n } from "$lib/i18n/instance";
+
+  const { children } = $props();
+  setLinguiContext(i18n);
+</script>
+
+{@render children()}
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="src/middleware.ts"
+import { defineMiddleware } from "astro:middleware";
+import { setupI18n } from "@lingui/core";
+import { setLinguiContext } from "lingui-for-astro";
+import { catalog } from "./lib/i18n/catalog";
+
+export const onRequest = defineMiddleware((context, next) => {
+  const locale = resolveLocale(context); // 独自のロケール解決ロジック
+  const i18n = setupI18n({ locale, messages: catalog });
+  setLinguiContext(context.locals, i18n);
+  return next();
+});
+```
+
+  </TabItem>
+</Tabs>
+
+### 1 度に 1 ロケールだけ読み込む
+
+全カタログを静的にインポートしつつ、`loadAndActivate` では 1 度に 1 つのロケールだけを渡す方法です。
+バンドルサイズは全ロケールをバンドルする方式と同じですが、あとで遅延読み込みへ移行する予定があるなら API の形式を揃えられます。
+
+```ts
+const i18n = setupI18n();
+i18n.loadAndActivate({ locale: "en", messages: catalog.en });
+
+function switchLocale(next: SupportedLocale): void {
+  i18n.loadAndActivate({ locale: next, messages: catalog[next] });
+}
+```
+
+## 動的インポート
+
+動的インポートを使うと、バンドラが各カタログを別チャンクへ分割できます。
+要求されたロケールだけを取得するため、初期バンドルサイズを抑えられます。
+
+```ts
+const i18n = setupI18n();
+
+async function loadLocale(locale: SupportedLocale): Promise<void> {
+  const { messages } = await import(`./locales/${locale}.ts`);
+  i18n.loadAndActivate({ locale, messages });
+}
+```
+
+<Aside type="caution">
+
+動的インポートは非同期です。翻訳を描画する前に、インポートの完了を待たなければなりません。
+`loadLocale` をどこで呼ぶか決めるときは、この点を考慮してください。
+
+</Aside>
+
+### Svelte の場合
+
+Svelte の `<script>` ブロックではトップレベル `await` は使えません。
+そのため、初期ロケールは静的インポートで読み込み、セットアップを同期的に保ったまま、後続のロケール切り替えだけ動的インポートを使うのがよいです。
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+
+  // 初期ロケールは静的インポートにして、セットアップを同期的に保つ
+  import { messages as enMessages } from "$lib/i18n/locales/en";
+  import type { SupportedLocale } from "$lib/i18n/catalog";
+
+  const i18n = setupI18n();
+  i18n.loadAndActivate({ locale: "en", messages: enMessages });
+  setLinguiContext(i18n);
+
+  async function switchLocale(next: SupportedLocale): Promise<void> {
+    const { messages } = await import(`$lib/i18n/locales/${next}.ts`);
+    i18n.loadAndActivate({ locale: next, messages });
+  }
+</script>
+```
+
+### Astro の場合
+
+Astro のミドルウェアは非同期関数で動くため、追加の工夫なしで動的インポートを使えます。
+
+```ts title="src/middleware.ts"
+import { defineMiddleware } from "astro:middleware";
+import { setupI18n } from "@lingui/core";
+import { setLinguiContext } from "lingui-for-astro";
+import type { SupportedLocale } from "./lib/i18n/catalog";
+
+export const onRequest = defineMiddleware(async (context, next) => {
+  const locale = resolveLocale(context) as SupportedLocale;
+  const { messages } = await import(`./lib/i18n/locales/${locale}.ts`);
+  const i18n = setupI18n();
+  i18n.loadAndActivate({ locale, messages });
+  setLinguiContext(context.locals, i18n);
+  return next();
+});
+```
+
+## どの方法を使うべきか
+
+|                           | 静的インポート     | 動的インポート                         |
+| ------------------------- | ------------------ | -------------------------------------- |
+| 初期バンドルサイズ        | 全ロケールを含む   | 最初のロケールだけ                     |
+| 切り替え                  | 同期的             | 非同期（`await` が必要）               |
+| Svelte の初期セットアップ | そのまま扱いやすい | 初期ロケールは静的インポートが必要     |
+| Astro ミドルウェア        | そのまま扱いやすい | そのまま扱いやすい（もともと `async`） |
+| 向いているケース          | 多くのアプリの標準 | カタログサイズが気になるとき           |

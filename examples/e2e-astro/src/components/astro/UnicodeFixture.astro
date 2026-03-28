@@ -1,0 +1,9 @@
+---
+import { t, Trans } from "lingui-for-astro/macro";
+
+const name = "世界";
+const direct = t`テンプレートこんにちは😀 ${name}`;
+---
+
+<p>前置き🎌 {direct} 後置き🍣</p>
+<Trans>ようこそ <strong>{name}</strong> さん🚀</Trans>

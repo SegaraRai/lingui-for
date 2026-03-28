@@ -1,0 +1,122 @@
+---
+title: select
+description: ICU の select メッセージを組み立て、または翻訳するためのマクロ
+---
+
+import { TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import selectWorkbench from "virtual:macro-workbench?demo=src/demos/macros/select";
+
+`select` は、ICU select メッセージのためのコアマクロです。同じロジックには、コンポーネントマクロ形式の [`Select`](/ja/macros/select-component) もあります。
+
+文言が、トーン、役割、状態、文法カテゴリのような名前付きケースによって変わる場合に使ってください。
+単独で翻訳済み文字列を生成することもできますし、select がより大きなメッセージの一部であるなら `` t`...` `` テンプレートリテラルの中に埋め込むこともできます。
+
+ケースキーは、接頭辞なしの通常の JavaScript オブジェクトキーとして書きます。
+たとえば `{ formal: "Welcome", casual: "Hi", other: "Hello" }` のように書きます。
+関数形式ではアンダースコアは使いません。
+`_` 接頭辞の規約が適用されるのは、予約済みプロパティである `value` や `other` と区別する必要があるコンポーネントマクロ [`Select`](/ja/macros/select-component) だけです。
+
+フレームワークに依存しない Lingui の意味論については、[公式の `select` リファレンス](https://lingui.dev/ref/macro#select) を参照してください。
+
+<MacroWorkbench workbench={selectWorkbench} language="ja" />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { select, t } from "lingui-for-svelte/macro";
+
+  let tone = $state("formal");
+</script>
+
+<!-- 単独使用: select 文字列を直接生成する -->
+<p>
+  {$select(tone, {
+    formal: "Welcome",
+    casual: "Hi",
+    other: "Hello",
+  })}
+</p>
+
+<!-- 埋め込み: select はより大きな翻訳単位の一部 -->
+<p>
+  {$t`Greeting: ${select(tone, {
+    formal: "Welcome",
+    casual: "Hi",
+    other: "Hello",
+  })}`}
+</p>
+```
+
+`.svelte` ファイルでは、単独でリアクティブに使うなら `$select` を使います。
+`` $t`...` `` の中にネストする場合は、`$` 接頭辞なしの `select` を使います。
+
+完全な説明と `select.eager` というエスケープハッチについては [リアクティブマクロ](/ja/frameworks/svelte/reactive-macros) を参照してください。
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { select, t } from "lingui-for-astro/macro";
+
+const tone = "formal";
+---
+
+<!-- 単独使用: select 文字列を直接生成する -->
+<p>
+  {
+    select(tone, {
+      formal: "Welcome",
+      casual: "Hi",
+      other: "Hello",
+    })
+  }
+</p>
+
+<!-- 埋め込み: select はより大きな翻訳単位の一部 -->
+<p>
+  {
+    t`Greeting: ${select(tone, {
+      formal: "Welcome",
+      casual: "Hi",
+      other: "Hello",
+    })}`
+  }
+</p>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { select, t } from "@lingui/core/macro";
+
+// 単独使用
+const label: string = select(tone, {
+  formal: "Welcome",
+  casual: "Hi",
+  other: "Hello",
+});
+
+// 埋め込み
+const message: string = t`Greeting: ${select(tone, {
+  formal: "Welcome",
+  casual: "Hi",
+  other: "Hello",
+})}`;
+```
+
+  </TabItem>
+</Tabs>
+
+## `select` が向いている場面
+
+- メッセージが数値以外のケース値に依存する
+- ケースをマークアッププロパティより文字列として表すほうが自然である
+- 公式 Lingui Core `select` と同じ意味論を使いたい

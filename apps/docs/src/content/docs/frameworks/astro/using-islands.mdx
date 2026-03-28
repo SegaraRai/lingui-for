@@ -49,10 +49,11 @@ The translation call site should still use the package that matches the current 
 ```astro title="src/pages/index.astro"
 ---
 import { t } from "lingui-for-astro/macro";
+import { getLinguiContext } from "lingui-for-astro";
 import MyIsland from "../components/MyIsland.svelte";
 
 // locale is set in middleware via setLinguiContext
-const locale = Astro.locals.lingui?.i18n.locale ?? "en";
+const locale = getLinguiContext(Astro.locals).i18n.locale;
 ---
 
 <h1>{t`Welcome`}</h1>

@@ -13,7 +13,7 @@ The full flow looks like this:
 
 1. Resolve the locale in `hooks.server.ts`.
 2. Store it in `event.locals`.
-3. Return it from the root layout load function.
+3. Return it from the root layout `load` function.
 4. Initialize Lingui in the root layout.
 5. Re-activate on client-side navigation when the locale changes.
 
@@ -88,7 +88,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     });
   }
 
-  // Keep the HTML lang attribute in sync for SEO and assistive technology.
+  // Keep the HTML `lang` attribute in sync for SEO and assistive technology.
   return resolve(event, {
     transformPageChunk: ({ html }) =>
       html.replace(
@@ -113,18 +113,18 @@ declare global {
 }
 ```
 
-## Pass locale to the layout via a load function
+## Pass locale to the layout via a `load` function
 
-A root layout server load function makes the resolved locale available as page data.
+A root layout server `load` function makes the resolved locale available as page data.
 
 Reading the `lang` query parameter here is a small but important trick. It forces SvelteKit to
-re-run this load function when a navigation changes only the locale parameter.
+re-run this `load` function when a navigation changes only the locale parameter.
 
 ```ts title="src/routes/+layout.server.ts"
 import type { LayoutServerLoad } from "./$types";
 
 export const load: LayoutServerLoad = ({ locals, url }) => {
-  // Touch lang so SvelteKit reruns this load on locale-only navigations.
+  // Touch lang so SvelteKit reruns this `load` on locale-only navigations.
   url.searchParams.get("lang");
 
   return { locale: locals.locale };
@@ -153,10 +153,10 @@ resolved locale for the initial render.
     }
   }
 
-  // Called immediately for the initial SSR render, where $effect does not run.
+  // Called immediately for the initial SSR render, where `$effect` does not run.
   ensureLocale(data.locale);
 
-  // Called on every subsequent client-side navigation when data.locale changes.
+  // Called on every subsequent client-side navigation when `data.locale` changes.
   $effect(() => {
     ensureLocale(data.locale);
     document.documentElement.lang = data.locale;

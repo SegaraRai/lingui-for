@@ -1,5 +1,7 @@
 import type { LinguiConfig } from "@lingui/conf";
 
+import type { RichTextWhitespaceMode } from "../compile/common/config.ts";
+
 /**
  * Options for the core `.astro` Lingui transform plugin.
  *
@@ -11,4 +13,6 @@ export interface LinguiAstroPluginOptions {
    * Partial Lingui config used while transforming `.astro` files.
    */
   linguiConfig?: Partial<LinguiConfig> | undefined;
+  astroPackages?: readonly string[] | undefined;
+  whitespace?: RichTextWhitespaceMode | undefined;
 }

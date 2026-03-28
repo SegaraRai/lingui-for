@@ -2,14 +2,14 @@
 import { Code } from "astro/components";
 
 import { resultCodeThemes, sourceCodeThemes } from "../lib/code-themes.ts";
-import type { MacroWorkbenchCodeArtifact } from "../lib/macro-workbench.ts";
+import type { MacroWorkbenchCodeArtifact } from "../lib/macro-workbench/spec.ts";
 
-type Props = {
+interface Props {
   artifact: MacroWorkbenchCodeArtifact;
   surface?: "result" | "source";
-};
+}
 
-const { artifact, surface = "source" } = Astro.props as Props;
+const { artifact, surface = "source" } = Astro.props;
 const themes = surface === "result" ? resultCodeThemes : sourceCodeThemes;
 ---
 

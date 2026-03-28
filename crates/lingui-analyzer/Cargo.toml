@@ -1,0 +1,28 @@
+[package]
+name = "lingui-analyzer"
+version = "0.0.0"
+publish = false
+edition = "2024"
+license = "MIT"
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+console_error_panic_hook = "0.1"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+sourcemap = "9.3.2"
+thiserror = "2"
+tree-sitter = "0.26"
+tree-sitter-astro = { git = "https://github.com/SegaraRai/tree-sitter-astro.git" }
+tree-sitter-javascript = { git = "https://github.com/SegaraRai/tree-sitter-javascript.git" }
+tree-sitter-svelte-ng = { git = "https://github.com/SegaraRai/tree-sitter-svelte.git" }
+tree-sitter-typescript = { git = "https://github.com/SegaraRai/tree-sitter-typescript.git" }
+tsify = { git = "https://github.com/madonoharu/tsify.git", rev = "d89d5c1d16a83c0370109232c9197fc2fa072564", features = [
+  "js",
+] }
+wasm-bindgen = "0.2"
+
+[dev-dependencies]
+indoc = "2"

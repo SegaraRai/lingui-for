@@ -1,19 +1,21 @@
 ---
-import type { MacroWorkbenchResolvedDefinition } from "../lib/macro-workbench.ts";
-import { ensureWorkbenchLinguiContext } from "../lib/workbench-i18n.ts";
+import { Trans, t } from "lingui-for-astro/macro";
 
+import type { MacroWorkbenchResolvedDefinition } from "../lib/macro-workbench/spec.ts";
+import { ensureDocsLinguiContext, type DocsLocale } from "../lib/docs-i18n.ts";
 import MacroWorkbenchCodeArtifact from "./MacroWorkbenchCodeArtifact.astro";
 import MacroWorkbenchControlField from "./MacroWorkbenchControlField.astro";
 import MacroWorkbenchPreviewIsland from "./MacroWorkbenchPreviewIsland.svelte";
 import WorkbenchTabBar from "./WorkbenchTabBar.astro";
 
-type Props = {
+interface Props {
   workbench: MacroWorkbenchResolvedDefinition;
-};
+  language?: DocsLocale;
+}
 
-const { workbench } = Astro.props as Props;
+const { workbench, language = "en" } = Astro.props;
 
-ensureWorkbenchLinguiContext(Astro.locals);
+ensureDocsLinguiContext(Astro.locals, language);
 
 const sourceCatalogCodes = workbench.locale.options.filter(
   (option) => workbench.source.catalogs[option.code],
@@ -38,14 +40,14 @@ const initialPreviewProps = {
 };
 const sourceTabs = [
   {
-    label: workbench.source.demo.filename ?? "Demo.svelte",
+    label: workbench.source.demo.filename ?? t`Demo.svelte`,
     selected: initialSourceTab === "demo",
     value: "demo",
   },
   ...(sourceCatalogCodes.length > 0
     ? [
         {
-          label: "Catalog",
+          label: t`Catalog`,
           selected: initialSourceTab === "catalog",
           value: "catalog",
         },
@@ -54,19 +56,19 @@ const sourceTabs = [
 ];
 const resultTabs = [
   {
-    label: "Preview",
+    label: t`Preview`,
     selected: initialResultTab === "preview",
     value: "preview",
   },
   {
-    label: "Transformed Svelte",
+    label: t`Transformed Svelte`,
     selected: initialResultTab === "transformed",
     value: "transformed",
   },
   ...(resultCompiledCodes.length > 0
     ? [
         {
-          label: "Compiled Catalog",
+          label: t`Compiled Catalog`,
           selected: initialResultTab === "compiledCatalog",
           value: "compiledCatalog",
         },
@@ -95,11 +97,11 @@ const resultTabs = [
             <div
               class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-toolbar-text) uppercase"
             >
-              Source
+              <Trans>Source</Trans>
             </div>
           </div>
           <WorkbenchTabBar
-            ariaLabel="Source tabs"
+            ariaLabel={t`Source tabs`}
             group="source"
             tabs={sourceTabs}
           />
@@ -110,7 +112,7 @@ const resultTabs = [
             role="tabpanel"
             data-panel-group="source"
             data-panel-value="demo"
-            class="col-start-1 row-start-1 grid max-h-68 overflow-auto aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-100"
+            class="col-start-1 row-start-1 grid max-h-68 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-100"
             aria-hidden={initialSourceTab !== "demo" ? "true" : "false"}
           >
             <MacroWorkbenchCodeArtifact
@@ -123,7 +125,7 @@ const resultTabs = [
             role="tabpanel"
             data-panel-group="source"
             data-panel-value="catalog"
-            class="col-start-1 row-start-1 grid max-h-68 overflow-auto aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-100"
+            class="col-start-1 row-start-1 grid max-h-68 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-100"
             aria-hidden={initialSourceTab !== "catalog" ? "true" : "false"}
           >
             {
@@ -151,11 +153,11 @@ const resultTabs = [
             <div
               class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-toolbar-text) uppercase"
             >
-              Result
+              <Trans>Result</Trans>
             </div>
           </div>
           <WorkbenchTabBar
-            ariaLabel="Result tabs"
+            ariaLabel={t`Result tabs`}
             group="result"
             tabs={resultTabs}
           />
@@ -166,7 +168,7 @@ const resultTabs = [
             role="tabpanel"
             data-panel-group="result"
             data-panel-value="preview"
-            class="col-start-1 row-start-1 grid max-h-64 overflow-auto aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
+            class="col-start-1 row-start-1 grid max-h-64 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
             aria-hidden={initialResultTab !== "preview" ? "true" : "false"}
           >
             <div class="p-6">
@@ -183,7 +185,7 @@ const resultTabs = [
             role="tabpanel"
             data-panel-group="result"
             data-panel-value="transformed"
-            class="col-start-1 row-start-1 grid max-h-64 overflow-auto aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
+            class="col-start-1 row-start-1 grid max-h-64 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
             aria-hidden={initialResultTab !== "transformed" ? "true" : "false"}
           >
             <MacroWorkbenchCodeArtifact
@@ -196,7 +198,7 @@ const resultTabs = [
             role="tabpanel"
             data-panel-group="result"
             data-panel-value="compiledCatalog"
-            class="col-start-1 row-start-1 grid max-h-64 overflow-auto aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
+            class="col-start-1 row-start-1 grid max-h-64 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
             aria-hidden={initialResultTab !== "compiledCatalog"
               ? "true"
               : "false"}
@@ -229,7 +231,7 @@ const resultTabs = [
           <div
             class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-control-text) uppercase"
           >
-            Locale
+            <Trans>Locale</Trans>
           </div>
           <div
             class="inline-flex overflow-hidden rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) text-sm text-(--demo-control-field-text)"
@@ -241,9 +243,9 @@ const resultTabs = [
                   aria-pressed={option.code === workbench.locale.initial}
                   data-locale-button
                   data-locale-code={option.code}
-                  class="border-r border-(--demo-control-field-border) px-3 py-1.5 transition-colors last:border-r-0 aria-pressed:bg-(--demo-control-active-background) aria-pressed:font-medium aria-pressed:text-(--demo-control-active-text)"
+                  class="border-r border-(--demo-control-field-border) px-3 py-1.5 transition-colors last:border-r-0 enabled:cursor-pointer aria-pressed:bg-(--demo-control-active-background) aria-pressed:font-medium aria-pressed:text-(--demo-control-active-text)"
                 >
-                  {option.label}
+                  {t(option.label)}
                 </button>
               ))
             }
@@ -350,7 +352,7 @@ const resultTabs = [
         }
 
         if (type === "boolean") {
-          values[id] = control.dataset.active === "1";
+          values[id] = control.ariaPressed === "true";
         }
       });
 
@@ -404,7 +406,6 @@ const resultTabs = [
       }
 
       const tabButton = target.closest("[data-tab-group]");
-
       if (tabButton instanceof HTMLElement) {
         const group = tabButton.dataset.tabGroup;
         const nextValue = tabButton.dataset.tabValue;
@@ -417,7 +418,6 @@ const resultTabs = [
       }
 
       const localeButton = target.closest("[data-locale-button]");
-
       if (localeButton instanceof HTMLElement) {
         const nextLocale = localeButton.dataset.localeCode;
         if (!nextLocale) {
@@ -431,12 +431,12 @@ const resultTabs = [
       }
 
       const booleanButton = target.closest('[data-control-type="boolean"]');
-
       if (booleanButton instanceof HTMLElement) {
-        const isActive = booleanButton.dataset.active === "1";
-        booleanButton.dataset.active = isActive ? "0" : "1";
-        booleanButton.setAttribute("aria-pressed", isActive ? "false" : "true");
-        booleanButton.textContent = isActive ? "Off" : "On";
+        const isActive = booleanButton.ariaPressed === "true";
+        booleanButton.ariaPressed = isActive ? "false" : "true";
+        booleanButton.textContent = isActive
+          ? booleanButton.dataset.offLabel!
+          : booleanButton.dataset.onLabel!;
         emitWorkbenchUpdate(workbench);
       }
     });

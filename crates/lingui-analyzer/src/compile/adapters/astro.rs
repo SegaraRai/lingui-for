@@ -1,0 +1,490 @@
+use serde::{Deserialize, Serialize};
+use tsify::Tsify;
+
+use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
+use crate::conventions::FrameworkConventions;
+use crate::framework::astro::{AstroAdapter, AstroFrameworkError};
+use crate::framework::js::{
+    JsAnalysisError, JsLikeLanguage, collect_top_level_declared_names_in_javascript,
+};
+use crate::framework::parse::{ParseError, parse_typescript};
+use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError, WhitespaceMode};
+
+use super::super::{
+    CommonCompilePlan, CompileError, CompileReplacement, CompileTarget, CompileTargetContext,
+    CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode, FrameworkCompilePlan,
+    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
+};
+use super::{AdapterError, CommonFrameworkCompileAnalysis};
+
+#[derive(thiserror::Error, Debug)]
+pub enum AstroAdapterError {
+    #[error(transparent)]
+    Framework(#[from] FrameworkError),
+    #[error(transparent)]
+    AstroFramework(#[from] AstroFrameworkError),
+    #[error(transparent)]
+    Js(#[from] JsAnalysisError),
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error("missing Astro convention field: {0}")]
+    MissingConvention(&'static str),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct AstroCompilePlan {
+    pub common: CommonCompilePlan,
+    pub runtime_requirements: RuntimeRequirements,
+    pub runtime_bindings: AstroCompileRuntimeBindings,
+    pub frontmatter: Option<AstroCompileFrontmatterRegion>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct AstroCompileRuntimeBindings {
+    pub create_i18n: String,
+    pub i18n: String,
+    pub runtime_trans: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct AstroCompileFrontmatterRegion {
+    pub outer_span: Span,
+    pub content_span: Span,
+    pub prelude_insert_point: usize,
+    pub trailing_whitespace_range: Option<Span>,
+    pub has_remaining_content_after_import_removal: bool,
+}
+
+impl FrameworkCompilePlan for AstroCompilePlan {
+    type Analysis = AstroFrameworkCompileAnalysis;
+
+    fn analyze(
+        source: &str,
+        whitespace_mode: WhitespaceMode,
+        conventions: &FrameworkConventions,
+    ) -> Result<Self::Analysis, CompileError> {
+        Ok(analyze_astro_compile(source, whitespace_mode, conventions)
+            .map_err(AdapterError::from)?)
+    }
+
+    fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
+        &mut analysis.common
+    }
+
+    fn wrap_compile_source(
+        _analysis: &Self::Analysis,
+        _prototype: &CompileTargetPrototype,
+        normalized_source: &str,
+    ) -> Result<String, CompileError> {
+        Ok(normalized_source.to_string())
+    }
+
+    fn repair_compile_targets(_source: &str, _targets: &mut [CompileTarget]) {}
+
+    fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
+        compute_runtime_requirements(targets)
+    }
+
+    fn assemble_plan(
+        common: CommonCompilePlan,
+        runtime_requirements: RuntimeRequirements,
+        analysis: Self::Analysis,
+    ) -> Self {
+        Self {
+            common,
+            runtime_requirements,
+            runtime_bindings: analysis.runtime_bindings,
+            frontmatter: analysis.frontmatter,
+        }
+    }
+
+    fn common(&self) -> &CommonCompilePlan {
+        &self.common
+    }
+
+    fn lower_runtime_component_markup(
+        &self,
+        declaration_code: &str,
+    ) -> Result<String, RuntimeComponentError> {
+        crate::compile::runtime_component::lower_runtime_component_markup(
+            declaration_code,
+            self.runtime_bindings.runtime_trans.as_str(),
+        )
+    }
+
+    fn append_runtime_injection_replacements(
+        &self,
+        _source: &str,
+        replacements: &mut Vec<CompileReplacement>,
+    ) -> Result<(), AdapterError> {
+        append_runtime_injection_replacements(self, replacements).map_err(AdapterError::from)
+    }
+}
+
+impl AstroCompilePlan {
+    pub fn build(
+        source: &str,
+        source_name: &str,
+        synthetic_name: &str,
+        whitespace_mode: WhitespaceMode,
+        conventions: FrameworkConventions,
+    ) -> Result<Self, CompileError> {
+        build_compile_plan_for_framework::<Self>(
+            source,
+            source_name,
+            synthetic_name,
+            whitespace_mode,
+            conventions,
+        )
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct AstroFrameworkCompileAnalysis {
+    pub(crate) common: CommonFrameworkCompileAnalysis,
+    pub(crate) runtime_bindings: AstroCompileRuntimeBindings,
+    pub(crate) frontmatter: Option<AstroCompileFrontmatterRegion>,
+}
+
+pub(crate) fn analyze_astro_compile(
+    source: &str,
+    whitespace: WhitespaceMode,
+    conventions: &FrameworkConventions,
+) -> Result<AstroFrameworkCompileAnalysis, AstroAdapterError> {
+    let analysis = AstroAdapter.analyze(
+        source,
+        &AnalyzeOptions {
+            whitespace,
+            conventions: conventions.clone(),
+        },
+    )?;
+    let frontmatter = analysis
+        .frontmatter
+        .as_ref()
+        .map(|region| build_frontmatter_region(source, region, conventions));
+    let import_removals = analysis
+        .frontmatter
+        .as_ref()
+        .map(|region| collect_macro_import_statement_spans(source, region, conventions))
+        .transpose()?
+        .unwrap_or_default();
+    let mut prototypes = Vec::new();
+
+    prototypes.extend(
+        analysis
+            .frontmatter_candidates
+            .iter()
+            .cloned()
+            .map(|candidate| CompileTargetPrototype {
+                output_kind: CompileTargetOutputKind::Expression,
+                candidate,
+                context: CompileTargetContext::Frontmatter,
+                translation_mode: CompileTranslationMode::Context,
+            }),
+    );
+    for expression in &analysis.template_expressions {
+        prototypes.extend(expression.candidates.iter().cloned().map(|candidate| {
+            CompileTargetPrototype {
+                output_kind: CompileTargetOutputKind::Expression,
+                candidate,
+                context: CompileTargetContext::Template,
+                translation_mode: CompileTranslationMode::Context,
+            }
+        }));
+    }
+    prototypes.extend(
+        analysis
+            .template_components
+            .iter()
+            .cloned()
+            .map(|component| CompileTargetPrototype {
+                output_kind: CompileTargetOutputKind::Component,
+                candidate: component.candidate,
+                context: CompileTargetContext::Template,
+                translation_mode: CompileTranslationMode::Context,
+            }),
+    );
+
+    Ok(AstroFrameworkCompileAnalysis {
+        common: CommonFrameworkCompileAnalysis {
+            imports: analysis.macro_imports,
+            prototypes,
+            import_removals,
+            synthetic_lang: ScriptLang::Ts,
+        },
+        runtime_bindings: create_runtime_bindings(
+            analysis
+                .frontmatter
+                .as_ref()
+                .map(|region| &source[region.inner_span.start..region.inner_span.end])
+                .unwrap_or(""),
+            conventions,
+        )?,
+        frontmatter,
+    })
+}
+
+pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
+    RuntimeRequirements {
+        needs_runtime_i18n_binding: !targets.is_empty(),
+        needs_runtime_trans_component: targets
+            .iter()
+            .any(|target| target.output_kind == CompileTargetOutputKind::Component),
+    }
+}
+
+fn create_runtime_bindings(
+    frontmatter_source: &str,
+    conventions: &FrameworkConventions,
+) -> Result<AstroCompileRuntimeBindings, AstroAdapterError> {
+    let declared_names = collect_top_level_declared_names_in_javascript(
+        frontmatter_source,
+        JsLikeLanguage::TypeScript,
+    )?;
+    let mut used = declared_names
+        .into_iter()
+        .collect::<std::collections::BTreeSet<_>>();
+
+    Ok(AstroCompileRuntimeBindings {
+        create_i18n: allocate_unique_binding_name(
+            &mut used,
+            conventions
+                .bindings
+                .i18n_accessor_factory
+                .as_deref()
+                .ok_or(AstroAdapterError::MissingConvention(
+                    "bindings.i18n_accessor_factory",
+                ))?,
+        ),
+        i18n: allocate_unique_binding_name(
+            &mut used,
+            conventions.bindings.i18n_instance.as_deref().ok_or(
+                AstroAdapterError::MissingConvention("bindings.i18n_instance"),
+            )?,
+        ),
+        runtime_trans: allocate_unique_binding_name(
+            &mut used,
+            conventions.bindings.runtime_trans_component.as_str(),
+        ),
+    })
+}
+
+fn allocate_unique_binding_name(
+    used: &mut std::collections::BTreeSet<String>,
+    preferred: &str,
+) -> String {
+    if used.insert(preferred.to_string()) {
+        return preferred.to_string();
+    }
+
+    let mut index = 1usize;
+    loop {
+        let candidate = format!("{preferred}_{index}");
+        if used.insert(candidate.clone()) {
+            return candidate;
+        }
+        index += 1;
+    }
+}
+
+fn append_runtime_injection_replacements(
+    plan: &AstroCompilePlan,
+    replacements: &mut Vec<CompileReplacement>,
+) -> Result<(), AstroAdapterError> {
+    let prelude = build_frontmatter_prelude(
+        plan.runtime_requirements.needs_runtime_i18n_binding,
+        plan.runtime_requirements.needs_runtime_trans_component,
+        &plan.runtime_bindings,
+        &plan.common.conventions,
+    )?;
+
+    if prelude.is_empty() {
+        return Ok(());
+    }
+
+    if let Some(frontmatter) = &plan.frontmatter {
+        let code = if frontmatter.has_remaining_content_after_import_removal {
+            format!("{prelude}\n")
+        } else {
+            prelude
+        };
+        replacements.push(CompileReplacement {
+            declaration_id: "__runtime_frontmatter_prelude".to_string(),
+            start: frontmatter.prelude_insert_point,
+            end: frontmatter.prelude_insert_point,
+            code,
+            source_map_json: None,
+        });
+
+        if !frontmatter.has_remaining_content_after_import_removal
+            && let Some(range) = frontmatter.trailing_whitespace_range
+        {
+            replacements.push(CompileReplacement {
+                declaration_id: "__runtime_frontmatter_trailing_ws".to_string(),
+                start: range.start,
+                end: range.end,
+                code: String::new(),
+                source_map_json: None,
+            });
+        }
+        return Ok(());
+    }
+
+    replacements.push(CompileReplacement {
+        declaration_id: "__runtime_frontmatter_block".to_string(),
+        start: 0,
+        end: 0,
+        code: format!("---\n{prelude}\n---\n"),
+        source_map_json: None,
+    });
+    Ok(())
+}
+
+fn build_frontmatter_prelude(
+    include_astro_context: bool,
+    include_runtime_trans: bool,
+    bindings: &AstroCompileRuntimeBindings,
+    conventions: &FrameworkConventions,
+) -> Result<String, AstroAdapterError> {
+    let mut lines = String::new();
+    let runtime_package = conventions.runtime.package.as_str();
+    let trans_export = conventions.runtime.exports.trans.as_str();
+    let i18n_accessor_export = conventions.runtime.exports.i18n_accessor.as_deref().ok_or(
+        AstroAdapterError::MissingConvention("runtime.exports.i18n_accessor"),
+    )?;
+
+    if include_astro_context {
+        lines.push_str(&format!(
+            "import {{ {} as {} }} from \"{}\";\n",
+            i18n_accessor_export, bindings.create_i18n, runtime_package
+        ));
+        lines.push_str(&format!(
+            "const {} = {}(Astro.locals);\n",
+            bindings.i18n, bindings.create_i18n
+        ));
+    }
+
+    if include_runtime_trans {
+        lines.push_str(&format!(
+            "import {{ {} as {} }} from \"{}\";\n",
+            trans_export, bindings.runtime_trans, runtime_package
+        ));
+    }
+
+    Ok(lines)
+}
+
+fn build_frontmatter_region(
+    source: &str,
+    region: &EmbeddedScriptRegion,
+    conventions: &FrameworkConventions,
+) -> AstroCompileFrontmatterRegion {
+    AstroCompileFrontmatterRegion {
+        outer_span: region.outer_span,
+        content_span: region.inner_span,
+        prelude_insert_point: compute_prelude_insert_point(source, region.inner_span.start),
+        trailing_whitespace_range: compute_trailing_whitespace_range(source, region),
+        has_remaining_content_after_import_removal: has_remaining_content_after_import_removal(
+            source,
+            region,
+            conventions,
+        ),
+    }
+}
+
+fn compute_prelude_insert_point(source: &str, content_start: usize) -> usize {
+    let mut insert = content_start;
+    if source.as_bytes().get(insert) == Some(&b'\r') {
+        insert += 1;
+    }
+    if source.as_bytes().get(insert) == Some(&b'\n') {
+        insert += 1;
+    }
+    insert
+}
+
+fn compute_trailing_whitespace_range(source: &str, region: &EmbeddedScriptRegion) -> Option<Span> {
+    let outer_source = &source[region.outer_span.start..region.outer_span.end];
+    let closing_fence_offset = outer_source.rfind("---")?;
+    let closing_fence_start = region.outer_span.start + closing_fence_offset;
+    if region.inner_span.end >= closing_fence_start {
+        return None;
+    }
+
+    let trailing = &source[region.inner_span.end..closing_fence_start];
+    if trailing.trim().is_empty() {
+        Some(Span::new(region.inner_span.end, closing_fence_start))
+    } else {
+        None
+    }
+}
+
+fn has_remaining_content_after_import_removal(
+    source: &str,
+    region: &EmbeddedScriptRegion,
+    conventions: &FrameworkConventions,
+) -> bool {
+    let content = &source[region.inner_span.start..region.inner_span.end];
+    let ranges =
+        collect_macro_import_statement_spans(source, region, conventions).unwrap_or_default();
+    let relative_ranges = ranges
+        .into_iter()
+        .map(|span| {
+            Span::new(
+                span.start - region.inner_span.start,
+                span.end - region.inner_span.start,
+            )
+        })
+        .collect::<Vec<_>>();
+    let mut cursor = 0usize;
+    for range in relative_ranges {
+        if !content[cursor..range.start].trim().is_empty() {
+            return true;
+        }
+        cursor = range.end;
+    }
+    !content[cursor..].trim().is_empty()
+}
+
+fn collect_macro_import_statement_spans(
+    source: &str,
+    region: &EmbeddedScriptRegion,
+    conventions: &FrameworkConventions,
+) -> Result<Vec<Span>, AstroAdapterError> {
+    let frontmatter_source = &source[region.inner_span.start..region.inner_span.end];
+    let tree = parse_typescript(frontmatter_source)?;
+    let root = tree.root_node();
+    let mut spans = Vec::new();
+    let mut cursor = root.walk();
+
+    for child in root.children(&mut cursor) {
+        if child.kind() != "import_statement" {
+            continue;
+        }
+        let Some(source_node) = child.child_by_field_name("source") else {
+            continue;
+        };
+        let module_specifier =
+            &frontmatter_source[source_node.start_byte() + 1..source_node.end_byte() - 1];
+        if !conventions.accepts_macro_package(module_specifier) {
+            continue;
+        }
+
+        let mut end = child.end_byte();
+        while matches!(frontmatter_source.as_bytes().get(end), Some(b'\r' | b'\n')) {
+            end += 1;
+        }
+        spans.push(Span::new(
+            region.inner_span.start + child.start_byte(),
+            region.inner_span.start + end,
+        ));
+    }
+
+    Ok(spans)
+}

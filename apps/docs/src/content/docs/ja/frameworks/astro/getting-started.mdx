@@ -1,0 +1,141 @@
+---
+title: "Astro: はじめに"
+description: "`.astro` ファイル向けに lingui-for-astro を導入して設定する方法"
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+## パッケージをインストールする
+
+<Tabs syncKey="package-manager">
+  <TabItem label="Vite+">
+
+```sh
+vp add @lingui/core lingui-for-astro
+vp add -D @lingui/cli @lingui/conf unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```sh
+npm install @lingui/core lingui-for-astro
+npm install -D @lingui/cli @lingui/conf unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```sh
+pnpm add @lingui/core lingui-for-astro
+pnpm add -D @lingui/cli @lingui/conf unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="yarn">
+
+```sh
+yarn add @lingui/core lingui-for-astro
+yarn add -D @lingui/cli @lingui/conf unplugin-lingui-macro
+```
+
+  </TabItem>
+</Tabs>
+
+<Aside>
+
+`unplugin-lingui-macro` が必要なのは、素の JavaScript または TypeScript ファイルで Lingui マクロを使う場合だけです。
+マクロを `.astro` ファイルでしか使わないなら、このパッケージのインストールは省略でき、`astro.config.ts` の `vite.plugins` からも外せます。
+詳しい設定は [プレーンな JS/TS でのセットアップ](/ja/guides/plain-js-ts) を参照してください。
+
+</Aside>
+
+## Astro を設定する
+
+```ts title="astro.config.ts"
+import { defineConfig } from "astro/config";
+import linguiForAstro from "lingui-for-astro/integration";
+import linguiMacro from "unplugin-lingui-macro/vite";
+
+export default defineConfig({
+  integrations: [linguiForAstro()],
+  vite: {
+    plugins: [linguiMacro()],
+  },
+});
+```
+
+<Aside>
+
+ミドルウェアは出力モードに関係なくすべてのページで動きます。
+`server` / `hybrid` 出力では各リクエストで処理され、`static` 出力ではビルド時に各ページごとに処理されます。
+どの場合でも、これが推奨される初期化パターンです。
+ロケールのロジックを持たない単純な静的ページでは、ページのフロントマターで初期化することもできますが、これはエスケープハッチです。
+この場合も、再利用コンポーネント内ではなく、ページまたはレイアウト境界に置いてください。
+詳しくは [i18n コンテキスト](/ja/frameworks/astro/i18n-context) を参照してください。
+
+</Aside>
+
+## Lingui を設定する
+
+```ts title="lingui.config.ts"
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { defineConfig } from "@lingui/conf";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [astroExtractor(), babelExtractor],
+});
+```
+
+<Aside>
+
+素の JavaScript または TypeScript ファイルで Lingui マクロを使わないなら、`extractors` 配列から `babelExtractor` を外し、インポートも省略できます。
+
+</Aside>
+
+## 出力モードに応じて Lingui を初期化する
+
+`server` と `hybrid` 出力では、ページが描画される前にミドルウェアから `setLinguiContext` を呼びます。
+ここで、そのリクエスト向けのコンパイル済みカタログを読み込みます。
+
+```ts title="src/middleware.ts"
+import { defineMiddleware } from "astro:middleware";
+import { setupI18n } from "@lingui/core";
+import { setLinguiContext } from "lingui-for-astro";
+import { catalog } from "./lib/i18n/catalog";
+
+export const onRequest = defineMiddleware((context, next) => {
+  const locale = resolveLocale(context); // 独自のロケール解決ロジック
+  const i18n = setupI18n({ locale, messages: catalog });
+  setLinguiContext(context.locals, i18n);
+  return next();
+});
+```
+
+<Aside>
+
+`catalog` は共有設定ファイルからエクスポートされる、ロケールをキーにしたオブジェクトです。
+このファイルの作り方と、全ロケールを最初からまとめてバンドルするか必要時に読み込むかの選び方は [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。
+
+</Aside>
+
+## `.astro` でマクロを使う
+
+```astro title="src/pages/index.astro"
+---
+import { Trans, t } from "lingui-for-astro/macro";
+---
+
+<h1>{t`Hello from Astro`}</h1>
+<p><Trans>Macro-first translation in Astro</Trans></p>
+```
+
+## 次に読むページ
+
+- `Astro.locals` が i18n インスタンスをどう保持するか、静的サイトとリクエスト依存の初期化がどう違うか、手動でどうアクセスするかは [i18n コンテキスト](/ja/frameworks/astro/i18n-context) を参照してください。
+- クライアントフレームワークのアイランドで翻訳が必要なら [アイランドを使う](/ja/frameworks/astro/using-islands) を参照してください。
+- サーバーと実行時の境界については [Astro の注意点](/ja/frameworks/astro/caveats) を参照してください。

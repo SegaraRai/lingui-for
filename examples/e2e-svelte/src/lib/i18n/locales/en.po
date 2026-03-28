@@ -42,15 +42,15 @@ msgstr "{count, plural, one {# item in the list.} other {# items in the list.}}"
 msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 msgstr "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:211
 msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:197
 msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:183
 msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 
@@ -235,7 +235,7 @@ msgstr "Explicit id from a plain descriptor."
 
 #. Used by the ids playground route
 #. js-lingui-explicit-id
-#: src/routes/playground/ids/+page.svelte:25
+#: src/routes/playground/ids/+page.svelte:29
 msgid "playground.ids.trans"
 msgstr "Explicit id from a Trans component."
 
@@ -386,7 +386,7 @@ msgstr "Messages live next to the code that renders them"
 msgid "Name"
 msgstr "Name"
 
-#: src/routes/+page.svelte:18
+#: src/routes/+page.svelte:19
 msgid "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
 msgstr "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
 
@@ -432,9 +432,9 @@ msgstr "Reactive"
 msgid "Reactivity"
 msgstr "Reactivity"
 
-#: src/routes/playground/rich-text/+page.svelte:21
-msgid "Read the <0>settings page</0>and look for the <1>cookie-backed locale</1> behavior."
-msgstr "Read the <0>settings page</0>and look for the <1>cookie-backed locale</1> behavior."
+#: src/routes/playground/rich-text/+page.svelte:22
+msgid "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
+msgstr "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
 
 #: src/routes/+page.svelte:9
 msgid "Real app"
@@ -446,7 +446,7 @@ msgstr "Real app"
 msgid "Rich text"
 msgstr "Rich text"
 
-#: src/routes/playground/rich-text/+page.svelte:30
+#: src/routes/playground/rich-text/+page.svelte:31
 msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 msgstr "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 
@@ -508,11 +508,11 @@ msgstr "Snippet badge"
 msgid "Snippet item: {text}"
 msgstr "Snippet item: {text}"
 
-#: src/routes/playground/syntax/+page.svelte:73
+#: src/routes/playground/syntax/+page.svelte:74
 msgid "Status summary: active"
 msgstr "Status summary: active"
 
-#: src/routes/playground/syntax/+page.svelte:72
+#: src/routes/playground/syntax/+page.svelte:73
 msgid "Status summary: idle"
 msgstr "Status summary: idle"
 
@@ -653,3 +653,12 @@ msgstr "Toggle the status branch"
 #: src/routes/playground/syntax/+page.svelte:44
 msgid "Type to filter syntax examples"
 msgstr "Type to filter syntax examples"
+
+#. placeholder {0}: untrack(() => name)
+#: src/lib/i18n/unicode-fixture.svelte:7
+msgid "テンプレートこんにちは😀 {0}"
+msgstr "テンプレートこんにちは😀 {0}"
+
+#: src/lib/i18n/unicode-fixture.svelte:13
+msgid "ようこそ <0>{name}</0> さん🚀"
+msgstr "ようこそ <0>{name}</0> さん🚀"

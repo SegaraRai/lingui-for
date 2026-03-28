@@ -1,0 +1,184 @@
+---
+title: "Svelte: i18n コンテキスト"
+description: Lingui の i18n インスタンスを Svelte のコンポーネントツリー全体で初期化し、共有する方法
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+`lingui-for-svelte` は、Svelte 標準のコンポーネントコンテキスト API を使って、現在の `i18n` インスタンスをプロパティなしでコンポーネントツリー全体へ渡します。
+
+まず 1 つだけ覚えるなら、翻訳付きマークアップが描画される前に、ツリーの根元付近で `setLinguiContext` を 1 回呼んでください。
+
+`loadAndActivate`、`activate`、`load`、`_` を含む `I18n` インスタンス API 全体については、[公式の @lingui/core リファレンス](https://lingui.dev/ref/core#i18n) を参照してください。
+
+## ルートレイアウトで初期化する
+
+SvelteKit アプリでは、ルートレイアウトがコンテキスト設定の標準的な場所です。
+すべてのページと子コンポーネントが自動的にこれを引き継ぎます。
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { catalog } from "$lib/i18n/catalog";
+
+  let { data, children } = $props();
+
+  const i18n = setupI18n({
+    locale: data.locale,
+    messages: catalog,
+  });
+  setLinguiContext(i18n);
+</script>
+
+{@render children()}
+```
+
+<Aside>
+
+ここでの `catalog` は共有設定ファイルにある、ロケールをキーにしたオブジェクト（`{ en: ..., ja: ... }`）です。
+作成方法や別の読み込み戦略については [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。
+
+</Aside>
+
+内部的には `setLinguiContext` は Svelte の `setContext` を包んでいます。
+同じツリー内のすべての子孫コンポーネントは、プロパティを受け渡さなくても現在の `i18n` インスタンスを読めます。
+
+別ロケールや別カタログで切り離したサブツリーが必要な場合を除き、深い子コンポーネントで `setLinguiContext` を呼ぶのは避けてください。
+
+## 同一コンポーネント内で初期化する
+
+1 つのコンポーネント内でコンテキストを設定し、その同じファイル内で `$t` などのリアクティブマクロを使えます。
+
+これが動く理由は、コンパイラが遅延アクセサ（`createLinguiAccessors`）を挿入するためです。
+コンテキストは遅延的に解決されるので、コンパイル済みマークアップが実行される時点では利用可能になっています。
+
+```svelte
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+  import { catalog } from "$lib/i18n/catalog";
+
+  const i18n = setupI18n({
+    locale: "en",
+    messages: catalog,
+  });
+  setLinguiContext(i18n);
+</script>
+
+<p>{$t`Hello`}</p>
+```
+
+## Astro 内の Svelte アイランド
+
+Svelte アイランドは独立したコンポーネントツリーです。
+周囲の Astro ページとはコンテキストを共有しません。
+そのため、各アイランドが自分で `setLinguiContext` を呼ぶ必要があります。
+
+```svelte title="src/components/MyIsland.svelte"
+<script lang="ts">
+  import { untrack } from "svelte";
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+  import { catalog } from "$lib/i18n/catalog";
+
+  const { locale = "en" } = $props();
+
+  // アイランドは独立して動くため、自分でコンテキストを初期化します
+  // `untrack` を使うことで、この初期化コードが Svelte によってリアクティブ依存として扱われるのを防ぎます
+  // あとで `locale` がプロパティとして変わっても、アイランドは既存の i18n インスタンスを再度 `activate` すべきであり、初期化ブロック全体をやり直すべきではありません
+  const i18n = setupI18n({
+    locale: untrack(() => locale),
+    messages: catalog,
+  });
+  setLinguiContext(i18n);
+</script>
+
+<p>{$t`Hello from an island`}</p>
+```
+
+<Aside>
+
+ページと同じロケールをアイランドでも使うために、Astro ページから `locale` をプロパティとして渡してください。
+全体の考え方は [Astro: アイランドを使う](/ja/frameworks/astro/using-islands) を参照してください。
+
+</Aside>
+
+## ロケールを切り替える
+
+`setLinguiContext` はインスタンスを 1 回設定するだけです。
+あとからロケールを切り替えるには、その同じインスタンスに対して `activate` または `loadAndActivate` を呼びます。
+リアクティブマクロはこの変化を自動で検知して、必要な部分を再描画します。
+
+```svelte
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { t } from "lingui-for-svelte/macro";
+  import { catalog, type SupportedLocale } from "$lib/i18n/catalog";
+
+  const i18n = setupI18n({
+    locale: "en",
+    messages: catalog,
+  });
+  setLinguiContext(i18n);
+
+  function switchLocale(next: SupportedLocale) {
+    i18n.activate(next);
+    // このツリー内の $t、$plural などはすべて自動で再描画される
+  }
+</script>
+```
+
+`activate` と `loadAndActivate` が `$t` や `$plural` のようなマクロの再描画をどう引き起こすかは [リアクティブマクロ](/ja/frameworks/svelte/reactive-macros) を参照してください。
+
+URL パラメータ、クッキー、ブラウザヘッダーから初期ロケールを解決し、それをレイアウトへ渡す方法は [ロケール解決](/ja/frameworks/svelte/locale-resolution) を参照してください。
+
+## 関数リファレンス
+
+### `setLinguiContext`
+
+```ts
+import { setLinguiContext } from "lingui-for-svelte";
+
+function setLinguiContext(instance: I18n): LinguiContext;
+```
+
+現在のサブツリー向けに、Lingui インスタンスを Svelte のコンポーネントコンテキストへ設定します。
+Svelte コンポーネント内で呼ぶ必要があります。すべての子孫コンポーネントがプロパティを介さずにこのコンテキストを継承します。
+
+戻り値は作成された `LinguiContext` です。
+通常、この戻り値を使う場面はあまりありません。
+子孫コンポーネントからは自動的にアクセスされます。
+
+### `getLinguiContext`
+
+```ts
+import { getLinguiContext } from "lingui-for-svelte";
+
+function getLinguiContext(): LinguiContext;
+```
+
+現在の Svelte コンポーネントツリーから、アクティブな Lingui コンテキストを読み取ります。
+コンテキストがまだ設定されていなければ例外を投げます。
+
+コンパイル済みマクロ出力は内部でこれを呼びます。
+必要になるのは、生の `i18n` インスタンスが欲しい場合だけです。
+たとえば、`setLinguiContext` を呼んだコンポーネントとは別のロケールスイッチャーで `i18n.activate()` を呼びたい場合です。
+
+### `LinguiContext`
+
+```ts
+import type { LinguiContext } from "lingui-for-svelte";
+
+type LinguiContext = {
+  i18n: I18n;
+  // そのほかのフィールドは内部用
+};
+```
+
+両方の関数が返す値です。
+命令的に Lingui インスタンスを使いたいときは `.i18n` にアクセスしてください。
+この型のほかのフィールドはコンパイル済みマクロ出力で使われる内部実装であり、公開 API には含まれません。

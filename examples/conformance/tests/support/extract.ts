@@ -6,12 +6,13 @@ import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 import { transformOfficialCore, transformOfficialReact } from "./transforms.ts";
 
+type FixtureWhitespace = "auto" | "jsx";
+
 const linguiConfig: LinguiConfigNormalized = {
   catalogs: [],
   compileNamespace: "cjs",
   extractorParserOptions: {},
   fallbackLocales: {},
-  format: undefined,
   locales: [],
   macro: {
     corePackage: ["@lingui/core/macro", "@lingui/macro"],
@@ -73,8 +74,8 @@ function normalizeExtractedValue(value: unknown): unknown {
 
     const normalized = value
       .replaceAll("\r\n", "\n")
-      .replaceAll(/__l4a_i18n\._/g, "_i18n._")
-      .replaceAll(/__l4s_getI18n\(\)\._/g, "_i18n._")
+      .replaceAll("__l4a_i18n._", "_i18n._")
+      .replaceAll("__l4s_getI18n()._", "_i18n._")
       .replaceAll(/\(\s+\/\*i18n\*\//g, "(/*i18n*/")
       .replaceAll(/[ \t]+\n/g, "\n")
       .trim();
@@ -147,7 +148,10 @@ function normalizeOfficialMessageOrigin(
 
   return {
     ...message,
-    origin: [origin, message.origin[1], message.origin[2]],
+    origin:
+      message.origin[2] != null
+        ? [origin, message.origin[1], message.origin[2]]
+        : [origin, message.origin[1]],
   };
 }
 
@@ -174,13 +178,15 @@ export async function extractOfficialReact(
 export async function extractSvelteFixture(
   source: string,
   fixtureName = "conformance",
+  whitespace: FixtureWhitespace = "auto",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
   const filename = fixtureName.endsWith(".svelte")
     ? fixtureName
     : `/virtual/${fixtureName}.svelte`;
+  const extractor = svelteExtractor({ whitespace });
 
-  await svelteExtractor.extract(
+  await extractor.extract(
     filename,
     source,
     (message) => {
@@ -195,13 +201,15 @@ export async function extractSvelteFixture(
 export async function extractAstroFixture(
   source: string,
   fixtureName = "conformance",
+  whitespace: FixtureWhitespace = "auto",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
   const filename = fixtureName.endsWith(".astro")
     ? fixtureName
     : `/virtual/${fixtureName}.astro`;
+  const extractor = astroExtractor({ whitespace });
 
-  await astroExtractor.extract(
+  await extractor.extract(
     filename,
     source,
     (message) => {

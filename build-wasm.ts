@@ -1,36 +1,61 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { existsSync, mkdirSync, rmSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+type WasmTarget = {
+  crateDir: string;
+  outputDir: string;
+  outputName: string;
+  expectedOutput: string;
+};
 
 function main(): void {
   const rootDir = dirname(fileURLToPath(import.meta.url));
-  const crateDir = join(rootDir, "crates", "astro-analyzer");
-  const wasmOutputPath = join(
-    rootDir,
-    "packages",
-    "astro-analyzer-wasm",
-    "dist",
-    "index_bg.wasm",
-  );
+  const targets: WasmTarget[] = [
+    {
+      crateDir: join(rootDir, "crates/lingui-analyzer"),
+      outputDir: "../../shared/lingui-analyzer-wasm/dist",
+      outputName: "index",
+      expectedOutput: join(
+        rootDir,
+        "shared/lingui-analyzer-wasm/dist/index_bg.wasm",
+      ),
+    },
+  ];
 
   if (process.env.LINGUI_WASM_PREBUILT === "1") {
     console.log("Skipping wasm build because LINGUI_WASM_PREBUILT=1.");
   } else {
     const isDebug = process.env.LINGUI_WASM_DEBUG === "1";
-    buildWasm(rootDir, crateDir, isDebug);
+    for (const target of targets) {
+      buildWasm(rootDir, target, isDebug);
+    }
   }
 
-  if (!existsSync(wasmOutputPath)) {
-    console.error(
-      `Expected wasm output was not found: ${wasmOutputPath}. ` +
-        "Build astro-analyzer first or unset LINGUI_WASM_PREBUILT.",
-    );
-    process.exit(1);
+  for (const target of targets) {
+    if (!existsSync(target.expectedOutput)) {
+      console.error(
+        `Expected wasm output was not found: ${target.expectedOutput}. ` +
+          "Build wasm targets first or unset LINGUI_WASM_PREBUILT.",
+      );
+      process.exit(1);
+    }
   }
 }
 
-function buildWasm(rootDir: string, crateDir: string, isDebug: boolean): void {
+function buildWasm(
+  rootDir: string,
+  target: WasmTarget,
+  isDebug: boolean,
+): void {
+  const absoluteOutputDir = resolve(target.crateDir, target.outputDir);
+
+  // wasm-pack reuses files in the output directory and can choke on its own
+  // previously generated package.json, so rebuild the directory from scratch.
+  rmSync(absoluteOutputDir, { recursive: true, force: true });
+  mkdirSync(absoluteOutputDir, { recursive: true });
+
   const result = spawnSync(
     resolveWasmPack(rootDir),
     [
@@ -39,12 +64,12 @@ function buildWasm(rootDir: string, crateDir: string, isDebug: boolean): void {
       "web",
       ...(isDebug ? ["--dev", "--no-opt"] : ["--release"]),
       "--out-dir",
-      "../../packages/astro-analyzer-wasm/dist",
+      target.outputDir,
       "--out-name",
-      "index",
+      target.outputName,
     ],
     {
-      cwd: crateDir,
+      cwd: target.crateDir,
       stdio: "inherit",
       shell: true,
     },
@@ -63,8 +88,7 @@ function buildWasm(rootDir: string, crateDir: string, isDebug: boolean): void {
 function resolveWasmPack(rootDir: string): string {
   const localBinary = join(
     rootDir,
-    "node_modules",
-    ".bin",
+    "node_modules/.bin",
     process.platform === "win32" ? "wasm-pack.cmd" : "wasm-pack",
   );
   if (existsSync(localBinary)) {

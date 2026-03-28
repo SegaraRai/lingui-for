@@ -1,9 +1,6 @@
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
-  fmt: {
-    ignorePatterns: ["dist"],
-  },
   pack: {
     clean: true,
     dts: true,
@@ -22,6 +19,8 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
+        cache: true,
+        input: [{ auto: true }, "!**/.vite-temp/**", "!dist/**"],
       },
       check: {
         command: "vp check",

@@ -1,0 +1,269 @@
+use std::collections::BTreeMap;
+
+use crate::framework::parse::{ParseError, parse_tsx};
+
+use super::emit::{EmitError, collect_compile_replacements, finish_compile_from_replacements};
+use super::runtime_component::RuntimeComponentError;
+use super::{
+    CompileTargetOutputKind, CompileTranslationMode, FinishedCompile, FrameworkCompilePlan,
+    TransformedPrograms,
+};
+
+#[derive(thiserror::Error, Debug)]
+pub enum LowerError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error(transparent)]
+    Emit(#[from] EmitError),
+    #[error(transparent)]
+    RuntimeComponent(#[from] RuntimeComponentError),
+}
+
+pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
+    plan: &P,
+    source: &str,
+    transformed_programs: &TransformedPrograms,
+) -> Result<FinishedCompile, LowerError> {
+    let lowered_declarations = lower_transformed_declarations(plan, transformed_programs)?;
+    let replacements = collect_compile_replacements(plan, source, &lowered_declarations)?;
+    Ok(finish_compile_from_replacements(
+        source,
+        &plan.common().source_name,
+        replacements,
+    )?)
+}
+
+fn lower_transformed_declarations<P: FrameworkCompilePlan>(
+    plan: &P,
+    transformed_programs: &TransformedPrograms,
+) -> Result<BTreeMap<String, String>, LowerError> {
+    let declaration_sets = collect_transformed_declarations(transformed_programs)?;
+    let mut lowered = BTreeMap::new();
+
+    for target in &plan.common().targets {
+        let Some(code) = declaration_sets
+            .get(&target.translation_mode)
+            .and_then(|declarations| declarations.get(&target.declaration_id))
+        else {
+            continue;
+        };
+
+        let finalized = if target.output_kind == CompileTargetOutputKind::Component {
+            plan.lower_runtime_component_markup(code)?
+        } else {
+            code.clone()
+        };
+        lowered.insert(target.declaration_id.clone(), finalized);
+    }
+
+    Ok(lowered)
+}
+
+fn collect_transformed_declarations(
+    programs: &TransformedPrograms,
+) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, String>>, LowerError> {
+    let mut declarations = BTreeMap::new();
+
+    if let Some(code) = &programs.raw_code {
+        declarations.insert(
+            CompileTranslationMode::Raw,
+            collect_declarations_from_program(code)?,
+        );
+    }
+    if let Some(code) = &programs.context_code {
+        declarations.insert(
+            CompileTranslationMode::Context,
+            collect_declarations_from_program(code)?,
+        );
+    }
+
+    Ok(declarations)
+}
+
+fn collect_declarations_from_program(source: &str) -> Result<BTreeMap<String, String>, LowerError> {
+    let tree = parse_tsx(source)?;
+    let root = tree.root_node();
+    let mut declarations = BTreeMap::new();
+    let mut cursor = root.walk();
+
+    for child in root.children(&mut cursor) {
+        if child.kind() != "variable_declaration" && child.kind() != "lexical_declaration" {
+            continue;
+        }
+
+        let mut decl_cursor = child.walk();
+        for declarator in child.children(&mut decl_cursor) {
+            if declarator.kind() != "variable_declarator" {
+                continue;
+            }
+
+            let Some(name) = declarator.child_by_field_name("name") else {
+                continue;
+            };
+            if name.kind() != "identifier" {
+                continue;
+            }
+            let Some(value) = declarator.child_by_field_name("value") else {
+                continue;
+            };
+            let value_start = extend_start_for_leading_comments(source, value.start_byte());
+
+            declarations.insert(
+                source[name.start_byte()..name.end_byte()].to_string(),
+                source[value_start..value.end_byte()].to_string(),
+            );
+        }
+    }
+
+    Ok(declarations)
+}
+
+fn extend_start_for_leading_comments(source: &str, start: usize) -> usize {
+    let bytes = source.as_bytes();
+    let mut current = start;
+
+    loop {
+        let mut cursor = current;
+        while cursor > 0 && bytes[cursor - 1].is_ascii_whitespace() {
+            cursor -= 1;
+        }
+
+        if cursor < 2 || &source[cursor - 2..cursor] != "*/" {
+            return current;
+        }
+
+        let Some(comment_start) = source[..cursor - 2].rfind("/*") else {
+            return current;
+        };
+        current = comment_start;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
+        CompileTranslationMode, FrameworkConventions, FrameworkKind, MacroFlavor,
+        NormalizedSegment, RuntimeRequirements, TransformedPrograms,
+        common::{ScriptLang, Span},
+        compile::adapters::{
+            SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
+        },
+        conventions::{
+            MacroConventions, RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions,
+            SyntheticConventions, WrapperConventions,
+        },
+    };
+
+    use super::finish_compile;
+
+    fn test_svelte_conventions() -> FrameworkConventions {
+        FrameworkConventions {
+            framework: FrameworkKind::Svelte,
+            macro_: MacroConventions {
+                primary_package: "lingui-for-svelte/macro".to_string(),
+                accepted_packages: vec![
+                    "lingui-for-svelte/macro".to_string(),
+                    "@lingui/core/macro".to_string(),
+                ],
+            },
+            runtime: RuntimeConventions {
+                package: "lingui-for-svelte/runtime".to_string(),
+                exports: RuntimeExportConventions {
+                    trans: "RuntimeTrans".to_string(),
+                    i18n_accessor: Some("createLinguiAccessors".to_string()),
+                },
+            },
+            bindings: RuntimeBindingSeeds {
+                i18n_accessor_factory: Some("createLinguiAccessors".to_string()),
+                context: Some("__l4s_ctx".to_string()),
+                get_i18n: Some("__l4s_getI18n".to_string()),
+                translate: Some("__l4s_translate".to_string()),
+                i18n_instance: None,
+                runtime_trans_component: "L4sRuntimeTrans".to_string(),
+            },
+            synthetic: Some(SyntheticConventions {
+                expression_prefix: Some("__lingui_for_svelte_expr_".to_string()),
+                component_prefix: Some("__lingui_for_svelte_component_".to_string()),
+            }),
+            wrappers: Some(WrapperConventions {
+                reactive_translation: Some(
+                    "__lingui_for_svelte_reactive_translation__".to_string(),
+                ),
+                eager_translation: Some("__lingui_for_svelte_eager_translation__".to_string()),
+            }),
+        }
+    }
+
+    #[test]
+    fn finishes_expression_replacements_with_indented_maps() {
+        let plan = SvelteCompilePlan {
+            common: CommonCompilePlan {
+                source_name: "Component.svelte".to_string(),
+                synthetic_name: "Component.svelte?compile".to_string(),
+                synthetic_source: String::new(),
+                synthetic_lang: ScriptLang::Ts,
+                conventions: test_svelte_conventions(),
+                declaration_ids: vec!["__lf_0".to_string()],
+                targets: vec![CompileTarget {
+                    declaration_id: "__lf_0".to_string(),
+                    original_span: Span::new(7, 21),
+                    normalized_span: Span::new(8, 21),
+                    source_map_anchor: None,
+                    local_name: "t".to_string(),
+                    imported_name: "t".to_string(),
+                    flavor: MacroFlavor::Reactive,
+                    context: CompileTargetContext::Template,
+                    output_kind: CompileTargetOutputKind::Expression,
+                    translation_mode: CompileTranslationMode::Context,
+                    normalized_segments: vec![NormalizedSegment {
+                        original_start: 8,
+                        generated_start: 0,
+                        len: 13,
+                    }],
+                }],
+                import_removals: vec![],
+            },
+            runtime_requirements: RuntimeRequirements {
+                needs_runtime_i18n_binding: true,
+                needs_runtime_trans_component: false,
+            },
+            runtime_bindings: SvelteCompileRuntimeBindings {
+                create_lingui_accessors: "createLinguiAccessors".to_string(),
+                context: "__l4s_ctx".to_string(),
+                get_i18n: "__l4s_getI18n".to_string(),
+                translate: "__l4s_translate".to_string(),
+                trans_component: "L4sRuntimeTrans".to_string(),
+            },
+            instance_script: Some(SvelteCompileScriptRegion {
+                outer_span: Span::new(0, 30),
+                content_span: Span::new(9, 20),
+                lang: ScriptLang::Ts,
+            }),
+            module_script: None,
+        };
+        let source = "<script>\n  let x = 1;\n</script>\n<p>\n  {$t`hello`}\n</p>";
+        let transformed = TransformedPrograms {
+            context_code: Some(
+                "const __lf_0 = __l4s_translate({id:\"a\",message:\"hello\"});".to_string(),
+            ),
+            ..TransformedPrograms::default()
+        };
+
+        let finished = finish_compile(&plan, source, &transformed).expect("finish succeeds");
+
+        assert!(finished.replacements.len() >= 2);
+        assert!(
+            finished
+                .replacements
+                .iter()
+                .any(|replacement| replacement.start == 7 && replacement.end == 21)
+        );
+        assert!(
+            finished
+                .replacements
+                .iter()
+                .any(|replacement| replacement.code.contains("createLinguiAccessors"))
+        );
+    }
+}

@@ -28,6 +28,8 @@ describe("lingui extract and compile outputs", () => {
     );
     expect(enPo).toContain("Keyed subtree revision {0}");
     expect(enPo).toContain("Embedded elements and components inside Trans");
+    expect(enPo).toContain("テンプレートこんにちは😀 {0}");
+    expect(enPo).toContain("ようこそ <0>{name}</0> さん🚀");
     expect(enPo).toContain("Explicit id from a plain descriptor.");
     expect(enPo).toContain("$t script and template reactivity");
     expect(enPo).toContain("Script descriptor static reactivity.");
@@ -47,6 +49,8 @@ describe("lingui extract and compile outputs", () => {
     );
     expect(jaCatalog).toContain("Svelte 構文の各所で使う $t");
     expect(jaCatalog).toContain("キー付きサブツリーのリビジョン");
+    expect(jaCatalog).toContain("テンプレートこんにちは😀 ");
+    expect(jaCatalog).toContain("ようこそ <0>");
     expect(jaCatalog).toContain("クッキーで保持されるロケール");
     expect(jaCatalog).toContain("Trans コンポーネントからの明示的な id。");
     expect(jaCatalog).toContain("$t の script と template のリアクティビティ");

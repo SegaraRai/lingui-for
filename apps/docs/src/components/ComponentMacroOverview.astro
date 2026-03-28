@@ -1,38 +1,49 @@
 ---
+import { t } from "lingui-for-astro/macro";
+
+import { ensureDocsLinguiContext, type DocsLocale } from "../lib/docs-i18n";
+import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
 import MacroFamilyOverview from "./MacroFamilyOverview.astro";
 
-import type { MacroFamilyOverviewItem } from "../lib/macro-family-overview.ts";
+interface Props {
+  language?: DocsLocale;
+  hrefPrefix?: string;
+}
+
+const { language = "en", hrefPrefix = "" } = Astro.props;
+
+ensureDocsLinguiContext(Astro.locals, language);
 
 const items = [
   {
     value: "trans",
-    label: "Trans",
-    description: "Translate rich text with embedded markup and placeholders.",
-    preview: "Say hello to Lingui.",
+    label: t`Trans`,
+    description: t`Translate rich text with embedded markup and placeholders.`,
+    preview: t`Say hello to Lingui.`,
     snippet: String.raw`<Trans>
   Say hello to <strong>{name}</strong>.
 </Trans>`,
     snippetLang: "svelte",
-    href: "/macros/trans-component",
+    href: `${hrefPrefix}/macros/trans-component`,
   },
   {
     value: "plural",
-    label: "Plural",
-    description: "Write plural ICU branches as component props in markup.",
-    preview: "3 files",
+    label: t`Plural`,
+    description: t`Write plural ICU branches as component props in markup.`,
+    preview: t`3 files`,
     snippet: String.raw`<Plural
   value={count}
   one="# file"
   other="# files"
 />`,
     snippetLang: "svelte",
-    href: "/macros/plural-component",
+    href: `${hrefPrefix}/macros/plural-component`,
   },
   {
     value: "select",
-    label: "Select",
-    description: "Write case-based selection as markup props.",
-    preview: "Hi",
+    label: t`Select`,
+    description: t`Write case-based selection as markup props.`,
+    preview: t`Hi`,
     snippet: String.raw`<Select
   value={tone}
   _formal="Welcome"
@@ -40,13 +51,13 @@ const items = [
   other="Hello"
 />`,
     snippetLang: "svelte",
-    href: "/macros/select-component",
+    href: `${hrefPrefix}/macros/select-component`,
   },
   {
     value: "select-ordinal",
-    label: "SelectOrdinal",
-    description: "Write ordinal cases directly in component props.",
-    preview: "1st",
+    label: t`SelectOrdinal`,
+    description: t`Write ordinal cases directly in component props.`,
+    preview: t`1st`,
     snippet: String.raw`<SelectOrdinal
   value={place}
   one="#st"
@@ -55,9 +66,9 @@ const items = [
   other="#th"
 />`,
     snippetLang: "svelte",
-    href: "/macros/select-ordinal-component",
+    href: `${hrefPrefix}/macros/select-ordinal-component`,
   },
 ] satisfies readonly MacroFamilyOverviewItem[];
 ---
 
-<MacroFamilyOverview title="Component Macro Overview" items={items} />
+<MacroFamilyOverview title={t`Component Macro Overview`} items={items} />

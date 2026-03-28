@@ -32,7 +32,7 @@ export const unpluginFactory: UnpluginFactory<
     options.sourceDir ?? joinPath(projectRoot, "src"),
   );
   const tempDir = joinPath(sourceDir, ".unplugin-markup-import");
-  const frameworks = options.frameworks ?? ["svelte"];
+  const frameworks = options.frameworks ?? ["astro", "svelte"];
   const handlers = frameworks.map((framework) => FRAMEWORK_HANDLERS[framework]);
   const handledExtensions = handlers.map((handler) => handler.extension);
   const scanFilter: ScanFilter = {

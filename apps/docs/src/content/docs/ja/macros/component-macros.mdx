@@ -1,0 +1,30 @@
+---
+title: コンポーネントマクロ
+description: リッチテキストやコンポーネント形式の ICU 記述に向いた、マークアップ指向のマクロ
+---
+
+import ComponentMacroOverview from "@components/ComponentMacroOverview.astro";
+
+コンポーネントマクロは、Lingui マクロ群のうち、マークアップ用の側面を担うものです。
+
+公式 Lingui の React ドキュメントでは、`Trans` は固定メッセージ、変数を含むメッセージ、インラインマークアップを含むメッセージに使う汎用コンポーネントです。
+`Plural`、`Select`、`SelectOrdinal` は、それぞれ対応するコアマクロに対応した、コンポーネント形式の補助マクロです。
+
+lingui-for でも、JSX ベースではないフレームワークにおいてこの考え方を保っています。
+
+<ComponentMacroOverview language="ja" hrefPrefix="/ja" />
+
+## まずここから始めるべき場面
+
+次のような場合は、コンポーネントマクロから始めてください。
+
+- テンプレートやマークアップ構文で書いている
+- リッチテキストや埋め込み構造が重要である
+- そのフレームワークでは、関数呼び出しよりコンポーネント形式のほうが自然に読める
+
+## このセクションのページ
+
+- [`Trans`](/ja/macros/trans-component)
+- [`Plural`](/ja/macros/plural-component)
+- [`Select`](/ja/macros/select-component)
+- [`SelectOrdinal`](/ja/macros/select-ordinal-component)

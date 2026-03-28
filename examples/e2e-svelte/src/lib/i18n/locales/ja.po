@@ -18,16 +18,16 @@ msgstr ""
 #. placeholder {2}: _i18n._( /*i18n*/ { id: "MTuVZ1", message: "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}", values: { rank: rank, role: role } })
 #: src/routes/playground/stress/+page.svelte:181
 msgid "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
-msgstr ""
+msgstr "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
 
 #: src/routes/playground/stress/+page.svelte:133
 msgid "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
-msgstr ""
+msgstr "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {コア・0・最初・管理者} other {コア・0・最初・その他}}} =2 {{role, select, admin {コア・0・2番目・管理者} other {コア・0・2番目・その他}}} other {{role, select, admin {コア・0・それ以降・管理者} other {コア・0・それ以降・その他}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {コア・2・最初・管理者} other {コア・2・最初・その他}}} =2 {{role, select, admin {コア・2・2番目・管理者} other {コア・2・2番目・その他}}} other {{role, select, admin {コア・2・それ以降・管理者} other {コア・2・それ以降・その他}}}}} other {{rank, selectordinal, =1 {{role, select, admin {コア・多・最初・管理者} other {コア・多・最初・その他}}} =2 {{role, select, admin {コア・多・2番目・管理者} other {コア・多・2番目・その他}}} other {{role, select, admin {コア・多 ・それ以降 ・管理者} other {コア ・多 ・それ以降 ・その他}}}}}}"
 
 #: src/routes/playground/stress/+page.svelte:97
 #: src/routes/playground/stress/+page.svelte:111
 msgid "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
-msgstr ""
+msgstr "{count, plural, =0 {キューに入っているビルドはありません} =2 {キューに入っている正確に 2 つのビルド} other {キューに入っている # 個のビルド}}"
 
 #: src/routes/playground/components/+page.svelte:44
 msgid "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
@@ -42,22 +42,22 @@ msgstr "{count, plural, one {リストに # 件あります。} other {リスト
 msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 msgstr "{count, selectordinal, one {第 # リリース候補} two {第 # リリース候補} few {第 # リリース候補} other {第 # リリース候補}}"
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:211
 msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
-msgstr ""
+msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・多・最初・管理者} other {コンポーネント・多・最初・その他}}} =2 {{role, select, admin {コンポーネント・多・2番目・管理者} other {コンポーネント・多・2番目・その他}}} other {{role, select, admin {コンポーネント・多・それ以降・管理者} other {コンポーネント・多・それ以降・その他}}}}"
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:197
 msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
-msgstr ""
+msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・2・最初・管理者} other {コンポーネント・2・最初・その他}}} =2 {{role, select, admin {コンポーネント・2・2番目・管理者} other {コンポーネント・2・2番目・その他}}} other {{role, select, admin {コンポーネント・2・それ以降・管理者} other {コンポーネント・2・それ以降・その他}}}}"
 
-#: src/routes/playground/stress/+page.svelte:225
+#: src/routes/playground/stress/+page.svelte:183
 msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
-msgstr ""
+msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・0・最初・管理者} other {コンポーネント・0・最初・その他}}} =2 {{role, select, admin {コンポーネント・0・2番目・管理者} other {コンポーネント・0・2番目・その他}}} other {{role, select, admin {コンポーネント・0・それ以降・管理者} other {コンポーネント・0・それ以降・その他}}}}"
 
 #: src/routes/playground/stress/+page.svelte:104
 #: src/routes/playground/stress/+page.svelte:119
 msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
-msgstr ""
+msgstr "{rank, selectordinal, =1 {近道をする} =2 {遠回りをする} other {# 位でゴール}}"
 
 #: src/routes/playground/components/+page.svelte:51
 msgid "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
@@ -226,7 +226,7 @@ msgstr "英語"
 
 #: src/routes/playground/stress/+page.svelte:22
 msgid "Exact-number branches and deep macro trees"
-msgstr ""
+msgstr "正確な数の分岐と深いマクロツリー"
 
 #. js-lingui-explicit-id
 #: src/routes/playground/ids/+page.svelte:5
@@ -235,7 +235,7 @@ msgstr "ディスクリプタからの明示的な id。"
 
 #. Used by the ids playground route
 #. js-lingui-explicit-id
-#: src/routes/playground/ids/+page.svelte:25
+#: src/routes/playground/ids/+page.svelte:29
 msgid "playground.ids.trans"
 msgstr "Trans コンポーネントからの明示的な id。"
 
@@ -386,7 +386,7 @@ msgstr "メッセージは描画するコードの近くに置く"
 msgid "Name"
 msgstr "名前"
 
-#: src/routes/+page.svelte:18
+#: src/routes/+page.svelte:19
 msgid "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
 msgstr "<0>設定</0>で言語を変えるか、<1>プレイグラウンド</1>でマクロ固有の確認を行ってください。"
 
@@ -432,9 +432,9 @@ msgstr "リアクティブ"
 msgid "Reactivity"
 msgstr "リアクティビティ"
 
-#: src/routes/playground/rich-text/+page.svelte:21
-msgid "Read the <0>settings page</0>and look for the <1>cookie-backed locale</1> behavior."
-msgstr "<0>設定ページ</0> を開いて、<1>クッキーで保持されるロケール</1>の挙動を確認してください。"
+#: src/routes/playground/rich-text/+page.svelte:22
+msgid "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
+msgstr "<0>設定ページ</0>を開いて、<1>クッキーで保持されるロケール</1>の挙動を確認してください。"
 
 #: src/routes/+page.svelte:9
 msgid "Real app"
@@ -446,7 +446,7 @@ msgstr "実アプリ"
 msgid "Rich text"
 msgstr "リッチテキスト"
 
-#: src/routes/playground/rich-text/+page.svelte:30
+#: src/routes/playground/rich-text/+page.svelte:31
 msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 msgstr "リッチテキストでも<0>意味のある強調</0>を保ったまま、Lingui のメッセージ抽出フローを使えます。"
 
@@ -508,17 +508,17 @@ msgstr "スニペットバッジ"
 msgid "Snippet item: {text}"
 msgstr "スニペット項目: {text}"
 
-#: src/routes/playground/syntax/+page.svelte:73
+#: src/routes/playground/syntax/+page.svelte:74
 msgid "Status summary: active"
 msgstr "状態サマリー: アクティブ"
 
-#: src/routes/playground/syntax/+page.svelte:72
+#: src/routes/playground/syntax/+page.svelte:73
 msgid "Status summary: idle"
 msgstr "状態サマリー: アイドル"
 
 #: src/routes/playground/stress/+page.svelte:19
 msgid "Stress"
-msgstr ""
+msgstr "ストレス"
 
 #: src/lib/app/LanguageSwitcher.svelte:16
 msgid "Switch language"
@@ -653,3 +653,12 @@ msgstr "状態分岐を切り替える"
 #: src/routes/playground/syntax/+page.svelte:44
 msgid "Type to filter syntax examples"
 msgstr "入力して構文例を絞り込む"
+
+#. placeholder {0}: untrack(() => name)
+#: src/lib/i18n/unicode-fixture.svelte:7
+msgid "テンプレートこんにちは😀 {0}"
+msgstr "テンプレートこんにちは😀 {0}"
+
+#: src/lib/i18n/unicode-fixture.svelte:13
+msgid "ようこそ <0>{name}</0> さん🚀"
+msgstr "ようこそ <0>{name}</0> さん🚀"

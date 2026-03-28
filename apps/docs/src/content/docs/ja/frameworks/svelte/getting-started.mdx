@@ -1,0 +1,137 @@
+---
+title: "Svelte: はじめに"
+description: Svelte または SvelteKit アプリに lingui-for-svelte を導入して設定する方法
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+## パッケージをインストールする
+
+<Tabs syncKey="package-manager">
+  <TabItem label="Vite+">
+
+```sh
+vp add @lingui/core lingui-for-svelte
+vp add -D @lingui/cli @lingui/conf unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```sh
+npm install @lingui/core lingui-for-svelte
+npm install -D @lingui/cli @lingui/conf unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```sh
+pnpm add @lingui/core lingui-for-svelte
+pnpm add -D @lingui/cli @lingui/conf unplugin-lingui-macro
+```
+
+  </TabItem>
+  <TabItem label="yarn">
+
+```sh
+yarn add @lingui/core lingui-for-svelte
+yarn add -D @lingui/cli @lingui/conf unplugin-lingui-macro
+```
+
+  </TabItem>
+</Tabs>
+
+<Aside>
+
+`unplugin-lingui-macro` が必要なのは、素の JavaScript または TypeScript ファイルで Lingui マクロを使う場合だけです。
+マクロを `.svelte` ファイルでしか使わないなら、このパッケージのインストールと、次の節で追加する Vite プラグインは省略できます。
+詳しい設定は [プレーンな JS/TS でのセットアップ](/ja/guides/plain-js-ts) を参照してください。
+
+</Aside>
+
+## Vite を設定する
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { sveltekit } from "@sveltejs/kit/vite";
+import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+import linguiMacro from "unplugin-lingui-macro/vite";
+
+export default defineConfig({
+  plugins: [linguiMacro(), linguiForSvelte(), sveltekit()],
+});
+```
+
+## Lingui を設定する
+
+```ts title="lingui.config.ts"
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { defineConfig } from "@lingui/conf";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [svelteExtractor(), babelExtractor],
+});
+```
+
+<Aside>
+
+素の JavaScript または TypeScript ファイルで Lingui マクロを使わないなら、`extractors` 配列から `babelExtractor` を外し、インポートも省略できます。
+
+</Aside>
+
+## Lingui を初期化する
+
+翻訳付きコンポーネントが描画される前に、レイアウトのようなコンポーネントツリーの根元付近で `setLinguiContext` を呼びます。
+
+```svelte title="src/routes/+layout.svelte"
+<script lang="ts">
+  import { setupI18n } from "@lingui/core";
+  import { setLinguiContext } from "lingui-for-svelte";
+  import { catalog } from "$lib/i18n/catalog";
+
+  const { children } = $props();
+
+  const i18n = setupI18n({ locale: "en", messages: catalog });
+  setLinguiContext(i18n);
+</script>
+
+{@render children()}
+```
+
+<Aside>
+
+`catalog` は共有設定ファイルからエクスポートされる、ロケールをキーにしたオブジェクトです。
+このファイルの作り方と、全ロケールを最初からまとめてバンドルするか必要時に読み込むかの選び方は [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。
+
+</Aside>
+
+## `.svelte` でマクロを使う
+
+```svelte title="src/routes/+page.svelte"
+<script lang="ts">
+  import { Trans, t } from "lingui-for-svelte/macro";
+
+  let count = $state(1);
+</script>
+
+<h1>{$t`Hello from Svelte`}</h1>
+
+<p><Trans>{count} item selected</Trans></p>
+```
+
+Svelte では、リアクティブ形式として `$t` が使えます。
+ロケールが変わると、この式は自動で再評価されます。
+`$` 接頭辞をどの場面で使うべきか、内部でどう動くかは [リアクティブマクロ](/ja/frameworks/svelte/reactive-macros) を参照してください。
+
+## 次に読むページ
+
+- 初期化パターン、アイランドでのセットアップ、ロケール切り替えについては [i18n コンテキスト](/ja/frameworks/svelte/i18n-context) を参照してください。
+- `$t` などがどう動き、いつ `$` 接頭辞を使うべきかは [リアクティブマクロ](/ja/frameworks/svelte/reactive-macros) を参照してください。
+- URL パラメータ、Cookie、ブラウザヘッダーから SvelteKit で初期ロケールを解決する方法は [ロケール解決](/ja/frameworks/svelte/locale-resolution) を参照してください。
+- 端のケースや制約については [Svelte の注意点](/ja/frameworks/svelte/caveats) を参照してください。
+- 各マクロの正確な記述ルールが必要なら [マクロリファレンス](/ja/macros/core-macros) を参照してください。
