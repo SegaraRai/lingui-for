@@ -13,6 +13,47 @@ import {
 import { getParserPlugins } from "../common/config.ts";
 import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
 
+export function transformProgram(
+  code: string,
+  request: ProgramTransformRequest,
+): ProgramTransform {
+  const extract = request.translationMode === "extract";
+  const result = transformSync(code, {
+    ast: true,
+    babelrc: false,
+    code: true,
+    configFile: false,
+    filename: request.filename,
+    inputSourceMap: request.inputSourceMap ?? undefined,
+    parserOpts: {
+      sourceType: "module",
+      plugins: getParserPlugins(),
+    },
+    plugins: [
+      [
+        linguiMacroPlugin,
+        {
+          extract,
+          linguiConfig: request.linguiConfig,
+          stripMessageField: extract ? false : undefined,
+        },
+      ],
+      createAstroContextPostprocessPlugin(request),
+    ],
+    sourceMaps: true,
+  });
+
+  if (!result?.ast || result.code == null) {
+    throw new Error(`Failed to transform ${request.filename}`);
+  }
+
+  return {
+    code: result.code,
+    ast: result.ast,
+    map: fromBabelSourceMap(result.map),
+  };
+}
+
 function createAstroContextPostprocessPlugin(
   request: ProgramTransformRequest,
 ): PluginObj<{ runtimeI18nLocals: Set<string> }> {
@@ -89,46 +130,5 @@ function createAstroContextPostprocessPlugin(
         path.node.callee.object = t.identifier(request.runtimeBinding);
       },
     },
-  };
-}
-
-export function transformProgram(
-  code: string,
-  request: ProgramTransformRequest,
-): ProgramTransform {
-  const extract = request.translationMode === "extract";
-  const result = transformSync(code, {
-    ast: true,
-    babelrc: false,
-    code: true,
-    configFile: false,
-    filename: request.filename,
-    inputSourceMap: request.inputSourceMap ?? undefined,
-    parserOpts: {
-      sourceType: "module",
-      plugins: getParserPlugins(),
-    },
-    plugins: [
-      [
-        linguiMacroPlugin,
-        {
-          extract,
-          linguiConfig: request.linguiConfig,
-          stripMessageField: extract ? false : undefined,
-        },
-      ],
-      createAstroContextPostprocessPlugin(request),
-    ],
-    sourceMaps: true,
-  });
-
-  if (!result?.ast || result.code == null) {
-    throw new Error(`Failed to transform ${request.filename}`);
-  }
-
-  return {
-    code: result.code,
-    ast: result.ast,
-    map: fromBabelSourceMap(result.map),
   };
 }
