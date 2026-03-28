@@ -9,9 +9,7 @@ import {
   type Detection,
 } from "@lingui-for/internal-shared-test-helpers";
 
-import { lowerSvelteWithRustSynthetic } from "../lower/index.ts";
-import { normalizeLinguiConfig } from "../shared/config.ts";
-import { transformSvelte } from "./transform-svelte.ts";
+import { transformSvelte } from "./index.ts";
 
 function compact(value: string): string {
   return value.replaceAll(/\s+/g, " ").trim();
@@ -739,30 +737,22 @@ describe("transformSvelte", () => {
     expect(result.code).toContain("{$__l4s_translate(");
   });
 
-  test("builds full-span replacements for later e2e template expressions", async () => {
-    const source = preloadedInitPageSource;
-    const lowered = await lowerSvelteWithRustSynthetic(
-      source,
-      "/virtual/+page.svelte",
-      normalizeLinguiConfig(),
-    );
-    expect(lowered).not.toBeNull();
-    const templateReplacements = lowered!.replacements.filter(
-      (replacement) => replacement.start > source.indexOf("</script>"),
-    );
+  test("rewrites preloaded template expressions without leaving raw macro syntax behind", async () => {
+    const result = await expectTransformed(preloadedInitPageSource, {
+      filename: "/virtual/+page.svelte",
+    });
 
-    expect(
-      templateReplacements.some((replacement) =>
-        source
-          .slice(replacement.start, replacement.end)
-          .startsWith("$t`Hello from the preloaded init pattern.`"),
-      ),
-    ).toBe(true);
-    expect(
-      templateReplacements.some((replacement) =>
-        source.slice(replacement.start, replacement.end).startsWith("$plural("),
-      ),
-    ).toBe(true);
+    expect(result.code).toContain("{$__l4s_translate(");
+    expect(result.code).not.toContain(
+      "{$t`Hello from the preloaded init pattern.`}",
+    );
+    expect(result.code).not.toContain("{$plural(count, {");
+    expect(result.code).toContain(
+      'message: "Hello from the preloaded init pattern."',
+    );
+    expect(result.code).toContain(
+      'message: "{count, plural, one {# item in the list.} other {# items in the list.}}"',
+    );
   });
 
   test("supports exact-number ICU branches in core and component macros", async () => {

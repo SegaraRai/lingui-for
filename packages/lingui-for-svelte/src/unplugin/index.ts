@@ -10,8 +10,8 @@ import {
   toUnpluginSourceMap,
 } from "@lingui-for/internal-shared-compile";
 
-import { transformSvelte } from "../compiler-core/index.ts";
-import { PACKAGE_MACRO } from "../compiler-core/shared/constants.ts";
+import { PACKAGE_MACRO } from "../compile/common/constants.ts";
+import { transformSvelte } from "../compile/transform/index.ts";
 import type { LinguiSveltePluginOptions } from "./types.ts";
 
 export const unpluginFactory: UnpluginFactory<

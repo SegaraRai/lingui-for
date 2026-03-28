@@ -2,7 +2,7 @@ import { transformSync, type PluginItem } from "@babel/core";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import { normalizeLinguiConfig } from "../shared/config.ts";
+import { normalizeLinguiConfig } from "../common/config.ts";
 import { createMacroPostprocessPlugin } from "./macro-rewrite.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 

@@ -2,7 +2,8 @@ import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
 import { fromBabelSourceMap } from "@lingui-for/internal-shared-compile";
-import { getParserPlugins } from "../shared/config.ts";
+
+import { getParserPlugins } from "../common/config.ts";
 import { createMacroPostprocessPlugin } from "./macro-rewrite.ts";
 import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
 

@@ -1,7 +1,10 @@
 import type { ParserOptions } from "@babel/core";
 import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 
-import type { ScriptLang } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type {
+  ScriptLang,
+  WhitespaceMode,
+} from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   getParserPlugins as getSharedParserPlugins,
   normalizeLinguiConfig as normalizeSharedLinguiConfig,
@@ -9,8 +12,10 @@ import {
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 
+export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
+
 /**
- * Normalizes a partial Lingui configuration for use by the compiler-core pipeline.
+ * Normalizes a partial Lingui configuration for use by the compile pipeline.
  *
  * @param config Optional user-provided Lingui configuration overrides.
  * @returns A fully normalized Lingui configuration with Lingui-for-Svelte defaults merged in.
@@ -43,4 +48,10 @@ export function getParserPlugins(
   return getSharedParserPlugins({
     typescript: lang === "ts" || lang === "tsx",
   });
+}
+
+export function resolveSvelteWhitespace(
+  whitespace: RichTextWhitespaceMode,
+): WhitespaceMode {
+  return whitespace === "auto" ? "svelte" : whitespace;
 }

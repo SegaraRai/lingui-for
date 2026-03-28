@@ -10,8 +10,8 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
-import { transformSvelte } from "lingui-for-svelte/__internal__/transform";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
+import { unstable_transformSvelte } from "lingui-for-svelte/transform";
 
 import linguiConfig from "../lingui.config.ts";
 import {
@@ -76,7 +76,7 @@ export function macroWorkbenchPlugin({
       );
       const ids = messages.map((message) => message.id);
       const sourceSnippet = extractSnippet(source);
-      const transformed = await transformSvelte(source, {
+      const transformed = await unstable_transformSvelte(source, {
         filename: demoFile,
         linguiConfig: normalizedLinguiConfig,
       });

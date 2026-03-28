@@ -11,7 +11,7 @@ import {
   EAGER_TRANSLATION_WRAPPER,
   PACKAGE_RUNTIME,
   REACTIVE_TRANSLATION_WRAPPER,
-} from "../shared/constants.ts";
+} from "../common/constants.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 
 type MacroRewriteState = {

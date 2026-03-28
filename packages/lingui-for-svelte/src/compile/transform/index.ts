@@ -1,5 +1,4 @@
-import type { LinguiConfigNormalized } from "@lingui/conf";
-import type { RichTextWhitespaceMode } from "../shared/types.ts";
+import type { LinguiConfig } from "@lingui/conf";
 
 import {
   buildSvelteCompilePlan,
@@ -11,25 +10,46 @@ import {
   type CanonicalSourceMap,
 } from "@lingui-for/internal-shared-compile";
 
-import { transformProgram } from "./babel-transform.ts";
+import {
+  normalizeLinguiConfig,
+  resolveSvelteWhitespace,
+  type RichTextWhitespaceMode,
+} from "../common/config.ts";
+import { transformProgram } from "../lower/babel-transform.ts";
 
-export interface SvelteLowerResult {
-  code: string;
-  map: CanonicalSourceMap | null;
-  replacements: {
-    start: number;
-    end: number;
-    code: string;
-    map: CanonicalSourceMap | null;
-  }[];
+export type { RichTextWhitespaceMode } from "../common/config.ts";
+
+export interface LinguiSvelteTransformOptions {
+  filename: string;
+  linguiConfig?: Partial<LinguiConfig> | undefined;
+  whitespace?: RichTextWhitespaceMode | undefined;
 }
 
-export async function lowerSvelteWithRustSynthetic(
+/**
+ * Result returned by `transformSvelte`.
+ */
+export interface SvelteTransformResult {
+  /**
+   * Transformed `.svelte` source.
+   */
+  code: string;
+  /**
+   * Source map for the transformed file, or `null` when none is generated.
+   */
+  map: CanonicalSourceMap | null;
+}
+
+export async function transformSvelte(
   source: string,
-  filename: string,
-  linguiConfig: LinguiConfigNormalized,
-  whitespace: RichTextWhitespaceMode = "auto",
-): Promise<SvelteLowerResult | null> {
+  options: LinguiSvelteTransformOptions,
+): Promise<SvelteTransformResult | null> {
+  const {
+    filename,
+    linguiConfig: linguiConfigPartial,
+    whitespace = "auto",
+  } = options;
+  const linguiConfig = normalizeLinguiConfig(linguiConfigPartial);
+
   await initWasmOnce();
 
   const compilePlan = buildSvelteCompilePlan({
@@ -81,17 +101,5 @@ export async function lowerSvelteWithRustSynthetic(
   return {
     code: finished.code,
     map: parseCanonicalSourceMap(finished.sourceMapJson),
-    replacements: finished.replacements.map((replacement) => ({
-      start: replacement.start,
-      end: replacement.end,
-      code: replacement.code,
-      map: parseCanonicalSourceMap(replacement.sourceMapJson),
-    })),
   };
-}
-
-function resolveSvelteWhitespace(
-  whitespace: RichTextWhitespaceMode,
-): "jsx" | "svelte" | "astro" {
-  return whitespace === "auto" ? "svelte" : whitespace;
 }

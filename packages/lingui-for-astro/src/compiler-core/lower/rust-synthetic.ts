@@ -1,9 +1,9 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
-import type { RichTextWhitespaceMode } from "../shared/types.ts";
 
 import {
   buildAstroCompilePlan,
   finishAstroCompile,
+  type WhitespaceMode,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
@@ -11,6 +11,7 @@ import {
   type CanonicalSourceMap,
 } from "@lingui-for/internal-shared-compile";
 
+import type { RichTextWhitespaceMode } from "../shared/types.ts";
 import { transformProgram } from "./babel-transform.ts";
 
 export interface AstroLowerResult {
@@ -22,7 +23,7 @@ export async function lowerAstroWithRustSynthetic(
   source: string,
   filename: string,
   linguiConfig: LinguiConfigNormalized,
-  whitespace: RichTextWhitespaceMode = "auto",
+  whitespace: RichTextWhitespaceMode,
 ): Promise<AstroLowerResult | null> {
   await initWasmOnce();
 
@@ -63,6 +64,6 @@ export async function lowerAstroWithRustSynthetic(
 
 function resolveAstroWhitespace(
   whitespace: RichTextWhitespaceMode,
-): "jsx" | "svelte" | "astro" {
+): WhitespaceMode {
   return whitespace === "auto" ? "astro" : whitespace;
 }

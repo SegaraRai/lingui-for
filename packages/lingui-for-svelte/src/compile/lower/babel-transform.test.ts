@@ -1,7 +1,7 @@
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import { normalizeLinguiConfig } from "../shared/config.ts";
+import { normalizeLinguiConfig } from "../common/config.ts";
 import { transformProgram } from "./babel-transform.ts";
 
 describe("transformProgram", () => {

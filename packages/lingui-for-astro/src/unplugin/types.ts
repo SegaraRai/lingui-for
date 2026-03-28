@@ -1,4 +1,5 @@
 import type { LinguiConfig } from "@lingui/conf";
+
 import type { RichTextWhitespaceMode } from "../compiler-core/shared/types.ts";
 
 /**

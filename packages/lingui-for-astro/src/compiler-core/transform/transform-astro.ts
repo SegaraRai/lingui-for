@@ -36,6 +36,6 @@ export async function transformAstro(
     source,
     options.filename,
     normalizeLinguiConfig(options.linguiConfig),
-    options.whitespace,
+    options.whitespace ?? "auto",
   );
 }

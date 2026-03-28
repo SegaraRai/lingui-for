@@ -1,12 +1,13 @@
 import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+
 import type { CanonicalSourceMap } from "./ourcemap-types";
 
-export type ExtractionUnit = {
+export interface ExtractionUnit {
   code: string;
-  map?: ExtractorCtx["sourceMaps"];
-};
+  map: CanonicalSourceMap | null;
+}
 
 export function getLinguiExtractorParserPlugins(
   ctx: ExtractorCtx,
