@@ -1,7 +1,3 @@
 [workspace]
 resolver = "2"
 members = ["crates/*"]
-
-[patch.crates-io]
-tree-sitter-javascript = { path = "vendor/tree-sitter-javascript" }
-tree-sitter-typescript = { path = "vendor/tree-sitter-typescript" }

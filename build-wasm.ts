@@ -14,15 +14,12 @@ function main(): void {
   const rootDir = dirname(fileURLToPath(import.meta.url));
   const targets: WasmTarget[] = [
     {
-      crateDir: join(rootDir, "crates", "lingui-analyzer"),
+      crateDir: join(rootDir, "crates/lingui-analyzer"),
       outputDir: "../../shared/lingui-analyzer-wasm/dist",
       outputName: "index",
       expectedOutput: join(
         rootDir,
-        "shared",
-        "lingui-analyzer-wasm",
-        "dist",
-        "index_bg.wasm",
+        "shared/lingui-analyzer-wasm/dist/index_bg.wasm",
       ),
     },
   ];
@@ -91,8 +88,7 @@ function buildWasm(
 function resolveWasmPack(rootDir: string): string {
   const localBinary = join(
     rootDir,
-    "node_modules",
-    ".bin",
+    "node_modules/.bin",
     process.platform === "win32" ? "wasm-pack.cmd" : "wasm-pack",
   );
   if (existsSync(localBinary)) {

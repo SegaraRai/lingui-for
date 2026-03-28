@@ -198,7 +198,7 @@ msgstr "Current demo: {pageLabel}"
 msgid "Current locale: {localeLabel}"
 msgstr "Current locale: {localeLabel}"
 
-#: src/layouts/AppLayout.astro:88
+#: src/layouts/AppLayout.astro:86
 msgid "Current page: {currentPage}"
 msgstr "Current page: {currentPage}"
 
