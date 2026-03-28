@@ -348,16 +348,16 @@ importers:
   packages/lingui-for-astro:
     dependencies:
       '@babel/core':
-        specifier: ^7.29.0
+        specifier: ^7.20.0
         version: 7.29.0
       '@babel/traverse':
-        specifier: ^7.29.0
+        specifier: ^7.20.0
         version: 7.29.0
       '@babel/types':
-        specifier: ^7.29.0
+        specifier: ^7.20.0
         version: 7.29.0
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(typescript@5.9.3)
       esbuild:
         specifier: '*'
@@ -400,19 +400,19 @@ importers:
         specifier: workspace:*
         version: link:../../shared/test-helpers
       '@lingui/cli':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(typescript@5.9.3)
       '@lingui/conf':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(typescript@5.9.3)
       '@lingui/core':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(@lingui/babel-plugin-lingui-macro@5.9.4(typescript@5.9.3))
       '@types/babel__core':
-        specifier: ^7.20.5
+        specifier: ^7.20.0
         version: 7.20.5
       '@types/babel__traverse':
-        specifier: ^7.28.0
+        specifier: ^7.20.0
         version: 7.28.0
       '@types/node':
         specifier: 'catalog:'
@@ -439,16 +439,16 @@ importers:
   packages/lingui-for-svelte:
     dependencies:
       '@babel/core':
-        specifier: ^7.29.0
+        specifier: ^7.20.0
         version: 7.29.0
       '@babel/traverse':
-        specifier: ^7.29.0
+        specifier: ^7.20.0
         version: 7.29.0
       '@babel/types':
-        specifier: ^7.29.0
+        specifier: ^7.20.0
         version: 7.29.0
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(typescript@5.9.3)
       esbuild:
         specifier: '*'
@@ -491,22 +491,22 @@ importers:
         specifier: workspace:*
         version: link:../../shared/test-helpers
       '@lingui/cli':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(typescript@5.9.3)
       '@lingui/conf':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(typescript@5.9.3)
       '@lingui/core':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(@lingui/babel-plugin-lingui-macro@5.9.4(typescript@5.9.3))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^7.0.0
         version: 7.0.0(@voidzero-dev/vite-plus-core@0.1.14(@arethetypeswrong/core@0.18.2)(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(yaml@2.8.3))(svelte@5.55.0)
       '@types/babel__core':
-        specifier: ^7.20.5
+        specifier: ^7.20.0
         version: 7.20.5
       '@types/babel__traverse':
-        specifier: ^7.28.0
+        specifier: ^7.20.0
         version: 7.28.0
       '@types/node':
         specifier: 'catalog:'
@@ -533,10 +533,10 @@ importers:
   packages/unplugin-lingui-macro:
     dependencies:
       '@babel/core':
-        specifier: ^7.29.0
+        specifier: ^7.20.0
         version: 7.29.0
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(typescript@5.9.3)
       esbuild:
         specifier: '*'
@@ -567,10 +567,10 @@ importers:
         specifier: workspace:*
         version: link:../../shared/common
       '@lingui/conf':
-        specifier: ^5.9.4
+        specifier: ^5.0.0
         version: 5.9.4(typescript@5.9.3)
       '@types/babel__core':
-        specifier: ^7.20.5
+        specifier: ^7.20.0
         version: 7.20.5
       '@types/node':
         specifier: 'catalog:'
