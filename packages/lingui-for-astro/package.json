@@ -44,17 +44,17 @@
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
     },
-    "./__internal__/transform": {
-      "types": "./dist/__internal__/transform.d.mts",
-      "default": "./dist/__internal__/transform.mjs"
+    "./transform": {
+      "types": "./dist/transform.d.mts",
+      "default": "./dist/transform.mjs"
     },
     "./extractor": {
-      "types": "./dist/extractor/index.d.mts",
-      "default": "./dist/extractor/index.mjs"
+      "types": "./dist/extractor.d.mts",
+      "default": "./dist/extractor.mjs"
     },
     "./macro": {
-      "types": "./dist/macro/index.d.mts",
-      "default": "./dist/macro/index.mjs"
+      "types": "./dist/macro.d.mts",
+      "default": "./dist/macro.mjs"
     },
     "./runtime": {
       "types": "./dist/runtime/index.d.mts",

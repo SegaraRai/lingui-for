@@ -7,7 +7,7 @@ import {
   type Detection,
 } from "@lingui-for/internal-shared-test-helpers";
 
-import { transformAstro } from "./transform-astro.ts";
+import { transformAstro } from "./index.ts";
 
 function compact(value: string): string {
   return value.replaceAll(/\s+/g, " ").trim();

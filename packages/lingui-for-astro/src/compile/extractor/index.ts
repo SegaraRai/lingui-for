@@ -1,9 +1,6 @@
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
-import {
-  buildSyntheticModule,
-  type SyntheticModule,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
+import { buildSyntheticModule } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import { stripQuery } from "@lingui-for/internal-shared-common";
 import {
@@ -13,40 +10,17 @@ import {
   type CanonicalSourceMap,
 } from "@lingui-for/internal-shared-compile";
 
-import { transformProgram } from "../compiler-core/lower/babel-transform.ts";
-import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
+import {
+  normalizeLinguiConfig,
+  resolveAstroWhitespace,
+  type RichTextWhitespaceMode,
+} from "../common/config.ts";
+import { transformProgram } from "../lower/babel-transform.ts";
 
-function createExtractorContext(ctx: ExtractorCtx | undefined): ExtractorCtx {
-  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig);
-  return { ...ctx, linguiConfig };
-}
-
-function normalizeExtractionSourceMap(
-  map: CanonicalSourceMap,
-): CanonicalSourceMap {
-  return {
-    ...map,
-    file: map.file ? stripQuery(map.file) : map.file,
-    sources: (map.sources as string[] | undefined)?.map(stripQuery) ?? [],
-  };
-}
-
-async function buildSyntheticExtractionUnit(
-  filename: string,
-  source: string,
-  whitespace: "jsx" | "astro" | "svelte",
-): Promise<SyntheticModule> {
-  return buildSyntheticModule({
-    framework: "astro",
-    source,
-    sourceName: filename,
-    syntheticName: filename.replace(/\.astro$/, ".synthetic.tsx"),
-    whitespace,
-  });
-}
+export type { RichTextWhitespaceMode } from "../common/config.ts";
 
 export interface AstroExtractorOptions {
-  whitespace?: "jsx" | "auto" | "astro" | "svelte";
+  whitespace?: RichTextWhitespaceMode | undefined;
 }
 
 /**
@@ -57,10 +31,8 @@ export interface AstroExtractorOptions {
  * extractor pipeline.
  */
 export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
-  const whitespace =
-    options?.whitespace == null || options.whitespace === "auto"
-      ? "astro"
-      : options.whitespace;
+  const { whitespace = "auto" } = options ?? {};
+  const resolvedWhitespace = resolveAstroWhitespace(whitespace);
 
   return {
     match(filename) {
@@ -70,14 +42,17 @@ export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
       await initWasmOnce();
 
       const extractorCtx = createExtractorContext(ctx);
-      const synthetic = await buildSyntheticExtractionUnit(
-        filename,
+      const syntheticName = filename.replace(/\.astro$/, ".synthetic.tsx");
+      const synthetic = buildSyntheticModule({
+        framework: "astro",
         source,
-        whitespace,
-      );
+        sourceName: filename,
+        syntheticName,
+        whitespace: resolvedWhitespace,
+      });
       const transformed = transformProgram(synthetic.source, {
         translationMode: "extract",
-        filename: filename.replace(/\.astro$/, ".synthetic.tsx"),
+        filename: syntheticName,
         linguiConfig: extractorCtx.linguiConfig,
         runtimeBinding: null,
         inputSourceMap: toBabelSourceMap(
@@ -90,7 +65,7 @@ export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
         [
           {
             code: transformed.code,
-            map: transformed.map ?? undefined,
+            map: transformed.map,
           },
         ],
         onMessageExtracted,
@@ -100,5 +75,20 @@ export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
         },
       );
     },
+  };
+}
+
+function createExtractorContext(ctx: ExtractorCtx | undefined): ExtractorCtx {
+  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig);
+  return { ...ctx, linguiConfig };
+}
+
+function normalizeExtractionSourceMap(
+  map: CanonicalSourceMap,
+): CanonicalSourceMap {
+  return {
+    ...map,
+    file: map.file != null ? stripQuery(map.file) : map.file,
+    sources: (map.sources as string[] | undefined)?.map(stripQuery) ?? [],
   };
 }

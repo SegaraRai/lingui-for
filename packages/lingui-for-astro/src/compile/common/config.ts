@@ -1,5 +1,6 @@
 import type { ParserOptions } from "@babel/core";
 import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
+import type { WhitespaceMode } from "@lingui-for/internal-lingui-analyzer-wasm";
 
 import {
   getParserPlugins as getSharedParserPlugins,
@@ -7,6 +8,8 @@ import {
 } from "@lingui-for/internal-shared-compile";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
+
+export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
 
 /**
  * Normalizes Lingui config for Astro-specific macro and runtime integration.
@@ -34,4 +37,10 @@ export function normalizeLinguiConfig(
  */
 export function getParserPlugins(): NonNullable<ParserOptions["plugins"]> {
   return getSharedParserPlugins({ typescript: true });
+}
+
+export function resolveAstroWhitespace(
+  whitespace: RichTextWhitespaceMode,
+): WhitespaceMode {
+  return whitespace === "auto" ? "astro" : whitespace;
 }

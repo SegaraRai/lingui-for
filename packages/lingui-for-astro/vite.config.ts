@@ -11,9 +11,9 @@ export default defineConfig({
     },
     entry: {
       index: "src/index.ts",
-      "__internal__/transform": "src/__internal__/transform.ts",
-      "extractor/index": "src/extractor/index.ts",
-      "macro/index": "src/macro/index.ts",
+      transform: "src/transform.ts",
+      extractor: "src/extractor.ts",
+      macro: "src/macro.ts",
       "runtime/index": "src/runtime/index.ts",
       "integration/index": "src/integration/index.ts",
       "unplugin/index": "src/unplugin/index.ts",

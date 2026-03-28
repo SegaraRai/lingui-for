@@ -25,32 +25,28 @@ export const unpluginFactory: UnpluginFactory<
     }
 
     const filename = stripQuery(id);
-    if (filename !== id) {
+    if (
+      filename !== id ||
+      !filename.endsWith(".svelte") ||
+      !mayContainLinguiMacroImport(code, PACKAGE_MACRO)
+    ) {
       return null;
     }
 
-    if (filename.endsWith(".svelte")) {
-      if (!mayContainLinguiMacroImport(code, PACKAGE_MACRO)) {
-        return null;
-      }
-
-      const transformed = await transformSvelte(code, {
-        filename,
-        linguiConfig: options?.linguiConfig,
-        whitespace: options?.whitespace,
-      });
-      if (transformed == null) {
-        return null;
-      }
-
-      return {
-        code: transformed.code,
-        map:
-          transformed.map != null ? toUnpluginSourceMap(transformed.map) : null,
-      };
+    const transformed = await transformSvelte(code, {
+      filename,
+      linguiConfig: options?.linguiConfig,
+      whitespace: options?.whitespace,
+    });
+    if (transformed == null) {
+      return null;
     }
 
-    return null;
+    return {
+      code: transformed.code,
+      map:
+        transformed.map != null ? toUnpluginSourceMap(transformed.map) : null,
+    };
   },
 });
 

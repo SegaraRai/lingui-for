@@ -10,7 +10,7 @@ import {
   LINGUI_TRANSLATE_METHOD,
 } from "@lingui-for/internal-shared-compile";
 
-import { getParserPlugins } from "../shared/config.ts";
+import { getParserPlugins } from "../common/config.ts";
 import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
 
 function createAstroContextPostprocessPlugin(

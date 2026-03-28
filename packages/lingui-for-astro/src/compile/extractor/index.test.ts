@@ -2,8 +2,8 @@ import type { ExtractedMessage } from "@lingui/conf";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import { normalizeLinguiConfig } from "../compiler-core/shared/config.ts";
-import { astroExtractor } from "./astro.ts";
+import { normalizeLinguiConfig } from "../common/config.ts";
+import { astroExtractor } from "./index.ts";
 
 const linguiConfig = normalizeLinguiConfig();
 const extractor = astroExtractor();

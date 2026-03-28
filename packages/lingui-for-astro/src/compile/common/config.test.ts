@@ -1,8 +1,12 @@
 import { describe, expect, test } from "vite-plus/test";
 
-import { getParserPlugins, normalizeLinguiConfig } from "./config.ts";
+import {
+  getParserPlugins,
+  normalizeLinguiConfig,
+  resolveAstroWhitespace,
+} from "./config.ts";
 
-describe("shared/config", () => {
+describe("compile/common/config", () => {
   test("normalizes Lingui config for astro runtime and macro packages", () => {
     const config = normalizeLinguiConfig();
 
@@ -17,5 +21,10 @@ describe("shared/config", () => {
 
     expect(plugins).toContain("typescript");
     expect(plugins).toContain("jsx");
+  });
+
+  test("defaults auto whitespace to astro semantics", () => {
+    expect(resolveAstroWhitespace("auto")).toBe("astro");
+    expect(resolveAstroWhitespace("jsx")).toBe("jsx");
   });
 });

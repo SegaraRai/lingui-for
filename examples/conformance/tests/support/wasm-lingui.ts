@@ -10,6 +10,7 @@ import {
   reinsertTransformedDeclarations,
   type ReinsertedModule,
   type SyntheticModule,
+  type WhitespaceMode,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
@@ -55,6 +56,7 @@ export function buildSyntheticModuleForTest(
   options?: {
     sourceName?: string;
     syntheticName?: string;
+    whitespace?: WhitespaceMode;
   },
 ): SyntheticModule {
   return buildSyntheticModule({
@@ -62,6 +64,7 @@ export function buildSyntheticModuleForTest(
     source,
     sourceName: options?.sourceName,
     syntheticName: options?.syntheticName,
+    whitespace: options?.whitespace,
   });
 }
 

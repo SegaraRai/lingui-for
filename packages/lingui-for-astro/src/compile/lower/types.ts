@@ -1,9 +1,10 @@
-import type { TransformOptions } from "@babel/core";
 import type * as BabelTypes from "@babel/types";
-import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-type BabelInputSourceMap = TransformOptions["inputSourceMap"];
+import type {
+  BabelSourceMap,
+  CanonicalSourceMap,
+} from "@lingui-for/internal-shared-compile";
 
 export interface ProgramTransform {
   code: string;
@@ -17,12 +18,12 @@ export type ProgramTransformRequest =
       filename: string;
       linguiConfig: LinguiConfigNormalized;
       runtimeBinding: null;
-      inputSourceMap?: BabelInputSourceMap;
+      inputSourceMap?: BabelSourceMap;
     }
   | {
       translationMode: "astro-context";
       filename: string;
       linguiConfig: LinguiConfigNormalized;
       runtimeBinding: string;
-      inputSourceMap?: BabelInputSourceMap;
+      inputSourceMap?: BabelSourceMap;
     };
