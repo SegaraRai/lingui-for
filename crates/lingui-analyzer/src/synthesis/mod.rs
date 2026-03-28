@@ -115,12 +115,14 @@ fn collect_normalization_operations(
 ) -> (Vec<Span>, Vec<(usize, String)>) {
     let mut strips = Vec::new();
     let mut insertions = Vec::new();
+    let outer_start = candidate.outer_span.start.min(source_len);
+    let outer_end = candidate.outer_span.end.min(source_len);
 
     for edit in &candidate.normalization_edits {
         match edit {
             NormalizationEdit::Delete { span } => {
-                let start = span.start.max(candidate.outer_span.start).min(source_len);
-                let end = span.end.max(candidate.outer_span.start).min(source_len);
+                let start = span.start.clamp(outer_start, outer_end);
+                let end = span.end.clamp(outer_start, outer_end);
                 if start < end {
                     strips.push(Span::new(start, end));
                 }
@@ -162,6 +164,11 @@ fn append_chunk(
     let mut cursor = start;
 
     while cursor < end {
+        while *insertion_index < insertions.len() && insertions[*insertion_index].0 == cursor {
+            generated.push_str(&insertions[*insertion_index].1);
+            *insertion_index += 1;
+        }
+
         let next_insertion = insertions
             .get(*insertion_index)
             .filter(|(at, _)| *at > cursor && *at < end)
@@ -178,10 +185,160 @@ fn append_chunk(
             });
         }
         cursor = next_insertion;
+    }
+}
 
-        while *insertion_index < insertions.len() && insertions[*insertion_index].0 == cursor {
-            generated.push_str(&insertions[*insertion_index].1);
-            *insertion_index += 1;
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::framework::{MacroCandidateKind, MacroCandidateStrategy, MacroFlavor};
+
+    fn candidate(outer_span: Span, normalization_edits: Vec<NormalizationEdit>) -> MacroCandidate {
+        MacroCandidate {
+            id: "candidate".to_string(),
+            kind: MacroCandidateKind::CallExpression,
+            imported_name: "t".to_string(),
+            local_name: "t".to_string(),
+            flavor: MacroFlavor::Direct,
+            outer_span,
+            normalized_span: outer_span,
+            normalization_edits,
+            source_map_anchor: None,
+            owner_id: None,
+            strategy: MacroCandidateStrategy::Standalone,
         }
+    }
+
+    #[test]
+    fn applies_insertions_at_outer_span_boundaries() {
+        let source = "prefixVALUEsuffix";
+        let outer_start = "prefix".len();
+        let outer_end = outer_start + "VALUE".len();
+        let candidate = candidate(
+            Span::new(outer_start, outer_end),
+            vec![
+                NormalizationEdit::Insert {
+                    at: outer_start,
+                    text: "[".to_string(),
+                },
+                NormalizationEdit::Insert {
+                    at: outer_end,
+                    text: "]".to_string(),
+                },
+            ],
+        );
+
+        let (normalized, segments) = normalize_candidate_source(source, &candidate);
+
+        assert_eq!(normalized, "[VALUE]");
+        assert_eq!(
+            segments,
+            vec![NormalizedSegment {
+                original_start: outer_start,
+                generated_start: 1,
+                len: "VALUE".len(),
+            }]
+        );
+    }
+
+    #[test]
+    fn applies_insertions_adjacent_to_deleted_ranges() {
+        let source = "abcde";
+        let candidate = candidate(
+            Span::new(0, source.len()),
+            vec![
+                NormalizationEdit::Delete {
+                    span: Span::new(1, 3),
+                },
+                NormalizationEdit::Insert {
+                    at: 1,
+                    text: "[".to_string(),
+                },
+                NormalizationEdit::Insert {
+                    at: 3,
+                    text: "]".to_string(),
+                },
+            ],
+        );
+
+        let (normalized, segments) = normalize_candidate_source(source, &candidate);
+
+        assert_eq!(normalized, "a[]de");
+        assert_eq!(
+            segments,
+            vec![
+                NormalizedSegment {
+                    original_start: 0,
+                    generated_start: 0,
+                    len: 1,
+                },
+                NormalizedSegment {
+                    original_start: 3,
+                    generated_start: 3,
+                    len: 2,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn clamps_delete_spans_to_outer_span() {
+        let source = "XXabcdeYY";
+        let outer_start = "XX".len();
+        let outer_end = outer_start + "abcde".len();
+        let candidate = candidate(
+            Span::new(outer_start, outer_end),
+            vec![NormalizationEdit::Delete {
+                span: Span::new(0, source.len()),
+            }],
+        );
+
+        let (normalized, segments) = normalize_candidate_source(source, &candidate);
+
+        assert_eq!(normalized, "");
+        assert!(segments.is_empty());
+    }
+
+    #[test]
+    fn preserves_byte_offsets_for_unicode_and_crlf_sources() {
+        let source = "A😀\r\nBéZ";
+        let outer_start = "A".len();
+        let outer_text = "😀\r\nBé";
+        let outer_end = outer_start + outer_text.len();
+        let candidate = candidate(
+            Span::new(outer_start, outer_end),
+            vec![
+                NormalizationEdit::Insert {
+                    at: outer_start,
+                    text: "<".to_string(),
+                },
+                NormalizationEdit::Delete {
+                    span: Span::new(outer_start + "😀".len(), outer_start + "😀\r\n".len()),
+                },
+                NormalizationEdit::Insert {
+                    at: outer_end,
+                    text: ">".to_string(),
+                },
+            ],
+        );
+
+        let (normalized, segments) = normalize_candidate_source(source, &candidate);
+
+        assert_eq!(normalized, "<😀Bé>");
+        assert_eq!(
+            segments,
+            vec![
+                NormalizedSegment {
+                    original_start: outer_start,
+                    generated_start: 1,
+                    len: "😀".len(),
+                },
+                NormalizedSegment {
+                    original_start: outer_start + "😀\r\n".len(),
+                    generated_start: 1 + "😀".len(),
+                    len: "Bé".len(),
+                },
+            ]
+        );
     }
 }
