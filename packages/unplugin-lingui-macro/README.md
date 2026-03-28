@@ -1,7 +1,7 @@
 # unplugin-lingui-macro
 
 [![npm](https://img.shields.io/npm/v/unplugin-lingui-macro)](https://www.npmjs.com/package/unplugin-lingui-macro)
-[![Documentation](https://img.shields.io/badge/docs-lingui--for.roundtrip.dev-blue)](https://lingui-for.roundtrip.dev/guides/install-and-first-translation)
+[![Documentation](https://img.shields.io/badge/docs-lingui--for.roundtrip.dev-blue)](https://lingui-for.roundtrip.dev/guides/plain-js-ts)
 
 Bundler plugin for compiling Lingui macros in plain JavaScript and TypeScript modules.
 
@@ -30,19 +30,19 @@ You will usually also want Lingui itself:
 
 ```sh
 vp add @lingui/core
-vp add -D @lingui/cli
+vp add -D @lingui/cli @lingui/conf
 
 # or
 npm install @lingui/core
-npm install -D @lingui/cli
+npm install -D @lingui/cli @lingui/conf
 
 # or
 pnpm add @lingui/core
-pnpm add -D @lingui/cli
+pnpm add -D @lingui/cli @lingui/conf
 
 # or
 yarn add @lingui/core
-yarn add -D @lingui/cli
+yarn add -D @lingui/cli @lingui/conf
 ```
 
 ## Quick Start
@@ -119,10 +119,3 @@ Supported option shape:
 - This package is for plain script modules. Use framework-specific packages for framework-owned files such as `.svelte` and `.astro`.
 - The transform runs only for files that actually import Lingui macros.
 - It does not perform Lingui extraction by itself. Extraction still comes from Lingui CLI and the relevant extractor setup.
-
-## Repository References
-
-These links point to paths inside the source repository and are only useful when browsing the repo directly.
-
-- Docs source: [`apps/docs/src/content/docs/guides/install-and-first-translation.mdx`](../../apps/docs/src/content/docs/guides/install-and-first-translation.mdx)
-- Used by: [`packages/lingui-for-svelte`](../lingui-for-svelte) and [`packages/lingui-for-astro`](../lingui-for-astro)
