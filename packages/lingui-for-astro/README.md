@@ -12,7 +12,7 @@ It provides:
 - runtime helpers for request-scoped Lingui context
 - unplugin entrypoints for direct bundler use when needed
 
-**Requirements:** Astro `^5.0.0` or `^6.0.0`, `@lingui/core` `^5.0.0`, Node.js 18+
+**Requirements:** Astro `^5.0.0` or `^6.0.0`, `@lingui/core` `^5.0.0`, Node.js 22+
 
 ## Install
 

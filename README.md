@@ -62,11 +62,12 @@ That asymmetry is intentional. The goal is not identical implementation. The goa
 
 ## Choose Your Path
 
-- Learn the design goals: <https://lingui-for.roundtrip.dev/concepts>
-- Start with Svelte: <https://lingui-for.roundtrip.dev/frameworks/svelte/getting-started>
-- Start with Astro: <https://lingui-for.roundtrip.dev/frameworks/astro/getting-started>
-- Browse the macro reference: <https://lingui-for.roundtrip.dev/macros/core-macros>
-- Working on this repository: jump to [For Contributors](#for-contributors)
+- [Learn the design goals](https://lingui-for.roundtrip.dev/concepts)
+- [Start with Svelte](https://lingui-for.roundtrip.dev/frameworks/svelte/getting-started)
+- [Start with Astro](https://lingui-for.roundtrip.dev/frameworks/astro/getting-started)
+- [Browse the macro reference](https://lingui-for.roundtrip.dev/macros/core-macros)
+
+Working on this repository? See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup instructions, workspace structure, and development commands.
 
 ## Packages
 

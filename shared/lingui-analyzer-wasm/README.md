@@ -11,7 +11,5 @@ Internal workspace package for the built WebAssembly bundle of `lingui-analyzer`
 From the repo root:
 
 - `vp run build:wasm`
-- `vp run build:wasm-dev`
 
-These commands run `wasm-pack` for `crates/lingui-analyzer` and write the generated JS wrapper,
-TypeScript declarations, and `.wasm` binary into this package's `dist/` directory.
+This command runs `wasm-pack` for `crates/lingui-analyzer` and writes the generated JS wrapper, TypeScript declarations, and `.wasm` binary into this package's `dist/` directory.

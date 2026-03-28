@@ -12,7 +12,7 @@ It provides:
 - runtime helpers for installing Lingui context in the component tree
 - unplugin entrypoints for Vite and other bundlers
 
-**Requirements:** Svelte `^5.0.0`, `@lingui/core` `^5.0.0`, Node.js 18+
+**Requirements:** Svelte `^5.0.0`, `@lingui/core` `^5.0.0`, Node.js 22+
 
 ## Install
 
