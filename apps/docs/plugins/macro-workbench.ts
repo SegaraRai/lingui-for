@@ -80,7 +80,12 @@ export function macroWorkbenchPlugin({
         filename: demoFile,
         linguiConfig: normalizedLinguiConfig,
       });
-      const transformedSource = extractSnippet(transformed?.code ?? source);
+      if (!transformed) {
+        throw new Error(
+          `unstable_transformSvelte returned no code for ${demoFile}. This indicates no transformation was applied, which is unexpected for a file containing localizable messages.`,
+        );
+      }
+      const transformedSource = extractSnippet(transformed.code);
       const poCatalogs = await buildPoCatalogArtifacts(
         projectRoot,
         demoOriginPath,
