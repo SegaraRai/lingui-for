@@ -142,6 +142,9 @@
     "webpack": "^4 || ^5"
   },
   "peerDependenciesMeta": {
+    "@lingui/conf": {
+      "optional": true
+    },
     "esbuild": {
       "optional": true
     },
