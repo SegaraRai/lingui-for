@@ -1,6 +1,6 @@
 {
   "name": "unplugin-markup-import",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Unplugin for including .svelte and .astro files in bundler output with correct import graph resolution.",
   "homepage": "https://github.com/SegaraRai/lingui-for/tree/main/packages/unplugin-markup-import#readme",
   "bugs": {
