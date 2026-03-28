@@ -629,7 +629,7 @@ dependencies = [
 [[package]]
 name = "tsify"
 version = "0.5.6"
-source = "git+https://github.com/madonoharu/tsify.git#d89d5c1d16a83c0370109232c9197fc2fa072564"
+source = "git+https://github.com/madonoharu/tsify.git?rev=d89d5c1d16a83c0370109232c9197fc2fa072564#d89d5c1d16a83c0370109232c9197fc2fa072564"
 dependencies = [
  "gloo-utils",
  "serde",
@@ -642,7 +642,7 @@ dependencies = [
 [[package]]
 name = "tsify-macros"
 version = "0.5.6"
-source = "git+https://github.com/madonoharu/tsify.git#d89d5c1d16a83c0370109232c9197fc2fa072564"
+source = "git+https://github.com/madonoharu/tsify.git?rev=d89d5c1d16a83c0370109232c9197fc2fa072564#d89d5c1d16a83c0370109232c9197fc2fa072564"
 dependencies = [
  "proc-macro2",
  "quote",
