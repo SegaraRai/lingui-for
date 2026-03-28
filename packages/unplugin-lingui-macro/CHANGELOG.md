@@ -1,5 +1,11 @@
 # unplugin-lingui-macro
 
+## 0.2.1
+
+### Patch Changes
+
+- [`2db96be`](https://github.com/SegaraRai/lingui-for/commit/2db96bec881789ac311f7ed1ebaadce016767a72) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Downgraded dependency versions to make package resolution easier.
+
 ## 0.2.0
 
 ### Minor Changes
