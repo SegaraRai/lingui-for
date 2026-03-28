@@ -75,7 +75,8 @@ export default defineConfig({
         cache: false,
       },
       release: {
-        command: "vp pm publish -r --access public --provenance",
+        command:
+          "vp pm publish -r --access public --provenance && changeset tag",
         dependsOn: ["build"],
         cache: false,
       },

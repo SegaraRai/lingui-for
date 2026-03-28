@@ -50,7 +50,7 @@ jobs:
         uses: changesets/action@v1
         with:
           version: vp run changeset version
-          publish: vp run release && vp exec changeset tag
+          publish: vp run release
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
