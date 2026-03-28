@@ -4,7 +4,6 @@ pub mod conventions;
 pub mod extract;
 pub mod framework;
 pub mod synthesis;
-pub mod wasm;
 
 use serde::{Deserialize, Serialize};
 use tsify::{Ts, Tsify};

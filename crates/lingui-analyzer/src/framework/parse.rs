@@ -2,8 +2,6 @@ use std::cell::RefCell;
 
 use tree_sitter::{Language, Parser, Tree};
 
-use crate::wasm::alloc::ensure_tree_sitter_allocator;
-
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum ParseError {
     #[error("tree-sitter language load failed")]
@@ -21,8 +19,6 @@ thread_local! {
 }
 
 fn build_parser(language: Language) -> Result<RefCell<Parser>, ParseError> {
-    ensure_tree_sitter_allocator();
-
     let mut parser = Parser::new();
     parser
         .set_language(&language)
