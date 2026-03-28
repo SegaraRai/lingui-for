@@ -104,11 +104,9 @@
   },
   "dependencies": {
     "@babel/core": "^7.29.0",
-    "@babel/generator": "^7.29.1",
     "@babel/traverse": "^7.29.0",
     "@babel/types": "^7.29.0",
     "@lingui/babel-plugin-lingui-macro": "^5.9.4",
-    "magic-string": "^0.30.21",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {
@@ -124,7 +122,6 @@
     "@lingui/core": "^5.9.4",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@types/babel__core": "^7.20.5",
-    "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
     "dedent": "^1.7.2",

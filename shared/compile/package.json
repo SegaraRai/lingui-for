@@ -20,13 +20,11 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",
-    "@babel/generator": "^7.29.1",
     "@babel/traverse": "^7.29.0",
     "@babel/types": "^7.29.0",
     "@lingui/cli": "^5.9.4",
     "@lingui/conf": "^5.9.4",
     "@types/babel__core": "^7.20.5",
-    "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
     "typescript": "catalog:",
@@ -34,7 +32,6 @@
   },
   "peerDependencies": {
     "@babel/core": "^7.0.0",
-    "@babel/generator": "^7.0.0",
     "@babel/traverse": "^7.0.0",
     "@babel/types": "^7.0.0",
     "@lingui/cli": "^5.0.0",
