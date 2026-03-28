@@ -17,10 +17,30 @@ import { transformProgram } from "../lower/babel-transform.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
 
+/**
+ * Options for {@link transformAstro}.
+ */
 export interface LinguiAstroTransformOptions {
+  /**
+   * Absolute or virtual filename used for diagnostics, source maps, and synthetic module naming.
+   */
   filename: string;
+  /**
+   * Partial Lingui configuration to merge with the defaults required by `lingui-for-astro`.
+   */
   linguiConfig?: Partial<LinguiConfig> | undefined;
+  /**
+   * Additional package specifiers that should be recognized as Astro macro packages.
+   */
   astroPackages?: readonly string[] | undefined;
+  /**
+   * Whitespace handling mode for rich-text Component Macros during compilation.
+   *
+   * Use the same mode in extraction and build transforms so catalog entries stay consistent with
+   * the emitted runtime code.
+   *
+   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros
+   */
   whitespace?: RichTextWhitespaceMode | undefined;
 }
 

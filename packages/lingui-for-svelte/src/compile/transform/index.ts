@@ -20,10 +20,30 @@ import { transformProgram } from "../lower/babel-transform.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
 
+/**
+ * Options for {@link transformSvelte}.
+ */
 export interface LinguiSvelteTransformOptions {
+  /**
+   * Absolute or virtual filename used for diagnostics, source maps, and synthetic module naming.
+   */
   filename: string;
+  /**
+   * Partial Lingui configuration to merge with the defaults required by `lingui-for-svelte`.
+   */
   linguiConfig?: Partial<LinguiConfig> | undefined;
+  /**
+   * Additional package specifiers that should be recognized as Svelte macro packages.
+   */
   sveltePackages?: readonly string[] | undefined;
+  /**
+   * Whitespace handling mode for rich-text Component Macros during compilation.
+   *
+   * Use the same mode in extraction and build transforms so catalog entries stay consistent with
+   * the emitted runtime code.
+   *
+   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros
+   */
   whitespace?: RichTextWhitespaceMode | undefined;
 }
 
@@ -41,6 +61,18 @@ export interface SvelteTransformResult {
   map: CanonicalSourceMap | null;
 }
 
+/**
+ * Transforms one `.svelte` source file in place for runtime use.
+ *
+ * @param source Original `.svelte` source.
+ * @param options Transform options including filename and optional Lingui config.
+ * @returns Rewritten source and source map, or `null` when the file contains no Lingui macros that
+ * require rewriting.
+ *
+ * This is the main Svelte entry point for runtime compilation. Rust handles analysis, planning, and
+ * final lowering; JS runs the Lingui/Babel passes needed to produce the intermediate programs that
+ * the Rust finisher stitches back into `.svelte` output.
+ */
 export async function transformSvelte(
   source: string,
   options: LinguiSvelteTransformOptions,

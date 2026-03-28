@@ -15,6 +15,14 @@ import {
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 
+/**
+ * Whitespace normalization mode for rich-text Component Macros in `.svelte` files.
+ *
+ * Use `"auto"` to follow Svelte-aware whitespace semantics, or pass an explicit analyzer mode such
+ * as `"jsx"` when you need non-default normalization.
+ *
+ * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros
+ */
 export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
 
 /**

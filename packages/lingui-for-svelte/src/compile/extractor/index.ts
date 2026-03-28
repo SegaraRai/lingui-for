@@ -22,8 +22,23 @@ import { transformProgram } from "../lower/babel-transform.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
 
+/**
+ * Options for {@link svelteExtractor}.
+ */
 export interface SvelteExtractorOptions {
+  /**
+   * Additional package specifiers that should be treated like `lingui-for-svelte/macro` when
+   * normalizing the Lingui configuration for synthetic modules.
+   */
   sveltePackages?: readonly string[] | undefined;
+  /**
+   * Whitespace handling mode for rich-text Component Macros during extraction.
+   *
+   * Keep this aligned with the transform-time `whitespace` setting so extracted messages match the
+   * compiled output.
+   *
+   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros
+   */
   whitespace?: RichTextWhitespaceMode | undefined;
 }
 
