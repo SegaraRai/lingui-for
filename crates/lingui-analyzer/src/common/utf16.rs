@@ -1,5 +1,3 @@
-use std::cmp::Ordering;
-
 #[derive(Debug, Clone)]
 pub struct Utf16Index<'a> {
     source: &'a str,
@@ -34,17 +32,9 @@ impl<'a> Utf16Index<'a> {
     }
 
     fn line_for_byte(&self, byte: usize) -> usize {
-        match self.line_starts.binary_search_by(|&probe| {
-            if probe <= byte {
-                Ordering::Less
-            } else {
-                Ordering::Greater
-            }
-        }) {
-            Ok(index) => index,
-            Err(0) => 0,
-            Err(index) => index - 1,
-        }
+        self.line_starts
+            .partition_point(|&probe| probe <= byte)
+            .saturating_sub(1)
     }
 }
 
@@ -164,5 +154,54 @@ mod tests {
         assert_eq!(index.byte_to_line_utf16_col(3), (0, 1));
         assert_eq!(index.byte_to_line_utf16_col(7), (0, 3));
         assert_eq!(index.byte_to_line_utf16_col(8), (0, 4));
+    }
+
+    #[test]
+    fn resolves_line_starts_at_exact_boundaries() {
+        let source = "ab\ncd\nef";
+        let index = Utf16Index::new(source, &line_starts(source));
+
+        assert_eq!(index.byte_to_line_utf16_col(0), (0, 0));
+        assert_eq!(index.byte_to_line_utf16_col(2), (0, 2));
+        assert_eq!(index.byte_to_line_utf16_col(3), (1, 0));
+        assert_eq!(index.byte_to_line_utf16_col(5), (1, 2));
+        assert_eq!(index.byte_to_line_utf16_col(6), (2, 0));
+    }
+
+    #[test]
+    fn treats_crlf_as_line_break_without_counting_cr() {
+        let source = "ab\r\ncd\r\nef";
+        let index = Utf16Index::new(source, &line_starts(source));
+
+        assert_eq!(index.byte_to_line_utf16_col(0), (0, 0));
+        assert_eq!(index.byte_to_line_utf16_col(2), (0, 2));
+        assert_eq!(index.byte_to_line_utf16_col(3), (0, 2));
+        assert_eq!(index.byte_to_line_utf16_col(4), (1, 0));
+        assert_eq!(index.byte_to_line_utf16_col(6), (1, 2));
+        assert_eq!(index.byte_to_line_utf16_col(7), (1, 2));
+        assert_eq!(index.byte_to_line_utf16_col(8), (2, 0));
+        assert_eq!(index.byte_to_line_utf16_col(10), (2, 2));
+    }
+
+    #[test]
+    fn clamps_past_end_to_last_line_end() {
+        let source = "ab\n🙂x";
+        let index = Utf16Index::new(source, &line_starts(source));
+
+        assert_eq!(index.byte_to_line_utf16_col(source.len()), (1, 3));
+        assert_eq!(index.byte_to_line_utf16_col(source.len() + 10), (1, 3));
+    }
+
+    #[test]
+    fn handles_empty_lines_and_unicode_across_lines() {
+        let source = "🙂\n\néx";
+        let index = Utf16Index::new(source, &line_starts(source));
+
+        assert_eq!(index.byte_to_line_utf16_col(0), (0, 0));
+        assert_eq!(index.byte_to_line_utf16_col(4), (0, 2));
+        assert_eq!(index.byte_to_line_utf16_col(5), (1, 0));
+        assert_eq!(index.byte_to_line_utf16_col(6), (2, 0));
+        assert_eq!(index.byte_to_line_utf16_col(8), (2, 1));
+        assert_eq!(index.byte_to_line_utf16_col(9), (2, 2));
     }
 }
