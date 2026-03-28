@@ -10,8 +10,9 @@ Astro does not have a built-in component reactivity model for `.astro` files.
 translation stores. Once a page renders, translated strings are fixed: there is no equivalent of
 Svelte's `$t` that re-evaluates when the locale changes on the client.
 
-Initialize Lingui in middleware (recommended for all output modes) or in page frontmatter for
-simple static sites. See [i18n Context](/frameworks/astro/i18n-context) for details.
+Initialize Lingui in middleware. If you need a minimal page-level setup for a simple static page,
+page frontmatter also works, but treat it as an escape hatch rather than the default pattern. See
+[i18n Context](/frameworks/astro/i18n-context) for details.
 
 ## Runtime helpers are not the primary API
 

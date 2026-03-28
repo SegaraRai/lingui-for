@@ -48,10 +48,11 @@ Astro ページは通常、静的 HTML として描画されるか、`server` / 
 ```astro title="src/pages/index.astro"
 ---
 import { t } from "lingui-for-astro/macro";
+import { getLinguiContext } from "lingui-for-astro";
 import MyIsland from "../components/MyIsland.svelte";
 
-// locale は middleware 内の setLinguiContext で設定済み
-const locale = Astro.locals.lingui?.i18n.locale ?? "en";
+// ロケールはミドルウェア内の setLinguiContext で設定済み
+const locale = getLinguiContext(Astro.locals).i18n.locale;
 ---
 
 <h1>{t`Welcome`}</h1>

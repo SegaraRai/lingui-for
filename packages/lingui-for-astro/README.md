@@ -127,9 +127,9 @@ import { t, Trans } from "lingui-for-astro/macro";
 ## Notes
 
 - The primary authoring API is `lingui-for-astro/macro`. Runtime helpers exist mainly as the compilation target.
-- Astro translations are request-scoped. Install Lingui context in middleware or page setup before translated content renders.
-- The middleware approach requires SSR (`output: 'server'` or `'hybrid'`). For fully static output (`output: 'static'`), initialize Lingui at the top of each page instead of in middleware, since `context.locals` is not available at build time.
-- `lingui-for-astro` handles `.astro` files. For UI framework islands (Svelte, React, Vue, etc.), use the corresponding Lingui integration for that framework — see the [Lingui documentation](https://lingui.dev) for available integrations.
+- Astro translations are request-scoped. Install Lingui context before translated content renders, preferably in middleware.
+- Astro middleware is the recommended initialization point in all output modes. Page frontmatter setup also works for simple page-level cases, but it should be treated as an escape hatch rather than the default pattern.
+- `lingui-for-astro` handles `.astro` files. For UI framework islands (Svelte, React, Vue, etc.), use the corresponding Lingui integration for that framework. See the [Lingui documentation](https://lingui.dev) for available integrations.
 - MDX is not supported. If you need translated MDX content, keep separate `.mdx` files per locale.
 - Plain `.js` and `.ts` macro support comes from `unplugin-lingui-macro`, not from the Astro transform itself.
 

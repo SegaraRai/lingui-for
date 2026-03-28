@@ -33,10 +33,11 @@ export const onRequest = defineMiddleware((context, next) => {
 Everything rendered in that request (or build) can then read the same `i18n` instance. No extra
 props or manual context plumbing are needed.
 
-## Frontmatter (simple static sites)
+## Page frontmatter (escape hatch for simple static pages)
 
-For a static site with a fixed locale and no per-page locale logic, initializing Lingui in page
-frontmatter is also valid. Skip the middleware entirely.
+If you have a simple static page with a fixed locale and do not want middleware, initializing
+Lingui in page frontmatter also works. Treat this as a page-level escape hatch, not the default
+pattern for reusable Astro components or shared rendering helpers.
 
 ```astro title="src/pages/index.astro"
 ---
@@ -100,8 +101,9 @@ const meta = buildPageMeta(Astro.locals);
 
 <Aside>
 
-For static sites with many pages, move the frontmatter setup into a shared helper. That keeps the
-initialization pattern consistent without repeating the whole block in every page.
+If you have many pages, prefer middleware so the context is installed once before rendering. If you
+still choose frontmatter setup, keep it at the page or layout boundary rather than inside reusable
+components.
 
 </Aside>
 
@@ -115,9 +117,9 @@ import { setLinguiContext } from "lingui-for-astro";
 function setLinguiContext(locals: object, instance: I18n): LinguiContext;
 ```
 
-Attaches the Lingui instance to the request locals bag. Pass `Astro.locals` (in page frontmatter)
-or `context.locals` (in middleware) as the first argument. Call this before any translated Astro
-content renders.
+Attaches the Lingui instance to the request locals bag. Pass `context.locals` from middleware for
+the default setup, or `Astro.locals` from page frontmatter for simple page-level initialization.
+Call this before any translated Astro content renders.
 
 ### `getLinguiContext`
 
