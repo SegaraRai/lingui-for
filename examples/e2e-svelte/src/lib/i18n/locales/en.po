@@ -654,10 +654,11 @@ msgstr "Toggle the status branch"
 msgid "Type to filter syntax examples"
 msgstr "Type to filter syntax examples"
 
-#: src/lib/i18n/unicode-fixture.svelte:5
-msgid "テンプレートこんにちは😀 {name}"
-msgstr "テンプレートこんにちは😀 {name}"
+#. placeholder {0}: untrack(() => name)
+#: src/lib/i18n/unicode-fixture.svelte:7
+msgid "テンプレートこんにちは😀 {0}"
+msgstr "テンプレートこんにちは😀 {0}"
 
-#: src/lib/i18n/unicode-fixture.svelte:11
+#: src/lib/i18n/unicode-fixture.svelte:13
 msgid "ようこそ <0>{name}</0> さん🚀"
 msgstr "ようこそ <0>{name}</0> さん🚀"

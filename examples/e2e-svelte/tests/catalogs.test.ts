@@ -28,7 +28,7 @@ describe("lingui extract and compile outputs", () => {
     );
     expect(enPo).toContain("Keyed subtree revision {0}");
     expect(enPo).toContain("Embedded elements and components inside Trans");
-    expect(enPo).toContain("テンプレートこんにちは😀 {name}");
+    expect(enPo).toContain("テンプレートこんにちは😀 {0}");
     expect(enPo).toContain("ようこそ <0>{name}</0> さん🚀");
     expect(enPo).toContain("Explicit id from a plain descriptor.");
     expect(enPo).toContain("$t script and template reactivity");
