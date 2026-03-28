@@ -13,22 +13,23 @@ If you believe a test case is correct, don’t modify it; instead, **mark it as 
 
 ## Common Commands
 
+- `cargo test`: run Rust tests
 - `vp run build`: build the package
-- `vp run test`: run tests with Vitest
-  - Our codebase requires building packages before running tests. Run `vp run build` before `vp run test` to ensure tests run correctly.
-- `vp run format`: format code (workspace root only)
-  - Always run `vp run format` from the workspace root. You don't need to worry about formatting individual packages; this command is fast enough.
-- `vp run check`: run type checks and other static checks
+- `vp run build && vp test`: run tests with Vitest
+  - You can pass extra arguments to Vitest, such as `vp run build && vp test <filename>`.
+  - Always run `vp run build` before `vp test` to ensure that the latest code is used in tests. Do not run them concurrently.
+- `cargo fmt && vp run format`: format code (workspace root only)
+  - Always run these commands from the workspace root. You don't need to worry about formatting individual packages; this command is fast enough.
+- `vp run check`: run formatting checks and type checks
 - `vp exec <command>`: run an external package command, such as `vp exec lingui extract`.
 - `vp add <package>`: add a new package
 
-TIP: Run `vp run format` → `vp run check` → `vp run test` sequentially to ensure a smooth development workflow.
+TIP: Run `cargo fmt && vp run format` → `vp run check` → `vp run build && vp test` sequentially to ensure a smooth development workflow.
 
 ## Common Pitfalls
 
-- `vp fmt` does not support `.astro` and `.svelte` files. Use `vp run format` from workspace root instead, which runs both Prettier and `vp fmt` under the hood.
-- Always use `vp run build`, `vp run test`, `vp run check` instead of `vp *`. This ensures that all pre-requisite steps are run before the command, such as building packages before testing.
-- Do not run `vp run check`, `vp run test`, or `vp run build` concurrently. Run sequentially to avoid conflicts in build artifacts. Build is cached so it’s not a problem to run them one after another.
+- Always use `vp run build` and `vp run check` instead of `vp *`. This ensures that all pre-requisite steps are run before the command, such as building packages before testing.
+- Do not run `vp run build`, `vp run check`, or `vp test` concurrently. Run sequentially to avoid conflicts in build artifacts. Build is cached so it’s not a problem to run them one after another.
 - DO NOT use `vp pack` or `vp build`. Use `vp run build` from the workspace root.
 
 ## Project Dependencies
