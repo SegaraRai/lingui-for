@@ -7,7 +7,10 @@ import type {
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   getParserPlugins as getSharedParserPlugins,
-  normalizeLinguiConfig as normalizeSharedLinguiConfig,
+  LINGUI_CORE_MACRO_PACKAGE,
+  LINGUI_CORE_PACKAGE,
+  LINGUI_I18N_EXPORT,
+  LINGUI_RUNTIME_TRANS_EXPORT,
 } from "@lingui-for/internal-shared-compile";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
@@ -26,11 +29,45 @@ export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
  */
 export function normalizeLinguiConfig(
   config?: Partial<LinguiConfig>,
+  options?: {
+    sveltePackages?: readonly string[] | undefined;
+  },
 ): LinguiConfigNormalized {
-  return normalizeSharedLinguiConfig(config, {
-    macroPackage: PACKAGE_MACRO,
-    runtimePackage: PACKAGE_RUNTIME,
-  });
+  const runtimeConfigModule =
+    config?.runtimeConfigModule &&
+    typeof config.runtimeConfigModule === "object" &&
+    !Array.isArray(config.runtimeConfigModule)
+      ? Object.assign({}, config.runtimeConfigModule)
+      : undefined;
+
+  const mergedRuntimeConfigModule = {
+    i18n: [LINGUI_CORE_PACKAGE, LINGUI_I18N_EXPORT] as const,
+    Trans: [PACKAGE_RUNTIME, LINGUI_RUNTIME_TRANS_EXPORT] as const,
+  };
+
+  if (runtimeConfigModule) {
+    Object.assign(mergedRuntimeConfigModule, runtimeConfigModule);
+  }
+
+  const sveltePackages = uniqueStrings([
+    PACKAGE_MACRO,
+    ...(options?.sveltePackages ?? []),
+  ]);
+
+  return {
+    ...config,
+    macro: {
+      ...config?.macro,
+      corePackage: uniqueStrings([
+        PACKAGE_MACRO,
+        LINGUI_CORE_MACRO_PACKAGE,
+        ...(config?.macro?.corePackage ?? []),
+      ]),
+      // We have to override `jsxPackage` here to ensure the macro plugin recognizes `lingui-for-svelte/macro` imports in synthetic modules
+      jsxPackage: sveltePackages,
+    },
+    runtimeConfigModule: mergedRuntimeConfigModule,
+  } as LinguiConfigNormalized;
 }
 
 /**
@@ -54,4 +91,8 @@ export function resolveSvelteWhitespace(
   whitespace: RichTextWhitespaceMode,
 ): WhitespaceMode {
   return whitespace === "auto" ? "svelte" : whitespace;
+}
+
+function uniqueStrings(values: readonly string[]): string[] {
+  return [...new Set(values)];
 }

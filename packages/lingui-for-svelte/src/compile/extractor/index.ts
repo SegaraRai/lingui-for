@@ -1,4 +1,8 @@
-import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+import type {
+  ExtractorCtx,
+  ExtractorType,
+  LinguiConfigNormalized,
+} from "@lingui/conf";
 
 import { buildSyntheticModule } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
@@ -13,11 +17,13 @@ import {
   resolveSvelteWhitespace,
   type RichTextWhitespaceMode,
 } from "../common/config.ts";
+import { createSvelteFrameworkConventions } from "../common/conventions.ts";
 import { transformProgram } from "../lower/babel-transform.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
 
 export interface SvelteExtractorOptions {
+  sveltePackages?: readonly string[] | undefined;
   whitespace?: RichTextWhitespaceMode | undefined;
 }
 
@@ -31,7 +37,7 @@ export interface SvelteExtractorOptions {
 export function svelteExtractor(
   options?: SvelteExtractorOptions,
 ): ExtractorType {
-  const { whitespace = "auto" } = options ?? {};
+  const { sveltePackages, whitespace = "auto" } = options ?? {};
   const resolvedWhitespace = resolveSvelteWhitespace(whitespace);
 
   return {
@@ -43,13 +49,16 @@ export function svelteExtractor(
 
       const syntheticName = filename.replace(/\.svelte$/, ".synthetic.tsx");
 
-      const extractorCtx = createExtractorContext(ctx);
+      const extractorCtx = createExtractorContext(ctx, { sveltePackages });
       const synthetic = buildSyntheticModule({
-        framework: "svelte",
         source,
         sourceName: filename,
         syntheticName,
         whitespace: resolvedWhitespace,
+        conventions: createSvelteFrameworkConventions(
+          extractorCtx.linguiConfig,
+          { sveltePackages },
+        ),
       });
       if (synthetic.source.trim().length === 0) {
         return;
@@ -81,7 +90,12 @@ export function svelteExtractor(
   };
 }
 
-function createExtractorContext(ctx: ExtractorCtx | undefined): ExtractorCtx {
-  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig);
+function createExtractorContext(
+  ctx: ExtractorCtx | undefined,
+  options?: {
+    sveltePackages?: readonly string[] | undefined;
+  },
+): ExtractorCtx & { linguiConfig: LinguiConfigNormalized } {
+  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig, options);
   return { ...ctx, linguiConfig };
 }

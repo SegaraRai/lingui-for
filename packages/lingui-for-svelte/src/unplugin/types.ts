@@ -1,6 +1,6 @@
 import type { LinguiConfig } from "@lingui/conf";
 
-import type { RichTextWhitespaceMode } from "../compile/transform/index.ts";
+import type { RichTextWhitespaceMode } from "../compile/common/config.ts";
 
 /**
  * Public configuration accepted by the lingui-for-svelte bundler plugin.
@@ -11,5 +11,6 @@ export interface LinguiSveltePluginOptions {
    * and dev transforms can share the same macro/extraction settings.
    */
   linguiConfig?: Partial<LinguiConfig> | undefined;
+  sveltePackages?: readonly string[] | undefined;
   whitespace?: RichTextWhitespaceMode | undefined;
 }

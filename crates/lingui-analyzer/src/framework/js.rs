@@ -27,23 +27,6 @@ pub fn collect_macro_candidates_in_javascript(
     base_offset: usize,
     syntax: JsMacroSyntax,
     language: JsLikeLanguage,
-) -> Result<Vec<MacroCandidate>, crate::AnalyzerError> {
-    collect_macro_candidates_in_javascript_with_shadowing(
-        source,
-        imports,
-        base_offset,
-        syntax,
-        language,
-        &[],
-    )
-}
-
-pub fn collect_macro_candidates_in_javascript_with_shadowing(
-    source: &str,
-    imports: &[MacroImport],
-    base_offset: usize,
-    syntax: JsMacroSyntax,
-    language: JsLikeLanguage,
     shadowed_names: &[String],
 ) -> Result<Vec<MacroCandidate>, crate::AnalyzerError> {
     let js_tree = match language {

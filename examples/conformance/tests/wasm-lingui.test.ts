@@ -119,7 +119,7 @@ describe("lingui-analyzer wasm contract", () => {
   test("connects Svelte component macros to Lingui transform through Rust wasm", () => {
     const source = dedent`
       <script lang="ts">
-        import { Trans as Translation } from "@lingui/react/macro";
+        import { Trans as Translation } from "lingui-for-svelte/macro";
         const name = "Ada";
       </script>
 
@@ -137,7 +137,7 @@ describe("lingui-analyzer wasm contract", () => {
   test("connects Astro component macros to Lingui transform through Rust wasm", () => {
     const source = dedent`
       ---
-      import { Trans as Translation } from "@lingui/react/macro";
+      import { Trans as Translation } from "lingui-for-astro/macro";
       const name = "Ada";
       ---
 
@@ -156,7 +156,7 @@ describe("lingui-analyzer wasm contract", () => {
     const filename = "/virtual/Component.svelte";
     const source = dedent`
       <script lang="ts">
-        import { Trans as Translation } from "@lingui/react/macro";
+        import { Trans as Translation } from "lingui-for-svelte/macro";
         const name = "Ada";
       </script>
 
@@ -182,7 +182,7 @@ describe("lingui-analyzer wasm contract", () => {
     const filename = "/virtual/Component.astro";
     const source = dedent`
       ---
-      import { Trans as Translation } from "@lingui/react/macro";
+      import { Trans as Translation } from "lingui-for-astro/macro";
       const name = "Ada";
       ---
 
@@ -289,7 +289,7 @@ describe("lingui-analyzer wasm contract", () => {
     const filename = "/virtual/ComponentRoundtrip.svelte";
     const source = dedent`
       <script lang="ts">
-        import { Trans as Translation } from "@lingui/react/macro";
+        import { Trans as Translation } from "lingui-for-svelte/macro";
         const name = "Ada";
       </script>
 
@@ -325,7 +325,7 @@ describe("lingui-analyzer wasm contract", () => {
     const filename = "/virtual/ComponentRoundtrip.astro";
     const source = dedent`
       ---
-      import { Trans as Translation } from "@lingui/react/macro";
+      import { Trans as Translation } from "lingui-for-astro/macro";
       const name = "Ada";
       ---
 

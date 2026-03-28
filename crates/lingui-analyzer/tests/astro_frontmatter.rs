@@ -1,9 +1,14 @@
+#[path = "support/astro.rs"]
+mod astro_support;
+
 use indoc::indoc;
 
 use lingui_analyzer::{
     AstroCompilePlan, MacroCandidateKind, WhitespaceMode,
-    framework::{AnalyzeOptions, FrameworkAdapter, astro::AstroAdapter},
+    framework::{FrameworkAdapter, astro::AstroAdapter},
 };
+
+use astro_support::{analyze_options_for_astro, astro_default_conventions};
 
 #[test]
 fn collects_aliased_frontmatter_macro_imports_and_candidates() {
@@ -17,12 +22,7 @@ fn collects_aliased_frontmatter_macro_imports_and_candidates() {
     "#};
 
     let analysis = AstroAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Astro,
-            },
-        )
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
 
     let imports = analysis
@@ -61,7 +61,8 @@ fn collects_aliased_frontmatter_macro_imports_and_candidates() {
 fn allocates_unique_runtime_bindings_for_astro_compile() {
     let source = indoc! {r#"
         ---
-        import { t, Trans } from "@lingui/core/macro";
+        import { t } from "@lingui/core/macro";
+        import { Trans } from "lingui-for-astro/macro";
 
         const __l4a_createI18n = "taken";
         const __l4a_i18n = "taken";
@@ -74,8 +75,14 @@ fn allocates_unique_runtime_bindings_for_astro_compile() {
         <p>{message}</p>
     "#};
 
-    let plan = AstroCompilePlan::build(source, "Page.astro", "Page.astro?compile")
-        .expect("compile plan succeeds");
+    let plan = AstroCompilePlan::build(
+        source,
+        "Page.astro",
+        "Page.astro?compile",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect("compile plan succeeds");
 
     assert_eq!(plan.runtime_bindings.create_i18n, "__l4a_createI18n_1");
     assert_eq!(plan.runtime_bindings.i18n, "__l4a_i18n_1");
@@ -98,12 +105,7 @@ fn ignores_shadowed_bindings_in_nested_scopes() {
     "#};
 
     let analysis = AstroAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Astro,
-            },
-        )
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
 
     let candidates = analysis
@@ -132,12 +134,7 @@ fn marks_frontmatter_content_region() {
     "#};
 
     let analysis = AstroAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Astro,
-            },
-        )
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
     let frontmatter = analysis.frontmatter.expect("frontmatter exists");
     let extracted = &source[frontmatter.inner_span.start..frontmatter.inner_span.end];
@@ -159,12 +156,7 @@ fn collects_template_expression_candidates_from_frontmatter_imports() {
     "#};
 
     let analysis = AstroAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Astro,
-            },
-        )
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
     let counts = analysis
         .template_expressions
@@ -197,12 +189,7 @@ fn supports_typescript_syntax_in_frontmatter_and_template_expressions() {
     "#};
 
     let analysis = AstroAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Astro,
-            },
-        )
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
 
     assert_eq!(analysis.frontmatter_candidates.len(), 1);
@@ -225,12 +212,7 @@ fn anchors_frontmatter_translate_msg_candidates_to_the_outer_callee() {
     "#};
 
     let analysis = AstroAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Astro,
-            },
-        )
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
     let candidate = analysis
         .frontmatter_candidates
@@ -249,7 +231,7 @@ fn anchors_frontmatter_translate_msg_candidates_to_the_outer_callee() {
 fn collects_template_components_from_frontmatter_imports() {
     let source = indoc! {r#"
         ---
-        import { Trans as T } from "@lingui/react/macro";
+        import { Trans as T } from "lingui-for-astro/macro";
         ---
 
         <T id="root" />
@@ -260,12 +242,7 @@ fn collects_template_components_from_frontmatter_imports() {
     "#};
 
     let analysis = AstroAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Astro,
-            },
-        )
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
     let summary = analysis
         .template_components

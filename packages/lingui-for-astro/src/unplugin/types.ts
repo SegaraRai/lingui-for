@@ -13,5 +13,6 @@ export interface LinguiAstroPluginOptions {
    * Partial Lingui config used while transforming `.astro` files.
    */
   linguiConfig?: Partial<LinguiConfig> | undefined;
+  astroPackages?: readonly string[] | undefined;
   whitespace?: RichTextWhitespaceMode | undefined;
 }

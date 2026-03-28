@@ -1,10 +1,18 @@
+#[path = "support/astro_conventions.rs"]
+mod astro_support;
+#[path = "support/svelte_conventions.rs"]
+mod svelte_support;
+
 use std::fs::read_to_string;
 use std::path::PathBuf;
 
 use lingui_analyzer::{
     AstroCompilePlan, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-    SvelteCompilePlan, build_synthetic_module_for_framework,
+    SvelteCompilePlan, WhitespaceMode, build_synthetic_module_for_framework,
 };
+
+use astro_support::astro_default_conventions;
+use svelte_support::svelte_default_conventions;
 
 #[test]
 fn builds_common_svelte_compile_plan_with_runtime_metadata() {
@@ -30,6 +38,8 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         source,
         "/virtual/App.svelte",
         "/virtual/App.svelte?compile.tsx",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
     )
     .expect("svelte compile plan should build");
 
@@ -132,6 +142,8 @@ const status = translate(msg`Status summary: active`);
         source,
         "/virtual/Page.astro",
         "/virtual/Page.astro?compile.tsx",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
     )
     .expect("astro compile plan should build");
 
@@ -191,6 +203,8 @@ fn rejects_bare_direct_t_in_svelte_scripts() {
         source,
         "/virtual/App.svelte",
         "/virtual/App.svelte?compile.tsx",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
     )
     .expect_err("bare direct t should be rejected in svelte scripts");
 
@@ -216,11 +230,11 @@ fn rejects_bare_direct_plural_in_svelte_extract_synthetic_builds() {
 "##;
 
     let error = build_synthetic_module_for_framework(
-        "svelte",
         source,
         "/virtual/App.svelte",
         "/virtual/App.svelte?extract.tsx",
         None,
+        &svelte_default_conventions(),
     )
     .expect_err("bare direct plural should be rejected in svelte extraction");
 
@@ -243,6 +257,8 @@ fn keeps_full_template_target_spans_for_the_e2e_preloaded_page() {
         &source,
         "/virtual/+page.svelte",
         "/virtual/+page.svelte?compile.tsx",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
     )
     .expect("svelte compile plan should build");
 

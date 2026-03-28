@@ -1,9 +1,14 @@
+#[path = "support/svelte.rs"]
+mod svelte_support;
+
 use indoc::indoc;
 
 use lingui_analyzer::{
     MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, SvelteCompilePlan, WhitespaceMode,
-    framework::{AnalyzeOptions, FrameworkAdapter, svelte::SvelteAdapter},
+    framework::{FrameworkAdapter, svelte::SvelteAdapter},
 };
+
+use svelte_support::{analyze_options_for_svelte, svelte_default_conventions};
 
 #[test]
 fn collects_svelte_script_macros_with_reactive_and_eager_flavors() {
@@ -18,12 +23,7 @@ fn collects_svelte_script_macros_with_reactive_and_eager_flavors() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     assert_eq!(analysis.scripts.len(), 1);
     assert!(analysis.template_expressions.is_empty());
@@ -83,12 +83,7 @@ fn supports_typescript_syntax_in_svelte_script() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let script = &analysis.scripts[0];
 
@@ -101,7 +96,7 @@ fn allocates_unique_runtime_bindings_for_svelte_compile() {
     let source = indoc! {r#"
         <script lang="ts">
           import { t } from "@lingui/core/macro";
-          import { Trans } from "@lingui/react/macro";
+          import { Trans } from "lingui-for-svelte/macro";
 
           const createLinguiAccessors = "taken";
           const __l4s_ctx = "taken";
@@ -115,8 +110,14 @@ fn allocates_unique_runtime_bindings_for_svelte_compile() {
         <Trans id="welcome" message="Welcome" />
     "#};
 
-    let plan = SvelteCompilePlan::build(source, "Component.svelte", "Component.svelte?compile")
-        .expect("compile plan succeeds");
+    let plan = SvelteCompilePlan::build(
+        source,
+        "Component.svelte",
+        "Component.svelte?compile",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
+    )
+    .expect("compile plan succeeds");
 
     assert_eq!(
         plan.runtime_bindings.create_lingui_accessors,
@@ -143,12 +144,7 @@ fn ignores_shadowed_names_in_svelte_script() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let script = &analysis.scripts[0];
 
@@ -191,12 +187,7 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let summary = analysis
         .template_expressions
@@ -245,12 +236,7 @@ fn treats_instance_script_non_macro_bindings_as_template_shadowing() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
 
     assert_eq!(analysis.scripts[0].macro_imports.len(), 0);
@@ -293,12 +279,7 @@ fn collects_macro_candidates_from_const_tag_initializers() {
 "#;
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("svelte analysis should succeed");
     let messages = analysis
         .template_expressions
@@ -314,7 +295,7 @@ fn collects_macro_candidates_from_const_tag_initializers() {
 fn collects_template_components_with_scope_aware_shadowing() {
     let source = indoc! {r#"
         <script>
-          import { Trans as T } from "@lingui/react/macro";
+          import { Trans as T } from "lingui-for-svelte/macro";
         </script>
 
         <T id="root" />
@@ -328,12 +309,7 @@ fn collects_template_components_with_scope_aware_shadowing() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let summary = analysis
         .template_components
@@ -388,12 +364,7 @@ fn collects_extended_svelte_template_expression_sites() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let kinds = analysis
         .template_expressions
@@ -421,12 +392,7 @@ fn keeps_outer_macro_when_javascript_macros_are_nested() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let script = &analysis.scripts[0];
 
@@ -489,12 +455,7 @@ fn marks_deeply_nested_script_core_macros_as_owned_by_the_outer_reactive_macro()
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let script = &analysis.scripts[0];
     let standalone = script
@@ -546,12 +507,7 @@ fn keeps_full_outer_span_for_later_reactive_plural_template_expressions() {
     "##};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("svelte analysis should succeed");
     let plural_expression = analysis
         .template_expressions

@@ -1,4 +1,8 @@
-import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+import type {
+  ExtractorCtx,
+  ExtractorType,
+  LinguiConfigNormalized,
+} from "@lingui/conf";
 
 import { buildSyntheticModule } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
@@ -15,11 +19,13 @@ import {
   resolveAstroWhitespace,
   type RichTextWhitespaceMode,
 } from "../common/config.ts";
+import { createAstroFrameworkConventions } from "../common/conventions.ts";
 import { transformProgram } from "../lower/babel-transform.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
 
 export interface AstroExtractorOptions {
+  astroPackages?: readonly string[] | undefined;
   whitespace?: RichTextWhitespaceMode | undefined;
 }
 
@@ -31,7 +37,7 @@ export interface AstroExtractorOptions {
  * extractor pipeline.
  */
 export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
-  const { whitespace = "auto" } = options ?? {};
+  const { astroPackages, whitespace = "auto" } = options ?? {};
   const resolvedWhitespace = resolveAstroWhitespace(whitespace);
 
   return {
@@ -41,14 +47,19 @@ export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
     async extract(filename, source, onMessageExtracted, ctx) {
       await initWasmOnce();
 
-      const extractorCtx = createExtractorContext(ctx);
+      const extractorCtx = createExtractorContext(ctx, { astroPackages });
       const syntheticName = filename.replace(/\.astro$/, ".synthetic.tsx");
       const synthetic = buildSyntheticModule({
-        framework: "astro",
         source,
         sourceName: filename,
         syntheticName,
         whitespace: resolvedWhitespace,
+        conventions: createAstroFrameworkConventions(
+          extractorCtx.linguiConfig,
+          {
+            astroPackages,
+          },
+        ),
       });
       const transformed = transformProgram(synthetic.source, {
         translationMode: "extract",
@@ -78,8 +89,13 @@ export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
   };
 }
 
-function createExtractorContext(ctx: ExtractorCtx | undefined): ExtractorCtx {
-  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig);
+function createExtractorContext(
+  ctx: ExtractorCtx | undefined,
+  options?: {
+    astroPackages?: readonly string[] | undefined;
+  },
+): ExtractorCtx & { linguiConfig: LinguiConfigNormalized } {
+  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig, options);
   return { ...ctx, linguiConfig };
 }
 

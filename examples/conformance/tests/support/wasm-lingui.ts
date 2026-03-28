@@ -3,11 +3,16 @@ import { generate } from "@babel/generator";
 import { type NodePath } from "@babel/traverse";
 import type { File, VariableDeclarator } from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
-import type { ExtractedMessage, ExtractorCtx } from "@lingui/conf";
+import type {
+  ExtractedMessage,
+  ExtractorCtx,
+  LinguiConfigNormalized,
+} from "@lingui/conf";
 
 import {
   buildSyntheticModule,
   reinsertTransformedDeclarations,
+  type FrameworkConventions,
   type ReinsertedModule,
   type SyntheticModule,
   type WhitespaceMode,
@@ -19,8 +24,6 @@ import {
   LINGUI_CORE_MACRO_PACKAGE,
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
-  LINGUI_MACRO_PACKAGE,
-  LINGUI_REACT_MACRO_PACKAGE,
   runBabelExtractionUnits,
 } from "@lingui-for/internal-shared-compile";
 
@@ -31,22 +34,6 @@ export type SyntheticTransformResult = {
 };
 
 const SYNTHETIC_MODULE_PARSER_PLUGINS = getParserPlugins({ typescript: true });
-
-const LINGUI_CONFIG = {
-  macro: {
-    corePackage: [LINGUI_CORE_MACRO_PACKAGE, LINGUI_MACRO_PACKAGE],
-    jsxPackage: [LINGUI_REACT_MACRO_PACKAGE, LINGUI_MACRO_PACKAGE],
-  },
-  runtimeConfigModule: {
-    i18n: [LINGUI_CORE_PACKAGE, LINGUI_I18N_EXPORT],
-    Trans: ["@lingui/react", "Trans"],
-  },
-  extractorParserOptions: {},
-} as const;
-
-const EXTRACTOR_CONTEXT = {
-  linguiConfig: LINGUI_CONFIG,
-} as unknown as ExtractorCtx;
 
 await initWasmOnce();
 
@@ -60,17 +47,19 @@ export function buildSyntheticModuleForTest(
   },
 ): SyntheticModule {
   return buildSyntheticModule({
-    framework,
     source,
     sourceName: options?.sourceName,
     syntheticName: options?.syntheticName,
     whitespace: options?.whitespace,
+    conventions: createTestFrameworkConventions(framework),
   });
 }
 
 export function transformSyntheticModule(
   synthetic: SyntheticModule,
 ): SyntheticTransformResult {
+  const framework = detectFramework(synthetic);
+  const linguiConfig = createLinguiConfigForFramework(framework);
   const transformed = transformSync(synthetic.source, {
     filename: synthetic.syntheticName,
     babelrc: false,
@@ -83,7 +72,7 @@ export function transformSyntheticModule(
       [
         linguiMacroPlugin,
         {
-          linguiConfig: LINGUI_CONFIG,
+          linguiConfig,
           stripMessageField: false,
         },
       ],
@@ -111,6 +100,9 @@ export async function extractMessagesFromSyntheticModule(
   synthetic: SyntheticModule,
 ): Promise<ExtractedMessage[]> {
   const extracted: ExtractedMessage[] = [];
+  const extractorContext = {
+    linguiConfig: createLinguiConfigForFramework(detectFramework(synthetic)),
+  } as unknown as ExtractorCtx;
 
   await runBabelExtractionUnits(
     filename,
@@ -123,7 +115,7 @@ export async function extractMessagesFromSyntheticModule(
     (message) => {
       extracted.push(message);
     },
-    EXTRACTOR_CONTEXT,
+    extractorContext,
   );
 
   return extracted;
@@ -147,6 +139,100 @@ export function reinsertTransformedModule(
 
 function parseSourceMap(sourceMapJson?: string | null) {
   return sourceMapJson ? JSON.parse(sourceMapJson) : undefined;
+}
+
+function detectFramework(synthetic: SyntheticModule): "astro" | "svelte" {
+  if (synthetic.source.includes("lingui-for-astro/macro")) {
+    return "astro";
+  }
+  return "svelte";
+}
+
+function createLinguiConfigForFramework(
+  framework: "astro" | "svelte",
+): LinguiConfigNormalized {
+  const macroPackage =
+    framework === "astro"
+      ? "lingui-for-astro/macro"
+      : "lingui-for-svelte/macro";
+  const runtimePackage =
+    framework === "astro"
+      ? "lingui-for-astro/runtime"
+      : "lingui-for-svelte/runtime";
+
+  return {
+    catalogs: [],
+    compileNamespace: "cjs",
+    extractorParserOptions: {},
+    fallbackLocales: {},
+    locales: [],
+    macro: {
+      corePackage: [LINGUI_CORE_MACRO_PACKAGE, macroPackage],
+      jsxPackage: [macroPackage],
+    },
+    orderBy: "messageId",
+    rootDir: "/virtual",
+    runtimeConfigModule: {
+      i18n: [LINGUI_CORE_PACKAGE, LINGUI_I18N_EXPORT],
+      Trans: [runtimePackage, "RuntimeTrans"],
+      useLingui: ["@lingui/react", "useLingui"],
+    },
+    sourceLocale: "en",
+  };
+}
+
+function createTestFrameworkConventions(framework: "astro" | "svelte") {
+  if (framework === "astro") {
+    return {
+      framework,
+      macro: {
+        primaryPackage: "lingui-for-astro/macro",
+        acceptedPackages: ["lingui-for-astro/macro", "@lingui/core/macro"],
+      },
+      runtime: {
+        package: "lingui-for-astro/runtime",
+        exports: {
+          trans: "RuntimeTrans",
+          i18nAccessor: "createFrontmatterI18n",
+        },
+      },
+      bindings: {
+        i18nAccessorFactory: "__l4a_createI18n",
+        i18nInstance: "__l4a_i18n",
+        runtimeTransComponent: "L4aRuntimeTrans",
+      },
+    } satisfies FrameworkConventions;
+  }
+
+  return {
+    framework,
+    macro: {
+      primaryPackage: "lingui-for-svelte/macro",
+      acceptedPackages: ["lingui-for-svelte/macro", "@lingui/core/macro"],
+    },
+    runtime: {
+      package: "lingui-for-svelte/runtime",
+      exports: {
+        trans: "RuntimeTrans",
+        i18nAccessor: "createLinguiAccessors",
+      },
+    },
+    bindings: {
+      i18nAccessorFactory: "createLinguiAccessors",
+      context: "__l4s_ctx",
+      getI18n: "__l4s_getI18n",
+      translate: "__l4s_translate",
+      runtimeTransComponent: "L4sRuntimeTrans",
+    },
+    synthetic: {
+      expressionPrefix: "__lingui_for_svelte_expr_",
+      componentPrefix: "__lingui_for_svelte_component_",
+    },
+    wrappers: {
+      reactiveTranslation: "__lingui_for_svelte_reactive_translation__",
+      eagerTranslation: "__lingui_for_svelte_eager_translation__",
+    },
+  } satisfies FrameworkConventions;
 }
 
 function collectDeclarationInitializers(

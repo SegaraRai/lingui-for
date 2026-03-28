@@ -3,10 +3,7 @@ import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 
 import {
   LINGUI_CORE_PACKAGE,
-  LINGUI_CORE_MACRO_PACKAGE,
   LINGUI_I18N_EXPORT,
-  LINGUI_MACRO_PACKAGE,
-  LINGUI_REACT_MACRO_PACKAGE,
   LINGUI_RUNTIME_TRANS_EXPORT,
 } from "./lingui-constants.ts";
 
@@ -17,7 +14,8 @@ function uniqueStrings(values: readonly string[]): string[] {
 export function normalizeLinguiConfig(
   config: Partial<LinguiConfig> | undefined,
   options: {
-    readonly macroPackage: string;
+    readonly coreMacroPackages: readonly string[];
+    readonly jsxMacroPackages: readonly string[];
     readonly runtimePackage: string;
   },
 ): LinguiConfigNormalized {
@@ -41,15 +39,11 @@ export function normalizeLinguiConfig(
     ...config,
     macro: {
       corePackage: uniqueStrings([
-        options.macroPackage,
-        LINGUI_MACRO_PACKAGE,
-        LINGUI_CORE_MACRO_PACKAGE,
+        ...options.coreMacroPackages,
         ...(config?.macro?.corePackage ?? []),
       ]),
       jsxPackage: uniqueStrings([
-        options.macroPackage,
-        LINGUI_MACRO_PACKAGE,
-        LINGUI_REACT_MACRO_PACKAGE,
+        ...options.jsxMacroPackages,
         ...(config?.macro?.jsxPackage ?? []),
       ]),
     },

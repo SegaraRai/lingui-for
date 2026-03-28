@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::Span;
+use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
 
@@ -45,11 +46,11 @@ pub struct SyntheticMapping {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct SyntheticModuleOptions {
-    pub framework: String,
     pub source: String,
     pub source_name: Option<String>,
     pub synthetic_name: Option<String>,
     pub whitespace: Option<WhitespaceMode>,
+    pub conventions: FrameworkConventions,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]

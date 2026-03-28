@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, MacroImport, WhitespaceMode};
 use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
@@ -10,29 +11,38 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     source_name: &str,
     synthetic_name: &str,
     whitespace_mode: WhitespaceMode,
+    conventions: FrameworkConventions,
 ) -> Result<P, crate::AnalyzerError> {
-    let mut analysis = P::analyze(source, whitespace_mode)?;
-    let common_analysis = P::common_analysis(&mut analysis);
-    retain_standalone_prototypes(&mut common_analysis.prototypes);
+    let mut analysis = P::analyze(source, whitespace_mode, &conventions)?;
+    let (imports, prototypes, import_removals, synthetic_lang) = {
+        let common_analysis = P::common_analysis(&mut analysis);
+        retain_standalone_prototypes(&mut common_analysis.prototypes);
+        (
+            common_analysis.imports.clone(),
+            common_analysis.prototypes.clone(),
+            common_analysis.import_removals.clone(),
+            common_analysis.synthetic_lang,
+        )
+    };
 
-    let candidates = common_analysis
-        .prototypes
+    let candidates = prototypes
         .iter()
         .map(|prototype| prototype.candidate.clone())
         .collect::<Vec<_>>();
-    let synthetic_plan = build_synthesis_plan(source, &common_analysis.imports, &candidates);
+    let synthetic_plan = build_synthesis_plan(source, &imports, &candidates);
     let synthetic_source = build_compile_synthetic_source(
         &synthetic_plan,
-        &common_analysis.prototypes,
-        P::wrap_compile_source,
+        &prototypes,
+        |prototype, normalized_source| {
+            P::wrap_compile_source(&analysis, prototype, normalized_source)
+        },
     );
     let declaration_ids = synthetic_plan
         .targets
         .iter()
         .map(|target| target.declaration_id.clone())
         .collect::<Vec<_>>();
-    let mut targets = common_analysis
-        .prototypes
+    let mut targets = prototypes
         .clone()
         .into_iter()
         .zip(synthetic_plan.targets.iter())
@@ -57,10 +67,11 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         source_name: source_name.to_string(),
         synthetic_name: synthetic_name.to_string(),
         synthetic_source,
-        synthetic_lang: common_analysis.synthetic_lang,
+        synthetic_lang,
+        conventions,
         declaration_ids,
         targets,
-        import_removals: common_analysis.import_removals.clone(),
+        import_removals,
     };
 
     Ok(P::assemble_plan(common, runtime_requirements, analysis))

@@ -11,9 +11,27 @@ describe("compile/common/config", () => {
     const config = normalizeLinguiConfig();
 
     expect(config.macro?.corePackage).toContain("lingui-for-astro/macro");
+    expect(config.macro?.corePackage).toContain("@lingui/core/macro");
+    expect(config.macro?.jsxPackage).toContain("lingui-for-astro/macro");
     expect(config.runtimeConfigModule.Trans[0]).toBe(
       "lingui-for-astro/runtime",
     );
+  });
+
+  test("accepts astro macro packages via top-level options", () => {
+    const config = normalizeLinguiConfig(
+      {
+        macro: {
+          corePackage: ["custom-core-macro"],
+        },
+      },
+      {
+        astroPackages: ["custom-astro-macro"],
+      },
+    );
+
+    expect(config.macro?.corePackage).toContain("custom-core-macro");
+    expect(config.macro?.jsxPackage).toContain("custom-astro-macro");
   });
 
   test("returns parser plugins including typescript and jsx", () => {

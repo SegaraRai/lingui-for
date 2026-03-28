@@ -59,14 +59,18 @@ fn analyze_astro(
     let (macro_imports, frontmatter_candidates) = if let Some(frontmatter_region) = &frontmatter {
         let frontmatter_source =
             &source[frontmatter_region.inner_span.start..frontmatter_region.inner_span.end];
-        let macro_imports =
-            collect_macro_imports(frontmatter_source, frontmatter_region.inner_span.start)?;
+        let macro_imports = collect_macro_imports(
+            frontmatter_source,
+            frontmatter_region.inner_span.start,
+            &options.conventions,
+        )?;
         let candidates = collect_macro_candidates_in_javascript(
             frontmatter_source,
             &macro_imports,
             frontmatter_region.inner_span.start,
             JsMacroSyntax::Standard,
             JsLikeLanguage::TypeScript,
+            &[],
         )?;
         (macro_imports, candidates)
     } else {
@@ -109,6 +113,7 @@ fn find_frontmatter(root: Node<'_>) -> Option<EmbeddedScriptRegion> {
 fn collect_macro_imports(
     source: &str,
     base_offset: usize,
+    conventions: &crate::conventions::FrameworkConventions,
 ) -> Result<Vec<MacroImport>, AnalyzerError> {
     let js_tree = parse_typescript(source)?;
     let root = js_tree.root_node();
@@ -126,7 +131,7 @@ fn collect_macro_imports(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(&module_specifier) {
+        if !is_macro_module_specifier(&module_specifier, conventions) {
             continue;
         }
 
@@ -273,6 +278,7 @@ fn push_template_expression(
         JsMacroSyntax::Standard,
         // Astro template expressions accept TypeScript syntax such as `as` and `satisfies`.
         JsLikeLanguage::TypeScript,
+        &[],
     )?;
     expressions.push(AstroTemplateExpression {
         outer_span,
@@ -377,15 +383,11 @@ fn unquote(text: &str) -> Option<String> {
     Some(text[1..text.len() - 1].to_string())
 }
 
-fn is_macro_module_specifier(specifier: &str) -> bool {
-    matches!(
-        specifier,
-        "@lingui/macro"
-            | "@lingui/core/macro"
-            | "@lingui/react/macro"
-            | "lingui-for-svelte/macro"
-            | "lingui-for-astro/macro"
-    )
+fn is_macro_module_specifier(
+    specifier: &str,
+    conventions: &crate::conventions::FrameworkConventions,
+) -> bool {
+    conventions.accepts_macro_package(specifier)
 }
 
 fn is_component_tag_name(tag_name: &str) -> bool {
@@ -428,6 +430,7 @@ fn collect_nested_component_normalization_edits(
                     inner.start,
                     JsMacroSyntax::Standard,
                     JsLikeLanguage::TypeScript,
+                    &[],
                 ) {
                     for candidate in candidates {
                         edits.extend(candidate.normalization_edits);
@@ -446,6 +449,7 @@ fn collect_nested_component_normalization_edits(
                     inner.start,
                     JsMacroSyntax::Standard,
                     JsLikeLanguage::TypeScript,
+                    &[],
                 ) {
                     for candidate in candidates {
                         edits.extend(candidate.normalization_edits);
@@ -460,6 +464,7 @@ fn collect_nested_component_normalization_edits(
                     inner.start,
                     JsMacroSyntax::Standard,
                     JsLikeLanguage::TypeScript,
+                    &[],
                 ) {
                     for candidate in candidates {
                         edits.extend(candidate.normalization_edits);

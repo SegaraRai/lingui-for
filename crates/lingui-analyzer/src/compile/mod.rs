@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{ScriptLang, Span};
+use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidate, MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
 
@@ -52,6 +53,7 @@ pub struct CommonCompilePlan {
     pub synthetic_name: String,
     pub synthetic_source: String,
     pub synthetic_lang: ScriptLang,
+    pub conventions: FrameworkConventions,
     pub declaration_ids: Vec<String>,
     pub targets: Vec<CompileTarget>,
     pub import_removals: Vec<Span>,
@@ -88,13 +90,18 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     fn analyze(
         source: &str,
         whitespace_mode: WhitespaceMode,
+        conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, crate::AnalyzerError>;
 
     fn common_analysis(
         analysis: &mut Self::Analysis,
     ) -> &mut adapters::CommonFrameworkCompileAnalysis;
 
-    fn wrap_compile_source(prototype: &CompileTargetPrototype, normalized_source: &str) -> String;
+    fn wrap_compile_source(
+        analysis: &Self::Analysis,
+        prototype: &CompileTargetPrototype,
+        normalized_source: &str,
+    ) -> String;
 
     fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]);
 

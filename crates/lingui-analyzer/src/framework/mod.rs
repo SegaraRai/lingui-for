@@ -10,6 +10,7 @@ use tsify::Tsify;
 
 use crate::AnalyzerError;
 use crate::common::Span;
+use crate::conventions::FrameworkConventions;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -86,6 +87,7 @@ pub struct MacroCandidate {
 #[serde(rename_all = "camelCase")]
 pub struct AnalyzeOptions {
     pub whitespace: WhitespaceMode,
+    pub conventions: FrameworkConventions,
 }
 
 pub trait FrameworkAdapter {

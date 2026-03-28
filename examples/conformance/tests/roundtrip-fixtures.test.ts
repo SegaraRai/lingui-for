@@ -38,7 +38,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteExpressionSource = dedent`
     <script lang="ts">
       import { t as translate } from "@lingui/core/macro";
-      import { Trans as Translation } from "@lingui/react/macro";
+      import { Trans as Translation } from "lingui-for-svelte/macro";
       const reactiveLabel = $translate\`Fixture reactive script\`;
       const eagerLabel = translate.eager\`Fixture eager script\`;
       const name = "Ada";
@@ -127,7 +127,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteComponentFilename = "/virtual/ComponentBoundary.svelte";
   const svelteComponentSource = dedent`
     <script lang="ts">
-      import { Trans as Translation } from "@lingui/react/macro";
+      import { Trans as Translation } from "lingui-for-svelte/macro";
       const name = "Ada";
     </script>
 
@@ -148,7 +148,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     "/virtual/ComponentWhitespace.svelte";
   const svelteWhitespaceComponentSource = dedent`
     <script lang="ts">
-      import { Trans as Translation } from "@lingui/react/macro";
+      import { Trans as Translation } from "lingui-for-svelte/macro";
       const name = "Ada";
     </script>
 
@@ -166,7 +166,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteNestedComponentSource = dedent`
     <script lang="ts">
       import { t as translate } from "@lingui/core/macro";
-      import { Trans as Translation } from "@lingui/react/macro";
+      import { Trans as Translation } from "lingui-for-svelte/macro";
       const name = "Ada";
     </script>
 
@@ -233,7 +233,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const astroExpressionSource = dedent`
     ---
     import { t as translate } from "@lingui/core/macro";
-    import { Trans as Translation } from "@lingui/react/macro";
+    import { Trans as Translation } from "lingui-for-astro/macro";
     const label = translate\`Fixture frontmatter\`;
     const name = "Ada";
     ---
@@ -305,7 +305,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const astroComponentFilename = "/virtual/ComponentBoundary.astro";
   const astroComponentSource = dedent`
     ---
-    import { Trans as Translation } from "@lingui/react/macro";
+    import { Trans as Translation } from "lingui-for-astro/macro";
     const name = "Ada";
     ---
 
@@ -325,7 +325,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const astroWhitespaceComponentFilename = "/virtual/ComponentWhitespace.astro";
   const astroWhitespaceComponentSource = dedent`
     ---
-    import { Trans as Translation } from "@lingui/react/macro";
+    import { Trans as Translation } from "lingui-for-astro/macro";
     const name = "Ada";
     ---
 
@@ -343,7 +343,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const astroNestedComponentSource = dedent`
     ---
     import { t as translate } from "@lingui/core/macro";
-    import { Trans as Translation } from "@lingui/react/macro";
+    import { Trans as Translation } from "lingui-for-astro/macro";
     const name = "Ada";
     ---
 
@@ -410,7 +410,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteComplexSource = dedent`
     <script lang="ts">
       import { msg, t as translate } from "@lingui/core/macro";
-      import { Plural, Trans as Translation } from "@lingui/react/macro";
+      import { Plural, Trans as Translation } from "lingui-for-svelte/macro";
       const loading = false;
       const count = 3;
       const gender = "female";
@@ -425,7 +425,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       Before
       <Plural
         value={count}
-        one={translate\`One item for \${gender}.\`}
+        one={$translate\`One item for \${gender}.\`}
         other={$translate\`Plural loaded \${count} items.\`}
       />
       After
@@ -464,7 +464,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const astroComplexSource = dedent`
     ---
     import { msg, select, t as translate } from "@lingui/core/macro";
-    import { Plural, Trans as Translation } from "@lingui/react/macro";
+    import { Plural, Trans as Translation } from "lingui-for-astro/macro";
     const loading = false;
     const count = 3;
     const gender = "female";
@@ -520,7 +520,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteUnicodeSource = dedent`
     <script lang="ts">
       import { t as translate } from "@lingui/core/macro";
-      import { Trans as Translation } from "@lingui/react/macro";
+      import { Trans as Translation } from "lingui-for-svelte/macro";
       const name = "世界😀";
     </script>
 
@@ -563,7 +563,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const astroUnicodeSource = dedent`
     ---
     import { t as translate } from "@lingui/core/macro";
-    import { Trans as Translation } from "@lingui/react/macro";
+    import { Trans as Translation } from "lingui-for-astro/macro";
     const name = "世界😀";
     ---
 
@@ -606,7 +606,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteUnicodeCrlfSource = [
     '<script lang="ts">',
     '  import { t as translate } from "@lingui/core/macro";',
-    '  import { Trans as Translation } from "@lingui/react/macro";',
+    '  import { Trans as Translation } from "lingui-for-svelte/macro";',
     '  const name = "世界👨‍👩‍👧‍👦😀😃😄";',
     "</script>",
     "",
@@ -650,7 +650,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const astroUnicodeCrlfSource = [
     "---",
     'import { t as translate } from "@lingui/core/macro";',
-    'import { Trans as Translation } from "@lingui/react/macro";',
+    'import { Trans as Translation } from "lingui-for-astro/macro";',
     'const name = "世界👨‍👩‍👧‍👦😀😃😄";',
     "---",
     "",

@@ -1,11 +1,16 @@
+#[path = "support/svelte.rs"]
+mod svelte_support;
+
 use indoc::indoc;
 use sourcemap::DecodedMap;
 
 use lingui_analyzer::{
     MacroFlavor, WhitespaceMode,
     extract::build_synthetic_module,
-    framework::{AnalyzeOptions, FrameworkAdapter, svelte::SvelteAdapter},
+    framework::{FrameworkAdapter, svelte::SvelteAdapter},
 };
+
+use svelte_support::analyze_options_for_svelte;
 
 #[test]
 fn builds_synthetic_module_with_normalized_svelte_macros() {
@@ -20,12 +25,7 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let script = &analysis.scripts[0];
     let synthetic = build_synthetic_module(
@@ -77,7 +77,7 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
 fn builds_synthetic_module_for_svelte_template_components() {
     let source = indoc! {r#"
         <script>
-          import { Trans as T } from "@lingui/react/macro";
+          import { Trans as T } from "lingui-for-svelte/macro";
         </script>
 
         <T id="root" />
@@ -85,12 +85,7 @@ fn builds_synthetic_module_for_svelte_template_components() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let candidates = analysis
         .template_components
@@ -108,7 +103,7 @@ fn builds_synthetic_module_for_svelte_template_components() {
     assert!(
         synthetic
             .source
-            .contains("import { Trans as T } from \"@lingui/react/macro\";")
+            .contains("import { Trans as T } from \"lingui-for-svelte/macro\";")
     );
     assert!(
         synthetic
@@ -128,7 +123,7 @@ fn groups_synthetic_imports_by_source() {
     let source = indoc! {r#"
         <script>
           import { t } from "@lingui/core/macro";
-          import { Trans as T } from "@lingui/react/macro";
+          import { Trans as T } from "lingui-for-svelte/macro";
           const direct = t`Hello`;
         </script>
 
@@ -136,12 +131,7 @@ fn groups_synthetic_imports_by_source() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let mut candidates = analysis.scripts[0].candidates.clone();
     candidates.extend(
@@ -166,7 +156,7 @@ fn groups_synthetic_imports_by_source() {
     assert!(
         synthetic
             .source
-            .contains("import { Trans as T } from \"@lingui/react/macro\";")
+            .contains("import { Trans as T } from \"lingui-for-svelte/macro\";")
     );
     assert!(synthetic.source.contains("const __lf_0 = t`Hello`;"));
     assert!(
@@ -186,12 +176,7 @@ fn emits_lookupable_sourcemap_for_normalized_segments() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let synthetic = build_synthetic_module(
         source,
@@ -228,12 +213,7 @@ fn emits_utf16_columns_for_unicode_prefixes() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let synthetic = build_synthetic_module(
         source,
@@ -261,7 +241,7 @@ fn emits_utf16_columns_for_unicode_prefixes() {
 fn maps_component_declaration_start_to_component_message_anchor() {
     let source = indoc! {r#"
         <script>
-          import { Trans as T } from "@lingui/react/macro";
+          import { Trans as T } from "lingui-for-svelte/macro";
           const name = "Ada";
         </script>
 
@@ -269,12 +249,7 @@ fn maps_component_declaration_start_to_component_message_anchor() {
     "#};
 
     let analysis = SvelteAdapter
-        .analyze(
-            source,
-            &AnalyzeOptions {
-                whitespace: WhitespaceMode::Svelte,
-            },
-        )
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let candidates = analysis
         .template_components

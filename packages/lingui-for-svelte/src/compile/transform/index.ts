@@ -15,6 +15,7 @@ import {
   resolveSvelteWhitespace,
   type RichTextWhitespaceMode,
 } from "../common/config.ts";
+import { createSvelteFrameworkConventions } from "../common/conventions.ts";
 import { transformProgram } from "../lower/babel-transform.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
@@ -22,6 +23,7 @@ export type { RichTextWhitespaceMode } from "../common/config.ts";
 export interface LinguiSvelteTransformOptions {
   filename: string;
   linguiConfig?: Partial<LinguiConfig> | undefined;
+  sveltePackages?: readonly string[] | undefined;
   whitespace?: RichTextWhitespaceMode | undefined;
 }
 
@@ -46,9 +48,12 @@ export async function transformSvelte(
   const {
     filename,
     linguiConfig: linguiConfigPartial,
+    sveltePackages,
     whitespace = "auto",
   } = options;
-  const linguiConfig = normalizeLinguiConfig(linguiConfigPartial);
+  const linguiConfig = normalizeLinguiConfig(linguiConfigPartial, {
+    sveltePackages,
+  });
 
   await initWasmOnce();
 
@@ -57,6 +62,9 @@ export async function transformSvelte(
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
     whitespace: resolveSvelteWhitespace(whitespace),
+    conventions: createSvelteFrameworkConventions(linguiConfig, {
+      sveltePackages,
+    }),
   });
   if (compilePlan.common.declarationIds.length === 0) {
     return null;

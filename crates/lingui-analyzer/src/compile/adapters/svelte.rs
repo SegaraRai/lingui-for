@@ -6,6 +6,7 @@ use tsify::Tsify;
 use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
 use crate::compile::CompileTranslationMode;
+use crate::conventions::FrameworkConventions;
 use crate::framework::svelte::{SvelteAdapter, bare_direct_macro_message};
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy,
@@ -18,15 +19,6 @@ use super::super::{
     build_compile_plan_for_framework,
 };
 use super::CommonFrameworkCompileAnalysis;
-
-const SVELTE_REACTIVE_WRAPPER: &str = "__lingui_for_svelte_reactive_translation__";
-const SVELTE_EAGER_WRAPPER: &str = "__lingui_for_svelte_eager_translation__";
-const SVELTE_BINDING_CREATE_LINGUI_ACCESSORS: &str = "createLinguiAccessors";
-const SVELTE_BINDING_CONTEXT: &str = "__l4s_ctx";
-const SVELTE_BINDING_GET_I18N: &str = "__l4s_getI18n";
-const SVELTE_BINDING_TRANSLATE: &str = "__l4s_translate";
-const SVELTE_BINDING_RUNTIME_TRANS: &str = "L4sRuntimeTrans";
-const SVELTE_RUNTIME_PACKAGE: &str = "lingui-for-svelte/runtime";
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -65,16 +57,21 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     fn analyze(
         source: &str,
         whitespace_mode: WhitespaceMode,
+        conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, AnalyzerError> {
-        analyze_svelte_compile(source, whitespace_mode)
+        analyze_svelte_compile(source, whitespace_mode, conventions)
     }
 
     fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
         &mut analysis.common
     }
 
-    fn wrap_compile_source(prototype: &CompileTargetPrototype, normalized_source: &str) -> String {
-        wrap_compile_source(prototype, normalized_source)
+    fn wrap_compile_source(
+        analysis: &Self::Analysis,
+        prototype: &CompileTargetPrototype,
+        normalized_source: &str,
+    ) -> String {
+        wrap_compile_source(analysis, prototype, normalized_source)
     }
 
     fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]) {
@@ -127,21 +124,15 @@ impl SvelteCompilePlan {
         source: &str,
         source_name: &str,
         synthetic_name: &str,
-    ) -> Result<Self, AnalyzerError> {
-        Self::build_with_whitespace(source, source_name, synthetic_name, WhitespaceMode::Svelte)
-    }
-
-    pub fn build_with_whitespace(
-        source: &str,
-        source_name: &str,
-        synthetic_name: &str,
         whitespace_mode: WhitespaceMode,
+        conventions: FrameworkConventions,
     ) -> Result<Self, AnalyzerError> {
         build_compile_plan_for_framework::<Self>(
             source,
             source_name,
             synthetic_name,
             whitespace_mode,
+            conventions,
         )
     }
 }
@@ -149,6 +140,7 @@ impl SvelteCompilePlan {
 #[derive(Debug, Clone)]
 pub(crate) struct SvelteFrameworkCompileAnalysis {
     pub(crate) common: CommonFrameworkCompileAnalysis,
+    pub(crate) conventions: FrameworkConventions,
     pub(crate) runtime_bindings: SvelteCompileRuntimeBindings,
     pub(crate) instance_script: Option<SvelteCompileScriptRegion>,
     pub(crate) module_script: Option<SvelteCompileScriptRegion>,
@@ -157,8 +149,15 @@ pub(crate) struct SvelteFrameworkCompileAnalysis {
 pub(crate) fn analyze_svelte_compile(
     source: &str,
     whitespace: WhitespaceMode,
+    conventions: &FrameworkConventions,
 ) -> Result<SvelteFrameworkCompileAnalysis, AnalyzerError> {
-    let analysis = SvelteAdapter.analyze(source, &AnalyzeOptions { whitespace })?;
+    let analysis = SvelteAdapter.analyze(
+        source,
+        &AnalyzeOptions {
+            whitespace,
+            conventions: conventions.clone(),
+        },
+    )?;
     let imports = analysis
         .scripts
         .iter()
@@ -240,6 +239,7 @@ pub(crate) fn analyze_svelte_compile(
                 .or_else(|| module_script.as_ref().map(|script| script.lang))
                 .unwrap_or(ScriptLang::Ts),
         },
+        conventions: conventions.clone(),
         runtime_bindings: create_runtime_bindings(
             analysis
                 .scripts
@@ -247,6 +247,7 @@ pub(crate) fn analyze_svelte_compile(
                 .find(|script| !script.is_module)
                 .map(|script| script.declared_names.as_slice())
                 .unwrap_or(&[]),
+            conventions,
         ),
         instance_script: instance_script.clone(),
         module_script: module_script.clone(),
@@ -278,19 +279,32 @@ pub(crate) fn compile_script_region(
 }
 
 pub(crate) fn wrap_compile_source(
+    analysis: &SvelteFrameworkCompileAnalysis,
     prototype: &CompileTargetPrototype,
     normalized_source: &str,
 ) -> String {
     if prototype.output_kind == CompileTargetOutputKind::Expression {
         match prototype.candidate.flavor {
             MacroFlavor::Reactive => {
+                let wrapper = analysis
+                    .conventions
+                    .wrappers
+                    .as_ref()
+                    .and_then(|wrappers| wrappers.reactive_translation.as_deref())
+                    .expect("svelte reactive wrapper should be configured");
                 return format!(
-                    "{SVELTE_REACTIVE_WRAPPER}({normalized_source}, {:?})",
+                    "{wrapper}({normalized_source}, {:?})",
                     prototype.candidate.local_name
                 );
             }
             MacroFlavor::Eager => {
-                return format!("{SVELTE_EAGER_WRAPPER}({normalized_source})");
+                let wrapper = analysis
+                    .conventions
+                    .wrappers
+                    .as_ref()
+                    .and_then(|wrappers| wrappers.eager_translation.as_deref())
+                    .expect("svelte eager wrapper should be configured");
+                return format!("{wrapper}({normalized_source})");
             }
             MacroFlavor::Direct => {}
         }
@@ -312,18 +326,46 @@ pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> Runtime
     }
 }
 
-pub(crate) fn create_runtime_bindings(declared_names: &[String]) -> SvelteCompileRuntimeBindings {
+pub(crate) fn create_runtime_bindings(
+    declared_names: &[String],
+    conventions: &FrameworkConventions,
+) -> SvelteCompileRuntimeBindings {
     let mut used = declared_names.iter().cloned().collect::<BTreeSet<_>>();
+    let bindings = &conventions.bindings;
 
     SvelteCompileRuntimeBindings {
         create_lingui_accessors: allocate_unique_binding_name(
             &mut used,
-            SVELTE_BINDING_CREATE_LINGUI_ACCESSORS,
+            bindings
+                .i18n_accessor_factory
+                .as_deref()
+                .expect("svelte conventions should provide i18n accessor factory"),
         ),
-        context: allocate_unique_binding_name(&mut used, SVELTE_BINDING_CONTEXT),
-        get_i18n: allocate_unique_binding_name(&mut used, SVELTE_BINDING_GET_I18N),
-        translate: allocate_unique_binding_name(&mut used, SVELTE_BINDING_TRANSLATE),
-        trans_component: allocate_unique_binding_name(&mut used, SVELTE_BINDING_RUNTIME_TRANS),
+        context: allocate_unique_binding_name(
+            &mut used,
+            bindings
+                .context
+                .as_deref()
+                .expect("svelte conventions should provide context binding"),
+        ),
+        get_i18n: allocate_unique_binding_name(
+            &mut used,
+            bindings
+                .get_i18n
+                .as_deref()
+                .expect("svelte conventions should provide getI18n binding"),
+        ),
+        translate: allocate_unique_binding_name(
+            &mut used,
+            bindings
+                .translate
+                .as_deref()
+                .expect("svelte conventions should provide translate binding"),
+        ),
+        trans_component: allocate_unique_binding_name(
+            &mut used,
+            bindings.runtime_trans_component.as_str(),
+        ),
     }
 }
 
@@ -419,6 +461,7 @@ pub(super) fn append_runtime_injection_replacements(
             runtime_bindings,
             needs_lingui_context,
             needs_trans_component,
+            &plan.common.conventions,
         );
         let insertion_start =
             get_script_insertion_start(source, instance_script.content_span.start);
@@ -451,6 +494,7 @@ pub(super) fn append_runtime_injection_replacements(
         runtime_bindings,
         needs_lingui_context,
         needs_trans_component,
+        &plan.common.conventions,
     );
     let block = format!("<script>\n{}{}</script>", injected.prelude, injected.suffix);
     let insertion_start = plan
@@ -530,26 +574,37 @@ fn create_runtime_binding_insertions(
     runtime_bindings: &SvelteCompileRuntimeBindings,
     include_lingui_context: bool,
     include_trans_component: bool,
+    conventions: &FrameworkConventions,
 ) -> RuntimeInsertions {
     let mut prelude = String::new();
     let mut suffix = String::new();
+    let runtime_package = conventions.runtime.package.as_str();
+    let trans_export = conventions.runtime.exports.trans.as_str();
+    let i18n_accessor_export = conventions
+        .runtime
+        .exports
+        .i18n_accessor
+        .as_deref()
+        .expect("svelte conventions should provide i18n accessor export");
 
     if include_lingui_context && include_trans_component {
         prelude.push_str(&format!(
-            "import {{ RuntimeTrans as {}, createLinguiAccessors as {} }} from \"{}\";\n",
+            "import {{ {} as {}, {} as {} }} from \"{}\";\n",
+            trans_export,
             runtime_bindings.trans_component,
+            i18n_accessor_export,
             runtime_bindings.create_lingui_accessors,
-            SVELTE_RUNTIME_PACKAGE
+            runtime_package
         ));
     } else if include_lingui_context {
         prelude.push_str(&format!(
-            "import {{ createLinguiAccessors as {} }} from \"{}\";\n",
-            runtime_bindings.create_lingui_accessors, SVELTE_RUNTIME_PACKAGE
+            "import {{ {} as {} }} from \"{}\";\n",
+            i18n_accessor_export, runtime_bindings.create_lingui_accessors, runtime_package
         ));
     } else if include_trans_component {
         prelude.push_str(&format!(
-            "import {{ RuntimeTrans as {} }} from \"{}\";\n",
-            runtime_bindings.trans_component, SVELTE_RUNTIME_PACKAGE
+            "import {{ {} as {} }} from \"{}\";\n",
+            trans_export, runtime_bindings.trans_component, runtime_package
         ));
     }
 

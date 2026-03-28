@@ -3,6 +3,7 @@ use tsify::Tsify;
 
 use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
+use crate::conventions::FrameworkConventions;
 use crate::framework::astro::AstroAdapter;
 use crate::framework::js::{JsLikeLanguage, collect_top_level_declared_names_in_javascript};
 use crate::framework::parse::parse_typescript;
@@ -14,11 +15,6 @@ use super::super::{
     RuntimeRequirements, build_compile_plan_for_framework,
 };
 use super::CommonFrameworkCompileAnalysis;
-
-const ASTRO_BINDING_CREATE_I18N: &str = "__l4a_createI18n";
-const ASTRO_BINDING_I18N: &str = "__l4a_i18n";
-const ASTRO_BINDING_RUNTIME_TRANS: &str = "L4aRuntimeTrans";
-const ASTRO_RUNTIME_PACKAGE: &str = "lingui-for-astro/runtime";
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -56,15 +52,20 @@ impl FrameworkCompilePlan for AstroCompilePlan {
     fn analyze(
         source: &str,
         whitespace_mode: WhitespaceMode,
+        conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, AnalyzerError> {
-        analyze_astro_compile(source, whitespace_mode)
+        analyze_astro_compile(source, whitespace_mode, conventions)
     }
 
     fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
         &mut analysis.common
     }
 
-    fn wrap_compile_source(_prototype: &CompileTargetPrototype, normalized_source: &str) -> String {
+    fn wrap_compile_source(
+        _analysis: &Self::Analysis,
+        _prototype: &CompileTargetPrototype,
+        normalized_source: &str,
+    ) -> String {
         normalized_source.to_string()
     }
 
@@ -115,21 +116,15 @@ impl AstroCompilePlan {
         source: &str,
         source_name: &str,
         synthetic_name: &str,
-    ) -> Result<Self, AnalyzerError> {
-        Self::build_with_whitespace(source, source_name, synthetic_name, WhitespaceMode::Astro)
-    }
-
-    pub fn build_with_whitespace(
-        source: &str,
-        source_name: &str,
-        synthetic_name: &str,
         whitespace_mode: WhitespaceMode,
+        conventions: FrameworkConventions,
     ) -> Result<Self, AnalyzerError> {
         build_compile_plan_for_framework::<Self>(
             source,
             source_name,
             synthetic_name,
             whitespace_mode,
+            conventions,
         )
     }
 }
@@ -144,16 +139,23 @@ pub(crate) struct AstroFrameworkCompileAnalysis {
 pub(crate) fn analyze_astro_compile(
     source: &str,
     whitespace: WhitespaceMode,
+    conventions: &FrameworkConventions,
 ) -> Result<AstroFrameworkCompileAnalysis, AnalyzerError> {
-    let analysis = AstroAdapter.analyze(source, &AnalyzeOptions { whitespace })?;
+    let analysis = AstroAdapter.analyze(
+        source,
+        &AnalyzeOptions {
+            whitespace,
+            conventions: conventions.clone(),
+        },
+    )?;
     let frontmatter = analysis
         .frontmatter
         .as_ref()
-        .map(|region| build_frontmatter_region(source, region));
+        .map(|region| build_frontmatter_region(source, region, conventions));
     let import_removals = analysis
         .frontmatter
         .as_ref()
-        .map(|region| collect_macro_import_statement_spans(source, region))
+        .map(|region| collect_macro_import_statement_spans(source, region, conventions))
         .transpose()?
         .unwrap_or_default();
     let mut prototypes = Vec::new();
@@ -206,6 +208,7 @@ pub(crate) fn analyze_astro_compile(
                 .as_ref()
                 .map(|region| &source[region.inner_span.start..region.inner_span.end])
                 .unwrap_or(""),
+            conventions,
         )?,
         frontmatter,
     })
@@ -222,6 +225,7 @@ pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> Runtime
 
 fn create_runtime_bindings(
     frontmatter_source: &str,
+    conventions: &FrameworkConventions,
 ) -> Result<AstroCompileRuntimeBindings, AnalyzerError> {
     let declared_names = collect_top_level_declared_names_in_javascript(
         frontmatter_source,
@@ -232,9 +236,26 @@ fn create_runtime_bindings(
         .collect::<std::collections::BTreeSet<_>>();
 
     Ok(AstroCompileRuntimeBindings {
-        create_i18n: allocate_unique_binding_name(&mut used, ASTRO_BINDING_CREATE_I18N),
-        i18n: allocate_unique_binding_name(&mut used, ASTRO_BINDING_I18N),
-        runtime_trans: allocate_unique_binding_name(&mut used, ASTRO_BINDING_RUNTIME_TRANS),
+        create_i18n: allocate_unique_binding_name(
+            &mut used,
+            conventions
+                .bindings
+                .i18n_accessor_factory
+                .as_deref()
+                .expect("astro conventions should provide i18n accessor factory binding"),
+        ),
+        i18n: allocate_unique_binding_name(
+            &mut used,
+            conventions
+                .bindings
+                .i18n_instance
+                .as_deref()
+                .expect("astro conventions should provide i18n binding"),
+        ),
+        runtime_trans: allocate_unique_binding_name(
+            &mut used,
+            conventions.bindings.runtime_trans_component.as_str(),
+        ),
     })
 }
 
@@ -264,6 +285,7 @@ fn append_runtime_injection_replacements(
         plan.runtime_requirements.needs_runtime_i18n_binding,
         plan.runtime_requirements.needs_runtime_trans_component,
         &plan.runtime_bindings,
+        &plan.common.conventions,
     );
 
     if prelude.is_empty() {
@@ -311,13 +333,22 @@ fn build_frontmatter_prelude(
     include_astro_context: bool,
     include_runtime_trans: bool,
     bindings: &AstroCompileRuntimeBindings,
+    conventions: &FrameworkConventions,
 ) -> String {
     let mut lines = String::new();
+    let runtime_package = conventions.runtime.package.as_str();
+    let trans_export = conventions.runtime.exports.trans.as_str();
+    let i18n_accessor_export = conventions
+        .runtime
+        .exports
+        .i18n_accessor
+        .as_deref()
+        .expect("astro conventions should provide i18n accessor export");
 
     if include_astro_context {
         lines.push_str(&format!(
-            "import {{ createFrontmatterI18n as {} }} from \"{}\";\n",
-            bindings.create_i18n, ASTRO_RUNTIME_PACKAGE
+            "import {{ {} as {} }} from \"{}\";\n",
+            i18n_accessor_export, bindings.create_i18n, runtime_package
         ));
         lines.push_str(&format!(
             "const {} = {}(Astro.locals);\n",
@@ -327,8 +358,8 @@ fn build_frontmatter_prelude(
 
     if include_runtime_trans {
         lines.push_str(&format!(
-            "import {{ RuntimeTrans as {} }} from \"{}\";\n",
-            bindings.runtime_trans, ASTRO_RUNTIME_PACKAGE
+            "import {{ {} as {} }} from \"{}\";\n",
+            trans_export, bindings.runtime_trans, runtime_package
         ));
     }
 
@@ -338,6 +369,7 @@ fn build_frontmatter_prelude(
 fn build_frontmatter_region(
     source: &str,
     region: &EmbeddedScriptRegion,
+    conventions: &FrameworkConventions,
 ) -> AstroCompileFrontmatterRegion {
     AstroCompileFrontmatterRegion {
         outer_span: region.outer_span,
@@ -345,7 +377,9 @@ fn build_frontmatter_region(
         prelude_insert_point: compute_prelude_insert_point(source, region.inner_span.start),
         trailing_whitespace_range: compute_trailing_whitespace_range(source, region),
         has_remaining_content_after_import_removal: has_remaining_content_after_import_removal(
-            source, region,
+            source,
+            region,
+            conventions,
         ),
     }
 }
@@ -377,9 +411,14 @@ fn compute_trailing_whitespace_range(source: &str, region: &EmbeddedScriptRegion
     }
 }
 
-fn has_remaining_content_after_import_removal(source: &str, region: &EmbeddedScriptRegion) -> bool {
+fn has_remaining_content_after_import_removal(
+    source: &str,
+    region: &EmbeddedScriptRegion,
+    conventions: &FrameworkConventions,
+) -> bool {
     let content = &source[region.inner_span.start..region.inner_span.end];
-    let ranges = collect_macro_import_statement_spans(source, region).unwrap_or_default();
+    let ranges =
+        collect_macro_import_statement_spans(source, region, conventions).unwrap_or_default();
     let relative_ranges = ranges
         .into_iter()
         .map(|span| {
@@ -402,6 +441,7 @@ fn has_remaining_content_after_import_removal(source: &str, region: &EmbeddedScr
 fn collect_macro_import_statement_spans(
     source: &str,
     region: &EmbeddedScriptRegion,
+    conventions: &FrameworkConventions,
 ) -> Result<Vec<Span>, AnalyzerError> {
     let frontmatter_source = &source[region.inner_span.start..region.inner_span.end];
     let tree = parse_typescript(frontmatter_source)?;
@@ -418,11 +458,7 @@ fn collect_macro_import_statement_spans(
         };
         let module_specifier =
             &frontmatter_source[source_node.start_byte() + 1..source_node.end_byte() - 1];
-        if module_specifier != "lingui-for-astro/macro"
-            && module_specifier != "@lingui/macro"
-            && module_specifier != "@lingui/core/macro"
-            && module_specifier != "@lingui/react/macro"
-        {
+        if !conventions.accepts_macro_package(module_specifier) {
             continue;
         }
 

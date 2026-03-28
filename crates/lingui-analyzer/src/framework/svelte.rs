@@ -6,8 +6,7 @@ use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{
     BindingParseMode, JsLikeLanguage, JsMacroSyntax, collect_declared_names_from_binding_source,
-    collect_macro_candidates_in_javascript, collect_macro_candidates_in_javascript_with_shadowing,
-    collect_top_level_declared_names_in_javascript,
+    collect_macro_candidates_in_javascript, collect_top_level_declared_names_in_javascript,
 };
 use super::parse::{parse_javascript, parse_svelte, parse_typescript};
 use super::{
@@ -68,7 +67,7 @@ fn analyze_svelte(
 ) -> Result<SvelteScriptAnalysis, AnalyzerError> {
     let tree = parse_svelte(source)?;
     let root = tree.root_node();
-    let mut scripts = collect_script_blocks(source, root)?;
+    let mut scripts = collect_script_blocks(source, root, options)?;
     let template_imports = scripts
         .iter()
         .filter(|script| !script.is_module)
@@ -108,14 +107,16 @@ fn analyze_svelte(
 fn collect_script_blocks(
     source: &str,
     node: Node<'_>,
+    options: &AnalyzeOptions,
 ) -> Result<Vec<SvelteScriptBlock>, AnalyzerError> {
     fn collect_script_blocks_impl(
         source: &str,
         node: Node<'_>,
+        options: &AnalyzeOptions,
         scripts: &mut Vec<SvelteScriptBlock>,
     ) -> Result<(), AnalyzerError> {
         if node.kind() == "script_element" {
-            if let Some(script) = analyze_script_block(source, node)? {
+            if let Some(script) = analyze_script_block(source, node, options)? {
                 scripts.push(script);
             }
             return Ok(());
@@ -123,13 +124,13 @@ fn collect_script_blocks(
 
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
-            collect_script_blocks_impl(source, child, scripts)?;
+            collect_script_blocks_impl(source, child, options, scripts)?;
         }
         Ok(())
     }
 
     let mut scripts = Vec::new();
-    collect_script_blocks_impl(source, node, &mut scripts)?;
+    collect_script_blocks_impl(source, node, options, &mut scripts)?;
 
     Ok(scripts)
 }
@@ -137,6 +138,7 @@ fn collect_script_blocks(
 fn analyze_script_block(
     source: &str,
     script_element: Node<'_>,
+    options: &AnalyzeOptions,
 ) -> Result<Option<SvelteScriptBlock>, AnalyzerError> {
     let mut cursor = script_element.walk();
     let mut raw_text = None;
@@ -162,12 +164,17 @@ fn analyze_script_block(
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
     let language = script_language(source, start_tag);
     let declared_names = collect_top_level_declared_names_in_javascript(script_source, language)?;
-    let macro_imports =
-        collect_script_macro_imports(script_source, content_region.inner_span.start, language)?;
+    let macro_imports = collect_script_macro_imports(
+        script_source,
+        content_region.inner_span.start,
+        language,
+        &options.conventions,
+    )?;
     let macro_import_statement_spans = collect_script_macro_import_statement_spans(
         script_source,
         content_region.inner_span.start,
         language,
+        &options.conventions,
     )?
     .into_iter()
     .map(|span| expand_import_removal_span_in_source(source, span))
@@ -178,6 +185,7 @@ fn analyze_script_block(
         content_region.inner_span.start,
         JsMacroSyntax::Svelte,
         language,
+        &[],
     )?;
 
     Ok(Some(SvelteScriptBlock {
@@ -284,7 +292,7 @@ fn push_expression(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+    let candidates = collect_macro_candidates_in_javascript(
         expression_source,
         imports,
         inner_span.start,
@@ -318,7 +326,7 @@ fn push_raw_text_expression(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+    let candidates = collect_macro_candidates_in_javascript(
         text(source, raw_text),
         imports,
         inner_span.start,
@@ -381,7 +389,7 @@ fn push_each_start_expression(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+    let candidates = collect_macro_candidates_in_javascript(
         text(source, identifier),
         imports,
         inner_span.start,
@@ -741,7 +749,7 @@ fn append_expression_normalization_edits(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+    let candidates = collect_macro_candidates_in_javascript(
         &source[inner_span.start..inner_span.end],
         imports,
         inner_span.start,
@@ -774,7 +782,7 @@ fn append_raw_text_expression_normalization_edits(
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
     let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
-    let candidates = collect_macro_candidates_in_javascript_with_shadowing(
+    let candidates = collect_macro_candidates_in_javascript(
         &source[inner_span.start..inner_span.end],
         imports,
         inner_span.start,
@@ -1134,6 +1142,7 @@ fn collect_script_macro_imports(
     source: &str,
     base_offset: usize,
     language: JsLikeLanguage,
+    conventions: &crate::conventions::FrameworkConventions,
 ) -> Result<Vec<MacroImport>, AnalyzerError> {
     let js_tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(source)?,
@@ -1154,7 +1163,7 @@ fn collect_script_macro_imports(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(&module_specifier) {
+        if !is_macro_module_specifier(&module_specifier, conventions) {
             continue;
         }
 
@@ -1174,6 +1183,7 @@ fn collect_script_macro_import_statement_spans(
     source: &str,
     base_offset: usize,
     language: JsLikeLanguage,
+    conventions: &crate::conventions::FrameworkConventions,
 ) -> Result<Vec<Span>, AnalyzerError> {
     let js_tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(source)?,
@@ -1194,7 +1204,7 @@ fn collect_script_macro_import_statement_spans(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(&module_specifier) {
+        if !is_macro_module_specifier(&module_specifier, conventions) {
             continue;
         }
 
@@ -1315,15 +1325,11 @@ fn unquote(text: &str) -> Option<String> {
     Some(text[1..text.len() - 1].to_string())
 }
 
-fn is_macro_module_specifier(specifier: &str) -> bool {
-    matches!(
-        specifier,
-        "@lingui/macro"
-            | "@lingui/core/macro"
-            | "@lingui/react/macro"
-            | "lingui-for-svelte/macro"
-            | "lingui-for-astro/macro"
-    )
+fn is_macro_module_specifier(
+    specifier: &str,
+    conventions: &crate::conventions::FrameworkConventions,
+) -> bool {
+    conventions.accepts_macro_package(specifier)
 }
 
 fn find_first_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {

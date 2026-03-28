@@ -15,7 +15,8 @@ describe("config helpers", () => {
         },
       },
       {
-        macroPackage: "lingui-for-test/macro",
+        coreMacroPackages: ["lingui-for-test/macro", "@lingui/core/macro"],
+        jsxMacroPackages: ["lingui-for-test/macro"],
         runtimePackage: "lingui-for-test/runtime",
       },
     );
@@ -23,16 +24,10 @@ describe("config helpers", () => {
 
     expect(macro.corePackage).toEqual([
       "lingui-for-test/macro",
-      "@lingui/macro",
       "@lingui/core/macro",
       "custom-core",
     ]);
-    expect(macro.jsxPackage).toEqual([
-      "lingui-for-test/macro",
-      "@lingui/macro",
-      "@lingui/react/macro",
-      "custom-jsx",
-    ]);
+    expect(macro.jsxPackage).toEqual(["lingui-for-test/macro", "custom-jsx"]);
     expect(config.runtimeConfigModule).toEqual({
       i18n: ["custom-runtime", "i18n"],
       Trans: ["lingui-for-test/runtime", "RuntimeTrans"],

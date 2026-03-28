@@ -8,6 +8,7 @@ describe("normalizeLinguiConfig", () => {
     const macro = config.macro!;
 
     expect(macro.corePackage).toContain("lingui-for-svelte/macro");
+    expect(macro.corePackage).toContain("@lingui/core/macro");
     expect(macro.jsxPackage).toContain("lingui-for-svelte/macro");
     expect(config.runtimeConfigModule.i18n).toEqual(["@lingui/core", "i18n"]);
     expect(config.runtimeConfigModule.Trans).toEqual([
@@ -17,14 +18,19 @@ describe("normalizeLinguiConfig", () => {
   });
 
   test("preserves explicit overrides", () => {
-    const config = normalizeLinguiConfig({
-      runtimeConfigModule: {
-        i18n: ["custom-runtime", "customI18n"],
+    const config = normalizeLinguiConfig(
+      {
+        runtimeConfigModule: {
+          i18n: ["custom-runtime", "customI18n"],
+        },
+        macro: {
+          corePackage: ["custom-macro"],
+        },
       },
-      macro: {
-        corePackage: ["custom-macro"],
+      {
+        sveltePackages: ["custom-svelte-macro"],
       },
-    });
+    );
     const macro = config.macro!;
 
     expect(config.runtimeConfigModule.i18n).toEqual([
@@ -33,6 +39,7 @@ describe("normalizeLinguiConfig", () => {
     ]);
     expect(macro.corePackage).toContain("custom-macro");
     expect(macro.corePackage).toContain("lingui-for-svelte/macro");
+    expect(macro.jsxPackage).toContain("custom-svelte-macro");
   });
 });
 

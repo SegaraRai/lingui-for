@@ -12,6 +12,7 @@ import {
   resolveAstroWhitespace,
   type RichTextWhitespaceMode,
 } from "../common/config.ts";
+import { createAstroFrameworkConventions } from "../common/conventions.ts";
 import { transformProgram } from "../lower/babel-transform.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
@@ -19,6 +20,7 @@ export type { RichTextWhitespaceMode } from "../common/config.ts";
 export interface LinguiAstroTransformOptions {
   filename: string;
   linguiConfig?: Partial<LinguiConfig> | undefined;
+  astroPackages?: readonly string[] | undefined;
   whitespace?: RichTextWhitespaceMode | undefined;
 }
 
@@ -53,9 +55,12 @@ export async function transformAstro(
   const {
     filename,
     linguiConfig: linguiConfigPartial,
+    astroPackages,
     whitespace = "auto",
   } = options;
-  const linguiConfig = normalizeLinguiConfig(linguiConfigPartial);
+  const linguiConfig = normalizeLinguiConfig(linguiConfigPartial, {
+    astroPackages,
+  });
 
   await initWasmOnce();
 
@@ -64,6 +69,9 @@ export async function transformAstro(
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
     whitespace: resolveAstroWhitespace(whitespace),
+    conventions: createAstroFrameworkConventions(linguiConfig, {
+      astroPackages,
+    }),
   });
   if (compilePlan.common.declarationIds.length === 0) {
     return null;
