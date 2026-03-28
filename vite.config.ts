@@ -66,7 +66,7 @@ export default defineConfig({
         cache: false,
       },
       format: {
-        command: "prettier -w **/*.{astro,svelte} && vp fmt .",
+        command: "prettier -w **/*.{astro,svelte,mdx} && vp fmt .",
         cache: false,
       },
       test: {
