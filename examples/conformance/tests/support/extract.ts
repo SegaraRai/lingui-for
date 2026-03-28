@@ -178,7 +178,7 @@ export async function extractOfficialReact(
 export async function extractSvelteFixture(
   source: string,
   fixtureName = "conformance",
-  whitespace: FixtureWhitespace = "jsx",
+  whitespace: FixtureWhitespace = "auto",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
   const filename = fixtureName.endsWith(".svelte")
@@ -201,7 +201,7 @@ export async function extractSvelteFixture(
 export async function extractAstroFixture(
   source: string,
   fixtureName = "conformance",
-  whitespace: FixtureWhitespace = "jsx",
+  whitespace: FixtureWhitespace = "auto",
 ): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
   const filename = fixtureName.endsWith(".astro")

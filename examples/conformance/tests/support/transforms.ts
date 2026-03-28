@@ -97,7 +97,7 @@ export function transformOfficialReact(code: string): string {
 
 export async function transformSvelteFixture(
   source: string,
-  whitespace: FixtureWhitespace = "jsx",
+  whitespace: FixtureWhitespace = "auto",
 ): Promise<string> {
   return await runFixtureTransform(
     svelteUnpluginFactory as unknown as TestTransformFactory,
@@ -109,7 +109,7 @@ export async function transformSvelteFixture(
 
 export async function transformAstroFixture(
   source: string,
-  whitespace: FixtureWhitespace = "jsx",
+  whitespace: FixtureWhitespace = "auto",
 ): Promise<string> {
   return await runFixtureTransform(
     astroUnpluginFactory as unknown as TestTransformFactory,
