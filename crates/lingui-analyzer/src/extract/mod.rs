@@ -11,8 +11,16 @@ use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
 
-pub use build::build_synthetic_module;
-pub use reinsert::reinsert_transformed_declarations;
+pub use build::{BuildSyntheticModuleError, build_synthetic_module};
+pub use reinsert::{ReinsertError, reinsert_transformed_declarations};
+
+#[derive(thiserror::Error, Debug)]
+pub enum ExtractError {
+    #[error(transparent)]
+    BuildSyntheticModule(#[from] BuildSyntheticModuleError),
+    #[error(transparent)]
+    Reinsert(#[from] ReinsertError),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
 #[tsify()]

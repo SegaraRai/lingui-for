@@ -5,8 +5,18 @@ use crate::common::{ScriptLang, Span};
 use crate::compile::CompileTargetPrototype;
 use crate::framework::MacroImport;
 
-pub use astro::AstroCompilePlan;
-pub use svelte::{SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion};
+pub use astro::{AstroAdapterError, AstroCompilePlan};
+pub use svelte::{
+    SvelteAdapterError, SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
+};
+
+#[derive(thiserror::Error, Debug)]
+pub enum AdapterError {
+    #[error(transparent)]
+    Astro(#[from] AstroAdapterError),
+    #[error(transparent)]
+    Svelte(#[from] SvelteAdapterError),
+}
 
 #[derive(Debug, Clone)]
 pub(crate) struct CommonFrameworkCompileAnalysis {

@@ -1,7 +1,6 @@
 pub mod common;
 pub mod compile;
 pub mod conventions;
-mod error;
 pub mod extract;
 pub mod framework;
 pub mod synthesis;
@@ -12,12 +11,12 @@ use tsify::{Ts, Tsify};
 use wasm_bindgen::JsError;
 use wasm_bindgen::prelude::*;
 
-use crate::compile::finish_compile;
+use crate::compile::{CompileError, finish_compile};
 use crate::conventions::FrameworkConventions;
-use crate::extract::{build_synthetic_module, reinsert_transformed_declarations};
+use crate::extract::{ExtractError, build_synthetic_module, reinsert_transformed_declarations};
 use crate::framework::astro::AstroAdapter;
 use crate::framework::svelte::{SvelteAdapter, validate_svelte_extract_candidates};
-use crate::framework::{AnalyzeOptions, FrameworkAdapter};
+use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError};
 
 pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
@@ -27,7 +26,6 @@ pub use compile::{
     TransformedPrograms,
 };
 pub use conventions::FrameworkKind;
-pub use error::AnalyzerError;
 pub use extract::{
     ReinsertOptions, ReinsertedModule, ReplacementChunk, SyntheticMapping, SyntheticModule,
     SyntheticModuleOptions,
@@ -38,6 +36,16 @@ pub use framework::{
 };
 pub use synthesis::NormalizedSegment;
 
+#[derive(thiserror::Error, Debug)]
+pub enum AnalyzerError {
+    #[error(transparent)]
+    Framework(#[from] FrameworkError),
+    #[error(transparent)]
+    Extract(#[from] ExtractError),
+    #[error(transparent)]
+    Compile(#[from] CompileError),
+}
+
 pub fn build_synthetic_module_for_framework(
     source: &str,
     source_name: &str,
@@ -46,7 +54,7 @@ pub fn build_synthetic_module_for_framework(
     conventions: &FrameworkConventions,
 ) -> Result<SyntheticModule, AnalyzerError> {
     match conventions.framework {
-        crate::conventions::FrameworkKind::Astro => {
+        FrameworkKind::Astro => {
             let analysis = AstroAdapter.analyze(
                 source,
                 &AnalyzeOptions {
@@ -75,9 +83,10 @@ pub fn build_synthetic_module_for_framework(
                 synthetic_name,
                 &analysis.macro_imports,
                 &candidates,
-            ))
+            )
+            .map_err(ExtractError::from)?)
         }
-        crate::conventions::FrameworkKind::Svelte => {
+        FrameworkKind::Svelte => {
             let analysis = SvelteAdapter.analyze(
                 source,
                 &AnalyzeOptions {
@@ -107,16 +116,13 @@ pub fn build_synthetic_module_for_framework(
                     .into_iter()
                     .map(|component| component.candidate),
             );
-            validate_svelte_extract_candidates(&candidates)?;
+            validate_svelte_extract_candidates(&candidates).map_err(FrameworkError::from)?;
             retain_standalone_candidates(&mut candidates);
             sort_candidates(&mut candidates);
-            Ok(build_synthetic_module(
-                source,
-                source_name,
-                synthetic_name,
-                &imports,
-                &candidates,
-            ))
+            Ok(
+                build_synthetic_module(source, source_name, synthetic_name, &imports, &candidates)
+                    .map_err(ExtractError::from)?,
+            )
         }
     }
 }

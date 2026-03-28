@@ -1,22 +1,29 @@
 use tree_sitter::Node;
 
-use crate::AnalyzerError;
-use crate::framework::parse;
+use crate::framework::parse::{ParseError, parse_tsx};
+
+#[derive(thiserror::Error, Debug)]
+pub enum RuntimeComponentError {
+    #[error("failed to lower runtime component: {0}")]
+    LoweringFailed(String),
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+}
 
 pub(crate) fn lower_runtime_component_markup(
     declaration_code: &str,
     runtime_component_name: &str,
-) -> Result<String, AnalyzerError> {
+) -> Result<String, RuntimeComponentError> {
     let wrapped = format!("const __lf = {declaration_code};");
-    let tree = parse::parse_tsx(&wrapped)?;
+    let tree = parse_tsx(&wrapped)?;
     let root = tree.root_node();
     let declarator = find_first_named_descendant(root, "variable_declarator").ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed(
+        RuntimeComponentError::LoweringFailed(
             "missing variable declarator for transformed component".to_string(),
         )
     })?;
     let value = declarator.child_by_field_name("value").ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed(
+        RuntimeComponentError::LoweringFailed(
             "missing initializer for transformed component".to_string(),
         )
     })?;
@@ -28,14 +35,14 @@ fn convert_runtime_trans_root(
     source: &str,
     node: Node<'_>,
     runtime_component_name: &str,
-) -> Result<String, AnalyzerError> {
+) -> Result<String, RuntimeComponentError> {
     let opening = match node.kind() {
         "jsx_element" => node.child_by_field_name("open_tag"),
         "jsx_self_closing_element" => Some(node),
         _ => None,
     }
     .ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed(
+        RuntimeComponentError::LoweringFailed(
             "expected JSX element initializer for transformed component".to_string(),
         )
     })?;
@@ -44,7 +51,7 @@ fn convert_runtime_trans_root(
     Ok(format!("<{runtime_component_name}{attributes} />"))
 }
 
-fn collect_jsx_attributes(source: &str, node: Node<'_>) -> Result<String, AnalyzerError> {
+fn collect_jsx_attributes(source: &str, node: Node<'_>) -> Result<String, RuntimeComponentError> {
     let mut rendered = String::new();
     let mut cursor = node.walk();
     for child in node.children_by_field_name("attribute", &mut cursor) {
@@ -53,20 +60,23 @@ fn collect_jsx_attributes(source: &str, node: Node<'_>) -> Result<String, Analyz
     Ok(rendered)
 }
 
-fn convert_jsx_attribute(source: &str, node: Node<'_>) -> Result<String, AnalyzerError> {
+fn convert_jsx_attribute(source: &str, node: Node<'_>) -> Result<String, RuntimeComponentError> {
     match node.kind() {
         "jsx_expression" => convert_jsx_spread_attribute(source, node),
         "jsx_attribute" => convert_jsx_named_attribute(source, node),
-        other => Err(AnalyzerError::ComponentLoweringFailed(format!(
+        other => Err(RuntimeComponentError::LoweringFailed(format!(
             "unsupported JSX attribute node kind: {other}"
         ))),
     }
 }
 
-fn convert_jsx_spread_attribute(source: &str, node: Node<'_>) -> Result<String, AnalyzerError> {
+fn convert_jsx_spread_attribute(
+    source: &str,
+    node: Node<'_>,
+) -> Result<String, RuntimeComponentError> {
     let raw_inner = &source[node.start_byte() + 1..node.end_byte() - 1];
     let spread_offset = raw_inner.find("...").ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed(
+        RuntimeComponentError::LoweringFailed(
             "expected spread element inside JSX spread attribute".to_string(),
         )
     })?;
@@ -84,9 +94,12 @@ fn convert_jsx_spread_attribute(source: &str, node: Node<'_>) -> Result<String, 
     Ok(format!(" {{{raw_inner}}}"))
 }
 
-fn convert_jsx_named_attribute(source: &str, node: Node<'_>) -> Result<String, AnalyzerError> {
+fn convert_jsx_named_attribute(
+    source: &str,
+    node: Node<'_>,
+) -> Result<String, RuntimeComponentError> {
     let name_node = jsx_attribute_name_node(node).ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed("missing JSX attribute name".to_string())
+        RuntimeComponentError::LoweringFailed("missing JSX attribute name".to_string())
     })?;
     let value_node = jsx_attribute_value_node(node);
     let name = source_slice(source, name_node);
@@ -112,7 +125,7 @@ fn convert_jsx_named_attribute(source: &str, node: Node<'_>) -> Result<String, A
             convert_jsx_element_descriptor(source, node, 0)?
         }
         Some(other) => {
-            return Err(AnalyzerError::ComponentLoweringFailed(format!(
+            return Err(RuntimeComponentError::LoweringFailed(format!(
                 "unsupported JSX attribute value kind: {}",
                 other.kind()
             )));
@@ -126,24 +139,24 @@ fn convert_expression_for_runtime_trans(
     source: &str,
     node: Node<'_>,
     indent_level: usize,
-) -> Result<String, AnalyzerError> {
+) -> Result<String, RuntimeComponentError> {
     match node.kind() {
         "object" => convert_object_expression(source, node, false, indent_level),
         _ => Ok(source_slice(source, node).to_string()),
     }
 }
 
-fn lower_object_expression_text(text: &str) -> Result<String, AnalyzerError> {
+fn lower_object_expression_text(text: &str) -> Result<String, RuntimeComponentError> {
     let wrapped = format!("const __expr = ({text});");
-    let tree = parse::parse_tsx(&wrapped)?;
+    let tree = parse_tsx(&wrapped)?;
     let root = tree.root_node();
     let declarator = find_first_named_descendant(root, "variable_declarator").ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed(
+        RuntimeComponentError::LoweringFailed(
             "missing variable declarator while lowering object expression".to_string(),
         )
     })?;
     let value = declarator.child_by_field_name("value").ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed("missing object expression initializer".to_string())
+        RuntimeComponentError::LoweringFailed("missing object expression initializer".to_string())
     })?;
     let object = if value.kind() == "parenthesized_expression" {
         first_named_child(value).unwrap_or(value)
@@ -161,9 +174,9 @@ fn convert_components_expression(
     source: &str,
     node: Node<'_>,
     indent_level: usize,
-) -> Result<String, AnalyzerError> {
+) -> Result<String, RuntimeComponentError> {
     if node.kind() != "object" {
-        return Err(AnalyzerError::ComponentLoweringFailed(
+        return Err(RuntimeComponentError::LoweringFailed(
             "Runtime Trans components must lower from an object expression".to_string(),
         ));
     }
@@ -176,7 +189,7 @@ fn convert_object_expression(
     node: Node<'_>,
     components_mode: bool,
     indent_level: usize,
-) -> Result<String, AnalyzerError> {
+) -> Result<String, RuntimeComponentError> {
     let mut parts = Vec::new();
     let indent = "  ".repeat(indent_level);
     let child_indent = "  ".repeat(indent_level + 1);
@@ -186,10 +199,10 @@ fn convert_object_expression(
         match child.kind() {
             "pair" => {
                 let key = child.child_by_field_name("key").ok_or_else(|| {
-                    AnalyzerError::ComponentLoweringFailed("missing object pair key".to_string())
+                    RuntimeComponentError::LoweringFailed("missing object pair key".to_string())
                 })?;
                 let value = child.child_by_field_name("value").ok_or_else(|| {
-                    AnalyzerError::ComponentLoweringFailed("missing object pair value".to_string())
+                    RuntimeComponentError::LoweringFailed("missing object pair value".to_string())
                 })?;
                 let key_text = source_slice(source, key);
                 let key_name = key_name(source, key);
@@ -204,7 +217,7 @@ fn convert_object_expression(
             }
             "spread_element" => {
                 let argument = first_named_child(child).ok_or_else(|| {
-                    AnalyzerError::ComponentLoweringFailed(
+                    RuntimeComponentError::LoweringFailed(
                         "missing spread argument in object expression".to_string(),
                     )
                 })?;
@@ -216,7 +229,7 @@ fn convert_object_expression(
                 parts.push(format!("{child_indent}{}", source_slice(source, child)));
             }
             other => {
-                return Err(AnalyzerError::ComponentLoweringFailed(format!(
+                return Err(RuntimeComponentError::LoweringFailed(format!(
                     "unsupported object child kind in runtime component lowering: {other}"
                 )));
             }
@@ -234,7 +247,7 @@ fn convert_rich_text_component_value(
     source: &str,
     node: Node<'_>,
     indent_level: usize,
-) -> Result<String, AnalyzerError> {
+) -> Result<String, RuntimeComponentError> {
     match node.kind() {
         "jsx_element" | "jsx_self_closing_element" => {
             convert_jsx_element_descriptor(source, node, indent_level)
@@ -247,18 +260,18 @@ fn convert_jsx_element_descriptor(
     source: &str,
     node: Node<'_>,
     indent_level: usize,
-) -> Result<String, AnalyzerError> {
+) -> Result<String, RuntimeComponentError> {
     let opening = match node.kind() {
         "jsx_element" => node.child_by_field_name("open_tag"),
         "jsx_self_closing_element" => Some(node),
         _ => None,
     }
     .ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed("expected JSX element descriptor".to_string())
+        RuntimeComponentError::LoweringFailed("expected JSX element descriptor".to_string())
     })?;
 
     let name_node = opening.child_by_field_name("name").ok_or_else(|| {
-        AnalyzerError::ComponentLoweringFailed(
+        RuntimeComponentError::LoweringFailed(
             "missing JSX name in component descriptor".to_string(),
         )
     })?;
@@ -284,7 +297,7 @@ fn convert_jsx_attributes_to_object(
     source: &str,
     node: Node<'_>,
     indent_level: usize,
-) -> Result<String, AnalyzerError> {
+) -> Result<String, RuntimeComponentError> {
     let mut parts = Vec::new();
     let indent = "  ".repeat(indent_level);
     let child_indent = "  ".repeat(indent_level + 1);
@@ -294,12 +307,12 @@ fn convert_jsx_attributes_to_object(
         match child.kind() {
             "jsx_expression" => {
                 let spread = first_named_child(child).ok_or_else(|| {
-                    AnalyzerError::ComponentLoweringFailed(
+                    RuntimeComponentError::LoweringFailed(
                         "missing spread child in JSX props".to_string(),
                     )
                 })?;
                 let argument = first_named_child(spread).ok_or_else(|| {
-                    AnalyzerError::ComponentLoweringFailed(
+                    RuntimeComponentError::LoweringFailed(
                         "missing spread argument in JSX props".to_string(),
                     )
                 })?;
@@ -309,7 +322,7 @@ fn convert_jsx_attributes_to_object(
             }
             "jsx_attribute" => {
                 let key = jsx_attribute_name_node(child).ok_or_else(|| {
-                    AnalyzerError::ComponentLoweringFailed("missing JSX prop name".to_string())
+                    RuntimeComponentError::LoweringFailed("missing JSX prop name".to_string())
                 })?;
                 let key_text = source_slice(source, key);
                 let value = jsx_attribute_value_node(child);
@@ -320,7 +333,7 @@ fn convert_jsx_attributes_to_object(
                     }
                     Some(value) if value.kind() == "jsx_expression" => {
                         let expression = first_named_child(value).ok_or_else(|| {
-                            AnalyzerError::ComponentLoweringFailed(
+                            RuntimeComponentError::LoweringFailed(
                                 "missing JSX expression value".to_string(),
                             )
                         })?;
@@ -331,7 +344,7 @@ fn convert_jsx_attributes_to_object(
                 parts.push(format!("{child_indent}{key_text}: {rendered}"));
             }
             other => {
-                return Err(AnalyzerError::ComponentLoweringFailed(format!(
+                return Err(RuntimeComponentError::LoweringFailed(format!(
                     "unsupported JSX prop kind: {other}"
                 )));
             }

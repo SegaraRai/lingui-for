@@ -1,15 +1,25 @@
 use tree_sitter::Node;
 
-use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
+use crate::conventions::FrameworkConventions;
 
 use super::expression::is_explicit_whitespace_string_expression;
-use super::js::{JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript};
-use super::parse::{parse_astro, parse_typescript};
-use super::{
-    AnalyzeOptions, FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy,
-    MacroFlavor, MacroImport, NormalizationEdit, WhitespaceMode,
+use super::js::{
+    JsAnalysisError, JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript,
 };
+use super::parse::{ParseError, parse_astro, parse_typescript};
+use super::{
+    AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
+    MacroCandidateStrategy, MacroFlavor, MacroImport, NormalizationEdit, WhitespaceMode,
+};
+
+#[derive(thiserror::Error, Debug)]
+pub enum AstroFrameworkError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error(transparent)]
+    Js(#[from] JsAnalysisError),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AstroTemplateExpression {
@@ -43,15 +53,15 @@ impl FrameworkAdapter for AstroAdapter {
         &self,
         source: &str,
         options: &AnalyzeOptions,
-    ) -> Result<Self::Analysis, AnalyzerError> {
-        analyze_astro(source, options)
+    ) -> Result<Self::Analysis, FrameworkError> {
+        Ok(analyze_astro(source, options)?)
     }
 }
 
 fn analyze_astro(
     source: &str,
     options: &AnalyzeOptions,
-) -> Result<AstroFrontmatterAnalysis, AnalyzerError> {
+) -> Result<AstroFrontmatterAnalysis, AstroFrameworkError> {
     let astro_tree = parse_astro(source)?;
     let root = astro_tree.root_node();
     let frontmatter = find_frontmatter(root);
@@ -113,8 +123,8 @@ fn find_frontmatter(root: Node<'_>) -> Option<EmbeddedScriptRegion> {
 fn collect_macro_imports(
     source: &str,
     base_offset: usize,
-    conventions: &crate::conventions::FrameworkConventions,
-) -> Result<Vec<MacroImport>, AnalyzerError> {
+    conventions: &FrameworkConventions,
+) -> Result<Vec<MacroImport>, AstroFrameworkError> {
     let js_tree = parse_typescript(source)?;
     let root = js_tree.root_node();
     let mut imports = Vec::new();
@@ -181,7 +191,7 @@ fn collect_template_expressions(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-) -> Result<(Vec<AstroTemplateExpression>, Vec<AstroTemplateComponent>), AnalyzerError> {
+) -> Result<(Vec<AstroTemplateExpression>, Vec<AstroTemplateComponent>), AstroFrameworkError> {
     fn collect_template_expressions_impl(
         source: &str,
         node: Node<'_>,
@@ -189,7 +199,7 @@ fn collect_template_expressions(
         options: &AnalyzeOptions,
         expressions: &mut Vec<AstroTemplateExpression>,
         components: &mut Vec<AstroTemplateComponent>,
-    ) -> Result<(), AnalyzerError> {
+    ) -> Result<(), AstroFrameworkError> {
         match node.kind() {
             "html_interpolation" => {
                 push_template_expression(
@@ -269,7 +279,7 @@ fn push_template_expression(
     inner_span: Span,
     imports: &[MacroImport],
     expressions: &mut Vec<AstroTemplateExpression>,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), AstroFrameworkError> {
     let expression_source = &source[inner_span.start..inner_span.end];
     let candidates = collect_macro_candidates_in_javascript(
         expression_source,
@@ -383,10 +393,7 @@ fn unquote(text: &str) -> Option<String> {
     Some(text[1..text.len() - 1].to_string())
 }
 
-fn is_macro_module_specifier(
-    specifier: &str,
-    conventions: &crate::conventions::FrameworkConventions,
-) -> bool {
+fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
     conventions.accepts_macro_package(specifier)
 }
 

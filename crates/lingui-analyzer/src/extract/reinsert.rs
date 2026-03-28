@@ -3,17 +3,24 @@ use std::io::Cursor;
 
 use sourcemap::SourceMapBuilder;
 
-use crate::AnalyzerError;
 use crate::common::{Span, Utf16Index};
 use crate::extract::{ReinsertedModule, ReplacementChunk, SyntheticModule};
 use crate::synthesis::NormalizedSegment;
+
+#[derive(thiserror::Error, Debug)]
+pub enum ReinsertError {
+    #[error("missing transformed declaration: {0}")]
+    MissingTransformedDeclaration(String),
+    #[error("synthetic mappings overlap around byte {0}")]
+    OverlappingMappings(usize),
+}
 
 pub fn reinsert_transformed_declarations(
     original_source: &str,
     source_name: &str,
     synthetic_module: &SyntheticModule,
     transformed_declarations: &BTreeMap<String, String>,
-) -> Result<ReinsertedModule, AnalyzerError> {
+) -> Result<ReinsertedModule, ReinsertError> {
     let mut chunks =
         build_replacement_chunks(&synthetic_module.mappings, transformed_declarations)?;
     chunks.sort_by_key(|chunk| {
@@ -41,14 +48,14 @@ pub fn reinsert_transformed_declarations(
 fn build_replacement_chunks(
     mappings: &[crate::extract::SyntheticMapping],
     transformed_declarations: &BTreeMap<String, String>,
-) -> Result<Vec<ReplacementChunk>, AnalyzerError> {
+) -> Result<Vec<ReplacementChunk>, ReinsertError> {
     mappings
         .iter()
         .map(|mapping| {
             let replacement = transformed_declarations
                 .get(&mapping.declaration_id)
                 .ok_or_else(|| {
-                    AnalyzerError::MissingTransformedDeclaration(mapping.declaration_id.clone())
+                    ReinsertError::MissingTransformedDeclaration(mapping.declaration_id.clone())
                 })?
                 .clone();
 
@@ -66,14 +73,14 @@ fn build_replacement_chunks(
 fn assemble_reinserted_output(
     original_source: &str,
     chunks: &[ReplacementChunk],
-) -> Result<ReinsertedAssembly, AnalyzerError> {
+) -> Result<ReinsertedAssembly, ReinsertError> {
     let mut code = String::new();
     let mut mapping_segments = Vec::new();
     let mut cursor = 0usize;
 
     for chunk in chunks {
         if chunk.original_span.start < cursor {
-            return Err(AnalyzerError::OverlappingMappings(
+            return Err(ReinsertError::OverlappingMappings(
                 chunk.original_span.start,
             ));
         }

@@ -3,17 +3,25 @@ use std::io::Cursor;
 
 use sourcemap::{SourceMap, SourceMapBuilder};
 
-use crate::AnalyzerError;
 use crate::common::Utf16Index;
 use crate::synthesis::NormalizedSegment;
 
+use super::adapters::AdapterError;
 use super::{CompileReplacement, CompileTarget, FinishedCompile, FrameworkCompilePlan};
+
+#[derive(thiserror::Error, Debug)]
+pub enum EmitError {
+    #[error("invalid source map: {0}")]
+    InvalidSourceMap(String),
+    #[error(transparent)]
+    Adapter(#[from] AdapterError),
+}
 
 pub(crate) fn collect_compile_replacements<P: FrameworkCompilePlan>(
     plan: &P,
     source: &str,
     transformed_declarations: &BTreeMap<String, String>,
-) -> Result<Vec<CompileReplacement>, AnalyzerError> {
+) -> Result<Vec<CompileReplacement>, EmitError> {
     let mut replacements = Vec::new();
     let common = plan.common();
 
@@ -53,7 +61,7 @@ pub(crate) fn collect_compile_replacements<P: FrameworkCompilePlan>(
         });
     }
 
-    plan.append_runtime_injection_replacements(source, &mut replacements);
+    plan.append_runtime_injection_replacements(source, &mut replacements)?;
 
     replacements.sort_by_key(|replacement| (replacement.start, replacement.end));
     Ok(replacements)
@@ -63,7 +71,7 @@ pub fn finish_compile_from_replacements(
     source: &str,
     source_name: &str,
     replacements: Vec<CompileReplacement>,
-) -> Result<FinishedCompile, AnalyzerError> {
+) -> Result<FinishedCompile, EmitError> {
     let (code, source_map_json) =
         assemble_output_with_source_map(source, source_name, &replacements)?;
 
@@ -79,7 +87,7 @@ fn assemble_output_with_source_map(
     source: &str,
     source_name: &str,
     replacements: &[CompileReplacement],
-) -> Result<(String, String), AnalyzerError> {
+) -> Result<(String, String), EmitError> {
     let mut builder = SourceMapBuilder::new(Some(source_name));
     builder.set_file(Some(source_name));
     let src_id = builder.add_source(source_name);
@@ -137,9 +145,9 @@ fn assemble_output_with_source_map(
     let mut out = Cursor::new(Vec::new());
     sourcemap
         .to_writer(&mut out)
-        .map_err(|error| AnalyzerError::InvalidSourceMap(error.to_string()))?;
+        .map_err(|error| EmitError::InvalidSourceMap(error.to_string()))?;
     let json = String::from_utf8(out.into_inner())
-        .map_err(|error| AnalyzerError::InvalidSourceMap(error.to_string()))?;
+        .map_err(|error| EmitError::InvalidSourceMap(error.to_string()))?;
 
     Ok((code, json))
 }
@@ -185,9 +193,9 @@ fn apply_chunk_mappings(
     builder: &mut SourceMapBuilder,
     map_json: &str,
     offset: GeneratedOffset,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), EmitError> {
     let map = SourceMap::from_slice(map_json.as_bytes())
-        .map_err(|error| AnalyzerError::InvalidSourceMap(error.to_string()))?;
+        .map_err(|error| EmitError::InvalidSourceMap(error.to_string()))?;
 
     for token in map.tokens() {
         let Some(source) = token.get_source() else {

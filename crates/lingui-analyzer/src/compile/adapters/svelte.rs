@@ -3,22 +3,32 @@ use std::collections::BTreeSet;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
-use crate::compile::CompileTranslationMode;
 use crate::conventions::FrameworkConventions;
-use crate::framework::svelte::{SvelteAdapter, bare_direct_macro_message};
+use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError, bare_direct_macro_message};
 use crate::framework::{
-    AnalyzeOptions, FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy,
-    MacroFlavor, WhitespaceMode,
+    AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
+    MacroCandidateStrategy, MacroFlavor, WhitespaceMode,
 };
 
 use super::super::{
-    CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTargetPrototype, FrameworkCompilePlan, RuntimeRequirements,
-    build_compile_plan_for_framework,
+    CommonCompilePlan, CompileError, CompileReplacement, CompileTarget, CompileTargetContext,
+    CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode, FrameworkCompilePlan,
+    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
 };
-use super::CommonFrameworkCompileAnalysis;
+use super::{AdapterError, CommonFrameworkCompileAnalysis};
+
+#[derive(thiserror::Error, Debug)]
+pub enum SvelteAdapterError {
+    #[error(transparent)]
+    Framework(#[from] FrameworkError),
+    #[error(transparent)]
+    SvelteFramework(#[from] SvelteFrameworkError),
+    #[error("{0}")]
+    InvalidMacroUsage(String),
+    #[error("missing Svelte convention field: {0}")]
+    MissingConvention(&'static str),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -58,8 +68,9 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         source: &str,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
-    ) -> Result<Self::Analysis, AnalyzerError> {
-        analyze_svelte_compile(source, whitespace_mode, conventions)
+    ) -> Result<Self::Analysis, CompileError> {
+        Ok(analyze_svelte_compile(source, whitespace_mode, conventions)
+            .map_err(AdapterError::from)?)
     }
 
     fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
@@ -70,8 +81,10 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         analysis: &Self::Analysis,
         prototype: &CompileTargetPrototype,
         normalized_source: &str,
-    ) -> String {
+    ) -> Result<String, CompileError> {
         wrap_compile_source(analysis, prototype, normalized_source)
+            .map_err(AdapterError::from)
+            .map_err(CompileError::from)
     }
 
     fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]) {
@@ -103,7 +116,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     fn lower_runtime_component_markup(
         &self,
         declaration_code: &str,
-    ) -> Result<String, AnalyzerError> {
+    ) -> Result<String, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(
             declaration_code,
             self.runtime_bindings.trans_component.as_str(),
@@ -114,8 +127,9 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         &self,
         source: &str,
         replacements: &mut Vec<CompileReplacement>,
-    ) {
-        append_runtime_injection_replacements(self, source, replacements);
+    ) -> Result<(), AdapterError> {
+        append_runtime_injection_replacements(self, source, replacements)
+            .map_err(AdapterError::from)
     }
 }
 
@@ -126,7 +140,7 @@ impl SvelteCompilePlan {
         synthetic_name: &str,
         whitespace_mode: WhitespaceMode,
         conventions: FrameworkConventions,
-    ) -> Result<Self, AnalyzerError> {
+    ) -> Result<Self, CompileError> {
         build_compile_plan_for_framework::<Self>(
             source,
             source_name,
@@ -150,7 +164,7 @@ pub(crate) fn analyze_svelte_compile(
     source: &str,
     whitespace: WhitespaceMode,
     conventions: &FrameworkConventions,
-) -> Result<SvelteFrameworkCompileAnalysis, AnalyzerError> {
+) -> Result<SvelteFrameworkCompileAnalysis, SvelteAdapterError> {
     let analysis = SvelteAdapter.analyze(
         source,
         &AnalyzeOptions {
@@ -248,7 +262,7 @@ pub(crate) fn analyze_svelte_compile(
                 .map(|script| script.declared_names.as_slice())
                 .unwrap_or(&[]),
             conventions,
-        ),
+        )?,
         instance_script: instance_script.clone(),
         module_script: module_script.clone(),
     })
@@ -282,7 +296,7 @@ pub(crate) fn wrap_compile_source(
     analysis: &SvelteFrameworkCompileAnalysis,
     prototype: &CompileTargetPrototype,
     normalized_source: &str,
-) -> String {
+) -> Result<String, SvelteAdapterError> {
     if prototype.output_kind == CompileTargetOutputKind::Expression {
         match prototype.candidate.flavor {
             MacroFlavor::Reactive => {
@@ -291,11 +305,13 @@ pub(crate) fn wrap_compile_source(
                     .wrappers
                     .as_ref()
                     .and_then(|wrappers| wrappers.reactive_translation.as_deref())
-                    .expect("svelte reactive wrapper should be configured");
-                return format!(
+                    .ok_or(SvelteAdapterError::MissingConvention(
+                        "wrappers.reactive_translation",
+                    ))?;
+                return Ok(format!(
                     "{wrapper}({normalized_source}, {:?})",
                     prototype.candidate.local_name
-                );
+                ));
             }
             MacroFlavor::Eager => {
                 let wrapper = analysis
@@ -303,20 +319,22 @@ pub(crate) fn wrap_compile_source(
                     .wrappers
                     .as_ref()
                     .and_then(|wrappers| wrappers.eager_translation.as_deref())
-                    .expect("svelte eager wrapper should be configured");
-                return format!("{wrapper}({normalized_source})");
+                    .ok_or(SvelteAdapterError::MissingConvention(
+                        "wrappers.eager_translation",
+                    ))?;
+                return Ok(format!("{wrapper}({normalized_source})"));
             }
             MacroFlavor::Direct => {}
         }
     }
 
-    normalized_source.to_string()
+    Ok(normalized_source.to_string())
 }
 
 pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
     RuntimeRequirements {
         needs_runtime_i18n_binding: targets.iter().any(|target| {
-            target.translation_mode == crate::compile::CompileTranslationMode::Context
+            target.translation_mode == CompileTranslationMode::Context
                 && target.output_kind == CompileTargetOutputKind::Expression
                 && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
         }),
@@ -329,44 +347,43 @@ pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> Runtime
 pub(crate) fn create_runtime_bindings(
     declared_names: &[String],
     conventions: &FrameworkConventions,
-) -> SvelteCompileRuntimeBindings {
+) -> Result<SvelteCompileRuntimeBindings, SvelteAdapterError> {
     let mut used = declared_names.iter().cloned().collect::<BTreeSet<_>>();
     let bindings = &conventions.bindings;
 
-    SvelteCompileRuntimeBindings {
+    Ok(SvelteCompileRuntimeBindings {
         create_lingui_accessors: allocate_unique_binding_name(
             &mut used,
-            bindings
-                .i18n_accessor_factory
-                .as_deref()
-                .expect("svelte conventions should provide i18n accessor factory"),
+            bindings.i18n_accessor_factory.as_deref().ok_or(
+                SvelteAdapterError::MissingConvention("bindings.i18n_accessor_factory"),
+            )?,
         ),
         context: allocate_unique_binding_name(
             &mut used,
             bindings
                 .context
                 .as_deref()
-                .expect("svelte conventions should provide context binding"),
+                .ok_or(SvelteAdapterError::MissingConvention("bindings.context"))?,
         ),
         get_i18n: allocate_unique_binding_name(
             &mut used,
             bindings
                 .get_i18n
                 .as_deref()
-                .expect("svelte conventions should provide getI18n binding"),
+                .ok_or(SvelteAdapterError::MissingConvention("bindings.get_i18n"))?,
         ),
         translate: allocate_unique_binding_name(
             &mut used,
             bindings
                 .translate
                 .as_deref()
-                .expect("svelte conventions should provide translate binding"),
+                .ok_or(SvelteAdapterError::MissingConvention("bindings.translate"))?,
         ),
         trans_component: allocate_unique_binding_name(
             &mut used,
             bindings.runtime_trans_component.as_str(),
         ),
-    }
+    })
 }
 
 pub(crate) fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]) {
@@ -421,7 +438,7 @@ pub(crate) fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]
 
 pub(crate) fn validate_compile_targets(
     prototypes: &[CompileTargetPrototype],
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteAdapterError> {
     let offending_macro = prototypes.iter().find_map(|prototype| {
         (matches!(
             prototype.context,
@@ -432,9 +449,9 @@ pub(crate) fn validate_compile_targets(
     });
 
     if let Some(imported_name) = offending_macro {
-        return Err(AnalyzerError::InvalidMacroUsage(bare_direct_macro_message(
-            imported_name,
-        )));
+        return Err(SvelteAdapterError::InvalidMacroUsage(
+            bare_direct_macro_message(imported_name),
+        ));
     }
 
     Ok(())
@@ -444,13 +461,13 @@ pub(super) fn append_runtime_injection_replacements(
     plan: &SvelteCompilePlan,
     source: &str,
     replacements: &mut Vec<CompileReplacement>,
-) {
+) -> Result<(), SvelteAdapterError> {
     let runtime_bindings = &plan.runtime_bindings;
 
     let needs_lingui_context = plan.runtime_requirements.needs_runtime_i18n_binding;
     let needs_trans_component = plan.runtime_requirements.needs_runtime_trans_component;
     if !needs_lingui_context && !needs_trans_component {
-        return;
+        return Ok(());
     }
 
     if let Some(instance_script) = &plan.instance_script {
@@ -462,7 +479,7 @@ pub(super) fn append_runtime_injection_replacements(
             needs_lingui_context,
             needs_trans_component,
             &plan.common.conventions,
-        );
+        )?;
         let insertion_start =
             get_script_insertion_start(source, instance_script.content_span.start);
 
@@ -486,7 +503,7 @@ pub(super) fn append_runtime_injection_replacements(
             });
         }
 
-        return;
+        return Ok(());
     }
 
     let injected = create_runtime_binding_insertions(
@@ -495,7 +512,7 @@ pub(super) fn append_runtime_injection_replacements(
         needs_lingui_context,
         needs_trans_component,
         &plan.common.conventions,
-    );
+    )?;
     let block = format!("<script>\n{}{}</script>", injected.prelude, injected.suffix);
     let insertion_start = plan
         .module_script
@@ -515,6 +532,7 @@ pub(super) fn append_runtime_injection_replacements(
         code,
         source_map_json: None,
     });
+    Ok(())
 }
 
 fn allocate_unique_binding_name(used: &mut BTreeSet<String>, preferred: &str) -> String {
@@ -575,17 +593,14 @@ fn create_runtime_binding_insertions(
     include_lingui_context: bool,
     include_trans_component: bool,
     conventions: &FrameworkConventions,
-) -> RuntimeInsertions {
+) -> Result<RuntimeInsertions, SvelteAdapterError> {
     let mut prelude = String::new();
     let mut suffix = String::new();
     let runtime_package = conventions.runtime.package.as_str();
     let trans_export = conventions.runtime.exports.trans.as_str();
-    let i18n_accessor_export = conventions
-        .runtime
-        .exports
-        .i18n_accessor
-        .as_deref()
-        .expect("svelte conventions should provide i18n accessor export");
+    let i18n_accessor_export = conventions.runtime.exports.i18n_accessor.as_deref().ok_or(
+        SvelteAdapterError::MissingConvention("runtime.exports.i18n_accessor"),
+    )?;
 
     if include_lingui_context && include_trans_component {
         prelude.push_str(&format!(
@@ -622,7 +637,7 @@ fn create_runtime_binding_insertions(
     }
 
     let indent = detect_script_indent(original_script_content);
-    RuntimeInsertions {
+    Ok(RuntimeInsertions {
         prelude: if prelude.is_empty() {
             String::new()
         } else {
@@ -633,7 +648,7 @@ fn create_runtime_binding_insertions(
         } else {
             format_inserted_script(&suffix, &indent, true, false)
         },
-    }
+    })
 }
 
 fn detect_script_indent(content: &str) -> String {

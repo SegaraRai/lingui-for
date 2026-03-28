@@ -1,28 +1,42 @@
 use std::collections::BTreeMap;
 
-use crate::AnalyzerError;
-use crate::framework::parse;
+use crate::framework::parse::{ParseError, parse_tsx};
 
-use super::emit::{collect_compile_replacements, finish_compile_from_replacements};
+use super::emit::{EmitError, collect_compile_replacements, finish_compile_from_replacements};
+use super::runtime_component::RuntimeComponentError;
 use super::{
     CompileTargetOutputKind, CompileTranslationMode, FinishedCompile, FrameworkCompilePlan,
     TransformedPrograms,
 };
 
+#[derive(thiserror::Error, Debug)]
+pub enum LowerError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error(transparent)]
+    Emit(#[from] EmitError),
+    #[error(transparent)]
+    RuntimeComponent(#[from] RuntimeComponentError),
+}
+
 pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
     plan: &P,
     source: &str,
     transformed_programs: &TransformedPrograms,
-) -> Result<FinishedCompile, AnalyzerError> {
+) -> Result<FinishedCompile, LowerError> {
     let lowered_declarations = lower_transformed_declarations(plan, transformed_programs)?;
     let replacements = collect_compile_replacements(plan, source, &lowered_declarations)?;
-    finish_compile_from_replacements(source, &plan.common().source_name, replacements)
+    Ok(finish_compile_from_replacements(
+        source,
+        &plan.common().source_name,
+        replacements,
+    )?)
 }
 
 fn lower_transformed_declarations<P: FrameworkCompilePlan>(
     plan: &P,
     transformed_programs: &TransformedPrograms,
-) -> Result<BTreeMap<String, String>, AnalyzerError> {
+) -> Result<BTreeMap<String, String>, LowerError> {
     let declaration_sets = collect_transformed_declarations(transformed_programs)?;
     let mut lowered = BTreeMap::new();
 
@@ -47,7 +61,7 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
 
 fn collect_transformed_declarations(
     programs: &TransformedPrograms,
-) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, String>>, AnalyzerError> {
+) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, String>>, LowerError> {
     let mut declarations = BTreeMap::new();
 
     if let Some(code) = &programs.raw_code {
@@ -66,10 +80,8 @@ fn collect_transformed_declarations(
     Ok(declarations)
 }
 
-fn collect_declarations_from_program(
-    source: &str,
-) -> Result<BTreeMap<String, String>, AnalyzerError> {
-    let tree = parse::parse_tsx(source)?;
+fn collect_declarations_from_program(source: &str) -> Result<BTreeMap<String, String>, LowerError> {
+    let tree = parse_tsx(source)?;
     let root = tree.root_node();
     let mut declarations = BTreeMap::new();
     let mut cursor = root.walk();

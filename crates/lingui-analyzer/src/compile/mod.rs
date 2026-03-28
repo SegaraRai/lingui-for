@@ -16,8 +16,24 @@ pub(crate) use lower::finish_compile;
 pub(crate) use plan::build_compile_plan_for_framework;
 
 pub use adapters::{
-    AstroCompilePlan, SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
+    AdapterError, AstroCompilePlan, SvelteCompilePlan, SvelteCompileRuntimeBindings,
+    SvelteCompileScriptRegion,
 };
+pub use emit::EmitError;
+pub use lower::LowerError;
+pub use runtime_component::RuntimeComponentError;
+
+#[derive(thiserror::Error, Debug)]
+pub enum CompileError {
+    #[error(transparent)]
+    Adapter(#[from] AdapterError),
+    #[error(transparent)]
+    Lower(#[from] LowerError),
+    #[error(transparent)]
+    Emit(#[from] EmitError),
+    #[error(transparent)]
+    RuntimeComponent(#[from] RuntimeComponentError),
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -91,7 +107,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         source: &str,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
-    ) -> Result<Self::Analysis, crate::AnalyzerError>;
+    ) -> Result<Self::Analysis, CompileError>;
 
     fn common_analysis(
         analysis: &mut Self::Analysis,
@@ -101,7 +117,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         analysis: &Self::Analysis,
         prototype: &CompileTargetPrototype,
         normalized_source: &str,
-    ) -> String;
+    ) -> Result<String, CompileError>;
 
     fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]);
 
@@ -118,7 +134,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     fn lower_runtime_component_markup(
         &self,
         declaration_code: &str,
-    ) -> Result<String, crate::AnalyzerError> {
+    ) -> Result<String, RuntimeComponentError> {
         Ok(declaration_code.to_string())
     }
 
@@ -126,7 +142,8 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         &self,
         _source: &str,
         _replacements: &mut Vec<CompileReplacement>,
-    ) {
+    ) -> Result<(), AdapterError> {
+        Ok(())
     }
 }
 

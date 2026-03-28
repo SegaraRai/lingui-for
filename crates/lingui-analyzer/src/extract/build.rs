@@ -8,13 +8,19 @@ use crate::extract::{SyntheticMapping, SyntheticModule};
 use crate::framework::{MacroCandidate, MacroCandidateKind, MacroImport};
 use crate::synthesis::{NormalizedSegment, SynthesisPlan, build_synthesis_plan};
 
+#[derive(thiserror::Error, Debug)]
+pub enum BuildSyntheticModuleError {
+    #[error("synthetic target should exist")]
+    MissingSyntheticTarget,
+}
+
 pub fn build_synthetic_module(
     source: &str,
     source_name: &str,
     synthetic_name: &str,
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
-) -> SyntheticModule {
+) -> Result<SyntheticModule, BuildSyntheticModuleError> {
     let plan = build_synthesis_plan(source, imports, candidates);
     build_synthetic_module_from_plan(source, source_name, synthetic_name, &plan)
 }
@@ -24,7 +30,7 @@ pub fn build_synthetic_module_from_plan(
     source_name: &str,
     synthetic_name: &str,
     plan: &SynthesisPlan,
-) -> SyntheticModule {
+) -> Result<SyntheticModule, BuildSyntheticModuleError> {
     let mut out = String::new();
     let mut declaration_ids = Vec::new();
     let mut original_spans = BTreeMap::new();
@@ -63,15 +69,15 @@ pub fn build_synthetic_module_from_plan(
         candidate_kinds.insert(declaration_id.clone(), target.candidate.kind);
     }
 
-    let mappings: Vec<SyntheticMapping> = declaration_ids
+    let mappings = declaration_ids
         .iter()
         .map(|id| {
             let target = plan
                 .targets
                 .iter()
                 .find(|target| target.declaration_id == *id)
-                .expect("synthetic target should exist");
-            SyntheticMapping {
+                .ok_or(BuildSyntheticModuleError::MissingSyntheticTarget)?;
+            Ok(SyntheticMapping {
                 declaration_id: id.clone(),
                 original_span: original_spans[id],
                 generated_span: generated_spans[id],
@@ -80,9 +86,9 @@ pub fn build_synthetic_module_from_plan(
                 flavor: target.candidate.flavor,
                 source_map_anchor: source_map_anchors[id],
                 normalized_segments: normalized_segments[id].clone(),
-            }
+            })
         })
-        .collect();
+        .collect::<Result<_, BuildSyntheticModuleError>>()?;
 
     let source_map_json = build_source_map_json(
         source,
@@ -98,7 +104,7 @@ pub fn build_synthetic_module_from_plan(
         },
     );
 
-    SyntheticModule {
+    Ok(SyntheticModule {
         source: out,
         source_name: source_name.to_string(),
         synthetic_name: synthetic_name.to_string(),
@@ -107,7 +113,7 @@ pub fn build_synthetic_module_from_plan(
         original_spans,
         generated_spans,
         mappings,
-    }
+    })
 }
 
 fn render_import_line(imports: &[MacroImport]) -> Option<String> {

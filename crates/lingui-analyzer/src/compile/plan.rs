@@ -4,7 +4,9 @@ use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, MacroImport, WhitespaceMode};
 use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
-use super::{CommonCompilePlan, CompileTarget, CompileTargetPrototype, FrameworkCompilePlan};
+use super::{
+    CommonCompilePlan, CompileError, CompileTarget, CompileTargetPrototype, FrameworkCompilePlan,
+};
 
 pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     source: &str,
@@ -12,7 +14,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     synthetic_name: &str,
     whitespace_mode: WhitespaceMode,
     conventions: FrameworkConventions,
-) -> Result<P, crate::AnalyzerError> {
+) -> Result<P, CompileError> {
     let mut analysis = P::analyze(source, whitespace_mode, &conventions)?;
     let (imports, prototypes, import_removals, synthetic_lang) = {
         let common_analysis = P::common_analysis(&mut analysis);
@@ -36,7 +38,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         |prototype, normalized_source| {
             P::wrap_compile_source(&analysis, prototype, normalized_source)
         },
-    );
+    )?;
     let declaration_ids = synthetic_plan
         .targets
         .iter()
@@ -91,8 +93,8 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
 fn build_compile_synthetic_source(
     synthetic_plan: &SynthesisPlan,
     prototypes: &[CompileTargetPrototype],
-    wrap_compile_source: impl Fn(&CompileTargetPrototype, &str) -> String,
-) -> String {
+    wrap_compile_source: impl Fn(&CompileTargetPrototype, &str) -> Result<String, CompileError>,
+) -> Result<String, CompileError> {
     let mut output = String::new();
 
     if let Some(line) = render_import_line(&synthetic_plan.imports) {
@@ -104,11 +106,11 @@ fn build_compile_synthetic_source(
         output.push_str("const ");
         output.push_str(&target.declaration_id);
         output.push_str(" = ");
-        output.push_str(&wrap_compile_source(prototype, &target.normalized_code));
+        output.push_str(&wrap_compile_source(prototype, &target.normalized_code)?);
         output.push_str(";\n");
     }
 
-    output
+    Ok(output)
 }
 
 fn render_import_line(imports: &[MacroImport]) -> Option<String> {

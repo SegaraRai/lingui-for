@@ -1,18 +1,31 @@
 use tree_sitter::Node;
 
-use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
+use crate::conventions::FrameworkConventions;
 
 use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{
-    BindingParseMode, JsLikeLanguage, JsMacroSyntax, collect_declared_names_from_binding_source,
-    collect_macro_candidates_in_javascript, collect_top_level_declared_names_in_javascript,
+    BindingParseMode, JsAnalysisError, JsLikeLanguage, JsMacroSyntax,
+    collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
+    collect_top_level_declared_names_in_javascript,
 };
-use super::parse::{parse_javascript, parse_svelte, parse_typescript};
+use super::parse::{ParseError, parse_javascript, parse_svelte, parse_typescript};
 use super::{
-    AnalyzeOptions, FrameworkAdapter, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy,
-    MacroFlavor, MacroImport, NormalizationEdit, WhitespaceMode,
+    AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
+    MacroCandidateStrategy, MacroFlavor, MacroImport, NormalizationEdit, WhitespaceMode,
 };
+
+#[derive(thiserror::Error, Debug)]
+pub enum SvelteFrameworkError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error(transparent)]
+    Js(#[from] JsAnalysisError),
+    #[error("script element should have start tag")]
+    MissingScriptStartTag,
+    #[error("{0}")]
+    InvalidMacroUsage(String),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SvelteScriptAnalysis {
@@ -56,15 +69,15 @@ impl FrameworkAdapter for SvelteAdapter {
         &self,
         source: &str,
         options: &AnalyzeOptions,
-    ) -> Result<Self::Analysis, AnalyzerError> {
-        analyze_svelte(source, options)
+    ) -> Result<Self::Analysis, FrameworkError> {
+        Ok(analyze_svelte(source, options)?)
     }
 }
 
 fn analyze_svelte(
     source: &str,
     options: &AnalyzeOptions,
-) -> Result<SvelteScriptAnalysis, AnalyzerError> {
+) -> Result<SvelteScriptAnalysis, SvelteFrameworkError> {
     let tree = parse_svelte(source)?;
     let root = tree.root_node();
     let mut scripts = collect_script_blocks(source, root, options)?;
@@ -108,13 +121,13 @@ fn collect_script_blocks(
     source: &str,
     node: Node<'_>,
     options: &AnalyzeOptions,
-) -> Result<Vec<SvelteScriptBlock>, AnalyzerError> {
+) -> Result<Vec<SvelteScriptBlock>, SvelteFrameworkError> {
     fn collect_script_blocks_impl(
         source: &str,
         node: Node<'_>,
         options: &AnalyzeOptions,
         scripts: &mut Vec<SvelteScriptBlock>,
-    ) -> Result<(), AnalyzerError> {
+    ) -> Result<(), SvelteFrameworkError> {
         if node.kind() == "script_element" {
             if let Some(script) = analyze_script_block(source, node, options)? {
                 scripts.push(script);
@@ -139,7 +152,7 @@ fn analyze_script_block(
     source: &str,
     script_element: Node<'_>,
     options: &AnalyzeOptions,
-) -> Result<Option<SvelteScriptBlock>, AnalyzerError> {
+) -> Result<Option<SvelteScriptBlock>, SvelteFrameworkError> {
     let mut cursor = script_element.walk();
     let mut raw_text = None;
     let mut start_tag = None;
@@ -154,7 +167,7 @@ fn analyze_script_block(
     let Some(raw_text) = raw_text else {
         return Ok(None);
     };
-    let start_tag = start_tag.expect("script element should have start tag");
+    let start_tag = start_tag.ok_or(SvelteFrameworkError::MissingScriptStartTag)?;
     let content_region = EmbeddedScriptRegion {
         kind: EmbeddedScriptKind::Script,
         outer_span: Span::from_node(script_element),
@@ -211,7 +224,7 @@ fn collect_template_expressions(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
     context: &mut CollectContext,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     match node.kind() {
         "script_element" | "style_element" => return Ok(()),
         "expression" => {
@@ -277,7 +290,7 @@ fn push_expression(
     node: Node<'_>,
     imports: &[MacroImport],
     context: &mut CollectContext,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "svelte_raw_text")
@@ -315,7 +328,7 @@ fn push_raw_text_expression(
     node: Node<'_>,
     imports: &[MacroImport],
     context: &mut CollectContext,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
         return Ok(());
     };
@@ -349,7 +362,7 @@ fn visit_each_statement(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
     context: &mut CollectContext,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let start = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "each_start");
@@ -378,7 +391,7 @@ fn push_each_start_expression(
     each_start: Node<'_>,
     imports: &[MacroImport],
     context: &mut CollectContext,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let Some(identifier) = each_start.child_by_field_name("identifier") else {
         return Ok(());
     };
@@ -413,7 +426,7 @@ fn visit_named_block(
     options: &AnalyzeOptions,
     context: &mut CollectContext,
     start_kind: &str,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let start = node
         .children(&mut node.walk())
         .find(|child| child.kind() == start_kind);
@@ -443,7 +456,7 @@ fn visit_snippet_statement(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
     context: &mut CollectContext,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let start = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "snippet_start");
@@ -473,7 +486,7 @@ fn visit_element_like(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
     context: &mut CollectContext,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     if let Some(candidate) =
         component_candidate_from_element(source, node, imports, options, context)
     {
@@ -571,7 +584,7 @@ fn collect_component_normalization_edits(
     options: &AnalyzeOptions,
     context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     // Restore the original scope stack after walking this component because
     // `{#const ...}` mutates the current frame; without this, names declared
     // inside the component would incorrectly shadow imports in later siblings.
@@ -599,7 +612,7 @@ fn collect_component_normalization_edits_inner(
     options: &AnalyzeOptions,
     context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     match node.kind() {
         "script_element" | "style_element" => return Ok(()),
         "expression" => {
@@ -735,7 +748,7 @@ fn append_expression_normalization_edits(
     imports: &[MacroImport],
     context: &CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "svelte_raw_text")
@@ -771,7 +784,7 @@ fn append_raw_text_expression_normalization_edits(
     imports: &[MacroImport],
     context: &CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
         return Ok(());
     };
@@ -805,7 +818,7 @@ fn visit_component_each_statement(
     options: &AnalyzeOptions,
     context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let start = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "each_start");
@@ -850,7 +863,7 @@ fn visit_component_named_block(
     context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
     start_kind: &str,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let start = node
         .children(&mut node.walk())
         .find(|child| child.kind() == start_kind);
@@ -888,7 +901,7 @@ fn visit_component_snippet_statement(
     options: &AnalyzeOptions,
     context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let start = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "snippet_start");
@@ -926,7 +939,7 @@ fn visit_component_element_like(
     options: &AnalyzeOptions,
     context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     if let Some(candidate) =
         component_candidate_from_element(source, node, imports, options, context)
     {
@@ -1062,7 +1075,7 @@ fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, S
 fn declared_names_from_const_tag(
     source: &str,
     node: Node<'_>,
-) -> Result<Vec<String>, AnalyzerError> {
+) -> Result<Vec<String>, SvelteFrameworkError> {
     declared_names_from_optional_raw_text(source, node, BindingParseMode::VariableDeclarator)
         .map(|names| names.unwrap_or_default())
 }
@@ -1070,22 +1083,22 @@ fn declared_names_from_const_tag(
 fn declared_names_from_each_start(
     source: &str,
     node: Node<'_>,
-) -> Result<Vec<String>, AnalyzerError> {
+) -> Result<Vec<String>, SvelteFrameworkError> {
     let Some(parameter) = node.child_by_field_name("parameter") else {
         return Ok(Vec::new());
     };
-    collect_declared_names_from_binding_source(
+    Ok(collect_declared_names_from_binding_source(
         text(source, parameter),
         BindingParseMode::FunctionParams,
         JsLikeLanguage::TypeScript,
-    )
+    )?)
 }
 
 fn declared_names_from_optional_raw_text(
     source: &str,
     node: Node<'_>,
     mode: BindingParseMode,
-) -> Result<Option<Vec<String>>, AnalyzerError> {
+) -> Result<Option<Vec<String>>, SvelteFrameworkError> {
     let raw_text = find_first_descendant(node, "svelte_raw_text");
     let Some(raw_text) = raw_text else {
         return Ok(None);
@@ -1142,8 +1155,8 @@ fn collect_script_macro_imports(
     source: &str,
     base_offset: usize,
     language: JsLikeLanguage,
-    conventions: &crate::conventions::FrameworkConventions,
-) -> Result<Vec<MacroImport>, AnalyzerError> {
+    conventions: &FrameworkConventions,
+) -> Result<Vec<MacroImport>, SvelteFrameworkError> {
     let js_tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(source)?,
         JsLikeLanguage::TypeScript => parse_typescript(source)?,
@@ -1183,8 +1196,8 @@ fn collect_script_macro_import_statement_spans(
     source: &str,
     base_offset: usize,
     language: JsLikeLanguage,
-    conventions: &crate::conventions::FrameworkConventions,
-) -> Result<Vec<Span>, AnalyzerError> {
+    conventions: &FrameworkConventions,
+) -> Result<Vec<Span>, SvelteFrameworkError> {
     let js_tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(source)?,
         JsLikeLanguage::TypeScript => parse_typescript(source)?,
@@ -1325,10 +1338,7 @@ fn unquote(text: &str) -> Option<String> {
     Some(text[1..text.len() - 1].to_string())
 }
 
-fn is_macro_module_specifier(
-    specifier: &str,
-    conventions: &crate::conventions::FrameworkConventions,
-) -> bool {
+fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
     conventions.accepts_macro_package(specifier)
 }
 
@@ -1478,7 +1488,7 @@ pub(crate) fn bare_direct_macro_message(imported_name: &str) -> String {
 
 pub fn validate_svelte_extract_candidates(
     candidates: &[MacroCandidate],
-) -> Result<(), AnalyzerError> {
+) -> Result<(), SvelteFrameworkError> {
     let offending_macro = candidates
         .iter()
         .find(|candidate| {
@@ -1492,9 +1502,9 @@ pub fn validate_svelte_extract_candidates(
         .map(|candidate| candidate.imported_name.as_str());
 
     if let Some(imported_name) = offending_macro {
-        return Err(AnalyzerError::InvalidMacroUsage(bare_direct_macro_message(
-            imported_name,
-        )));
+        return Err(SvelteFrameworkError::InvalidMacroUsage(
+            bare_direct_macro_message(imported_name),
+        ));
     }
 
     Ok(())

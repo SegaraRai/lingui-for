@@ -2,12 +2,18 @@ use tree_sitter::Node;
 
 use crate::common::Span;
 
-use super::parse::{parse_javascript, parse_typescript};
+use super::parse::{ParseError, parse_javascript, parse_typescript};
 use super::scope::LexicalScope;
 use super::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
     NormalizationEdit,
 };
+
+#[derive(thiserror::Error, Debug)]
+pub enum JsAnalysisError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsMacroSyntax {
@@ -28,7 +34,7 @@ pub fn collect_macro_candidates_in_javascript(
     syntax: JsMacroSyntax,
     language: JsLikeLanguage,
     shadowed_names: &[String],
-) -> Result<Vec<MacroCandidate>, crate::AnalyzerError> {
+) -> Result<Vec<MacroCandidate>, JsAnalysisError> {
     let js_tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(source)?,
         JsLikeLanguage::TypeScript => parse_typescript(source)?,
@@ -70,7 +76,7 @@ pub fn collect_declared_names_from_binding_source(
     source: &str,
     mode: BindingParseMode,
     language: JsLikeLanguage,
-) -> Result<Vec<String>, crate::AnalyzerError> {
+) -> Result<Vec<String>, JsAnalysisError> {
     let wrapped = match mode {
         BindingParseMode::VariableDeclarator => format!("const {source};"),
         BindingParseMode::FunctionParams => format!("function __lf({source}) {{}}"),
@@ -90,7 +96,7 @@ pub fn collect_declared_names_from_binding_source(
 pub fn collect_top_level_declared_names_in_javascript(
     source: &str,
     language: JsLikeLanguage,
-) -> Result<Vec<String>, crate::AnalyzerError> {
+) -> Result<Vec<String>, JsAnalysisError> {
     let tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(source)?,
         JsLikeLanguage::TypeScript => parse_typescript(source)?,

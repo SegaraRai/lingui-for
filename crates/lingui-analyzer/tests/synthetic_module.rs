@@ -34,7 +34,8 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
         "synthetic.js",
         &script.macro_imports,
         &script.candidates,
-    );
+    )
+    .expect("synthetic module builds");
 
     assert!(
         synthetic
@@ -98,7 +99,8 @@ fn builds_synthetic_module_for_svelte_template_components() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &candidates,
-    );
+    )
+    .expect("synthetic module builds");
 
     assert!(
         synthetic
@@ -146,7 +148,8 @@ fn groups_synthetic_imports_by_source() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &candidates,
-    );
+    )
+    .expect("synthetic module builds");
 
     assert!(
         synthetic
@@ -184,7 +187,8 @@ fn emits_lookupable_sourcemap_for_normalized_segments() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &analysis.scripts[0].candidates,
-    );
+    )
+    .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
     let decoded = DecodedMap::from_reader(map_json.as_bytes()).expect("source map decodes");
     let needle = "t({ id: \"msg\" })";
@@ -221,7 +225,8 @@ fn emits_utf16_columns_for_unicode_prefixes() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &analysis.scripts[0].candidates,
-    );
+    )
+    .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
     let decoded = DecodedMap::from_reader(map_json.as_bytes()).expect("source map decodes");
     let needle = "\"あ🙂\"";
@@ -262,7 +267,8 @@ fn maps_component_declaration_start_to_component_message_anchor() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &candidates,
-    );
+    )
+    .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
     let decoded = DecodedMap::from_reader(map_json.as_bytes()).expect("source map decodes");
     let generated_offset = synthetic.source.find("<T>").expect("component present");

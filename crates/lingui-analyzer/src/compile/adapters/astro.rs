@@ -1,20 +1,35 @@
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::AnalyzerError;
 use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
 use crate::conventions::FrameworkConventions;
-use crate::framework::astro::AstroAdapter;
-use crate::framework::js::{JsLikeLanguage, collect_top_level_declared_names_in_javascript};
-use crate::framework::parse::parse_typescript;
-use crate::framework::{AnalyzeOptions, FrameworkAdapter, WhitespaceMode};
+use crate::framework::astro::{AstroAdapter, AstroFrameworkError};
+use crate::framework::js::{
+    JsAnalysisError, JsLikeLanguage, collect_top_level_declared_names_in_javascript,
+};
+use crate::framework::parse::{ParseError, parse_typescript};
+use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError, WhitespaceMode};
 
 use super::super::{
-    CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
+    CommonCompilePlan, CompileError, CompileReplacement, CompileTarget, CompileTargetContext,
     CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode, FrameworkCompilePlan,
-    RuntimeRequirements, build_compile_plan_for_framework,
+    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
 };
-use super::CommonFrameworkCompileAnalysis;
+use super::{AdapterError, CommonFrameworkCompileAnalysis};
+
+#[derive(thiserror::Error, Debug)]
+pub enum AstroAdapterError {
+    #[error(transparent)]
+    Framework(#[from] FrameworkError),
+    #[error(transparent)]
+    AstroFramework(#[from] AstroFrameworkError),
+    #[error(transparent)]
+    Js(#[from] JsAnalysisError),
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error("missing Astro convention field: {0}")]
+    MissingConvention(&'static str),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -53,8 +68,9 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         source: &str,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
-    ) -> Result<Self::Analysis, AnalyzerError> {
-        analyze_astro_compile(source, whitespace_mode, conventions)
+    ) -> Result<Self::Analysis, CompileError> {
+        Ok(analyze_astro_compile(source, whitespace_mode, conventions)
+            .map_err(AdapterError::from)?)
     }
 
     fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
@@ -65,8 +81,8 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         _analysis: &Self::Analysis,
         _prototype: &CompileTargetPrototype,
         normalized_source: &str,
-    ) -> String {
-        normalized_source.to_string()
+    ) -> Result<String, CompileError> {
+        Ok(normalized_source.to_string())
     }
 
     fn repair_compile_targets(_source: &str, _targets: &mut [CompileTarget]) {}
@@ -95,7 +111,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
     fn lower_runtime_component_markup(
         &self,
         declaration_code: &str,
-    ) -> Result<String, AnalyzerError> {
+    ) -> Result<String, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(
             declaration_code,
             self.runtime_bindings.runtime_trans.as_str(),
@@ -106,8 +122,8 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         &self,
         _source: &str,
         replacements: &mut Vec<CompileReplacement>,
-    ) {
-        append_runtime_injection_replacements(self, replacements);
+    ) -> Result<(), AdapterError> {
+        append_runtime_injection_replacements(self, replacements).map_err(AdapterError::from)
     }
 }
 
@@ -118,7 +134,7 @@ impl AstroCompilePlan {
         synthetic_name: &str,
         whitespace_mode: WhitespaceMode,
         conventions: FrameworkConventions,
-    ) -> Result<Self, AnalyzerError> {
+    ) -> Result<Self, CompileError> {
         build_compile_plan_for_framework::<Self>(
             source,
             source_name,
@@ -140,7 +156,7 @@ pub(crate) fn analyze_astro_compile(
     source: &str,
     whitespace: WhitespaceMode,
     conventions: &FrameworkConventions,
-) -> Result<AstroFrameworkCompileAnalysis, AnalyzerError> {
+) -> Result<AstroFrameworkCompileAnalysis, AstroAdapterError> {
     let analysis = AstroAdapter.analyze(
         source,
         &AnalyzeOptions {
@@ -226,7 +242,7 @@ pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> Runtime
 fn create_runtime_bindings(
     frontmatter_source: &str,
     conventions: &FrameworkConventions,
-) -> Result<AstroCompileRuntimeBindings, AnalyzerError> {
+) -> Result<AstroCompileRuntimeBindings, AstroAdapterError> {
     let declared_names = collect_top_level_declared_names_in_javascript(
         frontmatter_source,
         JsLikeLanguage::TypeScript,
@@ -242,15 +258,15 @@ fn create_runtime_bindings(
                 .bindings
                 .i18n_accessor_factory
                 .as_deref()
-                .expect("astro conventions should provide i18n accessor factory binding"),
+                .ok_or(AstroAdapterError::MissingConvention(
+                    "bindings.i18n_accessor_factory",
+                ))?,
         ),
         i18n: allocate_unique_binding_name(
             &mut used,
-            conventions
-                .bindings
-                .i18n_instance
-                .as_deref()
-                .expect("astro conventions should provide i18n binding"),
+            conventions.bindings.i18n_instance.as_deref().ok_or(
+                AstroAdapterError::MissingConvention("bindings.i18n_instance"),
+            )?,
         ),
         runtime_trans: allocate_unique_binding_name(
             &mut used,
@@ -280,16 +296,16 @@ fn allocate_unique_binding_name(
 fn append_runtime_injection_replacements(
     plan: &AstroCompilePlan,
     replacements: &mut Vec<CompileReplacement>,
-) {
+) -> Result<(), AstroAdapterError> {
     let prelude = build_frontmatter_prelude(
         plan.runtime_requirements.needs_runtime_i18n_binding,
         plan.runtime_requirements.needs_runtime_trans_component,
         &plan.runtime_bindings,
         &plan.common.conventions,
-    );
+    )?;
 
     if prelude.is_empty() {
-        return;
+        return Ok(());
     }
 
     if let Some(frontmatter) = &plan.frontmatter {
@@ -317,7 +333,7 @@ fn append_runtime_injection_replacements(
                 source_map_json: None,
             });
         }
-        return;
+        return Ok(());
     }
 
     replacements.push(CompileReplacement {
@@ -327,6 +343,7 @@ fn append_runtime_injection_replacements(
         code: format!("---\n{prelude}\n---\n"),
         source_map_json: None,
     });
+    Ok(())
 }
 
 fn build_frontmatter_prelude(
@@ -334,16 +351,13 @@ fn build_frontmatter_prelude(
     include_runtime_trans: bool,
     bindings: &AstroCompileRuntimeBindings,
     conventions: &FrameworkConventions,
-) -> String {
+) -> Result<String, AstroAdapterError> {
     let mut lines = String::new();
     let runtime_package = conventions.runtime.package.as_str();
     let trans_export = conventions.runtime.exports.trans.as_str();
-    let i18n_accessor_export = conventions
-        .runtime
-        .exports
-        .i18n_accessor
-        .as_deref()
-        .expect("astro conventions should provide i18n accessor export");
+    let i18n_accessor_export = conventions.runtime.exports.i18n_accessor.as_deref().ok_or(
+        AstroAdapterError::MissingConvention("runtime.exports.i18n_accessor"),
+    )?;
 
     if include_astro_context {
         lines.push_str(&format!(
@@ -363,7 +377,7 @@ fn build_frontmatter_prelude(
         ));
     }
 
-    lines
+    Ok(lines)
 }
 
 fn build_frontmatter_region(
@@ -442,7 +456,7 @@ fn collect_macro_import_statement_spans(
     source: &str,
     region: &EmbeddedScriptRegion,
     conventions: &FrameworkConventions,
-) -> Result<Vec<Span>, AnalyzerError> {
+) -> Result<Vec<Span>, AstroAdapterError> {
     let frontmatter_source = &source[region.inner_span.start..region.inner_span.end];
     let tree = parse_typescript(frontmatter_source)?;
     let root = tree.root_node();

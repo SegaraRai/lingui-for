@@ -8,9 +8,25 @@ pub mod svelte;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::AnalyzerError;
 use crate::common::Span;
 use crate::conventions::FrameworkConventions;
+
+pub use astro::AstroFrameworkError;
+pub use js::JsAnalysisError;
+pub use parse::ParseError;
+pub use svelte::SvelteFrameworkError;
+
+#[derive(thiserror::Error, Debug)]
+pub enum FrameworkError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error(transparent)]
+    Js(#[from] JsAnalysisError),
+    #[error(transparent)]
+    Astro(#[from] AstroFrameworkError),
+    #[error(transparent)]
+    Svelte(#[from] SvelteFrameworkError),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -97,5 +113,5 @@ pub trait FrameworkAdapter {
         &self,
         source: &str,
         options: &AnalyzeOptions,
-    ) -> Result<Self::Analysis, AnalyzerError>;
+    ) -> Result<Self::Analysis, FrameworkError>;
 }
