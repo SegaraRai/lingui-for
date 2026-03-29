@@ -110,7 +110,7 @@ fn collect_declarations_from_program(source: &str) -> Result<BTreeMap<String, St
 
             declarations.insert(
                 source[name.start_byte()..name.end_byte()].to_string(),
-                source[value_start..value.end_byte()].to_string(),
+                normalize_i18n_comment_layout(&source[value_start..value.end_byte()]),
             );
         }
     }
@@ -139,6 +139,39 @@ fn extend_start_for_leading_comments(source: &str, start: usize) -> usize {
     }
 }
 
+fn normalize_i18n_comment_layout(input: &str) -> String {
+    collapse_whitespace_between(input, "/*i18n*/", "{", " ")
+}
+
+fn collapse_whitespace_between(input: &str, left: &str, right: &str, replacement: &str) -> String {
+    let mut output = String::with_capacity(input.len());
+    let mut cursor = 0;
+
+    while let Some(relative) = input[cursor..].find(left) {
+        let left_start = cursor + relative;
+        let after_left = left_start + left.len();
+        output.push_str(&input[cursor..after_left]);
+
+        let mut whitespace_end = after_left;
+        while whitespace_end < input.len() && input.as_bytes()[whitespace_end].is_ascii_whitespace()
+        {
+            whitespace_end += 1;
+        }
+
+        if input[whitespace_end..].starts_with(right) {
+            output.push_str(replacement);
+            output.push_str(right);
+            cursor = whitespace_end + right.len();
+        } else {
+            output.push_str(&input[after_left..whitespace_end]);
+            cursor = whitespace_end;
+        }
+    }
+
+    output.push_str(&input[cursor..]);
+    output
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
@@ -155,7 +188,7 @@ mod tests {
         },
     };
 
-    use super::finish_compile;
+    use super::{collapse_whitespace_between, finish_compile, normalize_i18n_comment_layout};
 
     fn test_svelte_conventions() -> FrameworkConventions {
         FrameworkConventions {
@@ -264,6 +297,26 @@ mod tests {
                 .replacements
                 .iter()
                 .any(|replacement| replacement.code.contains("createLinguiAccessors"))
+        );
+    }
+
+    #[test]
+    fn normalize_i18n_comment_layout_collapses_comment_to_object_spacing() {
+        let input = "/*i18n*/\n  \t{ id: \"x\" }";
+
+        assert_eq!(
+            normalize_i18n_comment_layout(input),
+            "/*i18n*/ { id: \"x\" }"
+        );
+    }
+
+    #[test]
+    fn collapse_whitespace_between_leaves_non_matching_sequences_untouched() {
+        let input = "before /*other*/\n{ value } after";
+
+        assert_eq!(
+            collapse_whitespace_between(input, "/*i18n*/", "{", " "),
+            input
         );
     }
 }

@@ -90,6 +90,23 @@ describe("transformAstro", () => {
     expect(code).toContain('href: "/docs"');
   });
 
+  test("keeps returned msg descriptors on the same line as the i18n marker", async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import { msg } from "lingui-for-astro/macro";
+
+        function getMessage() {
+          return msg\`No images found.\`;
+        }
+        ---
+      `,
+      { filename: "/virtual/Page.astro" },
+    );
+
+    expect(result.code).toContain("return /*i18n*/ {");
+  });
+
   test("defaults rich-text whitespace handling to framework-aware spacing", async () => {
     const result = await expectTransformed(
       dedent`
