@@ -68,7 +68,12 @@ const { control } = Astro.props;
         class="h-9 rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) px-3 text-sm text-(--demo-control-field-text)"
       >
         {control.options.map((option) => (
-          <option value={option.value}>{t(option.label)}</option>
+          <option
+            value={option.value}
+            selected={option.value === control.initial}
+          >
+            {t(option.label)}
+          </option>
         ))}
       </select>
     )
