@@ -3,7 +3,7 @@ import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../common/config.ts";
-import { createMacroPostprocessPlugin } from "./macro-rewrite.ts";
+import { createSvelteMacroPostprocessPlugin } from "./macro-rewrite.ts";
 import type { ProgramTransformRequest } from "./types.ts";
 
 function runWithPlugin(
@@ -65,7 +65,7 @@ describe("createMacroPostprocessPlugin", () => {
           message: "Inline"
         }), "t");
       `,
-      createMacroPostprocessPlugin(
+      createSvelteMacroPostprocessPlugin(
         createRequest({
           translationMode: "svelte-context",
           runtimeBindings: {
@@ -111,7 +111,7 @@ describe("createMacroPostprocessPlugin", () => {
           message: "active"
         }), "t");
       `,
-      createMacroPostprocessPlugin(
+      createSvelteMacroPostprocessPlugin(
         createRequest({
           translationMode: "svelte-context",
           runtimeBindings: {
@@ -148,7 +148,7 @@ describe("createMacroPostprocessPlugin", () => {
           message: "Hello"
         }), "t");
       `,
-      createMacroPostprocessPlugin(
+      createSvelteMacroPostprocessPlugin(
         createRequest({
           extract: true,
           translationMode: "extract",
@@ -175,7 +175,7 @@ describe("createMacroPostprocessPlugin", () => {
           message: "Hello"
         }));
       `,
-      createMacroPostprocessPlugin(
+      createSvelteMacroPostprocessPlugin(
         createRequest({
           translationMode: "svelte-context",
           runtimeBindings: {

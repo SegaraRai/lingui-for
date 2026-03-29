@@ -4,7 +4,7 @@ import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import { fromBabelSourceMap } from "@lingui-for/internal-shared-compile";
 
 import { getParserPlugins } from "../common/config.ts";
-import { createMacroPostprocessPlugin } from "./macro-rewrite.ts";
+import { createSvelteMacroPostprocessPlugin } from "./macro-rewrite.ts";
 import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
 
 /**
@@ -43,7 +43,7 @@ export function transformProgram(
           stripMessageField: request.extract ? false : undefined,
         },
       ],
-      createMacroPostprocessPlugin(request),
+      createSvelteMacroPostprocessPlugin(request),
     ],
     sourceMaps: true,
   });

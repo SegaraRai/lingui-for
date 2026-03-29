@@ -196,7 +196,7 @@ function removeRuntimeI18nImports(
  * stable wrapper calls that survive Lingui and rewrites runtime access into the final
  * Svelte-oriented form.
  */
-export function createMacroPostprocessPlugin(
+export function createSvelteMacroPostprocessPlugin(
   request: ProgramTransformRequest,
 ): PluginObj<MacroRewriteState> {
   return {
