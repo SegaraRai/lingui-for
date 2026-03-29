@@ -37,7 +37,7 @@ export interface SvelteExtractorOptions {
    * Keep this aligned with the transform-time `whitespace` setting so extracted messages match the
    * compiled output.
    *
-   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros
+   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#svelte
    */
   whitespace?: RichTextWhitespaceMode | undefined;
 }

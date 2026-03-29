@@ -40,7 +40,7 @@ export interface LinguiAstroTransformOptions {
    * Use the same mode in extraction and build transforms so catalog entries stay consistent with
    * the emitted runtime code.
    *
-   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros
+   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#astro
    */
   whitespace?: RichTextWhitespaceMode | undefined;
 }
