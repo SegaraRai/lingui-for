@@ -74,6 +74,10 @@ export default defineConfig({
         dependsOn: ["build"],
         cache: false,
       },
+      inspect: {
+        command: "vp run inspect --filter conformance",
+        cache: false,
+      },
       release: {
         command:
           "vp exec pnpm publish -r --access public --provenance && vp exec changeset tag",

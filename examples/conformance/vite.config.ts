@@ -21,6 +21,10 @@ export default defineConfig({
         ],
         cache: false,
       },
+      inspect: {
+        command: "node inspect.ts",
+        cache: false,
+      },
     },
   },
 });
