@@ -1,5 +1,13 @@
 # lingui-for-svelte
 
+## 0.2.2
+
+### Patch Changes
+
+- [`950bcdb`](https://github.com/SegaraRai/lingui-for/commit/950bcdba323598bdb191776fb5445b20f29cad5c) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Fixed an issue where transformed `msg` descriptors could produce invalid code when used in `return` or `throw` statements because automatic semicolon insertion could treat the descriptor object as starting on the next statement.
+
+  This change normalizes whitespace after the `/*i18n*/` marker so any newline between `/*i18n*/` and `{` is rewritten to a single space, keeping descriptor expressions in the safe `/*i18n*/ { ... }` form.
+
 ## 0.2.1
 
 ### Patch Changes
