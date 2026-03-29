@@ -130,7 +130,8 @@ describe("transformSvelte", () => {
     	    id: "demo.heading",
     	    message: "Hello"
     	  };
-    	  const label = __l4s_getI18n()._(/*i18n*/ {
+    	  const label = __l4s_getI18n()._(
+    	  /*i18n*/ {
     	    id: "tfDRzk",
     	    message: "Save"
     	  });
@@ -265,7 +266,8 @@ describe("transformSvelte", () => {
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
     	  let name = $state("Ada");
-    	  const label = $__l4s_translate(/*i18n*/ {
+    	  const label = $__l4s_translate(
+    	  /*i18n*/ {
     	    id: "OVaF9k",
     	    message: "Hello {name}",
     	    values: {
@@ -300,7 +302,8 @@ describe("transformSvelte", () => {
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
     	  let name = $state("Ada");
-    	  const label = $derived.by(() => $__l4s_translate(/*i18n*/ {
+    	  const label = $derived.by(() => $__l4s_translate(
+    	  /*i18n*/ {
     	    id: "OVaF9k",
     	    message: "Hello {name}",
     	    values: {
@@ -340,10 +343,12 @@ describe("transformSvelte", () => {
     	  let state = $state("idle");
 
     	  function getStatusText() {
-    	    return state === "idle" ? $__l4s_translate(/*i18n*/ {
+    	    return state === "idle" ? $__l4s_translate(
+    	    /*i18n*/ {
     	      id: "oBVc6R",
     	      message: "idle"
-    	    }) : $__l4s_translate(/*i18n*/ {
+    	    }) : $__l4s_translate(
+    	    /*i18n*/ {
     	      id: "s/ereB",
     	      message: "active"
     	    });
@@ -383,14 +388,16 @@ describe("transformSvelte", () => {
     	  let gender = $state("female");
 
     	  const status = $derived.by(() => ({
-    	    books: $__l4s_translate(/*i18n*/ {
+    	    books: $__l4s_translate(
+    	    /*i18n*/ {
     	      id: "V/M0Vc",
     	      message: "{count, plural, one {# Book} other {# Books}}",
     	      values: {
     	        count: count
     	      }
     	    }),
-    	    pronoun: $__l4s_translate(/*i18n*/ {
+    	    pronoun: $__l4s_translate(
+    	    /*i18n*/ {
     	      id: "BGY2VE",
     	      message: "{gender, select, female {she} other {they}}",
     	      values: {
@@ -427,10 +434,12 @@ describe("transformSvelte", () => {
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
     	  let state = $state("idle");
-    	  const label = state === "idle" ? $__l4s_translate(/*i18n*/ {
+    	  const label = state === "idle" ? $__l4s_translate(
+    	  /*i18n*/ {
     	    id: "oBVc6R",
     	    message: "idle"
-    	  }) : $__l4s_translate(/*i18n*/ {
+    	  }) : $__l4s_translate(
+    	  /*i18n*/ {
     	    id: "s/ereB",
     	    message: "active"
     	  });
@@ -465,11 +474,13 @@ describe("transformSvelte", () => {
     	  const __l4s_translate = __l4s_ctx._;
     	  let count = $state(2);
     	  const labels = {
-    	    state: $__l4s_translate(/*i18n*/ {
+    	    state: $__l4s_translate(
+    	    /*i18n*/ {
     	      id: "oBVc6R",
     	      message: "idle"
     	    }),
-    	    books: $__l4s_translate(/*i18n*/ {
+    	    books: $__l4s_translate(
+    	    /*i18n*/ {
     	      id: "V/M0Vc",
     	      message: "{count, plural, one {# Book} other {# Books}}",
     	      values: {
@@ -504,7 +515,8 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-    	  const getStatusText = () => $__l4s_translate(/*i18n*/ {
+    	  const getStatusText = () => $__l4s_translate(
+    	  /*i18n*/ {
     	    id: "oBVc6R",
     	    message: "idle"
     	  });
@@ -543,14 +555,16 @@ describe("transformSvelte", () => {
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
     	  let name = $state("Ada");
-    	  const eager = __l4s_getI18n()._(/*i18n*/ {
+    	  const eager = __l4s_getI18n()._(
+    	  /*i18n*/ {
     	    id: "hhBkx1",
     	    message: "Tagged eager in script for {name}",
     	    values: {
     	      name: name
     	    }
     	  });
-    	  const reactive = $__l4s_translate(/*i18n*/ {
+    	  const reactive = $__l4s_translate(
+    	  /*i18n*/ {
     	    id: "ZKsO3J",
     	    message: "Tagged reactive in script for {name}",
     	    values: {
@@ -614,7 +628,8 @@ describe("transformSvelte", () => {
     	  __l4s_ctx.prime();
     	</script>
 
-    	<p>{$__l4s_translate(/*i18n*/ {
+    	<p>{$__l4s_translate(
+    	/*i18n*/ {
     	  id: "OVaF9k",
     	  message: "Hello {name}",
     	  values: {
@@ -656,21 +671,24 @@ describe("transformSvelte", () => {
     	  __l4s_ctx.prime();
     	</script>
 
-    	<p>{$__l4s_translate(/*i18n*/ {
+    	<p>{$__l4s_translate(
+    	/*i18n*/ {
     	  id: "V/M0Vc",
     	  message: "{count, plural, one {# Book} other {# Books}}",
     	  values: {
     	    count: count
     	  }
     	})}</p>
-    	<p>{$__l4s_translate(/*i18n*/ {
+    	<p>{$__l4s_translate(
+    	/*i18n*/ {
     	  id: "BGY2VE",
     	  message: "{gender, select, female {she} other {they}}",
     	  values: {
     	    gender: gender
     	  }
     	})}</p>
-    	<p>{$__l4s_translate(/*i18n*/ {
+    	<p>{$__l4s_translate(
+    	/*i18n*/ {
     	  id: "0ALwK4",
     	  message: "{count, selectordinal, one {#st} other {#th}}",
     	  values: {
@@ -1163,7 +1181,8 @@ describe("transformSvelte", () => {
     	  const __l4s_ctx = createLinguiAccessors();
     	  const __l4s_getI18n = __l4s_ctx.getI18n;
     	  const __l4s_translate = __l4s_ctx._;
-    	  const outer = __l4s_getI18n()._(/*i18n*/ {
+    	  const outer = __l4s_getI18n()._(
+    	  /*i18n*/ {
     	    id: "wVGQ6j",
     	    message: "Outer"
     	  });
@@ -1211,7 +1230,8 @@ describe("transformSvelte", () => {
     	  __l4s_ctx.prime();
     	</script>
 
-    	<p>{$__l4s_translate(/*i18n*/ {
+    	<p>{$__l4s_translate(
+    	/*i18n*/ {
     	  id: "UmW678",
     	  message: "Reactive greeting"
     	})}</p>
@@ -1244,7 +1264,8 @@ describe("transformSvelte", () => {
     	  __l4s_ctx.prime();
     	</script>
 
-    	<p>{$__l4s_translate(/*i18n*/ {
+    	<p>{$__l4s_translate(
+    	/*i18n*/ {
     	  id: "PVyl3J",
     	  message: "Hello from markup-only component"
     	})}</p>"
@@ -1287,7 +1308,8 @@ describe("transformSvelte", () => {
     	  __l4s_ctx_1.prime();
     	</script>
 
-    	<p>{$__l4s_translate_1(/*i18n*/ {
+    	<p>{$__l4s_translate_1(
+    	/*i18n*/ {
     	  id: "uzTaYi",
     	  message: "Hello"
     	})}</p>"
