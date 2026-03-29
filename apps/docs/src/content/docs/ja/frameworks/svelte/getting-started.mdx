@@ -42,7 +42,7 @@ yarn add -D @lingui/cli @lingui/conf unplugin-lingui-macro
   </TabItem>
 </Tabs>
 
-<Aside>
+<Aside type="tip">
 
 `unplugin-lingui-macro` が必要なのは、素の JavaScript または TypeScript ファイルで Lingui マクロを使う場合だけです。
 マクロを `.svelte` ファイルでしか使わないなら、このパッケージのインストールと、次の節で追加する Vite プラグインは省略できます。
@@ -78,7 +78,7 @@ export default defineConfig({
 });
 ```
 
-<Aside>
+<Aside type="tip">
 
 素の JavaScript または TypeScript ファイルで Lingui マクロを使わないなら、`extractors` 配列から `babelExtractor` を外し、インポートも省略できます。
 
@@ -103,7 +103,7 @@ export default defineConfig({
 {@render children()}
 ```
 
-<Aside>
+<Aside type="tip">
 
 `catalog` は共有設定ファイルからエクスポートされる、ロケールをキーにしたオブジェクトです。
 このファイルの作り方と、全ロケールを最初からまとめてバンドルするか必要時に読み込むかの選び方は [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。

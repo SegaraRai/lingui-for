@@ -37,7 +37,7 @@ components inherit it automatically.
 {@render children()}
 ```
 
-<Aside>
+<Aside type="tip">
 
 `catalog` here is a locale-keyed object (`{ en: ..., ja: ... }`) from a shared setup file. See
 [Load Compiled Catalogs](/guides/load-compiled-catalogs) for how to create it and for alternative
@@ -106,7 +106,7 @@ page. Each island must call `setLinguiContext` itself.
 <p>{$t`Hello from an island`}</p>
 ```
 
-<Aside>
+<Aside type="tip">
 
 Pass `locale` from the Astro page as a prop so the island uses the same locale as the surrounding
 page. See [Astro: Using Islands](/frameworks/astro/using-islands) for the broader pattern.

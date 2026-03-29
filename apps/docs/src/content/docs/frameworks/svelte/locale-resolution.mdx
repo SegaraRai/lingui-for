@@ -56,7 +56,7 @@ export function resolveLocale(
 }
 ```
 
-<Aside>
+<Aside type="tip">
 
 `catalog` is a locale-keyed object exported from a shared setup file. See
 [Load Compiled Catalogs](/guides/load-compiled-catalogs) for how to create that file and choose
@@ -166,7 +166,7 @@ resolved locale for the initial render.
 {@render children()}
 ```
 
-<Aside>
+<Aside type="tip">
 
 `catalog` passes all locales to `setupI18n` upfront, so `activate()` is enough. No `load()` call is
 needed. If you prefer lazy loading, see [Load Compiled Catalogs](/guides/load-compiled-catalogs).

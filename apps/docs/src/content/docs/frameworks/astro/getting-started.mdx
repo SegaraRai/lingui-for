@@ -42,7 +42,7 @@ yarn add -D @lingui/cli @lingui/conf unplugin-lingui-macro
   </TabItem>
 </Tabs>
 
-<Aside>
+<Aside type="tip">
 
 `unplugin-lingui-macro` is only needed if you use Lingui macros in plain JavaScript or TypeScript
 files. If you only use macros in `.astro` files, you can skip installing this package and remove it
@@ -66,16 +66,6 @@ export default defineConfig({
 });
 ```
 
-<Aside>
-
-Middleware runs for every page regardless of output mode: for `server`/`hybrid` output it handles
-each request, and for `static` output it runs per page during the build. It is the recommended
-initialization pattern in all cases. For simple static pages with no locale logic, page
-frontmatter setup is also available as an escape hatch. Keep that setup at the page or layout
-boundary, not inside reusable components. See [i18n Context](/frameworks/astro/i18n-context).
-
-</Aside>
-
 ## Configure Lingui
 
 ```ts title="lingui.config.ts"
@@ -91,7 +81,7 @@ export default defineConfig({
 });
 ```
 
-<Aside>
+<Aside type="tip">
 
 If you do not use Lingui macros in plain JavaScript or TypeScript files, you can omit
 `babelExtractor` from the `extractors` array and skip the import.
@@ -118,6 +108,16 @@ export const onRequest = defineMiddleware((context, next) => {
 ```
 
 <Aside>
+
+Middleware runs for every page regardless of output mode: for `server`/`hybrid` output it handles
+each request, and for `static` output it runs per page during the build. It is the recommended
+initialization pattern in all cases. For simple static pages with no locale logic, page
+frontmatter setup is also available as an escape hatch. Keep that setup at the page or layout
+boundary, not inside reusable components. See [i18n Context](/frameworks/astro/i18n-context).
+
+</Aside>
+
+<Aside type="tip">
 
 `catalog` is a locale-keyed object exported from a shared setup file. See
 [Load Compiled Catalogs](/guides/load-compiled-catalogs) for how to create that file and choose

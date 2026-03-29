@@ -42,7 +42,7 @@ yarn add -D @lingui/cli @lingui/conf unplugin-lingui-macro
   </TabItem>
 </Tabs>
 
-<Aside>
+<Aside type="tip">
 
 `unplugin-lingui-macro` is only needed if you use Lingui macros in plain JavaScript or TypeScript
 files. If you only use macros in `.svelte` files, you can skip installing this package and adding
@@ -79,7 +79,7 @@ export default defineConfig({
 });
 ```
 
-<Aside>
+<Aside type="tip">
 
 If you do not use Lingui macros in plain JavaScript or TypeScript files, you can omit
 `babelExtractor` from the `extractors` array and skip the import.
@@ -106,7 +106,7 @@ component renders.
 {@render children()}
 ```
 
-<Aside>
+<Aside type="tip">
 
 `catalog` is a locale-keyed object exported from a shared setup file. See
 [Load Compiled Catalogs](/guides/load-compiled-catalogs) for how to create that file and choose

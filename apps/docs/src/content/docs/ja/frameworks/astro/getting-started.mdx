@@ -42,7 +42,7 @@ yarn add -D @lingui/cli @lingui/conf unplugin-lingui-macro
   </TabItem>
 </Tabs>
 
-<Aside>
+<Aside type="tip">
 
 `unplugin-lingui-macro` が必要なのは、素の JavaScript または TypeScript ファイルで Lingui マクロを使う場合だけです。
 マクロを `.astro` ファイルでしか使わないなら、このパッケージのインストールは省略でき、`astro.config.ts` の `vite.plugins` からも外せます。
@@ -65,17 +65,6 @@ export default defineConfig({
 });
 ```
 
-<Aside>
-
-ミドルウェアは出力モードに関係なくすべてのページで動きます。
-`server` / `hybrid` 出力では各リクエストで処理され、`static` 出力ではビルド時に各ページごとに処理されます。
-どの場合でも、これが推奨される初期化パターンです。
-ロケールのロジックを持たない単純な静的ページでは、ページのフロントマターで初期化することもできますが、これはエスケープハッチです。
-この場合も、再利用コンポーネント内ではなく、ページまたはレイアウト境界に置いてください。
-詳しくは [i18n コンテキスト](/ja/frameworks/astro/i18n-context) を参照してください。
-
-</Aside>
-
 ## Lingui を設定する
 
 ```ts title="lingui.config.ts"
@@ -91,7 +80,7 @@ export default defineConfig({
 });
 ```
 
-<Aside>
+<Aside type="tip">
 
 素の JavaScript または TypeScript ファイルで Lingui マクロを使わないなら、`extractors` 配列から `babelExtractor` を外し、インポートも省略できます。
 
@@ -117,6 +106,17 @@ export const onRequest = defineMiddleware((context, next) => {
 ```
 
 <Aside>
+
+ミドルウェアは出力モードに関係なくすべてのページで動きます。
+`server` / `hybrid` 出力では各リクエストで処理され、`static` 出力ではビルド時に各ページごとに処理されます。
+どの場合でも、これが推奨される初期化パターンです。
+ロケールのロジックを持たない単純な静的ページでは、ページのフロントマターで初期化することもできますが、これはエスケープハッチです。
+この場合も、再利用コンポーネント内ではなく、ページまたはレイアウト境界に置いてください。
+詳しくは [i18n コンテキスト](/ja/frameworks/astro/i18n-context) を参照してください。
+
+</Aside>
+
+<Aside type="tip">
 
 `catalog` は共有設定ファイルからエクスポートされる、ロケールをキーにしたオブジェクトです。
 このファイルの作り方と、全ロケールを最初からまとめてバンドルするか必要時に読み込むかの選び方は [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。

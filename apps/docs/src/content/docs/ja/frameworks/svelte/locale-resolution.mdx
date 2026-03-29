@@ -52,7 +52,7 @@ export function resolveLocale(
 }
 ```
 
-<Aside>
+<Aside type="tip">
 
 `catalog` は共有設定ファイルからエクスポートされる、ロケールをキーにしたオブジェクトです。
 このファイルの作り方と、全ロケールを最初からまとめてバンドルするか必要時に読み込むかの選び方は [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。
@@ -159,7 +159,7 @@ export const load: LayoutServerLoad = ({ locals, url }) => {
 {@render children()}
 ```
 
-<Aside>
+<Aside type="tip">
 
 ここでは `catalog` を通して全ロケールを最初から `setupI18n` に渡しているため、`activate()` だけで十分です。`load()` は不要です。
 遅延読み込みを選びたい場合は [コンパイル済みカタログの読み込み](/ja/guides/load-compiled-catalogs) を参照してください。
