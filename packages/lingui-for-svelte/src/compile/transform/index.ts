@@ -48,9 +48,9 @@ export interface LinguiSvelteTransformOptions {
 }
 
 /**
- * Result returned by `transformSvelte`.
+ * Result returned by {@link transformSvelte}.
  */
-export interface SvelteTransformResult {
+export interface LinguiSvelteTransformResult {
   /**
    * Transformed `.svelte` source.
    */
@@ -76,7 +76,7 @@ export interface SvelteTransformResult {
 export async function transformSvelte(
   source: string,
   options: LinguiSvelteTransformOptions,
-): Promise<SvelteTransformResult | null> {
+): Promise<LinguiSvelteTransformResult | null> {
   const {
     filename,
     linguiConfig: linguiConfigPartial,

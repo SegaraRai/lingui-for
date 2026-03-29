@@ -1,5 +1,5 @@
 export {
   transformAstro as unstable_transformAstro,
-  type AstroTransformResult,
   type LinguiAstroTransformOptions,
+  type LinguiAstroTransformResult,
 } from "./compile/transform/index.ts";

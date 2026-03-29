@@ -1,5 +1,5 @@
 export {
   transformSvelte as unstable_transformSvelte,
   type LinguiSvelteTransformOptions,
-  type SvelteTransformResult,
+  type LinguiSvelteTransformResult,
 } from "./compile/transform/index.ts";

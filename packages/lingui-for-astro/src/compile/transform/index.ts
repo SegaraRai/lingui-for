@@ -1,4 +1,5 @@
 import type { LinguiConfig } from "@lingui/conf";
+
 import {
   buildAstroCompilePlan,
   finishAstroCompile,
@@ -45,9 +46,9 @@ export interface LinguiAstroTransformOptions {
 }
 
 /**
- * Result returned by `transformAstro`.
+ * Result returned by {@link transformAstro}.
  */
-export interface AstroTransformResult {
+export interface LinguiAstroTransformResult {
   /**
    * Transformed `.astro` source.
    */
@@ -63,15 +64,17 @@ export interface AstroTransformResult {
  *
  * @param source Original `.astro` source.
  * @param options Transform options including filename and optional Lingui config.
- * @returns Rewritten source and source map.
+ * @returns Rewritten source and source map, or `null` when the file contains no Lingui macros that
+ * require rewriting.
  *
  * This is the main Astro entry point for runtime compilation. Rust handles analysis, planning, and
- * final lowering; JS only runs Babel/Lingui and returns the finished code and source map.
+ * final lowering; JS runs the Lingui/Babel passes needed to produce the intermediate programs that
+ * the Rust finisher stitches back into `.astro` output.
  */
 export async function transformAstro(
   source: string,
   options: LinguiAstroTransformOptions,
-): Promise<AstroTransformResult | null> {
+): Promise<LinguiAstroTransformResult | null> {
   const {
     filename,
     linguiConfig: linguiConfigPartial,
