@@ -78,6 +78,18 @@ impl<'a> MappedText<'a> {
         self.segments.iter().map(MappedSegment::len).sum()
     }
 
+    pub(crate) fn source_name(&self) -> &'a str {
+        self.source_name
+    }
+
+    pub(crate) fn source_text(&self) -> &'a str {
+        self.source_text
+    }
+
+    pub(crate) fn empty_like(&self) -> Self {
+        Self::new(self.source_name, self.source_text)
+    }
+
     pub(crate) fn slice(&self, span: crate::common::Span) -> Result<Self, MappedTextError> {
         if span.start > span.end || span.end > self.len() {
             return Err(MappedTextError::OutOfBounds);
@@ -110,6 +122,15 @@ impl<'a> MappedText<'a> {
         self.ensure_compatible(&other)?;
         self.segments.extend(other.segments);
         Ok(())
+    }
+
+    pub(crate) fn append_slice_from(
+        &mut self,
+        other: &Self,
+        span: crate::common::Span,
+    ) -> Result<(), MappedTextError> {
+        self.ensure_compatible(other)?;
+        self.append(other.slice(span)?)
     }
 
     pub(crate) fn replace(

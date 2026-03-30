@@ -19,8 +19,6 @@ import {
 import { createSvelteFrameworkConventions } from "../common/conventions.ts";
 import { transformProgram } from "../lower/babel-transform.ts";
 
-export type { RichTextWhitespaceMode } from "../common/config.ts";
-
 /**
  * Options for {@link transformSvelte}.
  */
@@ -60,15 +58,55 @@ export interface LinguiSvelteTransformResult {
    * Source map for the transformed file, or `null` when none is generated.
    */
   map: CanonicalSourceMap | null;
+  /**
+   * Intermediate artifacts from the transform process, useful for testing and debugging but not guaranteed.
+   */
+  artifacts: {
+    /**
+     * The synthetic TSX module produced by the Rust analyzer before any Babel/Lingui transforms run.
+     */
+    synthetic: LinguiSvelteTransformArtifact;
+    /**
+     * The Babel/Lingui transform of the synthetic module before Svelte-specific runtime rewriting.
+     */
+    raw: LinguiSvelteTransformArtifact;
+    /**
+     * The Babel/Lingui transform of the synthetic module with Svelte runtime bindings applied.
+     */
+    context: LinguiSvelteTransformArtifact;
+    /**
+     * The final `.svelte` output after Rust reinserts the transformed declarations into the original source.
+     */
+    final: LinguiSvelteTransformArtifact;
+  };
 }
 
 /**
- * Transforms one `.svelte` source file in place for runtime use.
+ * One intermediate or final output from the Svelte transform pipeline together with its source map.
+ */
+export interface LinguiSvelteTransformArtifact {
+  /**
+   * Filename associated with this artifact, typically used for diagnostics and source map generation.
+   * May be a virtual name for synthetic modules.
+   */
+  filename: string;
+  /**
+   * Transformed source code for this artifact.
+   */
+  code: string;
+  /**
+   * Source map for the transformed file, or `null` when none is generated.
+   */
+  map: CanonicalSourceMap | null;
+}
+
+/**
+ * Transforms one `.svelte` source string for runtime use.
  *
  * @param source Original `.svelte` source.
  * @param options Transform options including filename and optional Lingui config.
- * @returns Rewritten source and source map, or `null` when the file contains no Lingui macros that
- * require rewriting.
+ * @returns Rewritten source, source map, and intermediate artifacts, or `null` when the file
+ * contains no Lingui macros that require rewriting.
  *
  * This is the main Svelte entry point for runtime compilation. Rust handles analysis, planning, and
  * final lowering; JS runs the Lingui/Babel passes needed to produce the intermediate programs that
@@ -103,28 +141,29 @@ export async function transformSvelte(
     return null;
   }
 
+  const syntheticMap = parseCanonicalSourceMap(
+    compilePlan.common.syntheticSourceMapJson,
+  );
   const runtimeBindings = {
     createLinguiAccessors: compilePlan.runtimeBindings.createLinguiAccessors,
     context: compilePlan.runtimeBindings.context,
     getI18n: compilePlan.runtimeBindings.getI18n,
     translate: compilePlan.runtimeBindings.translate,
   };
+  const rawFilename = `${compilePlan.common.syntheticName}?raw`;
   const raw = transformProgram(compilePlan.common.syntheticSource, {
     extract: false,
-    filename: `${compilePlan.common.syntheticName}?raw`,
-    inputSourceMap: toBabelSourceMap(
-      parseCanonicalSourceMap(compilePlan.common.syntheticSourceMapJson),
-    ),
+    filename: rawFilename,
+    inputSourceMap: toBabelSourceMap(syntheticMap),
     lang: compilePlan.common.syntheticLang,
     linguiConfig,
     translationMode: "raw",
   });
-  const svelteContext = transformProgram(compilePlan.common.syntheticSource, {
+  const contextFilename = `${compilePlan.common.syntheticName}?svelte-context`;
+  const context = transformProgram(compilePlan.common.syntheticSource, {
     extract: false,
-    filename: `${compilePlan.common.syntheticName}?svelte-context`,
-    inputSourceMap: toBabelSourceMap(
-      parseCanonicalSourceMap(compilePlan.common.syntheticSourceMapJson),
-    ),
+    filename: contextFilename,
+    inputSourceMap: toBabelSourceMap(syntheticMap),
     lang: compilePlan.common.syntheticLang,
     linguiConfig,
     translationMode: "svelte-context",
@@ -137,16 +176,37 @@ export async function transformSvelte(
     transformedPrograms: {
       rawCode: raw.code,
       rawSourceMapJson: raw.map != null ? JSON.stringify(raw.map) : undefined,
-      contextCode: svelteContext.code,
+      contextCode: context.code,
       contextSourceMapJson:
-        svelteContext.map != null
-          ? JSON.stringify(svelteContext.map)
-          : undefined,
+        context.map != null ? JSON.stringify(context.map) : undefined,
     },
   });
+  const finalMap = parseCanonicalSourceMap(finished.sourceMapJson);
 
   return {
     code: finished.code,
-    map: parseCanonicalSourceMap(finished.sourceMapJson),
+    map: finalMap,
+    artifacts: {
+      synthetic: {
+        filename: compilePlan.common.syntheticName,
+        code: compilePlan.common.syntheticSource,
+        map: syntheticMap,
+      },
+      raw: {
+        filename: rawFilename,
+        code: raw.code,
+        map: raw.map,
+      },
+      context: {
+        filename: contextFilename,
+        code: context.code,
+        map: context.map,
+      },
+      final: {
+        filename,
+        code: finished.code,
+        map: finalMap,
+      },
+    },
   };
 }

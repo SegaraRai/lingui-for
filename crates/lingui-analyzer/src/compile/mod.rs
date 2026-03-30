@@ -135,12 +135,11 @@ pub(crate) trait FrameworkCompilePlan: Sized {
 
     fn lower_runtime_component_markup(
         &self,
-        declaration_code: &str,
+        _source_name: &str,
+        _source: &str,
+        declaration: RenderedMappedText,
     ) -> Result<RenderedMappedText, RuntimeComponentError> {
-        Ok(RenderedMappedText {
-            code: declaration_code.to_string(),
-            source_map: None,
-        })
+        Ok(declaration)
     }
 
     fn append_runtime_injection_replacements(

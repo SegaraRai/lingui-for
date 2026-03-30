@@ -41,7 +41,7 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
     assert!(
         synthetic
             .source
-            .contains("import { t as tt, plural } from \"@lingui/core/macro\";")
+            .contains("import { plural, t as tt } from \"@lingui/core/macro\";")
     );
     assert!(synthetic.source.contains("const __lf_0 = tt`Hello`;"));
     assert!(
@@ -240,11 +240,14 @@ fn emits_utf16_columns_for_unicode_prefixes() {
     let token = decoded
         .lookup_token(generated.0 as u32, generated.1 as u32)
         .expect("mapping exists");
-    let original_offset =
-        line_start(source, token.get_src_line() as usize) + token.get_src_col() as usize;
+    let original_offset = utf16_column_to_byte_offset(
+        source,
+        token.get_src_line() as usize,
+        token.get_src_col() as usize,
+    );
 
     assert_eq!(token.get_source(), Some("source"));
-    assert!(source[original_offset..].starts_with("t.eager({ id: \"あ🙂\" })"));
+    assert!(source[original_offset..].starts_with("\"あ🙂\""));
 }
 
 #[test]
@@ -282,10 +285,13 @@ fn maps_component_declaration_start_to_component_message_anchor() {
     let token = decoded
         .lookup_token(generated.0 as u32, generated.1 as u32)
         .expect("mapping exists");
-    let original_offset =
-        line_start(source, token.get_src_line() as usize) + token.get_src_col() as usize;
+    let original_offset = utf16_column_to_byte_offset(
+        source,
+        token.get_src_line() as usize,
+        token.get_src_col() as usize,
+    );
 
-    assert!(source[original_offset..].starts_with("Component origin "));
+    assert!(source[original_offset..].starts_with("<T>Component origin "));
 }
 
 fn offset_to_position(source: &str, offset: usize) -> (usize, usize) {
@@ -328,4 +334,23 @@ fn line_start(source: &str, line: usize) -> usize {
     }
 
     source.len()
+}
+
+fn utf16_column_to_byte_offset(source: &str, line: usize, utf16_column: usize) -> usize {
+    let start = line_start(source, line);
+    let mut offset = start;
+    let mut seen_utf16 = 0;
+
+    for ch in source[start..].chars() {
+        if ch == '\n' {
+            break;
+        }
+        if seen_utf16 >= utf16_column {
+            break;
+        }
+        seen_utf16 += ch.len_utf16();
+        offset += ch.len_utf8();
+    }
+
+    offset
 }

@@ -11,7 +11,6 @@ export default defineConfig({
     },
     entry: {
       index: "src/index.ts",
-      transform: "src/transform.ts",
       extractor: "src/extractor.ts",
       macro: "src/macro.ts",
       "runtime/index": "src/runtime/index.ts",
@@ -24,6 +23,7 @@ export default defineConfig({
       "unplugin/rspack": "src/unplugin/rspack.ts",
       "unplugin/vite": "src/unplugin/vite.ts",
       "unplugin/webpack": "src/unplugin/webpack.ts",
+      "internal/compile": "src/internal/compile.ts",
     },
     plugins: [
       markupImport({

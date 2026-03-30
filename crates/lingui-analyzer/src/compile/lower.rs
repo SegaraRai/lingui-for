@@ -2,8 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::common::{
     CollectDeclarationsError, SharedSourceMap, TransformedDeclaration,
-    collect_variable_initializer_declarations, compose_source_maps,
-    extend_start_for_leading_comments, parse_source_map,
+    collect_variable_initializer_declarations, extend_start_for_leading_comments, parse_source_map,
 };
 use crate::framework::parse::{ParseError, parse_tsx};
 
@@ -40,7 +39,7 @@ pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
     source: &str,
     transformed_programs: &TransformedPrograms,
 ) -> Result<FinishedCompile, LowerError> {
-    let lowered_declarations = lower_transformed_declarations(plan, transformed_programs)?;
+    let lowered_declarations = lower_transformed_declarations(plan, source, transformed_programs)?;
     let replacements = collect_compile_replacements_internal(plan, source, &lowered_declarations)?;
     Ok(finish_compile_from_internal_replacements(
         source,
@@ -52,6 +51,7 @@ pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
 
 fn lower_transformed_declarations<P: FrameworkCompilePlan>(
     plan: &P,
+    source: &str,
     transformed_programs: &TransformedPrograms,
 ) -> Result<BTreeMap<String, LoweredDeclaration>, LowerError> {
     let declaration_sets = collect_transformed_declarations(transformed_programs)?;
@@ -67,18 +67,15 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
         };
 
         let (code, source_map) = if target.output_kind == CompileTargetOutputKind::Component {
-            let lowered = plan.lower_runtime_component_markup(&declaration.code)?;
-            let composed = match (lowered.source_map.as_ref(), declaration.source_map.as_ref()) {
-                (Some(upper), Some(lower)) => {
-                    Some(compose_source_maps(upper, lower).map_err(|error| {
-                        LowerError::Emit(EmitError::InvalidSourceMap(error.to_string()))
-                    })?)
-                }
-                (Some(_), None) => None,
-                (None, Some(lower)) => Some(lower.clone()),
-                (None, None) => None,
-            };
-            (lowered.code, composed)
+            let lowered = plan.lower_runtime_component_markup(
+                &plan.common().source_name,
+                source,
+                crate::common::RenderedMappedText {
+                    code: declaration.code.clone(),
+                    source_map: declaration.source_map.clone(),
+                },
+            )?;
+            (lowered.code, lowered.source_map)
         } else {
             (declaration.code.clone(), declaration.source_map.clone())
         };

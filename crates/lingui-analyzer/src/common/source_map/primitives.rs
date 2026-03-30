@@ -342,20 +342,19 @@ pub(crate) fn project_generated_position_to_original(
     }
 
     let next = map.tokens.get(current_index + 1);
-    if let Some(next) = next {
-        if current.dst_line == line
-            && next.dst_line == line
-            && current.src_line == next.src_line
-            && col < next.dst_col
-        {
-            let generated_delta = col.saturating_sub(current.dst_col);
-            return Some(IndexedProjection {
-                src_line: current.src_line,
-                src_col: current.src_col + generated_delta,
-                source: current.source.clone(),
-                name: current.name.clone(),
-            });
-        }
+    if let Some(next) = next
+        && current.dst_line == line
+        && next.dst_line == line
+        && current.src_line == next.src_line
+        && col < next.dst_col
+    {
+        let generated_delta = col.saturating_sub(current.dst_col);
+        return Some(IndexedProjection {
+            src_line: current.src_line,
+            src_col: current.src_col + generated_delta,
+            source: current.source.clone(),
+            name: current.name.clone(),
+        });
     }
 
     Some(IndexedProjection::from_token(current))

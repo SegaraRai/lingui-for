@@ -46,10 +46,6 @@
       "svelte": "./dist/index.mjs",
       "default": "./dist/index.mjs"
     },
-    "./transform": {
-      "types": "./dist/transform.d.mts",
-      "default": "./dist/transform.mjs"
-    },
     "./extractor": {
       "types": "./dist/extractor.d.mts",
       "default": "./dist/extractor.mjs"
@@ -99,6 +95,10 @@
     "./unplugin/webpack": {
       "types": "./dist/unplugin/webpack.d.mts",
       "default": "./dist/unplugin/webpack.mjs"
+    },
+    "./internal/compile": {
+      "types": "./dist/internal/compile.d.mts",
+      "default": "./dist/internal/compile.mjs"
     },
     "./package.json": "./package.json"
   },
