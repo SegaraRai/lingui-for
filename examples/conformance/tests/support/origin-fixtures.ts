@@ -25,7 +25,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       </script>
 
       <p>{$t\`Template origin message\`}</p>
-      <Trans>Component origin message</Trans>
+      <p><Trans>Component origin message</Trans></p>
     `,
     expectations: [
       {
@@ -38,7 +38,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "Component origin message",
-        needle: "Component origin message",
+        needle: "<Trans>Component origin message</Trans>",
       },
     ],
   },
@@ -54,7 +54,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       ---
 
       <p>{t\`Template origin message\`}</p>
-      <Trans>Component origin message</Trans>
+      <p><Trans>Component origin message</Trans></p>
     `,
     expectations: [
       {
@@ -67,7 +67,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "Component origin message",
-        needle: "Component origin message",
+        needle: "<Trans>Component origin message</Trans>",
       },
     ],
   },
@@ -83,7 +83,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       </script>
 
       <p>前置き🎌 {$t\`テンプレート🚀メッセージ\`} 後置き🍣</p>
-      <Trans>ようこそ <strong>{"世界😀"}</strong> さん🎉</Trans>
+      <p title="日本語"><Trans>ようこそ <strong>{"世界😀"}</strong> さん🎉</Trans></p>
     `,
     expectations: [
       {
@@ -96,7 +96,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "ようこそ <0>世界😀</0> さん🎉",
-        needle: "ようこそ ",
+        needle: '<Trans>ようこそ <strong>{"世界😀"}</strong> さん🎉</Trans>',
       },
     ],
   },
@@ -112,7 +112,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       ---
 
       <p>前置き🎌 {t\`テンプレート🚀メッセージ\`} 後置き🍣</p>
-      <Trans>ようこそ <strong>{"世界😀"}</strong> さん🎉</Trans>
+      <p title="日本語"><Trans>ようこそ <strong>{"世界😀"}</strong> さん🎉</Trans></p>
     `,
     expectations: [
       {
@@ -125,7 +125,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "ようこそ <0>世界😀</0> さん🎉",
-        needle: "ようこそ ",
+        needle: '<Trans>ようこそ <strong>{"世界😀"}</strong> さん🎉</Trans>',
       },
     ],
   },
@@ -141,7 +141,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       "</script>",
       "",
       "<p>前置き🎌 {$t`家族👨‍👩‍👧‍👦😀😃😄テンプレート`} 後置き🍣</p>",
-      '<Trans>ようこそ <strong>{"世界👨‍👩‍👧‍👦😀😃😄"}</strong> さん🎉</Trans>',
+      '<p title="日本語"><Trans>ようこそ <strong>{"世界👨‍👩‍👧‍👦😀😃😄"}</strong> さん🎉</Trans></p>',
     ].join("\r\n"),
     expectations: [
       {
@@ -154,7 +154,8 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "ようこそ <0>世界👨‍👩‍👧‍👦😀😃😄</0> さん🎉",
-        needle: "ようこそ ",
+        needle:
+          '<Trans>ようこそ <strong>{"世界👨‍👩‍👧‍👦😀😃😄"}</strong> さん🎉</Trans>',
       },
     ],
   },
@@ -170,7 +171,7 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       "---",
       "",
       "<p>前置き🎌 {t`家族👨‍👩‍👧‍👦😀😃😄テンプレート`} 後置き🍣</p>",
-      '<Trans>ようこそ <strong>{"世界👨‍👩‍👧‍👦😀😃😄"}</strong> さん🎉</Trans>',
+      '<p title="日本語"><Trans>ようこそ <strong>{"世界👨‍👩‍👧‍👦😀😃😄"}</strong> さん🎉</Trans></p>',
     ].join("\r\n"),
     expectations: [
       {
@@ -183,7 +184,8 @@ export const extractOriginFixtures: readonly ExtractOriginFixture[] = [
       },
       {
         message: "ようこそ <0>世界👨‍👩‍👧‍👦😀😃😄</0> さん🎉",
-        needle: "ようこそ ",
+        needle:
+          '<Trans>ようこそ <strong>{"世界👨‍👩‍👧‍👦😀😃😄"}</strong> さん🎉</Trans>',
       },
     ],
   },

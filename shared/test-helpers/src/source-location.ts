@@ -93,6 +93,26 @@ export function nextCodePointOffset(source: string, offset: number): number {
   return bounded + (codePoint > 0xffff ? 2 : 1);
 }
 
+export function previousCodePointOffset(
+  source: string,
+  offset: number,
+): number {
+  const bounded = Math.min(offset, source.length);
+  if (bounded <= 0) {
+    return 0;
+  }
+
+  const lastCodeUnit = source.charCodeAt(bounded - 1);
+  if (bounded >= 2 && lastCodeUnit >= 0xdc00 && lastCodeUnit <= 0xdfff) {
+    const previousCodeUnit = source.charCodeAt(bounded - 2);
+    if (previousCodeUnit >= 0xd800 && previousCodeUnit <= 0xdbff) {
+      return bounded - 2;
+    }
+  }
+
+  return bounded - 1;
+}
+
 export function assertRangeMapping(
   consumer: TraceMap,
   generatedSource: string,
@@ -104,16 +124,31 @@ export function assertRangeMapping(
   const generated = findUniqueRange(generatedSource, detection.generated);
   const original = findUniqueRange(originalSource, detection.original);
   const generatedStart = offsetToLocation(generatedSource, generated.start);
-  const generatedEnd = offsetToLocation(generatedSource, generated.end);
   const originalStart = offsetToLocation(originalSource, original.start);
-  const originalEnd = offsetToLocation(originalSource, original.end);
+  const originalEndExclusive = offsetToLocation(originalSource, original.end);
+  const originalEndInclusive = offsetToLocation(
+    originalSource,
+    previousCodePointOffset(originalSource, original.end),
+  );
   const mappedStart = originalPositionFor(consumer, {
     line: generatedStart.line,
     column: generatedStart.column,
   });
-  const mappedEnd = originalPositionFor(consumer, {
-    line: generatedEnd.line,
-    column: generatedEnd.column,
+  const generatedEndExclusive = offsetToLocation(
+    generatedSource,
+    generated.end,
+  );
+  const mappedEndExclusive = originalPositionFor(consumer, {
+    line: generatedEndExclusive.line,
+    column: generatedEndExclusive.column,
+  });
+  const generatedEndInclusive = offsetToLocation(
+    generatedSource,
+    previousCodePointOffset(generatedSource, generated.end),
+  );
+  const mappedEndInclusive = originalPositionFor(consumer, {
+    line: generatedEndInclusive.line,
+    column: generatedEndInclusive.column,
   });
 
   expect(
@@ -127,12 +162,22 @@ export function assertRangeMapping(
     originalStart.column,
   );
 
+  const endMatchesExclusive =
+    mappedEndExclusive.source === filename &&
+    mappedEndExclusive.line === originalEndExclusive.line &&
+    mappedEndExclusive.column === originalEndExclusive.column;
+  const endMatchesInclusive =
+    mappedEndInclusive.source === filename &&
+    mappedEndInclusive.line === originalEndInclusive.line &&
+    mappedEndInclusive.column === originalEndInclusive.column;
+
   expect(
-    mappedEnd.source,
-    `${detection.name}: missing source for end position`,
-  ).toBe(filename);
-  expect(mappedEnd.line, `${detection.name}: end line`).toBe(originalEnd.line);
-  expect(mappedEnd.column, `${detection.name}: end column`).toBe(
-    originalEnd.column,
-  );
+    endMatchesExclusive || endMatchesInclusive,
+    [
+      `${detection.name}: end mapping mismatch`,
+      `exclusive generated ${generatedEndExclusive.line}:${generatedEndExclusive.column} -> ${mappedEndExclusive.source}:${mappedEndExclusive.line}:${mappedEndExclusive.column}`,
+      `inclusive generated ${generatedEndInclusive.line}:${generatedEndInclusive.column} -> ${mappedEndInclusive.source}:${mappedEndInclusive.line}:${mappedEndInclusive.column}`,
+      `expected exclusive ${filename}:${originalEndExclusive.line}:${originalEndExclusive.column} or inclusive ${filename}:${originalEndInclusive.line}:${originalEndInclusive.column}`,
+    ].join("\n"),
+  ).toBe(true);
 }

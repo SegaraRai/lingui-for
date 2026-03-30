@@ -226,7 +226,15 @@ fn finalize_replacement_mapped<'a>(
         .source_map
         .as_ref()
         .map(|map| {
-            augment_replacement_map(map, source_name, source_text, &replacement.original_anchors)
+            augment_replacement_map(
+                map,
+                source_name,
+                source_text,
+                replacement.code,
+                replacement.start,
+                replacement.end,
+                &replacement.original_anchors,
+            )
         })
         .transpose()?;
 
@@ -242,24 +250,27 @@ fn augment_replacement_map(
     map: &SourceMap,
     source_name: &str,
     source_text: &str,
+    generated_text: &str,
+    original_start: usize,
+    original_end: usize,
     original_anchors: &[usize],
 ) -> Result<SharedSourceMap, MappedTextError> {
-    if original_anchors.is_empty() {
-        return Ok(map.clone().into());
-    }
-
     let line_starts = compute_line_starts(source_text);
     let source_index = Utf16Index::new(source_text, &line_starts);
-    let anchor_positions = original_anchors
-        .iter()
-        .map(|anchor| source_index.byte_to_line_utf16_col(*anchor))
+    let mut anchor_positions = vec![
+        source_index.byte_to_line_utf16_col(original_start),
+        source_index.byte_to_line_utf16_col(original_end),
+    ];
+    anchor_positions.extend(
+        original_anchors
+            .iter()
+            .map(|anchor| source_index.byte_to_line_utf16_col(*anchor)),
+    );
+    let anchor_positions = anchor_positions
+        .into_iter()
         .map(|(line, col)| (line as u32, col as u32))
         .collect::<Vec<_>>();
     let projected = project_original_anchors_to_generated(map, &anchor_positions);
-
-    if projected.is_empty() {
-        return Ok(map.clone().into());
-    }
 
     let mut builder = SourceMapBuilder::new(map.get_file());
     builder.set_file(map.get_file());
@@ -273,11 +284,28 @@ fn augment_replacement_map(
         builder.set_source_contents(builder_src_id, map.get_source_contents(src_id));
     }
 
+    let mut extras = projected;
+    let (end_generated_line, end_generated_col) = generated_end_position(generated_text);
+    extras.push((
+        0,
+        0,
+        anchor_positions[0].0,
+        anchor_positions[0].1,
+        Some(source_name.to_string()),
+    ));
+    extras.push((
+        end_generated_line,
+        end_generated_col,
+        anchor_positions[1].0,
+        anchor_positions[1].1,
+        Some(source_name.to_string()),
+    ));
+
     let existing_positions = map
         .tokens()
         .map(|token| (token.get_dst_line(), token.get_dst_col()))
         .collect::<BTreeSet<_>>();
-    let mut extras = projected
+    let mut extras = extras
         .into_iter()
         .filter(|(dst_line, dst_col, _, _, _)| !existing_positions.contains(&(*dst_line, *dst_col)))
         .collect::<Vec<_>>();

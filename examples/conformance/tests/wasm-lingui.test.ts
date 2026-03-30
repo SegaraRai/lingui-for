@@ -160,7 +160,7 @@ describe("lingui-analyzer wasm contract", () => {
         const name = "Ada";
       </script>
 
-      <Translation>Component origin {name}</Translation>
+      <p><Translation>Component origin {name}</Translation></p>
     `;
 
     const synthetic = buildSyntheticModuleForTest("svelte", source, {
@@ -175,7 +175,7 @@ describe("lingui-analyzer wasm contract", () => {
     expect(
       messages.find((message) => message.message === "Component origin {name}")
         ?.origin,
-    ).toEqual([filename, 6, 13]);
+    ).toEqual([filename, 6, 3]);
   });
 
   test("preserves Astro component extraction origins through Rust sourcemaps", async () => {
@@ -186,7 +186,7 @@ describe("lingui-analyzer wasm contract", () => {
       const name = "Ada";
       ---
 
-      <Translation>Component origin {name}</Translation>
+      <p><Translation>Component origin {name}</Translation></p>
     `;
 
     const synthetic = buildSyntheticModuleForTest("astro", source, {
@@ -201,7 +201,7 @@ describe("lingui-analyzer wasm contract", () => {
     expect(
       messages.find((message) => message.message === "Component origin {name}")
         ?.origin,
-    ).toEqual([filename, 6, 13]);
+    ).toEqual([filename, 6, 3]);
   });
 
   test("reinjects transformed Svelte expressions back into markup with sourcemaps", () => {
@@ -241,7 +241,7 @@ describe("lingui-analyzer wasm contract", () => {
     );
     expect(origins).toEqual([
       [filename, 3, 16],
-      [filename, 7, 5],
+      [filename, 7, 4],
     ]);
   });
 
@@ -318,7 +318,7 @@ describe("lingui-analyzer wasm contract", () => {
       reinserted.sourceMapJson ?? "",
       "_Trans",
     );
-    expect(origins).toEqual([[filename, 6, 1]]);
+    expect(origins).toEqual([[filename, 6, 0]]);
   });
 
   test("reinjects transformed Astro component macros back into markup with sourcemaps", () => {
@@ -354,7 +354,7 @@ describe("lingui-analyzer wasm contract", () => {
       reinserted.sourceMapJson ?? "",
       "_Trans",
     );
-    expect(origins).toEqual([[filename, 6, 1]]);
+    expect(origins).toEqual([[filename, 6, 0]]);
   });
 });
 

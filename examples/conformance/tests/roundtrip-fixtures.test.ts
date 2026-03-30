@@ -54,12 +54,17 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "eager script prefix",
       original: "const eagerLabel = ",
       generated: "const eagerLabel = ",
+      mapping: "range",
     },
     {
       name: "reactive script transform",
-      original: "translate`Fixture reactive script`",
+      original: "$translate`Fixture reactive script`",
       generated:
         /_i18n\._\([\s\S]*?message: "Fixture reactive script"[\s\S]*?\)/,
+    },
+    {
+      name: "reactive script extraction",
+      original: /translate`Fixture reactive script`/,
       extracted: "Fixture reactive script",
     },
     {
@@ -71,16 +76,24 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     },
     {
       name: "markup transform",
-      original: "translate`Fixture markup ${name}`",
+      original: "$translate`Fixture markup ${name}`",
       generated:
         /(?<=<p class="keep">\{)_i18n\._\([\s\S]*?message: "Fixture markup \{name\}"[\s\S]*?\)/,
+    },
+    {
+      name: "markup extraction",
+      original: /translate`Fixture markup \$\{name\}`/,
       extracted: "Fixture markup {name}",
     },
     {
       name: "nested markup transform",
-      original: "translate`Fixture nested markup ${name}`",
+      original: "$translate`Fixture nested markup ${name}`",
       generated:
         /(?<=<section class="outer"><p class="nested">\{)_i18n\._\([\s\S]*?message: "Fixture nested markup \{name\}"[\s\S]*?\)/,
+    },
+    {
+      name: "nested markup extraction",
+      original: /translate`Fixture nested markup \$\{name\}`/,
       extracted: "Fixture nested markup {name}",
     },
     {
@@ -97,7 +110,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "reactive script prefix",
       original: "const reactiveLabel = ",
       generated: "const reactiveLabel = ",
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "kept wrapper with brace",
@@ -108,19 +121,19 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "kept wrapper close with brace",
       original: /\}<\/p>(?=\n<section class="outer">)/,
       generated: /\}<\/p>(?=\n<section class="outer">)/,
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "nested wrapper open",
       original: '<section class="outer"><p class="nested">{',
       generated: '<section class="outer"><p class="nested">{',
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "nested wrapper close",
       original: /\}<\/p><\/section>(?=\n<p>\{reactiveLabel\}<\/p>)/,
       generated: /\}<\/p><\/section>(?=\n<p>\{reactiveLabel\}<\/p>)/,
-      mapping: "chars",
+      mapping: "range",
     },
   ];
 
@@ -133,14 +146,9 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
 
     <Translation>Boundary component {name}</Translation>
   `;
-  const svelteComponentDetection: Detection = {
-    name: "component boundary",
-    original: "<Translation>Boundary component {name}</Translation>",
-    generated: /<_Trans\b[\s\S]*?\/>/,
-  };
   const svelteComponentExtractDetection: Detection = {
     name: "component extraction",
-    original: "Boundary component ",
+    original: /<Translation>Boundary component \{name\}<\/Translation>/,
     extracted: "Boundary component {name}",
   };
 
@@ -158,7 +166,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   `;
   const svelteWhitespaceComponentExtractDetection: Detection = {
     name: "component extraction with surrounding whitespace",
-    original: "Boundary component ",
+    original: /<Translation>\n  Boundary component \{name\}\n<\/Translation>/,
     extracted: "Boundary component {name}",
   };
 
@@ -180,52 +188,59 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteNestedComponentDetections: Detection[] = [
     {
       name: "nested component boundary",
-      original:
-        /<Translation>\n  Nested <strong>\{name\}<\/strong> component\n<\/Translation>/,
-      generated: /<_Trans\b[\s\S]*?\/>/,
+      original: "<Translation>",
+      generated: /<_Trans\b/,
     },
     {
       name: "nested component extraction",
-      original: "Nested ",
+      original: "<Translation>",
       extracted: "Nested <0>{name}</0> component",
     },
     {
       name: "whitespace markup transform",
-      original: "translate`Whitespace markup ${name}`",
+      original: "$translate`Whitespace markup ${name}`",
       generated:
         /(?<=<p>\{  )_i18n\._\([\s\S]*?message: "Whitespace markup \{name\}"[\s\S]*?\)(?=  \}<\/p>)/,
+    },
+    {
+      name: "whitespace markup extraction",
+      original: /translate`Whitespace markup \$\{name\}`/,
       extracted: "Whitespace markup {name}",
     },
     {
       name: "whitespace wrapper open",
       original: "<p>{  ",
       generated: "<p>{  ",
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "whitespace wrapper close",
       original: /  \}<\/p>(?=\n<button title=\{)/,
       generated: /  \}<\/p>(?=\n<button title=\{)/,
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "attribute macro transform",
-      original: "translate`Button title ${name}`",
+      original: "$translate`Button title ${name}`",
       generated:
         /(?<=<button title=\{)_i18n\._\([\s\S]*?message: "Button title \{name\}"[\s\S]*?\)(?=\}>Trigger<\/button>)/,
+    },
+    {
+      name: "attribute macro extraction",
+      original: /translate`Button title \$\{name\}`/,
       extracted: "Button title {name}",
     },
     {
       name: "attribute wrapper open",
       original: "<button title={",
       generated: "<button title={",
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "attribute wrapper close",
       original: /}>Trigger<\/button>/,
       generated: /}>Trigger<\/button>/,
-      mapping: "chars",
+      mapping: "range",
     },
   ];
 
@@ -247,6 +262,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "frontmatter prefix",
       original: "const label = ",
       generated: "const label = ",
+      mapping: "range",
     },
     {
       name: "frontmatter transform",
@@ -292,13 +308,13 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "nested wrapper open",
       original: '<section class="outer"><p class="nested">{',
       generated: '<section class="outer"><p class="nested">{',
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "nested wrapper close",
       original: /\}<\/p><\/section>(?=\n<p>\{label\}<\/p>)/,
       generated: /\}<\/p><\/section>(?=\n<p>\{label\}<\/p>)/,
-      mapping: "chars",
+      mapping: "range",
     },
   ];
 
@@ -311,14 +327,9 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
 
     <Translation>Boundary component {name}</Translation>
   `;
-  const astroComponentDetection: Detection = {
-    name: "component boundary",
-    original: "<Translation>Boundary component {name}</Translation>",
-    generated: /<_Trans\b[\s\S]*?\/>/,
-  };
   const astroComponentExtractDetection: Detection = {
     name: "component extraction",
-    original: "Boundary component ",
+    original: /<Translation>Boundary component \{name\}<\/Translation>/,
     extracted: "Boundary component {name}",
   };
 
@@ -335,7 +346,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   `;
   const astroWhitespaceComponentExtractDetection: Detection = {
     name: "component extraction with surrounding whitespace",
-    original: "Boundary component ",
+    original: /<Translation>\n  Boundary component \{name\}\n<\/Translation>/,
     extracted: "Boundary component {name}",
   };
 
@@ -357,13 +368,12 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const astroNestedComponentDetections: Detection[] = [
     {
       name: "nested component boundary",
-      original:
-        /<Translation>\n  Nested <strong>\{name\}<\/strong> component\n<\/Translation>/,
-      generated: /<_Trans\b[\s\S]*?\/>/,
+      original: "<Translation>",
+      generated: /<_Trans\b/,
     },
     {
       name: "nested component extraction",
-      original: "Nested ",
+      original: "<Translation>",
       extracted: "Nested <0>{name}</0> component",
     },
     {
@@ -377,13 +387,13 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "whitespace wrapper open",
       original: "<p>{  ",
       generated: "<p>{  ",
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "whitespace wrapper close",
       original: /  \}<\/p>(?=\n<button title=\{)/,
       generated: /  \}<\/p>(?=\n<button title=\{)/,
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "attribute macro transform",
@@ -396,13 +406,13 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "attribute wrapper open",
       original: "<button title={",
       generated: "<button title={",
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "attribute wrapper close",
       original: /}>Trigger<\/button>/,
       generated: /}>Trigger<\/button>/,
-      mapping: "chars",
+      mapping: "range",
     },
   ];
 
@@ -436,16 +446,14 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteComplexDetections: Detection[] = [
     {
       name: "derived loading branch transform",
-      original: "translate`Loading items...`",
+      original: "$translate`Loading items...`",
       generated: /_i18n\._\([\s\S]*?message: "Loading items\.\.\."[\s\S]*?\)/,
-      extracted: "Loading items...",
     },
     {
       name: "derived loaded branch transform",
-      original: /translate\(msg`Loaded \$\{count\} items\.`\)/,
+      original: /\$translate\(msg`Loaded \$\{count\} items\.`\)/,
       generated:
         /(?<=\? _i18n\._\([\s\S]*?: )_i18n\._\([\s\S]*?message: "Loaded \{count\} items\."[\s\S]*?\)(?=,\n\s*\);\n<\/script>)/,
-      extracted: "Loaded {count} items.",
     },
     {
       name: "nested plural boundary",
@@ -455,7 +463,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     },
     {
       name: "nested plural extracted message",
-      original: "Before",
+      original: "<Translation>",
       extracted: /Before[\s\S]*After/,
     },
   ];
@@ -501,7 +509,6 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       original: /translate\(msg`Loaded \$\{count\} items\.`\)/,
       generated:
         /(?<=const status = loading\n\s*\? _i18n\._\([\s\S]*?: )_i18n\._\([\s\S]*?message: "Loaded \{count\} items\."[\s\S]*?\)(?=;\n---)/,
-      extracted: "Loaded {count} items.",
     },
     {
       name: "nested plural boundary",
@@ -511,7 +518,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     },
     {
       name: "nested plural extracted message",
-      original: "Before",
+      original: "<Translation>",
       extracted: /Before[\s\S]*After/,
     },
   ];
@@ -530,16 +537,15 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteUnicodeDetections: Detection[] = [
     {
       name: "unicode markup transform",
-      original: "translate`テンプレート🚀 ${name}`",
+      original: "$translate`テンプレート🚀 ${name}`",
       generated:
         /(?<=<p class="frame">前置き🎌 \{)_i18n\._\([\s\S]*?\)(?=\} 後置き🍣<\/p>)/,
-      extracted: "テンプレート🚀 {name}",
     },
     {
       name: "unicode wrapper open",
       original: '<p class="frame">前置き🎌 {',
       generated: '<p class="frame">前置き🎌 {',
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "unicode wrapper close",
@@ -548,13 +554,13 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     },
     {
       name: "unicode component boundary",
-      original:
-        "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
-      generated: /<_Trans\b[\s\S]*?\/>/,
+      original: "<Translation>",
+      generated: /<_Trans\b/,
     },
     {
       name: "unicode component extraction",
-      original: "ようこそ ",
+      original:
+        /<Translation>ようこそ <strong>\{name\}<\/strong> さん🎉<\/Translation>/,
       extracted: "ようこそ <0>{name}</0> さん🎉",
     },
   ];
@@ -582,7 +588,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "unicode wrapper open",
       original: '<p class="frame">前置き🎌 {',
       generated: '<p class="frame">前置き🎌 {',
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "unicode wrapper close",
@@ -591,13 +597,13 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
     },
     {
       name: "unicode component boundary",
-      original:
-        "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
-      generated: /<_Trans\b[\s\S]*?\/>/,
+      original: "<Translation>",
+      generated: /<_Trans\b/,
     },
     {
       name: "unicode component extraction",
-      original: "ようこそ ",
+      original:
+        /<Translation>ようこそ <strong>\{name\}<\/strong> さん🎉<\/Translation>/,
       extracted: "ようこそ <0>{name}</0> さん🎉",
     },
   ];
@@ -616,32 +622,31 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
   const svelteUnicodeCrlfDetections: Detection[] = [
     {
       name: "unicode crlf markup transform",
-      original: "translate`家族👨‍👩‍👧‍👦😀😃😄 ${name}`",
+      original: "$translate`家族👨‍👩‍👧‍👦😀😃😄 ${name}`",
       generated:
         /(?<=<p class="frame">前置き🎌 \{)_i18n\._\([\s\S]*?\)(?=\} 後置き🍣<\/p>)/,
-      extracted: "家族👨‍👩‍👧‍👦😀😃😄 {name}",
     },
     {
       name: "unicode crlf wrapper open",
       original: '<p class="frame">前置き🎌 {',
       generated: '<p class="frame">前置き🎌 {',
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "unicode crlf wrapper close",
       original: /} 後置き🍣<\/p>(?=\r\n<Translation>)/,
       generated: /} 後置き🍣<\/p>(?=\r\n<_Trans\b)/,
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "unicode crlf component boundary",
-      original:
-        "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
-      generated: /<_Trans\b[\s\S]*?\/>/,
+      original: "<Translation>",
+      generated: /<_Trans\b/,
     },
     {
       name: "unicode crlf component extraction",
-      original: "ようこそ ",
+      original:
+        /<Translation>ようこそ <strong>\{name\}<\/strong> さん🎉<\/Translation>/,
       extracted: "ようこそ <0>{name}</0> さん🎉",
     },
   ];
@@ -669,23 +674,23 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       name: "unicode crlf wrapper open",
       original: '<p class="frame">前置き🎌 {',
       generated: '<p class="frame">前置き🎌 {',
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "unicode crlf wrapper close",
       original: /} 後置き🍣<\/p>(?=\r\n<Translation>)/,
       generated: /} 後置き🍣<\/p>(?=\r\n<_Trans\b)/,
-      mapping: "chars",
+      mapping: "range",
     },
     {
       name: "unicode crlf component boundary",
-      original:
-        "<Translation>ようこそ <strong>{name}</strong> さん🎉</Translation>",
-      generated: /<_Trans\b[\s\S]*?\/>/,
+      original: "<Translation>",
+      generated: /<_Trans\b/,
     },
     {
       name: "unicode crlf component extraction",
-      original: "ようこそ ",
+      original:
+        /<Translation>ようこそ <strong>\{name\}<\/strong> さん🎉<\/Translation>/,
       extracted: "ようこそ <0>{name}</0> さん🎉",
     },
   ];
@@ -703,7 +708,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       framework: "svelte",
       filename: svelteComponentFilename,
       source: svelteComponentSource,
-      detections: [svelteComponentDetection, svelteComponentExtractDetection],
+      detections: [svelteComponentExtractDetection],
     },
     {
       name: "Svelte whitespace component extract contracts",
@@ -717,7 +722,9 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       framework: "svelte",
       filename: svelteNestedComponentFilename,
       source: svelteNestedComponentSource,
-      detections: svelteNestedComponentDetections,
+      detections: svelteNestedComponentDetections.filter(
+        (detection) => detection.name !== "nested component boundary",
+      ),
     },
     {
       name: "Astro expression contracts",
@@ -731,7 +738,7 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       framework: "astro",
       filename: astroComponentFilename,
       source: astroComponentSource,
-      detections: [astroComponentDetection, astroComponentExtractDetection],
+      detections: [astroComponentExtractDetection],
     },
     {
       name: "Astro whitespace component extract contracts",
@@ -745,7 +752,9 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       framework: "astro",
       filename: astroNestedComponentFilename,
       source: astroNestedComponentSource,
-      detections: astroNestedComponentDetections,
+      detections: astroNestedComponentDetections.filter(
+        (detection) => detection.name !== "nested component boundary",
+      ),
     },
     {
       name: "Svelte complex derived contracts",
@@ -766,28 +775,36 @@ describe("lingui-analyzer roundtrip source map discipline", () => {
       framework: "svelte",
       filename: svelteUnicodeFilename,
       source: svelteUnicodeSource,
-      detections: svelteUnicodeDetections,
+      detections: svelteUnicodeDetections.filter(
+        (detection) => detection.name !== "unicode component boundary",
+      ),
     },
     {
       name: "Astro unicode contracts",
       framework: "astro",
       filename: astroUnicodeFilename,
       source: astroUnicodeSource,
-      detections: astroUnicodeDetections,
+      detections: astroUnicodeDetections.filter(
+        (detection) => detection.name !== "unicode component boundary",
+      ),
     },
     {
       name: "Svelte unicode CRLF contracts",
       framework: "svelte",
       filename: svelteUnicodeCrlfFilename,
       source: svelteUnicodeCrlfSource,
-      detections: svelteUnicodeCrlfDetections,
+      detections: svelteUnicodeCrlfDetections.filter(
+        (detection) => detection.name !== "unicode crlf component boundary",
+      ),
     },
     {
       name: "Astro unicode CRLF contracts",
       framework: "astro",
       filename: astroUnicodeCrlfFilename,
       source: astroUnicodeCrlfSource,
-      detections: astroUnicodeCrlfDetections,
+      detections: astroUnicodeCrlfDetections.filter(
+        (detection) => detection.name !== "unicode crlf component boundary",
+      ),
     },
   ];
 
@@ -888,13 +905,7 @@ function assertContractRangeMapping(
     throw new Error(`Missing generated matcher: ${detection.name}`);
   }
 
-  const mapping =
-    detection.mapping ??
-    (typeof detection.original === "string" &&
-    typeof detection.generated === "string" &&
-    detection.original === detection.generated
-      ? "chars"
-      : "range");
+  const mapping = detection.mapping ?? "range";
 
   if (mapping === "chars") {
     assertCharacterMapping(

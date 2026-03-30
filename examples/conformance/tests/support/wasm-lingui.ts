@@ -66,6 +66,7 @@ export function transformSyntheticModule(
     babelrc: false,
     configFile: false,
     sourceType: "module",
+    inputSourceMap: parseSourceMap(synthetic.sourceMapJson),
     parserOpts: {
       plugins: SYNTHETIC_MODULE_PARSER_PLUGINS,
     },
@@ -90,12 +91,7 @@ export function transformSyntheticModule(
   return {
     synthetic,
     code: transformed.code,
-    map:
-      transformed.map == null
-        ? null
-        : typeof transformed.map === "string"
-          ? transformed.map
-          : JSON.stringify(transformed.map),
+    map: transformed.map != null ? JSON.stringify(transformed.map) : null,
     declarations: collectDeclarationInitializers(
       transformed.ast,
       synthetic.declarationIds,
