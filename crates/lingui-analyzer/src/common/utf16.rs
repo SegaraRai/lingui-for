@@ -31,6 +31,13 @@ impl<'a> Utf16Index<'a> {
         (line, col)
     }
 
+    pub fn line_utf16_col_to_byte(&self, line: usize, utf16_col: usize) -> usize {
+        let Some(line_index) = self.lines.get(line) else {
+            return self.source.len();
+        };
+        line_index.utf16_col_to_byte(self.source, utf16_col)
+    }
+
     fn line_for_byte(&self, byte: usize) -> usize {
         self.line_starts
             .partition_point(|&probe| probe <= byte)
@@ -123,6 +130,29 @@ impl Utf16LineIndex {
 
         cur_utf16
     }
+
+    fn utf16_col_to_byte(&self, source: &str, target_utf16_col: usize) -> usize {
+        if target_utf16_col == 0 {
+            return self.start;
+        }
+
+        let line = &source[self.start..self.end];
+        let mut cur_byte = self.start;
+        let mut cur_utf16 = 0usize;
+
+        for (rel, ch) in line.char_indices() {
+            if cur_utf16 >= target_utf16_col {
+                return self.start + rel;
+            }
+            cur_utf16 += ch.len_utf16();
+            cur_byte = self.start + rel + ch.len_utf8();
+            if cur_utf16 >= target_utf16_col {
+                return cur_byte;
+            }
+        }
+
+        cur_byte.min(self.end)
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -203,5 +233,17 @@ mod tests {
         assert_eq!(index.byte_to_line_utf16_col(6), (2, 0));
         assert_eq!(index.byte_to_line_utf16_col(8), (2, 1));
         assert_eq!(index.byte_to_line_utf16_col(9), (2, 2));
+    }
+
+    #[test]
+    fn converts_utf16_columns_back_to_byte_offsets() {
+        let source = "🙂x\nab";
+        let index = Utf16Index::new(source, &line_starts(source));
+
+        assert_eq!(index.line_utf16_col_to_byte(0, 0), 0);
+        assert_eq!(index.line_utf16_col_to_byte(0, 2), 4);
+        assert_eq!(index.line_utf16_col_to_byte(0, 3), 5);
+        assert_eq!(index.line_utf16_col_to_byte(1, 0), 6);
+        assert_eq!(index.line_utf16_col_to_byte(1, 2), 8);
     }
 }

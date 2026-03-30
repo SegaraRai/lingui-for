@@ -7,7 +7,7 @@ mod runtime_component;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{ScriptLang, Span};
+use crate::common::{RenderedMappedText, ScriptLang, SharedSourceMap, Span};
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidate, MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
@@ -68,6 +68,8 @@ pub struct CommonCompilePlan {
     pub source_name: String,
     pub synthetic_name: String,
     pub synthetic_source: String,
+    pub synthetic_source_map_json: Option<String>,
+    pub source_anchors: Vec<usize>,
     pub synthetic_lang: ScriptLang,
     pub conventions: FrameworkConventions,
     pub declaration_ids: Vec<String>,
@@ -117,7 +119,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         analysis: &Self::Analysis,
         prototype: &CompileTargetPrototype,
         normalized_source: &str,
-    ) -> Result<String, CompileError>;
+    ) -> Result<RenderedMappedText, CompileError>;
 
     fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]);
 
@@ -134,17 +136,30 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     fn lower_runtime_component_markup(
         &self,
         declaration_code: &str,
-    ) -> Result<String, RuntimeComponentError> {
-        Ok(declaration_code.to_string())
+    ) -> Result<RenderedMappedText, RuntimeComponentError> {
+        Ok(RenderedMappedText {
+            code: declaration_code.to_string(),
+            source_map: None,
+        })
     }
 
     fn append_runtime_injection_replacements(
         &self,
         _source: &str,
-        _replacements: &mut Vec<CompileReplacement>,
+        _replacements: &mut Vec<CompileReplacementInternal>,
     ) -> Result<(), AdapterError> {
         Ok(())
     }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct CompileReplacementInternal {
+    pub(crate) declaration_id: String,
+    pub(crate) start: usize,
+    pub(crate) end: usize,
+    pub(crate) code: String,
+    pub(crate) source_map: Option<SharedSourceMap>,
+    pub(crate) original_anchors: Vec<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]

@@ -121,7 +121,7 @@ msgstr "2. Switch between English and Japanese in the header and watch the local
 msgid "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 msgstr "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 
-#: src/components/astro/AstroRichText.astro:22
+#: src/components/astro/AstroRichText.astro:21
 msgid "Astro can preserve <0>strong emphasis</0> in translated output."
 msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 
@@ -129,7 +129,7 @@ msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 msgid "Astro formats"
 msgstr "Astro formats"
 
-#: src/components/astro/AstroRichText.astro:15
+#: src/components/astro/AstroRichText.astro:14
 msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Astro keeps the <0>settings link</0> inside a translated sentence."
 
@@ -450,7 +450,7 @@ msgstr "Render stamp: {renderStamp}"
 msgid "Render Svelte and React islands with the same locale."
 msgstr "Render Svelte and React islands with the same locale."
 
-#: src/pages/settings.astro:36
+#: src/pages/settings.astro:35
 msgid "Return to the <0>home page</0> when you are done."
 msgstr "Return to the <0>home page</0> when you are done."
 
@@ -544,7 +544,7 @@ msgstr "Svelte activates Lingui inside its island."
 msgid "Svelte and React islands read the same active locale."
 msgstr "Svelte and React islands read the same active locale."
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:29
+#: src/components/svelte/SvelteRichTextIsland.svelte:28
 msgid "Svelte can preserve <0>strong emphasis</0> in translated output."
 msgstr "Svelte can preserve <0>strong emphasis</0> in translated output."
 
@@ -560,7 +560,7 @@ msgstr "Svelte island"
 msgid "Svelte islands"
 msgstr "Svelte islands"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:22
+#: src/components/svelte/SvelteRichTextIsland.svelte:21
 msgid "Svelte keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Svelte keeps the <0>settings link</0> inside a translated sentence."
 
@@ -588,11 +588,11 @@ msgstr "Svelte runs plural, select, and selectOrdinal macros in component code."
 msgid "Svelte sees locale {localeLabel}."
 msgstr "Svelte sees locale {localeLabel}."
 
-#: src/pages/routing/[slug].astro:38
+#: src/pages/routing/[slug].astro:37
 msgid "Switch to the <0>second route</0> without dropping the locale."
 msgstr "Switch to the <0>second route</0> without dropping the locale."
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:28
+#: src/components/svelte/SvelteLinguiIsland.svelte:27
 msgid "The active <0>Lingui context</0> is created inside the Svelte island."
 msgstr "The active <0>Lingui context</0> is created inside the Svelte island."
 

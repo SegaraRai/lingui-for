@@ -3,6 +3,7 @@ use tree_sitter::Node;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 use crate::conventions::FrameworkConventions;
 
+use super::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
 use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{
     BindingParseMode, JsAnalysisError, JsLikeLanguage, JsMacroSyntax,
@@ -32,6 +33,7 @@ pub struct SvelteScriptAnalysis {
     pub scripts: Vec<SvelteScriptBlock>,
     pub template_expressions: Vec<SvelteTemplateExpression>,
     pub template_components: Vec<SvelteTemplateComponent>,
+    pub source_anchors: Vec<usize>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -80,7 +82,8 @@ fn analyze_svelte(
 ) -> Result<SvelteScriptAnalysis, SvelteFrameworkError> {
     let tree = parse_svelte(source)?;
     let root = tree.root_node();
-    let mut scripts = collect_script_blocks(source, root, options)?;
+    let mut source_anchors = collect_node_start_anchors(source, root);
+    let mut scripts = collect_script_blocks(source, root, options, &mut source_anchors)?;
     let template_imports = scripts
         .iter()
         .filter(|script| !script.is_module)
@@ -114,6 +117,7 @@ fn analyze_svelte(
         scripts,
         template_expressions: context.expressions,
         template_components: context.components,
+        source_anchors,
     })
 }
 
@@ -121,15 +125,17 @@ fn collect_script_blocks(
     source: &str,
     node: Node<'_>,
     options: &AnalyzeOptions,
+    source_anchors: &mut Vec<usize>,
 ) -> Result<Vec<SvelteScriptBlock>, SvelteFrameworkError> {
     fn collect_script_blocks_impl(
         source: &str,
         node: Node<'_>,
         options: &AnalyzeOptions,
+        source_anchors: &mut Vec<usize>,
         scripts: &mut Vec<SvelteScriptBlock>,
     ) -> Result<(), SvelteFrameworkError> {
         if node.kind() == "script_element" {
-            if let Some(script) = analyze_script_block(source, node, options)? {
+            if let Some(script) = analyze_script_block(source, node, options, source_anchors)? {
                 scripts.push(script);
             }
             return Ok(());
@@ -137,13 +143,13 @@ fn collect_script_blocks(
 
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
-            collect_script_blocks_impl(source, child, options, scripts)?;
+            collect_script_blocks_impl(source, child, options, source_anchors, scripts)?;
         }
         Ok(())
     }
 
     let mut scripts = Vec::new();
-    collect_script_blocks_impl(source, node, options, &mut scripts)?;
+    collect_script_blocks_impl(source, node, options, source_anchors, &mut scripts)?;
 
     Ok(scripts)
 }
@@ -152,6 +158,7 @@ fn analyze_script_block(
     source: &str,
     script_element: Node<'_>,
     options: &AnalyzeOptions,
+    source_anchors: &mut Vec<usize>,
 ) -> Result<Option<SvelteScriptBlock>, SvelteFrameworkError> {
     let mut cursor = script_element.walk();
     let mut raw_text = None;
@@ -176,6 +183,16 @@ fn analyze_script_block(
 
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
     let language = script_language(source, start_tag);
+    let script_tree = match language {
+        JsLikeLanguage::JavaScript => parse_javascript(script_source)?,
+        JsLikeLanguage::TypeScript => parse_typescript(script_source)?,
+    };
+    extend_shifted_node_start_anchors(
+        script_source,
+        script_tree.root_node(),
+        content_region.inner_span.start,
+        source_anchors,
+    );
     let declared_names = collect_top_level_declared_names_in_javascript(script_source, language)?;
     let macro_imports = collect_script_macro_imports(
         script_source,

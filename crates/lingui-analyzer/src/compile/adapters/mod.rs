@@ -16,6 +16,8 @@ pub enum AdapterError {
     Astro(#[from] AstroAdapterError),
     #[error(transparent)]
     Svelte(#[from] SvelteAdapterError),
+    #[error("{0}")]
+    Other(String),
 }
 
 #[derive(Debug, Clone)]
@@ -24,4 +26,5 @@ pub(crate) struct CommonFrameworkCompileAnalysis {
     pub(crate) prototypes: Vec<CompileTargetPrototype>,
     pub(crate) import_removals: Vec<Span>,
     pub(crate) synthetic_lang: ScriptLang,
+    pub(crate) source_anchors: Vec<usize>,
 }

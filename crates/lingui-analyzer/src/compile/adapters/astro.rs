@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
+use crate::common::{
+    EmbeddedScriptRegion, MappedText, RenderedMappedText, ScriptLang, Span, build_copy_map,
+    build_span_anchor_map,
+};
 use crate::conventions::FrameworkConventions;
 use crate::framework::astro::{AstroAdapter, AstroFrameworkError};
 use crate::framework::js::{
@@ -11,9 +14,10 @@ use crate::framework::parse::{ParseError, parse_typescript};
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError, WhitespaceMode};
 
 use super::super::{
-    CommonCompilePlan, CompileError, CompileReplacement, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode, FrameworkCompilePlan,
-    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
+    CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
+    CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode,
+    FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
+    build_compile_plan_for_framework,
 };
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 
@@ -81,8 +85,21 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         _analysis: &Self::Analysis,
         _prototype: &CompileTargetPrototype,
         normalized_source: &str,
-    ) -> Result<String, CompileError> {
-        Ok(normalized_source.to_string())
+    ) -> Result<RenderedMappedText, CompileError> {
+        let mut mapped = MappedText::new("__normalized", normalized_source);
+        if let Some(map) = build_copy_map(
+            "__normalized",
+            normalized_source,
+            Span::new(0, normalized_source.len()),
+            &[],
+        ) {
+            mapped.push_pre_mapped(normalized_source, map);
+        } else {
+            mapped.push_unmapped(normalized_source);
+        }
+        mapped
+            .into_rendered()
+            .map_err(|error| CompileError::Adapter(AdapterError::Other(error.to_string())))
     }
 
     fn repair_compile_targets(_source: &str, _targets: &mut [CompileTarget]) {}
@@ -111,7 +128,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
     fn lower_runtime_component_markup(
         &self,
         declaration_code: &str,
-    ) -> Result<String, RuntimeComponentError> {
+    ) -> Result<RenderedMappedText, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(
             declaration_code,
             self.runtime_bindings.runtime_trans.as_str(),
@@ -120,10 +137,11 @@ impl FrameworkCompilePlan for AstroCompilePlan {
 
     fn append_runtime_injection_replacements(
         &self,
-        _source: &str,
-        replacements: &mut Vec<CompileReplacement>,
+        source: &str,
+        replacements: &mut Vec<CompileReplacementInternal>,
     ) -> Result<(), AdapterError> {
-        append_runtime_injection_replacements(self, replacements).map_err(AdapterError::from)
+        append_runtime_injection_replacements(self, source, replacements)
+            .map_err(AdapterError::from)
     }
 }
 
@@ -217,6 +235,7 @@ pub(crate) fn analyze_astro_compile(
             prototypes,
             import_removals,
             synthetic_lang: ScriptLang::Ts,
+            source_anchors: analysis.source_anchors.clone(),
         },
         runtime_bindings: create_runtime_bindings(
             analysis
@@ -295,7 +314,8 @@ fn allocate_unique_binding_name(
 
 fn append_runtime_injection_replacements(
     plan: &AstroCompilePlan,
-    replacements: &mut Vec<CompileReplacement>,
+    source: &str,
+    replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
     let prelude = build_frontmatter_prelude(
         plan.runtime_requirements.needs_runtime_i18n_binding,
@@ -314,34 +334,59 @@ fn append_runtime_injection_replacements(
         } else {
             prelude
         };
-        replacements.push(CompileReplacement {
+        let anchor_span = plan
+            .common
+            .import_removals
+            .first()
+            .copied()
+            .unwrap_or(Span::new(
+                frontmatter.prelude_insert_point,
+                frontmatter.prelude_insert_point,
+            ));
+        replacements.push(CompileReplacementInternal {
             declaration_id: "__runtime_frontmatter_prelude".to_string(),
             start: frontmatter.prelude_insert_point,
             end: frontmatter.prelude_insert_point,
+            source_map: build_span_anchor_map(
+                plan.common.source_name.as_str(),
+                source,
+                code.as_str(),
+                anchor_span.start,
+                anchor_span.end,
+            ),
             code,
-            source_map_json: None,
+            original_anchors: Vec::new(),
         });
 
         if !frontmatter.has_remaining_content_after_import_removal
             && let Some(range) = frontmatter.trailing_whitespace_range
         {
-            replacements.push(CompileReplacement {
+            replacements.push(CompileReplacementInternal {
                 declaration_id: "__runtime_frontmatter_trailing_ws".to_string(),
                 start: range.start,
                 end: range.end,
                 code: String::new(),
-                source_map_json: None,
+                source_map: None,
+                original_anchors: Vec::new(),
             });
         }
         return Ok(());
     }
 
-    replacements.push(CompileReplacement {
+    let code = format!("---\n{prelude}\n---\n");
+    replacements.push(CompileReplacementInternal {
         declaration_id: "__runtime_frontmatter_block".to_string(),
         start: 0,
         end: 0,
-        code: format!("---\n{prelude}\n---\n"),
-        source_map_json: None,
+        source_map: build_span_anchor_map(
+            plan.common.source_name.as_str(),
+            source,
+            code.as_str(),
+            0,
+            0,
+        ),
+        code,
+        original_anchors: Vec::new(),
     });
     Ok(())
 }

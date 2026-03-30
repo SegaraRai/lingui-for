@@ -3,7 +3,10 @@ use std::collections::BTreeSet;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
+use crate::common::{
+    EmbeddedScriptRegion, MappedText, RenderedMappedText, ScriptLang, Span, build_copy_map,
+    build_span_anchor_map,
+};
 use crate::conventions::FrameworkConventions;
 use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError, bare_direct_macro_message};
 use crate::framework::{
@@ -12,9 +15,10 @@ use crate::framework::{
 };
 
 use super::super::{
-    CommonCompilePlan, CompileError, CompileReplacement, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode, FrameworkCompilePlan,
-    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
+    CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
+    CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode,
+    FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
+    build_compile_plan_for_framework,
 };
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 
@@ -81,7 +85,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         analysis: &Self::Analysis,
         prototype: &CompileTargetPrototype,
         normalized_source: &str,
-    ) -> Result<String, CompileError> {
+    ) -> Result<RenderedMappedText, CompileError> {
         wrap_compile_source(analysis, prototype, normalized_source)
             .map_err(AdapterError::from)
             .map_err(CompileError::from)
@@ -116,7 +120,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     fn lower_runtime_component_markup(
         &self,
         declaration_code: &str,
-    ) -> Result<String, RuntimeComponentError> {
+    ) -> Result<RenderedMappedText, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(
             declaration_code,
             self.runtime_bindings.trans_component.as_str(),
@@ -126,7 +130,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     fn append_runtime_injection_replacements(
         &self,
         source: &str,
-        replacements: &mut Vec<CompileReplacement>,
+        replacements: &mut Vec<CompileReplacementInternal>,
     ) -> Result<(), AdapterError> {
         append_runtime_injection_replacements(self, source, replacements)
             .map_err(AdapterError::from)
@@ -252,6 +256,7 @@ pub(crate) fn analyze_svelte_compile(
                 .map(|script| script.lang)
                 .or_else(|| module_script.as_ref().map(|script| script.lang))
                 .unwrap_or(ScriptLang::Ts),
+            source_anchors: analysis.source_anchors.clone(),
         },
         conventions: conventions.clone(),
         runtime_bindings: create_runtime_bindings(
@@ -296,7 +301,8 @@ pub(crate) fn wrap_compile_source(
     analysis: &SvelteFrameworkCompileAnalysis,
     prototype: &CompileTargetPrototype,
     normalized_source: &str,
-) -> Result<String, SvelteAdapterError> {
+) -> Result<RenderedMappedText, SvelteAdapterError> {
+    let mut mapped = MappedText::new("__normalized", normalized_source);
     if prototype.output_kind == CompileTargetOutputKind::Expression {
         match prototype.candidate.flavor {
             MacroFlavor::Reactive => {
@@ -308,10 +314,23 @@ pub(crate) fn wrap_compile_source(
                     .ok_or(SvelteAdapterError::MissingConvention(
                         "wrappers.reactive_translation",
                     ))?;
-                return Ok(format!(
-                    "{wrapper}({normalized_source}, {:?})",
-                    prototype.candidate.local_name
-                ));
+                push_wrapper_anchor(&mut mapped, normalized_source, &format!("{wrapper}("), 0);
+                push_wrapped_copy(
+                    &mut mapped,
+                    normalized_source,
+                    Span::new(0, normalized_source.len()),
+                );
+                push_wrapper_anchor(
+                    &mut mapped,
+                    normalized_source,
+                    &format!(", {:?})", prototype.candidate.local_name),
+                    normalized_source.len(),
+                );
+                return mapped.into_rendered().map_err(|_| {
+                    SvelteAdapterError::InvalidMacroUsage(
+                        "failed to map reactive wrapper".to_string(),
+                    )
+                });
             }
             MacroFlavor::Eager => {
                 let wrapper = analysis
@@ -322,13 +341,55 @@ pub(crate) fn wrap_compile_source(
                     .ok_or(SvelteAdapterError::MissingConvention(
                         "wrappers.eager_translation",
                     ))?;
-                return Ok(format!("{wrapper}({normalized_source})"));
+                push_wrapper_anchor(&mut mapped, normalized_source, &format!("{wrapper}("), 0);
+                push_wrapped_copy(
+                    &mut mapped,
+                    normalized_source,
+                    Span::new(0, normalized_source.len()),
+                );
+                push_wrapper_anchor(&mut mapped, normalized_source, ")", normalized_source.len());
+                return mapped.into_rendered().map_err(|_| {
+                    SvelteAdapterError::InvalidMacroUsage("failed to map eager wrapper".to_string())
+                });
             }
             MacroFlavor::Direct => {}
         }
     }
 
-    Ok(normalized_source.to_string())
+    push_wrapped_copy(
+        &mut mapped,
+        normalized_source,
+        Span::new(0, normalized_source.len()),
+    );
+    mapped.into_rendered().map_err(|_| {
+        SvelteAdapterError::InvalidMacroUsage("failed to map direct wrapper".to_string())
+    })
+}
+
+fn push_wrapper_anchor(
+    mapped: &mut MappedText<'_>,
+    normalized_source: &str,
+    text: &str,
+    original_byte: usize,
+) {
+    let Some(map) = build_span_anchor_map(
+        "__normalized",
+        normalized_source,
+        text,
+        original_byte,
+        original_byte,
+    ) else {
+        return;
+    };
+    mapped.push_pre_mapped(text, map);
+}
+
+fn push_wrapped_copy(mapped: &mut MappedText<'_>, normalized_source: &str, span: Span) {
+    if let Some(map) = build_copy_map("__normalized", normalized_source, span, &[]) {
+        mapped.push_pre_mapped(&normalized_source[span.start..span.end], map);
+    } else {
+        mapped.push_unmapped(&normalized_source[span.start..span.end]);
+    }
 }
 
 pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
@@ -460,7 +521,7 @@ pub(crate) fn validate_compile_targets(
 pub(super) fn append_runtime_injection_replacements(
     plan: &SvelteCompilePlan,
     source: &str,
-    replacements: &mut Vec<CompileReplacement>,
+    replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), SvelteAdapterError> {
     let runtime_bindings = &plan.runtime_bindings;
 
@@ -484,22 +545,38 @@ pub(super) fn append_runtime_injection_replacements(
             get_script_insertion_start(source, instance_script.content_span.start);
 
         if !injections.prelude.is_empty() {
-            replacements.push(CompileReplacement {
+            let anchor_span = plan
+                .common
+                .import_removals
+                .first()
+                .copied()
+                .unwrap_or(Span::new(insertion_start, insertion_start));
+            let prelude = injections.prelude;
+            let source_map = build_span_anchor_map(
+                plan.common.source_name.as_str(),
+                source,
+                prelude.as_str(),
+                anchor_span.start,
+                anchor_span.end,
+            );
+            replacements.push(CompileReplacementInternal {
                 declaration_id: "__runtime_prelude".to_string(),
                 start: insertion_start,
                 end: insertion_start,
-                code: injections.prelude,
-                source_map_json: None,
+                code: prelude,
+                source_map,
+                original_anchors: Vec::new(),
             });
         }
 
         if !injections.suffix.is_empty() {
-            replacements.push(CompileReplacement {
+            replacements.push(CompileReplacementInternal {
                 declaration_id: "__runtime_suffix".to_string(),
                 start: instance_script.content_span.end,
                 end: instance_script.content_span.end,
                 code: injections.suffix,
-                source_map_json: None,
+                source_map: None,
+                original_anchors: Vec::new(),
             });
         }
 
@@ -525,12 +602,20 @@ pub(super) fn append_runtime_injection_replacements(
         format!("{block}\n\n")
     };
 
-    replacements.push(CompileReplacement {
+    let source_map = build_span_anchor_map(
+        plan.common.source_name.as_str(),
+        source,
+        code.as_str(),
+        insertion_start,
+        insertion_start,
+    );
+    replacements.push(CompileReplacementInternal {
         declaration_id: "__runtime_script_block".to_string(),
         start: insertion_start,
         end: insertion_start,
         code,
-        source_map_json: None,
+        source_map,
+        original_anchors: Vec::new(),
     });
     Ok(())
 }

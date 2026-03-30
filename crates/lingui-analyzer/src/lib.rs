@@ -26,8 +26,8 @@ pub use compile::{
 };
 pub use conventions::FrameworkKind;
 pub use extract::{
-    ReinsertOptions, ReinsertedModule, ReplacementChunk, SyntheticMapping, SyntheticModule,
-    SyntheticModuleOptions,
+    ExtractTransformedProgram, ReinsertOptions, ReinsertedModule, SyntheticMapping,
+    SyntheticModule, SyntheticModuleOptions,
 };
 pub use framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
@@ -82,6 +82,7 @@ pub fn build_synthetic_module_for_framework(
                 synthetic_name,
                 &analysis.macro_imports,
                 &candidates,
+                &analysis.source_anchors,
             )
             .map_err(ExtractError::from)?)
         }
@@ -118,10 +119,15 @@ pub fn build_synthetic_module_for_framework(
             validate_svelte_extract_candidates(&candidates).map_err(FrameworkError::from)?;
             retain_standalone_candidates(&mut candidates);
             sort_candidates(&mut candidates);
-            Ok(
-                build_synthetic_module(source, source_name, synthetic_name, &imports, &candidates)
-                    .map_err(ExtractError::from)?,
+            Ok(build_synthetic_module(
+                source,
+                source_name,
+                synthetic_name,
+                &imports,
+                &candidates,
+                &analysis.source_anchors,
             )
+            .map_err(ExtractError::from)?)
         }
     }
 }
@@ -132,6 +138,58 @@ fn sort_candidates(candidates: &mut [MacroCandidate]) {
 
 fn retain_standalone_candidates(candidates: &mut Vec<MacroCandidate>) {
     candidates.retain(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone);
+}
+
+pub fn build_svelte_compile_plan(
+    options: &CompilePlanOptions,
+) -> Result<SvelteCompilePlan, CompileError> {
+    SvelteCompilePlan::build(
+        &options.source,
+        options.source_name.as_deref().unwrap_or("source"),
+        options
+            .synthetic_name
+            .as_deref()
+            .unwrap_or("synthetic-compile.tsx"),
+        options.whitespace.unwrap_or(WhitespaceMode::Svelte),
+        options.conventions.clone(),
+    )
+}
+
+pub fn build_astro_compile_plan(
+    options: &CompilePlanOptions,
+) -> Result<AstroCompilePlan, CompileError> {
+    AstroCompilePlan::build(
+        &options.source,
+        options.source_name.as_deref().unwrap_or("source"),
+        options
+            .synthetic_name
+            .as_deref()
+            .unwrap_or("synthetic-compile.tsx"),
+        options.whitespace.unwrap_or(WhitespaceMode::Astro),
+        options.conventions.clone(),
+    )
+}
+
+pub fn finish_svelte_compile(
+    options: &SvelteFinishCompileOptions,
+) -> Result<FinishedCompile, CompileError> {
+    finish_compile(
+        &options.plan,
+        &options.source,
+        &options.transformed_programs,
+    )
+    .map_err(CompileError::Lower)
+}
+
+pub fn finish_astro_compile(
+    options: &AstroFinishCompileOptions,
+) -> Result<FinishedCompile, CompileError> {
+    finish_compile(
+        &options.plan,
+        &options.source,
+        &options.transformed_programs,
+    )
+    .map_err(CompileError::Lower)
 }
 
 #[wasm_bindgen(js_name = "buildSyntheticModule")]
@@ -190,16 +248,7 @@ pub fn wasm_build_svelte_compile_plan(
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = SvelteCompilePlan::build(
-        &options.source,
-        options.source_name.as_deref().unwrap_or("source"),
-        options
-            .synthetic_name
-            .as_deref()
-            .unwrap_or("synthetic-compile.tsx"),
-        options.whitespace.unwrap_or(WhitespaceMode::Svelte),
-        options.conventions,
-    )?;
+    let result = build_svelte_compile_plan(&options)?;
     Ok(result.into_ts()?)
 }
 
@@ -214,7 +263,7 @@ pub fn wasm_reinsert_transformed_declarations(
         &options.original_source,
         options.source_name.as_deref().unwrap_or("source"),
         &options.synthetic_module,
-        &options.transformed_declarations,
+        &options.transformed_program,
     )?;
     Ok(result.into_ts()?)
 }
@@ -226,16 +275,7 @@ pub fn wasm_build_astro_compile_plan(
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = AstroCompilePlan::build(
-        &options.source,
-        options.source_name.as_deref().unwrap_or("source"),
-        options
-            .synthetic_name
-            .as_deref()
-            .unwrap_or("synthetic-compile.tsx"),
-        options.whitespace.unwrap_or(WhitespaceMode::Astro),
-        options.conventions,
-    )?;
+    let result = build_astro_compile_plan(&options)?;
     Ok(result.into_ts()?)
 }
 
@@ -246,11 +286,7 @@ pub fn wasm_finish_svelte_compile(
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = finish_compile(
-        &options.plan,
-        &options.source,
-        &options.transformed_programs,
-    )?;
+    let result = finish_svelte_compile(&options)?;
     Ok(result.into_ts()?)
 }
 
@@ -261,10 +297,6 @@ pub fn wasm_finish_astro_compile(
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = finish_compile(
-        &options.plan,
-        &options.source,
-        &options.transformed_programs,
-    )?;
+    let result = finish_astro_compile(&options)?;
     Ok(result.into_ts()?)
 }

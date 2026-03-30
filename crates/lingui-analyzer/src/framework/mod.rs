@@ -1,9 +1,12 @@
+pub(crate) mod anchors;
 pub mod astro;
 mod expression;
 pub mod js;
 pub mod parse;
 pub mod scope;
 pub mod svelte;
+
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
@@ -114,4 +117,42 @@ pub trait FrameworkAdapter {
         source: &str,
         options: &AnalyzeOptions,
     ) -> Result<Self::Analysis, FrameworkError>;
+}
+
+pub(crate) fn render_macro_import_line(imports: &[MacroImport]) -> Option<String> {
+    let mut grouped = BTreeMap::<&str, BTreeSet<(&str, &str)>>::new();
+    for import_decl in imports {
+        grouped
+            .entry(import_decl.source.as_str())
+            .or_default()
+            .insert((
+                import_decl.imported_name.as_str(),
+                import_decl.local_name.as_str(),
+            ));
+    }
+
+    if grouped.is_empty() {
+        return None;
+    }
+
+    Some(
+        grouped
+            .into_iter()
+            .map(|(source, specifiers)| {
+                let rendered = specifiers
+                    .into_iter()
+                    .map(|(imported_name, local_name)| {
+                        if imported_name == local_name {
+                            local_name.to_string()
+                        } else {
+                            format!("{imported_name} as {local_name}")
+                        }
+                    })
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("import {{ {rendered} }} from \"{source}\";")
+            })
+            .collect::<Vec<_>>()
+            .join("\n"),
+    )
 }

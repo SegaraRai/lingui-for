@@ -6,7 +6,10 @@ import {
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
-import { parseCanonicalSourceMap } from "@lingui-for/internal-shared-compile";
+import {
+  parseCanonicalSourceMap,
+  toBabelSourceMap,
+} from "@lingui-for/internal-shared-compile";
 
 import {
   normalizeLinguiConfig,
@@ -104,6 +107,9 @@ export async function transformAstro(
     translationMode: "astro-context",
     filename: `${compilePlan.common.syntheticName}?astro-context`,
     linguiConfig,
+    inputSourceMap: toBabelSourceMap(
+      parseCanonicalSourceMap(compilePlan.common.syntheticSourceMapJson),
+    ),
     runtimeBinding: compilePlan.runtimeBindings.i18n,
   });
 

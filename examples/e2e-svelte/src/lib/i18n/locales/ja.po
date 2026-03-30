@@ -235,7 +235,7 @@ msgstr "ディスクリプタからの明示的な id。"
 
 #. Used by the ids playground route
 #. js-lingui-explicit-id
-#: src/routes/playground/ids/+page.svelte:29
+#: src/routes/playground/ids/+page.svelte:25
 msgid "playground.ids.trans"
 msgstr "Trans コンポーネントからの明示的な id。"
 
@@ -386,7 +386,7 @@ msgstr "メッセージは描画するコードの近くに置く"
 msgid "Name"
 msgstr "名前"
 
-#: src/routes/+page.svelte:19
+#: src/routes/+page.svelte:18
 msgid "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
 msgstr "<0>設定</0>で言語を変えるか、<1>プレイグラウンド</1>でマクロ固有の確認を行ってください。"
 
@@ -432,7 +432,7 @@ msgstr "リアクティブ"
 msgid "Reactivity"
 msgstr "リアクティビティ"
 
-#: src/routes/playground/rich-text/+page.svelte:22
+#: src/routes/playground/rich-text/+page.svelte:21
 msgid "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
 msgstr "<0>設定ページ</0>を開いて、<1>クッキーで保持されるロケール</1>の挙動を確認してください。"
 
@@ -446,7 +446,7 @@ msgstr "実アプリ"
 msgid "Rich text"
 msgstr "リッチテキスト"
 
-#: src/routes/playground/rich-text/+page.svelte:31
+#: src/routes/playground/rich-text/+page.svelte:30
 msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 msgstr "リッチテキストでも<0>意味のある強調</0>を保ったまま、Lingui のメッセージ抽出フローを使えます。"
 

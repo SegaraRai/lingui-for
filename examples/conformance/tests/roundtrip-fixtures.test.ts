@@ -813,12 +813,9 @@ async function assertDetections(fixture: DetectionFixture): Promise<void> {
     syntheticName: filename.replace(/\.(astro|svelte)$/, ".synthetic.tsx"),
   });
   const transformed = transformSyntheticModule(synthetic);
-  const reinserted = reinsertTransformedModule(
-    source,
-    synthetic,
-    transformed.declarations,
-    { sourceName: filename },
-  );
+  const reinserted = reinsertTransformedModule(source, synthetic, transformed, {
+    sourceName: filename,
+  });
   const consumer = new TraceMap(reinserted.sourceMapJson ?? "");
   const messages = await extractMessagesFromSyntheticModule(
     filename,

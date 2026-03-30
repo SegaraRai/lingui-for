@@ -225,7 +225,7 @@ describe("lingui-analyzer wasm contract", () => {
     const reinserted = reinsertTransformedModule(
       source,
       synthetic,
-      transformed.declarations,
+      transformed,
       {
         sourceName: filename,
       },
@@ -265,7 +265,7 @@ describe("lingui-analyzer wasm contract", () => {
     const reinserted = reinsertTransformedModule(
       source,
       synthetic,
-      transformed.declarations,
+      transformed,
       {
         sourceName: filename,
       },
@@ -304,7 +304,7 @@ describe("lingui-analyzer wasm contract", () => {
     const reinserted = reinsertTransformedModule(
       source,
       synthetic,
-      transformed.declarations,
+      transformed,
       {
         sourceName: filename,
       },
@@ -340,7 +340,7 @@ describe("lingui-analyzer wasm contract", () => {
     const reinserted = reinsertTransformedModule(
       source,
       synthetic,
-      transformed.declarations,
+      transformed,
       {
         sourceName: filename,
       },

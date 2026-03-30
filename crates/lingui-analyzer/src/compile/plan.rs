@@ -1,7 +1,6 @@
-use std::collections::{BTreeMap, BTreeSet};
-
+use crate::common::{MappedText, build_segmented_map, compose_source_maps, source_map_to_json};
 use crate::conventions::FrameworkConventions;
-use crate::framework::{MacroCandidateStrategy, MacroImport, WhitespaceMode};
+use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_import_line};
 use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
 use super::{
@@ -16,7 +15,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     conventions: FrameworkConventions,
 ) -> Result<P, CompileError> {
     let mut analysis = P::analyze(source, whitespace_mode, &conventions)?;
-    let (imports, prototypes, import_removals, synthetic_lang) = {
+    let (imports, prototypes, import_removals, synthetic_lang, source_anchors) = {
         let common_analysis = P::common_analysis(&mut analysis);
         retain_standalone_prototypes(&mut common_analysis.prototypes);
         (
@@ -24,6 +23,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
             common_analysis.prototypes.clone(),
             common_analysis.import_removals.clone(),
             common_analysis.synthetic_lang,
+            common_analysis.source_anchors.clone(),
         )
     };
 
@@ -32,9 +32,12 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         .map(|prototype| prototype.candidate.clone())
         .collect::<Vec<_>>();
     let synthetic_plan = build_synthesis_plan(source, &imports, &candidates);
-    let synthetic_source = build_compile_synthetic_source(
+    let synthetic = build_compile_synthetic_source(
+        source,
+        source_name,
         &synthetic_plan,
         &prototypes,
+        &source_anchors,
         |prototype, normalized_source| {
             P::wrap_compile_source(&analysis, prototype, normalized_source)
         },
@@ -68,7 +71,11 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     let common = CommonCompilePlan {
         source_name: source_name.to_string(),
         synthetic_name: synthetic_name.to_string(),
-        synthetic_source,
+        synthetic_source: synthetic.code,
+        synthetic_source_map_json: synthetic
+            .source_map
+            .and_then(|map| source_map_to_json(&map)),
+        source_anchors,
         synthetic_lang,
         conventions,
         declaration_ids,
@@ -91,70 +98,63 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
 }
 
 fn build_compile_synthetic_source(
+    source: &str,
+    source_name: &str,
     synthetic_plan: &SynthesisPlan,
     prototypes: &[CompileTargetPrototype],
-    wrap_compile_source: impl Fn(&CompileTargetPrototype, &str) -> Result<String, CompileError>,
-) -> Result<String, CompileError> {
-    let mut output = String::new();
+    source_anchors: &[usize],
+    wrap_compile_source: impl Fn(
+        &CompileTargetPrototype,
+        &str,
+    ) -> Result<crate::common::RenderedMappedText, CompileError>,
+) -> Result<crate::common::RenderedMappedText, CompileError> {
+    let mut output = MappedText::new(source_name, source);
 
-    if let Some(line) = render_import_line(&synthetic_plan.imports) {
-        output.push_str(&line);
-        output.push('\n');
+    if let Some(line) = render_macro_import_line(&synthetic_plan.imports) {
+        output.push_unmapped(line);
+        output.push_unmapped("\n");
     }
 
     for (prototype, target) in prototypes.iter().zip(synthetic_plan.targets.iter()) {
-        output.push_str("const ");
-        output.push_str(&target.declaration_id);
-        output.push_str(" = ");
-        output.push_str(&wrap_compile_source(prototype, &target.normalized_code)?);
-        output.push_str(";\n");
+        let normalized_map = build_segmented_map(
+            source_name,
+            source,
+            &target.normalized_code,
+            &target.normalized_segments,
+            source_anchors,
+        )
+        .map_err(|error| CompileError::Adapter(super::AdapterError::Other(error.to_string())))?;
+        let wrapped = wrap_compile_source(prototype, &target.normalized_code)?;
+        let wrapped_map = match (wrapped.source_map.as_ref(), normalized_map.as_ref()) {
+            (Some(upper), Some(lower)) => {
+                Some(compose_source_maps(upper, lower).map_err(|error| {
+                    CompileError::Adapter(super::AdapterError::Other(error.to_string()))
+                })?)
+            }
+            (Some(_), None) | (None, Some(_)) => None,
+            (None, None) => None,
+        };
+
+        output.push_unmapped("const ");
+        output.push_unmapped(&target.declaration_id);
+        output.push_unmapped(" = ");
+        if let Some(map) = wrapped_map {
+            output.push_pre_mapped(wrapped.code, map);
+        } else {
+            output.push_unmapped(wrapped.code);
+        }
+        output.push_unmapped(";\n");
     }
 
-    Ok(output)
-}
-
-fn render_import_line(imports: &[MacroImport]) -> Option<String> {
-    let mut grouped = BTreeMap::<&str, BTreeSet<(&str, &str)>>::new();
-    for import_decl in imports {
-        let specifiers = grouped.entry(import_decl.source.as_str()).or_default();
-        let specifier = (
-            import_decl.imported_name.as_str(),
-            import_decl.local_name.as_str(),
-        );
-        specifiers.insert(specifier);
-    }
-
-    if grouped.is_empty() {
-        return None;
-    }
-
-    let lines = grouped
-        .into_iter()
-        .map(|(source, specifiers)| {
-            let rendered = specifiers
-                .into_iter()
-                .map(|(imported_name, local_name)| {
-                    if imported_name == local_name {
-                        local_name.to_string()
-                    } else {
-                        format!("{imported_name} as {local_name}")
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join(", ");
-            format!("import {{ {rendered} }} from \"{source}\";")
-        })
-        .collect::<Vec<_>>()
-        .join("\n");
-
-    Some(lines)
+    output
+        .into_rendered()
+        .map_err(|error| CompileError::Adapter(super::AdapterError::Other(error.to_string())))
 }
 
 #[cfg(test)]
 mod tests {
-    use super::render_import_line;
     use crate::common::Span;
-    use crate::framework::MacroImport;
+    use crate::framework::{MacroImport, render_macro_import_line};
 
     fn import(source: &str, imported_name: &str, local_name: &str) -> MacroImport {
         MacroImport {
@@ -174,7 +174,7 @@ mod tests {
         ];
 
         assert_eq!(
-            render_import_line(&imports),
+            render_macro_import_line(&imports),
             Some("import { alpha, beta as bLocal, zeta as zLocal } from \"pkg\";".to_string())
         );
     }
@@ -197,8 +197,8 @@ mod tests {
         let rendered =
             Some("import { alpha, beta as bLocal, zeta as zLocal } from \"pkg\";".to_string());
 
-        assert_eq!(render_import_line(&ordered), rendered);
-        assert_eq!(render_import_line(&reversed), rendered);
+        assert_eq!(render_macro_import_line(&ordered), rendered);
+        assert_eq!(render_macro_import_line(&reversed), rendered);
     }
 
     #[test]
@@ -210,7 +210,7 @@ mod tests {
         ];
 
         assert_eq!(
-            render_import_line(&imports),
+            render_macro_import_line(&imports),
             Some(
                 "import { alpha, zeta as zLocal } from \"a-pkg\";\nimport { beta } from \"z-pkg\";"
                     .to_string()

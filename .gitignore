@@ -12,5 +12,7 @@ dist
 .vitest-attachments
 __screenshots__
 
+.tmp-inspect
+*.local
 *.log
 *.tsbuildinfo

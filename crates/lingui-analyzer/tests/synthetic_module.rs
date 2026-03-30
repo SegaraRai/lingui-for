@@ -34,6 +34,7 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
         "synthetic.js",
         &script.macro_imports,
         &script.candidates,
+        &analysis.source_anchors,
     )
     .expect("synthetic module builds");
 
@@ -99,6 +100,7 @@ fn builds_synthetic_module_for_svelte_template_components() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &candidates,
+        &analysis.source_anchors,
     )
     .expect("synthetic module builds");
 
@@ -148,6 +150,7 @@ fn groups_synthetic_imports_by_source() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &candidates,
+        &analysis.source_anchors,
     )
     .expect("synthetic module builds");
 
@@ -187,6 +190,7 @@ fn emits_lookupable_sourcemap_for_normalized_segments() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &analysis.scripts[0].candidates,
+        &analysis.source_anchors,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
@@ -225,6 +229,7 @@ fn emits_utf16_columns_for_unicode_prefixes() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &analysis.scripts[0].candidates,
+        &analysis.source_anchors,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
@@ -267,6 +272,7 @@ fn maps_component_declaration_start_to_component_message_anchor() {
         "synthetic.js",
         &analysis.scripts[0].macro_imports,
         &candidates,
+        &analysis.source_anchors,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");

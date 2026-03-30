@@ -7,6 +7,7 @@ import {
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
   parseCanonicalSourceMap,
+  toBabelSourceMap,
   type CanonicalSourceMap,
 } from "@lingui-for/internal-shared-compile";
 
@@ -111,6 +112,9 @@ export async function transformSvelte(
   const raw = transformProgram(compilePlan.common.syntheticSource, {
     extract: false,
     filename: `${compilePlan.common.syntheticName}?raw`,
+    inputSourceMap: toBabelSourceMap(
+      parseCanonicalSourceMap(compilePlan.common.syntheticSourceMapJson),
+    ),
     lang: compilePlan.common.syntheticLang,
     linguiConfig,
     translationMode: "raw",
@@ -118,6 +122,9 @@ export async function transformSvelte(
   const svelteContext = transformProgram(compilePlan.common.syntheticSource, {
     extract: false,
     filename: `${compilePlan.common.syntheticName}?svelte-context`,
+    inputSourceMap: toBabelSourceMap(
+      parseCanonicalSourceMap(compilePlan.common.syntheticSourceMapJson),
+    ),
     lang: compilePlan.common.syntheticLang,
     linguiConfig,
     translationMode: "svelte-context",

@@ -361,7 +361,6 @@ fn to_svelte_call_candidate(
                 source,
                 base_offset,
                 Span::from_node(node),
-                Span::from_node(identifier),
                 &import_decl.local_name,
             );
             let anchor = Span::new(identifier_span.start + 1, identifier_span.end);
@@ -408,14 +407,8 @@ fn to_svelte_call_candidate(
     let identifier = call_target_identifier(member_object)?;
     let local_name = text(source, identifier);
     let import_decl = scope.resolve_macro(local_name)?;
-    let (outer_span, object_span, property_span) = repair_svelte_eager_spans(
-        source,
-        base_offset,
-        Span::from_node(node),
-        Span::from_node(member_object),
-        Span::from_node(member_property),
-        local_name,
-    );
+    let (outer_span, object_span, property_span) =
+        repair_svelte_eager_spans(source, base_offset, Span::from_node(node), local_name);
 
     Some(MacroCandidate {
         id: String::new(),
@@ -456,7 +449,6 @@ fn repair_svelte_reactive_spans(
     source: &str,
     base_offset: usize,
     outer: Span,
-    _identifier: Span,
     local_name: &str,
 ) -> (Span, Span) {
     let pattern = format!("${local_name}");
@@ -473,8 +465,6 @@ fn repair_svelte_eager_spans(
     source: &str,
     base_offset: usize,
     outer: Span,
-    _object: Span,
-    _property: Span,
     local_name: &str,
 ) -> (Span, Span, Span) {
     let pattern = format!("{local_name}.eager");

@@ -3,6 +3,7 @@ use tree_sitter::Node;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 use crate::conventions::FrameworkConventions;
 
+use super::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
 use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{
     JsAnalysisError, JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript,
@@ -41,6 +42,7 @@ pub struct AstroFrontmatterAnalysis {
     pub frontmatter_candidates: Vec<MacroCandidate>,
     pub template_expressions: Vec<AstroTemplateExpression>,
     pub template_components: Vec<AstroTemplateComponent>,
+    pub source_anchors: Vec<usize>,
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -64,11 +66,19 @@ fn analyze_astro(
 ) -> Result<AstroFrontmatterAnalysis, AstroFrameworkError> {
     let astro_tree = parse_astro(source)?;
     let root = astro_tree.root_node();
+    let mut source_anchors = collect_node_start_anchors(source, root);
     let frontmatter = find_frontmatter(root);
 
     let (macro_imports, frontmatter_candidates) = if let Some(frontmatter_region) = &frontmatter {
         let frontmatter_source =
             &source[frontmatter_region.inner_span.start..frontmatter_region.inner_span.end];
+        let frontmatter_tree = parse_typescript(frontmatter_source)?;
+        extend_shifted_node_start_anchors(
+            frontmatter_source,
+            frontmatter_tree.root_node(),
+            frontmatter_region.inner_span.start,
+            &mut source_anchors,
+        );
         let macro_imports = collect_macro_imports(
             frontmatter_source,
             frontmatter_region.inner_span.start,
@@ -96,6 +106,7 @@ fn analyze_astro(
         frontmatter_candidates,
         template_expressions,
         template_components,
+        source_anchors,
     })
 }
 
