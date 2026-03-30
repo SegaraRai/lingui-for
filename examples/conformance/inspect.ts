@@ -217,7 +217,7 @@ async function runExtract(
 
     await writeArtifacts(options, [
       makeCodeArtifact("extract.final", transformed.code, "js"),
-      makeMapArtifact("extract.final", transformed.map),
+      makeMapArtifact("extract.final", transformed.map, "js"),
       makeJsonArtifact("extract.messages", messages),
     ]);
 
@@ -245,13 +245,10 @@ async function runTransform(
 ): Promise<string> {
   if (options.framework === "core" || options.framework === "react") {
     const transformed = transformOfficialSource(source, options.file);
+    const ext = normalizeSourceExtension(options.file);
     await writeArtifacts(options, [
-      makeCodeArtifact(
-        "transform.final",
-        transformed.code,
-        normalizeSourceExtension(options.file),
-      ),
-      makeMapArtifact("transform.final", transformed.map),
+      makeCodeArtifact("transform.final", transformed.code, ext),
+      makeMapArtifact("transform.final", transformed.map, ext),
     ]);
     return transformed.code;
   }
@@ -260,11 +257,11 @@ async function runTransform(
     const result = await inspectAstroTransform(source, options);
     await writeArtifacts(options, [
       makeCodeArtifact("transform.synthetic", result.syntheticSource, "tsx"),
-      makeMapArtifact("transform.synthetic", result.syntheticMap),
+      makeMapArtifact("transform.synthetic", result.syntheticMap, "tsx"),
       makeCodeArtifact("transform.context", result.context.code, "tsx"),
-      makeMapArtifact("transform.context", result.context.map),
+      makeMapArtifact("transform.context", result.context.map, "tsx"),
       makeCodeArtifact("transform.final", result.final.code, "astro"),
-      makeMapArtifact("transform.final", result.final.map),
+      makeMapArtifact("transform.final", result.final.map, "astro"),
     ]);
     return result.final.code;
   }
@@ -272,13 +269,13 @@ async function runTransform(
   const result = await inspectSvelteTransform(source, options);
   await writeArtifacts(options, [
     makeCodeArtifact("transform.synthetic", result.syntheticSource, "tsx"),
-    makeMapArtifact("transform.synthetic", result.syntheticMap),
+    makeMapArtifact("transform.synthetic", result.syntheticMap, "tsx"),
     makeCodeArtifact("transform.raw", result.raw.code, "tsx"),
-    makeMapArtifact("transform.raw", result.raw.map),
+    makeMapArtifact("transform.raw", result.raw.map, "tsx"),
     makeCodeArtifact("transform.context", result.context.code, "tsx"),
-    makeMapArtifact("transform.context", result.context.map),
+    makeMapArtifact("transform.context", result.context.map, "tsx"),
     makeCodeArtifact("transform.final", result.final.code, "svelte"),
-    makeMapArtifact("transform.final", result.final.map),
+    makeMapArtifact("transform.final", result.final.map, "svelte"),
   ]);
   return result.final.code;
 }
@@ -431,6 +428,7 @@ function makeCodeArtifact(
 function makeMapArtifact(
   name: string,
   map: CanonicalSourceMap | null,
+  ext: string,
 ): ArtifactFile | null {
   if (map == null) {
     return null;
@@ -438,7 +436,7 @@ function makeMapArtifact(
 
   return {
     content: JSON.stringify(map, null, 2),
-    ext: "map",
+    ext: `${ext}.map`,
     name,
   };
 }
