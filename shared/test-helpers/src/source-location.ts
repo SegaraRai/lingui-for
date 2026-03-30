@@ -119,6 +119,7 @@ export function assertRangeMapping(
   originalSource: string,
   detection: Detection,
   filename: string,
+  mode: "start" | "end" | "both",
   expect: typeof vpExpect,
 ): void {
   const generated = findUniqueRange(generatedSource, detection.generated);
@@ -151,16 +152,18 @@ export function assertRangeMapping(
     column: generatedEndInclusive.column,
   });
 
-  expect(
-    mappedStart.source,
-    `${detection.name}: missing source for start position`,
-  ).toBe(filename);
-  expect(mappedStart.line, `${detection.name}: start line`).toBe(
-    originalStart.line,
-  );
-  expect(mappedStart.column, `${detection.name}: start column`).toBe(
-    originalStart.column,
-  );
+  if (mode === "start" || mode === "both") {
+    expect(
+      mappedStart.source,
+      `${detection.name}: missing source for start position`,
+    ).toBe(filename);
+    expect(mappedStart.line, `${detection.name}: start line`).toBe(
+      originalStart.line,
+    );
+    expect(mappedStart.column, `${detection.name}: start column`).toBe(
+      originalStart.column,
+    );
+  }
 
   const endMatchesExclusive =
     mappedEndExclusive.source === filename &&
@@ -171,13 +174,15 @@ export function assertRangeMapping(
     mappedEndInclusive.line === originalEndInclusive.line &&
     mappedEndInclusive.column === originalEndInclusive.column;
 
-  expect(
-    endMatchesExclusive || endMatchesInclusive,
-    [
-      `${detection.name}: end mapping mismatch`,
-      `exclusive generated ${generatedEndExclusive.line}:${generatedEndExclusive.column} -> ${mappedEndExclusive.source}:${mappedEndExclusive.line}:${mappedEndExclusive.column}`,
-      `inclusive generated ${generatedEndInclusive.line}:${generatedEndInclusive.column} -> ${mappedEndInclusive.source}:${mappedEndInclusive.line}:${mappedEndInclusive.column}`,
-      `expected exclusive ${filename}:${originalEndExclusive.line}:${originalEndExclusive.column} or inclusive ${filename}:${originalEndInclusive.line}:${originalEndInclusive.column}`,
-    ].join("\n"),
-  ).toBe(true);
+  if (mode === "end" || mode === "both") {
+    expect(
+      endMatchesExclusive || endMatchesInclusive,
+      [
+        `${detection.name}: end mapping mismatch`,
+        `exclusive generated ${generatedEndExclusive.line}:${generatedEndExclusive.column} -> ${mappedEndExclusive.source}:${mappedEndExclusive.line}:${mappedEndExclusive.column}`,
+        `inclusive generated ${generatedEndInclusive.line}:${generatedEndInclusive.column} -> ${mappedEndInclusive.source}:${mappedEndInclusive.line}:${mappedEndInclusive.column}`,
+        `expected exclusive ${filename}:${originalEndExclusive.line}:${originalEndExclusive.column} or inclusive ${filename}:${originalEndInclusive.line}:${originalEndInclusive.column}`,
+      ].join("\n"),
+    ).toBe(true);
+  }
 }

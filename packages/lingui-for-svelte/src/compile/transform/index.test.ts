@@ -32,8 +32,8 @@ async function expectTransformed(
     filename: options.filename ?? "/virtual/App.svelte",
     whitespace: options.whitespace,
   });
-  expect(result).not.toBeNull();
-  return result!;
+  expect.assert(result != null);
+  return result;
 }
 
 const preloadedInitPageSource = dedent`
@@ -1597,19 +1597,22 @@ describe("transformSvelte source map discipline", () => {
       filename: "/virtual/App.svelte",
     });
 
-    expect(result.map).not.toBeNull();
-    expect(result.map?.file).toBe("/virtual/App.svelte");
-    expect(result.map?.sources).toEqual(["/virtual/App.svelte"]);
-    expect(result.map?.sourcesContent).toEqual([rangeSource]);
+    const { code, map } = result;
+    expect.assert(map != null);
 
-    const consumer = new TraceMap(JSON.stringify(result.map));
+    expect(map.file).toBe("/virtual/App.svelte");
+    expect(map.sources).toEqual(["/virtual/App.svelte"]);
+    expect(map.sourcesContent).toEqual([rangeSource]);
+
+    const consumer = new TraceMap(JSON.stringify(map));
     detections.forEach((detection) => {
       assertRangeMapping(
         consumer,
-        result.code,
+        code,
         rangeSource,
         detection,
         "/virtual/App.svelte",
+        "both",
         expect,
       );
     });
