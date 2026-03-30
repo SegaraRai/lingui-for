@@ -666,6 +666,238 @@ const fixtures: readonly DetectionFixture[] = [
     ],
   },
   {
+    name: "Svelte complex expression token contracts",
+    framework: "svelte",
+    filename: "/virtual/ComplexExpressionScenario.svelte",
+    source: dedent`
+      <script lang="ts">
+        import { t as translate } from "@lingui/core/macro";
+        import { Trans as Translation } from "lingui-for-svelte/macro";
+        const scriptData = { route: { path: "/docs" } };
+        const markupData = { location: { path: "/guide" } };
+        const scriptLabel = $translate\`foo \${String(scriptData.route.path ?? "")} bar\`;
+      </script>
+
+      <Translation>foo {String(markupData.location.path ?? "")} bar</Translation>
+      <p>{scriptLabel}</p>
+    `,
+    detections: [
+      {
+        contract: "boundary-preservation",
+        name: "complex script data start",
+        original: /scriptData(?=\.route\.path \?\? "")/,
+        generated: /scriptData(?=\.route\.path \?\? "")/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        name: "complex script route start",
+        original: /(?<=scriptData\.)route\.path \?\?/,
+        generated: /(?<=scriptData\.)route\.path \?\?/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        name: "complex script path start",
+        original: /(?<=scriptData\.route\.)path \?\? ""/,
+        generated: /(?<=scriptData\.route\.)path \?\? ""/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // babel does not create a single token for the nullish coalescing operator
+        name: "complex script nullish start",
+        original: /(?<=scriptData\.route\.path )\?\? ""/,
+        generated: /(?<=scriptData\.route\.path )\?\? ""/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        name: "complex script empty string start",
+        original: /(?<=scriptData\.route\.path \?\? )""/,
+        generated: /(?<=scriptData\.route\.path \?\? )""/,
+        mapping: "start",
+      },
+      {
+        contract: "extract-origin",
+        name: "complex script extraction",
+        original:
+          /translate`foo \$\{String\(scriptData\.route\.path \?\? ""\)\} bar`/,
+        extracted: "foo {0} bar",
+      },
+      {
+        contract: "boundary-preservation",
+        name: "complex component boundary",
+        original: "<Translation>",
+        generated: /<_Trans\b/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering still coalesces the object root inside the lowered values payload
+        name: "complex component data start",
+        original: /markupData(?=\.location\.path \?\? "")/,
+        generated: /markupData(?=\.location\.path \?\? "")/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering still coalesces the member-access chain inside the lowered values payload
+        name: "complex component location start",
+        original: /(?<=markupData\.)location\.path \?\?/,
+        generated: /(?<=markupData\.)location\.path \?\?/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering still coalesces the property access and following nullish expression
+        name: "complex component path start",
+        original: /(?<=markupData\.location\.)path \?\? ""/,
+        generated: /(?<=markupData\.location\.)path \?\? ""/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering does not preserve a standalone anchor for the nullish coalescing operator
+        name: "complex component nullish start",
+        original: /(?<=markupData\.location\.path )\?\? ""/,
+        generated: /(?<=markupData\.location\.path )\?\? ""/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering does not preserve a stable token start for the empty-string literal
+        name: "complex component empty string start",
+        original: /(?<=markupData\.location\.path \?\? )""/,
+        generated: /(?<=markupData\.location\.path \?\? )""/,
+        mapping: "start",
+      },
+      {
+        contract: "extract-origin",
+        name: "complex component extraction",
+        original:
+          /<Translation>foo \{String\(markupData\.location\.path \?\? ""\)\} bar<\/Translation>/,
+        extracted: "foo {0} bar",
+      },
+    ],
+  },
+  {
+    name: "Astro complex expression token contracts",
+    framework: "astro",
+    filename: "/virtual/ComplexExpressionScenario.astro",
+    source: dedent`
+      ---
+      import { t as translate } from "@lingui/core/macro";
+      import { Trans as Translation } from "lingui-for-astro/macro";
+      const scriptData = { route: { path: "/docs" } };
+      const markupData = { location: { path: "/guide" } };
+      const scriptLabel = translate\`foo \${String(scriptData.route.path ?? "")} bar\`;
+      ---
+
+      <Translation>foo {String(markupData.location.path ?? "")} bar</Translation>
+      <p>{scriptLabel}</p>
+    `,
+    detections: [
+      {
+        contract: "boundary-preservation",
+        name: "complex script data start",
+        original: /scriptData(?=\.route\.path \?\? "")/,
+        generated: /scriptData(?=\.route\.path \?\? "")/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        name: "complex script route start",
+        original: /(?<=scriptData\.)route\.path \?\?/,
+        generated: /(?<=scriptData\.)route\.path \?\?/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        name: "complex script path start",
+        original: /(?<=scriptData\.route\.)path \?\? ""/,
+        generated: /(?<=scriptData\.route\.)path \?\? ""/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // babel does not create a single token for the nullish coalescing operator
+        name: "complex script nullish start",
+        original: /(?<=scriptData\.route\.path )\?\? ""/,
+        generated: /(?<=scriptData\.route\.path )\?\? ""/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        name: "complex script empty string start",
+        original: /(?<=scriptData\.route\.path \?\? )""/,
+        generated: /(?<=scriptData\.route\.path \?\? )""/,
+        mapping: "start",
+      },
+      {
+        contract: "extract-origin",
+        name: "complex script extraction",
+        original:
+          /translate`foo \$\{String\(scriptData\.route\.path \?\? ""\)\} bar`/,
+        extracted: "foo {0} bar",
+      },
+      {
+        contract: "boundary-preservation",
+        name: "complex component boundary",
+        original: "<Translation>",
+        generated: /<_Trans\b/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering still coalesces the object root inside the lowered values payload
+        name: "complex component data start",
+        original: /markupData(?=\.location\.path \?\? "")/,
+        generated: /markupData(?=\.location\.path \?\? "")/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering still coalesces the member-access chain inside the lowered values payload
+        name: "complex component location start",
+        original: /(?<=markupData\.)location\.path \?\?/,
+        generated: /(?<=markupData\.)location\.path \?\?/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering still coalesces the property access and following nullish expression
+        name: "complex component path start",
+        original: /(?<=markupData\.location\.)path \?\? ""/,
+        generated: /(?<=markupData\.location\.)path \?\? ""/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering does not preserve a standalone anchor for the nullish coalescing operator
+        name: "complex component nullish start",
+        original: /(?<=markupData\.location\.path )\?\? ""/,
+        generated: /(?<=markupData\.location\.path )\?\? ""/,
+        mapping: "start",
+      },
+      {
+        contract: "boundary-preservation",
+        fails: true, // runtime component lowering does not preserve a stable token start for the empty-string literal
+        name: "complex component empty string start",
+        original: /(?<=markupData\.location\.path \?\? )""/,
+        generated: /(?<=markupData\.location\.path \?\? )""/,
+        mapping: "start",
+      },
+      {
+        contract: "extract-origin",
+        name: "complex component extraction",
+        original:
+          /<Translation>foo \{String\(markupData\.location\.path \?\? ""\)\} bar<\/Translation>/,
+        extracted: "foo {0} bar",
+      },
+    ],
+  },
+  {
     name: "Svelte unicode contracts",
     framework: "svelte",
     filename: "/virtual/UnicodeScenario.svelte",
