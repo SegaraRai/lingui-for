@@ -1,32 +1,18 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 
-import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
-import {
-  parseCanonicalSourceMap,
-  runBabelExtractionUnits,
-  toBabelSourceMap,
-} from "@lingui-for/internal-shared-compile";
-import {
-  buildAstroCompilePlan,
-  buildSyntheticModule,
-  buildSvelteCompilePlan,
-  finishAstroCompile,
-  finishSvelteCompile,
-  default as initLinguiAnalyzerWasm,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
 import type { ParserOptions } from "@babel/core";
 import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 
-import { normalizeLinguiConfig as normalizeAstroLinguiConfig } from "../../packages/lingui-for-astro/src/compile/common/config.ts";
-import { createAstroFrameworkConventions } from "../../packages/lingui-for-astro/src/compile/common/conventions.ts";
-import { transformProgram as transformAstroProgram } from "../../packages/lingui-for-astro/src/compile/lower/babel-transform.ts";
-import { normalizeLinguiConfig as normalizeSvelteLinguiConfig } from "../../packages/lingui-for-svelte/src/compile/common/config.ts";
-import { createSvelteFrameworkConventions } from "../../packages/lingui-for-svelte/src/compile/common/conventions.ts";
-import { transformProgram as transformSvelteProgram } from "../../packages/lingui-for-svelte/src/compile/lower/babel-transform.ts";
+import { astroExtractor } from "lingui-for-astro/extractor";
+import { unstable_transformAstro } from "lingui-for-astro/internal/compile";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+import { unstable_transformSvelte } from "lingui-for-svelte/internal/compile";
+
+import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
 
 type Framework = "astro" | "svelte" | "core" | "react";
 type WhitespaceMode = "auto" | "astro" | "svelte" | "jsx";
@@ -90,15 +76,6 @@ const parserPlugins: NonNullable<ParserOptions["plugins"]> = [
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2));
   const source = await readFile(options.file, "utf8");
-
-  await initLinguiAnalyzerWasm({
-    module_or_path: readFile(
-      new URL(
-        "../../shared/lingui-analyzer-wasm/dist/index_bg.wasm",
-        import.meta.url,
-      ),
-    ),
-  });
 
   if (options.extract) {
     const extracted = await runExtract(source, options);
@@ -250,13 +227,6 @@ async function runExtract(
   if (options.framework === "astro") {
     const result = await inspectAstroExtract(source, options);
     await writeArtifacts(options, [
-      makeCodeArtifact("extract.synthetic", result.synthetic.source, "tsx"),
-      makeMapArtifact(
-        "extract.synthetic",
-        parseCanonicalSourceMap(result.synthetic.sourceMapJson),
-      ),
-      makeCodeArtifact("extract.final", result.transformed.code, "tsx"),
-      makeMapArtifact("extract.final", result.transformed.map),
       makeJsonArtifact("extract.messages", result.messages),
     ]);
     return result.messages;
@@ -264,13 +234,6 @@ async function runExtract(
 
   const result = await inspectSvelteExtract(source, options);
   await writeArtifacts(options, [
-    makeCodeArtifact("extract.synthetic", result.synthetic.source, "tsx"),
-    makeMapArtifact(
-      "extract.synthetic",
-      parseCanonicalSourceMap(result.synthetic.sourceMapJson),
-    ),
-    makeCodeArtifact("extract.final", result.transformed.code, "ts"),
-    makeMapArtifact("extract.final", result.transformed.map),
     makeJsonArtifact("extract.messages", result.messages),
   ]);
   return result.messages;
@@ -321,191 +284,76 @@ async function runTransform(
 }
 
 async function inspectSvelteExtract(source: string, options: CliOptions) {
-  const normalized = normalizeSvelteLinguiConfig(linguiConfig);
-  const synthetic = buildSyntheticModule({
-    source,
-    sourceName: options.file,
-    syntheticName: options.file.replace(/\.svelte$/, ".synthetic.tsx"),
-    whitespace: options.whitespace === "auto" ? "svelte" : options.whitespace,
-    conventions: createSvelteFrameworkConventions(normalized),
+  const extractor = svelteExtractor({
+    whitespace: options.whitespace === "auto" ? "auto" : options.whitespace,
   });
-
-  const transformed = transformSvelteProgram(synthetic.source, {
-    filename: synthetic.syntheticName,
-    lang: "ts",
-    linguiConfig: normalized,
-    extract: true,
-    translationMode: "extract",
-    inputSourceMap: toBabelSourceMap(
-      parseCanonicalSourceMap(synthetic.sourceMapJson),
-    ),
-  });
-
-  const messages = await extractWithUnits(
-    options.file,
-    transformed.code,
-    transformed.map,
-  );
-  return { messages, synthetic, transformed };
-}
-
-async function inspectAstroExtract(source: string, options: CliOptions) {
-  const normalized = normalizeAstroLinguiConfig(linguiConfig);
-  const synthetic = buildSyntheticModule({
-    source,
-    sourceName: options.file,
-    syntheticName: options.file.replace(/\.astro$/, ".synthetic.tsx"),
-    whitespace: options.whitespace === "auto" ? "astro" : options.whitespace,
-    conventions: createAstroFrameworkConventions(normalized),
-  });
-
-  const transformed = transformAstroProgram(synthetic.source, {
-    translationMode: "extract",
-    filename: synthetic.syntheticName,
-    linguiConfig: normalized,
-    runtimeBinding: null,
-    inputSourceMap: toBabelSourceMap(
-      parseCanonicalSourceMap(synthetic.sourceMapJson),
-    ),
-  });
-
-  const messages = await extractWithUnits(
-    options.file,
-    transformed.code,
-    transformed.map,
-  );
-  return { messages, synthetic, transformed };
-}
-
-async function inspectSvelteTransform(source: string, options: CliOptions) {
-  const normalized = normalizeSvelteLinguiConfig(linguiConfig);
-  const compilePlan = buildSvelteCompilePlan({
-    source,
-    sourceName: options.file,
-    syntheticName: `${options.file}?rust-compile.tsx`,
-    whitespace: options.whitespace === "auto" ? "svelte" : options.whitespace,
-    conventions: createSvelteFrameworkConventions(normalized),
-  });
-
-  const runtimeBindings = {
-    createLinguiAccessors: compilePlan.runtimeBindings.createLinguiAccessors,
-    context: compilePlan.runtimeBindings.context,
-    getI18n: compilePlan.runtimeBindings.getI18n,
-    translate: compilePlan.runtimeBindings.translate,
-  };
-  const raw = transformSvelteProgram(compilePlan.common.syntheticSource, {
-    extract: false,
-    filename: `${compilePlan.common.syntheticName}?raw`,
-    inputSourceMap: toBabelSourceMap(
-      parseCanonicalSourceMap(compilePlan.common.syntheticSourceMapJson),
-    ),
-    lang: compilePlan.common.syntheticLang,
-    linguiConfig: normalized,
-    translationMode: "raw",
-  });
-  const context = transformSvelteProgram(compilePlan.common.syntheticSource, {
-    extract: false,
-    filename: `${compilePlan.common.syntheticName}?svelte-context`,
-    inputSourceMap: toBabelSourceMap(
-      parseCanonicalSourceMap(compilePlan.common.syntheticSourceMapJson),
-    ),
-    lang: compilePlan.common.syntheticLang,
-    linguiConfig: normalized,
-    translationMode: "svelte-context",
-    runtimeBindings,
-  });
-
-  const finished = finishSvelteCompile({
-    plan: compilePlan,
-    source,
-    transformedPrograms: {
-      rawCode: raw.code,
-      rawSourceMapJson: raw.map != null ? JSON.stringify(raw.map) : undefined,
-      contextCode: context.code,
-      contextSourceMapJson:
-        context.map != null ? JSON.stringify(context.map) : undefined,
-    },
-  });
-
-  return {
-    syntheticMap: parseCanonicalSourceMap(
-      compilePlan.common.syntheticSourceMapJson,
-    ),
-    syntheticSource: compilePlan.common.syntheticSource,
-    raw,
-    context,
-    final: {
-      code: finished.code,
-      map: parseCanonicalSourceMap(finished.sourceMapJson),
-    },
-  };
-}
-
-async function inspectAstroTransform(source: string, options: CliOptions) {
-  const normalized = normalizeAstroLinguiConfig(linguiConfig);
-  const compilePlan = buildAstroCompilePlan({
-    source,
-    sourceName: options.file,
-    syntheticName: `${options.file}?rust-compile.tsx`,
-    whitespace: options.whitespace === "auto" ? "astro" : options.whitespace,
-    conventions: createAstroFrameworkConventions(normalized),
-  });
-
-  const context = transformAstroProgram(compilePlan.common.syntheticSource, {
-    translationMode: "astro-context",
-    filename: `${compilePlan.common.syntheticName}?astro-context`,
-    inputSourceMap: toBabelSourceMap(
-      parseCanonicalSourceMap(compilePlan.common.syntheticSourceMapJson),
-    ),
-    linguiConfig: normalized,
-    runtimeBinding: compilePlan.runtimeBindings.i18n,
-  });
-
-  const finished = finishAstroCompile({
-    plan: compilePlan,
-    source,
-    transformedPrograms: {
-      contextCode: context.code,
-      contextSourceMapJson:
-        context.map != null ? JSON.stringify(context.map) : undefined,
-      rawCode: undefined,
-      rawSourceMapJson: undefined,
-    },
-  });
-
-  return {
-    syntheticMap: parseCanonicalSourceMap(
-      compilePlan.common.syntheticSourceMapJson,
-    ),
-    syntheticSource: compilePlan.common.syntheticSource,
-    context,
-    final: {
-      code: finished.code,
-      map: parseCanonicalSourceMap(finished.sourceMapJson),
-    },
-  };
-}
-
-async function extractWithUnits(
-  filename: string,
-  code: string,
-  map: CanonicalSourceMap | null,
-): Promise<ExtractedMessage[]> {
   const messages: ExtractedMessage[] = [];
-  await runBabelExtractionUnits(
-    filename,
-    [
-      {
-        code,
-        map,
-      },
-    ],
+
+  await extractor.extract(
+    options.file,
+    source,
     (message) => {
       messages.push(message);
     },
     { linguiConfig },
   );
-  return messages;
+
+  return { messages };
+}
+
+async function inspectAstroExtract(source: string, options: CliOptions) {
+  const extractor = astroExtractor({
+    whitespace: options.whitespace === "auto" ? "auto" : options.whitespace,
+  });
+  const messages: ExtractedMessage[] = [];
+
+  await extractor.extract(
+    options.file,
+    source,
+    (message) => {
+      messages.push(message);
+    },
+    { linguiConfig },
+  );
+
+  return { messages };
+}
+
+async function inspectSvelteTransform(source: string, options: CliOptions) {
+  const result = await unstable_transformSvelte(source, {
+    filename: options.file,
+    linguiConfig,
+    whitespace: options.whitespace,
+  });
+  if (result == null) {
+    throw new Error(`No Lingui macros found in ${options.file}`);
+  }
+
+  return {
+    syntheticMap: result.artifacts.synthetic.map,
+    syntheticSource: result.artifacts.synthetic.code,
+    raw: result.artifacts.raw,
+    context: result.artifacts.context,
+    final: result.artifacts.final,
+  };
+}
+
+async function inspectAstroTransform(source: string, options: CliOptions) {
+  const result = await unstable_transformAstro(source, {
+    filename: options.file,
+    linguiConfig,
+    whitespace: options.whitespace,
+  });
+  if (result == null) {
+    throw new Error(`No Lingui macros found in ${options.file}`);
+  }
+
+  return {
+    syntheticMap: result.artifacts.synthetic.map,
+    syntheticSource: result.artifacts.synthetic.code,
+    context: result.artifacts.context,
+    final: result.artifacts.final,
+  };
 }
 
 async function extractOfficialMessages(
