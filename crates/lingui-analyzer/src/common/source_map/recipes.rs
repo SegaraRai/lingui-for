@@ -153,8 +153,16 @@ pub(crate) fn build_final_output(
     let mut cursor = 0usize;
 
     for replacement in replacements {
-        if replacement.start < cursor {
-            continue;
+        if replacement.start > replacement.end
+            || replacement.end > source_text.len()
+            || replacement.start < cursor
+        {
+            return Err(MappedTextError::InvalidReplacement {
+                start: replacement.start,
+                end: replacement.end,
+                cursor,
+                source_len: source_text.len(),
+            });
         }
 
         if cursor < replacement.start {
@@ -456,8 +464,8 @@ mod tests {
 
     use sourcemap::SourceMapBuilder;
 
-    use super::indent_rendered_text;
-    use crate::common::RenderedMappedText;
+    use super::{FinalizedReplacement, build_final_output, indent_rendered_text};
+    use crate::common::{MappedTextError, RenderedMappedText};
 
     fn identity_map(source_name: &str, source_text: &str) -> Arc<sourcemap::SourceMap> {
         let mut builder = SourceMapBuilder::new(Some(source_name));
@@ -488,5 +496,64 @@ mod tests {
         let token = map.lookup_token(1, 2).expect("second line token");
         assert_eq!(token.get_src_line(), 1);
         assert_eq!(token.get_src_col(), 0);
+    }
+
+    #[test]
+    fn rejects_overlapping_replacements_in_final_output() {
+        let source_text = "abcdef";
+        let replacements = vec![
+            FinalizedReplacement {
+                start: 1,
+                end: 3,
+                code: "X",
+                source_map: None,
+                original_anchors: Vec::new(),
+            },
+            FinalizedReplacement {
+                start: 2,
+                end: 4,
+                code: "Y",
+                source_map: None,
+                original_anchors: Vec::new(),
+            },
+        ];
+
+        let error = build_final_output("test.ts", source_text, &[], &replacements)
+            .expect_err("overlapping replacements should fail");
+
+        assert!(matches!(
+            error,
+            MappedTextError::InvalidReplacement {
+                start: 2,
+                end: 4,
+                cursor: 3,
+                source_len: 6,
+            }
+        ));
+    }
+
+    #[test]
+    fn rejects_out_of_bounds_replacements_in_final_output() {
+        let source_text = "abcdef";
+        let replacements = vec![FinalizedReplacement {
+            start: 4,
+            end: 7,
+            code: "X",
+            source_map: None,
+            original_anchors: Vec::new(),
+        }];
+
+        let error = build_final_output("test.ts", source_text, &[], &replacements)
+            .expect_err("out-of-bounds replacements should fail");
+
+        assert!(matches!(
+            error,
+            MappedTextError::InvalidReplacement {
+                start: 4,
+                end: 7,
+                cursor: 0,
+                source_len: 6,
+            }
+        ));
     }
 }

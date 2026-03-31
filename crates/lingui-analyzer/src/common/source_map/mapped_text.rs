@@ -31,6 +31,15 @@ pub(crate) enum MappedTextError {
     MismatchedSourceContext,
     #[error("failed to slice mapped segment")]
     InvalidSegmentSlice,
+    #[error(
+        "invalid replacement: start={start}, end={end}, cursor={cursor}, source_len={source_len}"
+    )]
+    InvalidReplacement {
+        start: usize,
+        end: usize,
+        cursor: usize,
+        source_len: usize,
+    },
 }
 
 impl<'a> MappedText<'a> {

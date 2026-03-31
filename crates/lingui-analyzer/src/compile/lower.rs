@@ -251,8 +251,8 @@ mod tests {
                 declaration_ids: vec!["__lf_0".to_string()],
                 targets: vec![CompileTarget {
                     declaration_id: "__lf_0".to_string(),
-                    original_span: Span::new(7, 21),
-                    normalized_span: Span::new(8, 21),
+                    original_span: Span::new(39, 48),
+                    normalized_span: Span::new(40, 48),
                     source_map_anchor: None,
                     local_name: "t".to_string(),
                     imported_name: "t".to_string(),
@@ -301,7 +301,7 @@ mod tests {
             finished
                 .replacements
                 .iter()
-                .any(|replacement| replacement.start == 7 && replacement.end == 21)
+                .any(|replacement| replacement.start == 39 && replacement.end == 48)
         );
         assert!(
             finished
