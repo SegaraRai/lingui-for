@@ -196,9 +196,21 @@ pub(crate) fn extract_local_submap_indexed(
     let start_index = lower_bound(&map.tokens, start_line, start_col);
     let end_index = lower_bound(&map.tokens, end_line, end_col);
     let mut builder = SourceMapBuilder::new(None);
+    let mut saw_mapping = false;
 
-    if start_index >= end_index {
-        return None;
+    if let Some(projected_start) =
+        project_generated_position_to_original(map, start_line, start_col)
+    {
+        builder.add(
+            0,
+            0,
+            projected_start.src_line,
+            projected_start.src_col,
+            Some(projected_start.source.as_str()),
+            projected_start.name.as_deref(),
+            false,
+        );
+        saw_mapping = true;
     }
 
     for token in &map.tokens[start_index..end_index] {
@@ -218,9 +230,10 @@ pub(crate) fn extract_local_submap_indexed(
             token.name.as_deref(),
             false,
         );
+        saw_mapping = true;
     }
 
-    Some(Arc::new(builder.into_sourcemap()))
+    saw_mapping.then(|| Arc::new(builder.into_sourcemap()))
 }
 
 pub(crate) fn extract_generated_submap(
