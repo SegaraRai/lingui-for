@@ -14,10 +14,10 @@ import { unstable_transformSvelte } from "lingui-for-svelte/internal/compile";
 
 import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
 
-type Framework = "astro" | "svelte" | "core" | "react";
-type WhitespaceMode = "auto" | "astro" | "svelte" | "jsx";
+export type Framework = "astro" | "svelte" | "core" | "react";
+export type WhitespaceMode = "auto" | "astro" | "svelte" | "jsx";
 
-type CliOptions = {
+export type CliOptions = {
   artifacts: boolean;
   artifactsDir: string | null;
   extract: boolean;
@@ -204,7 +204,7 @@ function isWhitespaceMode(value: string | undefined): value is WhitespaceMode {
   );
 }
 
-async function runExtract(
+export async function runExtract(
   source: string,
   options: CliOptions,
 ): Promise<ExtractedMessage[]> {
@@ -218,7 +218,10 @@ async function runExtract(
     await writeArtifacts(options, [
       makeCodeArtifact("extract.final", transformed.code, "js"),
       makeMapArtifact("extract.final", transformed.map, "js"),
-      makeJsonArtifact("extract.messages", messages),
+      makeJsonArtifact(
+        "extract.messages",
+        relativizeExtractedMessages(messages),
+      ),
     ]);
 
     return messages;
@@ -227,19 +230,25 @@ async function runExtract(
   if (options.framework === "astro") {
     const result = await inspectAstroExtract(source, options);
     await writeArtifacts(options, [
-      makeJsonArtifact("extract.messages", result.messages),
+      makeJsonArtifact(
+        "extract.messages",
+        relativizeExtractedMessages(result.messages),
+      ),
     ]);
     return result.messages;
   }
 
   const result = await inspectSvelteExtract(source, options);
   await writeArtifacts(options, [
-    makeJsonArtifact("extract.messages", result.messages),
+    makeJsonArtifact(
+      "extract.messages",
+      relativizeExtractedMessages(result.messages),
+    ),
   ]);
   return result.messages;
 }
 
-async function runTransform(
+export async function runTransform(
   source: string,
   options: CliOptions,
 ): Promise<string> {
@@ -434,10 +443,21 @@ function makeMapArtifact(
     return null;
   }
 
+  const normalized = relativizeSourceMap(map);
+
   return {
-    content: JSON.stringify(map, null, 2),
+    content: JSON.stringify(normalized, null, 2),
     ext: `${ext}.map`,
     name,
+  };
+}
+
+function relativizeSourceMap(map: CanonicalSourceMap): CanonicalSourceMap {
+  return {
+    ...map,
+    file: typeof map.file === "string" ? basename(map.file) : map.file,
+    sourceRoot: undefined,
+    sources: map.sources.map((source) => basename(source)),
   };
 }
 
@@ -447,6 +467,22 @@ function makeJsonArtifact(name: string, value: unknown): ArtifactFile {
     ext: "json",
     name,
   };
+}
+
+function relativizeExtractedMessages(
+  messages: readonly ExtractedMessage[],
+): ExtractedMessage[] {
+  return messages.map((message) => {
+    if (message.origin == null) {
+      return message;
+    }
+
+    const [filepath, ...rest] = message.origin;
+    return {
+      ...message,
+      origin: [basename(filepath), ...rest],
+    };
+  });
 }
 
 async function writeArtifacts(
@@ -478,8 +514,10 @@ function normalizeSourceExtension(file: string): string {
   return extname(file).slice(1) || "js";
 }
 
-await main().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : String(error);
-  console.error(message);
-  process.exitCode = 1;
-});
+if (import.meta.main) {
+  await main().catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(message);
+    process.exitCode = 1;
+  });
+}
