@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use crate::framework::parse::{ParseError, parse_tsx};
 
 use super::{
-    MappedText, SharedSourceMap, Span, Utf16Index, compute_line_starts,
+    MappedText, MappedTextError, SharedSourceMap, Span, Utf16Index, compute_line_starts,
     extract_local_submap_indexed, index_source_map,
 };
 
@@ -17,8 +17,8 @@ pub(crate) struct TransformedDeclaration {
 pub enum CollectDeclarationsError {
     #[error(transparent)]
     Parse(#[from] ParseError),
-    #[error("invalid source map")]
-    InvalidSourceMap,
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
 }
 
 pub(crate) fn collect_variable_initializer_declarations(
@@ -101,17 +101,13 @@ fn normalize_i18n_comment_layout_rendered(
     let mut mapped =
         MappedText::from_rendered("__declaration", input, input.to_string(), source_map);
     for (start, end) in replacements.into_iter().rev() {
-        mapped
-            .replace(
-                Span::new(start, end),
-                MappedText::from_rendered("__declaration", input, " ", None),
-            )
-            .map_err(|_| CollectDeclarationsError::InvalidSourceMap)?;
+        mapped.replace(
+            Span::new(start, end),
+            MappedText::from_rendered("__declaration", input, " ", None),
+        )?;
     }
 
-    let rendered = mapped
-        .into_rendered()
-        .map_err(|_| CollectDeclarationsError::InvalidSourceMap)?;
+    let rendered = mapped.into_rendered()?;
     Ok((rendered.code, rendered.source_map))
 }
 

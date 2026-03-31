@@ -4,11 +4,11 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{
-    EmbeddedScriptRegion, MappedText, RenderedMappedText, ScriptLang, Span, build_copy_map,
-    build_span_anchor_map,
+    EmbeddedScriptRegion, MappedText, MappedTextError, RenderedMappedText, ScriptLang, Span,
+    build_copy_map, build_span_anchor_map,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError, bare_direct_macro_message};
+use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError};
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
     MacroCandidateStrategy, MacroFlavor, WhitespaceMode,
@@ -28,8 +28,16 @@ pub enum SvelteAdapterError {
     Framework(#[from] FrameworkError),
     #[error(transparent)]
     SvelteFramework(#[from] SvelteFrameworkError),
-    #[error("{0}")]
-    InvalidMacroUsage(String),
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
+    #[error(
+        "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations."
+    )]
+    BareDirectTNotAllowed,
+    #[error(
+        "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
+    )]
+    BareDirectMacroRequiresReactiveOrEager { imported_name: &'static str },
     #[error("missing Svelte convention field: {0}")]
     MissingConvention(&'static str),
 }
@@ -330,11 +338,7 @@ pub(crate) fn wrap_compile_source(
                     &format!(", {:?})", prototype.candidate.local_name),
                     normalized_source.len(),
                 );
-                return mapped.into_rendered().map_err(|_| {
-                    SvelteAdapterError::InvalidMacroUsage(
-                        "failed to map reactive wrapper".to_string(),
-                    )
-                });
+                return mapped.into_rendered().map_err(SvelteAdapterError::from);
             }
             MacroFlavor::Eager => {
                 let wrapper = analysis
@@ -352,9 +356,7 @@ pub(crate) fn wrap_compile_source(
                     Span::new(0, normalized_source.len()),
                 );
                 push_wrapper_anchor(&mut mapped, normalized_source, ")", normalized_source.len());
-                return mapped.into_rendered().map_err(|_| {
-                    SvelteAdapterError::InvalidMacroUsage("failed to map eager wrapper".to_string())
-                });
+                return mapped.into_rendered().map_err(SvelteAdapterError::from);
             }
             MacroFlavor::Direct => {}
         }
@@ -365,9 +367,7 @@ pub(crate) fn wrap_compile_source(
         normalized_source,
         Span::new(0, normalized_source.len()),
     );
-    mapped.into_rendered().map_err(|_| {
-        SvelteAdapterError::InvalidMacroUsage("failed to map direct wrapper".to_string())
-    })
+    mapped.into_rendered().map_err(SvelteAdapterError::from)
 }
 
 fn push_wrapper_anchor(
@@ -514,9 +514,19 @@ pub(crate) fn validate_compile_targets(
     });
 
     if let Some(imported_name) = offending_macro {
-        return Err(SvelteAdapterError::InvalidMacroUsage(
-            bare_direct_macro_message(imported_name),
-        ));
+        return Err(match imported_name {
+            "t" => SvelteAdapterError::BareDirectTNotAllowed,
+            "plural" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
+                imported_name: "plural",
+            },
+            "select" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
+                imported_name: "select",
+            },
+            "selectOrdinal" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
+                imported_name: "selectOrdinal",
+            },
+            other => panic!("unexpected bare direct macro `{other}`"),
+        });
     }
 
     Ok(())

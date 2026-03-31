@@ -99,7 +99,8 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         }
         mapped
             .into_rendered()
-            .map_err(|error| CompileError::Adapter(AdapterError::Other(error.to_string())))
+            .map_err(AdapterError::from)
+            .map_err(CompileError::from)
     }
 
     fn repair_compile_targets(_source: &str, _targets: &mut [CompileTarget]) {}

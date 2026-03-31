@@ -22,7 +22,7 @@ pub(crate) struct MappedText<'a> {
 }
 
 #[derive(thiserror::Error, Debug)]
-pub(crate) enum MappedTextError {
+pub enum MappedTextError {
     #[error("failed to compose source maps")]
     SourceMapCompositionFailed,
     #[error("span out of bounds")]

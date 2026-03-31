@@ -24,8 +24,14 @@ pub enum SvelteFrameworkError {
     Js(#[from] JsAnalysisError),
     #[error("script element should have start tag")]
     MissingScriptStartTag,
-    #[error("{0}")]
-    InvalidMacroUsage(String),
+    #[error(
+        "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations."
+    )]
+    BareDirectTNotAllowed,
+    #[error(
+        "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
+    )]
+    BareDirectMacroRequiresReactiveOrEager { imported_name: &'static str },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1491,15 +1497,19 @@ fn clamp_to_char_boundary_ceil(source: &str, mut index: usize) -> usize {
     index
 }
 
-pub(crate) fn bare_direct_macro_message(imported_name: &str) -> String {
+fn bare_direct_macro_error(imported_name: &str) -> SvelteFrameworkError {
     match imported_name {
-        "t" => {
-            "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()
-        }
-        "plural" | "select" | "selectOrdinal" => format!(
-            "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
-        ),
-        other => format!("Unsupported bare direct macro `{other}` in `.svelte` files."),
+        "t" => SvelteFrameworkError::BareDirectTNotAllowed,
+        "plural" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
+            imported_name: "plural",
+        },
+        "select" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
+            imported_name: "select",
+        },
+        "selectOrdinal" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
+            imported_name: "selectOrdinal",
+        },
+        other => panic!("unexpected bare direct macro `{other}`"),
     }
 }
 
@@ -1519,9 +1529,7 @@ pub fn validate_svelte_extract_candidates(
         .map(|candidate| candidate.imported_name.as_str());
 
     if let Some(imported_name) = offending_macro {
-        return Err(SvelteFrameworkError::InvalidMacroUsage(
-            bare_direct_macro_message(imported_name),
-        ));
+        return Err(bare_direct_macro_error(imported_name));
     }
 
     Ok(())

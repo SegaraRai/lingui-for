@@ -10,16 +10,10 @@ pub enum ReinsertError {
     MissingTransformedDeclaration(String),
     #[error("synthetic mappings overlap around byte {0}")]
     OverlappingMappings(usize),
-    #[error("failed to build source map: {0}")]
-    InvalidSourceMap(String),
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
     #[error(transparent)]
     CollectDeclarations(#[from] CollectDeclarationsError),
-}
-
-impl From<MappedTextError> for ReinsertError {
-    fn from(value: MappedTextError) -> Self {
-        Self::InvalidSourceMap(value.to_string())
-    }
 }
 
 pub fn reinsert_transformed_declarations(

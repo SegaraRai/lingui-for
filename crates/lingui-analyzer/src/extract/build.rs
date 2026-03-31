@@ -1,14 +1,18 @@
 use std::collections::BTreeMap;
 
-use crate::common::{MappedText, SharedSourceMap, Span, build_segmented_map, source_map_to_json};
+use crate::common::{
+    MappedText, MappedTextError, SharedSourceMap, Span, build_segmented_map, source_map_to_json,
+};
 use crate::extract::{SyntheticMapping, SyntheticModule};
 use crate::framework::{MacroCandidate, MacroImport, render_macro_import_line};
 use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
 #[derive(thiserror::Error, Debug)]
 pub enum BuildSyntheticModuleError {
-    #[error("synthetic target should exist")]
-    MissingSyntheticTarget,
+    #[error("missing synthetic target: {declaration_id}")]
+    MissingSyntheticTarget { declaration_id: String },
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
 }
 
 pub fn build_synthetic_module(
@@ -70,7 +74,9 @@ pub fn build_synthetic_module_from_plan(
                 .targets
                 .iter()
                 .find(|target| target.declaration_id == *id)
-                .ok_or(BuildSyntheticModuleError::MissingSyntheticTarget)?;
+                .ok_or_else(|| BuildSyntheticModuleError::MissingSyntheticTarget {
+                    declaration_id: id.clone(),
+                })?;
             Ok(SyntheticMapping {
                 declaration_id: id.clone(),
                 original_span: original_spans[id],
@@ -122,7 +128,9 @@ fn build_synthetic_source_map(
             .iter()
             .find(|target| target.declaration_id == *declaration_id)
         else {
-            return Err(BuildSyntheticModuleError::MissingSyntheticTarget);
+            return Err(BuildSyntheticModuleError::MissingSyntheticTarget {
+                declaration_id: declaration_id.clone(),
+            });
         };
         let declaration_map = build_segmented_map(
             source_name,
@@ -130,8 +138,7 @@ fn build_synthetic_source_map(
             &target.normalized_code,
             &target.normalized_segments,
             source_anchors,
-        )
-        .map_err(|_| BuildSyntheticModuleError::MissingSyntheticTarget)?;
+        )?;
 
         mapped.push_unmapped("const ");
         mapped.push_unmapped(&target.declaration_id);
@@ -147,5 +154,5 @@ fn build_synthetic_source_map(
     mapped
         .into_rendered()
         .map(|rendered| rendered.source_map)
-        .map_err(|_| BuildSyntheticModuleError::MissingSyntheticTarget)
+        .map_err(BuildSyntheticModuleError::from)
 }

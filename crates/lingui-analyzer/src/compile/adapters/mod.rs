@@ -1,7 +1,7 @@
 mod astro;
 mod svelte;
 
-use crate::common::{ScriptLang, Span};
+use crate::common::{MappedTextError, ScriptLang, Span};
 use crate::compile::CompileTargetPrototype;
 use crate::framework::MacroImport;
 
@@ -16,8 +16,8 @@ pub enum AdapterError {
     Astro(#[from] AstroAdapterError),
     #[error(transparent)]
     Svelte(#[from] SvelteAdapterError),
-    #[error("{0}")]
-    Other(String),
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
 }
 
 #[derive(Debug, Clone)]

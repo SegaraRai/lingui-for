@@ -13,16 +13,12 @@ use super::{
 
 #[derive(thiserror::Error, Debug)]
 pub enum EmitError {
-    #[error("invalid source map: {0}")]
-    InvalidSourceMap(String),
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
+    #[error("failed to overlay replacement start anchor")]
+    MissingReplacementStartAnchor,
     #[error(transparent)]
     Adapter(#[from] AdapterError),
-}
-
-impl From<MappedTextError> for EmitError {
-    fn from(value: MappedTextError) -> Self {
-        Self::InvalidSourceMap(value.to_string())
-    }
 }
 
 pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
@@ -156,11 +152,7 @@ fn normalize_final_replacement_map(
     if map.lookup_token(0, 0).is_none() {
         normalized =
             overlay_source_map_with_single_anchor(map, source_name, source, 0, 0, original_start)
-                .ok_or_else(|| {
-                EmitError::InvalidSourceMap(
-                    "failed to overlay replacement start anchor".to_string(),
-                )
-            })?;
+                .ok_or(EmitError::MissingReplacementStartAnchor)?;
     }
 
     Ok(normalized)

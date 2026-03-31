@@ -4,7 +4,8 @@ use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_impo
 use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
 use super::{
-    CommonCompilePlan, CompileError, CompileTarget, CompileTargetPrototype, FrameworkCompilePlan,
+    AdapterError, CommonCompilePlan, CompileError, CompileTarget, CompileTargetPrototype,
+    FrameworkCompilePlan,
 };
 
 pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
@@ -125,14 +126,15 @@ fn build_compile_synthetic_source(
             &target.normalized_segments,
             source_anchors,
         )
-        .map_err(|error| CompileError::Adapter(super::AdapterError::Other(error.to_string())))?;
+        .map_err(AdapterError::from)
+        .map_err(CompileError::from)?;
         let wrapped = wrap_compile_source(prototype, &target.normalized_code)?;
         let wrapped_map = match (wrapped.source_map.as_ref(), normalized_map.as_ref()) {
-            (Some(upper), Some(lower)) => {
-                Some(compose_source_maps(upper, lower).map_err(|error| {
-                    CompileError::Adapter(super::AdapterError::Other(error.to_string()))
-                })?)
-            }
+            (Some(upper), Some(lower)) => Some(
+                compose_source_maps(upper, lower)
+                    .map_err(AdapterError::from)
+                    .map_err(CompileError::from)?,
+            ),
             (Some(_), None) | (None, Some(_)) => None,
             (None, None) => None,
         };
@@ -150,7 +152,8 @@ fn build_compile_synthetic_source(
 
     output
         .into_rendered()
-        .map_err(|error| CompileError::Adapter(super::AdapterError::Other(error.to_string())))
+        .map_err(AdapterError::from)
+        .map_err(CompileError::from)
 }
 
 #[cfg(test)]
