@@ -407,8 +407,14 @@ fn to_svelte_call_candidate(
     let identifier = call_target_identifier(member_object)?;
     let local_name = text(source, identifier);
     let import_decl = scope.resolve_macro(local_name)?;
-    let (outer_span, object_span, property_span) =
-        repair_svelte_eager_spans(source, base_offset, Span::from_node(node), local_name);
+    let (outer_span, object_span, property_span) = repair_svelte_eager_spans(
+        source,
+        base_offset,
+        Span::from_node(node),
+        Span::from_node(member_object),
+        Span::from_node(member_property),
+        local_name,
+    );
 
     Some(MacroCandidate {
         id: String::new(),
@@ -465,8 +471,19 @@ fn repair_svelte_eager_spans(
     source: &str,
     base_offset: usize,
     outer: Span,
+    object: Span,
+    property: Span,
     local_name: &str,
 ) -> (Span, Span, Span) {
+    if object.start >= outer.start && property.end <= outer.end && object.end <= property.start {
+        // Prefer AST spans when they are consistent.
+        return (
+            shift_span(Span::new(object.start, outer.end), base_offset),
+            shift_span(object, base_offset),
+            shift_span(property, base_offset),
+        );
+    }
+
     let pattern = format!("{local_name}.eager");
     let repaired_start =
         find_pattern_near_start(source, outer.start, outer.end, &pattern).unwrap_or(outer.start);
@@ -633,7 +650,8 @@ fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) 
 
 #[cfg(test)]
 mod tests {
-    use super::find_pattern_near_start;
+    use super::{find_pattern_near_start, repair_svelte_eager_spans};
+    use crate::common::Span;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
@@ -649,5 +667,58 @@ mod tests {
 
         assert_eq!(&source[start..start + 2], "$t");
         assert!(source.is_char_boundary(start));
+    }
+
+    #[test]
+    fn prefers_ast_spans_for_spaced_and_commented_svelte_eager_access() {
+        let source = "const message = t /*one*/ . /*two*/ eager({ id: \"msg\" });";
+        let outer_start = source.find("t /*one*/").expect("member expression starts");
+        let outer_end = source.find(");").expect("call ends") + 1;
+        let object_start = outer_start;
+        let property_start = source.find("eager").expect("property starts");
+        let property_end = property_start + "eager".len();
+
+        let (outer_span, object_span, property_span) = repair_svelte_eager_spans(
+            source,
+            0,
+            Span::new(outer_start, outer_end),
+            Span::new(object_start, object_start + 1),
+            Span::new(property_start, property_end),
+            "t",
+        );
+
+        assert_eq!(
+            &source[outer_span.start..outer_span.end],
+            "t /*one*/ . /*two*/ eager({ id: \"msg\" })"
+        );
+        assert_eq!(&source[object_span.start..object_span.end], "t");
+        assert_eq!(&source[property_span.start..property_span.end], "eager");
+        assert_eq!(
+            &source[object_span.end..property_span.end],
+            " /*one*/ . /*two*/ eager"
+        );
+    }
+
+    #[test]
+    fn falls_back_to_pattern_search_when_ast_spans_are_invalid() {
+        let source = "const eagerValue = t.eager({ id: \"msg\" });";
+        let outer_start = source.find("t.eager").expect("outer start");
+        let outer_end = source.find(");").expect("call ends") + 1;
+
+        let (outer_span, object_span, property_span) = repair_svelte_eager_spans(
+            source,
+            0,
+            Span::new(outer_start, outer_end),
+            Span::new(0, 0),
+            Span::new(0, 0),
+            "t",
+        );
+
+        assert_eq!(
+            &source[outer_span.start..outer_span.end],
+            "t.eager({ id: \"msg\" })"
+        );
+        assert_eq!(&source[object_span.start..object_span.end], "t");
+        assert_eq!(&source[property_span.start..property_span.end], "eager");
     }
 }
