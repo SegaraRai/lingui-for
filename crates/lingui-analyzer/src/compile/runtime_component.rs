@@ -215,9 +215,9 @@ fn convert_jsx_spread_attribute(
     let after_spread = &raw_inner[spread_offset + 3..];
 
     let mut rendered = input.empty_like();
-    rendered.push_unmapped(" {...");
 
     if let Some((prefix, object_text)) = split_prefixed_object_expression(after_spread) {
+        rendered.push_unmapped(" {...");
         let after_spread_start = span.start + 1 + spread_offset + 3;
         let prefix_trimmed = prefix.trim_start();
         if !prefix_trimmed.is_empty() {
@@ -245,6 +245,7 @@ fn convert_jsx_spread_attribute(
         return rendered.into_rendered().map_err(as_lowering_failure);
     }
 
+    rendered.push_unmapped(" ");
     push_copied_span(&mut rendered, input, span)?;
     rendered.into_rendered().map_err(as_lowering_failure)
 }
@@ -792,4 +793,48 @@ fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
 
 fn as_lowering_failure(error: crate::common::MappedTextError) -> RuntimeComponentError {
     RuntimeComponentError::LoweringFailed(error.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::lower_runtime_component_markup;
+    use crate::common::RenderedMappedText;
+
+    #[test]
+    fn preserves_non_object_spread_without_duplicate_prefix() {
+        let source = "<Trans {...foo()} />".to_string();
+        let declaration = RenderedMappedText {
+            code: source.clone(),
+            source_map: None,
+        };
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("runtime component lowering succeeds");
+
+        assert_eq!(lowered.code, "<L4sRuntimeTrans {...foo()} />");
+    }
+
+    #[test]
+    fn lowers_object_spread_through_prefixed_object_path() {
+        let source = "<Trans {...{}} />".to_string();
+        let declaration = RenderedMappedText {
+            code: source.clone(),
+            source_map: None,
+        };
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("runtime component lowering succeeds");
+
+        assert_eq!(lowered.code, "<L4sRuntimeTrans {...{}} />");
+    }
 }
