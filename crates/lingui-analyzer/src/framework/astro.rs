@@ -213,13 +213,18 @@ fn collect_template_expressions(
     ) -> Result<(), AstroFrameworkError> {
         match node.kind() {
             "html_interpolation" => {
-                push_template_expression(
-                    source,
-                    Span::from_node(node),
-                    inner_range_from_delimiters(node, 1, 1),
-                    imports,
-                    expressions,
-                )?;
+                // Only treat pure JS/TS interpolations as standalone expression containers here.
+                // Mixed markup cases recurse into child nodes so nested containers are handled once.
+                if is_pure_html_interpolation_expression(node) {
+                    push_template_expression(
+                        source,
+                        Span::from_node(node),
+                        inner_range_from_delimiters(node, 1, 1),
+                        imports,
+                        expressions,
+                    )?;
+                    return Ok(());
+                }
             }
             "element" => {
                 if let Some(component) =
@@ -242,6 +247,7 @@ fn collect_template_expressions(
                     imports,
                     expressions,
                 )?;
+                return Ok(());
             }
             "attribute_backtick_string" => {
                 push_template_expression(
@@ -251,6 +257,7 @@ fn collect_template_expressions(
                     imports,
                     expressions,
                 )?;
+                return Ok(());
             }
             "frontmatter_js_block" => return Ok(()),
             _ => {}
@@ -376,6 +383,19 @@ fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: us
     let start = node.start_byte().saturating_add(prefix_len);
     let end = node.end_byte().saturating_sub(suffix_len).max(start);
     Span { start, end }
+}
+
+fn is_pure_html_interpolation_expression(node: Node<'_>) -> bool {
+    let mut cursor = node.walk();
+    let mut saw_named_child = false;
+    for child in node.named_children(&mut cursor) {
+        saw_named_child = true;
+        if child.kind() != "permissible_text" {
+            return false;
+        }
+    }
+
+    saw_named_child
 }
 
 fn shift_span(span: Span, base_offset: usize) -> Span {

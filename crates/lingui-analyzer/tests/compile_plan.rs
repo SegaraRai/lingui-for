@@ -190,6 +190,116 @@ const status = translate(msg`Status summary: active`);
 }
 
 #[test]
+fn avoids_duplicate_astro_template_targets_for_real_attribute_expression_file() {
+    let source = read_to_string(
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../apps/docs/src/components/MacroWorkbenchControlField.astro"),
+    )
+    .expect("fixture source should load");
+
+    let plan = AstroCompilePlan::build(
+        &source,
+        "/virtual/MacroWorkbenchControlField.astro",
+        "/virtual/MacroWorkbenchControlField.astro?compile.tsx",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect("astro compile plan should build");
+
+    let placeholder_targets = plan
+        .common
+        .targets
+        .iter()
+        .filter(|target| {
+            &source[target.original_span.start..target.original_span.end]
+                == "t(control.placeholder)"
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(placeholder_targets.len(), 1);
+    assert_eq!(plan.common.targets.len(), 6);
+}
+
+#[test]
+fn keeps_nested_astro_component_targets_inside_html_interpolations() {
+    let source = r#"---
+import { Trans } from "lingui-for-astro/macro";
+
+const showDemo = true;
+---
+
+<div>{showDemo ? <Trans>See full demo</Trans> : null}</div>
+"#;
+
+    let plan = AstroCompilePlan::build(
+        source,
+        "/virtual/Nested.astro",
+        "/virtual/Nested.astro?compile.tsx",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect("astro compile plan should build");
+
+    let component_targets = plan
+        .common
+        .targets
+        .iter()
+        .filter(|target| target.output_kind == CompileTargetOutputKind::Component)
+        .collect::<Vec<_>>();
+
+    assert_eq!(component_targets.len(), 1);
+    assert_eq!(
+        &source[component_targets[0].original_span.start..component_targets[0].original_span.end],
+        "<Trans>See full demo</Trans>"
+    );
+}
+
+#[test]
+fn keeps_multiline_plural_targets_inside_astro_html_interpolations() {
+    let source = r##"---
+import { plural } from "lingui-for-astro/macro";
+---
+
+<p class="text-base-content/70">
+  {
+    plural(3, {
+      one: "# Astro format sample",
+      other: "# Astro format samples",
+    })
+  }
+</p>
+"##;
+
+    let plan = AstroCompilePlan::build(
+        source,
+        "/virtual/Formats.astro",
+        "/virtual/Formats.astro?compile.tsx",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect("astro compile plan should build");
+
+    let plural_targets = plan
+        .common
+        .targets
+        .iter()
+        .filter(|target| {
+            &source[target.original_span.start..target.original_span.end]
+                == "plural(3, {\n      one: \"# Astro format sample\",\n      other: \"# Astro format samples\",\n    })"
+        })
+        .collect::<Vec<_>>();
+
+    let target_spans = plan
+        .common
+        .targets
+        .iter()
+        .map(|target| &source[target.original_span.start..target.original_span.end])
+        .collect::<Vec<_>>();
+
+    assert_eq!(plural_targets.len(), 1, "{target_spans:#?}");
+}
+
+#[test]
 fn rejects_bare_direct_t_in_svelte_scripts() {
     let source = r#"
 <script lang="ts">

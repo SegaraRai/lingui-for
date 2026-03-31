@@ -650,8 +650,12 @@ fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) 
 
 #[cfg(test)]
 mod tests {
-    use super::{find_pattern_near_start, repair_svelte_eager_spans};
+    use super::{
+        JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript,
+        find_pattern_near_start, repair_svelte_eager_spans,
+    };
     use crate::common::Span;
+    use crate::framework::MacroImport;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
@@ -720,5 +724,32 @@ mod tests {
         );
         assert_eq!(&source[object_span.start..object_span.end], "t");
         assert_eq!(&source[property_span.start..property_span.end], "eager");
+    }
+
+    #[test]
+    fn does_not_duplicate_standard_call_candidates_inside_conditionals() {
+        let source = "control.placeholder ? t(control.placeholder) : undefined";
+        let imports = vec![MacroImport {
+            source: "lingui-for-astro/macro".to_string(),
+            imported_name: "t".to_string(),
+            local_name: "t".to_string(),
+            span: Span::new(0, 0),
+        }];
+
+        let candidates = collect_macro_candidates_in_javascript(
+            source,
+            &imports,
+            0,
+            JsMacroSyntax::Standard,
+            JsLikeLanguage::TypeScript,
+            &[],
+        )
+        .expect("analysis succeeds");
+
+        assert_eq!(candidates.len(), 1);
+        assert_eq!(
+            &source[candidates[0].outer_span.start..candidates[0].outer_span.end],
+            "t(control.placeholder)"
+        );
     }
 }

@@ -192,7 +192,7 @@ pub struct TransformedPrograms {
     pub context_source_map_json: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct CompileTargetPrototype {
     pub(crate) candidate: MacroCandidate,
     pub(crate) context: CompileTargetContext,

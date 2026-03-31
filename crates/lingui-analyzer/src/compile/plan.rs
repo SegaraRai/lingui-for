@@ -95,6 +95,8 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
     });
     prototypes
         .retain(|prototype| prototype.candidate.strategy == MacroCandidateStrategy::Standalone);
+    // Keep a final dedupe pass as a safety net against duplicate prototypes.
+    prototypes.dedup_by(|left, right| left == right);
 }
 
 fn build_compile_synthetic_source(

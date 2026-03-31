@@ -26,4 +26,3 @@ wasm-bindgen = "0.2"
 
 [dev-dependencies]
 indoc = "2"
-
