@@ -317,14 +317,19 @@ fn slice_segment(
 
     match segment {
         MappedSegment::Unmapped(text) => {
-            Ok(Some(MappedSegment::Unmapped(text[start..end].to_string())))
+            let sliced = text
+                .get(start..end)
+                .ok_or(MappedTextError::InvalidSegmentSlice)?;
+            Ok(Some(MappedSegment::Unmapped(sliced.to_string())))
         }
         MappedSegment::PreMapped { code, source_map } => {
-            let sliced_code = code[start..end].to_string();
+            let sliced_code = code
+                .get(start..end)
+                .ok_or(MappedTextError::InvalidSegmentSlice)?;
             let sliced_map = extract_generated_submap(source_map, code, start, end)
                 .ok_or(MappedTextError::InvalidSegmentSlice)?;
             Ok(Some(MappedSegment::PreMapped {
-                code: sliced_code,
+                code: sliced_code.to_string(),
                 source_map: sliced_map,
             }))
         }

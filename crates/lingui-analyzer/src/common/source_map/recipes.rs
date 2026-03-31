@@ -76,7 +76,7 @@ pub(crate) fn build_copy_map(
         return None;
     }
 
-    let copied_text = &source_text[original_span.start..original_span.end];
+    let copied_text = source_text.get(original_span.start..original_span.end)?;
     let anchor_points = collect_copy_anchor_points(copied_text, original_span, source_anchors);
     if anchor_points.is_empty() {
         return None;
@@ -164,7 +164,7 @@ pub(crate) fn build_final_output(
                 source_text,
                 Span::new(cursor, replacement.start),
                 source_anchors,
-            );
+            )?;
         }
 
         output.append(finalize_replacement_mapped(
@@ -182,7 +182,7 @@ pub(crate) fn build_final_output(
             source_text,
             Span::new(cursor, source_text.len()),
             source_anchors,
-        );
+        )?;
     }
 
     output.into_rendered()
@@ -208,13 +208,16 @@ fn push_source_slice(
     source_text: &str,
     span: Span,
     source_anchors: &[usize],
-) {
-    let text = &source_text[span.start..span.end];
+) -> Result<(), MappedTextError> {
+    let text = source_text
+        .get(span.start..span.end)
+        .ok_or(MappedTextError::InvalidSegmentSlice)?;
     if let Some(map) = build_copy_map(source_name, source_text, span, source_anchors) {
         output.push_pre_mapped(text, map);
     } else {
         output.push_unmapped(text);
     }
+    Ok(())
 }
 
 fn finalize_replacement_mapped<'a>(
