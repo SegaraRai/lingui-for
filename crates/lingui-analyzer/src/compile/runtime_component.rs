@@ -131,6 +131,7 @@ fn push_anchor_mapped(
         original_byte,
         original_byte,
     ) else {
+        mapped.push_unmapped(text);
         return;
     };
     mapped.push_pre_mapped(text, map);
