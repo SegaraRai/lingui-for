@@ -766,7 +766,132 @@ fn jsx_attribute_value_node(node: Node<'_>) -> Option<Node<'_>> {
 fn split_prefixed_object_expression(input: &str) -> Option<(&str, &str)> {
     let object_start = input.find('{')?;
     let object_text = &input[object_start..];
+    if !is_standalone_object_literal_text(object_text) {
+        return None;
+    }
     Some((&input[..object_start], object_text))
+}
+
+fn is_standalone_object_literal_text(input: &str) -> bool {
+    let trimmed_start = input.trim_start();
+    if !trimmed_start.starts_with('{') || !trimmed_start.trim_end().ends_with('}') {
+        return false;
+    }
+
+    #[derive(Copy, Clone, PartialEq, Eq)]
+    enum ScanState {
+        Normal,
+        SingleQuoted,
+        DoubleQuoted,
+        Template,
+        LineComment,
+        BlockComment,
+    }
+
+    let bytes = trimmed_start.as_bytes();
+    let mut state = ScanState::Normal;
+    let mut index = 0usize;
+    let mut brace_depth = 0usize;
+    let mut paren_depth = 0usize;
+    let mut bracket_depth = 0usize;
+    let mut object_closed = false;
+
+    while index < bytes.len() {
+        let byte = bytes[index];
+        match state {
+            ScanState::Normal => {
+                if object_closed {
+                    if !byte.is_ascii_whitespace() {
+                        return false;
+                    }
+                    index += 1;
+                    continue;
+                }
+
+                match byte {
+                    b'\'' => state = ScanState::SingleQuoted,
+                    b'"' => state = ScanState::DoubleQuoted,
+                    b'`' => state = ScanState::Template,
+                    b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                        state = ScanState::LineComment;
+                        index += 1;
+                    }
+                    b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                        state = ScanState::BlockComment;
+                        index += 1;
+                    }
+                    b'{' => brace_depth += 1,
+                    b'}' => {
+                        let Some(next_depth) = brace_depth.checked_sub(1) else {
+                            return false;
+                        };
+                        brace_depth = next_depth;
+                        if brace_depth == 0 {
+                            if paren_depth != 0 || bracket_depth != 0 {
+                                return false;
+                            }
+                            object_closed = true;
+                        }
+                    }
+                    b'(' => paren_depth += 1,
+                    b')' => {
+                        let Some(next_depth) = paren_depth.checked_sub(1) else {
+                            return false;
+                        };
+                        paren_depth = next_depth;
+                    }
+                    b'[' => bracket_depth += 1,
+                    b']' => {
+                        let Some(next_depth) = bracket_depth.checked_sub(1) else {
+                            return false;
+                        };
+                        bracket_depth = next_depth;
+                    }
+                    _ => {}
+                }
+            }
+            ScanState::SingleQuoted => {
+                if byte == b'\\' {
+                    index += 1;
+                } else if byte == b'\'' {
+                    state = ScanState::Normal;
+                }
+            }
+            ScanState::DoubleQuoted => {
+                if byte == b'\\' {
+                    index += 1;
+                } else if byte == b'"' {
+                    state = ScanState::Normal;
+                }
+            }
+            ScanState::Template => {
+                if byte == b'\\' {
+                    index += 1;
+                } else if byte == b'`' {
+                    state = ScanState::Normal;
+                }
+            }
+            ScanState::LineComment => {
+                if byte == b'\n' {
+                    state = ScanState::Normal;
+                }
+            }
+            ScanState::BlockComment => {
+                if byte == b'*' && bytes.get(index + 1) == Some(&b'/') {
+                    state = ScanState::Normal;
+                    index += 1;
+                }
+            }
+        }
+
+        index += 1;
+    }
+
+    object_closed
+        && state == ScanState::Normal
+        && brace_depth == 0
+        && paren_depth == 0
+        && bracket_depth == 0
 }
 
 fn first_named_child(node: Node<'_>) -> Option<Node<'_>> {
@@ -834,6 +959,50 @@ mod tests {
         .expect("runtime component lowering succeeds");
 
         assert_eq!(lowered.code, "<L4sRuntimeTrans {...foo()} />");
+    }
+
+    #[test]
+    fn preserves_conditional_spread_wrapping_object_literals() {
+        let source = "<Trans {...(cond ? { title: <strong /> } : other)} />".to_string();
+        let declaration = RenderedMappedText {
+            code: source.clone(),
+            source_map: None,
+        };
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            "<L4sRuntimeTrans {...(cond ? { title: <strong /> } : other)} />"
+        );
+    }
+
+    #[test]
+    fn preserves_call_wrapped_object_literal_spreads() {
+        let source = "<Trans {...fn({ title: <strong /> })} />".to_string();
+        let declaration = RenderedMappedText {
+            code: source.clone(),
+            source_map: None,
+        };
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            "<L4sRuntimeTrans {...fn({ title: <strong /> })} />"
+        );
     }
 
     #[test]
