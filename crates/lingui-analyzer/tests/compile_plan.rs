@@ -6,9 +6,12 @@ mod svelte_support;
 use std::fs::read_to_string;
 use std::path::PathBuf;
 
+use sourcemap::DecodedMap;
+
 use lingui_analyzer::{
     AstroCompilePlan, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-    SvelteCompilePlan, WhitespaceMode, build_synthetic_module_for_framework,
+    SvelteCompilePlan, SvelteFinishCompileOptions, TransformedPrograms, WhitespaceMode,
+    build_synthetic_module_for_framework, finish_svelte_compile,
 };
 
 use astro_support::astro_default_conventions;
@@ -123,6 +126,63 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     assert_eq!(
         component_target.translation_mode,
         CompileTranslationMode::Context
+    );
+}
+
+#[test]
+fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
+    let source = indoc::indoc! {r#"
+        <script context="module">
+          import { t as moduleT } from "lingui-for-svelte/macro";
+
+          const moduleLabel = moduleT.eager({ id: "module", message: "Module" });
+        </script>
+
+        <script>
+          import { t as instanceT } from "lingui-for-svelte/macro";
+          let name = "Ada";
+        </script>
+
+        <p>{$instanceT`Hello ${name}`}</p>
+    "#};
+
+    let plan = SvelteCompilePlan::build(
+        source,
+        "/virtual/App.svelte",
+        "/virtual/App.svelte?compile.tsx",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
+    )
+    .expect("svelte compile plan should build");
+
+    let finished = finish_svelte_compile(&SvelteFinishCompileOptions {
+        plan,
+        source: source.to_string(),
+        transformed_programs: TransformedPrograms::default(),
+    })
+    .expect("svelte compile should finish");
+
+    let prelude = finished
+        .replacements
+        .iter()
+        .find(|replacement| replacement.declaration_id == "__runtime_prelude")
+        .expect("runtime prelude replacement exists");
+    let map_json = prelude.source_map_json.as_ref().expect("map exists");
+    let decoded = DecodedMap::from_reader(map_json.as_bytes()).expect("source map decodes");
+    let token = decoded.lookup_token(0, 0).expect("mapping exists");
+    let original_offset = utf16_column_to_byte_offset(
+        source,
+        token.get_src_line() as usize,
+        token.get_src_col() as usize,
+    );
+
+    assert_eq!(token.get_source(), Some("/virtual/App.svelte"));
+    assert!(
+        source[original_offset..]
+            .trim_start()
+            .starts_with("import { t as instanceT }"),
+        "runtime prelude should anchor to the instance script import, got: {}",
+        &source[original_offset..source.len().min(original_offset + 40)]
     );
 }
 
@@ -395,4 +455,25 @@ fn keeps_full_template_target_spans_for_the_e2e_preloaded_page() {
         }),
         "expected a full-span target for the later template plural expression"
     );
+}
+
+fn utf16_column_to_byte_offset(source: &str, line: usize, utf16_col: usize) -> usize {
+    let line_start = source
+        .split_inclusive('\n')
+        .take(line)
+        .map(str::len)
+        .sum::<usize>();
+    let line_text = source[line_start..]
+        .split_once('\n')
+        .map_or(&source[line_start..], |(current_line, _)| current_line);
+    let mut units = 0usize;
+
+    for (byte_offset, ch) in line_text.char_indices() {
+        if units >= utf16_col {
+            return line_start + byte_offset;
+        }
+        units += ch.len_utf16();
+    }
+
+    line_start + line_text.len()
 }

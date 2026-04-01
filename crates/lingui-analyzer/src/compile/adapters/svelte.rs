@@ -565,7 +565,10 @@ pub(super) fn append_runtime_injection_replacements(
             let anchor_span = plan
                 .common
                 .import_removals
-                .first()
+                .iter()
+                .find(|span| {
+                    span.start >= insertion_start && span.end <= instance_script.content_span.end
+                })
                 .copied()
                 .unwrap_or(Span::new(insertion_start, insertion_start));
             let prelude = injections.prelude;
