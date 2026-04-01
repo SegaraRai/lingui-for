@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::BTreeSet;
 
 use serde::{Deserialize, Serialize};
@@ -37,7 +38,7 @@ pub enum SvelteAdapterError {
     #[error(
         "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
     )]
-    BareDirectMacroRequiresReactiveOrEager { imported_name: &'static str },
+    BareDirectMacroRequiresReactiveOrEager { imported_name: Cow<'static, str> },
     #[error("missing Svelte convention field: {0}")]
     MissingConvention(&'static str),
 }
@@ -517,15 +518,17 @@ pub(crate) fn validate_compile_targets(
         return Err(match imported_name {
             "t" => SvelteAdapterError::BareDirectTNotAllowed,
             "plural" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
-                imported_name: "plural",
+                imported_name: Cow::Borrowed("plural"),
             },
             "select" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
-                imported_name: "select",
+                imported_name: Cow::Borrowed("select"),
             },
             "selectOrdinal" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
-                imported_name: "selectOrdinal",
+                imported_name: Cow::Borrowed("selectOrdinal"),
             },
-            other => panic!("unexpected bare direct macro `{other}`"),
+            other => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
+                imported_name: Cow::Owned(other.to_string()),
+            },
         });
     }
 

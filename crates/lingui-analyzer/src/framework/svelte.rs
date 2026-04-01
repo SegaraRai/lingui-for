@@ -1,3 +1,5 @@
+use std::borrow::Cow;
+
 use tree_sitter::Node;
 
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
@@ -31,7 +33,7 @@ pub enum SvelteFrameworkError {
     #[error(
         "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
     )]
-    BareDirectMacroRequiresReactiveOrEager { imported_name: &'static str },
+    BareDirectMacroRequiresReactiveOrEager { imported_name: Cow<'static, str> },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -1501,15 +1503,17 @@ fn bare_direct_macro_error(imported_name: &str) -> SvelteFrameworkError {
     match imported_name {
         "t" => SvelteFrameworkError::BareDirectTNotAllowed,
         "plural" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
-            imported_name: "plural",
+            imported_name: Cow::Borrowed("plural"),
         },
         "select" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
-            imported_name: "select",
+            imported_name: Cow::Borrowed("select"),
         },
         "selectOrdinal" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
-            imported_name: "selectOrdinal",
+            imported_name: Cow::Borrowed("selectOrdinal"),
         },
-        other => panic!("unexpected bare direct macro `{other}`"),
+        other => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
+            imported_name: Cow::Owned(other.to_string()),
+        },
     }
 }
 
