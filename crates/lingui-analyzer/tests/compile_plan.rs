@@ -3,9 +3,6 @@ mod astro_support;
 #[path = "support/svelte_conventions.rs"]
 mod svelte_support;
 
-use std::fs::read_to_string;
-use std::path::PathBuf;
-
 use sourcemap::DecodedMap;
 
 use lingui_analyzer::{
@@ -250,17 +247,28 @@ const status = translate(msg`Status summary: active`);
 }
 
 #[test]
-fn avoids_duplicate_astro_template_targets_for_real_attribute_expression_file() {
-    let source = read_to_string(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../apps/docs/src/components/MacroWorkbenchControlField.astro"),
-    )
-    .expect("fixture source should load");
+fn avoids_duplicate_astro_template_targets_for_attribute_conditional_expression() {
+    let source = r#"---
+import { t } from "lingui-for-astro/macro";
+
+const control = {
+  id: "query",
+  label: "Query",
+  placeholder: "Search docs",
+};
+---
+
+<label for={control.id}>{t(control.label)}</label>
+<input
+  id={control.id}
+  placeholder={control.placeholder ? t(control.placeholder) : undefined}
+/>
+"#;
 
     let plan = AstroCompilePlan::build(
-        &source,
-        "/virtual/MacroWorkbenchControlField.astro",
-        "/virtual/MacroWorkbenchControlField.astro?compile.tsx",
+        source,
+        "/virtual/ControlField.astro",
+        "/virtual/ControlField.astro?compile.tsx",
         WhitespaceMode::Astro,
         astro_default_conventions(),
     )
@@ -277,7 +285,7 @@ fn avoids_duplicate_astro_template_targets_for_real_attribute_expression_file() 
         .collect::<Vec<_>>();
 
     assert_eq!(placeholder_targets.len(), 1);
-    assert_eq!(plan.common.targets.len(), 6);
+    assert_eq!(plan.common.targets.len(), 2);
 }
 
 #[test]
@@ -416,15 +424,33 @@ fn rejects_bare_direct_plural_in_svelte_extract_synthetic_builds() {
 }
 
 #[test]
-fn keeps_full_template_target_spans_for_the_e2e_preloaded_page() {
-    let source = read_to_string(
-        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-            .join("../../examples/e2e-svelte/src/routes/playground/init-preloaded/+page.svelte"),
-    )
-    .expect("e2e fixture source should load");
+fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
+    let source = indoc::indoc! {r##"
+        <script lang="ts">
+          import { plural, t } from "lingui-for-svelte/macro";
+
+          let locale = $state("en");
+          let count = $state(3);
+        </script>
+
+        <section>
+          <p>{$t`Init: Preloaded`}</p>
+          <h1>{$t`All locales preloaded at init`}</h1>
+          <p>{$t`This widget has its own i18n context.`}</p>
+          <div>
+            <p>{$t`Hello from the preloaded init pattern.`}</p>
+            <p>
+              {$plural(count, {
+                one: "# item in the list.",
+                other: "# items in the list.",
+              })}
+            </p>
+          </div>
+        </section>
+    "##};
 
     let plan = SvelteCompilePlan::build(
-        &source,
+        source,
         "/virtual/+page.svelte",
         "/virtual/+page.svelte?compile.tsx",
         WhitespaceMode::Svelte,
@@ -447,13 +473,13 @@ fn keeps_full_template_target_spans_for_the_e2e_preloaded_page() {
             source[target.original_span.start..target.original_span.end]
                 .starts_with("$t`Hello from the preloaded init pattern.`")
         }),
-        "expected a full-span target for the later template t expression"
+        "expected a full-span target for the later template t expression",
     );
     assert!(
         template_targets.iter().any(|target| {
             source[target.original_span.start..target.original_span.end].starts_with("$plural(")
         }),
-        "expected a full-span target for the later template plural expression"
+        "expected a full-span target for the later template plural expression",
     );
 }
 
