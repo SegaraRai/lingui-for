@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use crate::common::{
     CollectDeclarationsError, SharedSourceMap, TransformedDeclaration,
-    collect_variable_initializer_declarations, extend_start_for_leading_comments, parse_source_map,
+    collect_variable_initializer_declarations, initializer_start_for_declarator, parse_source_map,
 };
 use crate::framework::parse::{ParseError, parse_tsx};
 
@@ -173,7 +173,7 @@ fn collect_declaration_value_starts(source: &str) -> Result<BTreeMap<String, usi
 
             starts.insert(
                 source[name.start_byte()..name.end_byte()].to_string(),
-                extend_start_for_leading_comments(source, value.start_byte()),
+                initializer_start_for_declarator(declarator, name, value),
             );
         }
     }

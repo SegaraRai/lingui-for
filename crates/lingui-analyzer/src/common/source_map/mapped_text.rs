@@ -142,23 +142,6 @@ impl<'a> MappedText<'a> {
         self.append(other.slice(span)?)
     }
 
-    pub(crate) fn replace(
-        &mut self,
-        span: crate::common::Span,
-        other: Self,
-    ) -> Result<(), MappedTextError> {
-        self.ensure_compatible(&other)?;
-        let prefix = self.slice(crate::common::Span::new(0, span.start))?;
-        let suffix = self.slice(crate::common::Span::new(span.end, self.len()))?;
-        self.segments = prefix
-            .segments
-            .into_iter()
-            .chain(other.segments)
-            .chain(suffix.segments)
-            .collect();
-        Ok(())
-    }
-
     pub(crate) fn into_rendered(self) -> Result<RenderedMappedText, MappedTextError> {
         render_mapped_text(self.source_name, self.source_text, &self.segments)
     }
@@ -499,9 +482,19 @@ mod tests {
         mapped.push_unmapped("ef");
 
         let replacement = MappedText::from_rendered("test.ts", source, "YZ", None);
-        mapped
-            .replace(Span::new(2, 4), replacement)
-            .expect("replace succeeds");
-        assert_eq!(mapped.into_rendered().expect("render").code, "abYZef");
+        let prefix = mapped
+            .slice(Span::new(0, 2))
+            .expect("prefix slice succeeds");
+        let suffix = mapped
+            .slice(Span::new(4, mapped.len()))
+            .expect("suffix slice succeeds");
+        let mut combined = MappedText::new("test.ts", source);
+        combined.append(prefix).expect("append prefix succeeds");
+        combined
+            .append(replacement)
+            .expect("append replacement succeeds");
+        combined.append(suffix).expect("append suffix succeeds");
+
+        assert_eq!(combined.into_rendered().expect("render").code, "abYZef");
     }
 }

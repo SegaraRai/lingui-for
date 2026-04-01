@@ -15,6 +15,6 @@ pub(crate) use source_map::{
 pub use span::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub(crate) use transformed_declaration::{
     CollectDeclarationsError, TransformedDeclaration, collect_variable_initializer_declarations,
-    extend_start_for_leading_comments,
+    initializer_start_for_declarator,
 };
 pub use utf16::Utf16Index;
