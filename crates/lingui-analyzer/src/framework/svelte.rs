@@ -201,17 +201,18 @@ fn analyze_script_block(
         content_region.inner_span.start,
         source_anchors,
     );
+    let script_root = script_tree.root_node();
     let declared_names = collect_top_level_declared_names_in_javascript(script_source, language)?;
     let macro_imports = collect_script_macro_imports(
         script_source,
+        script_root,
         content_region.inner_span.start,
-        language,
         &options.conventions,
     )?;
     let macro_import_statement_spans = collect_script_macro_import_statement_spans(
         script_source,
+        script_root,
         content_region.inner_span.start,
-        language,
         &options.conventions,
     )?
     .into_iter()
@@ -1178,15 +1179,10 @@ fn is_component_tag_name(tag_name: &str) -> bool {
 
 fn collect_script_macro_imports(
     source: &str,
+    root: Node<'_>,
     base_offset: usize,
-    language: JsLikeLanguage,
     conventions: &FrameworkConventions,
 ) -> Result<Vec<MacroImport>, SvelteFrameworkError> {
-    let js_tree = match language {
-        JsLikeLanguage::JavaScript => parse_javascript(source)?,
-        JsLikeLanguage::TypeScript => parse_typescript(source)?,
-    };
-    let root = js_tree.root_node();
     let mut imports = Vec::new();
     let mut cursor = root.walk();
 
@@ -1219,15 +1215,10 @@ fn collect_script_macro_imports(
 
 fn collect_script_macro_import_statement_spans(
     source: &str,
+    root: Node<'_>,
     base_offset: usize,
-    language: JsLikeLanguage,
     conventions: &FrameworkConventions,
 ) -> Result<Vec<Span>, SvelteFrameworkError> {
-    let js_tree = match language {
-        JsLikeLanguage::JavaScript => parse_javascript(source)?,
-        JsLikeLanguage::TypeScript => parse_typescript(source)?,
-    };
-    let root = js_tree.root_node();
     let mut spans = Vec::new();
     let mut cursor = root.walk();
 
