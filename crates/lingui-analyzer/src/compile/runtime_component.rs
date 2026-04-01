@@ -243,45 +243,48 @@ fn convert_jsx_spread_attribute(
     base_offset: isize,
 ) -> Result<RenderedMappedText, RuntimeComponentError> {
     let span = translated_span(node, base_offset)?;
-    let raw_inner = &source[span.start + 1..span.end - 1];
-    let spread_offset = raw_inner
-        .find("...")
+    let spread = spread_element_node(node)
         .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
-    let after_spread = &raw_inner[spread_offset + 3..];
+    let argument = spread_argument_node(spread)
+        .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
 
-    let mut rendered = input.empty_like();
-
-    if let Some((prefix, object_text)) = split_prefixed_object_expression(after_spread) {
+    if let Some(object) = lowerable_object_expression_node(argument) {
+        let spread_span = translated_span(spread, base_offset)?;
+        let object_span = translated_span(object, base_offset)?;
+        let mut rendered = input.empty_like();
         rendered.push_unmapped(" {...");
-        let after_spread_start = span.start + 1 + spread_offset + 3;
-        let prefix_trimmed = prefix.trim_start();
-        if !prefix_trimmed.is_empty() {
-            let prefix_start = after_spread_start + (prefix.len() - prefix_trimmed.len());
+        let prefix_start = (spread_span.start + 3).min(object_span.start);
+        let prefix_trimmed_start = source[prefix_start..object_span.start]
+            .find(|char: char| !char.is_ascii_whitespace())
+            .map(|offset| prefix_start + offset);
+        if let Some(prefix_trimmed_start) = prefix_trimmed_start {
             push_copied_span(
                 &mut rendered,
                 input,
-                Span::new(prefix_start, prefix_start + prefix_trimmed.len()),
+                Span::new(prefix_trimmed_start, object_span.start),
             )?;
         }
-
-        let object_start =
-            object_text.as_ptr() as usize - raw_inner.as_ptr() as usize + span.start + 1;
         append_rendered(
             &mut rendered,
-            lower_object_expression_span(
-                source,
-                input,
-                Span::new(object_start, object_start + object_text.len()),
-                false,
-                0,
-            )?,
+            lower_object_expression_span(source, input, object_span, false, 0)?,
         );
+        let suffix_trimmed_end = source[object_span.end..spread_span.end]
+            .rfind(|char: char| !char.is_ascii_whitespace())
+            .map(|offset| object_span.end + offset + 1);
+        if let Some(suffix_trimmed_end) = suffix_trimmed_end {
+            push_copied_span(
+                &mut rendered,
+                input,
+                Span::new(object_span.end, suffix_trimmed_end),
+            )?;
+        }
         rendered.push_unmapped("}");
         return rendered
             .into_rendered()
             .map_err(RuntimeComponentError::from);
     }
 
+    let mut rendered = input.empty_like();
     rendered.push_unmapped(" ");
     push_copied_span(&mut rendered, input, span)?;
     rendered
@@ -483,7 +486,7 @@ fn convert_object_expression(
                 );
             }
             "spread_element" => {
-                let argument = first_named_child(child)
+                let argument = spread_argument_node(child)
                     .ok_or(RuntimeComponentError::MissingSpreadArgumentInObjectExpression)?;
                 rendered.push_unmapped("...");
                 append_rendered(
@@ -619,9 +622,9 @@ fn convert_jsx_attributes_to_object(
 
         match child.kind() {
             "jsx_expression" => {
-                let spread = first_named_child(child)
+                let spread = spread_element_node(child)
                     .ok_or(RuntimeComponentError::MissingSpreadChildInJsxProps)?;
-                let argument = first_named_child(spread)
+                let argument = spread_argument_node(spread)
                     .ok_or(RuntimeComponentError::MissingSpreadArgumentInJsxProps)?;
                 rendered.push_unmapped("...");
                 append_rendered(
@@ -763,139 +766,30 @@ fn jsx_attribute_value_node(node: Node<'_>) -> Option<Node<'_>> {
     })
 }
 
-fn split_prefixed_object_expression(input: &str) -> Option<(&str, &str)> {
-    let object_start = input.find('{')?;
-    let object_text = &input[object_start..];
-    if !is_standalone_object_literal_text(object_text) {
-        return None;
-    }
-    Some((&input[..object_start], object_text))
-}
-
-fn is_standalone_object_literal_text(input: &str) -> bool {
-    let trimmed_start = input.trim_start();
-    if !trimmed_start.starts_with('{') || !trimmed_start.trim_end().ends_with('}') {
-        return false;
-    }
-
-    #[derive(Copy, Clone, PartialEq, Eq)]
-    enum ScanState {
-        Normal,
-        SingleQuoted,
-        DoubleQuoted,
-        Template,
-        LineComment,
-        BlockComment,
-    }
-
-    let bytes = trimmed_start.as_bytes();
-    let mut state = ScanState::Normal;
-    let mut index = 0usize;
-    let mut brace_depth = 0usize;
-    let mut paren_depth = 0usize;
-    let mut bracket_depth = 0usize;
-    let mut object_closed = false;
-
-    while index < bytes.len() {
-        let byte = bytes[index];
-        match state {
-            ScanState::Normal => {
-                if object_closed {
-                    if !byte.is_ascii_whitespace() {
-                        return false;
-                    }
-                    index += 1;
-                    continue;
-                }
-
-                match byte {
-                    b'\'' => state = ScanState::SingleQuoted,
-                    b'"' => state = ScanState::DoubleQuoted,
-                    b'`' => state = ScanState::Template,
-                    b'/' if bytes.get(index + 1) == Some(&b'/') => {
-                        state = ScanState::LineComment;
-                        index += 1;
-                    }
-                    b'/' if bytes.get(index + 1) == Some(&b'*') => {
-                        state = ScanState::BlockComment;
-                        index += 1;
-                    }
-                    b'{' => brace_depth += 1,
-                    b'}' => {
-                        let Some(next_depth) = brace_depth.checked_sub(1) else {
-                            return false;
-                        };
-                        brace_depth = next_depth;
-                        if brace_depth == 0 {
-                            if paren_depth != 0 || bracket_depth != 0 {
-                                return false;
-                            }
-                            object_closed = true;
-                        }
-                    }
-                    b'(' => paren_depth += 1,
-                    b')' => {
-                        let Some(next_depth) = paren_depth.checked_sub(1) else {
-                            return false;
-                        };
-                        paren_depth = next_depth;
-                    }
-                    b'[' => bracket_depth += 1,
-                    b']' => {
-                        let Some(next_depth) = bracket_depth.checked_sub(1) else {
-                            return false;
-                        };
-                        bracket_depth = next_depth;
-                    }
-                    _ => {}
-                }
-            }
-            ScanState::SingleQuoted => {
-                if byte == b'\\' {
-                    index += 1;
-                } else if byte == b'\'' {
-                    state = ScanState::Normal;
-                }
-            }
-            ScanState::DoubleQuoted => {
-                if byte == b'\\' {
-                    index += 1;
-                } else if byte == b'"' {
-                    state = ScanState::Normal;
-                }
-            }
-            ScanState::Template => {
-                if byte == b'\\' {
-                    index += 1;
-                } else if byte == b'`' {
-                    state = ScanState::Normal;
-                }
-            }
-            ScanState::LineComment => {
-                if byte == b'\n' {
-                    state = ScanState::Normal;
-                }
-            }
-            ScanState::BlockComment => {
-                if byte == b'*' && bytes.get(index + 1) == Some(&b'/') {
-                    state = ScanState::Normal;
-                    index += 1;
-                }
-            }
+fn lowerable_object_expression_node(node: Node<'_>) -> Option<Node<'_>> {
+    match node.kind() {
+        "object" => Some(node),
+        "parenthesized_expression" => {
+            first_named_child(node).and_then(lowerable_object_expression_node)
         }
-
-        index += 1;
+        _ => None,
     }
-
-    object_closed
-        && state == ScanState::Normal
-        && brace_depth == 0
-        && paren_depth == 0
-        && bracket_depth == 0
 }
 
 fn first_named_child(node: Node<'_>) -> Option<Node<'_>> {
     node.named_children(&mut node.walk()).next()
+}
+
+fn spread_element_node(node: Node<'_>) -> Option<Node<'_>> {
+    node.named_children(&mut node.walk())
+        .find(|child| child.kind() == "spread_element")
+}
+
+fn spread_argument_node(node: Node<'_>) -> Option<Node<'_>> {
+    node.child_by_field_name("argument").or_else(|| {
+        node.named_children(&mut node.walk())
+            .find(|child| child.kind() != "comment")
+    })
 }
 
 fn find_first_named_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
@@ -941,6 +835,7 @@ fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
 mod tests {
     use super::lower_runtime_component_markup;
     use crate::common::RenderedMappedText;
+    use indoc::indoc;
 
     #[test]
     fn preserves_non_object_spread_without_duplicate_prefix() {
@@ -1022,5 +917,71 @@ mod tests {
         .expect("runtime component lowering succeeds");
 
         assert_eq!(lowered.code, "<L4sRuntimeTrans {...{}} />");
+    }
+
+    #[test]
+    fn lowers_object_spread_with_leading_comment_prefix() {
+        let source =
+            "<Trans {.../*i18n*/ { components: { 0: <a href=\"/docs\" /> } }} />".to_string();
+        let declaration = RenderedMappedText {
+            code: source.clone(),
+            source_map: None,
+        };
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("lower succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4sRuntimeTrans {.../*i18n*/ {
+                  components: {
+                    0: {
+                      kind: "element",
+                      tag: "a",
+                      props: {
+                        href: "/docs"
+                      }
+                    }
+                  }
+                }} />
+            "#}
+            .trim_end()
+        );
+    }
+
+    #[test]
+    fn lowers_parenthesized_object_spread() {
+        let source = "<Trans {...({ count: 1, nested: { ok: true } })} />".to_string();
+        let declaration = RenderedMappedText {
+            code: source.clone(),
+            source_map: None,
+        };
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4sRuntimeTrans {...({
+                  count: 1,
+                  nested: {
+                    ok: true
+                  }
+                })} />
+            "#}
+            .trim_end()
+        );
     }
 }
