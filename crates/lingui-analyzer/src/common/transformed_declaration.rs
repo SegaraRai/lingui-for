@@ -82,17 +82,21 @@ pub(crate) fn initializer_start_for_declarator(
     name: Node<'_>,
     value: Node<'_>,
 ) -> usize {
-    let mut cursor = declarator.walk();
-    let mut saw_equals = false;
-    let mut fallback_start = value.start_byte();
+    let fallback_start = value.start_byte();
 
+    let mut cursor = declarator.walk();
+    let mut saw_name = false;
+    let mut saw_equals = false;
     for child in declarator.children(&mut cursor) {
-        if child.id() == name.id() {
+        if !saw_name {
+            if child.id() == name.id() {
+                saw_name = true;
+            }
             continue;
         }
 
         if child.id() == value.id() {
-            return fallback_start.min(value.start_byte());
+            break;
         }
 
         if child.kind() == "=" {
@@ -100,11 +104,8 @@ pub(crate) fn initializer_start_for_declarator(
             continue;
         }
 
-        if child.kind() == "comment" {
-            if saw_equals {
-                return child.start_byte();
-            }
-            fallback_start = fallback_start.min(child.start_byte());
+        if child.kind() == "comment" && saw_equals {
+            return child.start_byte();
         }
     }
 
@@ -332,6 +333,30 @@ mod tests {
         assert_eq!(
             &input[initializer_start_for_declarator(declarator, name, value)..value.end_byte()],
             "/*i18n*/\n  { id: \"x\" }"
+        );
+    }
+
+    #[test]
+    fn initializer_start_for_declarator_ignores_comment_before_equals() {
+        let input = "const message /*leading*/ = { id: \"x\" };";
+        let tree = parse_tsx(input).expect("parse succeeds");
+        let root = tree.root_node();
+        let declarator = root
+            .children(&mut root.walk())
+            .find(|node| node.kind() == "lexical_declaration")
+            .and_then(|decl| {
+                decl.children(&mut decl.walk())
+                    .find(|child| child.kind() == "variable_declarator")
+            })
+            .expect("declarator exists");
+        let name = declarator.child_by_field_name("name").expect("name exists");
+        let value = declarator
+            .child_by_field_name("value")
+            .expect("value exists");
+
+        assert_eq!(
+            &input[initializer_start_for_declarator(declarator, name, value)..value.end_byte()],
+            "{ id: \"x\" }"
         );
     }
 }
