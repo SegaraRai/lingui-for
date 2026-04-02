@@ -1,0 +1,542 @@
+[
+  {
+    "id": "8+nA3Y",
+    "message": "Welcome back, {dashboardOwner}.",
+    "placeholders": {
+      "dashboardOwner": "dashboardOwner"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      489,
+      34
+    ]
+  },
+  {
+    "id": "5kwh2a",
+    "message": "Showing {0} queue items for {1}.",
+    "placeholders": {
+      "0": "String(filteredQueue.length)",
+      "1": "selectedRegion === \"all\" ? \"all regions\" : selectedRegion"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      492,
+      6
+    ]
+  },
+  {
+    "id": "wc9bP7",
+    "message": "{localeMode, select, en {English workflow} ja {Japanese workflow} fr {French workflow} other {Fallback workflow}}",
+    "placeholders": {
+      "localeMode": "localeMode"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      496,
+      5
+    ]
+  },
+  {
+    "id": "C81jcY",
+    "message": "Escalation required: unresolved high-priority queue items remain.",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      505,
+      9
+    ]
+  },
+  {
+    "id": "jJ+oTf",
+    "message": "Attention needed: high-priority items are waiting for review.",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      507,
+      11
+    ]
+  },
+  {
+    "id": "GzY8qo",
+    "message": "All monitored queues are stable.",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      508,
+      11
+    ]
+  },
+  {
+    "id": "lC/3w5",
+    "message": "Live snapshot latency: {0}.",
+    "placeholders": {
+      "0": "String(latencyMs > 250 ? `${latencyMs}ms (slow)` : `${latencyMs}ms`)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      512,
+      6
+    ]
+  },
+  {
+    "id": "B1MDds",
+    "message": "Operations",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      542,
+      12
+    ]
+  },
+  {
+    "id": "xdDw1Z",
+    "message": "Workspace mode:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      551,
+      12
+    ]
+  },
+  {
+    "id": "5wic0R",
+    "message": "Editing tools are enabled for this workspace.",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      556,
+      15
+    ]
+  },
+  {
+    "id": "oYLtG0",
+    "message": "Editing tools are read-only for this workspace.",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      557,
+      15
+    ]
+  },
+  {
+    "id": "tQcxxg",
+    "message": "Region:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      564,
+      11
+    ]
+  },
+  {
+    "id": "7lRCx1",
+    "message": "Queue kind:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      567,
+      11
+    ]
+  },
+  {
+    "id": "gzWinp",
+    "message": "Assigned only:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      570,
+      10
+    ]
+  },
+  {
+    "id": "Fdp03t",
+    "message": "on",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      571,
+      29
+    ]
+  },
+  {
+    "id": "Bdtwnw",
+    "message": "off",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      571,
+      46
+    ]
+  },
+  {
+    "id": "jYKshG",
+    "message": "History:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      574,
+      10
+    ]
+  },
+  {
+    "id": "JkIYli",
+    "message": "shown",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      575,
+      24
+    ]
+  },
+  {
+    "id": "zNCBmf",
+    "message": "hidden",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      575,
+      44
+    ]
+  },
+  {
+    "id": "W3Ae0L",
+    "message": "{0} active reviewers available.",
+    "placeholders": {
+      "0": "String(card.reviewers)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      590,
+      0
+    ]
+  },
+  {
+    "id": "UbRKMZ",
+    "message": "Pending",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      601,
+      16
+    ]
+  },
+  {
+    "id": "FEPXtw",
+    "message": "Reviewed",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      609,
+      16
+    ]
+  },
+  {
+    "id": "3UYUtA",
+    "message": "Flagged",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      617,
+      16
+    ]
+  },
+  {
+    "id": "yiNL80",
+    "message": "Reviewers",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      625,
+      16
+    ]
+  },
+  {
+    "id": "mtE2Ev",
+    "message": "Queue details",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      643,
+      14
+    ]
+  },
+  {
+    "id": "gimT52",
+    "message": "{0} items match the current filters.",
+    "placeholders": {
+      "0": "String(filteredQueue.length)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      647,
+      0
+    ]
+  },
+  {
+    "id": "Ji1wwM",
+    "message": "Attachments {0}, comments {1}, unread {2}.",
+    "placeholders": {
+      "0": "String($totals.attachments)",
+      "1": "String($totals.comments)",
+      "2": "String($totals.unread)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      653,
+      0
+    ]
+  },
+  {
+    "id": "szWjCj",
+    "message": "{0} left {1} comments while {2} still has {3} unread updates.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "String(item.comments)",
+      "2": "item.assignee",
+      "3": "String(item.unread)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      663,
+      0
+    ]
+  },
+  {
+    "id": "IDpMOo",
+    "message": "{0} left {1} comments and the queue is fully read.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "String(item.comments)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      666,
+      0
+    ]
+  },
+  {
+    "id": "2TUOis",
+    "message": "Owner:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      683,
+      19
+    ]
+  },
+  {
+    "id": "GRmQfp",
+    "message": "Assignee:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      684,
+      19
+    ]
+  },
+  {
+    "id": "Y2+ZT9",
+    "message": "Comments:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      685,
+      19
+    ]
+  },
+  {
+    "id": "jqmIfA",
+    "message": "Attachments:",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      686,
+      19
+    ]
+  },
+  {
+    "id": "lvcfoy",
+    "message": "Path {0}",
+    "placeholders": {
+      "0": "String(item.pathHint ?? \"\")"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      699,
+      20
+    ]
+  },
+  {
+    "id": "pa6gX+",
+    "message": "No path",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      703,
+      20
+    ]
+  },
+  {
+    "id": "qbgW+C",
+    "message": "Highlights",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      718,
+      14
+    ]
+  },
+  {
+    "id": "ubwhkQ",
+    "message": "{0} items need attention.",
+    "placeholders": {
+      "0": "String($highlightedQueue.length)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      722,
+      0
+    ]
+  },
+  {
+    "id": "nj0sbN",
+    "message": "No highlighted queue items.",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      729,
+      14
+    ]
+  },
+  {
+    "id": "i4y9D/",
+    "message": "{0} assigned {1} with {2} comments and {3} unread changes.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "item.assignee",
+      "2": "String(item.comments)",
+      "3": "String(item.unread)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      738,
+      0
+    ]
+  },
+  {
+    "id": "quM66o",
+    "message": "Decision log",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      751,
+      12
+    ]
+  },
+  {
+    "id": "LZB4fD",
+    "message": "{0} updated {1} during this step.",
+    "placeholders": {
+      "0": "row.changedBy",
+      "1": "String(row.path ?? \"the current workflow\")"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      766,
+      0
+    ]
+  },
+  {
+    "id": "OcCQjb",
+    "message": "Activity stream",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      781,
+      10
+    ]
+  },
+  {
+    "id": "YqL2gS",
+    "message": "Imported digest: <0>{htmlDigest}</0>",
+    "placeholders": {
+      "htmlDigest": "htmlDigest"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      797,
+      10
+    ]
+  },
+  {
+    "id": "UsgvkK",
+    "message": "Status digest",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      809,
+      10
+    ]
+  },
+  {
+    "id": "8p/xVT",
+    "message": "{0, plural, one {{1}} other {{2}}}",
+    "placeholders": {
+      "0": "$highlightedQueue.length",
+      "1": "_i18n._(\n    /*i18n*/\n    {\n      id: \"s0sXxO\",\n      message: \"There is one highlighted queue item.\"\n    })",
+      "2": "_i18n._(\n    /*i18n*/\n    {\n      id: \"J4w9XN\",\n      message: \"There are {0} highlighted queue items.\",\n      values: {\n        0: String($highlightedQueue.length)\n      }\n    })"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      811,
+      6
+    ]
+  },
+  {
+    "id": "s0sXxO",
+    "message": "There is one highlighted queue item.",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      813,
+      13
+    ]
+  },
+  {
+    "id": "J4w9XN",
+    "message": "There are {0} highlighted queue items.",
+    "placeholders": {
+      "0": "String($highlightedQueue.length)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      815,
+      0
+    ]
+  },
+  {
+    "id": "pnokNm",
+    "message": "The queue is {0} and {1}.",
+    "placeholders": {
+      "0": "String(filteredQueue.length > 8 ? \"very busy\" : \"manageable\")",
+      "1": "String($highlightedQueue.length > 2 ? \"requires escalation\" : \"is within normal review limits\")"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      820,
+      0
+    ]
+  },
+  {
+    "id": "d8ajL9",
+    "message": "Nested expression summary: {0}.",
+    "placeholders": {
+      "0": "String($highlightedQueue.length > 0 ? `highlighted:${$highlightedQueue[0]?.id ?? \"none\"}` : `region:${selectedRegion}`)"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      825,
+      0
+    ]
+  }
+]

@@ -264,3 +264,29 @@ fn collects_template_components_from_frontmatter_imports() {
         ]
     );
 }
+
+#[test]
+fn rejects_unsupported_astro_trans_child_directives_with_location() {
+    let source = indoc! {r#"
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans>
+          <div set:html={content} />
+        </Trans>
+    "#};
+
+    let error = AstroCompilePlan::build(
+        source,
+        "Unsupported.astro",
+        "Unsupported.astro?compile",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect_err("compile plan should fail");
+    let rendered = error.to_string();
+
+    assert!(rendered.contains("Unsupported.astro:"));
+    assert!(rendered.contains("set:html"));
+}

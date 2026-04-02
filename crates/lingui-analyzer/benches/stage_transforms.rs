@@ -1,0 +1,407 @@
+#[path = "../tests/support/astro_conventions.rs"]
+mod astro_conventions;
+#[path = "../tests/support/svelte_conventions.rs"]
+mod svelte_conventions;
+
+use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+
+use lingui_analyzer::conventions::{FrameworkConventions, FrameworkKind};
+use lingui_analyzer::extract::build_synthetic_module;
+use lingui_analyzer::framework::astro::AstroAdapter;
+use lingui_analyzer::framework::svelte::SvelteAdapter;
+use lingui_analyzer::framework::{AnalyzeOptions, FrameworkAdapter};
+use lingui_analyzer::{
+    AstroCompilePlan, AstroFinishCompileOptions, CompilePlanOptions, MacroCandidate,
+    MacroCandidateStrategy, SvelteCompilePlan, SvelteFinishCompileOptions, TransformedPrograms,
+    WhitespaceMode, build_astro_compile_plan, build_svelte_compile_plan,
+    build_synthetic_module_for_framework, finish_astro_compile, finish_svelte_compile,
+};
+
+use astro_conventions::astro_default_conventions;
+use svelte_conventions::svelte_default_conventions;
+
+#[derive(Clone, Copy)]
+struct FixtureCase {
+    framework: FrameworkKind,
+    name: &'static str,
+    source_name: &'static str,
+    source: &'static str,
+    transformed_programs: StaticTransformedPrograms,
+}
+
+#[derive(Clone, Copy)]
+struct StaticTransformedPrograms {
+    raw_code: Option<&'static str>,
+    raw_source_map_json: Option<&'static str>,
+    context_code: Option<&'static str>,
+    context_source_map_json: Option<&'static str>,
+}
+
+impl From<StaticTransformedPrograms> for TransformedPrograms {
+    fn from(value: StaticTransformedPrograms) -> Self {
+        TransformedPrograms {
+            context_code: value.context_code.map(|code| code.to_string()),
+            context_source_map_json: value.context_source_map_json.map(|json| json.to_string()),
+            raw_code: value.raw_code.map(|code| code.to_string()),
+            raw_source_map_json: value.raw_source_map_json.map(|json| json.to_string()),
+        }
+    }
+}
+
+#[derive(Clone)]
+struct ExtractInputs {
+    imports: Vec<lingui_analyzer::MacroImport>,
+    candidates: Vec<MacroCandidate>,
+    source_anchors: Vec<usize>,
+}
+
+#[derive(Clone)]
+enum CompilePlanCase {
+    Astro(AstroCompilePlan),
+    Svelte(SvelteCompilePlan),
+}
+
+const FIXTURE_CASES: [FixtureCase; 4] = [
+    FixtureCase {
+        framework: FrameworkKind::Astro,
+        name: "full",
+        source_name: "astro-full.astro",
+        source: include_str!("fixtures/astro-full.astro"),
+        transformed_programs: StaticTransformedPrograms {
+            raw_code: None,
+            raw_source_map_json: None,
+            context_code: Some(include_str!(
+                "fixtures/astro-full.astro.transform.context.tsx"
+            )),
+            context_source_map_json: Some(include_str!(
+                "fixtures/astro-full.astro.transform.context.tsx.map"
+            )),
+        },
+    },
+    FixtureCase {
+        framework: FrameworkKind::Astro,
+        name: "unicode",
+        source_name: "astro-unicode.astro",
+        source: include_str!("fixtures/astro-unicode.astro"),
+        transformed_programs: StaticTransformedPrograms {
+            raw_code: None,
+            raw_source_map_json: None,
+            context_code: Some(include_str!(
+                "fixtures/astro-unicode.astro.transform.context.tsx"
+            )),
+            context_source_map_json: Some(include_str!(
+                "fixtures/astro-unicode.astro.transform.context.tsx.map"
+            )),
+        },
+    },
+    FixtureCase {
+        framework: FrameworkKind::Svelte,
+        name: "full",
+        source_name: "svelte-full.svelte",
+        source: include_str!("fixtures/svelte-full.svelte"),
+        transformed_programs: StaticTransformedPrograms {
+            raw_code: Some(include_str!(
+                "fixtures/svelte-full.svelte.transform.raw.tsx"
+            )),
+            raw_source_map_json: Some(include_str!(
+                "fixtures/svelte-full.svelte.transform.raw.tsx.map"
+            )),
+            context_code: Some(include_str!(
+                "fixtures/svelte-full.svelte.transform.context.tsx"
+            )),
+            context_source_map_json: Some(include_str!(
+                "fixtures/svelte-full.svelte.transform.context.tsx.map"
+            )),
+        },
+    },
+    FixtureCase {
+        framework: FrameworkKind::Svelte,
+        name: "unicode",
+        source_name: "svelte-unicode.svelte",
+        source: include_str!("fixtures/svelte-unicode.svelte"),
+        transformed_programs: StaticTransformedPrograms {
+            raw_code: Some(include_str!(
+                "fixtures/svelte-unicode.svelte.transform.raw.tsx"
+            )),
+            raw_source_map_json: Some(include_str!(
+                "fixtures/svelte-unicode.svelte.transform.raw.tsx.map"
+            )),
+            context_code: Some(include_str!(
+                "fixtures/svelte-unicode.svelte.transform.context.tsx"
+            )),
+            context_source_map_json: Some(include_str!(
+                "fixtures/svelte-unicode.svelte.transform.context.tsx.map"
+            )),
+        },
+    },
+];
+
+fn framework_name(framework: FrameworkKind) -> &'static str {
+    match framework {
+        FrameworkKind::Astro => "astro",
+        FrameworkKind::Svelte => "svelte",
+    }
+}
+
+fn conventions(framework: FrameworkKind) -> FrameworkConventions {
+    match framework {
+        FrameworkKind::Astro => astro_default_conventions(),
+        FrameworkKind::Svelte => svelte_default_conventions(),
+    }
+}
+
+fn whitespace(framework: FrameworkKind) -> WhitespaceMode {
+    match framework {
+        FrameworkKind::Astro => WhitespaceMode::Astro,
+        FrameworkKind::Svelte => WhitespaceMode::Svelte,
+    }
+}
+
+fn analyze_options(case: &FixtureCase) -> AnalyzeOptions {
+    AnalyzeOptions {
+        source_name: case.source_name.to_string(),
+        whitespace: whitespace(case.framework),
+        conventions: conventions(case.framework),
+    }
+}
+
+fn compile_plan_options(case: &FixtureCase) -> CompilePlanOptions {
+    CompilePlanOptions {
+        source: case.source.to_string(),
+        source_name: Some(case.source_name.to_string()),
+        synthetic_name: Some(format!("{}?compile.tsx", case.source_name)),
+        whitespace: Some(whitespace(case.framework)),
+        conventions: conventions(case.framework),
+    }
+}
+
+fn standalone_candidates(mut candidates: Vec<MacroCandidate>) -> Vec<MacroCandidate> {
+    candidates.retain(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone);
+    candidates.sort_by_key(|candidate| (candidate.outer_span.start, candidate.outer_span.end));
+    candidates
+}
+
+fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
+    match case.framework {
+        FrameworkKind::Astro => {
+            let analysis = AstroAdapter
+                .analyze(case.source, &analyze_options(case))
+                .expect("astro analysis succeeds");
+            let mut candidates = analysis.frontmatter_candidates.clone();
+            candidates.extend(
+                analysis
+                    .template_expressions
+                    .iter()
+                    .flat_map(|expression| expression.candidates.iter().cloned()),
+            );
+            candidates.extend(
+                analysis
+                    .template_components
+                    .iter()
+                    .map(|component| component.candidate.clone()),
+            );
+            ExtractInputs {
+                imports: analysis.macro_imports,
+                candidates: standalone_candidates(candidates),
+                source_anchors: analysis.source_anchors,
+            }
+        }
+        FrameworkKind::Svelte => {
+            let analysis = SvelteAdapter
+                .analyze(case.source, &analyze_options(case))
+                .expect("svelte analysis succeeds");
+            let imports = analysis
+                .scripts
+                .iter()
+                .flat_map(|script| script.macro_imports.iter().cloned())
+                .collect::<Vec<_>>();
+            let mut candidates = analysis
+                .scripts
+                .iter()
+                .flat_map(|script| script.candidates.iter().cloned())
+                .collect::<Vec<_>>();
+            candidates.extend(
+                analysis
+                    .template_expressions
+                    .iter()
+                    .flat_map(|expression| expression.candidates.iter().cloned()),
+            );
+            candidates.extend(
+                analysis
+                    .template_components
+                    .iter()
+                    .map(|component| component.candidate.clone()),
+            );
+            ExtractInputs {
+                imports,
+                candidates: standalone_candidates(candidates),
+                source_anchors: analysis.source_anchors,
+            }
+        }
+    }
+}
+
+fn build_compile_plan(case: &FixtureCase) -> CompilePlanCase {
+    match case.framework {
+        FrameworkKind::Astro => CompilePlanCase::Astro(
+            build_astro_compile_plan(&compile_plan_options(case))
+                .expect("astro compile plan succeeds"),
+        ),
+        FrameworkKind::Svelte => CompilePlanCase::Svelte(
+            build_svelte_compile_plan(&compile_plan_options(case))
+                .expect("svelte compile plan succeeds"),
+        ),
+    }
+}
+
+fn bench_analyze(c: &mut Criterion) {
+    let mut group = c.benchmark_group("analyze");
+    for case in FIXTURE_CASES {
+        group.bench_with_input(
+            BenchmarkId::new(framework_name(case.framework), case.name),
+            &case,
+            |b, case| {
+                let options = analyze_options(case);
+                b.iter(|| match case.framework {
+                    FrameworkKind::Astro => {
+                        let analysis = AstroAdapter
+                            .analyze(black_box(case.source), black_box(&options))
+                            .expect("astro analysis succeeds");
+                        black_box(analysis);
+                    }
+                    FrameworkKind::Svelte => {
+                        let analysis = SvelteAdapter
+                            .analyze(black_box(case.source), black_box(&options))
+                            .expect("svelte analysis succeeds");
+                        black_box(analysis);
+                    }
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
+fn bench_extract(c: &mut Criterion) {
+    let mut group = c.benchmark_group("extract");
+    for case in FIXTURE_CASES {
+        group.bench_with_input(
+            BenchmarkId::new(framework_name(case.framework), case.name),
+            &case,
+            |b, case| {
+                let case_conventions = conventions(case.framework);
+                b.iter(|| {
+                    let module = build_synthetic_module_for_framework(
+                        black_box(case.source),
+                        black_box(case.source_name),
+                        black_box("synthetic-extract.tsx"),
+                        Some(whitespace(case.framework)),
+                        black_box(&case_conventions),
+                    )
+                    .expect("extract succeeds");
+                    black_box(module);
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
+fn bench_extract_build_only(c: &mut Criterion) {
+    let mut group = c.benchmark_group("extract_build_only");
+    for case in FIXTURE_CASES {
+        let inputs = collect_extract_inputs(&case);
+        group.bench_with_input(
+            BenchmarkId::new(framework_name(case.framework), case.name),
+            &case,
+            |b, case| {
+                b.iter(|| {
+                    let module = build_synthetic_module(
+                        black_box(case.source),
+                        black_box(case.source_name),
+                        black_box("synthetic-extract.tsx"),
+                        black_box(&inputs.imports),
+                        black_box(&inputs.candidates),
+                        black_box(&inputs.source_anchors),
+                    )
+                    .expect("synthetic builder succeeds");
+                    black_box(module);
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
+fn bench_compile_plan(c: &mut Criterion) {
+    let mut group = c.benchmark_group("compile_plan");
+    for case in FIXTURE_CASES {
+        group.bench_with_input(
+            BenchmarkId::new(framework_name(case.framework), case.name),
+            &case,
+            |b, case| {
+                let options = compile_plan_options(case);
+                b.iter(|| match case.framework {
+                    FrameworkKind::Astro => {
+                        let plan = build_astro_compile_plan(black_box(&options))
+                            .expect("astro compile plan succeeds");
+                        black_box(plan);
+                    }
+                    FrameworkKind::Svelte => {
+                        let plan = build_svelte_compile_plan(black_box(&options))
+                            .expect("svelte compile plan succeeds");
+                        black_box(plan);
+                    }
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
+fn bench_finish_compile(c: &mut Criterion) {
+    let mut group = c.benchmark_group("finish_compile");
+    for case in FIXTURE_CASES {
+        let plan = build_compile_plan(&case);
+        let transformed_programs: TransformedPrograms = case.transformed_programs.into();
+        group.bench_with_input(
+            BenchmarkId::new(framework_name(case.framework), case.name),
+            &case,
+            |b, case| {
+                b.iter(|| match &plan {
+                    CompilePlanCase::Astro(plan) => {
+                        let finished =
+                            finish_astro_compile(black_box(&AstroFinishCompileOptions {
+                                plan: plan.clone(),
+                                source: case.source.to_string(),
+                                transformed_programs: transformed_programs.clone(),
+                            }))
+                            .expect("astro finish compile succeeds");
+                        black_box(finished);
+                    }
+                    CompilePlanCase::Svelte(plan) => {
+                        let finished =
+                            finish_svelte_compile(black_box(&SvelteFinishCompileOptions {
+                                plan: plan.clone(),
+                                source: case.source.to_string(),
+                                transformed_programs: transformed_programs.clone(),
+                            }))
+                            .expect("svelte finish compile succeeds");
+                        black_box(finished);
+                    }
+                });
+            },
+        );
+    }
+    group.finish();
+}
+
+criterion_group!(
+    benches,
+    bench_analyze,
+    bench_extract,
+    bench_extract_build_only,
+    bench_compile_plan,
+    bench_finish_compile
+);
+criterion_main!(benches);

@@ -107,6 +107,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
 
     fn analyze(
         source: &str,
+        source_name: &str,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, CompileError>;

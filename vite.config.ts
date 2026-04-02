@@ -11,8 +11,8 @@ export default defineConfig({
       "**/.svelte-kit",
       "**/.sveltekit-build",
       "**/.unplugin-markup-import",
-      "**/vendor",
       "**/dist",
+      "crates/lingui-analyzer/benches/fixtures/*",
     ],
   },
   fmt: {
@@ -25,7 +25,7 @@ export default defineConfig({
       "**/.sveltekit-build",
       "**/.unplugin-markup-import",
       "**/dist",
-      "**/vendor",
+      "crates/lingui-analyzer/benches/fixtures/*",
       "pnpm-lock.yaml",
     ],
   },
@@ -77,6 +77,11 @@ export default defineConfig({
       inspect: {
         command: "vp run inspect --filter conformance",
         cache: false,
+      },
+      artifacts: {
+        command: "node ./generate-artifacts.ts",
+        cache: true,
+        input: [{ auto: true }],
       },
       release: {
         command:

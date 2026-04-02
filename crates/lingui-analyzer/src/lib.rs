@@ -57,6 +57,7 @@ pub fn build_synthetic_module_for_framework(
             let analysis = AstroAdapter.analyze(
                 source,
                 &AnalyzeOptions {
+                    source_name: source_name.to_string(),
                     whitespace: whitespace.unwrap_or(WhitespaceMode::Astro),
                     conventions: conventions.clone(),
                 },
@@ -90,6 +91,7 @@ pub fn build_synthetic_module_for_framework(
             let analysis = SvelteAdapter.analyze(
                 source,
                 &AnalyzeOptions {
+                    source_name: source_name.to_string(),
                     whitespace: whitespace.unwrap_or(WhitespaceMode::Svelte),
                     conventions: conventions.clone(),
                 },
@@ -116,7 +118,8 @@ pub fn build_synthetic_module_for_framework(
                     .into_iter()
                     .map(|component| component.candidate),
             );
-            validate_svelte_extract_candidates(&candidates).map_err(FrameworkError::from)?;
+            validate_svelte_extract_candidates(source_name, source, &candidates)
+                .map_err(FrameworkError::from)?;
             retain_standalone_candidates(&mut candidates);
             sort_candidates(&mut candidates);
             Ok(build_synthetic_module(

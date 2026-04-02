@@ -104,6 +104,7 @@ pub struct MacroCandidate {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct AnalyzeOptions {
+    pub source_name: String,
     pub whitespace: WhitespaceMode,
     pub conventions: FrameworkConventions,
 }

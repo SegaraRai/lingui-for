@@ -1,0 +1,26 @@
+{
+  "version": 3,
+  "names": [
+    "id",
+    "message",
+    "values",
+    "readerName",
+    "0",
+    "String",
+    "selectedPath",
+    "$translate",
+    "1",
+    "relatedPaths",
+    "localeLabel",
+    "components",
+    "path"
+  ],
+  "sources": [
+    "svelte-unicode.svelte"
+  ],
+  "sourcesContent": [
+    "<svelte:options runes={true} />\r\n\r\n<script lang=\"ts\">\r\n  import { msg, t as translate } from \"@lingui/core/macro\";\r\n  import { Trans } from \"lingui-for-svelte/macro\";\r\n\r\n  const readerName = $state(\"世界👨‍👩‍👧‍👦😀😃😄\");\r\n  const localeLabel = $state(\"日本語\");\r\n  const selectedPath = $state<string | null>(\"/資料/レビュー/案内😀.md\");\r\n  const relatedPaths = $state([\r\n    \"/資料/概要.md\",\r\n    \"/案内/導入👨‍👩‍👧‍👦.md\",\r\n    \"/履歴/更新🙂.md\",\r\n  ]);\r\n\r\n  const headline = $derived($translate`ようこそ ${readerName}`);\r\n  const summary = $derived(\r\n    $translate(\r\n      // Note that this method is actually not recommended for complex messages with multiple variables.\r\n      // It's better to use `select` or `plural` for such cases.\r\n      msg`参照中のパスは ${String(selectedPath ?? $translate`未設定`)} で、候補は ${String(\r\n        relatedPaths[1] ?? $translate`ありません`,\r\n      )} です。`,\r\n    ),\r\n  );\r\n</script>\r\n\r\n<main class=\"grid gap-4 p-6\">\r\n  <h1 class=\"text-2xl font-semibold\">{headline}</h1>\r\n  <p class=\"text-sm\">{summary}</p>\r\n  <p class=\"text-sm\">\r\n    <Trans>\r\n      ロケール <strong>{localeLabel}</strong> で\r\n      <span>{String(selectedPath ?? \"\")}</span>\r\n      を確認しています。\r\n    </Trans>\r\n  </p>\r\n  <ul class=\"grid gap-2\">\r\n    {#each relatedPaths as path}\r\n      <li class=\"rounded border px-3 py-2\">\r\n        {$translate(msg`候補パス: ${String(path ?? \"\")}`)}\r\n      </li>\r\n    {/each}\r\n  </ul>\r\n</main>\r\n"
+  ],
+  "mappings": ";;;AAe6B;EAAAA,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAC,UAAA,EAAiBA;EAAU;AAAC,CAAC;;;AAGpD;AACA;AACA;EAAAH,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAcC,MAAM,CAACC,YAAA,IAAgBC,UAAU,KAAK,CAAC;IAAAC,CAAA,EAAUH,MAAM,CACnEI,YAAY,CAAC,CAAC,KAAKF,UAAU,OAC/B;EAAC;AAAK,CAAC,CACR;eAQD;AAAA;AAAA;EAAAP,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAESC,MAAM,CAACC,YAAA,IAAgB,EAAE,CAAC;IAAAI,WAAA,EADnBA;EAAW;EAAAC,UAAA;IAAAP,CAAA,EAApB,CAAC,MAAM,GAAuB;IAAAI,CAAA,EACnC,CAAC,IAAI;EAAoC;AAEpC,CAAC;;;AAKQ;EAAAR,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAYC,MAAM,CAACO,IAAA,IAAQ,EAAE;EAAC;AAAC,CAAC,CAAC",
+  "ignoreList": []
+}

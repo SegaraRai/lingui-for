@@ -1,0 +1,26 @@
+{
+  "version": 3,
+  "file": "svelte-unicode.svelte",
+  "sources": [
+    "svelte-unicode.svelte"
+  ],
+  "sourcesContent": [
+    "<svelte:options runes={true} />\r\n\r\n<script lang=\"ts\">\r\n  import { msg, t as translate } from \"@lingui/core/macro\";\r\n  import { Trans } from \"lingui-for-svelte/macro\";\r\n\r\n  const readerName = $state(\"世界👨‍👩‍👧‍👦😀😃😄\");\r\n  const localeLabel = $state(\"日本語\");\r\n  const selectedPath = $state<string | null>(\"/資料/レビュー/案内😀.md\");\r\n  const relatedPaths = $state([\r\n    \"/資料/概要.md\",\r\n    \"/案内/導入👨‍👩‍👧‍👦.md\",\r\n    \"/履歴/更新🙂.md\",\r\n  ]);\r\n\r\n  const headline = $derived($translate`ようこそ ${readerName}`);\r\n  const summary = $derived(\r\n    $translate(\r\n      // Note that this method is actually not recommended for complex messages with multiple variables.\r\n      // It's better to use `select` or `plural` for such cases.\r\n      msg`参照中のパスは ${String(selectedPath ?? $translate`未設定`)} で、候補は ${String(\r\n        relatedPaths[1] ?? $translate`ありません`,\r\n      )} です。`,\r\n    ),\r\n  );\r\n</script>\r\n\r\n<main class=\"grid gap-4 p-6\">\r\n  <h1 class=\"text-2xl font-semibold\">{headline}</h1>\r\n  <p class=\"text-sm\">{summary}</p>\r\n  <p class=\"text-sm\">\r\n    <Trans>\r\n      ロケール <strong>{localeLabel}</strong> で\r\n      <span>{String(selectedPath ?? \"\")}</span>\r\n      を確認しています。\r\n    </Trans>\r\n  </p>\r\n  <ul class=\"grid gap-2\">\r\n    {#each relatedPaths as path}\r\n      <li class=\"rounded border px-3 py-2\">\r\n        {$translate(msg`候補パス: ${String(path ?? \"\")}`)}\r\n      </li>\r\n    {/each}\r\n  </ul>\r\n</main>\r\n"
+  ],
+  "names": [
+    "id",
+    "message",
+    "values",
+    "readerName",
+    "0",
+    "String",
+    "selectedPath",
+    "$translate",
+    "1",
+    "relatedPaths",
+    "localeLabel",
+    "components",
+    "path"
+  ],
+  "mappings": "AAAA,CAAC,eAAe,KAAK,CAAC,CAAC,IAAI,EAAE;AAC7B;AACA,CAAC,OAAO,IAAI,CAAC,CAAC,EAAE,CAAC,CAAC;AAClB;;;;AACA,AAEA,EAAE,MAAM,WAAW,EAAE,MAAM,CAAC,CAAC,mBAAmB,CAAC,CAAC;AAClD,EAAE,MAAM,YAAY,EAAE,MAAM,CAAC,CAAC,GAAG,CAAC,CAAC;AACnC,EAAE,MAAM,aAAa,EAAE,MAAM,CAAC,OAAO,EAAE,IAAI,CAAC,CAAC,CAAC,gBAAgB,CAAC,CAAC;AAChE,EAAE,MAAM,aAAa,EAAE,MAAM,CAAC;AAC9B,IAAI,CAAC,SAAS,CAAC;AACf,IAAI,CAAC,oBAAoB,CAAC;AAC1B,IAAI,CAAC,WAAW,CAAC;AACjB,EAAE,CAAC,CAAC;AACJ;AACA,EAAE,MAAM,SAAS,EAAE,QAAQ,CAAC;UAdpB,CACR;IAa6BA,EAAA;IAAAC,OAAA;IAAAC,MAAA;MAAAC,UAAA,EAAiBA;IAAU;EAAC,CAAC,CAAA,CAAC;AAC3D,EAAE,MAAM,QAAQ,EAAE,QAAQ;AAC1B,IAAI,AAFsD;;IAGpD;IACA;IACA;MAAAH,EAAA;MAAAC,OAAA;MAAAC,MAAA;QAAAE,CAAA,EAAcC,MAAM,CAACC,YAAA,IAAgBC,UAAU,KAAK,CAAC;QAAAC,CAAA,EAAUH,MAAM,CACnEI,YAAY,CAAC,CAAC,KAAKF,UAAU,OAC/B;MAAC;IAAK,CAAC,CACR;AACL,EAAE,CAAC;AACH;;AAAA,EAAE,MAAM;AACR;AACA,CAAC,KAAK,KAAK,CAAC,CAAC,cAAc,CAAC;AAC5B,EAAE,CAAC,GAAG,KAAK,CAAC,CAAC,sBAAsB,CAAC,CAAC,CAAC,QAAQ,CAAC,EAAE,EAAE;AACnD,EAAE,CAAC,EAAE,KAAK,CAAC,CAAC,OAAO,CAAC,CAAC,CAAC,OAAO,CAAC,EAAE,CAAC;AACjC,EAAE,CAAC,EAAE,KAAK,CAAC,CAAC,OAAO,CAAC;AACpB,IAAI,CAAA,oBAAA,QAAA,CA7BJ;MA6BIP,EAAA,EAAA,QAAA;MAAAC,OAAA,EAAA,wHAAA;MAAAC,MAAA;QAAAE,CAAA,EAESC,MAAM,CAACC,YAAA,IAAgB,EAAE,CAAC;QAAAI,WAAA,EADnBA,WAAAA;;MAAWC,UAAA;QAAAP,CAAA;;gBAAnB,MAAM;;;QAAuBI,CAAA;;gBAClC,IAAI;;;;MAEC,GAAA;AACZ,EAAE,EAAE,CAAC;AACL,EAAE,CAAC,GAAG,KAAK,CAAC,CAAC,UAAU,CAAC;AACxB,IAAI,CAAC,CAAC,KAAK,aAAa,GAAG,IAAI;AAC/B,MAAM,CAAC,GAAG,KAAK,CAAC,CAAC,wBAAwB,CAAC;AAC1C,QAAQ,CAAC,AALG;gBAAA,AAlCJ,CACR,AAsCoB;UAAAR,EAAA;UAAAC,OAAA;UAAAC,MAAA;YAAAE,CAAA,EAAYC,MAAM,CAACO,IAAA,IAAQ,EAAE;UAAC;QAAC,CAAC,CAAA,AAAC;AACrD,MAAM,EAAE,EAAE;AACV,IAAI,CAAC,CAAC,IAAI;AACV,EAAE,EAAE,EAAE;AACN,EAAE,IAAI;AACN"
+}

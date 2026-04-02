@@ -32,6 +32,8 @@ pub enum SvelteAdapterError {
     SvelteFramework(#[from] SvelteFrameworkError),
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
+    #[error("{0}")]
+    InvalidMacroUsage(String),
     #[error(
         "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations."
     )]
@@ -80,11 +82,14 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
 
     fn analyze(
         source: &str,
+        source_name: &str,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, CompileError> {
-        Ok(analyze_svelte_compile(source, whitespace_mode, conventions)
-            .map_err(AdapterError::from)?)
+        Ok(
+            analyze_svelte_compile(source, source_name, whitespace_mode, conventions)
+                .map_err(AdapterError::from)?,
+        )
     }
 
     fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
@@ -180,12 +185,14 @@ pub(crate) struct SvelteFrameworkCompileAnalysis {
 
 pub(crate) fn analyze_svelte_compile(
     source: &str,
+    source_name: &str,
     whitespace: WhitespaceMode,
     conventions: &FrameworkConventions,
 ) -> Result<SvelteFrameworkCompileAnalysis, SvelteAdapterError> {
     let analysis = SvelteAdapter.analyze(
         source,
         &AnalyzeOptions {
+            source_name: source_name.to_string(),
             whitespace,
             conventions: conventions.clone(),
         },
@@ -258,7 +265,7 @@ pub(crate) fn analyze_svelte_compile(
             }),
     );
 
-    validate_compile_targets(&prototypes)?;
+    validate_compile_targets(source_name, source, &prototypes)?;
 
     Ok(SvelteFrameworkCompileAnalysis {
         common: CommonFrameworkCompileAnalysis {
@@ -505,36 +512,44 @@ pub(crate) fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]
 }
 
 pub(crate) fn validate_compile_targets(
+    source_name: &str,
+    source: &str,
     prototypes: &[CompileTargetPrototype],
 ) -> Result<(), SvelteAdapterError> {
-    let offending_macro = prototypes.iter().find_map(|prototype| {
+    let offending_candidate = prototypes.iter().find_map(|prototype| {
         (matches!(
             prototype.context,
             CompileTargetContext::ModuleScript | CompileTargetContext::InstanceScript
         ) && prototype.output_kind == CompileTargetOutputKind::Expression
             && is_forbidden_bare_direct_svelte_macro(&prototype.candidate))
-        .then_some(prototype.candidate.imported_name.as_str())
+        .then_some(&prototype.candidate)
     });
 
-    if let Some(imported_name) = offending_macro {
-        return Err(match imported_name {
-            "t" => SvelteAdapterError::BareDirectTNotAllowed,
-            "plural" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
-                imported_name: Cow::Borrowed("plural"),
-            },
-            "select" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
-                imported_name: Cow::Borrowed("select"),
-            },
-            "selectOrdinal" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
-                imported_name: Cow::Borrowed("selectOrdinal"),
-            },
-            other => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
-                imported_name: Cow::Owned(other.to_string()),
-            },
-        });
+    if let Some(candidate) = offending_candidate {
+        return Err(SvelteAdapterError::InvalidMacroUsage(
+            crate::common::format_single_diagnostic(
+                source,
+                &crate::common::make_diagnostic(
+                    source_name,
+                    candidate.outer_span,
+                    bare_direct_macro_message(candidate.imported_name.as_str()),
+                ),
+            ),
+        ));
     }
 
     Ok(())
+}
+
+fn bare_direct_macro_message(imported_name: &str) -> String {
+    match imported_name {
+        "t" => {
+            "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()
+        }
+        other => format!(
+            "Bare `{other}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${other}` there or `{other}.eager(...)` for non-reactive script translations."
+        ),
+    }
 }
 
 pub(super) fn append_runtime_injection_replacements(

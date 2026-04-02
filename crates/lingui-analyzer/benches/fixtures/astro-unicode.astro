@@ -1,0 +1,38 @@
+---
+import { msg, t as translate } from "@lingui/core/macro";
+import { Trans } from "lingui-for-astro/macro";
+
+const localeLabel = "日本語";
+const selectedPath: string | null = "/資料/レビュー/案内😀.md";
+const relatedPaths = ["/資料/概要.md", "/案内/導入👨‍👩‍👧‍👦.md", "/履歴/更新🙂.md"];
+
+const headline = translate`ようこそ ${localeLabel}`;
+const summary = translate(
+  // Note that this method is actually not recommended for complex messages with multiple variables.
+  // It's better to use `select` or `plural` for such cases.
+  msg`参照中のパスは ${String(selectedPath ?? translate`未設定`)} で、候補は ${String(
+    relatedPaths[1] ?? translate`ありません`,
+  )} です。`,
+);
+---
+
+<main class="grid gap-4 p-6">
+  <h1 class="text-2xl font-semibold">{headline}</h1>
+  <p class="text-sm">{summary}</p>
+  <p class="text-sm">
+    <Trans>
+      ロケール <strong>{localeLabel}</strong> で
+      <span>{String(selectedPath ?? "")}</span>
+      を確認しています。
+    </Trans>
+  </p>
+  <ul class="grid gap-2">
+    {
+      relatedPaths.map((path) => (
+        <li class="rounded border px-3 py-2">
+          {translate(msg`候補パス: ${String(path ?? "")}`)}
+        </li>
+      ))
+    }
+  </ul>
+</main>

@@ -523,3 +523,29 @@ fn keeps_full_outer_span_for_later_reactive_plural_template_expressions() {
     assert!(outer.starts_with("$plural("));
     assert!(normalized.starts_with("$plural("));
 }
+
+#[test]
+fn rejects_unsupported_svelte_trans_child_syntax_with_location() {
+    let source = indoc! {r#"
+        <script>
+          import { Trans } from "lingui-for-svelte/macro";
+        </script>
+
+        <Trans>
+          {@html content}
+        </Trans>
+    "#};
+
+    let error = SvelteCompilePlan::build(
+        source,
+        "Unsupported.svelte",
+        "Unsupported.svelte?compile",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
+    )
+    .expect_err("compile plan should fail");
+    let rendered = error.to_string();
+
+    assert!(rendered.contains("Unsupported.svelte:6:3"));
+    assert!(rendered.contains("{@html ...}"));
+}

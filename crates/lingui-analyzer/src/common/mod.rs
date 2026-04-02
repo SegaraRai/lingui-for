@@ -1,9 +1,11 @@
+mod diagnostics;
 mod indexed_text;
 mod lang;
 mod source_map;
 mod span;
 mod transformed_declaration;
 
+pub(crate) use diagnostics::{format_single_diagnostic, make_diagnostic};
 pub use indexed_text::{IndexedText, IndexedTextSlice};
 pub use lang::ScriptLang;
 pub use source_map::MappedTextError;

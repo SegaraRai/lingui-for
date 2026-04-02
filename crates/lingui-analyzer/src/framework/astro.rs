@@ -1,6 +1,8 @@
 use tree_sitter::Node;
 
-use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
+use crate::common::{
+    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_single_diagnostic, make_diagnostic,
+};
 use crate::conventions::FrameworkConventions;
 
 use super::helpers::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
@@ -26,6 +28,8 @@ pub enum AstroFrameworkError {
     Parse(#[from] ParseError),
     #[error(transparent)]
     Js(#[from] JsAnalysisError),
+    #[error("{0}")]
+    InvalidMacroUsage(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -214,7 +218,7 @@ fn collect_template_expressions(
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, node, imports, options, context)
+                    component_candidate_from_element(source, node, imports, options)?
                 {
                     components.push(component);
                     return Ok(());
@@ -316,27 +320,36 @@ fn component_candidate_from_element(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-    context: &mut AstroCollectContext,
-) -> Option<AstroTemplateComponent> {
+) -> Result<Option<AstroTemplateComponent>, AstroFrameworkError> {
     let mut cursor = node.walk();
     let tag_node = node
         .children(&mut cursor)
-        .find(|child| child.kind() == "start_tag" || child.kind() == "self_closing_tag")?;
+        .find(|child| child.kind() == "start_tag" || child.kind() == "self_closing_tag");
+    let Some(tag_node) = tag_node else {
+        return Ok(None);
+    };
     let tag_name_node = tag_node
         .children(&mut tag_node.walk())
-        .find(|child| child.kind() == "tag_name")?;
+        .find(|child| child.kind() == "tag_name");
+    let Some(tag_name_node) = tag_name_node else {
+        return Ok(None);
+    };
     let tag_name = text(source, tag_name_node);
     if !is_component_tag_name(tag_name) {
-        return None;
+        return Ok(None);
     }
 
     let import_decl = imports
         .iter()
-        .find(|import_decl| import_decl.local_name == tag_name)?;
+        .find(|import_decl| import_decl.local_name == tag_name);
+    let Some(import_decl) = import_decl else {
+        return Ok(None);
+    };
+    validate_runtime_lowerable_astro_component(source, node, options)?;
     let normalization_edits =
-        collect_component_normalization_edits(source, node, imports, options, context);
+        collect_component_normalization_edits(source, node, imports, options)?;
 
-    Some(AstroTemplateComponent {
+    Ok(Some(AstroTemplateComponent {
         candidate: MacroCandidate {
             id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
             kind: MacroCandidateKind::Component,
@@ -351,7 +364,7 @@ fn component_candidate_from_element(
             strategy: MacroCandidateStrategy::Standalone,
         },
         shadowed_names: Vec::new(),
-    })
+    }))
 }
 
 fn component_source_map_anchor(source: &str, node: Node<'_>) -> Option<Span> {
@@ -387,13 +400,11 @@ fn collect_component_normalization_edits(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-    context: &mut AstroCollectContext,
-) -> Vec<NormalizationEdit> {
-    let mut edits =
-        collect_nested_component_normalization_edits(source, node, imports, options, context);
+) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
+    let mut edits = collect_nested_component_normalization_edits(source, node, imports, options)?;
     edits.extend(component_whitespace_edits(source, node, options));
     sort_and_dedup_normalization_edits(&mut edits);
-    edits
+    Ok(edits)
 }
 
 fn collect_nested_component_normalization_edits(
@@ -401,8 +412,8 @@ fn collect_nested_component_normalization_edits(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-    context: &mut AstroCollectContext,
-) -> Vec<NormalizationEdit> {
+) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
+    let mut context = AstroCollectContext::default();
     let mut edits = Vec::new();
     let mut cursor = node.walk();
 
@@ -475,24 +486,24 @@ fn collect_nested_component_normalization_edits(
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, child, imports, options, context)
+                    component_candidate_from_element(source, child, imports, options)?
                 {
                     edits.extend(component.candidate.normalization_edits);
                     continue;
                 }
                 edits.extend(collect_nested_component_normalization_edits(
-                    source, child, imports, options, context,
-                ));
+                    source, child, imports, options,
+                )?);
             }
             _ => {
                 edits.extend(collect_nested_component_normalization_edits(
-                    source, child, imports, options, context,
-                ));
+                    source, child, imports, options,
+                )?);
             }
         }
     }
 
-    edits
+    Ok(edits)
 }
 
 fn component_whitespace_edits(
@@ -520,4 +531,98 @@ fn is_explicit_space_expression(source: &str, node: Node<'_>) -> bool {
     let span = Span::from_node(node);
     let text = source[span.start..span.end].trim();
     is_explicit_whitespace_string_expression(text)
+}
+
+fn validate_runtime_lowerable_astro_component(
+    source: &str,
+    node: Node<'_>,
+    options: &AnalyzeOptions,
+) -> Result<(), AstroFrameworkError> {
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        validate_astro_component_node(source, child, options)?;
+    }
+    Ok(())
+}
+
+fn validate_astro_component_node(
+    source: &str,
+    node: Node<'_>,
+    options: &AnalyzeOptions,
+) -> Result<(), AstroFrameworkError> {
+    if matches!(node.kind(), "element" | "self_closing_tag") {
+        validate_astro_element_like(source, node, options)?;
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        validate_astro_component_node(source, child, options)?;
+    }
+
+    Ok(())
+}
+
+fn validate_astro_element_like(
+    source: &str,
+    node: Node<'_>,
+    options: &AnalyzeOptions,
+) -> Result<(), AstroFrameworkError> {
+    let tag = match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag"),
+        "self_closing_tag" => Some(node),
+        _ => None,
+    };
+    let Some(tag) = tag else {
+        return Ok(());
+    };
+
+    let mut cursor = tag.walk();
+    for child in tag.children(&mut cursor) {
+        if child.kind() != "attribute" {
+            continue;
+        }
+        let Some(name_node) = child
+            .children(&mut child.walk())
+            .find(|grandchild| grandchild.kind() == "attribute_name")
+        else {
+            continue;
+        };
+        let attribute_name = text(source, name_node);
+        if is_unsupported_astro_directive(attribute_name) {
+            return Err(unsupported_component_syntax_error(
+                source,
+                options,
+                Span::from_node(name_node),
+                format!("Astro directive `{attribute_name}` is not supported inside <Trans>."),
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn is_unsupported_astro_directive(attribute_name: &str) -> bool {
+    attribute_name == "class:list"
+        || attribute_name == "set:html"
+        || attribute_name == "set:text"
+        || attribute_name == "define:vars"
+        || attribute_name == "is:global"
+        || attribute_name == "is:inline"
+        || attribute_name.starts_with("client:")
+        || attribute_name.starts_with("server:")
+        || attribute_name.starts_with("is:")
+}
+
+fn unsupported_component_syntax_error(
+    source: &str,
+    options: &AnalyzeOptions,
+    span: Span,
+    message: impl Into<String>,
+) -> AstroFrameworkError {
+    AstroFrameworkError::InvalidMacroUsage(format_single_diagnostic(
+        source,
+        &make_diagnostic(options.source_name.clone(), span, message),
+    ))
 }

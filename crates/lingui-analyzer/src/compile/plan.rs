@@ -17,7 +17,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     whitespace_mode: WhitespaceMode,
     conventions: FrameworkConventions,
 ) -> Result<P, CompileError> {
-    let mut analysis = P::analyze(source, whitespace_mode, &conventions)?;
+    let mut analysis = P::analyze(source, source_name, whitespace_mode, &conventions)?;
     let (imports, prototypes, import_removals, synthetic_lang, source_anchors) = {
         let common_analysis = P::common_analysis(&mut analysis);
         retain_standalone_prototypes(&mut common_analysis.prototypes);
