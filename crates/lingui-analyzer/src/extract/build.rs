@@ -11,6 +11,8 @@ use crate::synthesis::{SynthesisPlan, SynthesisTarget, build_synthesis_plan};
 pub enum BuildSyntheticModuleError {
     #[error("missing synthetic target: {declaration_id}")]
     MissingSyntheticTarget { declaration_id: String },
+    #[error("duplicate synthetic target declaration_id `{declaration_id}`")]
+    DuplicateSyntheticTarget { declaration_id: String },
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
 }
@@ -36,11 +38,7 @@ pub fn build_synthetic_module_from_plan(
 ) -> Result<SyntheticModule, BuildSyntheticModuleError> {
     let mut out = String::new();
     let mut declaration_ids = Vec::new();
-    let targets_by_id = plan
-        .targets
-        .iter()
-        .map(|target| (target.declaration_id.as_str(), target))
-        .collect::<HashMap<_, _>>();
+    let targets_by_id = build_targets_by_id(plan)?;
     let mut original_spans = BTreeMap::new();
     let mut generated_spans = BTreeMap::new();
     let mut normalized_segments = BTreeMap::new();
@@ -117,6 +115,21 @@ pub fn build_synthetic_module_from_plan(
     })
 }
 
+fn build_targets_by_id<'a>(
+    plan: &'a SynthesisPlan,
+) -> Result<HashMap<&'a str, &'a SynthesisTarget>, BuildSyntheticModuleError> {
+    let mut targets_by_id = HashMap::with_capacity(plan.targets.len());
+    for target in &plan.targets {
+        let declaration_id = target.declaration_id.as_str();
+        if targets_by_id.insert(declaration_id, target).is_some() {
+            return Err(BuildSyntheticModuleError::DuplicateSyntheticTarget {
+                declaration_id: target.declaration_id.clone(),
+            });
+        }
+    }
+    Ok(targets_by_id)
+}
+
 fn build_synthetic_source_map(
     source: &str,
     source_name: &str,
@@ -161,4 +174,50 @@ fn build_synthetic_source_map(
         .into_rendered()
         .map(|rendered| rendered.indexed_source_map)
         .map_err(BuildSyntheticModuleError::from)
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::common::Span;
+    use crate::framework::{
+        MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+    };
+    use crate::synthesis::{SynthesisPlan, SynthesisTarget};
+
+    use super::{BuildSyntheticModuleError, build_synthetic_module_from_plan};
+
+    #[test]
+    fn rejects_duplicate_synthetic_target_ids() {
+        let target = SynthesisTarget {
+            declaration_id: "__lf_dup".to_string(),
+            candidate: MacroCandidate {
+                id: "__mc_0_1".to_string(),
+                kind: MacroCandidateKind::CallExpression,
+                imported_name: "t".to_string(),
+                local_name: "t".to_string(),
+                flavor: MacroFlavor::Direct,
+                outer_span: Span::new(0, 1),
+                normalized_span: Span::new(0, 1),
+                normalization_edits: Vec::new(),
+                source_map_anchor: Some(Span::new(0, 1)),
+                owner_id: None,
+                strategy: MacroCandidateStrategy::Standalone,
+            },
+            normalized_code: "t".to_string(),
+            normalized_segments: Vec::new(),
+        };
+        let plan = SynthesisPlan {
+            imports: Vec::new(),
+            targets: vec![target.clone(), target],
+        };
+
+        let error = build_synthetic_module_from_plan("t", "test.ts", "synthetic.ts", &plan, &[])
+            .expect_err("duplicate declaration ids should fail");
+
+        assert!(matches!(
+            error,
+            BuildSyntheticModuleError::DuplicateSyntheticTarget { declaration_id }
+            if declaration_id == "__lf_dup"
+        ));
+    }
 }
