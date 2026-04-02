@@ -3,7 +3,9 @@ mod astro_conventions;
 #[path = "../tests/support/svelte_conventions.rs"]
 mod svelte_conventions;
 
-use criterion::{BenchmarkId, Criterion, black_box, criterion_group, criterion_main};
+use std::hint::black_box;
+
+use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
 
 use lingui_analyzer::conventions::{FrameworkConventions, FrameworkKind};
 use lingui_analyzer::extract::build_synthetic_module;
