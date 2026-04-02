@@ -102,6 +102,10 @@ pub fn collect_top_level_declared_names_in_javascript(
         JsLikeLanguage::TypeScript => parse_typescript(source)?,
     };
     let root = tree.root_node();
+    Ok(collect_top_level_declared_names_from_root(source, root))
+}
+
+pub fn collect_top_level_declared_names_from_root(source: &str, root: Node<'_>) -> Vec<String> {
     let mut names = Vec::new();
     let mut cursor = root.walk();
 
@@ -130,7 +134,7 @@ pub fn collect_top_level_declared_names_in_javascript(
 
     names.sort();
     names.dedup();
-    Ok(names)
+    names
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

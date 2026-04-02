@@ -188,16 +188,16 @@ pub(crate) fn analyze_astro_compile(
             conventions: conventions.clone(),
         },
     )?;
-    let frontmatter = analysis
-        .frontmatter
-        .as_ref()
-        .map(|region| build_frontmatter_region(source, region, conventions));
     let import_removals = analysis
         .frontmatter
         .as_ref()
         .map(|region| collect_macro_import_statement_spans(source, region, conventions))
         .transpose()?
         .unwrap_or_default();
+    let frontmatter = analysis
+        .frontmatter
+        .as_ref()
+        .map(|region| build_frontmatter_region(source, region, &import_removals));
     let mut prototypes = Vec::new();
 
     prototypes.extend(
@@ -437,7 +437,7 @@ fn build_frontmatter_prelude(
 fn build_frontmatter_region(
     source: &str,
     region: &EmbeddedScriptRegion,
-    conventions: &FrameworkConventions,
+    import_removals: &[Span],
 ) -> AstroCompileFrontmatterRegion {
     AstroCompileFrontmatterRegion {
         outer_span: region.outer_span,
@@ -447,7 +447,7 @@ fn build_frontmatter_region(
         has_remaining_content_after_import_removal: has_remaining_content_after_import_removal(
             source,
             region,
-            conventions,
+            import_removals,
         ),
     }
 }
@@ -482,12 +482,12 @@ fn compute_trailing_whitespace_range(source: &str, region: &EmbeddedScriptRegion
 fn has_remaining_content_after_import_removal(
     source: &str,
     region: &EmbeddedScriptRegion,
-    conventions: &FrameworkConventions,
+    import_removals: &[Span],
 ) -> bool {
     let content = &source[region.inner_span.start..region.inner_span.end];
-    let ranges =
-        collect_macro_import_statement_spans(source, region, conventions).unwrap_or_default();
-    let relative_ranges = ranges
+    let relative_ranges = import_removals
+        .iter()
+        .copied()
         .into_iter()
         .map(|span| {
             Span::new(

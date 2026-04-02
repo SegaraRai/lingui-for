@@ -9,8 +9,8 @@ use super::anchors::{collect_node_start_anchors, extend_shifted_node_start_ancho
 use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{
     BindingParseMode, JsAnalysisError, JsLikeLanguage, JsMacroSyntax,
-    collect_declared_names_from_binding_source, collect_macro_candidates_in_javascript,
-    collect_top_level_declared_names_in_javascript,
+    collect_declared_names_from_binding_source, collect_macro_candidates_from_root,
+    collect_macro_candidates_in_javascript, collect_top_level_declared_names_from_root,
 };
 use super::parse::{ParseError, parse_javascript, parse_svelte, parse_typescript};
 use super::{
@@ -202,7 +202,7 @@ fn analyze_script_block(
         source_anchors,
     );
     let script_root = script_tree.root_node();
-    let declared_names = collect_top_level_declared_names_in_javascript(script_source, language)?;
+    let declared_names = collect_top_level_declared_names_from_root(script_source, script_root);
     let macro_imports = collect_script_macro_imports(
         script_source,
         script_root,
@@ -218,14 +218,14 @@ fn analyze_script_block(
     .into_iter()
     .map(|span| expand_import_removal_span_in_source(source, span))
     .collect();
-    let candidates = collect_macro_candidates_in_javascript(
+    let candidates = collect_macro_candidates_from_root(
         script_source,
+        script_root,
         &macro_imports,
         content_region.inner_span.start,
         JsMacroSyntax::Svelte,
-        language,
         &[],
-    )?;
+    );
 
     Ok(Some(SvelteScriptBlock {
         region: content_region,

@@ -6,7 +6,8 @@ use crate::conventions::FrameworkConventions;
 use super::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
 use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{
-    JsAnalysisError, JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript,
+    JsAnalysisError, JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_from_root,
+    collect_macro_candidates_in_javascript,
 };
 use super::parse::{ParseError, parse_astro, parse_typescript};
 use super::{
@@ -79,19 +80,21 @@ fn analyze_astro(
             frontmatter_region.inner_span.start,
             &mut source_anchors,
         );
+        let frontmatter_root = frontmatter_tree.root_node();
         let macro_imports = collect_macro_imports(
             frontmatter_source,
+            frontmatter_root,
             frontmatter_region.inner_span.start,
             &options.conventions,
-        )?;
-        let candidates = collect_macro_candidates_in_javascript(
+        );
+        let candidates = collect_macro_candidates_from_root(
             frontmatter_source,
+            frontmatter_root,
             &macro_imports,
             frontmatter_region.inner_span.start,
             JsMacroSyntax::Standard,
-            JsLikeLanguage::TypeScript,
             &[],
-        )?;
+        );
         (macro_imports, candidates)
     } else {
         (Vec::new(), Vec::new())
@@ -133,11 +136,10 @@ fn find_frontmatter(root: Node<'_>) -> Option<EmbeddedScriptRegion> {
 
 fn collect_macro_imports(
     source: &str,
+    root: Node<'_>,
     base_offset: usize,
     conventions: &FrameworkConventions,
-) -> Result<Vec<MacroImport>, AstroFrameworkError> {
-    let js_tree = parse_typescript(source)?;
-    let root = js_tree.root_node();
+) -> Vec<MacroImport> {
     let mut imports = Vec::new();
     let mut cursor = root.walk();
 
@@ -165,7 +167,7 @@ fn collect_macro_imports(
         );
     }
 
-    Ok(imports)
+    imports
 }
 
 fn collect_import_specifiers_from_node(
