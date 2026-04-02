@@ -147,46 +147,16 @@ pub(crate) struct IndexedToken {
     name: Option<String>,
 }
 
+impl IndexedToken {
+    pub(crate) fn generated_position(&self) -> (u32, u32) {
+        (self.dst_line, self.dst_col)
+    }
+}
+
 impl IndexedSourceMap {
     pub(crate) fn new(source_map: SourceMap) -> Self {
-        let tokens = source_map
-            .tokens()
-            .filter_map(|token| {
-                Some(IndexedToken {
-                    dst_line: token.get_dst_line(),
-                    dst_col: token.get_dst_col(),
-                    src_line: token.get_src_line(),
-                    src_col: token.get_src_col(),
-                    source: token.get_source()?.to_string(),
-                    name: token.get_name().map(str::to_string),
-                })
-            })
-            .collect::<Vec<_>>();
-        let by_original = tokens
-            .iter()
-            .fold(BTreeMap::new(), |mut by_original, token| {
-                by_original
-                    .entry((token.src_line, token.src_col))
-                    .or_insert_with(|| OriginalAnchorProjection {
-                        dst_line: token.dst_line,
-                        dst_col: token.dst_col,
-                        src_line: token.src_line,
-                        src_col: token.src_col,
-                        source: Some(token.source.clone()),
-                    });
-                by_original
-            });
-        let dst_positions = tokens
-            .iter()
-            .map(|token| (token.dst_line, token.dst_col))
-            .collect();
-
-        Self {
-            source_map,
-            tokens,
-            by_original,
-            dst_positions,
-        }
+        let tokens = collect_indexed_tokens(&source_map);
+        Self::from_parts(source_map, tokens)
     }
 
     pub(crate) fn source_map(&self) -> &SourceMap {
@@ -197,15 +167,136 @@ impl IndexedSourceMap {
         &self.tokens
     }
 
-    pub(crate) fn generated_positions(&self) -> impl Iterator<Item = (u32, u32)> + '_ {
-        self.tokens
-            .iter()
-            .map(|token| (token.dst_line, token.dst_col))
-    }
-
     pub(crate) fn has_dst_position(&self, line: u32, col: u32) -> bool {
         self.dst_positions.contains(&(line, col))
     }
+
+    pub(crate) fn clone_with_inserted_projections(
+        &self,
+        extras: impl IntoIterator<Item = OriginalAnchorProjection>,
+        fallback_source: &str,
+    ) -> Self {
+        let mut extras = extras
+            .into_iter()
+            .filter(|projection| !self.has_dst_position(projection.dst_line, projection.dst_col))
+            .map(|projection| IndexedToken {
+                dst_line: projection.dst_line,
+                dst_col: projection.dst_col,
+                src_line: projection.src_line,
+                src_col: projection.src_col,
+                source: projection
+                    .source
+                    .unwrap_or_else(|| fallback_source.to_string()),
+                name: None,
+            })
+            .collect::<Vec<_>>();
+        extras.sort_by_key(|token| (token.dst_line, token.dst_col));
+
+        let mut merged = Vec::with_capacity(self.tokens.len() + extras.len());
+        let mut extra_index = 0usize;
+        for token in &self.tokens {
+            while let Some(extra) = extras.get(extra_index) {
+                if (extra.dst_line, extra.dst_col) < (token.dst_line, token.dst_col) {
+                    merged.push(extra.clone());
+                    extra_index += 1;
+                } else {
+                    break;
+                }
+            }
+            merged.push(token.clone());
+        }
+        merged.extend(extras.into_iter().skip(extra_index));
+
+        Self::from_template_tokens(&self.source_map, merged)
+    }
+
+    fn from_parts(source_map: SourceMap, tokens: Vec<IndexedToken>) -> Self {
+        let by_original = build_by_original(&tokens);
+        let dst_positions = build_dst_positions(&tokens);
+
+        Self {
+            source_map,
+            tokens,
+            by_original,
+            dst_positions,
+        }
+    }
+
+    fn from_template_tokens(template: &SourceMap, tokens: Vec<IndexedToken>) -> Self {
+        let source_map = build_source_map_from_indexed_tokens(template, &tokens);
+        Self::from_parts(source_map, tokens)
+    }
+}
+
+fn collect_indexed_tokens(source_map: &SourceMap) -> Vec<IndexedToken> {
+    source_map
+        .tokens()
+        .filter_map(|token| {
+            Some(IndexedToken {
+                dst_line: token.get_dst_line(),
+                dst_col: token.get_dst_col(),
+                src_line: token.get_src_line(),
+                src_col: token.get_src_col(),
+                source: token.get_source()?.to_string(),
+                name: token.get_name().map(str::to_string),
+            })
+        })
+        .collect()
+}
+
+fn build_by_original(tokens: &[IndexedToken]) -> BTreeMap<(u32, u32), OriginalAnchorProjection> {
+    tokens
+        .iter()
+        .fold(BTreeMap::new(), |mut by_original, token| {
+            by_original
+                .entry((token.src_line, token.src_col))
+                .or_insert_with(|| OriginalAnchorProjection {
+                    dst_line: token.dst_line,
+                    dst_col: token.dst_col,
+                    src_line: token.src_line,
+                    src_col: token.src_col,
+                    source: Some(token.source.clone()),
+                });
+            by_original
+        })
+}
+
+fn build_dst_positions(tokens: &[IndexedToken]) -> BTreeSet<(u32, u32)> {
+    tokens
+        .iter()
+        .map(|token| (token.dst_line, token.dst_col))
+        .collect()
+}
+
+fn build_source_map_from_indexed_tokens(
+    template: &SourceMap,
+    tokens: &[IndexedToken],
+) -> SourceMap {
+    let mut builder = SourceMapBuilder::new(template.get_file());
+    builder.set_file(template.get_file());
+    builder.set_source_root(template.get_source_root());
+
+    for src_id in 0..template.get_source_count() {
+        let Some(source) = template.get_source(src_id) else {
+            continue;
+        };
+        let builder_src_id = builder.add_source(source);
+        builder.set_source_contents(builder_src_id, template.get_source_contents(src_id));
+    }
+
+    for token in tokens {
+        builder.add(
+            token.dst_line,
+            token.dst_col,
+            token.src_line,
+            token.src_col,
+            Some(token.source.as_str()),
+            token.name.as_deref(),
+            false,
+        );
+    }
+
+    builder.into_sourcemap()
 }
 
 pub(crate) fn extract_local_submap(
@@ -281,22 +372,19 @@ pub(crate) fn extract_generated_submap(
     let end_col = end.1 as u32;
     let start_index = lower_bound(&map.tokens, start_line, start_col);
     let end_index = lower_bound(&map.tokens, end_line, end_col);
-    let mut builder = SourceMapBuilder::new(None);
-    let mut saw_mapping = false;
+    let mut tokens = Vec::with_capacity(end_index.saturating_sub(start_index) + 2);
 
     if let Some(projected_start) =
         project_generated_position_to_original(map, start_line, start_col)
     {
-        builder.add(
-            0,
-            0,
-            projected_start.src_line,
-            projected_start.src_col,
-            Some(projected_start.source.as_str()),
-            projected_start.name.as_deref(),
-            false,
-        );
-        saw_mapping = true;
+        tokens.push(IndexedToken {
+            dst_line: 0,
+            dst_col: 0,
+            src_line: projected_start.src_line,
+            src_col: projected_start.src_col,
+            source: projected_start.source,
+            name: projected_start.name,
+        });
     }
 
     for token in &map.tokens[start_index..end_index] {
@@ -307,38 +395,46 @@ pub(crate) fn extract_generated_submap(
             token.dst_col
         };
 
-        builder.add(
-            generated_line,
-            generated_col,
-            token.src_line,
-            token.src_col,
-            Some(token.source.as_str()),
-            token.name.as_deref(),
-            false,
-        );
-        saw_mapping = true;
+        let mapped = IndexedToken {
+            dst_line: generated_line,
+            dst_col: generated_col,
+            src_line: token.src_line,
+            src_col: token.src_col,
+            source: token.source.clone(),
+            name: token.name.clone(),
+        };
+        if tokens
+            .last()
+            .map(|last| (last.dst_line, last.dst_col) != (mapped.dst_line, mapped.dst_col))
+            .unwrap_or(true)
+        {
+            tokens.push(mapped);
+        }
     }
 
     if let Some(projected_end) = project_generated_position_to_original(map, end_line, end_col) {
-        let end_generated_line = end_line.saturating_sub(start_line);
-        let end_generated_col = if end_line == start_line {
-            end_col.saturating_sub(start_col)
-        } else {
-            end_col
+        let mapped = IndexedToken {
+            dst_line: end_line.saturating_sub(start_line),
+            dst_col: if end_line == start_line {
+                end_col.saturating_sub(start_col)
+            } else {
+                end_col
+            },
+            src_line: projected_end.src_line,
+            src_col: projected_end.src_col,
+            source: projected_end.source,
+            name: projected_end.name,
         };
-        builder.add(
-            end_generated_line,
-            end_generated_col,
-            projected_end.src_line,
-            projected_end.src_col,
-            Some(projected_end.source.as_str()),
-            projected_end.name.as_deref(),
-            false,
-        );
-        saw_mapping = true;
+        if tokens
+            .last()
+            .map(|last| (last.dst_line, last.dst_col) != (mapped.dst_line, mapped.dst_col))
+            .unwrap_or(true)
+        {
+            tokens.push(mapped);
+        }
     }
 
-    saw_mapping.then(|| IndexedSourceMap::new(builder.into_sourcemap()))
+    (!tokens.is_empty()).then(|| IndexedSourceMap::from_template_tokens(map.source_map(), tokens))
 }
 
 fn lower_bound(tokens: &[IndexedToken], line: u32, col: u32) -> usize {

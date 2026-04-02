@@ -376,46 +376,61 @@ fn append_rendered_segments(
         return;
     }
 
-    let boundaries = indexed_map
-        .generated_positions()
-        .map(|(dst_line, dst_col)| {
-            generated
-                .line_utf16_col_to_byte(dst_line as usize, dst_col as usize)
-                .ok_or(MappedTextError::InvalidSegmentSlice)
-        })
-        .collect::<Result<Vec<_>, _>>();
-    let Ok(mut boundaries) = boundaries else {
+    let mut token_iter = indexed_map.tokens().iter().peekable();
+    let Some(first) = token_iter.peek() else {
         mapped.push_unmapped(code);
         return;
     };
-    boundaries.push(code.len());
-    boundaries.sort_unstable();
-    boundaries.dedup();
+    let (first_line, first_col) = first.generated_position();
+    let Ok(mut segment_start) = generated
+        .line_utf16_col_to_byte(first_line as usize, first_col as usize)
+        .ok_or(MappedTextError::InvalidSegmentSlice)
+    else {
+        mapped.push_unmapped(code);
+        return;
+    };
 
-    let mut cursor = 0usize;
-    for window in boundaries.windows(2) {
-        let start = window[0];
-        let end = window[1];
-        if start > cursor {
-            mapped.push_unmapped(&code[cursor..start]);
-        }
-        if start >= end {
-            cursor = end.max(cursor);
-            continue;
-        }
-        if let Some(submap) = extract_generated_submap(indexed_map, &generated, start, end) {
-            mapped.segments.push(MappedSegment::PreMapped {
-                code: code[start..end].to_string(),
-                indexed_source_map: Box::new(submap),
-            });
-        } else {
-            mapped.push_unmapped(&code[start..end]);
-        }
-        cursor = end;
+    if segment_start > 0 {
+        mapped.push_unmapped(&code[..segment_start]);
     }
 
-    if cursor < code.len() {
-        mapped.push_unmapped(&code[cursor..]);
+    while let Some(current) = token_iter.next() {
+        while let Some(next) = token_iter.peek() {
+            if next.generated_position() == current.generated_position() {
+                token_iter.next();
+            } else {
+                break;
+            }
+        }
+
+        let segment_end = if let Some(next) = token_iter.peek() {
+            let (next_line, next_col) = next.generated_position();
+            let Ok(boundary) = generated
+                .line_utf16_col_to_byte(next_line as usize, next_col as usize)
+                .ok_or(MappedTextError::InvalidSegmentSlice)
+            else {
+                mapped.push_unmapped(&code[segment_start..]);
+                return;
+            };
+            boundary
+        } else {
+            code.len()
+        };
+
+        if segment_end > segment_start {
+            if let Some(submap) =
+                extract_generated_submap(indexed_map, &generated, segment_start, segment_end)
+            {
+                mapped.segments.push(MappedSegment::PreMapped {
+                    code: code[segment_start..segment_end].to_string(),
+                    indexed_source_map: Box::new(submap),
+                });
+            } else {
+                mapped.push_unmapped(&code[segment_start..segment_end]);
+            }
+        }
+
+        segment_start = segment_end;
     }
 }
 

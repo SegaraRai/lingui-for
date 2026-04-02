@@ -314,38 +314,24 @@ fn augment_replacement_map(
     original_end: usize,
     original_anchors: &[usize],
 ) -> Result<IndexedSourceMap, MappedTextError> {
-    let map = indexed_map.source_map();
-    let mut anchor_positions = vec![
-        source.byte_to_line_utf16_col(original_start),
-        source.byte_to_line_utf16_col(original_end),
-    ];
-    anchor_positions.extend(
-        original_anchors
-            .iter()
-            .map(|anchor| source.byte_to_line_utf16_col(*anchor)),
-    );
-    let anchor_positions = anchor_positions
-        .into_iter()
-        .collect::<Option<Vec<_>>>()
-        .ok_or(MappedTextError::OutOfBounds)?
-        .into_iter()
-        .map(|(line, col)| (line as u32, col as u32))
-        .collect::<Vec<_>>();
-    let projected = project_original_anchors_to_generated(indexed_map, &anchor_positions);
-
-    let mut builder = SourceMapBuilder::new(map.get_file());
-    builder.set_file(map.get_file());
-    builder.set_source_root(map.get_source_root());
-
-    for src_id in 0..map.get_source_count() {
-        let Some(source) = map.get_source(src_id) else {
-            continue;
-        };
-        let builder_src_id = builder.add_source(source);
-        builder.set_source_contents(builder_src_id, map.get_source_contents(src_id));
+    let mut anchor_positions = Vec::with_capacity(original_anchors.len() + 2);
+    let (start_line, start_col) = source
+        .byte_to_line_utf16_col(original_start)
+        .ok_or(MappedTextError::OutOfBounds)?;
+    anchor_positions.push((start_line as u32, start_col as u32));
+    let (end_line, end_col) = source
+        .byte_to_line_utf16_col(original_end)
+        .ok_or(MappedTextError::OutOfBounds)?;
+    anchor_positions.push((end_line as u32, end_col as u32));
+    for &anchor in original_anchors {
+        let (line, col) = source
+            .byte_to_line_utf16_col(anchor)
+            .ok_or(MappedTextError::OutOfBounds)?;
+        anchor_positions.push((line as u32, col as u32));
     }
-
-    let mut extras = projected;
+    let projected = project_original_anchors_to_generated(indexed_map, &anchor_positions);
+    let mut extras = Vec::with_capacity(projected.len() + 2);
+    extras.extend(projected);
     let (end_generated_line, end_generated_col) = generated_end_position(generated_text);
     extras.push(OriginalAnchorProjection {
         dst_line: 0,
@@ -361,60 +347,7 @@ fn augment_replacement_map(
         src_col: anchor_positions[1].1,
         source: Some(source_name.to_string()),
     });
-
-    let mut extras = extras
-        .into_iter()
-        .filter(|projection| !indexed_map.has_dst_position(projection.dst_line, projection.dst_col))
-        .collect::<Vec<_>>();
-    extras.sort_by_key(|projection| (projection.dst_line, projection.dst_col));
-    let mut extras = extras.into_iter().peekable();
-
-    for token in map.tokens() {
-        while let Some(projection) = extras.peek() {
-            if (projection.dst_line, projection.dst_col)
-                < (token.get_dst_line(), token.get_dst_col())
-            {
-                builder.add(
-                    projection.dst_line,
-                    projection.dst_col,
-                    projection.src_line,
-                    projection.src_col,
-                    projection.source.as_deref().or(Some(source_name)),
-                    None::<&str>,
-                    false,
-                );
-                extras.next();
-            } else {
-                break;
-            }
-        }
-
-        if let Some(source) = token.get_source() {
-            builder.add(
-                token.get_dst_line(),
-                token.get_dst_col(),
-                token.get_src_line(),
-                token.get_src_col(),
-                Some(source),
-                token.get_name(),
-                false,
-            );
-        }
-    }
-
-    for projection in extras {
-        builder.add(
-            projection.dst_line,
-            projection.dst_col,
-            projection.src_line,
-            projection.src_col,
-            projection.source.as_deref().or(Some(source_name)),
-            None::<&str>,
-            false,
-        );
-    }
-
-    Ok(IndexedSourceMap::new(builder.into_sourcemap()))
+    Ok(indexed_map.clone_with_inserted_projections(extras, source_name))
 }
 
 fn collect_copy_anchor_points(
