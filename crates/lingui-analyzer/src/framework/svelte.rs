@@ -5,8 +5,14 @@ use tree_sitter::Node;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 use crate::conventions::FrameworkConventions;
 
-use super::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
-use super::expression::is_explicit_whitespace_string_expression;
+use super::helpers::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
+use super::helpers::components::first_non_whitespace_child_anchor;
+use super::helpers::expressions::is_explicit_whitespace_string_expression;
+use super::helpers::imports::collect_import_specifiers_from_node;
+use super::helpers::normalization::{
+    sort_and_dedup_normalization_edits, whitespace_replacement_edits,
+};
+use super::helpers::text::{find_pattern_near_start, is_component_tag_name, text, unquote};
 use super::js::{
     BindingParseMode, ExpressionParseCache, JsAnalysisError, JsLikeLanguage, JsMacroSyntax,
     collect_declared_names_from_binding_source, collect_macro_candidates,
@@ -1031,22 +1037,8 @@ fn component_source_map_anchor(source: &str, node: Node<'_>) -> Option<Span> {
         return Some(Span::from_node(node));
     }
 
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if child.kind() == "start_tag" || child.kind() == "end_tag" {
-            continue;
-        }
-
-        let child_text = text(source, child);
-        if let Some(trimmed_start) = child_text.find(|char: char| !char.is_whitespace()) {
-            return Some(Span::new(
-                child.start_byte() + trimmed_start,
-                child.end_byte(),
-            ));
-        }
-    }
-
-    Some(Span::from_node(node))
+    first_non_whitespace_child_anchor(source, node, &["start_tag", "end_tag"])
+        .or(Some(Span::from_node(node)))
 }
 
 fn component_whitespace_edits(
@@ -1067,61 +1059,12 @@ fn component_whitespace_edits(
         content_children.push(child);
     }
 
-    whitespace_replacement_edits(source, &content_children)
-}
-
-fn whitespace_replacement_edits(source: &str, children: &[Node<'_>]) -> Vec<NormalizationEdit> {
-    let mut edits = Vec::new();
-    let meaningful_children = children
-        .iter()
-        .copied()
-        .filter(|child| {
-            let span = Span::from_node(*child);
-            !source[span.start..span.end].trim().is_empty()
-        })
-        .collect::<Vec<_>>();
-
-    for pair in meaningful_children.windows(2) {
-        let previous = pair[0];
-        let next = pair[1];
-        if is_explicit_space_expression(source, previous)
-            || is_explicit_space_expression(source, next)
-        {
-            continue;
-        }
-        let gap = Span::new(previous.end_byte(), next.start_byte());
-        if gap.start >= gap.end {
-            continue;
-        }
-        if !source[gap.start..gap.end].trim().is_empty() {
-            continue;
-        }
-
-        edits.push(NormalizationEdit::Delete { span: gap });
-        edits.push(NormalizationEdit::Insert {
-            at: gap.start,
-            text: "{\" \"}".to_string(),
-        });
-    }
-
-    edits
+    whitespace_replacement_edits(source, &content_children, is_explicit_space_expression)
 }
 
 fn is_explicit_space_expression(source: &str, node: Node<'_>) -> bool {
     let text = source[Span::from_node(node).start..Span::from_node(node).end].trim();
     is_explicit_whitespace_string_expression(text)
-}
-
-fn sort_and_dedup_normalization_edits(edits: &mut Vec<NormalizationEdit>) {
-    edits.sort_by_key(normalization_edit_sort_key);
-    edits.dedup();
-}
-
-fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, String) {
-    match edit {
-        NormalizationEdit::Delete { span } => (span.start, span.end, 0, String::new()),
-        NormalizationEdit::Insert { at, text } => (*at, *at, 1, text.clone()),
-    }
 }
 
 fn declared_names_from_const_tag(
@@ -1195,14 +1138,6 @@ fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<String> {
     names
 }
 
-fn is_component_tag_name(tag_name: &str) -> bool {
-    tag_name
-        .chars()
-        .next()
-        .map(|first| first.is_ascii_uppercase())
-        .unwrap_or(false)
-}
-
 fn collect_script_macro_imports(
     source: &str,
     root: Node<'_>,
@@ -1263,7 +1198,7 @@ fn collect_script_macro_import_statement_spans(
             continue;
         }
 
-        spans.push(shift_span(Span::from_node(child), base_offset));
+        spans.push(Span::from_node(child).shifted(base_offset));
     }
 
     Ok(spans)
@@ -1291,35 +1226,6 @@ fn expand_import_removal_span_in_source(source: &str, span: Span) -> Span {
     }
 
     Span::new(start, end)
-}
-
-fn collect_import_specifiers_from_node(
-    source: &str,
-    node: Node<'_>,
-    base_offset: usize,
-    module_specifier: &str,
-    imports: &mut Vec<MacroImport>,
-) {
-    if node.kind() == "import_specifier" {
-        let imported = node.child_by_field_name("name");
-        let local = node.child_by_field_name("alias").or(imported);
-        let (Some(imported), Some(local)) = (imported, local) else {
-            return;
-        };
-
-        imports.push(MacroImport {
-            source: module_specifier.to_string(),
-            imported_name: text(source, imported).to_string(),
-            local_name: text(source, local).to_string(),
-            span: shift_span(Span::from_node(node), base_offset),
-        });
-        return;
-    }
-
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_import_specifiers_from_node(source, child, base_offset, module_specifier, imports);
-    }
 }
 
 fn start_tag_has_context_module(source: &str, start_tag: Node<'_>) -> bool {
@@ -1352,32 +1258,6 @@ fn script_language(source: &str, start_tag: Node<'_>) -> JsLikeLanguage {
     }
 
     JsLikeLanguage::JavaScript
-}
-
-fn shift_span(span: Span, base_offset: usize) -> Span {
-    Span::new(span.start + base_offset, span.end + base_offset)
-}
-
-fn text<'a>(source: &'a str, node: Node<'_>) -> &'a str {
-    &source[node.start_byte()..node.end_byte()]
-}
-
-fn unquote(text: &str) -> Option<String> {
-    if text.len() < 2 {
-        return None;
-    }
-
-    let bytes = text.as_bytes();
-    let quote = bytes.first().copied()?;
-    if quote != b'"' && quote != b'\'' {
-        return None;
-    }
-
-    if bytes.last().copied()? != quote {
-        return None;
-    }
-
-    Some(text[1..text.len() - 1].to_string())
 }
 
 fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
@@ -1435,7 +1315,7 @@ fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
     match candidate.flavor {
         MacroFlavor::Reactive => {
             let pattern = format!("${}", candidate.local_name);
-            let Some(start) = find_svelte_prefix_near(
+            let Some(start) = find_pattern_near_start(
                 source,
                 candidate.outer_span.start,
                 candidate.outer_span.end,
@@ -1456,7 +1336,7 @@ fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
         }
         MacroFlavor::Eager => {
             let pattern = format!("{}.eager", candidate.local_name);
-            let Some(start) = find_svelte_prefix_near(
+            let Some(start) = find_pattern_near_start(
                 source,
                 candidate.outer_span.start,
                 candidate.outer_span.end,
@@ -1482,38 +1362,6 @@ fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
         }
         MacroFlavor::Direct => {}
     }
-}
-
-fn find_svelte_prefix_near(
-    source: &str,
-    current_start: usize,
-    current_end: usize,
-    pattern: &str,
-) -> Option<usize> {
-    let window_start =
-        clamp_to_char_boundary_floor(source, current_start.saturating_sub(pattern.len() + 8));
-    let window_end = clamp_to_char_boundary_ceil(source, current_end.min(source.len()));
-    source[window_start..window_end]
-        .match_indices(pattern)
-        .map(|(offset, _)| window_start + offset)
-        .filter(|start| *start <= current_start)
-        .max()
-}
-
-fn clamp_to_char_boundary_floor(source: &str, mut index: usize) -> usize {
-    index = index.min(source.len());
-    while index > 0 && !source.is_char_boundary(index) {
-        index -= 1;
-    }
-    index
-}
-
-fn clamp_to_char_boundary_ceil(source: &str, mut index: usize) -> usize {
-    index = index.min(source.len());
-    while index < source.len() && !source.is_char_boundary(index) {
-        index += 1;
-    }
-    index
 }
 
 fn bare_direct_macro_error(imported_name: &str) -> SvelteFrameworkError {
@@ -1558,7 +1406,7 @@ pub fn validate_svelte_extract_candidates(
 
 #[cfg(test)]
 mod tests {
-    use super::find_svelte_prefix_near;
+    use crate::framework::helpers::text::find_pattern_near_start;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
@@ -1569,7 +1417,7 @@ mod tests {
             .map(|index| index + 2)
             .unwrap_or(source.len());
 
-        let start = find_svelte_prefix_near(source, current_start, current_end, "$t")
+        let start = find_pattern_near_start(source, current_start, current_end, "$t")
             .expect("finds reactive prefix");
 
         assert_eq!(&source[start..start + 2], "$t");

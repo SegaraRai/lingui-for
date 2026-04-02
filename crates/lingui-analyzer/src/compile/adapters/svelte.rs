@@ -9,6 +9,7 @@ use crate::common::{
     Span, build_copy_map, build_span_anchor_map,
 };
 use crate::conventions::FrameworkConventions;
+use crate::framework::helpers::text::find_pattern_near_start;
 use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError};
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
@@ -458,7 +459,7 @@ pub(crate) fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]
         match target.flavor {
             MacroFlavor::Reactive => {
                 let pattern = format!("${}", target.local_name);
-                let Some(start) = find_svelte_prefix_near(
+                let Some(start) = find_pattern_near_start(
                     source,
                     target.original_span.start,
                     target.original_span.end,
@@ -479,7 +480,7 @@ pub(crate) fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]
             }
             MacroFlavor::Eager => {
                 let pattern = format!("{}.eager", target.local_name);
-                let Some(start) = find_svelte_prefix_near(
+                let Some(start) = find_pattern_near_start(
                     source,
                     target.original_span.start,
                     target.original_span.end,
@@ -655,38 +656,6 @@ fn allocate_unique_binding_name(used: &mut BTreeSet<String>, preferred: &str) ->
         }
         index += 1;
     }
-}
-
-fn find_svelte_prefix_near(
-    source: &str,
-    current_start: usize,
-    current_end: usize,
-    pattern: &str,
-) -> Option<usize> {
-    let window_start =
-        clamp_to_char_boundary_floor(source, current_start.saturating_sub(pattern.len() + 8));
-    let window_end = clamp_to_char_boundary_ceil(source, current_end.min(source.len()));
-    source[window_start..window_end]
-        .match_indices(pattern)
-        .map(|(offset, _)| window_start + offset)
-        .filter(|start| *start <= current_start)
-        .max()
-}
-
-fn clamp_to_char_boundary_floor(source: &str, mut index: usize) -> usize {
-    index = index.min(source.len());
-    while index > 0 && !source.is_char_boundary(index) {
-        index -= 1;
-    }
-    index
-}
-
-fn clamp_to_char_boundary_ceil(source: &str, mut index: usize) -> usize {
-    index = index.min(source.len());
-    while index < source.len() && !source.is_char_boundary(index) {
-        index += 1;
-    }
-    index
 }
 
 struct RuntimeInsertions {

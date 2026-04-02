@@ -3,8 +3,14 @@ use tree_sitter::Node;
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 use crate::conventions::FrameworkConventions;
 
-use super::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
-use super::expression::is_explicit_whitespace_string_expression;
+use super::helpers::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
+use super::helpers::components::first_non_whitespace_child_anchor;
+use super::helpers::expressions::is_explicit_whitespace_string_expression;
+use super::helpers::imports::collect_import_specifiers_from_node;
+use super::helpers::normalization::{
+    sort_and_dedup_normalization_edits, whitespace_replacement_edits,
+};
+use super::helpers::text::{is_component_tag_name, text, unquote};
 use super::js::{
     ExpressionParseCache, JsAnalysisError, JsLikeLanguage, JsMacroSyntax, collect_macro_candidates,
 };
@@ -172,35 +178,6 @@ fn collect_macro_imports(
     }
 
     imports
-}
-
-fn collect_import_specifiers_from_node(
-    source: &str,
-    node: Node<'_>,
-    base_offset: usize,
-    module_specifier: &str,
-    imports: &mut Vec<MacroImport>,
-) {
-    if node.kind() == "import_specifier" {
-        let imported = node.child_by_field_name("name");
-        let local = node.child_by_field_name("alias").or(imported);
-        let (Some(imported), Some(local)) = (imported, local) else {
-            return;
-        };
-
-        imports.push(MacroImport {
-            source: module_specifier.to_string(),
-            imported_name: text(source, imported).to_string(),
-            local_name: text(source, local).to_string(),
-            span: shift_span(Span::from_node(node), base_offset),
-        });
-        return;
-    }
-
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_import_specifiers_from_node(source, child, base_offset, module_specifier, imports);
-    }
 }
 
 fn collect_template_expressions(
@@ -378,25 +355,8 @@ fn component_candidate_from_element(
 }
 
 fn component_source_map_anchor(source: &str, node: Node<'_>) -> Option<Span> {
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if child.kind() == "start_tag"
-            || child.kind() == "self_closing_tag"
-            || child.kind() == "end_tag"
-        {
-            continue;
-        }
-
-        let child_text = text(source, child);
-        if let Some(trimmed_start) = child_text.find(|char: char| !char.is_whitespace()) {
-            return Some(Span::new(
-                child.start_byte() + trimmed_start,
-                child.end_byte(),
-            ));
-        }
-    }
-
-    Some(Span::from_node(node))
+    first_non_whitespace_child_anchor(source, node, &["start_tag", "self_closing_tag", "end_tag"])
+        .or(Some(Span::from_node(node)))
 }
 
 fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: usize) -> Span {
@@ -418,42 +378,8 @@ fn is_pure_html_interpolation_expression(node: Node<'_>) -> bool {
     saw_named_child
 }
 
-fn shift_span(span: Span, base_offset: usize) -> Span {
-    Span::new(span.start + base_offset, span.end + base_offset)
-}
-
-fn text<'a>(source: &'a str, node: Node<'_>) -> &'a str {
-    &source[node.start_byte()..node.end_byte()]
-}
-
-fn unquote(text: &str) -> Option<String> {
-    if text.len() < 2 {
-        return None;
-    }
-
-    let bytes = text.as_bytes();
-    let quote = bytes.first().copied()?;
-    if quote != b'"' && quote != b'\'' {
-        return None;
-    }
-
-    if bytes.last().copied()? != quote {
-        return None;
-    }
-
-    Some(text[1..text.len() - 1].to_string())
-}
-
 fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
     conventions.accepts_macro_package(specifier)
-}
-
-fn is_component_tag_name(tag_name: &str) -> bool {
-    tag_name
-        .chars()
-        .next()
-        .map(|first| first.is_ascii_uppercase())
-        .unwrap_or(false)
 }
 
 fn collect_component_normalization_edits(
@@ -587,60 +513,11 @@ fn component_whitespace_edits(
         content_children.push(child);
     }
 
-    whitespace_replacement_edits(source, &content_children)
-}
-
-fn whitespace_replacement_edits(source: &str, children: &[Node<'_>]) -> Vec<NormalizationEdit> {
-    let mut edits = Vec::new();
-    let meaningful_children = children
-        .iter()
-        .copied()
-        .filter(|child| {
-            let span = Span::from_node(*child);
-            !source[span.start..span.end].trim().is_empty()
-        })
-        .collect::<Vec<_>>();
-
-    for pair in meaningful_children.windows(2) {
-        let previous = pair[0];
-        let next = pair[1];
-        if is_explicit_space_expression(source, previous)
-            || is_explicit_space_expression(source, next)
-        {
-            continue;
-        }
-        let gap = Span::new(previous.end_byte(), next.start_byte());
-        if gap.start >= gap.end {
-            continue;
-        }
-        if !source[gap.start..gap.end].trim().is_empty() {
-            continue;
-        }
-
-        edits.push(NormalizationEdit::Delete { span: gap });
-        edits.push(NormalizationEdit::Insert {
-            at: gap.start,
-            text: "{\" \"}".to_string(),
-        });
-    }
-
-    edits
+    whitespace_replacement_edits(source, &content_children, is_explicit_space_expression)
 }
 
 fn is_explicit_space_expression(source: &str, node: Node<'_>) -> bool {
     let span = Span::from_node(node);
     let text = source[span.start..span.end].trim();
     is_explicit_whitespace_string_expression(text)
-}
-
-fn sort_and_dedup_normalization_edits(edits: &mut Vec<NormalizationEdit>) {
-    edits.sort_by_key(normalization_edit_sort_key);
-    edits.dedup();
-}
-
-fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, String) {
-    match edit {
-        NormalizationEdit::Delete { span } => (span.start, span.end, 0, String::new()),
-        NormalizationEdit::Insert { at, text } => (*at, *at, 1, text.clone()),
-    }
 }

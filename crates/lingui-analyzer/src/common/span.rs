@@ -18,6 +18,10 @@ impl Span {
     pub fn from_node(node: Node<'_>) -> Self {
         Self::new(node.start_byte(), node.end_byte())
     }
+
+    pub const fn shifted(self, base_offset: usize) -> Self {
+        Self::new(self.start + base_offset, self.end + base_offset)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]

@@ -4,6 +4,7 @@ use tree_sitter::{Node, Tree};
 
 use crate::common::Span;
 
+use super::helpers::text::{find_pattern_near_start, text};
 use super::parse::{ParseError, parse_javascript, parse_typescript};
 use super::scope::LexicalScope;
 use super::{
@@ -344,15 +345,15 @@ fn to_call_candidate(
             let identifier = call_target_identifier(function)?;
             let local_name = text(source, identifier);
             let import_decl = scope.resolve_macro(local_name)?;
-            let identifier_span = shift_span(Span::from_node(identifier), base_offset);
+            let identifier_span = Span::from_node(identifier).shifted(base_offset);
             Some(MacroCandidate {
                 id: String::new(),
                 kind: candidate_kind_from_arguments(arguments),
                 imported_name: import_decl.imported_name.clone(),
                 local_name: import_decl.local_name.clone(),
                 flavor: MacroFlavor::Direct,
-                outer_span: shift_span(Span::from_node(node), base_offset),
-                normalized_span: shift_span(Span::from_node(node), base_offset),
+                outer_span: Span::from_node(node).shifted(base_offset),
+                normalized_span: Span::from_node(node).shifted(base_offset),
                 normalization_edits: Vec::new(),
                 source_map_anchor: Some(identifier_span),
                 owner_id: None,
@@ -410,10 +411,10 @@ fn to_svelte_call_candidate(
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),
             flavor: MacroFlavor::Direct,
-            outer_span: shift_span(Span::from_node(node), base_offset),
-            normalized_span: shift_span(Span::from_node(node), base_offset),
+            outer_span: Span::from_node(node).shifted(base_offset),
+            normalized_span: Span::from_node(node).shifted(base_offset),
             normalization_edits: Vec::new(),
-            source_map_anchor: Some(shift_span(Span::from_node(identifier), base_offset)),
+            source_map_anchor: Some(Span::from_node(identifier).shifted(base_offset)),
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
         });
@@ -446,7 +447,7 @@ fn to_svelte_call_candidate(
         outer_span,
         normalized_span: Span::new(
             object_span.start,
-            shift_span(Span::from_node(arguments), base_offset).end,
+            Span::from_node(arguments).shifted(base_offset).end,
         ),
         normalization_edits: vec![NormalizationEdit::Delete {
             span: Span::new(object_span.end, property_span.end),
@@ -468,10 +469,6 @@ fn call_target_identifier(node: Node<'_>) -> Option<Node<'_>> {
     (node.kind() == "identifier").then_some(node)
 }
 
-fn shift_span(span: Span, base_offset: usize) -> Span {
-    Span::new(span.start + base_offset, span.end + base_offset)
-}
-
 fn repair_svelte_reactive_spans(
     source: &str,
     base_offset: usize,
@@ -483,8 +480,8 @@ fn repair_svelte_reactive_spans(
         find_pattern_near_start(source, outer.start, outer.end, &pattern).unwrap_or(outer.start);
     let repaired_identifier = Span::new(repaired_start, repaired_start + pattern.len());
     (
-        shift_span(Span::new(repaired_start, outer.end), base_offset),
-        shift_span(repaired_identifier, base_offset),
+        Span::new(repaired_start, outer.end).shifted(base_offset),
+        repaired_identifier.shifted(base_offset),
     )
 }
 
@@ -499,9 +496,9 @@ fn repair_svelte_eager_spans(
     if object.start >= outer.start && property.end <= outer.end && object.end <= property.start {
         // Prefer AST spans when they are consistent.
         return (
-            shift_span(Span::new(object.start, outer.end), base_offset),
-            shift_span(object, base_offset),
-            shift_span(property, base_offset),
+            Span::new(object.start, outer.end).shifted(base_offset),
+            object.shifted(base_offset),
+            property.shifted(base_offset),
         );
     }
 
@@ -514,42 +511,10 @@ fn repair_svelte_eager_spans(
         repaired_start + pattern.len(),
     );
     (
-        shift_span(Span::new(repaired_start, outer.end), base_offset),
-        shift_span(repaired_object, base_offset),
-        shift_span(repaired_property, base_offset),
+        Span::new(repaired_start, outer.end).shifted(base_offset),
+        repaired_object.shifted(base_offset),
+        repaired_property.shifted(base_offset),
     )
-}
-
-fn find_pattern_near_start(
-    source: &str,
-    current_start: usize,
-    current_end: usize,
-    pattern: &str,
-) -> Option<usize> {
-    let window_start =
-        clamp_to_char_boundary_floor(source, current_start.saturating_sub(pattern.len() + 8));
-    let window_end = clamp_to_char_boundary_ceil(source, current_end.min(source.len()));
-    source[window_start..window_end]
-        .match_indices(pattern)
-        .map(|(offset, _)| window_start + offset)
-        .filter(|start| *start <= current_start)
-        .max()
-}
-
-fn clamp_to_char_boundary_floor(source: &str, mut index: usize) -> usize {
-    index = index.min(source.len());
-    while index > 0 && !source.is_char_boundary(index) {
-        index -= 1;
-    }
-    index
-}
-
-fn clamp_to_char_boundary_ceil(source: &str, mut index: usize) -> usize {
-    index = index.min(source.len());
-    while index < source.len() && !source.is_char_boundary(index) {
-        index += 1;
-    }
-    index
 }
 
 fn assign_candidate_ownership(mut candidates: Vec<MacroCandidate>) -> Vec<MacroCandidate> {
@@ -579,10 +544,6 @@ fn assign_candidate_ownership(mut candidates: Vec<MacroCandidate>) -> Vec<MacroC
 
     planned.sort_by_key(|candidate| (candidate.outer_span.start, candidate.outer_span.end));
     planned
-}
-
-fn text<'a>(source: &'a str, node: Node<'_>) -> &'a str {
-    &source[node.start_byte()..node.end_byte()]
 }
 
 fn collect_declared_names(node: Node<'_>, source: &str, names: &mut Vec<String>) {
@@ -671,11 +632,10 @@ fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) 
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        JsMacroSyntax, collect_macro_candidates, find_pattern_near_start, repair_svelte_eager_spans,
-    };
+    use super::{JsMacroSyntax, collect_macro_candidates, repair_svelte_eager_spans};
     use crate::common::Span;
     use crate::framework::MacroImport;
+    use crate::framework::helpers::text::find_pattern_near_start;
     use crate::framework::parse::parse_typescript;
 
     #[test]
