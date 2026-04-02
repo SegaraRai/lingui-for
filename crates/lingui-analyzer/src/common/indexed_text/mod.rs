@@ -50,7 +50,11 @@ impl<'a> IndexedText<'a> {
 
 impl<'a> IndexedTextSlice<'a> {
     pub fn new(indexed: &'a IndexedText<'a>, range: Range<usize>) -> Option<Self> {
-        (range.start <= range.end && range.end <= indexed.len()).then_some(Self { indexed, range })
+        (range.start <= range.end
+            && range.end <= indexed.len()
+            && indexed.as_str().is_char_boundary(range.start)
+            && indexed.as_str().is_char_boundary(range.end))
+        .then_some(Self { indexed, range })
     }
 
     pub fn as_str(&self) -> &'a str {
@@ -122,5 +126,13 @@ mod tests {
         let source = IndexedText::new("abc");
 
         assert!(source.slice(1..4).is_none());
+    }
+
+    #[test]
+    fn rejects_non_char_boundary_slices() {
+        let source = IndexedText::new("a😀b");
+
+        assert!(source.slice(1..2).is_none());
+        assert!(source.slice(0..2).is_none());
     }
 }

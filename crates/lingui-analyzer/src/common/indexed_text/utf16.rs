@@ -30,7 +30,7 @@ impl<'a> Utf16Table<'a> {
 
     pub fn line_utf16_col_to_byte(&self, line: usize, utf16_col: usize) -> Option<usize> {
         let line_index = self.lines.get(line)?;
-        Some(line_index.utf16_col_to_byte(utf16_col))
+        line_index.utf16_col_to_byte(utf16_col)
     }
 
     pub fn line_for_byte(&self, byte: usize) -> Option<usize> {
@@ -155,26 +155,29 @@ impl<'a> Utf16LineTable<'a> {
         cur_utf16
     }
 
-    fn utf16_col_to_byte(&self, target_utf16_col: usize) -> usize {
+    fn utf16_col_to_byte(&self, target_utf16_col: usize) -> Option<usize> {
         if target_utf16_col == 0 {
-            return self.start;
+            return Some(self.start);
         }
 
         let mut cur_byte = self.start;
         let mut cur_utf16 = 0usize;
 
         for (rel, ch) in self.line.char_indices() {
-            if cur_utf16 >= target_utf16_col {
-                return self.start + rel;
+            if cur_utf16 == target_utf16_col {
+                return Some(self.start + rel);
             }
             cur_utf16 += ch.len_utf16();
             cur_byte = self.start + rel + ch.len_utf8();
-            if cur_utf16 >= target_utf16_col {
-                return cur_byte;
+            if cur_utf16 == target_utf16_col {
+                return Some(cur_byte);
+            }
+            if cur_utf16 > target_utf16_col {
+                return None;
             }
         }
 
-        cur_byte.min(self.end)
+        (cur_utf16 == target_utf16_col).then_some(cur_byte.min(self.end))
     }
 }
 
@@ -269,6 +272,16 @@ mod tests {
         assert_eq!(table.line_utf16_col_to_byte(1, 0), Some(6));
         assert_eq!(table.line_utf16_col_to_byte(1, 2), Some(8));
         assert_eq!(table.line_utf16_col_to_byte(2, 0), None);
+    }
+
+    #[test]
+    fn rejects_invalid_utf16_columns_inside_surrogates_and_past_end() {
+        let source = "🙂x\nab";
+        let table = Utf16Table::new(source, &line_starts(source));
+
+        assert_eq!(table.line_utf16_col_to_byte(0, 1), None);
+        assert_eq!(table.line_utf16_col_to_byte(0, 4), None);
+        assert_eq!(table.line_utf16_col_to_byte(1, 3), None);
     }
 
     #[test]
