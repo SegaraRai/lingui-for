@@ -1,11 +1,11 @@
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::common::{
     IndexedSourceMap, MappedText, MappedTextError, Span, build_segmented_map, source_map_to_json,
 };
 use crate::extract::{SyntheticMapping, SyntheticModule};
 use crate::framework::{MacroCandidate, MacroImport, render_macro_import_line};
-use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
+use crate::synthesis::{SynthesisPlan, SynthesisTarget, build_synthesis_plan};
 
 #[derive(thiserror::Error, Debug)]
 pub enum BuildSyntheticModuleError {
@@ -36,6 +36,11 @@ pub fn build_synthetic_module_from_plan(
 ) -> Result<SyntheticModule, BuildSyntheticModuleError> {
     let mut out = String::new();
     let mut declaration_ids = Vec::new();
+    let targets_by_id = plan
+        .targets
+        .iter()
+        .map(|target| (target.declaration_id.as_str(), target))
+        .collect::<HashMap<_, _>>();
     let mut original_spans = BTreeMap::new();
     let mut generated_spans = BTreeMap::new();
     let mut normalized_segments = BTreeMap::new();
@@ -70,13 +75,11 @@ pub fn build_synthetic_module_from_plan(
     let mappings = declaration_ids
         .iter()
         .map(|id| {
-            let target = plan
-                .targets
-                .iter()
-                .find(|target| target.declaration_id == *id)
-                .ok_or_else(|| BuildSyntheticModuleError::MissingSyntheticTarget {
+            let target = targets_by_id.get(id.as_str()).copied().ok_or_else(|| {
+                BuildSyntheticModuleError::MissingSyntheticTarget {
                     declaration_id: id.clone(),
-                })?;
+                }
+            })?;
             Ok(SyntheticMapping {
                 declaration_id: id.clone(),
                 original_span: original_spans[id],
@@ -90,10 +93,16 @@ pub fn build_synthetic_module_from_plan(
         })
         .collect::<Result<_, BuildSyntheticModuleError>>()?;
 
-    let source_map_json =
-        build_synthetic_source_map(source, source_name, plan, &declaration_ids, source_anchors)?
-            .as_ref()
-            .and_then(|map| source_map_to_json(map.source_map()));
+    let source_map_json = build_synthetic_source_map(
+        source,
+        source_name,
+        &plan.imports,
+        &targets_by_id,
+        &declaration_ids,
+        source_anchors,
+    )?
+    .as_ref()
+    .and_then(|map| source_map_to_json(map.source_map()));
 
     Ok(SyntheticModule {
         source: out,
@@ -111,23 +120,20 @@ pub fn build_synthetic_module_from_plan(
 fn build_synthetic_source_map(
     source: &str,
     source_name: &str,
-    plan: &SynthesisPlan,
+    imports: &[MacroImport],
+    targets_by_id: &HashMap<&str, &SynthesisTarget>,
     declaration_ids: &[String],
     source_anchors: &[usize],
 ) -> Result<Option<IndexedSourceMap>, BuildSyntheticModuleError> {
     let mut mapped = MappedText::new(source_name, source);
 
-    if let Some(line) = render_macro_import_line(&plan.imports) {
+    if let Some(line) = render_macro_import_line(imports) {
         mapped.push_unmapped(line);
         mapped.push_unmapped("\n");
     }
 
     for declaration_id in declaration_ids {
-        let Some(target) = plan
-            .targets
-            .iter()
-            .find(|target| target.declaration_id == *declaration_id)
-        else {
+        let Some(target) = targets_by_id.get(declaration_id.as_str()).copied() else {
             return Err(BuildSyntheticModuleError::MissingSyntheticTarget {
                 declaration_id: declaration_id.clone(),
             });
