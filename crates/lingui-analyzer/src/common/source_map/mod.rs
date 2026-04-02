@@ -11,7 +11,7 @@ pub(crate) type SharedSourceMap = Arc<SourceMap>;
 pub use mapped_text::MappedTextError;
 pub(crate) use mapped_text::{MappedText, RenderedMappedText, build_segmented_map};
 pub(crate) use primitives::{
-    compose_source_maps, compute_line_starts, extract_local_submap_indexed, index_source_map,
+    compose_source_maps, extract_local_submap, index_source_map,
     overlay_source_map_with_single_anchor, parse_source_map, source_map_to_json,
 };
 pub(crate) use recipes::{

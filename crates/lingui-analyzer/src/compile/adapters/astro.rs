@@ -2,8 +2,8 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{
-    EmbeddedScriptRegion, MappedText, RenderedMappedText, ScriptLang, Span, build_copy_map,
-    build_span_anchor_map,
+    EmbeddedScriptRegion, IndexedText, MappedText, RenderedMappedText, ScriptLang, Span,
+    build_copy_map, build_span_anchor_map,
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::astro::{AstroAdapter, AstroFrameworkError};
@@ -86,10 +86,11 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         _prototype: &CompileTargetPrototype,
         normalized_source: &str,
     ) -> Result<RenderedMappedText, CompileError> {
+        let indexed_source = IndexedText::new(normalized_source);
         let mut mapped = MappedText::new("__normalized", normalized_source);
         if let Some(map) = build_copy_map(
             "__normalized",
-            normalized_source,
+            &indexed_source,
             Span::new(0, normalized_source.len()),
             &[],
         ) {
@@ -322,6 +323,7 @@ fn append_runtime_injection_replacements(
     source: &str,
     replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
+    let indexed_source = IndexedText::new(source);
     let prelude = build_frontmatter_prelude(
         plan.runtime_requirements.needs_runtime_i18n_binding,
         plan.runtime_requirements.needs_runtime_trans_component,
@@ -354,7 +356,7 @@ fn append_runtime_injection_replacements(
             end: frontmatter.prelude_insert_point,
             source_map: build_span_anchor_map(
                 plan.common.source_name.as_str(),
-                source,
+                &indexed_source,
                 code.as_str(),
                 anchor_span.start,
                 anchor_span.end,
@@ -385,7 +387,7 @@ fn append_runtime_injection_replacements(
         end: 0,
         source_map: build_span_anchor_map(
             plan.common.source_name.as_str(),
-            source,
+            &indexed_source,
             code.as_str(),
             0,
             0,

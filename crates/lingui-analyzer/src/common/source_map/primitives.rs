@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use sourcemap::{SourceMap, SourceMapBuilder};
 
-use crate::common::{MappedTextError, SharedSourceMap, Utf16Index};
+use crate::common::{IndexedText, MappedTextError, SharedSourceMap};
 
 pub(crate) fn parse_source_map(json: &str) -> Option<SharedSourceMap> {
     SourceMap::from_slice(json.as_bytes()).ok().map(Arc::new)
@@ -19,7 +19,7 @@ pub(crate) fn source_map_to_json(map: &SourceMap) -> Option<String> {
 pub(crate) fn overlay_source_map_with_single_anchor(
     base: &SourceMap,
     source_name: &str,
-    source_text: &str,
+    source: &IndexedText<'_>,
     generated_line: u32,
     generated_col: u32,
     original_byte: usize,
@@ -34,9 +34,7 @@ pub(crate) fn overlay_source_map_with_single_anchor(
         builder.set_source_contents(builder_src_id, base.get_source_contents(src_id));
     }
 
-    let line_starts = compute_line_starts(source_text);
-    let source_index = Utf16Index::new(source_text, &line_starts);
-    let (src_line, src_col) = source_index.byte_to_line_utf16_col(original_byte);
+    let (src_line, src_col) = source.byte_to_line_utf16_col(original_byte);
 
     let mut inserted = false;
     let mut seen = BTreeSet::new();
@@ -181,14 +179,14 @@ pub(crate) fn index_source_map(map: &SourceMap) -> IndexedSourceMap {
     }
 }
 
-pub(crate) fn extract_local_submap_indexed(
+pub(crate) fn extract_local_submap(
     map: &IndexedSourceMap,
-    source_index: &Utf16Index<'_>,
+    source: &IndexedText<'_>,
     start_byte: usize,
     end_byte: usize,
 ) -> Option<SharedSourceMap> {
-    let start = source_index.byte_to_line_utf16_col(start_byte);
-    let end = source_index.byte_to_line_utf16_col(end_byte);
+    let start = source.byte_to_line_utf16_col(start_byte);
+    let end = source.byte_to_line_utf16_col(end_byte);
     let start_line = start.0 as u32;
     let start_col = start.1 as u32;
     let end_line = end.0 as u32;
@@ -237,31 +235,28 @@ pub(crate) fn extract_local_submap_indexed(
 }
 
 pub(crate) fn extract_generated_submap(
-    map: &SourceMap,
-    generated_text: &str,
+    map: &IndexedSourceMap,
+    generated: &IndexedText<'_>,
     start_byte: usize,
     end_byte: usize,
 ) -> Option<SharedSourceMap> {
-    if start_byte >= end_byte || end_byte > generated_text.len() {
+    if start_byte >= end_byte || end_byte > generated.len() {
         return None;
     }
 
-    let indexed = index_source_map(map);
-    let line_starts = compute_line_starts(generated_text);
-    let generated_index = Utf16Index::new(generated_text, &line_starts);
-    let start = generated_index.byte_to_line_utf16_col(start_byte);
-    let end = generated_index.byte_to_line_utf16_col(end_byte);
+    let start = generated.byte_to_line_utf16_col(start_byte);
+    let end = generated.byte_to_line_utf16_col(end_byte);
     let start_line = start.0 as u32;
     let start_col = start.1 as u32;
     let end_line = end.0 as u32;
     let end_col = end.1 as u32;
-    let start_index = lower_bound(&indexed.tokens, start_line, start_col);
-    let end_index = lower_bound(&indexed.tokens, end_line, end_col);
+    let start_index = lower_bound(&map.tokens, start_line, start_col);
+    let end_index = lower_bound(&map.tokens, end_line, end_col);
     let mut builder = SourceMapBuilder::new(None);
     let mut saw_mapping = false;
 
     if let Some(projected_start) =
-        project_generated_position_to_original(&indexed, start_line, start_col)
+        project_generated_position_to_original(map, start_line, start_col)
     {
         builder.add(
             0,
@@ -275,7 +270,7 @@ pub(crate) fn extract_generated_submap(
         saw_mapping = true;
     }
 
-    for token in &indexed.tokens[start_index..end_index] {
+    for token in &map.tokens[start_index..end_index] {
         let generated_line = token.dst_line.saturating_sub(start_line);
         let generated_col = if token.dst_line == start_line {
             token.dst_col.saturating_sub(start_col)
@@ -295,8 +290,7 @@ pub(crate) fn extract_generated_submap(
         saw_mapping = true;
     }
 
-    if let Some(projected_end) = project_generated_position_to_original(&indexed, end_line, end_col)
-    {
+    if let Some(projected_end) = project_generated_position_to_original(map, end_line, end_col) {
         let end_generated_line = end_line.saturating_sub(start_line);
         let end_generated_col = if end_line == start_line {
             end_col.saturating_sub(start_col)
@@ -390,14 +384,4 @@ impl IndexedProjection {
             name: token.name.clone(),
         }
     }
-}
-
-pub(crate) fn compute_line_starts(source: &str) -> Vec<usize> {
-    let mut starts = vec![0];
-    for (index, byte) in source.bytes().enumerate() {
-        if byte == b'\n' {
-            starts.push(index + 1);
-        }
-    }
-    starts
 }

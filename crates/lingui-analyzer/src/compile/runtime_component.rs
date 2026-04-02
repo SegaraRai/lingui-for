@@ -1,8 +1,8 @@
 use tree_sitter::Node;
 
 use crate::common::{
-    MappedText, MappedTextError, RenderedMappedText, SharedSourceMap, Span, Utf16Index,
-    build_span_anchor_map, compute_line_starts,
+    IndexedText, MappedText, MappedTextError, RenderedMappedText, SharedSourceMap, Span,
+    build_span_anchor_map,
 };
 use crate::framework::parse::{ParseError, parse_tsx};
 
@@ -66,9 +66,11 @@ pub(crate) fn lower_runtime_component_markup(
 ) -> Result<RenderedMappedText, RuntimeComponentError> {
     let declaration_source_map = declaration.source_map.clone();
     let source = declaration.code;
+    let declaration_source = IndexedText::new(&source);
+    let original_source = IndexedText::new(original_source);
     let mapped_input = MappedText::from_rendered(
         source_name,
-        original_source,
+        original_source.as_str(),
         source.clone(),
         declaration.source_map,
     );
@@ -83,9 +85,9 @@ pub(crate) fn lower_runtime_component_markup(
         .ok_or(RuntimeComponentError::MissingInitializerForTransformedComponent)?;
 
     convert_runtime_trans_root(
-        original_source,
+        &original_source,
         declaration_source_map.as_ref(),
-        &source,
+        &declaration_source,
         &mapped_input,
         value,
         -(wrapper_prefix.len() as isize),
@@ -94,9 +96,9 @@ pub(crate) fn lower_runtime_component_markup(
 }
 
 fn convert_runtime_trans_root(
-    original_source: &str,
+    original_source: &IndexedText<'_>,
     declaration_source_map: Option<&SharedSourceMap>,
-    source: &str,
+    source: &IndexedText<'_>,
     input: &MappedText<'_>,
     node: Node<'_>,
     base_offset: isize,
@@ -129,7 +131,7 @@ fn convert_runtime_trans_root(
     );
     append_rendered(
         &mut mapped,
-        collect_jsx_attributes(source, input, opening, base_offset)?,
+        collect_jsx_attributes(source.as_str(), input, opening, base_offset)?,
     );
     push_anchor_mapped(
         &mut mapped,
@@ -145,8 +147,8 @@ fn convert_runtime_trans_root(
 fn push_anchor_mapped(
     mapped: &mut MappedText<'_>,
     declaration_source_map: Option<&SharedSourceMap>,
-    declaration_source: &str,
-    original_source: &str,
+    declaration_source: &IndexedText<'_>,
+    original_source: &IndexedText<'_>,
     text: &str,
     declaration_byte: usize,
 ) {
@@ -161,7 +163,7 @@ fn push_anchor_mapped(
     };
     let Some(map) = build_span_anchor_map(
         mapped.source_name(),
-        mapped.source_text(),
+        original_source,
         text,
         original_byte,
         original_byte,
@@ -174,20 +176,16 @@ fn push_anchor_mapped(
 
 fn project_declaration_byte_to_original_byte(
     declaration_source_map: Option<&SharedSourceMap>,
-    declaration_source: &str,
-    original_source: &str,
+    declaration_source: &IndexedText<'_>,
+    original_source: &IndexedText<'_>,
     declaration_byte: usize,
 ) -> Option<usize> {
     let source_map = declaration_source_map?;
-    let declaration_line_starts = compute_line_starts(declaration_source);
-    let declaration_index = Utf16Index::new(declaration_source, &declaration_line_starts);
     let (generated_line, generated_col) =
-        declaration_index.byte_to_line_utf16_col(declaration_byte);
+        declaration_source.byte_to_line_utf16_col(declaration_byte);
     let token = source_map.lookup_token(generated_line as u32, generated_col as u32)?;
-    let original_line_starts = compute_line_starts(original_source);
-    let original_index = Utf16Index::new(original_source, &original_line_starts);
     Some(
-        original_index
+        original_source
             .line_utf16_col_to_byte(token.get_src_line() as usize, token.get_src_col() as usize),
     )
 }

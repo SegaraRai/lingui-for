@@ -166,7 +166,7 @@ fn build_compile_synthetic_source(
 #[cfg(test)]
 mod tests {
     use super::build_compile_synthetic_source;
-    use crate::common::{RenderedMappedText, Span, build_span_anchor_map};
+    use crate::common::{IndexedText, RenderedMappedText, Span, build_span_anchor_map};
     use crate::compile::{
         CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
         CompileTranslationMode,
@@ -286,9 +286,16 @@ mod tests {
             &prototypes,
             &[0, source.len()],
             |_, normalized_source| {
+                let indexed_source = IndexedText::new(source);
                 Ok(RenderedMappedText {
                     code: normalized_source.to_string(),
-                    source_map: build_span_anchor_map("test.ts", source, normalized_source, 1, 4),
+                    source_map: build_span_anchor_map(
+                        "test.ts",
+                        &indexed_source,
+                        normalized_source,
+                        1,
+                        4,
+                    ),
                 })
             },
         )

@@ -5,8 +5,8 @@ use tree_sitter::Node;
 use crate::framework::parse::{ParseError, parse_tsx};
 
 use super::{
-    MappedText, MappedTextError, SharedSourceMap, Span, Utf16Index, build_span_anchor_map,
-    compute_line_starts, extract_local_submap_indexed, index_source_map,
+    IndexedText, MappedText, MappedTextError, SharedSourceMap, Span, build_span_anchor_map,
+    extract_local_submap, index_source_map,
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -31,8 +31,7 @@ pub(crate) fn collect_variable_initializer_declarations(
     let root = tree.root_node();
     let mut declarations = BTreeMap::new();
     let mut cursor = root.walk();
-    let line_starts = compute_line_starts(source);
-    let source_index = Utf16Index::new(source, &line_starts);
+    let indexed_source = IndexedText::new(source);
     let indexed_source_map = source_map.map(|map| index_source_map(map));
     for child in root.children(&mut cursor) {
         if child.kind() != "variable_declaration" && child.kind() != "lexical_declaration" {
@@ -57,7 +56,7 @@ pub(crate) fn collect_variable_initializer_declarations(
             let value_start = initializer_start_for_declarator(declarator, name, value);
             let raw_code = &source[value_start..value.end_byte()];
             let raw_submap = indexed_source_map.as_ref().and_then(|map| {
-                extract_local_submap_indexed(map, &source_index, value_start, value.end_byte())
+                extract_local_submap(map, &indexed_source, value_start, value.end_byte())
             });
             let collapse_spans = collect_i18n_comment_whitespace_spans(
                 source,
@@ -126,6 +125,7 @@ fn normalize_i18n_comment_layout_rendered(
         .and_then(|map| map.get_source(0))
         .unwrap_or("__declaration")
         .to_string();
+    let indexed_input = IndexedText::new(input);
     let original =
         MappedText::from_rendered(source_name.as_str(), input, input.to_string(), source_map);
     let mut mapped = MappedText::new(source_name.as_str(), input);
@@ -133,9 +133,13 @@ fn normalize_i18n_comment_layout_rendered(
 
     for span in collapse_spans {
         mapped.append_slice_from(&original, Span::new(cursor, span.start))?;
-        if let Some(map) =
-            build_span_anchor_map(source_name.as_str(), input, " ", span.start, span.end)
-        {
+        if let Some(map) = build_span_anchor_map(
+            source_name.as_str(),
+            &indexed_input,
+            " ",
+            span.start,
+            span.end,
+        ) {
             mapped.push_pre_mapped(" ", map);
         } else {
             mapped.push_unmapped(" ");

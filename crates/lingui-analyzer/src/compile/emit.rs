@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
 
 use crate::common::{
-    FinalizedReplacement, MappedTextError, RenderedMappedText, SharedSourceMap, build_final_output,
-    indent_rendered_text, overlay_source_map_with_single_anchor, source_map_to_json,
+    FinalizedReplacement, IndexedText, MappedTextError, RenderedMappedText, SharedSourceMap,
+    build_final_output, indent_rendered_text, overlay_source_map_with_single_anchor,
+    source_map_to_json,
 };
 
 use super::adapters::AdapterError;
@@ -119,6 +120,7 @@ fn assemble_output_with_source_map(
     source_anchors: &[usize],
     replacements: &[CompileReplacementInternal],
 ) -> Result<RenderedMappedText, EmitError> {
+    let indexed_source = IndexedText::new(source);
     let finalized = replacements
         .iter()
         .map(|replacement| {
@@ -126,7 +128,12 @@ fn assemble_output_with_source_map(
                 .source_map
                 .as_ref()
                 .map(|map| {
-                    normalize_final_replacement_map(map, source_name, source, replacement.start)
+                    normalize_final_replacement_map(
+                        map,
+                        source_name,
+                        &indexed_source,
+                        replacement.start,
+                    )
                 })
                 .transpose()?;
             Ok(FinalizedReplacement {
@@ -144,7 +151,7 @@ fn assemble_output_with_source_map(
 fn normalize_final_replacement_map(
     map: &SharedSourceMap,
     source_name: &str,
-    source: &str,
+    source: &IndexedText<'_>,
     original_start: usize,
 ) -> Result<SharedSourceMap, EmitError> {
     let mut normalized = map.clone();

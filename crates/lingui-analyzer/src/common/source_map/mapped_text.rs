@@ -1,9 +1,9 @@
-use crate::common::Utf16Index;
+use crate::common::IndexedText;
 
 use sourcemap::{SourceMap, SourceMapBuilder};
 
 use super::SharedSourceMap;
-use super::primitives::{compute_line_starts, extract_generated_submap};
+use super::primitives::{extract_generated_submap, index_source_map};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum MappedSegment {
@@ -89,10 +89,6 @@ impl<'a> MappedText<'a> {
 
     pub(crate) fn source_name(&self) -> &'a str {
         self.source_name
-    }
-
-    pub(crate) fn source_text(&self) -> &'a str {
-        self.source_text
     }
 
     pub(crate) fn empty_like(&self) -> Self {
@@ -213,14 +209,13 @@ pub(crate) fn build_segmented_map(
         return Ok(None);
     }
 
+    let source = IndexedText::new(source_text);
+    let generated = IndexedText::new(generated_text);
+
     let mut builder = SourceMapBuilder::new(Some(source_name));
     builder.set_file(Some(source_name));
     let src_id = builder.add_source(source_name);
     builder.set_source_contents(src_id, Some(source_text));
-    let source_line_starts = compute_line_starts(source_text);
-    let source_index = Utf16Index::new(source_text, &source_line_starts);
-    let generated_line_starts = compute_line_starts(generated_text);
-    let generated_index = Utf16Index::new(generated_text, &generated_line_starts);
     let mut saw_mapping = false;
 
     for segment in segments {
@@ -232,8 +227,8 @@ pub(crate) fn build_segmented_map(
         add_segment_mapping_point(
             &mut builder,
             source_name,
-            &source_index,
-            &generated_index,
+            &source,
+            &generated,
             segment,
             segment_start,
         );
@@ -246,8 +241,8 @@ pub(crate) fn build_segmented_map(
             add_segment_mapping_point(
                 &mut builder,
                 source_name,
-                &source_index,
-                &generated_index,
+                &source,
+                &generated,
                 segment,
                 anchor,
             );
@@ -256,8 +251,8 @@ pub(crate) fn build_segmented_map(
         add_segment_mapping_point(
             &mut builder,
             source_name,
-            &source_index,
-            &generated_index,
+            &source,
+            &generated,
             segment,
             segment_end,
         );
@@ -318,7 +313,9 @@ fn slice_segment(
             let sliced_code = code
                 .get(start..end)
                 .ok_or(MappedTextError::InvalidSegmentSlice)?;
-            let sliced_map = extract_generated_submap(source_map, code, start, end)
+            let indexed_map = index_source_map(source_map);
+            let indexed_code = IndexedText::new(code);
+            let sliced_map = extract_generated_submap(&indexed_map, &indexed_code, start, end)
                 .ok_or(MappedTextError::InvalidSegmentSlice)?;
             Ok(Some(MappedSegment::PreMapped {
                 code: sliced_code.to_string(),
@@ -331,15 +328,15 @@ fn slice_segment(
 fn add_segment_mapping_point(
     builder: &mut SourceMapBuilder,
     source_name: &str,
-    source_index: &Utf16Index<'_>,
-    generated_index: &Utf16Index<'_>,
+    source: &IndexedText<'_>,
+    generated: &IndexedText<'_>,
     segment: &crate::synthesis::NormalizedSegment,
     original_byte: usize,
 ) {
     let clamped = original_byte.min(segment.original_start + segment.len);
     let generated_byte = segment.generated_start + clamped.saturating_sub(segment.original_start);
-    let (original_line, original_col) = source_index.byte_to_line_utf16_col(clamped);
-    let (generated_line, generated_col) = generated_index.byte_to_line_utf16_col(generated_byte);
+    let (original_line, original_col) = source.byte_to_line_utf16_col(clamped);
+    let (generated_line, generated_col) = generated.byte_to_line_utf16_col(generated_byte);
     builder.add(
         generated_line as u32,
         generated_col as u32,
@@ -352,12 +349,12 @@ fn add_segment_mapping_point(
 }
 
 fn append_rendered_segments(mapped: &mut MappedText<'_>, code: &str, map: &SharedSourceMap) {
-    let line_starts = compute_line_starts(code);
-    let generated_index = Utf16Index::new(code, &line_starts);
+    let indexed_map = index_source_map(map);
+    let generated = IndexedText::new(code);
     let mut boundaries = map
         .tokens()
         .map(|token| {
-            generated_index
+            generated
                 .line_utf16_col_to_byte(token.get_dst_line() as usize, token.get_dst_col() as usize)
         })
         .filter(|offset| *offset <= code.len())
@@ -382,7 +379,7 @@ fn append_rendered_segments(mapped: &mut MappedText<'_>, code: &str, map: &Share
             continue;
         }
 
-        if let Some(submap) = extract_generated_submap(map, code, start, end) {
+        if let Some(submap) = extract_generated_submap(&indexed_map, &generated, start, end) {
             mapped.push_pre_mapped(&code[start..end], submap);
         } else {
             mapped.push_unmapped(&code[start..end]);

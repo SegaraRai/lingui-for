@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{
-    EmbeddedScriptRegion, MappedText, MappedTextError, RenderedMappedText, ScriptLang, Span,
-    build_copy_map, build_span_anchor_map,
+    EmbeddedScriptRegion, IndexedText, MappedText, MappedTextError, RenderedMappedText, ScriptLang,
+    Span, build_copy_map, build_span_anchor_map,
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError};
@@ -315,6 +315,7 @@ pub(crate) fn wrap_compile_source(
     prototype: &CompileTargetPrototype,
     normalized_source: &str,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
+    let indexed_source = IndexedText::new(normalized_source);
     let mut mapped = MappedText::new("__normalized", normalized_source);
     if prototype.output_kind == CompileTargetOutputKind::Expression {
         match prototype.candidate.flavor {
@@ -327,15 +328,15 @@ pub(crate) fn wrap_compile_source(
                     .ok_or(SvelteAdapterError::MissingConvention(
                         "wrappers.reactive_translation",
                     ))?;
-                push_wrapper_anchor(&mut mapped, normalized_source, &format!("{wrapper}("), 0);
+                push_wrapper_anchor(&mut mapped, &indexed_source, &format!("{wrapper}("), 0);
                 push_wrapped_copy(
                     &mut mapped,
-                    normalized_source,
+                    &indexed_source,
                     Span::new(0, normalized_source.len()),
                 );
                 push_wrapper_anchor(
                     &mut mapped,
-                    normalized_source,
+                    &indexed_source,
                     &format!(", {:?})", prototype.candidate.local_name),
                     normalized_source.len(),
                 );
@@ -350,13 +351,13 @@ pub(crate) fn wrap_compile_source(
                     .ok_or(SvelteAdapterError::MissingConvention(
                         "wrappers.eager_translation",
                     ))?;
-                push_wrapper_anchor(&mut mapped, normalized_source, &format!("{wrapper}("), 0);
+                push_wrapper_anchor(&mut mapped, &indexed_source, &format!("{wrapper}("), 0);
                 push_wrapped_copy(
                     &mut mapped,
-                    normalized_source,
+                    &indexed_source,
                     Span::new(0, normalized_source.len()),
                 );
-                push_wrapper_anchor(&mut mapped, normalized_source, ")", normalized_source.len());
+                push_wrapper_anchor(&mut mapped, &indexed_source, ")", normalized_source.len());
                 return mapped.into_rendered().map_err(SvelteAdapterError::from);
             }
             MacroFlavor::Direct => {}
@@ -365,7 +366,7 @@ pub(crate) fn wrap_compile_source(
 
     push_wrapped_copy(
         &mut mapped,
-        normalized_source,
+        &indexed_source,
         Span::new(0, normalized_source.len()),
     );
     mapped.into_rendered().map_err(SvelteAdapterError::from)
@@ -373,7 +374,7 @@ pub(crate) fn wrap_compile_source(
 
 fn push_wrapper_anchor(
     mapped: &mut MappedText<'_>,
-    normalized_source: &str,
+    normalized_source: &IndexedText<'_>,
     text: &str,
     original_byte: usize,
 ) {
@@ -389,11 +390,11 @@ fn push_wrapper_anchor(
     mapped.push_pre_mapped(text, map);
 }
 
-fn push_wrapped_copy(mapped: &mut MappedText<'_>, normalized_source: &str, span: Span) {
+fn push_wrapped_copy(mapped: &mut MappedText<'_>, normalized_source: &IndexedText<'_>, span: Span) {
     if let Some(map) = build_copy_map("__normalized", normalized_source, span, &[]) {
-        mapped.push_pre_mapped(&normalized_source[span.start..span.end], map);
+        mapped.push_pre_mapped(&normalized_source.as_str()[span.start..span.end], map);
     } else {
-        mapped.push_unmapped(&normalized_source[span.start..span.end]);
+        mapped.push_unmapped(&normalized_source.as_str()[span.start..span.end]);
     }
 }
 
@@ -540,6 +541,7 @@ pub(super) fn append_runtime_injection_replacements(
     source: &str,
     replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), SvelteAdapterError> {
+    let indexed_source = IndexedText::new(source);
     let runtime_bindings = &plan.runtime_bindings;
 
     let needs_lingui_context = plan.runtime_requirements.needs_runtime_i18n_binding;
@@ -574,7 +576,7 @@ pub(super) fn append_runtime_injection_replacements(
             let prelude = injections.prelude;
             let source_map = build_span_anchor_map(
                 plan.common.source_name.as_str(),
-                source,
+                &indexed_source,
                 prelude.as_str(),
                 anchor_span.start,
                 anchor_span.end,
@@ -624,7 +626,7 @@ pub(super) fn append_runtime_injection_replacements(
 
     let source_map = build_span_anchor_map(
         plan.common.source_name.as_str(),
-        source,
+        &indexed_source,
         code.as_str(),
         insertion_start,
         insertion_start,

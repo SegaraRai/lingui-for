@@ -3,12 +3,12 @@ use std::collections::BTreeSet;
 use sourcemap::{SourceMap, SourceMapBuilder};
 use tree_sitter::Node;
 
-use crate::common::{Span, Utf16Index};
+use crate::common::{IndexedText, Span};
 use crate::framework::parse::parse_tsx;
 
 use super::SharedSourceMap;
 use super::mapped_text::{MappedText, MappedTextError, RenderedMappedText};
-use super::primitives::{compute_line_starts, project_original_anchors_to_generated};
+use super::primitives::project_original_anchors_to_generated;
 
 #[derive(Debug, Clone)]
 pub(crate) struct FinalizedReplacement<'a> {
@@ -21,7 +21,7 @@ pub(crate) struct FinalizedReplacement<'a> {
 
 pub(crate) fn build_span_anchor_map(
     source_name: &str,
-    source_text: &str,
+    source: &IndexedText<'_>,
     generated_text: &str,
     original_span_start: usize,
     original_span_end: usize,
@@ -33,13 +33,11 @@ pub(crate) fn build_span_anchor_map(
     let mut builder = SourceMapBuilder::new(Some(source_name));
     builder.set_file(Some(source_name));
     let src_id = builder.add_source(source_name);
-    builder.set_source_contents(src_id, Some(source_text));
-    let line_starts = compute_line_starts(source_text);
-    let source_index = Utf16Index::new(source_text, &line_starts);
+    builder.set_source_contents(src_id, Some(source.as_str()));
 
-    let start_byte = original_span_start.min(source_text.len());
-    let end_byte = original_span_end.min(source_text.len());
-    let (start_line, start_col) = source_index.byte_to_line_utf16_col(start_byte);
+    let start_byte = original_span_start.min(source.len());
+    let end_byte = original_span_end.min(source.len());
+    let (start_line, start_col) = source.byte_to_line_utf16_col(start_byte);
     builder.add(
         0,
         0,
@@ -52,7 +50,7 @@ pub(crate) fn build_span_anchor_map(
 
     let (end_generated_line, end_generated_col) = generated_end_position(generated_text);
     if (end_generated_line > 0 || end_generated_col > 0) && start_byte != end_byte {
-        let (end_line, end_col) = source_index.byte_to_line_utf16_col(end_byte);
+        let (end_line, end_col) = source.byte_to_line_utf16_col(end_byte);
         builder.add(
             end_generated_line,
             end_generated_col,
@@ -68,15 +66,16 @@ pub(crate) fn build_span_anchor_map(
 
 pub(crate) fn build_copy_map(
     source_name: &str,
-    source_text: &str,
+    source: &IndexedText<'_>,
     original_span: Span,
     source_anchors: &[usize],
 ) -> Option<SharedSourceMap> {
-    if original_span.start >= original_span.end || original_span.end > source_text.len() {
+    if original_span.start >= original_span.end || original_span.end > source.len() {
         return None;
     }
 
-    let copied_text = source_text.get(original_span.start..original_span.end)?;
+    let copied = source.slice(original_span.start..original_span.end);
+    let copied_text = copied.as_str();
     let anchor_points = collect_copy_anchor_points(copied_text, original_span, source_anchors);
     if anchor_points.is_empty() {
         return None;
@@ -85,16 +84,12 @@ pub(crate) fn build_copy_map(
     let mut builder = SourceMapBuilder::new(Some(source_name));
     builder.set_file(Some(source_name));
     let src_id = builder.add_source(source_name);
-    builder.set_source_contents(src_id, Some(source_text));
-    let source_line_starts = compute_line_starts(source_text);
-    let source_index = Utf16Index::new(source_text, &source_line_starts);
-    let generated_line_starts = compute_line_starts(copied_text);
-    let generated_index = Utf16Index::new(copied_text, &generated_line_starts);
+    builder.set_source_contents(src_id, Some(source.as_str()));
 
     for anchor in anchor_points {
         let generated_byte = anchor - original_span.start;
-        let (src_line, src_col) = source_index.byte_to_line_utf16_col(anchor);
-        let (dst_line, dst_col) = generated_index.byte_to_line_utf16_col(generated_byte);
+        let (src_line, src_col) = source.byte_to_line_utf16_col(anchor);
+        let (dst_line, dst_col) = copied.byte_to_line_utf16_col(generated_byte);
         builder.add(
             dst_line as u32,
             dst_col as u32,
@@ -149,6 +144,7 @@ pub(crate) fn build_final_output(
     source_anchors: &[usize],
     replacements: &[FinalizedReplacement<'_>],
 ) -> Result<RenderedMappedText, MappedTextError> {
+    let source = IndexedText::new(source_text);
     let mut output = MappedText::new(source_name, source_text);
     let mut cursor = 0usize;
 
@@ -169,7 +165,7 @@ pub(crate) fn build_final_output(
             push_source_slice(
                 &mut output,
                 source_name,
-                source_text,
+                &source,
                 Span::new(cursor, replacement.start),
                 source_anchors,
             )?;
@@ -177,7 +173,7 @@ pub(crate) fn build_final_output(
 
         output.append(finalize_replacement_mapped(
             source_name,
-            source_text,
+            &source,
             replacement,
         )?)?;
         cursor = replacement.end;
@@ -187,7 +183,7 @@ pub(crate) fn build_final_output(
         push_source_slice(
             &mut output,
             source_name,
-            source_text,
+            &source,
             Span::new(cursor, source_text.len()),
             source_anchors,
         )?;
@@ -213,14 +209,15 @@ fn generated_end_position(text: &str) -> (u32, u32) {
 fn push_source_slice(
     output: &mut MappedText<'_>,
     source_name: &str,
-    source_text: &str,
+    source: &IndexedText<'_>,
     span: Span,
     source_anchors: &[usize],
 ) -> Result<(), MappedTextError> {
-    let text = source_text
+    let text = source
+        .as_str()
         .get(span.start..span.end)
         .ok_or(MappedTextError::InvalidSegmentSlice)?;
-    if let Some(map) = build_copy_map(source_name, source_text, span, source_anchors) {
+    if let Some(map) = build_copy_map(source_name, source, span, source_anchors) {
         output.push_pre_mapped(text, map);
     } else {
         output.push_unmapped(text);
@@ -230,7 +227,7 @@ fn push_source_slice(
 
 fn finalize_replacement_mapped<'a>(
     source_name: &'a str,
-    source_text: &'a str,
+    source: &'a IndexedText<'a>,
     replacement: &FinalizedReplacement<'_>,
 ) -> Result<MappedText<'a>, MappedTextError> {
     let source_map = replacement
@@ -240,7 +237,7 @@ fn finalize_replacement_mapped<'a>(
             augment_replacement_map(
                 map,
                 source_name,
-                source_text,
+                source,
                 replacement.code,
                 replacement.start,
                 replacement.end,
@@ -251,7 +248,7 @@ fn finalize_replacement_mapped<'a>(
 
     Ok(MappedText::from_rendered(
         source_name,
-        source_text,
+        source.as_str(),
         replacement.code.to_string(),
         source_map,
     ))
@@ -260,22 +257,20 @@ fn finalize_replacement_mapped<'a>(
 fn augment_replacement_map(
     map: &SourceMap,
     source_name: &str,
-    source_text: &str,
+    source: &IndexedText<'_>,
     generated_text: &str,
     original_start: usize,
     original_end: usize,
     original_anchors: &[usize],
 ) -> Result<SharedSourceMap, MappedTextError> {
-    let line_starts = compute_line_starts(source_text);
-    let source_index = Utf16Index::new(source_text, &line_starts);
     let mut anchor_positions = vec![
-        source_index.byte_to_line_utf16_col(original_start),
-        source_index.byte_to_line_utf16_col(original_end),
+        source.byte_to_line_utf16_col(original_start),
+        source.byte_to_line_utf16_col(original_end),
     ];
     anchor_positions.extend(
         original_anchors
             .iter()
-            .map(|anchor| source_index.byte_to_line_utf16_col(*anchor)),
+            .map(|anchor| source.byte_to_line_utf16_col(*anchor)),
     );
     let anchor_positions = anchor_positions
         .into_iter()
