@@ -6,7 +6,10 @@ import {
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
-import { parseCanonicalSourceMap } from "@lingui-for/internal-shared-compile";
+import {
+  parseCanonicalSourceMap,
+  toBabelSourceMap,
+} from "@lingui-for/internal-shared-compile";
 
 import {
   normalizeLinguiConfig,
@@ -15,8 +18,6 @@ import {
 } from "../common/config.ts";
 import { createAstroFrameworkConventions } from "../common/conventions.ts";
 import { transformProgram } from "../lower/babel-transform.ts";
-
-export type { RichTextWhitespaceMode } from "../common/config.ts";
 
 /**
  * Options for {@link transformAstro}.
@@ -57,15 +58,51 @@ export interface LinguiAstroTransformResult {
    * Source map for the transformed file, or `null` when none is generated.
    */
   map: CanonicalSourceMap | null;
+  /**
+   * Intermediate artifacts from the transform process, useful for testing and debugging but not guaranteed.
+   */
+  artifacts: {
+    /**
+     * The synthetic TSX module produced by the Rust analyzer before any Babel/Lingui transforms run.
+     */
+    synthetic: LinguiAstroTransformArtifact;
+    /**
+     * The Babel/Lingui transform of the synthetic module with Astro runtime bindings applied.
+     */
+    context: LinguiAstroTransformArtifact;
+    /**
+     * The final `.astro` output after Rust reinserts the transformed declarations into the original source.
+     */
+    final: LinguiAstroTransformArtifact;
+  };
 }
 
 /**
- * Transforms one `.astro` source file in place for runtime use.
+ * One intermediate or final output from the Astro transform pipeline together with its source map.
+ */
+export interface LinguiAstroTransformArtifact {
+  /**
+   * Filename associated with this artifact, typically used for diagnostics and source map generation.
+   * May be a virtual name for synthetic modules.
+   */
+  filename: string;
+  /**
+   * Transformed source code for this artifact.
+   */
+  code: string;
+  /**
+   * Source map for the transformed file, or `null` when none is generated.
+   */
+  map: CanonicalSourceMap | null;
+}
+
+/**
+ * Transforms one `.astro` source string for runtime use.
  *
  * @param source Original `.astro` source.
  * @param options Transform options including filename and optional Lingui config.
- * @returns Rewritten source and source map, or `null` when the file contains no Lingui macros that
- * require rewriting.
+ * @returns Rewritten source, source map, and intermediate artifacts, or `null` when the file
+ * contains no Lingui macros that require rewriting.
  *
  * This is the main Astro entry point for runtime compilation. Rust handles analysis, planning, and
  * final lowering; JS runs the Lingui/Babel passes needed to produce the intermediate programs that
@@ -100,10 +137,15 @@ export async function transformAstro(
     return null;
   }
 
+  const syntheticMap = parseCanonicalSourceMap(
+    compilePlan.common.syntheticSourceMapJson,
+  );
+  const contextFilename = `${compilePlan.common.syntheticName}?astro-context`;
   const context = transformProgram(compilePlan.common.syntheticSource, {
     translationMode: "astro-context",
-    filename: `${compilePlan.common.syntheticName}?astro-context`,
+    filename: contextFilename,
     linguiConfig,
+    inputSourceMap: toBabelSourceMap(syntheticMap),
     runtimeBinding: compilePlan.runtimeBindings.i18n,
   });
 
@@ -118,9 +160,27 @@ export async function transformAstro(
       rawSourceMapJson: undefined,
     },
   });
+  const finalMap = parseCanonicalSourceMap(finished.sourceMapJson);
 
   return {
     code: finished.code,
-    map: parseCanonicalSourceMap(finished.sourceMapJson),
+    map: finalMap,
+    artifacts: {
+      synthetic: {
+        filename: compilePlan.common.syntheticName,
+        code: compilePlan.common.syntheticSource,
+        map: syntheticMap,
+      },
+      context: {
+        filename: contextFilename,
+        code: context.code,
+        map: context.map ?? null,
+      },
+      final: {
+        filename,
+        code: finished.code,
+        map: finalMap,
+      },
+    },
   };
 }

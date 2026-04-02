@@ -24,8 +24,8 @@ async function expectTransformed(
     filename: options.filename ?? "/virtual/App.astro",
     whitespace: options.whitespace,
   });
-  expect(result).not.toBeNull();
-  return result!;
+  expect.assert(result != null);
+  return result;
 }
 
 describe("transformAstro", () => {
@@ -499,7 +499,9 @@ describe("transformAstro source map discipline", () => {
     const result = await expectTransformed(source, {
       filename: "/virtual/Page.astro",
     });
-    const map = result.map!;
+
+    const { code, map } = result;
+    expect.assert(map != null);
 
     expect(map.file).toBe("/virtual/Page.astro");
     expect(map.sources).toEqual(["/virtual/Page.astro"]);
@@ -509,10 +511,11 @@ describe("transformAstro source map discipline", () => {
     detections.forEach((detection) => {
       assertRangeMapping(
         consumer,
-        result.code,
+        code,
         source,
         detection,
         "/virtual/Page.astro",
+        "both",
         expect,
       );
     });

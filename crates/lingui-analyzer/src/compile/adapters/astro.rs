@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
+use crate::common::{
+    EmbeddedScriptRegion, IndexedText, MappedText, RenderedMappedText, ScriptLang, Span,
+    build_copy_map, build_span_anchor_map,
+};
 use crate::conventions::FrameworkConventions;
 use crate::framework::astro::{AstroAdapter, AstroFrameworkError};
 use crate::framework::js::{
@@ -11,9 +14,10 @@ use crate::framework::parse::{ParseError, parse_typescript};
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError, WhitespaceMode};
 
 use super::super::{
-    CommonCompilePlan, CompileError, CompileReplacement, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode, FrameworkCompilePlan,
-    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
+    CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
+    CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode,
+    FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
+    build_compile_plan_for_framework,
 };
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 
@@ -81,8 +85,23 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         _analysis: &Self::Analysis,
         _prototype: &CompileTargetPrototype,
         normalized_source: &str,
-    ) -> Result<String, CompileError> {
-        Ok(normalized_source.to_string())
+    ) -> Result<RenderedMappedText, CompileError> {
+        let indexed_source = IndexedText::new(normalized_source);
+        let mut mapped = MappedText::new("__normalized", normalized_source);
+        if let Some(map) = build_copy_map(
+            "__normalized",
+            &indexed_source,
+            Span::new(0, normalized_source.len()),
+            &[],
+        ) {
+            mapped.push_pre_mapped(normalized_source, map);
+        } else {
+            mapped.push_unmapped(normalized_source);
+        }
+        mapped
+            .into_rendered()
+            .map_err(AdapterError::from)
+            .map_err(CompileError::from)
     }
 
     fn repair_compile_targets(_source: &str, _targets: &mut [CompileTarget]) {}
@@ -110,20 +129,25 @@ impl FrameworkCompilePlan for AstroCompilePlan {
 
     fn lower_runtime_component_markup(
         &self,
-        declaration_code: &str,
-    ) -> Result<String, RuntimeComponentError> {
+        source_name: &str,
+        source: &str,
+        declaration: &RenderedMappedText,
+    ) -> Result<RenderedMappedText, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(
-            declaration_code,
+            source_name,
+            source,
+            declaration,
             self.runtime_bindings.runtime_trans.as_str(),
         )
     }
 
     fn append_runtime_injection_replacements(
         &self,
-        _source: &str,
-        replacements: &mut Vec<CompileReplacement>,
+        source: &str,
+        replacements: &mut Vec<CompileReplacementInternal>,
     ) -> Result<(), AdapterError> {
-        append_runtime_injection_replacements(self, replacements).map_err(AdapterError::from)
+        append_runtime_injection_replacements(self, source, replacements)
+            .map_err(AdapterError::from)
     }
 }
 
@@ -164,16 +188,16 @@ pub(crate) fn analyze_astro_compile(
             conventions: conventions.clone(),
         },
     )?;
-    let frontmatter = analysis
-        .frontmatter
-        .as_ref()
-        .map(|region| build_frontmatter_region(source, region, conventions));
     let import_removals = analysis
         .frontmatter
         .as_ref()
         .map(|region| collect_macro_import_statement_spans(source, region, conventions))
         .transpose()?
         .unwrap_or_default();
+    let frontmatter = analysis
+        .frontmatter
+        .as_ref()
+        .map(|region| build_frontmatter_region(source, region, &import_removals));
     let mut prototypes = Vec::new();
 
     prototypes.extend(
@@ -217,6 +241,7 @@ pub(crate) fn analyze_astro_compile(
             prototypes,
             import_removals,
             synthetic_lang: ScriptLang::Ts,
+            source_anchors: analysis.source_anchors.clone(),
         },
         runtime_bindings: create_runtime_bindings(
             analysis
@@ -295,8 +320,10 @@ fn allocate_unique_binding_name(
 
 fn append_runtime_injection_replacements(
     plan: &AstroCompilePlan,
-    replacements: &mut Vec<CompileReplacement>,
+    source: &str,
+    replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
+    let indexed_source = IndexedText::new(source);
     let prelude = build_frontmatter_prelude(
         plan.runtime_requirements.needs_runtime_i18n_binding,
         plan.runtime_requirements.needs_runtime_trans_component,
@@ -314,35 +341,62 @@ fn append_runtime_injection_replacements(
         } else {
             prelude
         };
-        replacements.push(CompileReplacement {
-            declaration_id: "__runtime_frontmatter_prelude".to_string(),
-            start: frontmatter.prelude_insert_point,
-            end: frontmatter.prelude_insert_point,
+        let anchor_span = plan
+            .common
+            .import_removals
+            .first()
+            .copied()
+            .unwrap_or(Span::new(
+                frontmatter.prelude_insert_point,
+                frontmatter.prelude_insert_point,
+            ));
+        let source_map = build_span_anchor_map(
+            plan.common.source_name.as_str(),
+            &indexed_source,
+            code.as_str(),
+            anchor_span.start,
+            anchor_span.end,
+        );
+        replacements.push(CompileReplacementInternal::new(
+            "__runtime_frontmatter_prelude".to_string(),
+            frontmatter.prelude_insert_point,
+            frontmatter.prelude_insert_point,
             code,
-            source_map_json: None,
-        });
+            source_map,
+            Vec::new(),
+        ));
 
         if !frontmatter.has_remaining_content_after_import_removal
             && let Some(range) = frontmatter.trailing_whitespace_range
         {
-            replacements.push(CompileReplacement {
-                declaration_id: "__runtime_frontmatter_trailing_ws".to_string(),
-                start: range.start,
-                end: range.end,
-                code: String::new(),
-                source_map_json: None,
-            });
+            replacements.push(CompileReplacementInternal::new(
+                "__runtime_frontmatter_trailing_ws".to_string(),
+                range.start,
+                range.end,
+                String::new(),
+                None,
+                Vec::new(),
+            ));
         }
         return Ok(());
     }
 
-    replacements.push(CompileReplacement {
-        declaration_id: "__runtime_frontmatter_block".to_string(),
-        start: 0,
-        end: 0,
-        code: format!("---\n{prelude}\n---\n"),
-        source_map_json: None,
-    });
+    let code = format!("---\n{prelude}\n---\n");
+    let source_map = build_span_anchor_map(
+        plan.common.source_name.as_str(),
+        &indexed_source,
+        code.as_str(),
+        0,
+        0,
+    );
+    replacements.push(CompileReplacementInternal::new(
+        "__runtime_frontmatter_block".to_string(),
+        0,
+        0,
+        code,
+        source_map,
+        Vec::new(),
+    ));
     Ok(())
 }
 
@@ -383,7 +437,7 @@ fn build_frontmatter_prelude(
 fn build_frontmatter_region(
     source: &str,
     region: &EmbeddedScriptRegion,
-    conventions: &FrameworkConventions,
+    import_removals: &[Span],
 ) -> AstroCompileFrontmatterRegion {
     AstroCompileFrontmatterRegion {
         outer_span: region.outer_span,
@@ -393,7 +447,7 @@ fn build_frontmatter_region(
         has_remaining_content_after_import_removal: has_remaining_content_after_import_removal(
             source,
             region,
-            conventions,
+            import_removals,
         ),
     }
 }
@@ -428,13 +482,12 @@ fn compute_trailing_whitespace_range(source: &str, region: &EmbeddedScriptRegion
 fn has_remaining_content_after_import_removal(
     source: &str,
     region: &EmbeddedScriptRegion,
-    conventions: &FrameworkConventions,
+    import_removals: &[Span],
 ) -> bool {
     let content = &source[region.inner_span.start..region.inner_span.end];
-    let ranges =
-        collect_macro_import_statement_spans(source, region, conventions).unwrap_or_default();
-    let relative_ranges = ranges
-        .into_iter()
+    let relative_ranges = import_removals
+        .iter()
+        .copied()
         .map(|span| {
             Span::new(
                 span.start - region.inner_span.start,

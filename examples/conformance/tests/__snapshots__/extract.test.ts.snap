@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`'component-whitespacing' > astro extraction 1`] = `
+exports[`extract fixtures > 'component-whitespacing' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -9,8 +9,8 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.astro",
-      6,
-      2,
+      5,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -23,8 +23,8 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "message": "Before{value}After",
     "origin": [
       "/virtual/component-whitespacing.astro",
-      11,
-      2,
+      10,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -37,8 +37,8 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.astro",
-      16,
-      2,
+      15,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -51,8 +51,8 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
     "message": " Before  {value}  After ",
     "origin": [
       "/virtual/component-whitespacing.astro",
-      19,
-      2,
+      18,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -61,7 +61,7 @@ exports[`'component-whitespacing' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'component-whitespacing' > official react extraction 1`] = `
+exports[`extract fixtures > 'component-whitespacing' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -122,7 +122,7 @@ exports[`'component-whitespacing' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'component-whitespacing' > svelte extraction 1`] = `
+exports[`extract fixtures > 'component-whitespacing' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -131,8 +131,8 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.svelte",
-      6,
-      2,
+      5,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -145,8 +145,8 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
     "message": "Before{value}After",
     "origin": [
       "/virtual/component-whitespacing.svelte",
-      11,
-      2,
+      10,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -159,8 +159,8 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.svelte",
-      16,
-      2,
+      15,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -173,8 +173,8 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
     "message": " Before  {value}  After ",
     "origin": [
       "/virtual/component-whitespacing.svelte",
-      19,
-      2,
+      18,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -183,7 +183,7 @@ exports[`'component-whitespacing' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'component-whitespacing-auto' > astro extraction 1`] = `
+exports[`extract fixtures > 'component-whitespacing-auto' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -192,8 +192,8 @@ exports[`'component-whitespacing-auto' > astro extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.astro",
-      6,
-      2,
+      5,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -206,8 +206,8 @@ exports[`'component-whitespacing-auto' > astro extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.astro",
-      11,
-      2,
+      10,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -220,8 +220,8 @@ exports[`'component-whitespacing-auto' > astro extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.astro",
-      16,
-      2,
+      15,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -234,8 +234,8 @@ exports[`'component-whitespacing-auto' > astro extraction 1`] = `
     "message": " Before  {value}  After ",
     "origin": [
       "/virtual/component-whitespacing-auto.astro",
-      19,
-      2,
+      18,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -244,7 +244,7 @@ exports[`'component-whitespacing-auto' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'component-whitespacing-auto' > official react extraction 1`] = `
+exports[`extract fixtures > 'component-whitespacing-auto' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -305,7 +305,7 @@ exports[`'component-whitespacing-auto' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'component-whitespacing-auto' > svelte extraction 1`] = `
+exports[`extract fixtures > 'component-whitespacing-auto' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -314,8 +314,8 @@ exports[`'component-whitespacing-auto' > svelte extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.svelte",
-      6,
-      2,
+      5,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -328,8 +328,8 @@ exports[`'component-whitespacing-auto' > svelte extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.svelte",
-      11,
-      2,
+      10,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -342,8 +342,8 @@ exports[`'component-whitespacing-auto' > svelte extraction 1`] = `
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.svelte",
-      16,
-      2,
+      15,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -356,8 +356,8 @@ exports[`'component-whitespacing-auto' > svelte extraction 1`] = `
     "message": " Before  {value}  After ",
     "origin": [
       "/virtual/component-whitespacing-auto.svelte",
-      19,
-      2,
+      18,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -366,7 +366,7 @@ exports[`'component-whitespacing-auto' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'deep-rich-text-trans' > astro extraction 1`] = `
+exports[`extract fixtures > 'deep-rich-text-trans' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -375,8 +375,8 @@ exports[`'deep-rich-text-trans' > astro extraction 1`] = `
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
       "/virtual/deep-rich-text-trans.astro",
-      10,
-      2,
+      9,
+      0,
     ],
     "placeholders": {
       "action": "action",
@@ -387,7 +387,7 @@ exports[`'deep-rich-text-trans' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'deep-rich-text-trans' > official react extraction 1`] = `
+exports[`extract fixtures > 'deep-rich-text-trans' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -408,7 +408,7 @@ exports[`'deep-rich-text-trans' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'deep-rich-text-trans' > svelte extraction 1`] = `
+exports[`extract fixtures > 'deep-rich-text-trans' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -417,8 +417,8 @@ exports[`'deep-rich-text-trans' > svelte extraction 1`] = `
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
       "/virtual/deep-rich-text-trans.svelte",
-      10,
-      2,
+      9,
+      0,
     ],
     "placeholders": {
       "action": "action",
@@ -429,7 +429,7 @@ exports[`'deep-rich-text-trans' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'exact-number-component' > astro extraction 1`] = `
+exports[`extract fixtures > 'exact-number-component' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -462,7 +462,7 @@ exports[`'exact-number-component' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'exact-number-component' > official react extraction 1`] = `
+exports[`extract fixtures > 'exact-number-component' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -495,7 +495,7 @@ exports[`'exact-number-component' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'exact-number-component' > svelte extraction 1`] = `
+exports[`extract fixtures > 'exact-number-component' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -528,7 +528,7 @@ exports[`'exact-number-component' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'nested-icu-core' > astro extraction 1`] = `
+exports[`extract fixtures > 'nested-icu-core' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -538,7 +538,7 @@ exports[`'nested-icu-core' > astro extraction 1`] = `
     "origin": [
       "/virtual/nested-icu-core.astro",
       7,
-      17,
+      19,
     ],
     "placeholders": {
       "count": "count",
@@ -549,7 +549,7 @@ exports[`'nested-icu-core' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'nested-icu-core' > official core extraction 1`] = `
+exports[`extract fixtures > 'nested-icu-core' > official core extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -570,7 +570,7 @@ exports[`'nested-icu-core' > official core extraction 1`] = `
 ]
 `;
 
-exports[`'nested-icu-core' > svelte extraction 1`] = `
+exports[`extract fixtures > 'nested-icu-core' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -580,7 +580,7 @@ exports[`'nested-icu-core' > svelte extraction 1`] = `
     "origin": [
       "/virtual/nested-icu-core.svelte",
       8,
-      29,
+      31,
     ],
     "placeholders": {
       "count": "count",
@@ -591,7 +591,7 @@ exports[`'nested-icu-core' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'rich-text-trans' > astro extraction 1`] = `
+exports[`extract fixtures > 'rich-text-trans' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -601,7 +601,7 @@ exports[`'rich-text-trans' > astro extraction 1`] = `
     "origin": [
       "/virtual/rich-text-trans.astro",
       7,
-      7,
+      0,
     ],
     "placeholders": {
       "name": "name",
@@ -610,7 +610,7 @@ exports[`'rich-text-trans' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'rich-text-trans' > official react extraction 1`] = `
+exports[`extract fixtures > 'rich-text-trans' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -629,7 +629,7 @@ exports[`'rich-text-trans' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'rich-text-trans' > svelte extraction 1`] = `
+exports[`extract fixtures > 'rich-text-trans' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -639,7 +639,7 @@ exports[`'rich-text-trans' > svelte extraction 1`] = `
     "origin": [
       "/virtual/rich-text-trans.svelte",
       7,
-      7,
+      0,
     ],
     "placeholders": {
       "name": "name",
@@ -648,7 +648,7 @@ exports[`'rich-text-trans' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
+exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -657,8 +657,8 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
     "message": "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
     "origin": [
       "/virtual/trans-with-deeply-nested-component-icu.astro",
-      15,
-      2,
+      14,
+      0,
     ],
     "placeholders": {
       "0": "_i18n._(
@@ -742,7 +742,7 @@ exports[`'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'trans-with-deeply-nested-component-icu' > official react extraction 1`] = `
+exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -836,7 +836,7 @@ exports[`'trans-with-deeply-nested-component-icu' > official react extraction 1`
 ]
 `;
 
-exports[`'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
+exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -845,8 +845,8 @@ exports[`'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
     "message": "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
     "origin": [
       "/virtual/trans-with-deeply-nested-component-icu.svelte",
-      15,
-      2,
+      14,
+      0,
     ],
     "placeholders": {
       "0": "_i18n._(
@@ -930,7 +930,7 @@ exports[`'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'trans-with-plural' > astro extraction 1`] = `
+exports[`extract fixtures > 'trans-with-plural' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -939,8 +939,8 @@ exports[`'trans-with-plural' > astro extraction 1`] = `
     "message": "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
     "origin": [
       "/virtual/trans-with-plural.astro",
-      8,
-      2,
+      7,
+      0,
     ],
     "placeholders": {
       "count": "count",
@@ -949,7 +949,7 @@ exports[`'trans-with-plural' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'trans-with-plural' > official react extraction 1`] = `
+exports[`extract fixtures > 'trans-with-plural' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -968,7 +968,7 @@ exports[`'trans-with-plural' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'trans-with-plural' > svelte extraction 1`] = `
+exports[`extract fixtures > 'trans-with-plural' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -977,8 +977,8 @@ exports[`'trans-with-plural' > svelte extraction 1`] = `
     "message": "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
     "origin": [
       "/virtual/trans-with-plural.svelte",
-      8,
-      2,
+      7,
+      0,
     ],
     "placeholders": {
       "count": "count",
@@ -987,7 +987,7 @@ exports[`'trans-with-plural' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'unicode-adjacent-text' > astro extraction 1`] = `
+exports[`extract fixtures > 'unicode-adjacent-text' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -997,7 +997,7 @@ exports[`'unicode-adjacent-text' > astro extraction 1`] = `
     "origin": [
       "/virtual/unicode-adjacent-text.astro",
       9,
-      9,
+      2,
     ],
     "placeholders": {
       "name": "name",
@@ -1006,7 +1006,7 @@ exports[`'unicode-adjacent-text' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'unicode-adjacent-text' > official react extraction 1`] = `
+exports[`extract fixtures > 'unicode-adjacent-text' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1025,7 +1025,7 @@ exports[`'unicode-adjacent-text' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'unicode-adjacent-text' > svelte extraction 1`] = `
+exports[`extract fixtures > 'unicode-adjacent-text' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1035,7 +1035,7 @@ exports[`'unicode-adjacent-text' > svelte extraction 1`] = `
     "origin": [
       "/virtual/unicode-adjacent-text.svelte",
       9,
-      9,
+      2,
     ],
     "placeholders": {
       "name": "name",
@@ -1044,7 +1044,7 @@ exports[`'unicode-adjacent-text' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'unicode-zwj-adjacent-text' > astro extraction 1`] = `
+exports[`extract fixtures > 'unicode-zwj-adjacent-text' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1054,7 +1054,7 @@ exports[`'unicode-zwj-adjacent-text' > astro extraction 1`] = `
     "origin": [
       "/virtual/unicode-zwj-adjacent-text.astro",
       9,
-      9,
+      2,
     ],
     "placeholders": {
       "name": "name",
@@ -1063,7 +1063,7 @@ exports[`'unicode-zwj-adjacent-text' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'unicode-zwj-adjacent-text' > official react extraction 1`] = `
+exports[`extract fixtures > 'unicode-zwj-adjacent-text' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1082,7 +1082,7 @@ exports[`'unicode-zwj-adjacent-text' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'unicode-zwj-adjacent-text' > svelte extraction 1`] = `
+exports[`extract fixtures > 'unicode-zwj-adjacent-text' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1092,7 +1092,7 @@ exports[`'unicode-zwj-adjacent-text' > svelte extraction 1`] = `
     "origin": [
       "/virtual/unicode-zwj-adjacent-text.svelte",
       9,
-      9,
+      2,
     ],
     "placeholders": {
       "name": "name",
@@ -1101,7 +1101,7 @@ exports[`'unicode-zwj-adjacent-text' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`'with-id-context-comment-component' > astro extraction 1`] = `
+exports[`extract fixtures > 'with-id-context-comment-component' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1111,7 +1111,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       7,
-      7,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1125,7 +1125,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       8,
-      7,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1139,7 +1139,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       9,
-      39,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1153,7 +1153,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       10,
-      35,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1167,7 +1167,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       11,
-      35,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1181,7 +1181,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       13,
-      7,
+      0,
     ],
     "placeholders": {},
   },
@@ -1193,7 +1193,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       14,
-      7,
+      0,
     ],
     "placeholders": {},
   },
@@ -1205,7 +1205,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       15,
-      37,
+      0,
     ],
     "placeholders": {},
   },
@@ -1217,7 +1217,7 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       16,
-      35,
+      0,
     ],
     "placeholders": {},
   },
@@ -1229,14 +1229,14 @@ exports[`'with-id-context-comment-component' > astro extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.astro",
       17,
-      35,
+      0,
     ],
     "placeholders": {},
   },
 ]
 `;
 
-exports[`'with-id-context-comment-component' > official react extraction 1`] = `
+exports[`extract fixtures > 'with-id-context-comment-component' > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1345,7 +1345,7 @@ exports[`'with-id-context-comment-component' > official react extraction 1`] = `
 ]
 `;
 
-exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
+exports[`extract fixtures > 'with-id-context-comment-component' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1355,7 +1355,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       7,
-      7,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1369,7 +1369,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       8,
-      7,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1383,7 +1383,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       9,
-      39,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1397,7 +1397,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       10,
-      35,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1411,7 +1411,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       11,
-      35,
+      0,
     ],
     "placeholders": {
       "value": "value",
@@ -1425,7 +1425,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       13,
-      7,
+      0,
     ],
     "placeholders": {},
   },
@@ -1437,7 +1437,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       14,
-      7,
+      0,
     ],
     "placeholders": {},
   },
@@ -1449,7 +1449,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       15,
-      37,
+      0,
     ],
     "placeholders": {},
   },
@@ -1461,7 +1461,7 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       16,
-      35,
+      0,
     ],
     "placeholders": {},
   },
@@ -1473,14 +1473,14 @@ exports[`'with-id-context-comment-component' > svelte extraction 1`] = `
     "origin": [
       "/virtual/with-id-context-comment-component.svelte",
       17,
-      35,
+      0,
     ],
     "placeholders": {},
   },
 ]
 `;
 
-exports[`'with-id-context-comment-core' > astro extraction 1`] = `
+exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1615,7 +1615,7 @@ exports[`'with-id-context-comment-core' > astro extraction 1`] = `
 ]
 `;
 
-exports[`'with-id-context-comment-core' > official core extraction 1`] = `
+exports[`extract fixtures > 'with-id-context-comment-core' > official core extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1750,7 +1750,7 @@ exports[`'with-id-context-comment-core' > official core extraction 1`] = `
 ]
 `;
 
-exports[`'with-id-context-comment-core' > svelte extraction 1`] = `
+exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1`] = `
 [
   {
     "comment": undefined,

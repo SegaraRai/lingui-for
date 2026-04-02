@@ -1,20 +1,26 @@
+use std::borrow::Cow;
 use std::collections::BTreeSet;
 
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
+use crate::common::{
+    EmbeddedScriptRegion, IndexedText, MappedText, MappedTextError, RenderedMappedText, ScriptLang,
+    Span, build_copy_map, build_span_anchor_map,
+};
 use crate::conventions::FrameworkConventions;
-use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError, bare_direct_macro_message};
+use crate::framework::helpers::text::find_pattern_near_start;
+use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError};
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
     MacroCandidateStrategy, MacroFlavor, WhitespaceMode,
 };
 
 use super::super::{
-    CommonCompilePlan, CompileError, CompileReplacement, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode, FrameworkCompilePlan,
-    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
+    CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
+    CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype, CompileTranslationMode,
+    FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
+    build_compile_plan_for_framework,
 };
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 
@@ -24,8 +30,16 @@ pub enum SvelteAdapterError {
     Framework(#[from] FrameworkError),
     #[error(transparent)]
     SvelteFramework(#[from] SvelteFrameworkError),
-    #[error("{0}")]
-    InvalidMacroUsage(String),
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
+    #[error(
+        "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations."
+    )]
+    BareDirectTNotAllowed,
+    #[error(
+        "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
+    )]
+    BareDirectMacroRequiresReactiveOrEager { imported_name: Cow<'static, str> },
     #[error("missing Svelte convention field: {0}")]
     MissingConvention(&'static str),
 }
@@ -81,7 +95,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         analysis: &Self::Analysis,
         prototype: &CompileTargetPrototype,
         normalized_source: &str,
-    ) -> Result<String, CompileError> {
+    ) -> Result<RenderedMappedText, CompileError> {
         wrap_compile_source(analysis, prototype, normalized_source)
             .map_err(AdapterError::from)
             .map_err(CompileError::from)
@@ -115,10 +129,14 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
 
     fn lower_runtime_component_markup(
         &self,
-        declaration_code: &str,
-    ) -> Result<String, RuntimeComponentError> {
+        source_name: &str,
+        source: &str,
+        declaration: &RenderedMappedText,
+    ) -> Result<RenderedMappedText, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(
-            declaration_code,
+            source_name,
+            source,
+            declaration,
             self.runtime_bindings.trans_component.as_str(),
         )
     }
@@ -126,7 +144,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     fn append_runtime_injection_replacements(
         &self,
         source: &str,
-        replacements: &mut Vec<CompileReplacement>,
+        replacements: &mut Vec<CompileReplacementInternal>,
     ) -> Result<(), AdapterError> {
         append_runtime_injection_replacements(self, source, replacements)
             .map_err(AdapterError::from)
@@ -252,6 +270,7 @@ pub(crate) fn analyze_svelte_compile(
                 .map(|script| script.lang)
                 .or_else(|| module_script.as_ref().map(|script| script.lang))
                 .unwrap_or(ScriptLang::Ts),
+            source_anchors: analysis.source_anchors.clone(),
         },
         conventions: conventions.clone(),
         runtime_bindings: create_runtime_bindings(
@@ -296,7 +315,9 @@ pub(crate) fn wrap_compile_source(
     analysis: &SvelteFrameworkCompileAnalysis,
     prototype: &CompileTargetPrototype,
     normalized_source: &str,
-) -> Result<String, SvelteAdapterError> {
+) -> Result<RenderedMappedText, SvelteAdapterError> {
+    let indexed_source = IndexedText::new(normalized_source);
+    let mut mapped = MappedText::new("__normalized", normalized_source);
     if prototype.output_kind == CompileTargetOutputKind::Expression {
         match prototype.candidate.flavor {
             MacroFlavor::Reactive => {
@@ -308,10 +329,19 @@ pub(crate) fn wrap_compile_source(
                     .ok_or(SvelteAdapterError::MissingConvention(
                         "wrappers.reactive_translation",
                     ))?;
-                return Ok(format!(
-                    "{wrapper}({normalized_source}, {:?})",
-                    prototype.candidate.local_name
-                ));
+                push_wrapper_anchor(&mut mapped, &indexed_source, &format!("{wrapper}("), 0);
+                push_wrapped_copy(
+                    &mut mapped,
+                    &indexed_source,
+                    Span::new(0, normalized_source.len()),
+                );
+                push_wrapper_anchor(
+                    &mut mapped,
+                    &indexed_source,
+                    &format!(", {:?})", prototype.candidate.local_name),
+                    normalized_source.len(),
+                );
+                return mapped.into_rendered().map_err(SvelteAdapterError::from);
             }
             MacroFlavor::Eager => {
                 let wrapper = analysis
@@ -322,13 +352,51 @@ pub(crate) fn wrap_compile_source(
                     .ok_or(SvelteAdapterError::MissingConvention(
                         "wrappers.eager_translation",
                     ))?;
-                return Ok(format!("{wrapper}({normalized_source})"));
+                push_wrapper_anchor(&mut mapped, &indexed_source, &format!("{wrapper}("), 0);
+                push_wrapped_copy(
+                    &mut mapped,
+                    &indexed_source,
+                    Span::new(0, normalized_source.len()),
+                );
+                push_wrapper_anchor(&mut mapped, &indexed_source, ")", normalized_source.len());
+                return mapped.into_rendered().map_err(SvelteAdapterError::from);
             }
             MacroFlavor::Direct => {}
         }
     }
 
-    Ok(normalized_source.to_string())
+    push_wrapped_copy(
+        &mut mapped,
+        &indexed_source,
+        Span::new(0, normalized_source.len()),
+    );
+    mapped.into_rendered().map_err(SvelteAdapterError::from)
+}
+
+fn push_wrapper_anchor(
+    mapped: &mut MappedText<'_>,
+    normalized_source: &IndexedText<'_>,
+    text: &str,
+    original_byte: usize,
+) {
+    let Some(map) = build_span_anchor_map(
+        "__normalized",
+        normalized_source,
+        text,
+        original_byte,
+        original_byte,
+    ) else {
+        return;
+    };
+    mapped.push_pre_mapped(text, map);
+}
+
+fn push_wrapped_copy(mapped: &mut MappedText<'_>, normalized_source: &IndexedText<'_>, span: Span) {
+    if let Some(map) = build_copy_map("__normalized", normalized_source, span, &[]) {
+        mapped.push_pre_mapped(&normalized_source.as_str()[span.start..span.end], map);
+    } else {
+        mapped.push_unmapped(&normalized_source.as_str()[span.start..span.end]);
+    }
 }
 
 pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
@@ -391,7 +459,7 @@ pub(crate) fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]
         match target.flavor {
             MacroFlavor::Reactive => {
                 let pattern = format!("${}", target.local_name);
-                let Some(start) = find_svelte_prefix_near(
+                let Some(start) = find_pattern_near_start(
                     source,
                     target.original_span.start,
                     target.original_span.end,
@@ -412,7 +480,7 @@ pub(crate) fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]
             }
             MacroFlavor::Eager => {
                 let pattern = format!("{}.eager", target.local_name);
-                let Some(start) = find_svelte_prefix_near(
+                let Some(start) = find_pattern_near_start(
                     source,
                     target.original_span.start,
                     target.original_span.end,
@@ -449,9 +517,21 @@ pub(crate) fn validate_compile_targets(
     });
 
     if let Some(imported_name) = offending_macro {
-        return Err(SvelteAdapterError::InvalidMacroUsage(
-            bare_direct_macro_message(imported_name),
-        ));
+        return Err(match imported_name {
+            "t" => SvelteAdapterError::BareDirectTNotAllowed,
+            "plural" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
+                imported_name: Cow::Borrowed("plural"),
+            },
+            "select" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
+                imported_name: Cow::Borrowed("select"),
+            },
+            "selectOrdinal" => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
+                imported_name: Cow::Borrowed("selectOrdinal"),
+            },
+            other => SvelteAdapterError::BareDirectMacroRequiresReactiveOrEager {
+                imported_name: Cow::Owned(other.to_string()),
+            },
+        });
     }
 
     Ok(())
@@ -460,8 +540,9 @@ pub(crate) fn validate_compile_targets(
 pub(super) fn append_runtime_injection_replacements(
     plan: &SvelteCompilePlan,
     source: &str,
-    replacements: &mut Vec<CompileReplacement>,
+    replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), SvelteAdapterError> {
+    let indexed_source = IndexedText::new(source);
     let runtime_bindings = &plan.runtime_bindings;
 
     let needs_lingui_context = plan.runtime_requirements.needs_runtime_i18n_binding;
@@ -484,23 +565,42 @@ pub(super) fn append_runtime_injection_replacements(
             get_script_insertion_start(source, instance_script.content_span.start);
 
         if !injections.prelude.is_empty() {
-            replacements.push(CompileReplacement {
-                declaration_id: "__runtime_prelude".to_string(),
-                start: insertion_start,
-                end: insertion_start,
-                code: injections.prelude,
-                source_map_json: None,
-            });
+            let anchor_span = plan
+                .common
+                .import_removals
+                .iter()
+                .find(|span| {
+                    span.start >= insertion_start && span.end <= instance_script.content_span.end
+                })
+                .copied()
+                .unwrap_or(Span::new(insertion_start, insertion_start));
+            let prelude = injections.prelude;
+            let source_map = build_span_anchor_map(
+                plan.common.source_name.as_str(),
+                &indexed_source,
+                prelude.as_str(),
+                anchor_span.start,
+                anchor_span.end,
+            );
+            replacements.push(CompileReplacementInternal::new(
+                "__runtime_prelude".to_string(),
+                insertion_start,
+                insertion_start,
+                prelude,
+                source_map,
+                Vec::new(),
+            ));
         }
 
         if !injections.suffix.is_empty() {
-            replacements.push(CompileReplacement {
-                declaration_id: "__runtime_suffix".to_string(),
-                start: instance_script.content_span.end,
-                end: instance_script.content_span.end,
-                code: injections.suffix,
-                source_map_json: None,
-            });
+            replacements.push(CompileReplacementInternal::new(
+                "__runtime_suffix".to_string(),
+                instance_script.content_span.end,
+                instance_script.content_span.end,
+                injections.suffix,
+                None,
+                Vec::new(),
+            ));
         }
 
         return Ok(());
@@ -525,13 +625,21 @@ pub(super) fn append_runtime_injection_replacements(
         format!("{block}\n\n")
     };
 
-    replacements.push(CompileReplacement {
-        declaration_id: "__runtime_script_block".to_string(),
-        start: insertion_start,
-        end: insertion_start,
+    let source_map = build_span_anchor_map(
+        plan.common.source_name.as_str(),
+        &indexed_source,
+        code.as_str(),
+        insertion_start,
+        insertion_start,
+    );
+    replacements.push(CompileReplacementInternal::new(
+        "__runtime_script_block".to_string(),
+        insertion_start,
+        insertion_start,
         code,
-        source_map_json: None,
-    });
+        source_map,
+        Vec::new(),
+    ));
     Ok(())
 }
 
@@ -548,38 +656,6 @@ fn allocate_unique_binding_name(used: &mut BTreeSet<String>, preferred: &str) ->
         }
         index += 1;
     }
-}
-
-fn find_svelte_prefix_near(
-    source: &str,
-    current_start: usize,
-    current_end: usize,
-    pattern: &str,
-) -> Option<usize> {
-    let window_start =
-        clamp_to_char_boundary_floor(source, current_start.saturating_sub(pattern.len() + 8));
-    let window_end = clamp_to_char_boundary_ceil(source, current_end.min(source.len()));
-    source[window_start..window_end]
-        .match_indices(pattern)
-        .map(|(offset, _)| window_start + offset)
-        .filter(|start| *start <= current_start)
-        .max()
-}
-
-fn clamp_to_char_boundary_floor(source: &str, mut index: usize) -> usize {
-    index = index.min(source.len());
-    while index > 0 && !source.is_char_boundary(index) {
-        index -= 1;
-    }
-    index
-}
-
-fn clamp_to_char_boundary_ceil(source: &str, mut index: usize) -> usize {
-    index = index.min(source.len());
-    while index < source.len() && !source.is_char_boundary(index) {
-        index += 1;
-    }
-    index
 }
 
 struct RuntimeInsertions {

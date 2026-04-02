@@ -11,7 +11,7 @@ import { readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
 import { svelteExtractor } from "lingui-for-svelte/extractor";
-import { unstable_transformSvelte } from "lingui-for-svelte/transform";
+import { unstable_transformSvelte } from "lingui-for-svelte/internal/compile";
 
 import linguiConfig from "../lingui.config.ts";
 import {

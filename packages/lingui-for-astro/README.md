@@ -80,7 +80,7 @@ export default defineConfig({
       exclude: ["src/lib/i18n/locales/**"],
     },
   ],
-  extractors: [astroExtractor, babelExtractor],
+  extractors: [astroExtractor(), babelExtractor],
 });
 ```
 
@@ -113,7 +113,7 @@ import { t, Trans } from "lingui-for-astro/macro";
 
 <h1>{t`Hello from Astro`}</h1>
 
-<p><Trans>Macro-first translation in Astro</Trans></p>
+<p><Trans><strong>Macro-first</strong> translation in Astro</Trans></p>
 ```
 
 ## Entrypoints
@@ -123,19 +123,12 @@ import { t, Trans } from "lingui-for-astro/macro";
 - `lingui-for-astro/extractor`: `astroExtractor` for Lingui CLI extraction
 - `lingui-for-astro/integration`: Astro integration entrypoint for `.astro` transforms
 - `lingui-for-astro/unplugin/*`: bundler plugins for Vite, Rollup, Webpack, esbuild, Rolldown, Rspack, and Bun
+- `lingui-for-astro/internal/*`: internal utilities and helpers (unstable, not for public use)
 
 ## Notes
 
 - The primary authoring API is `lingui-for-astro/macro`. Runtime helpers exist mainly as the compilation target.
-- Astro translations are request-scoped. Install Lingui context before translated content renders, preferably in middleware.
-- Astro middleware is the recommended initialization point in all output modes. Page frontmatter setup also works for simple page-level cases, but it should be treated as an escape hatch rather than the default pattern.
-- `lingui-for-astro` handles `.astro` files. For UI framework islands (Svelte, React, Vue, etc.), use the corresponding Lingui integration for that framework. See the [Lingui documentation](https://lingui.dev) for available integrations.
+- Astro translations are request-scoped. Install Lingui context before translated content renders, preferably in middleware. See [i18n Context](https://lingui-for.roundtrip.dev/frameworks/astro/i18n-context) for patterns and best practices.
+- `lingui-for-astro` handles `.astro` files. For UI framework islands (Svelte, React, Vue, etc.), use the corresponding Lingui integration for that framework. See [Using Islands](https://lingui-for.roundtrip.dev/frameworks/astro/using-islands) for setup details.
 - MDX is not supported. If you need translated MDX content, keep separate `.mdx` files per locale.
-- Plain `.js` and `.ts` macro support comes from `unplugin-lingui-macro`, not from the Astro transform itself.
-
-## Repository References
-
-These links point to paths inside the source repository and are only useful when browsing the repo directly.
-
-- Docs source: [`apps/docs/src/content/docs/frameworks/astro/getting-started.mdx`](../../apps/docs/src/content/docs/frameworks/astro/getting-started.mdx)
-- Verification app: [`examples/e2e-astro`](../../examples/e2e-astro)
+- Plain `.js` and `.ts` macro support comes from `unplugin-lingui-macro`, not from the Astro transform itself. See [Plain JS/TS Setup](https://lingui-for.roundtrip.dev/guides/plain-js-ts) for details.

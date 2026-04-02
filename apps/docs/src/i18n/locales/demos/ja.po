@@ -39,7 +39,7 @@ msgstr "こんにちは、{name}"
 msgid "Hi there!"
 msgstr "やあ！"
 
-#: src/demos/macros/trans-component/Demo.svelte:20
+#: src/demos/macros/trans-component/Demo.svelte:19
 msgid "Say hello to <0>{name}</0>."
 msgstr "<0>{name}</0>に挨拶しましょう。"
 

@@ -30,6 +30,7 @@ import {
 export type SyntheticTransformResult = {
   synthetic: SyntheticModule;
   code: string;
+  map: string | null;
   declarations: Record<string, string>;
 };
 
@@ -65,6 +66,7 @@ export function transformSyntheticModule(
     babelrc: false,
     configFile: false,
     sourceType: "module",
+    inputSourceMap: parseSourceMap(synthetic.sourceMapJson),
     parserOpts: {
       plugins: SYNTHETIC_MODULE_PARSER_PLUGINS,
     },
@@ -79,6 +81,7 @@ export function transformSyntheticModule(
     ],
     ast: true,
     code: true,
+    sourceMaps: true,
   });
 
   if (!transformed?.code || !transformed.ast) {
@@ -88,6 +91,7 @@ export function transformSyntheticModule(
   return {
     synthetic,
     code: transformed.code,
+    map: transformed.map != null ? JSON.stringify(transformed.map) : null,
     declarations: collectDeclarationInitializers(
       transformed.ast,
       synthetic.declarationIds,
@@ -124,7 +128,7 @@ export async function extractMessagesFromSyntheticModule(
 export function reinsertTransformedModule(
   originalSource: string,
   synthetic: SyntheticModule,
-  declarations: Record<string, string>,
+  transformedProgram: Pick<SyntheticTransformResult, "code" | "map">,
   options?: {
     sourceName?: string;
   },
@@ -133,7 +137,10 @@ export function reinsertTransformedModule(
     originalSource: originalSource,
     sourceName: options?.sourceName,
     syntheticModule: synthetic,
-    transformedDeclarations: new Map(Object.entries(declarations)),
+    transformedProgram: {
+      code: transformedProgram.code,
+      sourceMapJson: transformedProgram.map ?? undefined,
+    },
   });
 }
 

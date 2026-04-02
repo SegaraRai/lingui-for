@@ -1,4 +1,4 @@
-pub fn is_explicit_whitespace_string_expression(text: &str) -> bool {
+pub(crate) fn is_explicit_whitespace_string_expression(text: &str) -> bool {
     let Some(inner) = text
         .strip_prefix('{')
         .and_then(|value| value.strip_suffix('}'))

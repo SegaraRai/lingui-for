@@ -121,7 +121,7 @@ msgstr "2. ヘッダーで日本語と英語を切り替えて、ロケールラ
 msgid "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 msgstr "3. 対応するルートを開き、どのアイランドがカウンターを保持したか、どれがロケールとページプロパティを更新したか、どれが固定されたままかを比べてください。"
 
-#: src/components/astro/AstroRichText.astro:22
+#: src/components/astro/AstroRichText.astro:21
 msgid "Astro can preserve <0>strong emphasis</0> in translated output."
 msgstr "Astro は翻訳結果の中でも<0>強調表示</0>を保てます。"
 
@@ -129,7 +129,7 @@ msgstr "Astro は翻訳結果の中でも<0>強調表示</0>を保てます。"
 msgid "Astro formats"
 msgstr "Astro フォーマット"
 
-#: src/components/astro/AstroRichText.astro:15
+#: src/components/astro/AstroRichText.astro:14
 msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Astro は翻訳された文の中でも<0>設定リンク</0>を保てます。"
 
@@ -450,7 +450,7 @@ msgstr "レンダースタンプ: {renderStamp}"
 msgid "Render Svelte and React islands with the same locale."
 msgstr "Svelte と React のアイランドを同じロケールで描画します。"
 
-#: src/pages/settings.astro:36
+#: src/pages/settings.astro:35
 msgid "Return to the <0>home page</0> when you are done."
 msgstr "終わったら<0>ホームページ</0>に戻ってください。"
 
@@ -544,7 +544,7 @@ msgstr "Svelte はアイランドの内部で Lingui を有効化します。"
 msgid "Svelte and React islands read the same active locale."
 msgstr "Svelte と React のアイランドは同じアクティブなロケールを読み取ります。"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:29
+#: src/components/svelte/SvelteRichTextIsland.svelte:28
 msgid "Svelte can preserve <0>strong emphasis</0> in translated output."
 msgstr "Svelte は翻訳結果の中でも<0>強調表示</0>を保てます。"
 
@@ -560,7 +560,7 @@ msgstr "Svelte アイランド"
 msgid "Svelte islands"
 msgstr "Svelte アイランド"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:22
+#: src/components/svelte/SvelteRichTextIsland.svelte:21
 msgid "Svelte keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Svelte は翻訳された文の中でも<0>設定リンク</0>を保てます。"
 
@@ -588,11 +588,11 @@ msgstr "Svelte はコンポーネントコードの中で plural、select、sele
 msgid "Svelte sees locale {localeLabel}."
 msgstr "Svelte からはロケール {localeLabel} が見えます。"
 
-#: src/pages/routing/[slug].astro:38
+#: src/pages/routing/[slug].astro:37
 msgid "Switch to the <0>second route</0> without dropping the locale."
 msgstr "ロケールを維持したまま <0>2 つ目のルート</0>へ移動します。"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:28
+#: src/components/svelte/SvelteLinguiIsland.svelte:27
 msgid "The active <0>Lingui context</0> is created inside the Svelte island."
 msgstr "アクティブな <0>Lingui コンテキスト</0>は Svelte アイランドの内部で作られます。"
 

@@ -1,6 +1,7 @@
 import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
+
 import { astroExtractor } from "lingui-for-astro/extractor";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 

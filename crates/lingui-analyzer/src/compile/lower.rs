@@ -1,11 +1,17 @@
 use std::collections::BTreeMap;
 
+use crate::common::{
+    CollectDeclarationsError, IndexedSourceMap, RenderedMappedText, TransformedDeclaration,
+    collect_variable_initializer_declarations, initializer_start_for_declarator, parse_source_map,
+};
 use crate::framework::parse::{ParseError, parse_tsx};
 
-use super::emit::{EmitError, collect_compile_replacements, finish_compile_from_replacements};
+use super::emit::{
+    EmitError, collect_compile_replacements_internal, finish_compile_from_internal_replacements,
+};
 use super::runtime_component::RuntimeComponentError;
 use super::{
-    CompileTargetOutputKind, CompileTranslationMode, FinishedCompile, FrameworkCompilePlan,
+    CompileTargetOutputKind, CompileTranslationMode, FinishedCompileInternal, FrameworkCompilePlan,
     TransformedPrograms,
 };
 
@@ -17,43 +23,83 @@ pub enum LowerError {
     Emit(#[from] EmitError),
     #[error(transparent)]
     RuntimeComponent(#[from] RuntimeComponentError),
+    #[error(transparent)]
+    CollectDeclarations(#[from] CollectDeclarationsError),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct LoweredDeclaration {
+    pub(crate) code: String,
+    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
+    pub(crate) synthetic_start: Option<usize>,
+}
+
+impl From<LoweredDeclaration> for RenderedMappedText {
+    fn from(value: LoweredDeclaration) -> Self {
+        Self {
+            code: value.code,
+            indexed_source_map: value.indexed_source_map,
+        }
+    }
 }
 
 pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
     plan: &P,
     source: &str,
     transformed_programs: &TransformedPrograms,
-) -> Result<FinishedCompile, LowerError> {
-    let lowered_declarations = lower_transformed_declarations(plan, transformed_programs)?;
-    let replacements = collect_compile_replacements(plan, source, &lowered_declarations)?;
-    Ok(finish_compile_from_replacements(
+) -> Result<FinishedCompileInternal, LowerError> {
+    let lowered_declarations = lower_transformed_declarations(plan, source, transformed_programs)?;
+    let replacements = collect_compile_replacements_internal(plan, source, &lowered_declarations)?;
+    Ok(finish_compile_from_internal_replacements(
         source,
         &plan.common().source_name,
+        &plan.common().source_anchors,
         replacements,
     )?)
 }
 
 fn lower_transformed_declarations<P: FrameworkCompilePlan>(
     plan: &P,
+    source: &str,
     transformed_programs: &TransformedPrograms,
-) -> Result<BTreeMap<String, String>, LowerError> {
+) -> Result<BTreeMap<String, LoweredDeclaration>, LowerError> {
     let declaration_sets = collect_transformed_declarations(transformed_programs)?;
+    let synthetic_starts = collect_declaration_value_starts(&plan.common().synthetic_source)?;
     let mut lowered = BTreeMap::new();
 
     for target in &plan.common().targets {
-        let Some(code) = declaration_sets
+        let Some(declaration) = declaration_sets
             .get(&target.translation_mode)
             .and_then(|declarations| declarations.get(&target.declaration_id))
+            .cloned()
         else {
             continue;
         };
 
-        let finalized = if target.output_kind == CompileTargetOutputKind::Component {
-            plan.lower_runtime_component_markup(code)?
+        let (code, indexed_source_map) = if target.output_kind == CompileTargetOutputKind::Component
+        {
+            let lowered = plan.lower_runtime_component_markup(
+                &plan.common().source_name,
+                source,
+                &RenderedMappedText {
+                    code: declaration.code,
+                    indexed_source_map: declaration.indexed_source_map,
+                },
+            )?;
+            (lowered.code, lowered.indexed_source_map)
         } else {
-            code.clone()
+            (declaration.code, declaration.indexed_source_map)
         };
-        lowered.insert(target.declaration_id.clone(), finalized);
+        lowered.insert(
+            target.declaration_id.clone(),
+            LoweredDeclaration {
+                code,
+                indexed_source_map,
+                synthetic_start: declaration
+                    .synthetic_start
+                    .or_else(|| synthetic_starts.get(&target.declaration_id).copied()),
+            },
+        );
     }
 
     Ok(lowered)
@@ -61,29 +107,60 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
 
 fn collect_transformed_declarations(
     programs: &TransformedPrograms,
-) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, String>>, LowerError> {
+) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, LoweredDeclaration>>, LowerError> {
     let mut declarations = BTreeMap::new();
+    let raw_source_map = programs
+        .raw_source_map_json
+        .as_deref()
+        .and_then(parse_source_map)
+        .map(IndexedSourceMap::new);
+    let context_source_map = programs
+        .context_source_map_json
+        .as_deref()
+        .and_then(parse_source_map)
+        .map(IndexedSourceMap::new);
 
     if let Some(code) = &programs.raw_code {
         declarations.insert(
             CompileTranslationMode::Raw,
-            collect_declarations_from_program(code)?,
+            collect_declarations_from_program(code, raw_source_map.as_ref())?,
         );
     }
     if let Some(code) = &programs.context_code {
         declarations.insert(
             CompileTranslationMode::Context,
-            collect_declarations_from_program(code)?,
+            collect_declarations_from_program(code, context_source_map.as_ref())?,
         );
     }
 
     Ok(declarations)
 }
 
-fn collect_declarations_from_program(source: &str) -> Result<BTreeMap<String, String>, LowerError> {
+fn collect_declarations_from_program(
+    source: &str,
+    indexed_source_map: Option<&IndexedSourceMap>,
+) -> Result<BTreeMap<String, LoweredDeclaration>, LowerError> {
+    Ok(
+        collect_variable_initializer_declarations(source, indexed_source_map)?
+            .into_iter()
+            .map(|(name, declaration): (String, TransformedDeclaration)| {
+                (
+                    name,
+                    LoweredDeclaration {
+                        code: declaration.code,
+                        indexed_source_map: declaration.indexed_source_map.clone(),
+                        synthetic_start: None,
+                    },
+                )
+            })
+            .collect(),
+    )
+}
+
+fn collect_declaration_value_starts(source: &str) -> Result<BTreeMap<String, usize>, LowerError> {
     let tree = parse_tsx(source)?;
     let root = tree.root_node();
-    let mut declarations = BTreeMap::new();
+    let mut starts = BTreeMap::new();
     let mut cursor = root.walk();
 
     for child in root.children(&mut cursor) {
@@ -106,70 +183,15 @@ fn collect_declarations_from_program(source: &str) -> Result<BTreeMap<String, St
             let Some(value) = declarator.child_by_field_name("value") else {
                 continue;
             };
-            let value_start = extend_start_for_leading_comments(source, value.start_byte());
 
-            declarations.insert(
+            starts.insert(
                 source[name.start_byte()..name.end_byte()].to_string(),
-                normalize_i18n_comment_layout(&source[value_start..value.end_byte()]),
+                initializer_start_for_declarator(declarator, name, value),
             );
         }
     }
 
-    Ok(declarations)
-}
-
-fn extend_start_for_leading_comments(source: &str, start: usize) -> usize {
-    let bytes = source.as_bytes();
-    let mut current = start;
-
-    loop {
-        let mut cursor = current;
-        while cursor > 0 && bytes[cursor - 1].is_ascii_whitespace() {
-            cursor -= 1;
-        }
-
-        if cursor < 2 || &source[cursor - 2..cursor] != "*/" {
-            return current;
-        }
-
-        let Some(comment_start) = source[..cursor - 2].rfind("/*") else {
-            return current;
-        };
-        current = comment_start;
-    }
-}
-
-fn normalize_i18n_comment_layout(input: &str) -> String {
-    collapse_whitespace_between(input, "/*i18n*/", "{", " ")
-}
-
-fn collapse_whitespace_between(input: &str, left: &str, right: &str, replacement: &str) -> String {
-    let mut output = String::with_capacity(input.len());
-    let mut cursor = 0;
-
-    while let Some(relative) = input[cursor..].find(left) {
-        let left_start = cursor + relative;
-        let after_left = left_start + left.len();
-        output.push_str(&input[cursor..after_left]);
-
-        let mut whitespace_end = after_left;
-        while whitespace_end < input.len() && input.as_bytes()[whitespace_end].is_ascii_whitespace()
-        {
-            whitespace_end += 1;
-        }
-
-        if input[whitespace_end..].starts_with(right) {
-            output.push_str(replacement);
-            output.push_str(right);
-            cursor = whitespace_end + right.len();
-        } else {
-            output.push_str(&input[after_left..whitespace_end]);
-            cursor = whitespace_end;
-        }
-    }
-
-    output.push_str(&input[cursor..]);
-    output
+    Ok(starts)
 }
 
 #[cfg(test)]
@@ -188,7 +210,7 @@ mod tests {
         },
     };
 
-    use super::{collapse_whitespace_between, finish_compile, normalize_i18n_comment_layout};
+    use super::finish_compile;
 
     fn test_svelte_conventions() -> FrameworkConventions {
         FrameworkConventions {
@@ -235,13 +257,15 @@ mod tests {
                 source_name: "Component.svelte".to_string(),
                 synthetic_name: "Component.svelte?compile".to_string(),
                 synthetic_source: String::new(),
+                synthetic_source_map_json: None,
+                source_anchors: Vec::new(),
                 synthetic_lang: ScriptLang::Ts,
                 conventions: test_svelte_conventions(),
                 declaration_ids: vec!["__lf_0".to_string()],
                 targets: vec![CompileTarget {
                     declaration_id: "__lf_0".to_string(),
-                    original_span: Span::new(7, 21),
-                    normalized_span: Span::new(8, 21),
+                    original_span: Span::new(39, 48),
+                    normalized_span: Span::new(40, 48),
                     source_map_anchor: None,
                     local_name: "t".to_string(),
                     imported_name: "t".to_string(),
@@ -290,33 +314,13 @@ mod tests {
             finished
                 .replacements
                 .iter()
-                .any(|replacement| replacement.start == 7 && replacement.end == 21)
+                .any(|replacement| replacement.start == 39 && replacement.end == 48)
         );
         assert!(
             finished
                 .replacements
                 .iter()
                 .any(|replacement| replacement.code.contains("createLinguiAccessors"))
-        );
-    }
-
-    #[test]
-    fn normalize_i18n_comment_layout_collapses_comment_to_object_spacing() {
-        let input = "/*i18n*/\n  \t{ id: \"x\" }";
-
-        assert_eq!(
-            normalize_i18n_comment_layout(input),
-            "/*i18n*/ { id: \"x\" }"
-        );
-    }
-
-    #[test]
-    fn collapse_whitespace_between_leaves_non_matching_sequences_untouched() {
-        let input = "before /*other*/\n{ value } after";
-
-        assert_eq!(
-            collapse_whitespace_between(input, "/*i18n*/", "{", " "),
-            input
         );
     }
 }

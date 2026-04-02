@@ -30,6 +30,7 @@ pub struct SyntheticModule {
     pub source_name: String,
     pub synthetic_name: String,
     pub source_map_json: Option<String>,
+    pub source_anchors: Vec<usize>,
     pub declaration_ids: Vec<String>,
     pub original_spans: BTreeMap<String, Span>,
     pub generated_spans: BTreeMap<String, Span>,
@@ -64,12 +65,9 @@ pub struct SyntheticModuleOptions {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct ReplacementChunk {
-    pub declaration_id: String,
-    pub original_span: Span,
-    pub replacement: String,
-    pub source_map_anchor: Option<Span>,
-    pub normalized_segments: Vec<NormalizedSegment>,
+pub struct ExtractTransformedProgram {
+    pub code: String,
+    pub source_map_json: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -79,7 +77,7 @@ pub struct ReinsertOptions {
     pub original_source: String,
     pub source_name: Option<String>,
     pub synthetic_module: SyntheticModule,
-    pub transformed_declarations: BTreeMap<String, String>,
+    pub transformed_program: ExtractTransformedProgram,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]

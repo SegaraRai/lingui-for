@@ -78,7 +78,7 @@ export default defineConfig({
       exclude: ["src/lib/i18n/locales/**"],
     },
   ],
-  extractors: [svelteExtractor, babelExtractor],
+  extractors: [svelteExtractor(), babelExtractor],
 });
 ```
 
@@ -116,7 +116,7 @@ Use macros in Svelte components:
 
 <h1>{$t`Hello from Svelte`}</h1>
 
-<p><Trans>{count} item selected</Trans></p>
+<p><Trans><strong>Macro-first</strong> translation in Svelte</Trans></p>
 ```
 
 ## Entrypoints
@@ -125,18 +125,12 @@ Use macros in Svelte components:
 - `lingui-for-svelte/macro`: authoring macros such as `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, and `defineMessage`
 - `lingui-for-svelte/extractor`: `svelteExtractor` for Lingui CLI extraction
 - `lingui-for-svelte/unplugin/*`: bundler plugins for Vite, Rollup, Webpack, esbuild, Rolldown, Rspack, and Bun
+- `lingui-for-svelte/internal/*`: internal utilities and helpers (unstable, not for public use)
 
 ## Notes
 
 - The primary authoring API is `lingui-for-svelte/macro`. Runtime helpers exist mainly as the compilation target.
-- Initialize Lingui context before translated markup runs. In practice, a root layout is the safest place.
+- Initialize Lingui context before translated markup runs. In practice, a root layout is the safest place. See [i18n Context](https://lingui-for.roundtrip.dev/frameworks/svelte/i18n-context) for patterns and best practices.
 - `$t` is a reactive store-like form specific to Svelte. It re-evaluates when the active locale changes. It is not a Svelte 5 rune despite the `$` prefix.
 - Bare `t(...)` / `` t`...` `` are not allowed in `.svelte` files. Use `$t(...)` / `` $t`...` `` for reactive UI text, or `t.eager(...)` / `` t.eager`...` `` when you explicitly need a non-reactive snapshot.
-- Plain `.js`, `.ts`, `.svelte.js`, and `.svelte.ts` macro support comes from `unplugin-lingui-macro`, not from the Svelte transform itself.
-
-## Repository References
-
-These links point to paths inside the source repository and are only useful when browsing the repo directly.
-
-- Docs source: [`apps/docs/src/content/docs/frameworks/svelte/getting-started.mdx`](../../apps/docs/src/content/docs/frameworks/svelte/getting-started.mdx)
-- Verification app: [`examples/e2e-svelte`](../../examples/e2e-svelte)
+- Plain `.js`, `.ts`, `.svelte.js`, and `.svelte.ts` macro support comes from `unplugin-lingui-macro`, not from the Svelte transform itself. See [Plain JS/TS Setup](https://lingui-for.roundtrip.dev/guides/plain-js-ts) for details.

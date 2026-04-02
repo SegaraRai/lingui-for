@@ -5,13 +5,9 @@ export type SourceLocation = {
 
 export function findSourceLocation(
   source: string,
-  needle: string,
+  needle: string | RegExp,
 ): SourceLocation {
-  const start = source.indexOf(needle);
-
-  if (start < 0) {
-    throw new Error(`Needle not found in source: ${needle}`);
-  }
+  const start = findUniqueIndex(source, needle);
 
   let line = 1;
   let column = 0;
@@ -26,4 +22,27 @@ export function findSourceLocation(
   }
 
   return { line, column };
+}
+
+function findUniqueIndex(source: string, needle: string | RegExp): number {
+  if (typeof needle === "string") {
+    const index = source.indexOf(needle);
+    if (index < 0) {
+      throw new Error(`Needle not found: ${needle}`);
+    }
+    if (source.includes(needle, index + 1)) {
+      throw new Error(`Needle matched multiple times: ${needle}`);
+    }
+    return index;
+  }
+
+  const flags = needle.flags.includes("g") ? needle.flags : `${needle.flags}g`;
+  const expression = new RegExp(needle.source, flags);
+  const matches = [...source.matchAll(expression)];
+  if (matches.length !== 1) {
+    throw new Error(
+      `Pattern matched ${matches.length} times (expected exactly once): ${needle}`,
+    );
+  }
+  return matches[0].index;
 }
