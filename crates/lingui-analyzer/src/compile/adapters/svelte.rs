@@ -130,7 +130,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         &self,
         source_name: &str,
         source: &str,
-        declaration: RenderedMappedText,
+        declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(
             source_name,
@@ -581,25 +581,25 @@ pub(super) fn append_runtime_injection_replacements(
                 anchor_span.start,
                 anchor_span.end,
             );
-            replacements.push(CompileReplacementInternal {
-                declaration_id: "__runtime_prelude".to_string(),
-                start: insertion_start,
-                end: insertion_start,
-                code: prelude,
+            replacements.push(CompileReplacementInternal::new(
+                "__runtime_prelude".to_string(),
+                insertion_start,
+                insertion_start,
+                prelude,
                 source_map,
-                original_anchors: Vec::new(),
-            });
+                Vec::new(),
+            ));
         }
 
         if !injections.suffix.is_empty() {
-            replacements.push(CompileReplacementInternal {
-                declaration_id: "__runtime_suffix".to_string(),
-                start: instance_script.content_span.end,
-                end: instance_script.content_span.end,
-                code: injections.suffix,
-                source_map: None,
-                original_anchors: Vec::new(),
-            });
+            replacements.push(CompileReplacementInternal::new(
+                "__runtime_suffix".to_string(),
+                instance_script.content_span.end,
+                instance_script.content_span.end,
+                injections.suffix,
+                None,
+                Vec::new(),
+            ));
         }
 
         return Ok(());
@@ -631,14 +631,14 @@ pub(super) fn append_runtime_injection_replacements(
         insertion_start,
         insertion_start,
     );
-    replacements.push(CompileReplacementInternal {
-        declaration_id: "__runtime_script_block".to_string(),
-        start: insertion_start,
-        end: insertion_start,
+    replacements.push(CompileReplacementInternal::new(
+        "__runtime_script_block".to_string(),
+        insertion_start,
+        insertion_start,
         code,
         source_map,
-        original_anchors: Vec::new(),
-    });
+        Vec::new(),
+    ));
     Ok(())
 }
 

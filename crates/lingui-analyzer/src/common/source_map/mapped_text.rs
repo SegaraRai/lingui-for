@@ -1,19 +1,15 @@
-use std::sync::Arc;
-
 use sourcemap::{SourceMap, SourceMapBuilder};
 
 use crate::common::{IndexedText, Span};
 
-use super::SharedSourceMap;
-use super::primitives::{IndexedSourceMap, extract_generated_submap, index_source_map};
+use super::primitives::{IndexedSourceMap, extract_generated_submap};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum MappedSegment {
     Unmapped(String),
     PreMapped {
         code: String,
-        source_map: SharedSourceMap,
-        indexed_source_map: Arc<IndexedSourceMap>,
+        indexed_source_map: Box<IndexedSourceMap>,
     },
 }
 
@@ -61,14 +57,16 @@ impl<'a> MappedText<'a> {
         }
     }
 
-    pub(crate) fn push_pre_mapped(&mut self, code: impl Into<String>, source_map: SharedSourceMap) {
+    pub(crate) fn push_pre_mapped(
+        &mut self,
+        code: impl Into<String>,
+        indexed_source_map: IndexedSourceMap,
+    ) {
         let code = code.into();
         if !code.is_empty() {
-            let indexed_source_map = Arc::new(index_source_map(&source_map));
             self.segments.push(MappedSegment::PreMapped {
                 code,
-                source_map,
-                indexed_source_map,
+                indexed_source_map: Box::new(indexed_source_map),
             });
         }
     }
@@ -77,13 +75,13 @@ impl<'a> MappedText<'a> {
         source_name: &'a str,
         source_text: &'a str,
         code: impl Into<String>,
-        source_map: Option<SharedSourceMap>,
+        source_map: Option<&IndexedSourceMap>,
     ) -> Self {
         let mut mapped = Self::new(source_name, source_text);
         let code = code.into();
         match source_map {
             Some(map) if !code.is_empty() => {
-                append_rendered_segments(&mut mapped, &code, &map);
+                append_rendered_segments(&mut mapped, &code, map);
             }
             _ => mapped.push_unmapped(code),
         }
@@ -161,7 +159,7 @@ impl<'a> MappedText<'a> {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct RenderedMappedText {
     pub(crate) code: String,
-    pub(crate) source_map: Option<SharedSourceMap>,
+    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
 }
 
 pub(crate) fn render_mapped_text(
@@ -186,24 +184,27 @@ pub(crate) fn render_mapped_text(
             }
             MappedSegment::PreMapped {
                 code: text,
-                source_map,
+                indexed_source_map,
                 ..
             } => {
                 code.push_str(text);
-                apply_shifted_map(&mut builder, source_map, offset);
+                apply_shifted_map(&mut builder, indexed_source_map.source_map(), offset);
                 saw_mapping = true;
                 offset = advance_generated_offset(offset, text);
             }
         }
     }
 
-    let source_map = if saw_mapping {
-        Some(builder.into_sourcemap().into())
+    let indexed_source_map = if saw_mapping {
+        Some(IndexedSourceMap::new(builder.into_sourcemap()))
     } else {
         None
     };
 
-    Ok(RenderedMappedText { code, source_map })
+    Ok(RenderedMappedText {
+        code,
+        indexed_source_map,
+    })
 }
 
 pub(crate) fn build_segmented_map(
@@ -212,7 +213,7 @@ pub(crate) fn build_segmented_map(
     generated_text: &str,
     segments: &[crate::synthesis::NormalizedSegment],
     source_anchors: &[usize],
-) -> Result<Option<SharedSourceMap>, MappedTextError> {
+) -> Result<Option<IndexedSourceMap>, MappedTextError> {
     if segments.is_empty() {
         return Ok(None);
     }
@@ -266,7 +267,7 @@ pub(crate) fn build_segmented_map(
         )?;
     }
 
-    Ok(saw_mapping.then(|| builder.into_sourcemap().into()))
+    Ok(saw_mapping.then(|| IndexedSourceMap::new(builder.into_sourcemap())))
 }
 
 fn apply_shifted_map(builder: &mut SourceMapBuilder, map: &SourceMap, offset: GeneratedOffset) {
@@ -319,7 +320,6 @@ fn slice_segment(
         }
         MappedSegment::PreMapped {
             code,
-            source_map: _,
             indexed_source_map,
         } => {
             let sliced_code = code
@@ -331,8 +331,7 @@ fn slice_segment(
                     .ok_or(MappedTextError::InvalidSegmentSlice)?;
             Ok(Some(MappedSegment::PreMapped {
                 code: sliced_code.to_string(),
-                indexed_source_map: Arc::new(index_source_map(&sliced_map)),
-                source_map: sliced_map,
+                indexed_source_map: Box::new(sliced_map),
             }))
         }
     }
@@ -366,8 +365,11 @@ fn add_segment_mapping_point(
     Ok(())
 }
 
-fn append_rendered_segments(mapped: &mut MappedText<'_>, code: &str, map: &SharedSourceMap) {
-    let indexed_map = Arc::new(index_source_map(map));
+fn append_rendered_segments(
+    mapped: &mut MappedText<'_>,
+    code: &str,
+    indexed_map: &IndexedSourceMap,
+) {
     let generated = IndexedText::new(code);
     if indexed_map.tokens().is_empty() {
         mapped.push_unmapped(code);
@@ -401,11 +403,10 @@ fn append_rendered_segments(mapped: &mut MappedText<'_>, code: &str, map: &Share
             cursor = end.max(cursor);
             continue;
         }
-        if let Some(submap) = extract_generated_submap(&indexed_map, &generated, start, end) {
+        if let Some(submap) = extract_generated_submap(indexed_map, &generated, start, end) {
             mapped.segments.push(MappedSegment::PreMapped {
                 code: code[start..end].to_string(),
-                indexed_source_map: Arc::new(index_source_map(&submap)),
-                source_map: submap,
+                indexed_source_map: Box::new(submap),
             });
         } else {
             mapped.push_unmapped(&code[start..end]);
@@ -438,11 +439,9 @@ fn advance_generated_offset(mut offset: GeneratedOffset, text: &str) -> Generate
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
     use sourcemap::SourceMapBuilder;
 
-    use crate::common::Span;
+    use crate::common::{IndexedSourceMap, Span};
 
     use super::MappedText;
 
@@ -451,7 +450,7 @@ mod tests {
         source_text: &str,
         start: usize,
         end: usize,
-    ) -> Arc<sourcemap::SourceMap> {
+    ) -> IndexedSourceMap {
         let code = &source_text[start..end];
         let mut builder = SourceMapBuilder::new(Some(source_name));
         builder.set_file(Some(source_name));
@@ -475,7 +474,7 @@ mod tests {
             None::<&str>,
             false,
         );
-        Arc::new(builder.into_sourcemap())
+        IndexedSourceMap::new(builder.into_sourcemap())
     }
 
     #[test]
@@ -489,9 +488,9 @@ mod tests {
 
         assert_eq!(rendered.code, "de");
         let token = rendered
-            .source_map
+            .indexed_source_map
             .as_ref()
-            .and_then(|map| map.lookup_token(0, 0))
+            .and_then(|map| map.source_map().lookup_token(0, 0))
             .expect("lookup token");
         assert_eq!(token.get_src_col(), 3);
     }

@@ -7,7 +7,7 @@ mod runtime_component;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{RenderedMappedText, ScriptLang, SharedSourceMap, Span};
+use crate::common::{IndexedSourceMap, RenderedMappedText, ScriptLang, Span, source_map_to_json};
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidate, MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
@@ -137,10 +137,8 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         &self,
         _source_name: &str,
         _source: &str,
-        declaration: RenderedMappedText,
-    ) -> Result<RenderedMappedText, RuntimeComponentError> {
-        Ok(declaration)
-    }
+        declaration: &RenderedMappedText,
+    ) -> Result<RenderedMappedText, RuntimeComponentError>;
 
     fn append_runtime_injection_replacements(
         &self,
@@ -157,8 +155,28 @@ pub(crate) struct CompileReplacementInternal {
     pub(crate) start: usize,
     pub(crate) end: usize,
     pub(crate) code: String,
-    pub(crate) source_map: Option<SharedSourceMap>,
+    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
     pub(crate) original_anchors: Vec<usize>,
+}
+
+impl CompileReplacementInternal {
+    pub(crate) fn new(
+        declaration_id: String,
+        start: usize,
+        end: usize,
+        code: String,
+        indexed_source_map: Option<IndexedSourceMap>,
+        original_anchors: Vec<usize>,
+    ) -> Self {
+        Self {
+            declaration_id,
+            start,
+            end,
+            code,
+            indexed_source_map,
+            original_anchors,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -180,6 +198,62 @@ pub struct FinishedCompile {
     pub source_name: String,
     pub source_map_json: Option<String>,
     pub replacements: Vec<CompileReplacement>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct CompileReplacementOutputInternal {
+    pub(crate) declaration_id: String,
+    pub(crate) start: usize,
+    pub(crate) end: usize,
+    pub(crate) code: String,
+    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
+}
+
+impl From<CompileReplacementInternal> for CompileReplacementOutputInternal {
+    fn from(value: CompileReplacementInternal) -> Self {
+        Self {
+            declaration_id: value.declaration_id,
+            start: value.start,
+            end: value.end,
+            code: value.code,
+            indexed_source_map: value.indexed_source_map,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct FinishedCompileInternal {
+    pub(crate) code: String,
+    pub(crate) source_name: String,
+    pub(crate) source_map: Option<IndexedSourceMap>,
+    pub(crate) replacements: Vec<CompileReplacementOutputInternal>,
+}
+
+impl FinishedCompileInternal {
+    pub(crate) fn into_public(self) -> FinishedCompile {
+        FinishedCompile {
+            code: self.code,
+            source_name: self.source_name,
+            source_map_json: self
+                .source_map
+                .as_ref()
+                .and_then(|map| source_map_to_json(map.source_map())),
+            replacements: self
+                .replacements
+                .into_iter()
+                .map(|replacement| CompileReplacement {
+                    declaration_id: replacement.declaration_id,
+                    start: replacement.start,
+                    end: replacement.end,
+                    code: replacement.code,
+                    source_map_json: replacement
+                        .indexed_source_map
+                        .as_ref()
+                        .and_then(|map| source_map_to_json(map.source_map())),
+                })
+                .collect(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]

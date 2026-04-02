@@ -2,17 +2,19 @@ use std::collections::BTreeMap;
 
 use tree_sitter::Node;
 
-use crate::framework::parse::{ParseError, parse_tsx};
+use crate::{
+    common::IndexedSourceMap,
+    framework::parse::{ParseError, parse_tsx},
+};
 
 use super::{
-    IndexedText, MappedText, MappedTextError, SharedSourceMap, Span, build_span_anchor_map,
-    extract_local_submap, index_source_map,
+    IndexedText, MappedText, MappedTextError, Span, build_span_anchor_map, extract_local_submap,
 };
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct TransformedDeclaration {
     pub(crate) code: String,
-    pub(crate) source_map: Option<SharedSourceMap>,
+    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -25,14 +27,13 @@ pub enum CollectDeclarationsError {
 
 pub(crate) fn collect_variable_initializer_declarations(
     source: &str,
-    source_map: Option<&SharedSourceMap>,
+    indexed_source_map: Option<&IndexedSourceMap>,
 ) -> Result<BTreeMap<String, TransformedDeclaration>, CollectDeclarationsError> {
     let tree = parse_tsx(source)?;
     let root = tree.root_node();
     let mut declarations = BTreeMap::new();
     let mut cursor = root.walk();
     let indexed_source = IndexedText::new(source);
-    let indexed_source_map = source_map.map(|map| index_source_map(map));
     for child in root.children(&mut cursor) {
         if child.kind() != "variable_declaration" && child.kind() != "lexical_declaration" {
             continue;
@@ -55,7 +56,7 @@ pub(crate) fn collect_variable_initializer_declarations(
             };
             let value_start = initializer_start_for_declarator(declarator, name, value);
             let raw_code = &source[value_start..value.end_byte()];
-            let raw_submap = indexed_source_map.as_ref().and_then(|map| {
+            let raw_indexed_submap = indexed_source_map.as_ref().and_then(|map| {
                 extract_local_submap(map, &indexed_source, value_start, value.end_byte())
             });
             let collapse_spans = collect_i18n_comment_whitespace_spans(
@@ -64,11 +65,17 @@ pub(crate) fn collect_variable_initializer_declarations(
                 value_start,
                 value.end_byte(),
             );
-            let (code, source_map) =
-                normalize_i18n_comment_layout_rendered(raw_code, raw_submap, &collapse_spans)?;
+            let (code, indexed_source_map) = normalize_i18n_comment_layout_rendered(
+                raw_code,
+                raw_indexed_submap.as_ref(),
+                &collapse_spans,
+            )?;
             declarations.insert(
                 source[name.start_byte()..name.end_byte()].to_string(),
-                TransformedDeclaration { code, source_map },
+                TransformedDeclaration {
+                    code,
+                    indexed_source_map,
+                },
             );
         }
     }
@@ -113,16 +120,16 @@ pub(crate) fn initializer_start_for_declarator(
 
 fn normalize_i18n_comment_layout_rendered(
     input: &str,
-    source_map: Option<SharedSourceMap>,
+    source_map: Option<&IndexedSourceMap>,
     collapse_spans: &[Span],
-) -> Result<(String, Option<SharedSourceMap>), CollectDeclarationsError> {
+) -> Result<(String, Option<IndexedSourceMap>), CollectDeclarationsError> {
     if collapse_spans.is_empty() {
-        return Ok((input.to_string(), source_map));
+        return Ok((input.to_string(), source_map.cloned()));
     }
 
     let source_name = source_map
         .as_ref()
-        .and_then(|map| map.get_source(0))
+        .and_then(|map| map.source_map().get_source(0))
         .unwrap_or("__declaration")
         .to_string();
     let indexed_input = IndexedText::new(input);
@@ -152,7 +159,7 @@ fn normalize_i18n_comment_layout_rendered(
     }
 
     let rendered = mapped.into_rendered()?;
-    Ok((rendered.code, rendered.source_map))
+    Ok((rendered.code, rendered.indexed_source_map))
 }
 
 fn collect_i18n_comment_whitespace_spans(

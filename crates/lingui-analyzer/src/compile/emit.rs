@@ -1,15 +1,15 @@
 use std::collections::BTreeMap;
 
 use crate::common::{
-    FinalizedReplacement, IndexedText, MappedTextError, RenderedMappedText, SharedSourceMap,
+    FinalizedReplacement, IndexedSourceMap, IndexedText, MappedTextError, RenderedMappedText,
     build_final_output, indent_rendered_text, overlay_source_map_with_single_anchor,
-    source_map_to_json,
 };
 
 use super::adapters::AdapterError;
 use super::lower::LoweredDeclaration;
 use super::{
-    CompileReplacement, CompileReplacementInternal, FinishedCompile, FrameworkCompilePlan,
+    CompileReplacementInternal, CompileReplacementOutputInternal, FinishedCompileInternal,
+    FrameworkCompilePlan,
 };
 
 #[derive(thiserror::Error, Debug)]
@@ -29,40 +29,37 @@ pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
 ) -> Result<Vec<CompileReplacementInternal>, EmitError> {
     let mut replacements = Vec::new();
     let common = plan.common();
-    replacements.extend(
-        common
-            .import_removals
-            .iter()
-            .map(|range| CompileReplacementInternal {
-                declaration_id: format!("__import_remove_{}_{}", range.start, range.end),
-                start: range.start,
-                end: range.end,
-                code: String::new(),
-                source_map: None,
-                original_anchors: Vec::new(),
-            }),
-    );
+    replacements.extend(common.import_removals.iter().map(|range| {
+        CompileReplacementInternal::new(
+            format!("__import_remove_{}_{}", range.start, range.end),
+            range.start,
+            range.end,
+            String::new(),
+            None,
+            Vec::new(),
+        )
+    }));
 
     for target in &common.targets {
-        let Some(declaration) = transformed_declarations.get(&target.declaration_id) else {
+        let Some(declaration) = transformed_declarations
+            .get(&target.declaration_id)
+            .cloned()
+        else {
             continue;
         };
 
         let indented = indent_rendered_text(
-            RenderedMappedText {
-                code: declaration.code.clone(),
-                source_map: declaration.source_map.clone(),
-            },
+            declaration.into(),
             get_source_line_indent(source, target.original_span.start),
         )?;
 
-        replacements.push(CompileReplacementInternal {
-            declaration_id: target.declaration_id.clone(),
-            start: target.original_span.start,
-            end: target.original_span.end,
-            source_map: indented.source_map,
-            code: indented.code,
-            original_anchors: common
+        replacements.push(CompileReplacementInternal::new(
+            target.declaration_id.clone(),
+            target.original_span.start,
+            target.original_span.end,
+            indented.code,
+            indented.indexed_source_map,
+            common
                 .source_anchors
                 .iter()
                 .copied()
@@ -70,7 +67,7 @@ pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
                     (*anchor >= target.original_span.start) && (*anchor < target.original_span.end)
                 })
                 .collect(),
-        });
+        ));
     }
 
     plan.append_runtime_injection_replacements(source, &mut replacements)?;
@@ -84,30 +81,18 @@ pub(crate) fn finish_compile_from_internal_replacements(
     source_name: &str,
     source_anchors: &[usize],
     replacements: Vec<CompileReplacementInternal>,
-) -> Result<FinishedCompile, EmitError> {
+) -> Result<FinishedCompileInternal, EmitError> {
     let mapped =
         assemble_output_with_source_map(source, source_name, source_anchors, &replacements)?;
     let replacements = replacements
         .into_iter()
-        .map(|replacement| CompileReplacement {
-            declaration_id: replacement.declaration_id,
-            start: replacement.start,
-            end: replacement.end,
-            code: replacement.code,
-            source_map_json: replacement
-                .source_map
-                .as_ref()
-                .and_then(|map| source_map_to_json(map)),
-        })
+        .map(CompileReplacementOutputInternal::from)
         .collect();
 
-    Ok(FinishedCompile {
+    Ok(FinishedCompileInternal {
         code: mapped.code,
         source_name: source_name.to_string(),
-        source_map_json: mapped
-            .source_map
-            .as_ref()
-            .and_then(|map| source_map_to_json(map)),
+        source_map: mapped.indexed_source_map,
         replacements,
     })
 }
@@ -123,7 +108,7 @@ fn assemble_output_with_source_map(
         .iter()
         .map(|replacement| {
             let normalized = replacement
-                .source_map
+                .indexed_source_map
                 .as_ref()
                 .map(|map| {
                     normalize_final_replacement_map(
@@ -138,7 +123,7 @@ fn assemble_output_with_source_map(
                 start: replacement.start,
                 end: replacement.end,
                 code: replacement.code.as_str(),
-                source_map: normalized,
+                indexed_source_map: normalized,
                 original_anchors: replacement.original_anchors.clone(),
             })
         })
@@ -147,17 +132,25 @@ fn assemble_output_with_source_map(
 }
 
 fn normalize_final_replacement_map(
-    map: &SharedSourceMap,
+    map: &IndexedSourceMap,
     source_name: &str,
     source: &IndexedText<'_>,
     original_start: usize,
-) -> Result<SharedSourceMap, EmitError> {
+) -> Result<IndexedSourceMap, EmitError> {
     let mut normalized = map.clone();
 
-    if map.lookup_token(0, 0).is_none() {
-        normalized =
-            overlay_source_map_with_single_anchor(map, source_name, source, 0, 0, original_start)
-                .ok_or(EmitError::MissingReplacementStartAnchor)?;
+    if map.source_map().lookup_token(0, 0).is_none() {
+        normalized = IndexedSourceMap::new(
+            overlay_source_map_with_single_anchor(
+                map.source_map(),
+                source_name,
+                source,
+                0,
+                0,
+                original_start,
+            )
+            .ok_or(EmitError::MissingReplacementStartAnchor)?,
+        );
     }
 
     Ok(normalized)

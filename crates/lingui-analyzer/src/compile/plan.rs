@@ -1,6 +1,5 @@
 use crate::common::{
-    MappedText, RenderedMappedText, build_segmented_map, compose_source_maps, index_source_map,
-    source_map_to_json,
+    MappedText, RenderedMappedText, build_segmented_map, compose_source_maps, source_map_to_json,
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_import_line};
@@ -77,8 +76,8 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         synthetic_name: synthetic_name.to_string(),
         synthetic_source: synthetic.code,
         synthetic_source_map_json: synthetic
-            .source_map
-            .and_then(|map| source_map_to_json(&map)),
+            .indexed_source_map
+            .and_then(|map| source_map_to_json(map.source_map())),
         source_anchors,
         synthetic_lang,
         conventions,
@@ -134,11 +133,11 @@ fn build_compile_synthetic_source(
         let wrapped = wrap_compile_source(prototype, &target.normalized_code)?;
         let RenderedMappedText {
             code: wrapped_code,
-            source_map: wrapped_source_map,
+            indexed_source_map: wrapped_source_map,
         } = wrapped;
         let wrapped_map = match (wrapped_source_map, normalized_map) {
             (Some(upper), Some(lower)) => Some(
-                compose_source_maps(&upper, &index_source_map(&lower))
+                compose_source_maps(upper.source_map(), &lower)
                     .map_err(AdapterError::from)
                     .map_err(CompileError::from)?,
             ),
@@ -290,7 +289,7 @@ mod tests {
                 let indexed_source = IndexedText::new(source);
                 Ok(RenderedMappedText {
                     code: normalized_source.to_string(),
-                    source_map: build_span_anchor_map(
+                    indexed_source_map: build_span_anchor_map(
                         "test.ts",
                         &indexed_source,
                         normalized_source,
@@ -303,9 +302,12 @@ mod tests {
         .expect("synthetic source builds");
 
         let token = rendered
-            .source_map
+            .indexed_source_map
             .as_ref()
-            .and_then(|map| map.lookup_token(0, "const __lf_0 = ".len() as u32))
+            .and_then(|map| {
+                map.source_map()
+                    .lookup_token(0, "const __lf_0 = ".len() as u32)
+            })
             .expect("wrapped mapping should be preserved");
 
         assert_eq!(token.get_source(), Some("test.ts"));
@@ -339,16 +341,19 @@ mod tests {
             |_, normalized_source| {
                 Ok(RenderedMappedText {
                     code: normalized_source.to_string(),
-                    source_map: None,
+                    indexed_source_map: None,
                 })
             },
         )
         .expect("synthetic source builds");
 
         let token = rendered
-            .source_map
+            .indexed_source_map
             .as_ref()
-            .and_then(|map| map.lookup_token(0, "const __lf_0 = ".len() as u32))
+            .and_then(|map| {
+                map.source_map()
+                    .lookup_token(0, "const __lf_0 = ".len() as u32)
+            })
             .expect("normalized mapping should be preserved");
 
         assert_eq!(token.get_source(), Some("test.ts"));

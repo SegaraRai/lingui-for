@@ -1,6 +1,7 @@
 use crate::common::{
-    CollectDeclarationsError, FinalizedReplacement, MappedTextError, build_final_output,
-    collect_variable_initializer_declarations, parse_source_map, source_map_to_json,
+    CollectDeclarationsError, FinalizedReplacement, IndexedSourceMap, MappedTextError,
+    build_final_output, collect_variable_initializer_declarations, parse_source_map,
+    source_map_to_json,
 };
 use crate::extract::{ExtractTransformedProgram, ReinsertedModule, SyntheticModule};
 
@@ -25,7 +26,8 @@ pub fn reinsert_transformed_declarations(
     let transformed_program_map = transformed_program
         .source_map_json
         .as_deref()
-        .and_then(parse_source_map);
+        .and_then(parse_source_map)
+        .map(IndexedSourceMap::new);
     let transformed_declarations = collect_variable_initializer_declarations(
         &transformed_program.code,
         transformed_program_map.as_ref(),
@@ -59,7 +61,7 @@ pub fn reinsert_transformed_declarations(
             start: mapping.original_span.start,
             end: mapping.original_span.end,
             code: replacement.code.as_str(),
-            source_map: replacement.source_map.clone(),
+            indexed_source_map: replacement.indexed_source_map.clone(),
             original_anchors: synthetic_module
                 .source_anchors
                 .iter()
@@ -81,8 +83,8 @@ pub fn reinsert_transformed_declarations(
         code: rendered.code,
         source_name: source_name.to_string(),
         source_map_json: rendered
-            .source_map
+            .indexed_source_map
             .as_ref()
-            .and_then(|map| source_map_to_json(map)),
+            .and_then(|map| source_map_to_json(map.source_map())),
     })
 }

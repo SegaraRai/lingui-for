@@ -1,7 +1,7 @@
 use tree_sitter::Node;
 
 use crate::common::{
-    IndexedText, MappedText, MappedTextError, RenderedMappedText, SharedSourceMap, Span,
+    IndexedSourceMap, IndexedText, MappedText, MappedTextError, RenderedMappedText, Span,
     build_span_anchor_map,
 };
 use crate::framework::parse::{ParseError, parse_tsx};
@@ -61,21 +61,19 @@ pub enum RuntimeComponentError {
 pub(crate) fn lower_runtime_component_markup(
     source_name: &str,
     original_source: &str,
-    declaration: RenderedMappedText,
+    declaration: &RenderedMappedText,
     runtime_component_name: &str,
 ) -> Result<RenderedMappedText, RuntimeComponentError> {
-    let declaration_source_map = declaration.source_map.clone();
-    let source = declaration.code;
-    let declaration_source = IndexedText::new(&source);
+    let declaration_source = IndexedText::new(&declaration.code);
     let original_source = IndexedText::new(original_source);
     let mapped_input = MappedText::from_rendered(
         source_name,
         original_source.as_str(),
-        source.clone(),
-        declaration.source_map,
+        &declaration.code,
+        declaration.indexed_source_map.as_ref(),
     );
     let wrapper_prefix = "const __lf = ";
-    let wrapped = format!("{wrapper_prefix}{source};");
+    let wrapped = format!("{wrapper_prefix}{};", declaration.code);
     let tree = parse_tsx(&wrapped)?;
     let root = tree.root_node();
     let declarator = find_first_named_descendant(root, "variable_declarator")
@@ -86,7 +84,7 @@ pub(crate) fn lower_runtime_component_markup(
 
     convert_runtime_trans_root(
         &original_source,
-        declaration_source_map.as_ref(),
+        declaration.indexed_source_map.as_ref(),
         &declaration_source,
         &mapped_input,
         value,
@@ -97,7 +95,7 @@ pub(crate) fn lower_runtime_component_markup(
 
 fn convert_runtime_trans_root(
     original_source: &IndexedText<'_>,
-    declaration_source_map: Option<&SharedSourceMap>,
+    declaration_source_map: Option<&IndexedSourceMap>,
     source: &IndexedText<'_>,
     input: &MappedText<'_>,
     node: Node<'_>,
@@ -146,7 +144,7 @@ fn convert_runtime_trans_root(
 
 fn push_anchor_mapped(
     mapped: &mut MappedText<'_>,
-    declaration_source_map: Option<&SharedSourceMap>,
+    declaration_source_map: Option<&IndexedSourceMap>,
     declaration_source: &IndexedText<'_>,
     original_source: &IndexedText<'_>,
     text: &str,
@@ -175,12 +173,12 @@ fn push_anchor_mapped(
 }
 
 fn project_declaration_byte_to_original_byte(
-    declaration_source_map: Option<&SharedSourceMap>,
+    declaration_source_map: Option<&IndexedSourceMap>,
     declaration_source: &IndexedText<'_>,
     original_source: &IndexedText<'_>,
     declaration_byte: usize,
 ) -> Option<usize> {
-    let source_map = declaration_source_map?;
+    let source_map = declaration_source_map?.source_map();
     let (generated_line, generated_col) =
         declaration_source.byte_to_line_utf16_col(declaration_byte)?;
     let token = source_map.lookup_token(generated_line as u32, generated_col as u32)?;
@@ -694,7 +692,7 @@ fn convert_jsx_attributes_to_object(
 }
 
 fn append_rendered(mapped: &mut MappedText<'_>, rendered: RenderedMappedText) {
-    if let Some(map) = rendered.source_map {
+    if let Some(map) = rendered.indexed_source_map {
         mapped.push_pre_mapped(rendered.code, map);
     } else {
         mapped.push_unmapped(rendered.code);
@@ -839,13 +837,13 @@ mod tests {
         let source = "<Trans {...foo()} />".to_string();
         let declaration = RenderedMappedText {
             code: source.clone(),
-            source_map: None,
+            indexed_source_map: None,
         };
 
         let lowered = lower_runtime_component_markup(
             "Component.svelte",
             &source,
-            declaration,
+            &declaration,
             "L4sRuntimeTrans",
         )
         .expect("runtime component lowering succeeds");
@@ -858,13 +856,13 @@ mod tests {
         let source = "<Trans {...(cond ? { title: <strong /> } : other)} />".to_string();
         let declaration = RenderedMappedText {
             code: source.clone(),
-            source_map: None,
+            indexed_source_map: None,
         };
 
         let lowered = lower_runtime_component_markup(
             "Component.svelte",
             &source,
-            declaration,
+            &declaration,
             "L4sRuntimeTrans",
         )
         .expect("runtime component lowering succeeds");
@@ -880,13 +878,13 @@ mod tests {
         let source = "<Trans {...fn({ title: <strong /> })} />".to_string();
         let declaration = RenderedMappedText {
             code: source.clone(),
-            source_map: None,
+            indexed_source_map: None,
         };
 
         let lowered = lower_runtime_component_markup(
             "Component.svelte",
             &source,
-            declaration,
+            &declaration,
             "L4sRuntimeTrans",
         )
         .expect("runtime component lowering succeeds");
@@ -902,13 +900,13 @@ mod tests {
         let source = "<Trans {...{}} />".to_string();
         let declaration = RenderedMappedText {
             code: source.clone(),
-            source_map: None,
+            indexed_source_map: None,
         };
 
         let lowered = lower_runtime_component_markup(
             "Component.svelte",
             &source,
-            declaration,
+            &declaration,
             "L4sRuntimeTrans",
         )
         .expect("runtime component lowering succeeds");
@@ -922,13 +920,13 @@ mod tests {
             "<Trans {.../*i18n*/ { components: { 0: <a href=\"/docs\" /> } }} />".to_string();
         let declaration = RenderedMappedText {
             code: source.clone(),
-            source_map: None,
+            indexed_source_map: None,
         };
 
         let lowered = lower_runtime_component_markup(
             "Component.svelte",
             &source,
-            declaration,
+            &declaration,
             "L4sRuntimeTrans",
         )
         .expect("lower succeeds");
@@ -957,13 +955,13 @@ mod tests {
         let source = "<Trans {...({ count: 1, nested: { ok: true } })} />".to_string();
         let declaration = RenderedMappedText {
             code: source.clone(),
-            source_map: None,
+            indexed_source_map: None,
         };
 
         let lowered = lower_runtime_component_markup(
             "Component.svelte",
             &source,
-            declaration,
+            &declaration,
             "L4sRuntimeTrans",
         )
         .expect("runtime component lowering succeeds");

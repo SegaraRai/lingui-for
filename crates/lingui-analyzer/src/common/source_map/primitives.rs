@@ -1,13 +1,12 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::Cursor;
-use std::sync::Arc;
 
 use sourcemap::{SourceMap, SourceMapBuilder};
 
-use crate::common::{IndexedText, MappedTextError, SharedSourceMap};
+use crate::common::{IndexedText, MappedTextError};
 
-pub(crate) fn parse_source_map(json: &str) -> Option<SharedSourceMap> {
-    SourceMap::from_slice(json.as_bytes()).ok().map(Arc::new)
+pub(crate) fn parse_source_map(json: &str) -> Option<SourceMap> {
+    SourceMap::from_slice(json.as_bytes()).ok()
 }
 
 pub(crate) fn source_map_to_json(map: &SourceMap) -> Option<String> {
@@ -23,7 +22,7 @@ pub(crate) fn overlay_source_map_with_single_anchor(
     generated_line: u32,
     generated_col: u32,
     original_byte: usize,
-) -> Option<SharedSourceMap> {
+) -> Option<SourceMap> {
     let mut builder = SourceMapBuilder::new(base.get_file());
     builder.set_file(base.get_file());
     builder.set_source_root(base.get_source_root());
@@ -84,13 +83,13 @@ pub(crate) fn overlay_source_map_with_single_anchor(
         );
     }
 
-    Some(Arc::new(builder.into_sourcemap()))
+    Some(builder.into_sourcemap())
 }
 
 pub(crate) fn compose_source_maps(
     upper: &SourceMap,
     lower: &IndexedSourceMap,
-) -> Result<SharedSourceMap, MappedTextError> {
+) -> Result<IndexedSourceMap, MappedTextError> {
     let mut builder = SourceMapBuilder::new(None);
     let mut saw_mapping = false;
 
@@ -117,7 +116,7 @@ pub(crate) fn compose_source_maps(
         return Err(MappedTextError::SourceMapCompositionFailed);
     }
 
-    Ok(Arc::new(builder.into_sourcemap()))
+    Ok(IndexedSourceMap::new(builder.into_sourcemap()))
 }
 
 pub(crate) fn project_original_anchors_to_generated(
@@ -130,8 +129,9 @@ pub(crate) fn project_original_anchors_to_generated(
         .collect()
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct IndexedSourceMap {
+    source_map: SourceMap,
     tokens: Vec<IndexedToken>,
     by_original: BTreeMap<(u32, u32), OriginalAnchorProjection>,
     dst_positions: BTreeSet<(u32, u32)>,
@@ -147,47 +147,52 @@ pub(crate) struct IndexedToken {
     name: Option<String>,
 }
 
-pub(crate) fn index_source_map(map: &SourceMap) -> IndexedSourceMap {
-    let tokens = map
-        .tokens()
-        .filter_map(|token| {
-            Some(IndexedToken {
-                dst_line: token.get_dst_line(),
-                dst_col: token.get_dst_col(),
-                src_line: token.get_src_line(),
-                src_col: token.get_src_col(),
-                source: token.get_source()?.to_string(),
-                name: token.get_name().map(str::to_string),
-            })
-        })
-        .collect::<Vec<_>>();
-    let by_original = tokens
-        .iter()
-        .fold(BTreeMap::new(), |mut by_original, token| {
-            by_original
-                .entry((token.src_line, token.src_col))
-                .or_insert_with(|| OriginalAnchorProjection {
-                    dst_line: token.dst_line,
-                    dst_col: token.dst_col,
-                    src_line: token.src_line,
-                    src_col: token.src_col,
-                    source: Some(token.source.clone()),
-                });
-            by_original
-        });
-    let dst_positions = tokens
-        .iter()
-        .map(|token| (token.dst_line, token.dst_col))
-        .collect();
-
-    IndexedSourceMap {
-        tokens,
-        by_original,
-        dst_positions,
-    }
-}
-
 impl IndexedSourceMap {
+    pub(crate) fn new(source_map: SourceMap) -> Self {
+        let tokens = source_map
+            .tokens()
+            .filter_map(|token| {
+                Some(IndexedToken {
+                    dst_line: token.get_dst_line(),
+                    dst_col: token.get_dst_col(),
+                    src_line: token.get_src_line(),
+                    src_col: token.get_src_col(),
+                    source: token.get_source()?.to_string(),
+                    name: token.get_name().map(str::to_string),
+                })
+            })
+            .collect::<Vec<_>>();
+        let by_original = tokens
+            .iter()
+            .fold(BTreeMap::new(), |mut by_original, token| {
+                by_original
+                    .entry((token.src_line, token.src_col))
+                    .or_insert_with(|| OriginalAnchorProjection {
+                        dst_line: token.dst_line,
+                        dst_col: token.dst_col,
+                        src_line: token.src_line,
+                        src_col: token.src_col,
+                        source: Some(token.source.clone()),
+                    });
+                by_original
+            });
+        let dst_positions = tokens
+            .iter()
+            .map(|token| (token.dst_line, token.dst_col))
+            .collect();
+
+        Self {
+            source_map,
+            tokens,
+            by_original,
+            dst_positions,
+        }
+    }
+
+    pub(crate) fn source_map(&self) -> &SourceMap {
+        &self.source_map
+    }
+
     pub(crate) fn tokens(&self) -> &[IndexedToken] {
         &self.tokens
     }
@@ -208,7 +213,7 @@ pub(crate) fn extract_local_submap(
     source: &IndexedText<'_>,
     start_byte: usize,
     end_byte: usize,
-) -> Option<SharedSourceMap> {
+) -> Option<IndexedSourceMap> {
     let start = source.byte_to_line_utf16_col(start_byte)?;
     let end = source.byte_to_line_utf16_col(end_byte)?;
     let start_line = start.0 as u32;
@@ -255,7 +260,7 @@ pub(crate) fn extract_local_submap(
         saw_mapping = true;
     }
 
-    saw_mapping.then(|| Arc::new(builder.into_sourcemap()))
+    saw_mapping.then(|| IndexedSourceMap::new(builder.into_sourcemap()))
 }
 
 pub(crate) fn extract_generated_submap(
@@ -263,7 +268,7 @@ pub(crate) fn extract_generated_submap(
     generated: &IndexedText<'_>,
     start_byte: usize,
     end_byte: usize,
-) -> Option<SharedSourceMap> {
+) -> Option<IndexedSourceMap> {
     if start_byte >= end_byte || end_byte > generated.len() {
         return None;
     }
@@ -333,7 +338,7 @@ pub(crate) fn extract_generated_submap(
         saw_mapping = true;
     }
 
-    saw_mapping.then(|| Arc::new(builder.into_sourcemap()))
+    saw_mapping.then(|| IndexedSourceMap::new(builder.into_sourcemap()))
 }
 
 fn lower_bound(tokens: &[IndexedToken], line: u32, col: u32) -> usize {

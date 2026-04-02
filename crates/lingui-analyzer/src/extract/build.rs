@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use crate::common::{
-    MappedText, MappedTextError, SharedSourceMap, Span, build_segmented_map, source_map_to_json,
+    IndexedSourceMap, MappedText, MappedTextError, Span, build_segmented_map, source_map_to_json,
 };
 use crate::extract::{SyntheticMapping, SyntheticModule};
 use crate::framework::{MacroCandidate, MacroImport, render_macro_import_line};
@@ -93,7 +93,7 @@ pub fn build_synthetic_module_from_plan(
     let source_map_json =
         build_synthetic_source_map(source, source_name, plan, &declaration_ids, source_anchors)?
             .as_ref()
-            .and_then(|map| source_map_to_json(map));
+            .and_then(|map| source_map_to_json(map.source_map()));
 
     Ok(SyntheticModule {
         source: out,
@@ -114,7 +114,7 @@ fn build_synthetic_source_map(
     plan: &SynthesisPlan,
     declaration_ids: &[String],
     source_anchors: &[usize],
-) -> Result<Option<SharedSourceMap>, BuildSyntheticModuleError> {
+) -> Result<Option<IndexedSourceMap>, BuildSyntheticModuleError> {
     let mut mapped = MappedText::new(source_name, source);
 
     if let Some(line) = render_macro_import_line(&plan.imports) {
@@ -153,6 +153,6 @@ fn build_synthetic_source_map(
 
     mapped
         .into_rendered()
-        .map(|rendered| rendered.source_map)
+        .map(|rendered| rendered.indexed_source_map)
         .map_err(BuildSyntheticModuleError::from)
 }

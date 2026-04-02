@@ -1,23 +1,20 @@
 use std::collections::BTreeSet;
 
-use sourcemap::{SourceMap, SourceMapBuilder};
+use sourcemap::SourceMapBuilder;
 use tree_sitter::Node;
 
-use crate::common::{IndexedText, Span};
+use crate::common::{IndexedSourceMap, IndexedText, Span};
 use crate::framework::parse::parse_tsx;
 
-use super::SharedSourceMap;
 use super::mapped_text::{MappedText, MappedTextError, RenderedMappedText};
-use super::primitives::{
-    OriginalAnchorProjection, index_source_map, project_original_anchors_to_generated,
-};
+use super::primitives::{OriginalAnchorProjection, project_original_anchors_to_generated};
 
 #[derive(Debug, Clone)]
 pub(crate) struct FinalizedReplacement<'a> {
     pub(crate) start: usize,
     pub(crate) end: usize,
     pub(crate) code: &'a str,
-    pub(crate) source_map: Option<SharedSourceMap>,
+    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
     pub(crate) original_anchors: Vec<usize>,
 }
 
@@ -27,7 +24,7 @@ pub(crate) fn build_span_anchor_map(
     generated_text: &str,
     original_span_start: usize,
     original_span_end: usize,
-) -> Option<SharedSourceMap> {
+) -> Option<IndexedSourceMap> {
     if generated_text.is_empty() {
         return None;
     }
@@ -63,7 +60,7 @@ pub(crate) fn build_span_anchor_map(
             false,
         );
     }
-    Some(builder.into_sourcemap().into())
+    Some(IndexedSourceMap::new(builder.into_sourcemap()))
 }
 
 pub(crate) fn build_copy_map(
@@ -71,7 +68,7 @@ pub(crate) fn build_copy_map(
     source: &IndexedText<'_>,
     original_span: Span,
     source_anchors: &[usize],
-) -> Option<SharedSourceMap> {
+) -> Option<IndexedSourceMap> {
     if original_span.start >= original_span.end || original_span.end > source.len() {
         return None;
     }
@@ -103,7 +100,7 @@ pub(crate) fn build_copy_map(
         );
     }
 
-    Some(builder.into_sourcemap().into())
+    Some(IndexedSourceMap::new(builder.into_sourcemap()))
 }
 
 pub(crate) fn indent_rendered_text(
@@ -114,7 +111,10 @@ pub(crate) fn indent_rendered_text(
         return Ok(rendered);
     }
 
-    let RenderedMappedText { code, source_map } = rendered;
+    let RenderedMappedText {
+        code,
+        indexed_source_map,
+    } = rendered;
 
     let mut indented =
         String::with_capacity(code.len() + indent.len() * code.matches('\n').count());
@@ -136,12 +136,13 @@ pub(crate) fn indent_rendered_text(
         }
     }
 
-    let Some(map) = source_map else {
+    let Some(map) = indexed_source_map else {
         return Ok(RenderedMappedText {
             code: indented,
-            source_map: None,
+            indexed_source_map: None,
         });
     };
+    let map = map.source_map();
 
     let indent_utf16 = indent.encode_utf16().count() as u32;
     let mut builder = SourceMapBuilder::new(map.get_file());
@@ -180,9 +181,11 @@ pub(crate) fn indent_rendered_text(
         );
     }
 
+    let indexed_source_map = IndexedSourceMap::new(builder.into_sourcemap());
+
     Ok(RenderedMappedText {
         code: indented,
-        source_map: Some(builder.into_sourcemap().into()),
+        indexed_source_map: Some(indexed_source_map),
     })
 }
 
@@ -279,7 +282,7 @@ fn finalize_replacement_mapped<'a>(
     replacement: &FinalizedReplacement<'_>,
 ) -> Result<MappedText<'a>, MappedTextError> {
     let source_map = replacement
-        .source_map
+        .indexed_source_map
         .as_ref()
         .map(|map| {
             augment_replacement_map(
@@ -298,20 +301,20 @@ fn finalize_replacement_mapped<'a>(
         source_name,
         source.as_str(),
         replacement.code.to_string(),
-        source_map,
+        source_map.as_ref(),
     ))
 }
 
 fn augment_replacement_map(
-    map: &SourceMap,
+    indexed_map: &IndexedSourceMap,
     source_name: &str,
     source: &IndexedText<'_>,
     generated_text: &str,
     original_start: usize,
     original_end: usize,
     original_anchors: &[usize],
-) -> Result<SharedSourceMap, MappedTextError> {
-    let indexed_map = index_source_map(map);
+) -> Result<IndexedSourceMap, MappedTextError> {
+    let map = indexed_map.source_map();
     let mut anchor_positions = vec![
         source.byte_to_line_utf16_col(original_start),
         source.byte_to_line_utf16_col(original_end),
@@ -328,7 +331,7 @@ fn augment_replacement_map(
         .into_iter()
         .map(|(line, col)| (line as u32, col as u32))
         .collect::<Vec<_>>();
-    let projected = project_original_anchors_to_generated(&indexed_map, &anchor_positions);
+    let projected = project_original_anchors_to_generated(indexed_map, &anchor_positions);
 
     let mut builder = SourceMapBuilder::new(map.get_file());
     builder.set_file(map.get_file());
@@ -411,7 +414,7 @@ fn augment_replacement_map(
         );
     }
 
-    Ok(builder.into_sourcemap().into())
+    Ok(IndexedSourceMap::new(builder.into_sourcemap()))
 }
 
 fn collect_copy_anchor_points(
@@ -505,14 +508,12 @@ fn first_named_child(node: Node<'_>) -> Option<Node<'_>> {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
-    use sourcemap::{SourceMap, SourceMapBuilder};
+    use sourcemap::SourceMapBuilder;
 
     use super::{FinalizedReplacement, build_final_output, indent_rendered_text};
-    use crate::common::{MappedTextError, RenderedMappedText};
+    use crate::common::{IndexedSourceMap, MappedTextError, RenderedMappedText};
 
-    fn identity_map(source_name: &str, source_text: &str) -> Arc<SourceMap> {
+    fn identity_map(source_name: &str, source_text: &str) -> IndexedSourceMap {
         let mut builder = SourceMapBuilder::new(Some(source_name));
         builder.set_file(Some(source_name));
         let src_id = builder.add_source(source_name);
@@ -521,7 +522,7 @@ mod tests {
         builder.add(0, 0, 0, 0, Some(source_name), None::<&str>, false);
         builder.add(1, 0, 1, 0, Some(source_name), None::<&str>, false);
         builder.add(1, 4, 1, 4, Some(source_name), None::<&str>, false);
-        Arc::new(builder.into_sourcemap())
+        IndexedSourceMap::new(builder.into_sourcemap())
     }
 
     #[test]
@@ -530,13 +531,14 @@ mod tests {
         let source_text = "alpha\nbeta";
         let rendered = RenderedMappedText {
             code: source_text.to_string(),
-            source_map: Some(identity_map(source_name, source_text)),
+            indexed_source_map: Some(identity_map(source_name, source_text)),
         };
 
         let indented = indent_rendered_text(rendered, "  ").expect("indent works");
 
         assert_eq!(indented.code, "alpha\n  beta");
-        let map = indented.source_map.expect("map preserved");
+        let map = indented.indexed_source_map.expect("map preserved");
+        let map = map.source_map();
         let token = map.lookup_token(1, 2).expect("second line token");
         assert_eq!(token.get_src_line(), 1);
         assert_eq!(token.get_src_col(), 0);
@@ -550,14 +552,14 @@ mod tests {
                 start: 1,
                 end: 3,
                 code: "X",
-                source_map: None,
+                indexed_source_map: None,
                 original_anchors: Vec::new(),
             },
             FinalizedReplacement {
                 start: 2,
                 end: 4,
                 code: "Y",
-                source_map: None,
+                indexed_source_map: None,
                 original_anchors: Vec::new(),
             },
         ];
@@ -583,7 +585,7 @@ mod tests {
             start: 4,
             end: 7,
             code: "X",
-            source_map: None,
+            indexed_source_map: None,
             original_anchors: Vec::new(),
         }];
 

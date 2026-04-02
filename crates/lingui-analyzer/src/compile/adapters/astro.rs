@@ -131,7 +131,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         &self,
         source_name: &str,
         source: &str,
-        declaration: RenderedMappedText,
+        declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(
             source_name,
@@ -350,51 +350,53 @@ fn append_runtime_injection_replacements(
                 frontmatter.prelude_insert_point,
                 frontmatter.prelude_insert_point,
             ));
-        replacements.push(CompileReplacementInternal {
-            declaration_id: "__runtime_frontmatter_prelude".to_string(),
-            start: frontmatter.prelude_insert_point,
-            end: frontmatter.prelude_insert_point,
-            source_map: build_span_anchor_map(
-                plan.common.source_name.as_str(),
-                &indexed_source,
-                code.as_str(),
-                anchor_span.start,
-                anchor_span.end,
-            ),
+        let source_map = build_span_anchor_map(
+            plan.common.source_name.as_str(),
+            &indexed_source,
+            code.as_str(),
+            anchor_span.start,
+            anchor_span.end,
+        );
+        replacements.push(CompileReplacementInternal::new(
+            "__runtime_frontmatter_prelude".to_string(),
+            frontmatter.prelude_insert_point,
+            frontmatter.prelude_insert_point,
             code,
-            original_anchors: Vec::new(),
-        });
+            source_map,
+            Vec::new(),
+        ));
 
         if !frontmatter.has_remaining_content_after_import_removal
             && let Some(range) = frontmatter.trailing_whitespace_range
         {
-            replacements.push(CompileReplacementInternal {
-                declaration_id: "__runtime_frontmatter_trailing_ws".to_string(),
-                start: range.start,
-                end: range.end,
-                code: String::new(),
-                source_map: None,
-                original_anchors: Vec::new(),
-            });
+            replacements.push(CompileReplacementInternal::new(
+                "__runtime_frontmatter_trailing_ws".to_string(),
+                range.start,
+                range.end,
+                String::new(),
+                None,
+                Vec::new(),
+            ));
         }
         return Ok(());
     }
 
     let code = format!("---\n{prelude}\n---\n");
-    replacements.push(CompileReplacementInternal {
-        declaration_id: "__runtime_frontmatter_block".to_string(),
-        start: 0,
-        end: 0,
-        source_map: build_span_anchor_map(
-            plan.common.source_name.as_str(),
-            &indexed_source,
-            code.as_str(),
-            0,
-            0,
-        ),
+    let source_map = build_span_anchor_map(
+        plan.common.source_name.as_str(),
+        &indexed_source,
+        code.as_str(),
+        0,
+        0,
+    );
+    replacements.push(CompileReplacementInternal::new(
+        "__runtime_frontmatter_block".to_string(),
+        0,
+        0,
         code,
-        original_anchors: Vec::new(),
-    });
+        source_map,
+        Vec::new(),
+    ));
     Ok(())
 }
 

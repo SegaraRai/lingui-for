@@ -173,23 +173,25 @@ pub fn build_astro_compile_plan(
 pub fn finish_svelte_compile(
     options: &SvelteFinishCompileOptions,
 ) -> Result<FinishedCompile, CompileError> {
-    finish_compile(
+    Ok(finish_compile(
         &options.plan,
         &options.source,
         &options.transformed_programs,
     )
-    .map_err(CompileError::Lower)
+    .map_err(CompileError::Lower)?
+    .into_public())
 }
 
 pub fn finish_astro_compile(
     options: &AstroFinishCompileOptions,
 ) -> Result<FinishedCompile, CompileError> {
-    finish_compile(
+    Ok(finish_compile(
         &options.plan,
         &options.source,
         &options.transformed_programs,
     )
-    .map_err(CompileError::Lower)
+    .map_err(CompileError::Lower)?
+    .into_public())
 }
 
 #[wasm_bindgen(js_name = "buildSyntheticModule")]
