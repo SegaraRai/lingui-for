@@ -2,7 +2,10 @@ use sourcemap::{SourceMap, SourceMapBuilder};
 
 use crate::common::{IndexedText, Span};
 
-use super::primitives::{IndexedSourceMap, extract_generated_submap};
+use super::primitives::{
+    IndexedSourceMap, IndexedToken, extract_generated_submap,
+    project_generated_position_to_original,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum MappedSegment {
@@ -376,8 +379,8 @@ fn append_rendered_segments(
         return;
     }
 
-    let mut token_iter = indexed_map.tokens().iter().peekable();
-    let Some(first) = token_iter.peek() else {
+    let tokens = indexed_map.tokens();
+    let Some(first) = tokens.first() else {
         mapped.push_unmapped(code);
         return;
     };
@@ -394,16 +397,17 @@ fn append_rendered_segments(
         mapped.push_unmapped(&code[..segment_start]);
     }
 
-    while let Some(current) = token_iter.next() {
-        while let Some(next) = token_iter.peek() {
-            if next.generated_position() == current.generated_position() {
-                token_iter.next();
-            } else {
-                break;
-            }
+    let mut start_index = 0usize;
+    while start_index < tokens.len() {
+        let current = &tokens[start_index];
+        let mut end_index = start_index + 1;
+        while end_index < tokens.len()
+            && tokens[end_index].generated_position() == current.generated_position()
+        {
+            end_index += 1;
         }
 
-        let segment_end = if let Some(next) = token_iter.peek() {
+        let segment_end = if let Some(next) = tokens.get(end_index) {
             let (next_line, next_col) = next.generated_position();
             let Ok(boundary) = generated
                 .line_utf16_col_to_byte(next_line as usize, next_col as usize)
@@ -418,9 +422,14 @@ fn append_rendered_segments(
         };
 
         if segment_end > segment_start {
-            if let Some(submap) =
-                extract_generated_submap(indexed_map, &generated, segment_start, segment_end)
-            {
+            if let Some(submap) = build_segment_submap(
+                indexed_map,
+                start_index,
+                end_index,
+                &generated,
+                segment_start,
+                segment_end,
+            ) {
                 mapped.segments.push(MappedSegment::PreMapped {
                     code: code[segment_start..segment_end].to_string(),
                     indexed_source_map: Box::new(submap),
@@ -431,7 +440,65 @@ fn append_rendered_segments(
         }
 
         segment_start = segment_end;
+        start_index = end_index;
     }
+}
+
+fn build_segment_submap(
+    indexed_map: &IndexedSourceMap,
+    start_index: usize,
+    end_index: usize,
+    generated: &IndexedText<'_>,
+    start_byte: usize,
+    end_byte: usize,
+) -> Option<IndexedSourceMap> {
+    let start = generated.byte_to_line_utf16_col(start_byte)?;
+    let end = generated.byte_to_line_utf16_col(end_byte)?;
+    let start_line = start.0 as u32;
+    let start_col = start.1 as u32;
+    let end_line = end.0 as u32;
+    let end_col = end.1 as u32;
+
+    let mut tokens = Vec::with_capacity(end_index.saturating_sub(start_index) + 2);
+    if let Some(projected_start) =
+        project_generated_position_to_original(indexed_map, start_line, start_col)
+    {
+        tokens.push(IndexedToken::from_projection(0, 0, projected_start));
+    }
+
+    for token in &indexed_map.tokens()[start_index..end_index] {
+        let shifted = token.shifted_generated(start_line, start_col);
+        if tokens
+            .last()
+            .map(|last| last.generated_position() != shifted.generated_position())
+            .unwrap_or(true)
+        {
+            tokens.push(shifted);
+        }
+    }
+
+    if let Some(projected_end) =
+        project_generated_position_to_original(indexed_map, end_line, end_col)
+    {
+        let shifted_end = IndexedToken::from_projection(
+            end_line.saturating_sub(start_line),
+            if end_line == start_line {
+                end_col.saturating_sub(start_col)
+            } else {
+                end_col
+            },
+            projected_end,
+        );
+        if tokens
+            .last()
+            .map(|last| last.generated_position() != shifted_end.generated_position())
+            .unwrap_or(true)
+        {
+            tokens.push(shifted_end);
+        }
+    }
+
+    indexed_map.submap_from_generated_tokens(tokens)
 }
 
 #[derive(Debug, Clone, Copy, Default)]

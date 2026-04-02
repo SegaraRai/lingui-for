@@ -281,7 +281,8 @@ fn finalize_replacement_mapped<'a>(
     source: &'a IndexedText<'a>,
     replacement: &FinalizedReplacement<'_>,
 ) -> Result<MappedText<'a>, MappedTextError> {
-    let source_map = replacement
+    let mut mapped = MappedText::new(source_name, source.as_str());
+    if let Some(source_map) = replacement
         .indexed_source_map
         .as_ref()
         .map(|map| {
@@ -295,14 +296,13 @@ fn finalize_replacement_mapped<'a>(
                 &replacement.original_anchors,
             )
         })
-        .transpose()?;
-
-    Ok(MappedText::from_rendered(
-        source_name,
-        source.as_str(),
-        replacement.code.to_string(),
-        source_map.as_ref(),
-    ))
+        .transpose()?
+    {
+        mapped.push_pre_mapped(replacement.code, source_map);
+    } else {
+        mapped.push_unmapped(replacement.code);
+    }
+    Ok(mapped)
 }
 
 fn augment_replacement_map(

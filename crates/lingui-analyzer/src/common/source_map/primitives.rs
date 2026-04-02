@@ -151,6 +151,36 @@ impl IndexedToken {
     pub(crate) fn generated_position(&self) -> (u32, u32) {
         (self.dst_line, self.dst_col)
     }
+
+    pub(crate) fn shifted_generated(&self, start_line: u32, start_col: u32) -> Self {
+        Self {
+            dst_line: self.dst_line.saturating_sub(start_line),
+            dst_col: if self.dst_line == start_line {
+                self.dst_col.saturating_sub(start_col)
+            } else {
+                self.dst_col
+            },
+            src_line: self.src_line,
+            src_col: self.src_col,
+            source: self.source.clone(),
+            name: self.name.clone(),
+        }
+    }
+
+    pub(crate) fn from_projection(
+        dst_line: u32,
+        dst_col: u32,
+        projection: IndexedProjection,
+    ) -> Self {
+        Self {
+            dst_line,
+            dst_col,
+            src_line: projection.src_line,
+            src_col: projection.src_col,
+            source: projection.source,
+            name: projection.name,
+        }
+    }
 }
 
 impl IndexedSourceMap {
@@ -225,6 +255,10 @@ impl IndexedSourceMap {
     fn from_template_tokens(template: &SourceMap, tokens: Vec<IndexedToken>) -> Self {
         let source_map = build_source_map_from_indexed_tokens(template, &tokens);
         Self::from_parts(source_map, tokens)
+    }
+
+    pub(crate) fn submap_from_generated_tokens(&self, tokens: Vec<IndexedToken>) -> Option<Self> {
+        (!tokens.is_empty()).then(|| Self::from_template_tokens(&self.source_map, tokens))
     }
 }
 
