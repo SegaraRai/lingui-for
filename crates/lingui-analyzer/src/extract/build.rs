@@ -45,7 +45,7 @@ pub fn build_synthetic_module_from_plan(
     let mut source_map_anchors = BTreeMap::new();
     let import_line = render_macro_import_line(&plan.imports);
 
-    if let Some(line) = import_line {
+    if let Some(line) = import_line.as_deref() {
         out.push_str(&line);
         out.push('\n');
     }
@@ -94,7 +94,7 @@ pub fn build_synthetic_module_from_plan(
     let source_map_json = build_synthetic_source_map(
         source,
         source_name,
-        &plan.imports,
+        import_line.as_deref(),
         &targets_by_id,
         &declaration_ids,
         source_anchors,
@@ -133,14 +133,14 @@ fn build_targets_by_id<'a>(
 fn build_synthetic_source_map(
     source: &str,
     source_name: &str,
-    imports: &[MacroImport],
+    import_line: Option<&str>,
     targets_by_id: &HashMap<&str, &SynthesisTarget>,
     declaration_ids: &[String],
     source_anchors: &[usize],
 ) -> Result<Option<IndexedSourceMap>, BuildSyntheticModuleError> {
     let mut mapped = MappedText::new(source_name, source);
 
-    if let Some(line) = render_macro_import_line(imports) {
+    if let Some(line) = import_line {
         mapped.push_unmapped(line);
         mapped.push_unmapped("\n");
     }
