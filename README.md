@@ -2,10 +2,13 @@
 
 _Bring Lingui's macro-first localization model to Svelte and Astro._
 
+[![Documentation](https://img.shields.io/badge/docs-lingui--for.roundtrip.dev-blue)](https://lingui-for.roundtrip.dev/)
+[![CI](https://github.com/SegaraRai/lingui-for/actions/workflows/ci.yml/badge.svg)](https://github.com/SegaraRai/lingui-for/actions/workflows/ci.yml)
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/SegaraRai/lingui-for?labelColor=171717&color=FF570A&label=CodeRabbit+Reviews)](https://coderabbit.ai)
+
 [![npm](https://img.shields.io/npm/v/lingui-for-svelte?label=lingui-for-svelte)](https://www.npmjs.com/package/lingui-for-svelte)
 [![npm](https://img.shields.io/npm/v/lingui-for-astro?label=lingui-for-astro)](https://www.npmjs.com/package/lingui-for-astro)
 [![npm](https://img.shields.io/npm/v/unplugin-lingui-macro?label=unplugin-lingui-macro)](https://www.npmjs.com/package/unplugin-lingui-macro)
-[![Documentation](https://img.shields.io/badge/docs-lingui--for.roundtrip.dev-blue)](https://lingui-for.roundtrip.dev/)
 
 lingui-for exists for teams who want the strengths of Lingui in frameworks that need framework-specific integration. It keeps Lingui's core authoring model intact while making it feel natural in Svelte and Astro.
 
