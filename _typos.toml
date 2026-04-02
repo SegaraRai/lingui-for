@@ -1,5 +1,9 @@
 [files]
-extend-exclude = ["**/locales/*.ts"]
+extend-exclude = [
+  "**/locales/*.ts",
+  "**/*.map",
+  "crates/lingui-analyzer/benches/fixtures/*",
+]
 
 [default]
 # "#nd"
