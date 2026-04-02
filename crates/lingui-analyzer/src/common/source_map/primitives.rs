@@ -34,7 +34,7 @@ pub(crate) fn overlay_source_map_with_single_anchor(
         builder.set_source_contents(builder_src_id, base.get_source_contents(src_id));
     }
 
-    let (src_line, src_col) = source.byte_to_line_utf16_col(original_byte);
+    let (src_line, src_col) = source.byte_to_line_utf16_col(original_byte)?;
 
     let mut inserted = false;
     let mut seen = BTreeSet::new();
@@ -185,8 +185,8 @@ pub(crate) fn extract_local_submap(
     start_byte: usize,
     end_byte: usize,
 ) -> Option<SharedSourceMap> {
-    let start = source.byte_to_line_utf16_col(start_byte);
-    let end = source.byte_to_line_utf16_col(end_byte);
+    let start = source.byte_to_line_utf16_col(start_byte)?;
+    let end = source.byte_to_line_utf16_col(end_byte)?;
     let start_line = start.0 as u32;
     let start_col = start.1 as u32;
     let end_line = end.0 as u32;
@@ -244,8 +244,8 @@ pub(crate) fn extract_generated_submap(
         return None;
     }
 
-    let start = generated.byte_to_line_utf16_col(start_byte);
-    let end = generated.byte_to_line_utf16_col(end_byte);
+    let start = generated.byte_to_line_utf16_col(start_byte)?;
+    let end = generated.byte_to_line_utf16_col(end_byte)?;
     let start_line = start.0 as u32;
     let start_col = start.1 as u32;
     let end_line = end.0 as u32;

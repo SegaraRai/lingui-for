@@ -4,7 +4,7 @@ mod source_map;
 mod span;
 mod transformed_declaration;
 
-pub use indexed_text::{IndexedText, IndexedTextSlice, Utf16Index};
+pub use indexed_text::{IndexedText, IndexedTextSlice};
 pub use lang::ScriptLang;
 pub use source_map::MappedTextError;
 pub(crate) use source_map::{

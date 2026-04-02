@@ -182,12 +182,11 @@ fn project_declaration_byte_to_original_byte(
 ) -> Option<usize> {
     let source_map = declaration_source_map?;
     let (generated_line, generated_col) =
-        declaration_source.byte_to_line_utf16_col(declaration_byte);
+        declaration_source.byte_to_line_utf16_col(declaration_byte)?;
     let token = source_map.lookup_token(generated_line as u32, generated_col as u32)?;
-    Some(
-        original_source
-            .line_utf16_col_to_byte(token.get_src_line() as usize, token.get_src_col() as usize),
-    )
+    let byte = original_source
+        .line_utf16_col_to_byte(token.get_src_line() as usize, token.get_src_col() as usize)?;
+    Some(byte)
 }
 
 fn push_copied_span<'a>(

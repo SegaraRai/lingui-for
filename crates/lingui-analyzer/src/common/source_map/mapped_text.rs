@@ -231,7 +231,7 @@ pub(crate) fn build_segmented_map(
             &generated,
             segment,
             segment_start,
-        );
+        )?;
         saw_mapping = true;
 
         for anchor in source_anchors[lower..upper].iter().copied() {
@@ -245,7 +245,7 @@ pub(crate) fn build_segmented_map(
                 &generated,
                 segment,
                 anchor,
-            );
+            )?;
         }
 
         add_segment_mapping_point(
@@ -255,7 +255,7 @@ pub(crate) fn build_segmented_map(
             &generated,
             segment,
             segment_end,
-        );
+        )?;
     }
 
     Ok(saw_mapping.then(|| builder.into_sourcemap().into()))
@@ -332,11 +332,15 @@ fn add_segment_mapping_point(
     generated: &IndexedText<'_>,
     segment: &crate::synthesis::NormalizedSegment,
     original_byte: usize,
-) {
+) -> Result<(), MappedTextError> {
     let clamped = original_byte.min(segment.original_start + segment.len);
     let generated_byte = segment.generated_start + clamped.saturating_sub(segment.original_start);
-    let (original_line, original_col) = source.byte_to_line_utf16_col(clamped);
-    let (generated_line, generated_col) = generated.byte_to_line_utf16_col(generated_byte);
+    let (original_line, original_col) = source
+        .byte_to_line_utf16_col(clamped)
+        .ok_or(MappedTextError::InvalidSegmentSlice)?;
+    let (generated_line, generated_col) = generated
+        .byte_to_line_utf16_col(generated_byte)
+        .ok_or(MappedTextError::InvalidSegmentSlice)?;
     builder.add(
         generated_line as u32,
         generated_col as u32,
@@ -346,6 +350,7 @@ fn add_segment_mapping_point(
         None::<&str>,
         false,
     );
+    Ok(())
 }
 
 fn append_rendered_segments(mapped: &mut MappedText<'_>, code: &str, map: &SharedSourceMap) {
@@ -353,7 +358,7 @@ fn append_rendered_segments(mapped: &mut MappedText<'_>, code: &str, map: &Share
     let generated = IndexedText::new(code);
     let mut boundaries = map
         .tokens()
-        .map(|token| {
+        .flat_map(|token| {
             generated
                 .line_utf16_col_to_byte(token.get_dst_line() as usize, token.get_dst_col() as usize)
         })

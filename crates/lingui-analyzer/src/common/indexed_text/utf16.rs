@@ -1,11 +1,12 @@
+use std::ops::Range;
+
 #[derive(Debug, Clone)]
-pub struct Utf16Index<'a> {
+pub struct Utf16Table<'a> {
     source: &'a str,
-    line_starts: Vec<usize>,
-    lines: Vec<Utf16LineIndex>,
+    lines: Vec<Utf16LineTable<'a>>,
 }
 
-impl<'a> Utf16Index<'a> {
+impl<'a> Utf16Table<'a> {
     pub fn new(source: &'a str, line_starts: &[usize]) -> Self {
         let mut lines = Vec::with_capacity(line_starts.len());
         for (index, &start) in line_starts.iter().enumerate() {
@@ -16,53 +17,76 @@ impl<'a> Utf16Index<'a> {
             if end > start && source.as_bytes().get(end - 1) == Some(&b'\r') {
                 end = end.saturating_sub(1);
             }
-            lines.push(Utf16LineIndex::new(source, start, end));
+            lines.push(Utf16LineTable::new(source, start, end));
         }
-        Self {
-            source,
-            line_starts: line_starts.to_vec(),
-            lines,
-        }
+        Self { source, lines }
     }
 
-    pub fn byte_to_line_utf16_col(&self, byte: usize) -> (usize, usize) {
-        let line = self.line_for_byte(byte);
-        let col = self.lines[line].byte_to_utf16_col(self.source, byte);
-        (line, col)
+    pub fn byte_to_line_utf16_col(&self, byte: usize) -> Option<(usize, usize)> {
+        let line = self.line_for_byte(byte)?;
+        let col = self.lines[line].byte_to_utf16_col(byte);
+        Some((line, col))
     }
 
-    pub fn line_utf16_col_to_byte(&self, line: usize, utf16_col: usize) -> usize {
-        let Some(line_index) = self.lines.get(line) else {
-            return self.source.len();
+    pub fn line_utf16_col_to_byte(&self, line: usize, utf16_col: usize) -> Option<usize> {
+        let line_index = self.lines.get(line)?;
+        Some(line_index.utf16_col_to_byte(utf16_col))
+    }
+
+    pub fn line_for_byte(&self, byte: usize) -> Option<usize> {
+        if byte > self.source.len() {
+            return None;
+        }
+        Some(
+            self.lines
+                .partition_point(|line| line.start <= byte)
+                .saturating_sub(1),
+        )
+    }
+
+    pub fn relative_byte_to_line_utf16_col(
+        &self,
+        range: Range<usize>,
+        local_byte: usize,
+    ) -> Option<(usize, usize)> {
+        if range.start > range.end || range.end > self.source.len() || local_byte > range.len() {
+            return None;
+        }
+
+        let global_byte = range.start + local_byte;
+        let slice_start_line = self.line_for_byte(range.start)?;
+        let line = self.line_for_byte(global_byte)?;
+        let line_start = if line == slice_start_line {
+            range.start
+        } else {
+            self.lines.get(line)?.start
         };
-        line_index.utf16_col_to_byte(self.source, utf16_col)
-    }
+        let utf16_col = self.byte_to_line_utf16_col(global_byte)?.1;
+        let line_start_utf16_col = self.byte_to_line_utf16_col(line_start)?.1;
 
-    fn line_for_byte(&self, byte: usize) -> usize {
-        self.line_starts
-            .partition_point(|&probe| probe <= byte)
-            .saturating_sub(1)
+        Some((line - slice_start_line, utf16_col - line_start_utf16_col))
     }
 }
 
 #[derive(Debug, Clone)]
-struct Utf16LineIndex {
+struct Utf16LineTable<'a> {
     start: usize,
     end: usize,
+    line: &'a str,
     checkpoints: Vec<Utf16Checkpoint>,
 }
 
-impl Utf16LineIndex {
+impl<'a> Utf16LineTable<'a> {
     const CHECKPOINT_STRIDE_CHARS: usize = 64;
 
-    fn new(source: &str, start: usize, end: usize) -> Self {
+    fn new(source: &'a str, start: usize, end: usize) -> Self {
         let mut checkpoints = vec![Utf16Checkpoint {
             byte: start,
             utf16_col: 0,
         }];
 
-        let mut utf16_col: usize = 0;
-        let mut char_count: usize = 0;
+        let mut utf16_col = 0usize;
+        let mut char_count = 0usize;
 
         for (rel, ch) in source[start..end].char_indices() {
             utf16_col += ch.len_utf16();
@@ -90,11 +114,12 @@ impl Utf16LineIndex {
         Self {
             start,
             end,
+            line: &source[start..end],
             checkpoints,
         }
     }
 
-    fn byte_to_utf16_col(&self, source: &str, abs_byte: usize) -> usize {
+    fn byte_to_utf16_col(&self, abs_byte: usize) -> usize {
         if abs_byte <= self.start {
             return 0;
         }
@@ -112,11 +137,10 @@ impl Utf16LineIndex {
 
         let mut cur_byte = checkpoint.byte;
         let mut cur_utf16 = checkpoint.utf16_col;
-        let line = &source[self.start..self.end];
 
         while cur_byte < clamped {
             let rel = cur_byte - self.start;
-            let Some(ch) = line[rel..].chars().next() else {
+            let Some(ch) = self.line[rel..].chars().next() else {
                 break;
             };
             let next_byte = cur_byte + ch.len_utf8();
@@ -131,16 +155,15 @@ impl Utf16LineIndex {
         cur_utf16
     }
 
-    fn utf16_col_to_byte(&self, source: &str, target_utf16_col: usize) -> usize {
+    fn utf16_col_to_byte(&self, target_utf16_col: usize) -> usize {
         if target_utf16_col == 0 {
             return self.start;
         }
 
-        let line = &source[self.start..self.end];
         let mut cur_byte = self.start;
         let mut cur_utf16 = 0usize;
 
-        for (rel, ch) in line.char_indices() {
+        for (rel, ch) in self.line.char_indices() {
             if cur_utf16 >= target_utf16_col {
                 return self.start + rel;
             }
@@ -163,7 +186,7 @@ struct Utf16Checkpoint {
 
 #[cfg(test)]
 mod tests {
-    use super::Utf16Index;
+    use super::Utf16Table;
 
     fn line_starts(source: &str) -> Vec<usize> {
         let mut starts = vec![0];
@@ -178,72 +201,98 @@ mod tests {
     #[test]
     fn uses_utf16_columns_for_unicode() {
         let source = "あ🙂x";
-        let index = Utf16Index::new(source, &line_starts(source));
+        let table = Utf16Table::new(source, &line_starts(source));
 
-        assert_eq!(index.byte_to_line_utf16_col(0), (0, 0));
-        assert_eq!(index.byte_to_line_utf16_col(3), (0, 1));
-        assert_eq!(index.byte_to_line_utf16_col(7), (0, 3));
-        assert_eq!(index.byte_to_line_utf16_col(8), (0, 4));
+        assert_eq!(table.byte_to_line_utf16_col(0), Some((0, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(3), Some((0, 1)));
+        assert_eq!(table.byte_to_line_utf16_col(7), Some((0, 3)));
+        assert_eq!(table.byte_to_line_utf16_col(8), Some((0, 4)));
     }
 
     #[test]
     fn resolves_line_starts_at_exact_boundaries() {
         let source = "ab\ncd\nef";
-        let index = Utf16Index::new(source, &line_starts(source));
+        let table = Utf16Table::new(source, &line_starts(source));
 
-        assert_eq!(index.byte_to_line_utf16_col(0), (0, 0));
-        assert_eq!(index.byte_to_line_utf16_col(2), (0, 2));
-        assert_eq!(index.byte_to_line_utf16_col(3), (1, 0));
-        assert_eq!(index.byte_to_line_utf16_col(5), (1, 2));
-        assert_eq!(index.byte_to_line_utf16_col(6), (2, 0));
+        assert_eq!(table.byte_to_line_utf16_col(0), Some((0, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(2), Some((0, 2)));
+        assert_eq!(table.byte_to_line_utf16_col(3), Some((1, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(5), Some((1, 2)));
+        assert_eq!(table.byte_to_line_utf16_col(6), Some((2, 0)));
     }
 
     #[test]
     fn treats_crlf_as_line_break_without_counting_cr() {
         let source = "ab\r\ncd\r\nef";
-        let index = Utf16Index::new(source, &line_starts(source));
+        let table = Utf16Table::new(source, &line_starts(source));
 
-        assert_eq!(index.byte_to_line_utf16_col(0), (0, 0));
-        assert_eq!(index.byte_to_line_utf16_col(2), (0, 2));
-        assert_eq!(index.byte_to_line_utf16_col(3), (0, 2));
-        assert_eq!(index.byte_to_line_utf16_col(4), (1, 0));
-        assert_eq!(index.byte_to_line_utf16_col(6), (1, 2));
-        assert_eq!(index.byte_to_line_utf16_col(7), (1, 2));
-        assert_eq!(index.byte_to_line_utf16_col(8), (2, 0));
-        assert_eq!(index.byte_to_line_utf16_col(10), (2, 2));
+        assert_eq!(table.byte_to_line_utf16_col(0), Some((0, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(2), Some((0, 2)));
+        assert_eq!(table.byte_to_line_utf16_col(3), Some((0, 2)));
+        assert_eq!(table.byte_to_line_utf16_col(4), Some((1, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(6), Some((1, 2)));
+        assert_eq!(table.byte_to_line_utf16_col(7), Some((1, 2)));
+        assert_eq!(table.byte_to_line_utf16_col(8), Some((2, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(10), Some((2, 2)));
     }
 
     #[test]
-    fn clamps_past_end_to_last_line_end() {
+    fn rejects_past_end_offsets() {
         let source = "ab\n🙂x";
-        let index = Utf16Index::new(source, &line_starts(source));
+        let table = Utf16Table::new(source, &line_starts(source));
 
-        assert_eq!(index.byte_to_line_utf16_col(source.len()), (1, 3));
-        assert_eq!(index.byte_to_line_utf16_col(source.len() + 10), (1, 3));
+        assert_eq!(table.byte_to_line_utf16_col(source.len()), Some((1, 3)));
+        assert_eq!(table.byte_to_line_utf16_col(source.len() + 10), None);
     }
 
     #[test]
     fn handles_empty_lines_and_unicode_across_lines() {
         let source = "🙂\n\néx";
-        let index = Utf16Index::new(source, &line_starts(source));
+        let table = Utf16Table::new(source, &line_starts(source));
 
-        assert_eq!(index.byte_to_line_utf16_col(0), (0, 0));
-        assert_eq!(index.byte_to_line_utf16_col(4), (0, 2));
-        assert_eq!(index.byte_to_line_utf16_col(5), (1, 0));
-        assert_eq!(index.byte_to_line_utf16_col(6), (2, 0));
-        assert_eq!(index.byte_to_line_utf16_col(8), (2, 1));
-        assert_eq!(index.byte_to_line_utf16_col(9), (2, 2));
+        assert_eq!(table.byte_to_line_utf16_col(0), Some((0, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(4), Some((0, 2)));
+        assert_eq!(table.byte_to_line_utf16_col(5), Some((1, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(6), Some((2, 0)));
+        assert_eq!(table.byte_to_line_utf16_col(8), Some((2, 1)));
+        assert_eq!(table.byte_to_line_utf16_col(9), Some((2, 2)));
     }
 
     #[test]
     fn converts_utf16_columns_back_to_byte_offsets() {
         let source = "🙂x\nab";
-        let index = Utf16Index::new(source, &line_starts(source));
+        let table = Utf16Table::new(source, &line_starts(source));
 
-        assert_eq!(index.line_utf16_col_to_byte(0, 0), 0);
-        assert_eq!(index.line_utf16_col_to_byte(0, 2), 4);
-        assert_eq!(index.line_utf16_col_to_byte(0, 3), 5);
-        assert_eq!(index.line_utf16_col_to_byte(1, 0), 6);
-        assert_eq!(index.line_utf16_col_to_byte(1, 2), 8);
+        assert_eq!(table.line_utf16_col_to_byte(0, 0), Some(0));
+        assert_eq!(table.line_utf16_col_to_byte(0, 2), Some(4));
+        assert_eq!(table.line_utf16_col_to_byte(0, 3), Some(5));
+        assert_eq!(table.line_utf16_col_to_byte(1, 0), Some(6));
+        assert_eq!(table.line_utf16_col_to_byte(1, 2), Some(8));
+        assert_eq!(table.line_utf16_col_to_byte(2, 0), None);
+    }
+
+    #[test]
+    fn resolves_relative_slice_positions() {
+        let source = "ab😀\nxyz\n";
+        let table = Utf16Table::new(source, &line_starts(source));
+        let range = 1.."ab😀\nxy".len();
+
+        assert_eq!(
+            table.relative_byte_to_line_utf16_col(range.clone(), 0),
+            Some((0, 0))
+        );
+        assert_eq!(
+            table.relative_byte_to_line_utf16_col(range.clone(), "b😀".len()),
+            Some((0, 3))
+        );
+        assert_eq!(
+            table.relative_byte_to_line_utf16_col(range.clone(), "b😀\n".len()),
+            Some((1, 0))
+        );
+        assert_eq!(
+            table.relative_byte_to_line_utf16_col(range.clone(), "b😀\nx".len()),
+            Some((1, 1))
+        );
+        assert_eq!(table.relative_byte_to_line_utf16_col(range, 99), None);
     }
 }

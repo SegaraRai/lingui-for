@@ -37,7 +37,7 @@ pub(crate) fn build_span_anchor_map(
 
     let start_byte = original_span_start.min(source.len());
     let end_byte = original_span_end.min(source.len());
-    let (start_line, start_col) = source.byte_to_line_utf16_col(start_byte);
+    let (start_line, start_col) = source.byte_to_line_utf16_col(start_byte)?;
     builder.add(
         0,
         0,
@@ -50,7 +50,7 @@ pub(crate) fn build_span_anchor_map(
 
     let (end_generated_line, end_generated_col) = generated_end_position(generated_text);
     if (end_generated_line > 0 || end_generated_col > 0) && start_byte != end_byte {
-        let (end_line, end_col) = source.byte_to_line_utf16_col(end_byte);
+        let (end_line, end_col) = source.byte_to_line_utf16_col(end_byte)?;
         builder.add(
             end_generated_line,
             end_generated_col,
@@ -74,7 +74,7 @@ pub(crate) fn build_copy_map(
         return None;
     }
 
-    let copied = source.slice(original_span.start..original_span.end);
+    let copied = source.slice(original_span.start..original_span.end)?;
     let copied_text = copied.as_str();
     let anchor_points = collect_copy_anchor_points(copied_text, original_span, source_anchors);
     if anchor_points.is_empty() {
@@ -88,8 +88,8 @@ pub(crate) fn build_copy_map(
 
     for anchor in anchor_points {
         let generated_byte = anchor - original_span.start;
-        let (src_line, src_col) = source.byte_to_line_utf16_col(anchor);
-        let (dst_line, dst_col) = copied.byte_to_line_utf16_col(generated_byte);
+        let (src_line, src_col) = source.byte_to_line_utf16_col(anchor)?;
+        let (dst_line, dst_col) = copied.byte_to_line_utf16_col(generated_byte)?;
         builder.add(
             dst_line as u32,
             dst_col as u32,
@@ -273,6 +273,9 @@ fn augment_replacement_map(
             .map(|anchor| source.byte_to_line_utf16_col(*anchor)),
     );
     let anchor_positions = anchor_positions
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or(MappedTextError::OutOfBounds)?
         .into_iter()
         .map(|(line, col)| (line as u32, col as u32))
         .collect::<Vec<_>>();
