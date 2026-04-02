@@ -1,4 +1,6 @@
-use tree_sitter::Node;
+use std::collections::HashMap;
+
+use tree_sitter::{Node, Tree};
 
 use crate::common::Span;
 
@@ -21,36 +23,13 @@ pub enum JsMacroSyntax {
     Svelte,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum JsLikeLanguage {
     JavaScript,
     TypeScript,
 }
 
-pub fn collect_macro_candidates_in_javascript(
-    source: &str,
-    imports: &[MacroImport],
-    base_offset: usize,
-    syntax: JsMacroSyntax,
-    language: JsLikeLanguage,
-    shadowed_names: &[String],
-) -> Result<Vec<MacroCandidate>, JsAnalysisError> {
-    let js_tree = match language {
-        JsLikeLanguage::JavaScript => parse_javascript(source)?,
-        JsLikeLanguage::TypeScript => parse_typescript(source)?,
-    };
-    let js_root = js_tree.root_node();
-    Ok(collect_macro_candidates_from_root(
-        source,
-        js_root,
-        imports,
-        base_offset,
-        syntax,
-        shadowed_names,
-    ))
-}
-
-pub fn collect_macro_candidates_from_root(
+pub fn collect_macro_candidates(
     source: &str,
     root: Node<'_>,
     imports: &[MacroImport],
@@ -135,6 +114,44 @@ pub fn collect_top_level_declared_names_from_root(source: &str, root: Node<'_>) 
     names.sort();
     names.dedup();
     names
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct ExpressionParseKey {
+    start: usize,
+    end: usize,
+    language: JsLikeLanguage,
+}
+
+#[derive(Debug, Default)]
+pub struct ExpressionParseCache {
+    trees: HashMap<ExpressionParseKey, Tree>,
+}
+
+impl ExpressionParseCache {
+    pub fn parse(
+        &mut self,
+        source: &str,
+        span: Span,
+        language: JsLikeLanguage,
+    ) -> Result<Tree, ParseError> {
+        let key = ExpressionParseKey {
+            start: span.start,
+            end: span.end,
+            language,
+        };
+        if let Some(tree) = self.trees.get(&key) {
+            return Ok(tree.clone());
+        }
+
+        let slice = &source[span.start..span.end];
+        let tree = match language {
+            JsLikeLanguage::JavaScript => parse_javascript(slice)?,
+            JsLikeLanguage::TypeScript => parse_typescript(slice)?,
+        };
+        self.trees.insert(key, tree.clone());
+        Ok(tree)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -655,11 +672,11 @@ fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) 
 #[cfg(test)]
 mod tests {
     use super::{
-        JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_in_javascript,
-        find_pattern_near_start, repair_svelte_eager_spans,
+        JsMacroSyntax, collect_macro_candidates, find_pattern_near_start, repair_svelte_eager_spans,
     };
     use crate::common::Span;
     use crate::framework::MacroImport;
+    use crate::framework::parse::parse_typescript;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
@@ -740,15 +757,15 @@ mod tests {
             span: Span::new(0, 0),
         }];
 
-        let candidates = collect_macro_candidates_in_javascript(
+        let tree = parse_typescript(source).expect("parse succeeds");
+        let candidates = collect_macro_candidates(
             source,
+            tree.root_node(),
             &imports,
             0,
             JsMacroSyntax::Standard,
-            JsLikeLanguage::TypeScript,
             &[],
-        )
-        .expect("analysis succeeds");
+        );
 
         assert_eq!(candidates.len(), 1);
         assert_eq!(

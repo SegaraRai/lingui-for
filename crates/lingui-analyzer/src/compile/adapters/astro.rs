@@ -488,7 +488,6 @@ fn has_remaining_content_after_import_removal(
     let relative_ranges = import_removals
         .iter()
         .copied()
-        .into_iter()
         .map(|span| {
             Span::new(
                 span.start - region.inner_span.start,

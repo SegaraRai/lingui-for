@@ -8,9 +8,9 @@ use crate::conventions::FrameworkConventions;
 use super::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
 use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{
-    BindingParseMode, JsAnalysisError, JsLikeLanguage, JsMacroSyntax,
-    collect_declared_names_from_binding_source, collect_macro_candidates_from_root,
-    collect_macro_candidates_in_javascript, collect_top_level_declared_names_from_root,
+    BindingParseMode, ExpressionParseCache, JsAnalysisError, JsLikeLanguage, JsMacroSyntax,
+    collect_declared_names_from_binding_source, collect_macro_candidates,
+    collect_top_level_declared_names_from_root,
 };
 use super::parse::{ParseError, parse_javascript, parse_svelte, parse_typescript};
 use super::{
@@ -113,6 +113,7 @@ fn analyze_svelte(
         scope_stack: vec![template_shadowed_names],
         expressions: Vec::new(),
         components: Vec::new(),
+        expression_parse_cache: ExpressionParseCache::default(),
     };
     collect_template_expressions(source, root, &template_imports, options, &mut context)?;
     for script in &mut scripts {
@@ -218,7 +219,7 @@ fn analyze_script_block(
     .into_iter()
     .map(|span| expand_import_removal_span_in_source(source, span))
     .collect();
-    let candidates = collect_macro_candidates_from_root(
+    let candidates = collect_macro_candidates(
         script_source,
         script_root,
         &macro_imports,
@@ -242,6 +243,7 @@ struct CollectContext {
     scope_stack: Vec<Vec<String>>,
     expressions: Vec<SvelteTemplateExpression>,
     components: Vec<SvelteTemplateComponent>,
+    expression_parse_cache: ExpressionParseCache,
 }
 
 fn collect_template_expressions(
@@ -331,15 +333,18 @@ fn push_expression(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let candidates = collect_macro_candidates_in_javascript(
+    let tree =
+        context
+            .expression_parse_cache
+            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let candidates = collect_macro_candidates(
         expression_source,
+        tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        // Svelte template expressions accept TypeScript syntax such as `as` and `satisfies`.
-        JsLikeLanguage::TypeScript,
         &shadowed_names,
-    )?;
+    );
     context.expressions.push(SvelteTemplateExpression {
         outer_span,
         inner_span,
@@ -365,14 +370,19 @@ fn push_raw_text_expression(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let candidates = collect_macro_candidates_in_javascript(
-        text(source, raw_text),
+    let expression_source = &source[inner_span.start..inner_span.end];
+    let tree =
+        context
+            .expression_parse_cache
+            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let candidates = collect_macro_candidates(
+        expression_source,
+        tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        JsLikeLanguage::TypeScript,
         &shadowed_names,
-    )?;
+    );
     context.expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(node),
         inner_span,
@@ -428,14 +438,19 @@ fn push_each_start_expression(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let candidates = collect_macro_candidates_in_javascript(
+    let tree =
+        context
+            .expression_parse_cache
+            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+
+    let candidates = collect_macro_candidates(
         text(source, identifier),
+        tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        JsLikeLanguage::TypeScript,
         &shadowed_names,
-    )?;
+    );
     context.expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(each_start),
         inner_span,
@@ -772,7 +787,7 @@ fn append_expression_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    context: &CollectContext,
+    context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = node
@@ -788,14 +803,20 @@ fn append_expression_normalization_edits(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let candidates = collect_macro_candidates_in_javascript(
-        &source[inner_span.start..inner_span.end],
+    let expression_source = &source[inner_span.start..inner_span.end];
+    let tree =
+        context
+            .expression_parse_cache
+            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+
+    let candidates = collect_macro_candidates(
+        expression_source,
+        tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        JsLikeLanguage::TypeScript,
         &shadowed_names,
-    )?;
+    );
     normalization_edits.extend(
         candidates
             .into_iter()
@@ -808,7 +829,7 @@ fn append_raw_text_expression_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    context: &CollectContext,
+    context: &mut CollectContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
@@ -821,14 +842,19 @@ fn append_raw_text_expression_normalization_edits(
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
     let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
-    let candidates = collect_macro_candidates_in_javascript(
-        &source[inner_span.start..inner_span.end],
+    let expression_source = &source[inner_span.start..inner_span.end];
+    let tree =
+        context
+            .expression_parse_cache
+            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let candidates = collect_macro_candidates(
+        expression_source,
+        tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        JsLikeLanguage::TypeScript,
         &shadowed_names,
-    )?;
+    );
     normalization_edits.extend(
         candidates
             .into_iter()

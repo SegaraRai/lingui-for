@@ -1,5 +1,6 @@
 use sourcemap::{SourceMap, SourceMapBuilder};
 
+use crate::NormalizedSegment;
 use crate::common::{IndexedText, Span};
 
 use super::primitives::{
@@ -214,7 +215,7 @@ pub(crate) fn build_segmented_map(
     source_name: &str,
     source_text: &str,
     generated_text: &str,
-    segments: &[crate::synthesis::NormalizedSegment],
+    segments: &[NormalizedSegment],
     source_anchors: &[usize],
 ) -> Result<Option<IndexedSourceMap>, MappedTextError> {
     if segments.is_empty() {
@@ -345,7 +346,7 @@ fn add_segment_mapping_point(
     source_name: &str,
     source: &IndexedText<'_>,
     generated: &IndexedText<'_>,
-    segment: &crate::synthesis::NormalizedSegment,
+    segment: &NormalizedSegment,
     original_byte: usize,
 ) -> Result<(), MappedTextError> {
     let clamped = original_byte.min(segment.original_start + segment.len);

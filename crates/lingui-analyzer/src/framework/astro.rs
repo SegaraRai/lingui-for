@@ -6,8 +6,7 @@ use crate::conventions::FrameworkConventions;
 use super::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
 use super::expression::is_explicit_whitespace_string_expression;
 use super::js::{
-    JsAnalysisError, JsLikeLanguage, JsMacroSyntax, collect_macro_candidates_from_root,
-    collect_macro_candidates_in_javascript,
+    ExpressionParseCache, JsAnalysisError, JsLikeLanguage, JsMacroSyntax, collect_macro_candidates,
 };
 use super::parse::{ParseError, parse_astro, parse_typescript};
 use super::{
@@ -49,6 +48,11 @@ pub struct AstroFrontmatterAnalysis {
 #[derive(Debug, Default, Clone, Copy)]
 pub struct AstroAdapter;
 
+#[derive(Debug, Default)]
+struct AstroCollectContext {
+    expression_parse_cache: ExpressionParseCache,
+}
+
 impl FrameworkAdapter for AstroAdapter {
     type Analysis = AstroFrontmatterAnalysis;
 
@@ -87,7 +91,7 @@ fn analyze_astro(
             frontmatter_region.inner_span.start,
             &options.conventions,
         );
-        let candidates = collect_macro_candidates_from_root(
+        let candidates = collect_macro_candidates(
             frontmatter_source,
             frontmatter_root,
             &macro_imports,
@@ -205,11 +209,13 @@ fn collect_template_expressions(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
 ) -> Result<(Vec<AstroTemplateExpression>, Vec<AstroTemplateComponent>), AstroFrameworkError> {
+    let mut context = AstroCollectContext::default();
     fn collect_template_expressions_impl(
         source: &str,
         node: Node<'_>,
         imports: &[MacroImport],
         options: &AnalyzeOptions,
+        context: &mut AstroCollectContext,
         expressions: &mut Vec<AstroTemplateExpression>,
         components: &mut Vec<AstroTemplateComponent>,
     ) -> Result<(), AstroFrameworkError> {
@@ -223,6 +229,7 @@ fn collect_template_expressions(
                         Span::from_node(node),
                         inner_range_from_delimiters(node, 1, 1),
                         imports,
+                        context,
                         expressions,
                     )?;
                     return Ok(());
@@ -230,7 +237,7 @@ fn collect_template_expressions(
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, node, imports, options)
+                    component_candidate_from_element(source, node, imports, options, context)
                 {
                     components.push(component);
                     return Ok(());
@@ -247,6 +254,7 @@ fn collect_template_expressions(
                     Span::from_node(node),
                     inner,
                     imports,
+                    context,
                     expressions,
                 )?;
                 return Ok(());
@@ -257,6 +265,7 @@ fn collect_template_expressions(
                     Span::from_node(node),
                     inner_range_from_delimiters(node, 1, 1),
                     imports,
+                    context,
                     expressions,
                 )?;
                 return Ok(());
@@ -272,6 +281,7 @@ fn collect_template_expressions(
                 child,
                 imports,
                 options,
+                context,
                 expressions,
                 components,
             )?;
@@ -287,6 +297,7 @@ fn collect_template_expressions(
         node,
         imports,
         options,
+        &mut context,
         &mut expressions,
         &mut components,
     )?;
@@ -298,18 +309,23 @@ fn push_template_expression(
     outer_span: Span,
     inner_span: Span,
     imports: &[MacroImport],
+    context: &mut AstroCollectContext,
     expressions: &mut Vec<AstroTemplateExpression>,
 ) -> Result<(), AstroFrameworkError> {
     let expression_source = &source[inner_span.start..inner_span.end];
-    let candidates = collect_macro_candidates_in_javascript(
+    let tree =
+        context
+            .expression_parse_cache
+            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+
+    let candidates = collect_macro_candidates(
         expression_source,
+        tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Standard,
-        // Astro template expressions accept TypeScript syntax such as `as` and `satisfies`.
-        JsLikeLanguage::TypeScript,
         &[],
-    )?;
+    );
     expressions.push(AstroTemplateExpression {
         outer_span,
         inner_span,
@@ -323,6 +339,7 @@ fn component_candidate_from_element(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
+    context: &mut AstroCollectContext,
 ) -> Option<AstroTemplateComponent> {
     let mut cursor = node.walk();
     let tag_node = node
@@ -339,7 +356,8 @@ fn component_candidate_from_element(
     let import_decl = imports
         .iter()
         .find(|import_decl| import_decl.local_name == tag_name)?;
-    let normalization_edits = collect_component_normalization_edits(source, node, imports, options);
+    let normalization_edits =
+        collect_component_normalization_edits(source, node, imports, options, context);
 
     Some(AstroTemplateComponent {
         candidate: MacroCandidate {
@@ -443,8 +461,10 @@ fn collect_component_normalization_edits(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
+    context: &mut AstroCollectContext,
 ) -> Vec<NormalizationEdit> {
-    let mut edits = collect_nested_component_normalization_edits(source, node, imports, options);
+    let mut edits =
+        collect_nested_component_normalization_edits(source, node, imports, options, context);
     edits.extend(component_whitespace_edits(source, node, options));
     sort_and_dedup_normalization_edits(&mut edits);
     edits
@@ -455,6 +475,7 @@ fn collect_nested_component_normalization_edits(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
+    context: &mut AstroCollectContext,
 ) -> Vec<NormalizationEdit> {
     let mut edits = Vec::new();
     let mut cursor = node.walk();
@@ -464,14 +485,19 @@ fn collect_nested_component_normalization_edits(
             "frontmatter_js_block" => {}
             "html_interpolation" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                if let Ok(candidates) = collect_macro_candidates_in_javascript(
-                    &source[inner.start..inner.end],
-                    imports,
-                    inner.start,
-                    JsMacroSyntax::Standard,
-                    JsLikeLanguage::TypeScript,
-                    &[],
-                ) {
+                if let Ok(tree) =
+                    context
+                        .expression_parse_cache
+                        .parse(source, inner, JsLikeLanguage::TypeScript)
+                {
+                    let candidates = collect_macro_candidates(
+                        &source[inner.start..inner.end],
+                        tree.root_node(),
+                        imports,
+                        inner.start,
+                        JsMacroSyntax::Standard,
+                        &[],
+                    );
                     for candidate in candidates {
                         edits.extend(candidate.normalization_edits);
                     }
@@ -483,14 +509,19 @@ fn collect_nested_component_normalization_edits(
                     .find(|grandchild| grandchild.kind() == "attribute_js_expr")
                     .map(Span::from_node)
                     .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
-                if let Ok(candidates) = collect_macro_candidates_in_javascript(
-                    &source[inner.start..inner.end],
-                    imports,
-                    inner.start,
-                    JsMacroSyntax::Standard,
-                    JsLikeLanguage::TypeScript,
-                    &[],
-                ) {
+                if let Ok(tree) =
+                    context
+                        .expression_parse_cache
+                        .parse(source, inner, JsLikeLanguage::TypeScript)
+                {
+                    let candidates = collect_macro_candidates(
+                        &source[inner.start..inner.end],
+                        tree.root_node(),
+                        imports,
+                        inner.start,
+                        JsMacroSyntax::Standard,
+                        &[],
+                    );
                     for candidate in candidates {
                         edits.extend(candidate.normalization_edits);
                     }
@@ -498,14 +529,19 @@ fn collect_nested_component_normalization_edits(
             }
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                if let Ok(candidates) = collect_macro_candidates_in_javascript(
-                    &source[inner.start..inner.end],
-                    imports,
-                    inner.start,
-                    JsMacroSyntax::Standard,
-                    JsLikeLanguage::TypeScript,
-                    &[],
-                ) {
+                if let Ok(tree) =
+                    context
+                        .expression_parse_cache
+                        .parse(source, inner, JsLikeLanguage::TypeScript)
+                {
+                    let candidates = collect_macro_candidates(
+                        &source[inner.start..inner.end],
+                        tree.root_node(),
+                        imports,
+                        inner.start,
+                        JsMacroSyntax::Standard,
+                        &[],
+                    );
                     for candidate in candidates {
                         edits.extend(candidate.normalization_edits);
                     }
@@ -513,18 +549,18 @@ fn collect_nested_component_normalization_edits(
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, child, imports, options)
+                    component_candidate_from_element(source, child, imports, options, context)
                 {
                     edits.extend(component.candidate.normalization_edits);
                     continue;
                 }
                 edits.extend(collect_nested_component_normalization_edits(
-                    source, child, imports, options,
+                    source, child, imports, options, context,
                 ));
             }
             _ => {
                 edits.extend(collect_nested_component_normalization_edits(
-                    source, child, imports, options,
+                    source, child, imports, options, context,
                 ));
             }
         }
