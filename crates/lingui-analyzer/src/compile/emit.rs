@@ -49,8 +49,6 @@ pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
         };
 
         let indented = indent_rendered_text(
-            common.source_name.as_str(),
-            source,
             RenderedMappedText {
                 code: declaration.code.clone(),
                 source_map: declaration.source_map.clone(),

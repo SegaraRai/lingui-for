@@ -1,5 +1,6 @@
 use crate::common::{
-    MappedText, RenderedMappedText, build_segmented_map, compose_source_maps, source_map_to_json,
+    MappedText, RenderedMappedText, build_segmented_map, compose_source_maps, index_source_map,
+    source_map_to_json,
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_import_line};
@@ -137,7 +138,7 @@ fn build_compile_synthetic_source(
         } = wrapped;
         let wrapped_map = match (wrapped_source_map, normalized_map) {
             (Some(upper), Some(lower)) => Some(
-                compose_source_maps(&upper, &lower)
+                compose_source_maps(&upper, &index_source_map(&lower))
                     .map_err(AdapterError::from)
                     .map_err(CompileError::from)?,
             ),

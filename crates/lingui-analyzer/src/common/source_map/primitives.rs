@@ -1,4 +1,4 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::io::Cursor;
 use std::sync::Arc;
 
@@ -89,15 +89,14 @@ pub(crate) fn overlay_source_map_with_single_anchor(
 
 pub(crate) fn compose_source_maps(
     upper: &SourceMap,
-    lower: &SourceMap,
+    lower: &IndexedSourceMap,
 ) -> Result<SharedSourceMap, MappedTextError> {
     let mut builder = SourceMapBuilder::new(None);
     let mut saw_mapping = false;
-    let indexed_lower = index_source_map(lower);
 
     for token in upper.tokens() {
         let composed = project_generated_position_to_original(
-            &indexed_lower,
+            lower,
             token.get_src_line(),
             token.get_src_col(),
         )
@@ -122,37 +121,24 @@ pub(crate) fn compose_source_maps(
 }
 
 pub(crate) fn project_original_anchors_to_generated(
-    map: &SourceMap,
+    map: &IndexedSourceMap,
     anchors: &[(u32, u32)],
-) -> Vec<(u32, u32, u32, u32, Option<String>)> {
-    let mut by_original = std::collections::BTreeMap::new();
-
-    for token in map.tokens() {
-        let key = (token.get_src_line(), token.get_src_col());
-        by_original.entry(key).or_insert_with(|| {
-            (
-                token.get_dst_line(),
-                token.get_dst_col(),
-                token.get_src_line(),
-                token.get_src_col(),
-                token.get_source().map(str::to_string),
-            )
-        });
-    }
-
+) -> Vec<OriginalAnchorProjection> {
     anchors
         .iter()
-        .filter_map(|anchor| by_original.get(anchor).cloned())
+        .filter_map(|anchor| map.by_original.get(anchor).cloned())
         .collect()
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct IndexedSourceMap {
     tokens: Vec<IndexedToken>,
+    by_original: BTreeMap<(u32, u32), OriginalAnchorProjection>,
+    dst_positions: BTreeSet<(u32, u32)>,
 }
 
-#[derive(Debug, Clone)]
-struct IndexedToken {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct IndexedToken {
     dst_line: u32,
     dst_col: u32,
     src_line: u32,
@@ -162,20 +148,58 @@ struct IndexedToken {
 }
 
 pub(crate) fn index_source_map(map: &SourceMap) -> IndexedSourceMap {
-    IndexedSourceMap {
-        tokens: map
-            .tokens()
-            .filter_map(|token| {
-                Some(IndexedToken {
-                    dst_line: token.get_dst_line(),
-                    dst_col: token.get_dst_col(),
-                    src_line: token.get_src_line(),
-                    src_col: token.get_src_col(),
-                    source: token.get_source()?.to_string(),
-                    name: token.get_name().map(str::to_string),
-                })
+    let tokens = map
+        .tokens()
+        .filter_map(|token| {
+            Some(IndexedToken {
+                dst_line: token.get_dst_line(),
+                dst_col: token.get_dst_col(),
+                src_line: token.get_src_line(),
+                src_col: token.get_src_col(),
+                source: token.get_source()?.to_string(),
+                name: token.get_name().map(str::to_string),
             })
-            .collect(),
+        })
+        .collect::<Vec<_>>();
+    let by_original = tokens
+        .iter()
+        .fold(BTreeMap::new(), |mut by_original, token| {
+            by_original
+                .entry((token.src_line, token.src_col))
+                .or_insert_with(|| OriginalAnchorProjection {
+                    dst_line: token.dst_line,
+                    dst_col: token.dst_col,
+                    src_line: token.src_line,
+                    src_col: token.src_col,
+                    source: Some(token.source.clone()),
+                });
+            by_original
+        });
+    let dst_positions = tokens
+        .iter()
+        .map(|token| (token.dst_line, token.dst_col))
+        .collect();
+
+    IndexedSourceMap {
+        tokens,
+        by_original,
+        dst_positions,
+    }
+}
+
+impl IndexedSourceMap {
+    pub(crate) fn tokens(&self) -> &[IndexedToken] {
+        &self.tokens
+    }
+
+    pub(crate) fn generated_positions(&self) -> impl Iterator<Item = (u32, u32)> + '_ {
+        self.tokens
+            .iter()
+            .map(|token| (token.dst_line, token.dst_col))
+    }
+
+    pub(crate) fn has_dst_position(&self, line: u32, col: u32) -> bool {
+        self.dst_positions.contains(&(line, col))
     }
 }
 
@@ -373,6 +397,15 @@ pub(crate) struct IndexedProjection {
     pub(crate) src_col: u32,
     pub(crate) source: String,
     pub(crate) name: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct OriginalAnchorProjection {
+    pub(crate) dst_line: u32,
+    pub(crate) dst_col: u32,
+    pub(crate) src_line: u32,
+    pub(crate) src_col: u32,
+    pub(crate) source: Option<String>,
 }
 
 impl IndexedProjection {

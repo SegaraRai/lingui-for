@@ -8,7 +8,9 @@ use crate::framework::parse::parse_tsx;
 
 use super::SharedSourceMap;
 use super::mapped_text::{MappedText, MappedTextError, RenderedMappedText};
-use super::primitives::project_original_anchors_to_generated;
+use super::primitives::{
+    OriginalAnchorProjection, index_source_map, project_original_anchors_to_generated,
+};
 
 #[derive(Debug, Clone)]
 pub(crate) struct FinalizedReplacement<'a> {
@@ -104,38 +106,84 @@ pub(crate) fn build_copy_map(
     Some(builder.into_sourcemap().into())
 }
 
-pub(crate) fn indent_rendered_text<'a>(
-    source_name: &'a str,
-    source_text: &'a str,
+pub(crate) fn indent_rendered_text(
     rendered: RenderedMappedText,
     indent: &str,
 ) -> Result<RenderedMappedText, MappedTextError> {
+    if indent.is_empty() || !rendered.code.contains('\n') {
+        return Ok(rendered);
+    }
+
     let RenderedMappedText { code, source_map } = rendered;
 
-    if indent.is_empty() || !code.contains('\n') {
-        return Ok(RenderedMappedText { code, source_map });
-    }
-
-    let line_spans = code
-        .split_inclusive('\n')
-        .scan(0usize, |offset, line| {
-            let start = *offset;
-            *offset += line.len();
-            Some((start, *offset, line == "\n"))
-        })
-        .collect::<Vec<_>>();
-
-    let source = MappedText::from_rendered(source_name, source_text, code, source_map);
-    let mut output = MappedText::new(source_name, source_text);
-
-    for (index, (start, end, is_blank_line)) in line_spans.into_iter().enumerate() {
-        if index > 0 && !is_blank_line {
-            output.push_unmapped(indent);
+    let mut indented =
+        String::with_capacity(code.len() + indent.len() * code.matches('\n').count());
+    let mut should_indent_line = Vec::new();
+    for (index, line) in code.split_inclusive('\n').enumerate() {
+        let is_blank_line = line.trim_matches(['\r', '\n']).is_empty();
+        let should_indent = index > 0 && !is_blank_line;
+        should_indent_line.push(should_indent);
+        if should_indent {
+            indented.push_str(indent);
         }
-        output.append(source.slice(Span::new(start, end))?)?;
+        indented.push_str(line);
+    }
+    if !code.ends_with('\n') {
+        let tail = code.rsplit('\n').next().unwrap_or(code.as_str());
+        let should_indent = code.contains('\n') && !tail.trim_matches('\r').is_empty();
+        if should_indent_line.len() < code.split('\n').count() {
+            should_indent_line.push(should_indent);
+        }
     }
 
-    output.into_rendered()
+    let Some(map) = source_map else {
+        return Ok(RenderedMappedText {
+            code: indented,
+            source_map: None,
+        });
+    };
+
+    let indent_utf16 = indent.encode_utf16().count() as u32;
+    let mut builder = SourceMapBuilder::new(map.get_file());
+    builder.set_file(map.get_file());
+    builder.set_source_root(map.get_source_root());
+    for src_id in 0..map.get_source_count() {
+        let Some(source) = map.get_source(src_id) else {
+            continue;
+        };
+        let builder_src_id = builder.add_source(source);
+        builder.set_source_contents(builder_src_id, map.get_source_contents(src_id));
+    }
+
+    for token in map.tokens() {
+        let Some(source) = token.get_source() else {
+            continue;
+        };
+        let dst_line = token.get_dst_line();
+        let dst_col = if should_indent_line
+            .get(dst_line as usize)
+            .copied()
+            .unwrap_or(false)
+        {
+            token.get_dst_col() + indent_utf16
+        } else {
+            token.get_dst_col()
+        };
+        builder.add(
+            dst_line,
+            dst_col,
+            token.get_src_line(),
+            token.get_src_col(),
+            Some(source),
+            token.get_name(),
+            false,
+        );
+    }
+
+    Ok(RenderedMappedText {
+        code: indented,
+        source_map: Some(builder.into_sourcemap().into()),
+    })
 }
 
 pub(crate) fn build_final_output(
@@ -263,6 +311,7 @@ fn augment_replacement_map(
     original_end: usize,
     original_anchors: &[usize],
 ) -> Result<SharedSourceMap, MappedTextError> {
+    let indexed_map = index_source_map(map);
     let mut anchor_positions = vec![
         source.byte_to_line_utf16_col(original_start),
         source.byte_to_line_utf16_col(original_end),
@@ -279,7 +328,7 @@ fn augment_replacement_map(
         .into_iter()
         .map(|(line, col)| (line as u32, col as u32))
         .collect::<Vec<_>>();
-    let projected = project_original_anchors_to_generated(map, &anchor_positions);
+    let projected = project_original_anchors_to_generated(&indexed_map, &anchor_positions);
 
     let mut builder = SourceMapBuilder::new(map.get_file());
     builder.set_file(map.get_file());
@@ -295,41 +344,39 @@ fn augment_replacement_map(
 
     let mut extras = projected;
     let (end_generated_line, end_generated_col) = generated_end_position(generated_text);
-    extras.push((
-        0,
-        0,
-        anchor_positions[0].0,
-        anchor_positions[0].1,
-        Some(source_name.to_string()),
-    ));
-    extras.push((
-        end_generated_line,
-        end_generated_col,
-        anchor_positions[1].0,
-        anchor_positions[1].1,
-        Some(source_name.to_string()),
-    ));
+    extras.push(OriginalAnchorProjection {
+        dst_line: 0,
+        dst_col: 0,
+        src_line: anchor_positions[0].0,
+        src_col: anchor_positions[0].1,
+        source: Some(source_name.to_string()),
+    });
+    extras.push(OriginalAnchorProjection {
+        dst_line: end_generated_line,
+        dst_col: end_generated_col,
+        src_line: anchor_positions[1].0,
+        src_col: anchor_positions[1].1,
+        source: Some(source_name.to_string()),
+    });
 
-    let existing_positions = map
-        .tokens()
-        .map(|token| (token.get_dst_line(), token.get_dst_col()))
-        .collect::<BTreeSet<_>>();
     let mut extras = extras
         .into_iter()
-        .filter(|(dst_line, dst_col, _, _, _)| !existing_positions.contains(&(*dst_line, *dst_col)))
+        .filter(|projection| !indexed_map.has_dst_position(projection.dst_line, projection.dst_col))
         .collect::<Vec<_>>();
-    extras.sort_by_key(|(dst_line, dst_col, _, _, _)| (*dst_line, *dst_col));
+    extras.sort_by_key(|projection| (projection.dst_line, projection.dst_col));
     let mut extras = extras.into_iter().peekable();
 
     for token in map.tokens() {
-        while let Some((dst_line, dst_col, src_line, src_col, source)) = extras.peek() {
-            if (*dst_line, *dst_col) < (token.get_dst_line(), token.get_dst_col()) {
+        while let Some(projection) = extras.peek() {
+            if (projection.dst_line, projection.dst_col)
+                < (token.get_dst_line(), token.get_dst_col())
+            {
                 builder.add(
-                    *dst_line,
-                    *dst_col,
-                    *src_line,
-                    *src_col,
-                    source.as_deref().or(Some(source_name)),
+                    projection.dst_line,
+                    projection.dst_col,
+                    projection.src_line,
+                    projection.src_col,
+                    projection.source.as_deref().or(Some(source_name)),
                     None::<&str>,
                     false,
                 );
@@ -352,13 +399,13 @@ fn augment_replacement_map(
         }
     }
 
-    for (dst_line, dst_col, src_line, src_col, source) in extras {
+    for projection in extras {
         builder.add(
-            dst_line,
-            dst_col,
-            src_line,
-            src_col,
-            source.as_deref().or(Some(source_name)),
+            projection.dst_line,
+            projection.dst_col,
+            projection.src_line,
+            projection.src_col,
+            projection.source.as_deref().or(Some(source_name)),
             None::<&str>,
             false,
         );
@@ -460,12 +507,12 @@ fn first_named_child(node: Node<'_>) -> Option<Node<'_>> {
 mod tests {
     use std::sync::Arc;
 
-    use sourcemap::SourceMapBuilder;
+    use sourcemap::{SourceMap, SourceMapBuilder};
 
     use super::{FinalizedReplacement, build_final_output, indent_rendered_text};
     use crate::common::{MappedTextError, RenderedMappedText};
 
-    fn identity_map(source_name: &str, source_text: &str) -> Arc<sourcemap::SourceMap> {
+    fn identity_map(source_name: &str, source_text: &str) -> Arc<SourceMap> {
         let mut builder = SourceMapBuilder::new(Some(source_name));
         builder.set_file(Some(source_name));
         let src_id = builder.add_source(source_name);
@@ -486,8 +533,7 @@ mod tests {
             source_map: Some(identity_map(source_name, source_text)),
         };
 
-        let indented =
-            indent_rendered_text(source_name, source_text, rendered, "  ").expect("indent works");
+        let indented = indent_rendered_text(rendered, "  ").expect("indent works");
 
         assert_eq!(indented.code, "alpha\n  beta");
         let map = indented.source_map.expect("map preserved");

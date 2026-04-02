@@ -1,9 +1,11 @@
-use crate::common::IndexedText;
+use std::sync::Arc;
 
 use sourcemap::{SourceMap, SourceMapBuilder};
 
+use crate::common::{IndexedText, Span};
+
 use super::SharedSourceMap;
-use super::primitives::{extract_generated_submap, index_source_map};
+use super::primitives::{IndexedSourceMap, extract_generated_submap, index_source_map};
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum MappedSegment {
@@ -11,6 +13,7 @@ pub(crate) enum MappedSegment {
     PreMapped {
         code: String,
         source_map: SharedSourceMap,
+        indexed_source_map: Arc<IndexedSourceMap>,
     },
 }
 
@@ -61,8 +64,12 @@ impl<'a> MappedText<'a> {
     pub(crate) fn push_pre_mapped(&mut self, code: impl Into<String>, source_map: SharedSourceMap) {
         let code = code.into();
         if !code.is_empty() {
-            self.segments
-                .push(MappedSegment::PreMapped { code, source_map });
+            let indexed_source_map = Arc::new(index_source_map(&source_map));
+            self.segments.push(MappedSegment::PreMapped {
+                code,
+                source_map,
+                indexed_source_map,
+            });
         }
     }
 
@@ -95,7 +102,7 @@ impl<'a> MappedText<'a> {
         Self::new(self.source_name, self.source_text)
     }
 
-    pub(crate) fn slice(&self, span: crate::common::Span) -> Result<Self, MappedTextError> {
+    pub(crate) fn slice(&self, span: Span) -> Result<Self, MappedTextError> {
         if span.start > span.end || span.end > self.len() {
             return Err(MappedTextError::OutOfBounds);
         }
@@ -132,7 +139,7 @@ impl<'a> MappedText<'a> {
     pub(crate) fn append_slice_from(
         &mut self,
         other: &Self,
-        span: crate::common::Span,
+        span: Span,
     ) -> Result<(), MappedTextError> {
         self.ensure_compatible(other)?;
         self.append(other.slice(span)?)
@@ -180,6 +187,7 @@ pub(crate) fn render_mapped_text(
             MappedSegment::PreMapped {
                 code: text,
                 source_map,
+                ..
             } => {
                 code.push_str(text);
                 apply_shifted_map(&mut builder, source_map, offset);
@@ -309,16 +317,21 @@ fn slice_segment(
                 .ok_or(MappedTextError::InvalidSegmentSlice)?;
             Ok(Some(MappedSegment::Unmapped(sliced.to_string())))
         }
-        MappedSegment::PreMapped { code, source_map } => {
+        MappedSegment::PreMapped {
+            code,
+            source_map: _,
+            indexed_source_map,
+        } => {
             let sliced_code = code
                 .get(start..end)
                 .ok_or(MappedTextError::InvalidSegmentSlice)?;
-            let indexed_map = index_source_map(source_map);
             let indexed_code = IndexedText::new(code);
-            let sliced_map = extract_generated_submap(&indexed_map, &indexed_code, start, end)
-                .ok_or(MappedTextError::InvalidSegmentSlice)?;
+            let sliced_map =
+                extract_generated_submap(indexed_source_map, &indexed_code, start, end)
+                    .ok_or(MappedTextError::InvalidSegmentSlice)?;
             Ok(Some(MappedSegment::PreMapped {
                 code: sliced_code.to_string(),
+                indexed_source_map: Arc::new(index_source_map(&sliced_map)),
                 source_map: sliced_map,
             }))
         }
@@ -354,38 +367,46 @@ fn add_segment_mapping_point(
 }
 
 fn append_rendered_segments(mapped: &mut MappedText<'_>, code: &str, map: &SharedSourceMap) {
-    let indexed_map = index_source_map(map);
+    let indexed_map = Arc::new(index_source_map(map));
     let generated = IndexedText::new(code);
-    let mut boundaries = map
-        .tokens()
-        .flat_map(|token| {
-            generated
-                .line_utf16_col_to_byte(token.get_dst_line() as usize, token.get_dst_col() as usize)
-        })
-        .filter(|offset| *offset <= code.len())
-        .collect::<Vec<_>>();
-    boundaries.sort_unstable();
-    boundaries.dedup();
-
-    if boundaries.is_empty() {
+    if indexed_map.tokens().is_empty() {
         mapped.push_unmapped(code);
         return;
     }
 
+    let boundaries = indexed_map
+        .generated_positions()
+        .map(|(dst_line, dst_col)| {
+            generated
+                .line_utf16_col_to_byte(dst_line as usize, dst_col as usize)
+                .ok_or(MappedTextError::InvalidSegmentSlice)
+        })
+        .collect::<Result<Vec<_>, _>>();
+    let Ok(mut boundaries) = boundaries else {
+        mapped.push_unmapped(code);
+        return;
+    };
+    boundaries.push(code.len());
+    boundaries.sort_unstable();
+    boundaries.dedup();
+
     let mut cursor = 0usize;
-    for (index, start) in boundaries.iter().copied().enumerate() {
+    for window in boundaries.windows(2) {
+        let start = window[0];
+        let end = window[1];
         if start > cursor {
             mapped.push_unmapped(&code[cursor..start]);
         }
-
-        let end = boundaries.get(index + 1).copied().unwrap_or(code.len());
         if start >= end {
             cursor = end.max(cursor);
             continue;
         }
-
         if let Some(submap) = extract_generated_submap(&indexed_map, &generated, start, end) {
-            mapped.push_pre_mapped(&code[start..end], submap);
+            mapped.segments.push(MappedSegment::PreMapped {
+                code: code[start..end].to_string(),
+                indexed_source_map: Arc::new(index_source_map(&submap)),
+                source_map: submap,
+            });
         } else {
             mapped.push_unmapped(&code[start..end]);
         }
