@@ -4,8 +4,8 @@ const __lf_0 = __lingui_for_svelte_reactive_translation__(translate`ようこそ
 const __lf_1 = __lingui_for_svelte_reactive_translation__(translate(
       // Note that this method is actually not recommended for complex messages with multiple variables.
       // It's better to use `select` or `plural` for such cases.
-      msg`参照中のパスは ${String(selectedPath ?? $translate`未設定`)} で、候補は ${String(
-        relatedPaths[1] ?? $translate`ありません`,
+      msg`参照中のパスは ${String(selectedPath ?? translate`未設定`)} で、候補は ${String(
+        relatedPaths[1] ?? translate`ありません`,
       )} です。`,
     ), "translate");
 const __lf_2 = <Trans>

@@ -80,6 +80,7 @@ export default defineConfig({
       },
       artifacts: {
         command: "node ./generate-artifacts.ts",
+        dependsOn: ["build:lib"],
         cache: true,
         input: [{ auto: true }],
       },

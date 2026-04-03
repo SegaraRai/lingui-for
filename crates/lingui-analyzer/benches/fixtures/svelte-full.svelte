@@ -466,7 +466,7 @@
     }),
   );
 
-  const pagedQueue = $derived(() => {
+  const pagedQueue = $derived.by(() => {
     const start = (page - 1) * pageSize;
     return filteredQueue.slice(start, start + pageSize);
   });

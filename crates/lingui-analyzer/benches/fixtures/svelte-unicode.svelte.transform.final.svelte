@@ -31,8 +31,16 @@
       id: "DSRd7/",
       message: "\u53C2\u7167\u4E2D\u306E\u30D1\u30B9\u306F {0} \u3067\u3001\u5019\u88DC\u306F {1} \u3067\u3059\u3002",
       values: {
-        0: String(selectedPath ?? $translate`未設定`),
-        1: String(relatedPaths[1] ?? $translate`ありません`)
+        0: String(selectedPath ?? __l4s_getI18n()._(
+        /*i18n*/ {
+          id: "ggPEgU",
+          message: "\u672A\u8A2D\u5B9A"
+        })),
+        1: String(relatedPaths[1] ?? __l4s_getI18n()._(
+        /*i18n*/ {
+          id: "gkv1jV",
+          message: "\u3042\u308A\u307E\u305B\u3093"
+        }))
       }
     }),
   );
