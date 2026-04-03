@@ -1,7 +1,6 @@
-import { t as translate } from "lingui-for-svelte/runtime";
 import { i18n as _i18n } from "@lingui/core";
 import { Trans as _Trans } from "@lingui/react";
-const __lf_0 = translate(
+const __lf_0 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
   id: "grYdd0",
@@ -9,8 +8,8 @@ const __lf_0 = translate(
   values: {
     readerName: readerName
   }
-});
-const __lf_1 = translate(
+}), "translate");
+const __lf_1 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 // Note that this method is actually not recommended for complex messages with multiple variables.
 // It's better to use `select` or `plural` for such cases.
@@ -31,7 +30,7 @@ const __lf_1 = translate(
       message: "\u3042\u308A\u307E\u305B\u3093"
     }))
   }
-});
+}), "translate");
 const __lf_2 = <_Trans {...
 /*i18n*/
 {
@@ -46,7 +45,7 @@ const __lf_2 = <_Trans {...
     1: <span />
   }
 }} />;
-const __lf_3 = translate(
+const __lf_3 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
   id: "AUUW5v",
@@ -54,4 +53,4 @@ const __lf_3 = translate(
   values: {
     0: String(path ?? "")
   }
-});
+}), "translate");

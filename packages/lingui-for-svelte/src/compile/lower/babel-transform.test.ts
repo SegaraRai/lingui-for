@@ -74,6 +74,34 @@ describe("transformProgram", () => {
     `);
   });
 
+  test("keeps reactive wrappers in raw mode without synthesizing runtime t imports", () => {
+    const result = transformProgram(
+      dedent`
+        import { select, t as translate } from "@lingui/core/macro";
+
+        const __lingui_for_svelte_expr_0 = __lingui_for_svelte_reactive_translation__(translate\`Hello \${name}\`, "translate");
+        const __lingui_for_svelte_expr_1 = __lingui_for_svelte_reactive_translation__(select(locale, {
+          en: "English",
+          other: "Other",
+        }), "select");
+      `,
+      {
+        extract: false,
+        filename: "/virtual/App.instance.ts",
+        lang: "ts",
+        linguiConfig: normalizeLinguiConfig(),
+        translationMode: "raw",
+      },
+    );
+
+    expect(result.code).toContain(
+      "__lingui_for_svelte_reactive_translation__(",
+    );
+    expect(result.code).not.toContain('from "lingui-for-svelte/runtime"');
+    expect(result.code).not.toContain("t as translate");
+    expect(result.code).not.toContain("t as select");
+  });
+
   test("keeps extraction output in Lingui-friendly form", () => {
     const result = transformProgram(
       dedent`

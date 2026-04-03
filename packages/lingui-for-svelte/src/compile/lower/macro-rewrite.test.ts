@@ -165,6 +165,37 @@ describe("createMacroPostprocessPlugin", () => {
     `);
   });
 
+  test("keeps reactive wrappers intact in raw mode without inventing runtime t imports", () => {
+    const code = runWithPlugin(
+      dedent`
+        import { i18n as runtimeI18n } from "@lingui/core";
+
+        const greeting = __lingui_for_svelte_reactive_translation__(runtimeI18n._({
+          id: "demo.heading",
+          message: "Hello"
+        }), "translate");
+
+        const choice = __lingui_for_svelte_reactive_translation__(runtimeI18n._({
+          id: "demo.choice",
+          message: "{locale, select, en {English} other {Other}}",
+          values: {
+            locale
+          }
+        }), "select");
+      `,
+      createSvelteMacroPostprocessPlugin(
+        createRequest({
+          translationMode: "raw",
+        }),
+      ),
+    );
+
+    expect(code).toContain("__lingui_for_svelte_reactive_translation__(");
+    expect(code).not.toContain('from "lingui-for-svelte/runtime"');
+    expect(code).not.toContain("t as translate");
+    expect(code).not.toContain("t as select");
+  });
+
   test("unwraps eager wrappers to direct translator calls", () => {
     const code = runWithPlugin(
       dedent`

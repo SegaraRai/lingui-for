@@ -17,10 +17,10 @@ use svelte_support::svelte_default_conventions;
 #[test]
 fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     let source = r#"
-<script context="module" lang="ts">
-  import { t } from "lingui-for-svelte/macro";
+<script module lang="ts">
+  import { t } from "@lingui/core/macro";
 
-  const moduleLabel = t.eager`Module label`;
+  const moduleLabel = t`Module label`;
 </script>
 
 <script lang="ts">
@@ -53,6 +53,12 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     assert!(plan.runtime_requirements.needs_runtime_trans_component);
     assert!(
         plan.common
+            .synthetic_source
+            .contains("const __lf_0 = t`Module label`;")
+    );
+    assert!(
+        !plan
+            .common
             .synthetic_source
             .contains("__lingui_for_svelte_eager_translation__(t`Module label`)")
     );
@@ -129,10 +135,10 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
 #[test]
 fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
     let source = indoc::indoc! {r#"
-        <script context="module">
-          import { t as moduleT } from "lingui-for-svelte/macro";
+        <script module>
+          import { t as moduleT } from "@lingui/core/macro";
 
-          const moduleLabel = moduleT.eager({ id: "module", message: "Module" });
+          const moduleLabel = moduleT({ id: "module", message: "Module" });
         </script>
 
         <script>

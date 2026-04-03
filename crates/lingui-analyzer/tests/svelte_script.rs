@@ -155,6 +155,50 @@ fn ignores_shadowed_names_in_svelte_script() {
 }
 
 #[test]
+fn treats_module_script_macros_as_plain_js_ts_macros() {
+    let source = indoc! {r#"
+        <script module lang="ts">
+          import { t, plural } from "@lingui/core/macro";
+
+          const direct = t`Hello`;
+          const nested = t({ message: "{count, plural, one {item} other {items}}", values: { count } });
+          const notMacro = plural.eager(count, { one: "item", other: "items" });
+        </script>
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let script = &analysis.scripts[0];
+
+    assert!(script.is_module);
+    assert_eq!(script.macro_imports.len(), 2);
+    assert_eq!(script.candidates.len(), 2);
+    assert_eq!(script.candidates[0].imported_name, "t");
+    assert_eq!(script.candidates[0].flavor, MacroFlavor::Direct);
+    assert_eq!(script.candidates[1].imported_name, "t");
+    assert_eq!(script.candidates[1].flavor, MacroFlavor::Direct);
+}
+
+#[test]
+fn rejects_svelte_macro_imports_in_module_script() {
+    let source = indoc! {r#"
+        <script module>
+          import { t } from "lingui-for-svelte/macro";
+
+          const label = t`Module label`;
+        </script>
+    "#};
+
+    let error = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect_err("analysis should reject Svelte macro imports in module scripts");
+
+    assert!(error.to_string().contains("@lingui/core/macro"));
+    assert!(error.to_string().contains("lingui-for-svelte/macro"));
+}
+
+#[test]
 fn tracks_template_scope_shadowing_across_svelte_binders() {
     let source = indoc! {r#"
         <script>

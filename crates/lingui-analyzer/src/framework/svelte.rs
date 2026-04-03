@@ -44,6 +44,10 @@ pub enum SvelteFrameworkError {
         "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
     )]
     BareDirectMacroRequiresReactiveOrEager { imported_name: Cow<'static, str> },
+    #[error(
+        "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`."
+    )]
+    ModuleScriptMustUseCoreMacroPackage,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -220,6 +224,14 @@ fn analyze_script_block(
         content_region.inner_span.start,
         &options.conventions,
     )?;
+    let is_module = start_tag_is_module(source, start_tag);
+    validate_module_script_macro_imports(
+        source,
+        &macro_imports,
+        is_module,
+        &options.conventions,
+        &options.source_name,
+    )?;
     let macro_import_statement_spans = collect_script_macro_import_statement_spans(
         script_source,
         script_root,
@@ -234,13 +246,17 @@ fn analyze_script_block(
         script_root,
         &macro_imports,
         content_region.inner_span.start,
-        JsMacroSyntax::Svelte,
+        if is_module {
+            JsMacroSyntax::Standard
+        } else {
+            JsMacroSyntax::Svelte
+        },
         &[],
     );
 
     Ok(Some(SvelteScriptBlock {
         region: content_region,
-        is_module: start_tag_has_context_module(source, start_tag),
+        is_module,
         is_typescript: language == JsLikeLanguage::TypeScript,
         declared_names,
         macro_imports,
@@ -1241,7 +1257,7 @@ fn expand_import_removal_span_in_source(source: &str, span: Span) -> Span {
     Span::new(start, end)
 }
 
-fn start_tag_has_context_module(source: &str, start_tag: Node<'_>) -> bool {
+fn start_tag_is_module(source: &str, start_tag: Node<'_>) -> bool {
     let mut cursor = start_tag.walk();
     for child in start_tag.children(&mut cursor) {
         if child.kind() != "attribute" {
@@ -1249,12 +1265,44 @@ fn start_tag_has_context_module(source: &str, start_tag: Node<'_>) -> bool {
         }
 
         let attribute_text = text(source, child);
-        if attribute_text.contains("context") && attribute_text.contains("module") {
+        if attribute_text.trim() == "module"
+            || (attribute_text.contains("context") && attribute_text.contains("module"))
+        {
             return true;
         }
     }
 
     false
+}
+
+fn validate_module_script_macro_imports(
+    source: &str,
+    macro_imports: &[MacroImport],
+    is_module: bool,
+    conventions: &FrameworkConventions,
+    source_name: &str,
+) -> Result<(), SvelteFrameworkError> {
+    if !is_module {
+        return Ok(());
+    }
+
+    let Some(offending_import) = macro_imports
+        .iter()
+        .find(|import_decl| import_decl.source == conventions.macro_.primary_package)
+    else {
+        return Ok(());
+    };
+
+    Err(SvelteFrameworkError::InvalidMacroUsage(
+        format_single_diagnostic(
+            source,
+            &make_diagnostic(
+                source_name,
+                offending_import.span,
+                "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`.".to_string(),
+            ),
+        ),
+    ))
 }
 
 fn script_language(source: &str, start_tag: Node<'_>) -> JsLikeLanguage {

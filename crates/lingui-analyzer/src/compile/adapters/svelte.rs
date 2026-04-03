@@ -517,10 +517,8 @@ pub(crate) fn validate_compile_targets(
     prototypes: &[CompileTargetPrototype],
 ) -> Result<(), SvelteAdapterError> {
     let offending_candidate = prototypes.iter().find_map(|prototype| {
-        (matches!(
-            prototype.context,
-            CompileTargetContext::ModuleScript | CompileTargetContext::InstanceScript
-        ) && prototype.output_kind == CompileTargetOutputKind::Expression
+        (matches!(prototype.context, CompileTargetContext::InstanceScript)
+            && prototype.output_kind == CompileTargetOutputKind::Expression
             && is_forbidden_bare_direct_svelte_macro(&prototype.candidate))
         .then_some(&prototype.candidate)
     });
