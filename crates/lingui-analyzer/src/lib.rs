@@ -16,6 +16,7 @@ use crate::extract::{ExtractError, build_synthetic_module, reinsert_transformed_
 use crate::framework::astro::AstroAdapter;
 use crate::framework::svelte::{SvelteAdapter, validate_svelte_extract_candidates};
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError};
+use crate::synthesis::merge_owned_candidate_normalization_edits;
 
 pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
@@ -140,6 +141,7 @@ fn sort_candidates(candidates: &mut [MacroCandidate]) {
 }
 
 fn retain_standalone_candidates(candidates: &mut Vec<MacroCandidate>) {
+    merge_owned_candidate_normalization_edits(candidates);
     candidates.retain(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone);
 }
 

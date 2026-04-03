@@ -483,6 +483,46 @@ fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
     );
 }
 
+#[test]
+fn normalizes_owned_nested_svelte_macros_in_compile_synthetic_source() {
+    let source = indoc::indoc! {r#"
+        <script lang="ts">
+          import { msg, t as translate } from "lingui-for-svelte/macro";
+
+          const summary = $derived(
+            $translate(
+              msg`参照中のパスは ${String(selectedPath ?? $translate`未設定`)} で、候補は ${String(
+                relatedPaths[1] ?? $translate`ありません`,
+              )} です。`,
+            ),
+          );
+        </script>
+    "#};
+
+    let plan = SvelteCompilePlan::build(
+        source,
+        "/virtual/Nested.svelte",
+        "/virtual/Nested.svelte?compile.tsx",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
+    )
+    .expect("svelte compile plan should build");
+
+    assert!(plan.common.synthetic_source.contains("translate`未設定`"));
+    assert!(
+        plan.common
+            .synthetic_source
+            .contains("translate`ありません`")
+    );
+    assert!(!plan.common.synthetic_source.contains("$translate`未設定`"));
+    assert!(
+        !plan
+            .common
+            .synthetic_source
+            .contains("$translate`ありません`")
+    );
+}
+
 fn utf16_column_to_byte_offset(source: &str, line: usize, utf16_col: usize) -> usize {
     let line_start = source
         .split_inclusive('\n')

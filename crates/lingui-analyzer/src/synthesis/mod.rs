@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use tsify::Tsify;
 
 use crate::common::Span;
-use crate::framework::{MacroCandidate, MacroImport, NormalizationEdit};
+use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport, NormalizationEdit};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SynthesisPlan {
@@ -32,8 +33,11 @@ pub fn build_synthesis_plan(
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
 ) -> SynthesisPlan {
-    let targets = candidates
+    let mut merged_candidates = candidates.to_vec();
+    merge_owned_candidate_normalization_edits(&mut merged_candidates);
+    let targets = merged_candidates
         .iter()
+        .filter(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone)
         .enumerate()
         .map(|(index, candidate)| {
             let declaration_id = format!("__lf_{index}");
@@ -51,6 +55,65 @@ pub fn build_synthesis_plan(
     SynthesisPlan {
         imports: imports.to_vec(),
         targets,
+    }
+}
+
+pub fn merge_owned_candidate_normalization_edits(candidates: &mut [MacroCandidate]) {
+    let mut owned_by_parent =
+        BTreeMap::<String, Vec<(String, Span, Vec<NormalizationEdit>)>>::new();
+    for candidate in candidates.iter() {
+        if candidate.strategy == MacroCandidateStrategy::OwnedByParent
+            && let Some(owner_id) = candidate.owner_id.as_deref()
+        {
+            owned_by_parent
+                .entry(owner_id.to_string())
+                .or_default()
+                .push((
+                    candidate.id.clone(),
+                    candidate.outer_span,
+                    candidate.normalization_edits.clone(),
+                ));
+        }
+    }
+
+    for candidate in candidates.iter_mut() {
+        if candidate.strategy != MacroCandidateStrategy::Standalone {
+            continue;
+        }
+        let mut edits = candidate.normalization_edits.clone();
+        collect_owned_normalization_edits(candidate.id.as_str(), &owned_by_parent, &mut edits);
+        sort_and_dedup_normalization_edits(&mut edits);
+        candidate.normalization_edits = edits;
+    }
+}
+
+fn collect_owned_normalization_edits(
+    owner_id: &str,
+    owned_by_parent: &BTreeMap<String, Vec<(String, Span, Vec<NormalizationEdit>)>>,
+    edits: &mut Vec<NormalizationEdit>,
+) {
+    let Some(children) = owned_by_parent.get(owner_id) else {
+        return;
+    };
+
+    let mut sorted_children = children.clone();
+    sorted_children.sort_by_key(|(_, span, _)| (span.start, span.end));
+
+    for (child_id, _, child_edits) in sorted_children {
+        edits.extend(child_edits);
+        collect_owned_normalization_edits(child_id.as_str(), owned_by_parent, edits);
+    }
+}
+
+fn sort_and_dedup_normalization_edits(edits: &mut Vec<NormalizationEdit>) {
+    edits.sort_by_key(normalization_edit_sort_key);
+    edits.dedup();
+}
+
+fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, String) {
+    match edit {
+        NormalizationEdit::Delete { span } => (span.start, span.end, 0, String::new()),
+        NormalizationEdit::Insert { at, text } => (*at, *at, 1, text.clone()),
     }
 }
 

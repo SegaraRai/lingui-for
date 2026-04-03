@@ -3,7 +3,9 @@ use crate::common::{
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_import_line};
-use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
+use crate::synthesis::{
+    SynthesisPlan, build_synthesis_plan, merge_owned_candidate_normalization_edits,
+};
 
 use super::{
     AdapterError, CommonCompilePlan, CompileError, CompileTarget, CompileTargetPrototype,
@@ -90,6 +92,21 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
 }
 
 fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
+    let mut candidates = prototypes
+        .iter()
+        .map(|prototype| prototype.candidate.clone())
+        .collect::<Vec<_>>();
+    merge_owned_candidate_normalization_edits(&mut candidates);
+    let merged_by_id = candidates
+        .into_iter()
+        .map(|candidate| (candidate.id.clone(), candidate))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    for prototype in prototypes.iter_mut() {
+        if let Some(candidate) = merged_by_id.get(prototype.candidate.id.as_str()) {
+            prototype.candidate.normalization_edits = candidate.normalization_edits.clone();
+        }
+    }
+
     prototypes.sort_by_key(|prototype| {
         (
             prototype.candidate.outer_span.start,
