@@ -75,10 +75,10 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
             lowered_code: None,
             lowered_source_map_json: None,
             contextual_code: Some(include_str!(
-                "fixtures/astro-full.astro.transform.context.tsx"
+                "fixtures/astro-full.astro.transform.contextual.tsx"
             )),
             contextual_source_map_json: Some(include_str!(
-                "fixtures/astro-full.astro.transform.context.tsx.map"
+                "fixtures/astro-full.astro.transform.contextual.tsx.map"
             )),
         },
     },
@@ -91,10 +91,10 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
             lowered_code: None,
             lowered_source_map_json: None,
             contextual_code: Some(include_str!(
-                "fixtures/astro-unicode.astro.transform.context.tsx"
+                "fixtures/astro-unicode.astro.transform.contextual.tsx"
             )),
             contextual_source_map_json: Some(include_str!(
-                "fixtures/astro-unicode.astro.transform.context.tsx.map"
+                "fixtures/astro-unicode.astro.transform.contextual.tsx.map"
             )),
         },
     },
@@ -105,16 +105,16 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
         source: include_str!("fixtures/svelte-full.svelte"),
         transformed_programs: StaticTransformedPrograms {
             lowered_code: Some(include_str!(
-                "fixtures/svelte-full.svelte.transform.raw.tsx"
+                "fixtures/svelte-full.svelte.transform.lowered.tsx"
             )),
             lowered_source_map_json: Some(include_str!(
-                "fixtures/svelte-full.svelte.transform.raw.tsx.map"
+                "fixtures/svelte-full.svelte.transform.lowered.tsx.map"
             )),
             contextual_code: Some(include_str!(
-                "fixtures/svelte-full.svelte.transform.context.tsx"
+                "fixtures/svelte-full.svelte.transform.contextual.tsx"
             )),
             contextual_source_map_json: Some(include_str!(
-                "fixtures/svelte-full.svelte.transform.context.tsx.map"
+                "fixtures/svelte-full.svelte.transform.contextual.tsx.map"
             )),
         },
     },
@@ -125,16 +125,16 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
         source: include_str!("fixtures/svelte-unicode.svelte"),
         transformed_programs: StaticTransformedPrograms {
             lowered_code: Some(include_str!(
-                "fixtures/svelte-unicode.svelte.transform.raw.tsx"
+                "fixtures/svelte-unicode.svelte.transform.lowered.tsx"
             )),
             lowered_source_map_json: Some(include_str!(
-                "fixtures/svelte-unicode.svelte.transform.raw.tsx.map"
+                "fixtures/svelte-unicode.svelte.transform.lowered.tsx.map"
             )),
             contextual_code: Some(include_str!(
-                "fixtures/svelte-unicode.svelte.transform.context.tsx"
+                "fixtures/svelte-unicode.svelte.transform.contextual.tsx"
             )),
             contextual_source_map_json: Some(include_str!(
-                "fixtures/svelte-unicode.svelte.transform.context.tsx.map"
+                "fixtures/svelte-unicode.svelte.transform.contextual.tsx.map"
             )),
         },
     },
