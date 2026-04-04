@@ -82,7 +82,9 @@ describe("transformAstro", () => {
     expect(code).toContain(
       'import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";',
     );
-    expect(code).toContain("<L4aRuntimeTrans {.../*i18n*/ {");
+    expect(code).toContain(
+      '<L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {',
+    );
     expect(code).not.toContain("<LocalTrans");
     expect(code).toContain('message: "Read the <0>docs</0>, {name}."');
     expect(code).toContain(

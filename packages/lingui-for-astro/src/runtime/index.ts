@@ -28,6 +28,10 @@ interface RuntimeTransProps {
    * Runtime interpolation values merged into the final descriptor.
    */
   values?: Readonly<Record<string, unknown>> | undefined;
+  /**
+   * Rich-text placeholder names used by the translated message.
+   */
+  placeholders?: readonly string[] | undefined;
 }
 
 /**

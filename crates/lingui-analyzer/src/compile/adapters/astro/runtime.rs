@@ -16,6 +16,7 @@ use super::AstroAdapterError;
 struct AstroLoweredObjectExpression {
     props: RenderedMappedText,
     slot_callbacks: Vec<RenderedMappedText>,
+    placeholder_keys: Vec<String>,
 }
 
 pub(crate) fn lower_runtime_component_markup(
@@ -75,8 +76,10 @@ fn convert_runtime_trans_root(
     .ok_or(RuntimeComponentError::ExpectedJsxElementInitializerForTransformedComponent)?;
 
     let mut mapped = input.empty_like();
+    let mut attributes = input.empty_like();
     let root_span = translated_span(node, base_offset)?;
     let mut slot_callbacks = Vec::new();
+    let mut placeholder_keys = Vec::new();
     let original_input = MappedText::from_rendered(
         source_name,
         original_source.as_str(),
@@ -122,36 +125,37 @@ fn convert_runtime_trans_root(
                         object_span,
                         0,
                     )?;
-                    mapped.push_unmapped(" {...");
+                    attributes.push_unmapped(" {...");
                     let prefix_start = (spread_span.start + 3).min(object_span.start);
                     let prefix_trimmed_start = source.as_str()[prefix_start..object_span.start]
                         .find(|char: char| !char.is_ascii_whitespace())
                         .map(|offset| prefix_start + offset);
                     if let Some(prefix_trimmed_start) = prefix_trimmed_start {
                         push_copied_span(
-                            &mut mapped,
+                            &mut attributes,
                             input,
                             Span::new(prefix_trimmed_start, object_span.start),
                         )?;
                     }
-                    append_rendered(&mut mapped, lowered.props);
+                    append_rendered(&mut attributes, lowered.props);
                     let suffix_trimmed_end = source.as_str()[object_span.end..spread_span.end]
                         .rfind(|char: char| !char.is_ascii_whitespace())
                         .map(|offset| object_span.end + offset + 1);
                     if let Some(suffix_trimmed_end) = suffix_trimmed_end {
                         push_copied_span(
-                            &mut mapped,
+                            &mut attributes,
                             input,
                             Span::new(object_span.end, suffix_trimmed_end),
                         )?;
                     }
-                    mapped.push_unmapped("}");
+                    attributes.push_unmapped("}");
                     slot_callbacks.extend(lowered.slot_callbacks);
+                    placeholder_keys.extend(lowered.placeholder_keys);
                     continue;
                 }
 
-                mapped.push_unmapped(" ");
-                push_copied_span(&mut mapped, input, translated_span(child, base_offset)?)?;
+                attributes.push_unmapped(" ");
+                push_copied_span(&mut attributes, input, translated_span(child, base_offset)?)?;
             }
             "jsx_attribute" => {
                 let name_node = jsx_attribute_name_node(child)
@@ -171,12 +175,13 @@ fn convert_runtime_trans_root(
                         base_offset,
                     )?
                 {
-                    slot_callbacks.extend(component_slots);
+                    slot_callbacks.extend(component_slots.slot_callbacks);
+                    placeholder_keys.extend(component_slots.placeholder_keys);
                     continue;
                 }
 
                 append_rendered(
-                    &mut mapped,
+                    &mut attributes,
                     convert_jsx_named_attribute(source.as_str(), input, child, base_offset)?,
                 );
             }
@@ -187,6 +192,18 @@ fn convert_runtime_trans_root(
             }
         }
     }
+
+    if !placeholder_keys.is_empty() {
+        mapped.push_unmapped(" placeholders={");
+        mapped.push_unmapped(&render_placeholder_keys_inline(&placeholder_keys));
+        mapped.push_unmapped("}");
+    }
+    append_rendered(
+        &mut mapped,
+        attributes
+            .into_rendered()
+            .map_err(AstroAdapterError::from)?,
+    );
 
     if slot_callbacks.is_empty() {
         push_anchor_mapped(
@@ -268,6 +285,7 @@ fn lower_object_expression_span(
         return Ok(AstroLoweredObjectExpression {
             props: copy_span(input, span)?,
             slot_callbacks: Vec::new(),
+            placeholder_keys: Vec::new(),
         });
     }
 
@@ -297,6 +315,7 @@ fn convert_object_expression(
     let child_indent = "  ".repeat(indent_level + 1);
     let mut rendered = input.empty_like();
     let mut slot_callbacks = Vec::new();
+    let mut placeholder_keys = Vec::new();
     let mut cursor = node.walk();
     let mut wrote_entry = false;
 
@@ -322,7 +341,8 @@ fn convert_object_expression(
                         base_offset,
                     )?
                 {
-                    slot_callbacks.extend(component_slots);
+                    slot_callbacks.extend(component_slots.slot_callbacks);
+                    placeholder_keys.extend(component_slots.placeholder_keys);
                     continue;
                 }
 
@@ -397,6 +417,7 @@ fn convert_object_expression(
     Ok(AstroLoweredObjectExpression {
         props: rendered.into_rendered().map_err(AstroAdapterError::from)?,
         slot_callbacks,
+        placeholder_keys,
     })
 }
 
@@ -407,7 +428,7 @@ fn collect_component_slot_callbacks(
     transformed_source: &str,
     node: Node<'_>,
     base_offset: isize,
-) -> Result<Option<Vec<RenderedMappedText>>, AstroAdapterError> {
+) -> Result<Option<AstroLoweredComponentSlots>, AstroAdapterError> {
     let node = match node.kind() {
         "parenthesized_expression" => first_named_child(node).unwrap_or(node),
         _ => node,
@@ -447,7 +468,7 @@ fn collect_component_slot_callbacks_from_source(
     original_source: &str,
     target: &CompileTarget,
     keys: &[String],
-) -> Result<Vec<RenderedMappedText>, AstroAdapterError> {
+) -> Result<AstroLoweredComponentSlots, AstroAdapterError> {
     let tree = parse_astro(original_source)?;
     let root = tree.root_node();
     let component_node = find_node_by_span(root, target.original_span)
@@ -464,7 +485,8 @@ fn collect_component_slot_callbacks_from_source(
         );
     }
 
-    keys.iter()
+    let slot_callbacks = keys
+        .iter()
         .zip(wrappers)
         .map(|(key, wrapper)| {
             lower_original_wrapper_to_slot_callback(
@@ -473,7 +495,26 @@ fn collect_component_slot_callbacks_from_source(
                 &format!("component_{key}"),
             )
         })
-        .collect()
+        .collect::<Result<Vec<_>, _>>()?;
+
+    Ok(AstroLoweredComponentSlots {
+        slot_callbacks,
+        placeholder_keys: keys.to_vec(),
+    })
+}
+
+struct AstroLoweredComponentSlots {
+    slot_callbacks: Vec<RenderedMappedText>,
+    placeholder_keys: Vec<String>,
+}
+
+fn render_placeholder_keys_inline(keys: &[String]) -> String {
+    let joined = keys
+        .iter()
+        .map(|key| format!("\"{key}\""))
+        .collect::<Vec<_>>()
+        .join(", ");
+    format!("[{joined}]")
 }
 
 fn collect_runtime_component_wrappers<'a>(
@@ -631,7 +672,7 @@ mod tests {
         assert_eq!(
             lowered.code,
             indoc! {r#"
-                <L4aRuntimeTrans {.../*i18n*/ {
+                <L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {
                   id: "demo.docs",
                   message: "Read the <0>docs</0>."
                 }}>
@@ -665,7 +706,7 @@ mod tests {
         assert_eq!(
             lowered.code,
             indoc! {r#"
-                <L4aRuntimeTrans {.../*i18n*/ {
+                <L4aRuntimeTrans placeholders={["0", "1"]} {.../*i18n*/ {
                   id: "demo.docs",
                   message: "Read <0><1>carefully</1></0>."
                 }}>

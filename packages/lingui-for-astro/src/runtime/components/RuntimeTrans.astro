@@ -8,9 +8,10 @@ interface Props {
   id: string;
   message?: string | undefined;
   values?: Readonly<Record<string, unknown>> | undefined;
+  placeholders?: readonly string[] | undefined;
 }
 
-const { id, message, values = {} } = Astro.props;
+const { id, message, values = {}, placeholders } = Astro.props;
 const options = message != null ? { message } : {};
 
 const { i18n } = getLinguiContext(Astro.locals);
@@ -26,22 +27,14 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-function collectRuntimePlaceholders(
-  value: string,
-): Readonly<Record<string, true>> | null {
-  const matches = value.matchAll(/<([A-Za-z0-9]+)(?:\s*\/)?>/g);
-  const entries = [...matches].map((match) => match[1]).filter(Boolean);
-  if (entries.length === 0) {
-    return null;
-  }
-  return Object.fromEntries(entries.map((name) => [name!, true])) as Readonly<
-    Record<string, true>
-  >;
-}
-
-const placeholders = collectRuntimePlaceholders(translated);
-const nodes = placeholders
-  ? formatRichTextTranslation(translated, placeholders)
+const placeholderMap =
+  placeholders && placeholders.length > 0
+    ? Object.fromEntries(
+        placeholders.map((placeholder) => [placeholder, true] as const),
+      )
+    : null;
+const nodes = placeholderMap
+  ? formatRichTextTranslation(translated, placeholderMap)
   : [];
 
 async function renderNodes(
@@ -66,7 +59,7 @@ async function renderNodes(
   return chunks.join("");
 }
 
-const html = placeholders ? await renderNodes(nodes) : null;
+const html = placeholderMap ? await renderNodes(nodes) : null;
 ---
 
 {html == null ? translated : <Fragment set:html={html} />}
