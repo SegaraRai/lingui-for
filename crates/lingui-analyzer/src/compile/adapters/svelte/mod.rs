@@ -13,13 +13,14 @@ use crate::common::{
 };
 use crate::compile::{
     CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
-    CompileTargetPrototype, FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
-    build_compile_plan_for_framework,
+    CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype, FrameworkCompilePlan,
+    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::svelte::{SvelteFrameworkError, bare_direct_macro_message};
+use crate::framework::svelte::bare_direct_macro_message;
 use crate::framework::{
-    FrameworkError, MacroCandidate, MacroCandidateStrategy, MacroFlavor, WhitespaceMode,
+    FrameworkError, MacroCandidate, MacroCandidateStrategy, MacroFlavor, ParseError,
+    SvelteFrameworkError, WhitespaceMode,
 };
 
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
@@ -40,7 +41,7 @@ pub enum SvelteAdapterError {
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
     #[error(transparent)]
-    Parse(#[from] crate::framework::parse::ParseError),
+    Parse(#[from] ParseError),
     #[error(transparent)]
     RuntimeComponent(#[from] RuntimeComponentError),
     #[error("{0}")]
@@ -209,10 +210,8 @@ pub(crate) fn validate_compile_targets(
     prototypes: &[CompileTargetPrototype],
 ) -> Result<(), SvelteAdapterError> {
     let offending_candidate = prototypes.iter().find_map(|prototype| {
-        (matches!(
-            prototype.context,
-            crate::compile::CompileTargetContext::InstanceScript
-        ) && prototype.output_kind == crate::compile::CompileTargetOutputKind::Expression
+        (matches!(prototype.context, CompileTargetContext::InstanceScript)
+            && prototype.output_kind == CompileTargetOutputKind::Expression
             && is_forbidden_bare_direct_svelte_macro(&prototype.candidate))
         .then_some(&prototype.candidate)
     });

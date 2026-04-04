@@ -14,7 +14,9 @@ use crate::compile::{
     build_compile_plan_for_framework,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::{FrameworkError, WhitespaceMode};
+use crate::framework::{
+    AstroFrameworkError, FrameworkError, JsAnalysisError, ParseError, WhitespaceMode,
+};
 
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 
@@ -27,11 +29,11 @@ pub enum AstroAdapterError {
     #[error(transparent)]
     Framework(#[from] FrameworkError),
     #[error(transparent)]
-    AstroFramework(#[from] crate::framework::astro::AstroFrameworkError),
+    AstroFramework(#[from] AstroFrameworkError),
     #[error(transparent)]
-    Js(#[from] crate::framework::js::JsAnalysisError),
+    Js(#[from] JsAnalysisError),
     #[error(transparent)]
-    Parse(#[from] crate::framework::parse::ParseError),
+    Parse(#[from] ParseError),
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
     #[error(transparent)]
