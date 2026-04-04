@@ -995,7 +995,7 @@
             message: "Imported digest: <0><1/></0>"
           }}>
           {#snippet component_0(children)}<span>{@render children?.()}</span>{/snippet}
-          {#snippet component_1(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html htmlDigest}{/snippet}
+          {#snippet component_1(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html htmlDigest}{/snippet}
           </L4sRuntimeTrans>
         </p>
         <p>
@@ -1003,7 +1003,7 @@
             id: "JUNx+G",
             message: "Also we can embed some text and <0/> directly in translations."
           }}>
-          {#snippet component_0(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html "<em>some HTML</em>"}{/snippet}
+          {#snippet component_0(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html "<em>some HTML</em>"}{/snippet}
           </L4sRuntimeTrans>
         </p>
         <div>

@@ -113,7 +113,7 @@ describe("transformAstro", () => {
     const code = compact(result.code);
 
     expect(code).toContain(
-      '<fragment slot="component_0">{(children) => (import.meta.env.DEV && children !== "" && console.warn(',
+      '<fragment slot="component_0">{(children) => (children !== "" && console.warn(',
     );
     expect(code).toContain(
       "<article set:html={content}>Ignored child</article>",
@@ -136,7 +136,7 @@ describe("transformAstro", () => {
     const code = compact(result.code);
 
     expect(code).toContain(
-      '<fragment slot="component_0">{(children) => (import.meta.env.DEV && children !== "" && console.warn(',
+      '<fragment slot="component_0">{(children) => (children !== "" && console.warn(',
     );
     expect(code).toContain(
       "<article set:text={content}>Ignored child</article>",

@@ -39,7 +39,7 @@ export const unpluginFactory: UnpluginFactory<
       const runtimeWarnings =
         options?.runtimeWarnings ??
         (isDev
-          ? { transContentOverride: "dev" }
+          ? { transContentOverride: "on" }
           : { transContentOverride: "off" });
 
       const transformed = await transformSvelte(code, {

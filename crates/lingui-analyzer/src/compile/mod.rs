@@ -65,7 +65,7 @@ pub enum CompileTranslationMode {
 pub enum RuntimeWarningMode {
     Off,
     #[default]
-    Dev,
+    On,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -78,7 +78,7 @@ pub struct RuntimeWarningOptions {
 impl Default for RuntimeWarningOptions {
     fn default() -> Self {
         Self {
-            trans_content_override: RuntimeWarningMode::Dev,
+            trans_content_override: RuntimeWarningMode::On,
         }
     }
 }

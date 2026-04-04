@@ -644,9 +644,9 @@ fn lower_original_wrapper_to_slot_callback(
     rendered.push_unmapped("(children)");
     rendered.push_unmapped(" => ");
 
-    if has_content_hole && runtime_warning_mode == RuntimeWarningMode::Dev {
+    if has_content_hole && runtime_warning_mode == RuntimeWarningMode::On {
         rendered.push_unmapped(
-            "(import.meta.env.DEV && children !== \"\" && console.warn(\"[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead.\"), ",
+            "(children !== \"\" && console.warn(\"[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead.\"), ",
         );
     }
 
@@ -687,7 +687,7 @@ fn lower_original_wrapper_to_slot_callback(
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
 
-    if has_content_hole && runtime_warning_mode == RuntimeWarningMode::Dev {
+    if has_content_hole && runtime_warning_mode == RuntimeWarningMode::On {
         rendered.push_unmapped(")");
     }
     rendered.push_unmapped("}</fragment>");
@@ -773,7 +773,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("astro runtime component lowering succeeds");
 
@@ -808,7 +808,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("astro runtime component lowering succeeds");
 
@@ -842,7 +842,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect_err("unsafe placeholder key should be rejected");
 
@@ -866,12 +866,12 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("astro html-hole lowering succeeds");
 
         assert!(lowered.code.contains(
-            "<fragment slot=\"component_0\">{(children) => (import.meta.env.DEV && children !== \"\" && console.warn("
+            "<fragment slot=\"component_0\">{(children) => (children !== \"\" && console.warn("
         ));
         assert!(lowered.code.contains("<article set:html={content} />"));
     }
@@ -891,12 +891,12 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("astro text-hole lowering succeeds");
 
         assert!(lowered.code.contains(
-            "<fragment slot=\"component_0\">{(children) => (import.meta.env.DEV && children !== \"\" && console.warn("
+            "<fragment slot=\"component_0\">{(children) => (children !== \"\" && console.warn("
         ));
         assert!(lowered.code.contains("<article set:text={content} />"));
     }
@@ -915,7 +915,7 @@ mod tests {
             &html_target,
             &html_declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("astro html-hole lowering succeeds");
 
@@ -937,7 +937,7 @@ mod tests {
             &text_target,
             &text_declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("astro text-hole lowering succeeds");
 
@@ -964,15 +964,11 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("astro html-hole lowering succeeds");
 
-        assert!(
-            lowered
-                .code
-                .contains("import.meta.env.DEV && children !== \"\" && console.warn(")
-        );
+        assert!(lowered.code.contains("children !== \"\" && console.warn("));
         assert!(
             lowered
                 .code
@@ -995,7 +991,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("astro html-hole lowering succeeds");
 

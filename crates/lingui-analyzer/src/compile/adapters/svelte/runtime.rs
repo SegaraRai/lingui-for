@@ -659,9 +659,7 @@ fn push_runtime_content_override_warning(
     if runtime_warning_mode == RuntimeWarningMode::Off {
         return;
     }
-    rendered.push_unmapped(
-        "{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn(",
-    );
+    rendered.push_unmapped("{#if children}{@const __l4s_ignored = console.warn(");
     rendered.push_unmapped("\"[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.\"");
     rendered.push_unmapped(")}{/if}");
 }
@@ -709,7 +707,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -744,7 +742,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -792,7 +790,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -839,7 +837,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -863,7 +861,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect_err("unsafe placeholder key should be rejected");
 
@@ -887,7 +885,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -898,7 +896,7 @@ mod tests {
                   id: "demo.html",
                   message: "<0/>"
                 }}>
-                {#snippet component_0(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html content}{/snippet}
+                {#snippet component_0(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html content}{/snippet}
                 </L4sRuntimeTrans>
             "#}
             .trim_end()
@@ -920,7 +918,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
-            RuntimeWarningMode::Dev,
+            RuntimeWarningMode::On,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -931,7 +929,7 @@ mod tests {
                   id: "demo.render",
                   message: "<0/>"
                 }}>
-                {#snippet component_0(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@render row(item)}{/snippet}
+                {#snippet component_0(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@render row(item)}{/snippet}
                 </L4sRuntimeTrans>
             "#}
             .trim_end()

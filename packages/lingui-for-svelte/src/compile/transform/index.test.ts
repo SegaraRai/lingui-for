@@ -243,10 +243,10 @@ describe("transformSvelte", () => {
 
     expect(compact(result.code)).toContain('message: "<0/> <1/>"');
     expect(result.code).toContain(
-      '{#snippet component_0(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html content}{/snippet}',
+      '{#snippet component_0(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html content}{/snippet}',
     );
     expect(result.code).toContain(
-      '{#snippet component_1(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@render row(item)}{/snippet}',
+      '{#snippet component_1(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@render row(item)}{/snippet}',
     );
   });
 
