@@ -954,17 +954,10 @@ describe("transformSvelte", () => {
     	  message: "Read the <0>docs</0>, {name}.",
     	  values: {
     	    name: name
-    	  },
-    	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "a",
-    	      props: {
-    	        href: "/docs"
-    	      }
-    	    }
     	  }
-    	}} />"
+    	}}>
+    	{#snippet component_0(children)}<a href="/docs">{@render children?.()}</a>{/snippet}
+    	</L4sRuntimeTrans>"
     `);
   });
 
@@ -998,22 +991,11 @@ describe("transformSvelte", () => {
     	  message: "Read <0><1>{name}</1></0> carefully.",
     	  values: {
     	    name: name
-    	  },
-    	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "strong",
-    	      props: {}
-    	    },
-    	    1: {
-    	      kind: "component",
-    	      component: DocLink,
-    	      props: {
-    	        href: "/docs"
-    	      }
-    	    }
     	  }
-    	}} />"
+    	}}>
+    	{#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}
+    	{#snippet component_1(children)}<DocLink href="/docs">{@render children?.()}</DocLink>{/snippet}
+    	</L4sRuntimeTrans>"
     `);
   });
 
@@ -1038,17 +1020,10 @@ describe("transformSvelte", () => {
 
     	<L4sRuntimeTrans {.../*i18n*/ {
     	  id: "demo.docs",
-    	  message: "Read the <0>docs</0>.",
-    	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "a",
-    	      props: {
-    	        href: "/docs"
-    	      }
-    	    }
-    	  }
-    	}} />"
+    	  message: "Read the <0>docs</0>."
+    	}}>
+    	{#snippet component_0(children)}<a href="/docs">{@render children?.()}</a>{/snippet}
+    	</L4sRuntimeTrans>"
     `);
   });
 
@@ -1558,7 +1533,7 @@ describe("transformSvelte source map discipline", () => {
     {
       name: "component transform",
       original: "<Trans>Mapped component message</Trans>",
-      generated: /<L4sRuntimeTrans\b[\s\S]*?\/>/,
+      generated: /<L4sRuntimeTrans\b[\s\S]*?(?:\/>|<\/L4sRuntimeTrans>)/,
     },
     {
       name: "label binding is preserved",

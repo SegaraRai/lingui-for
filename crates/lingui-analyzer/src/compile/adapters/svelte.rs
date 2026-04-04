@@ -136,11 +136,13 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         &self,
         source_name: &str,
         source: &str,
+        target: &CompileTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, RuntimeComponentError> {
-        crate::compile::runtime_component::lower_runtime_component_markup(
+        crate::compile::runtime_component::lower_runtime_component_markup_svelte(
             source_name,
             source,
+            target,
             declaration,
             self.runtime_bindings.trans_component.as_str(),
         )

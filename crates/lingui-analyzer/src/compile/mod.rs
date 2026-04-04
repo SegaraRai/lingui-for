@@ -138,6 +138,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         &self,
         _source_name: &str,
         _source: &str,
+        _target: &CompileTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, RuntimeComponentError>;
 

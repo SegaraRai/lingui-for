@@ -81,6 +81,7 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
             let lowered = plan.lower_runtime_component_markup(
                 &plan.common().source_name,
                 source,
+                target,
                 &RenderedMappedText {
                     code: declaration.code,
                     indexed_source_map: declaration.indexed_source_map,

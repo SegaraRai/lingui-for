@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { I18n } from "@lingui/core";
-  import { untrack } from "svelte";
+  import { untrack, type Snippet } from "svelte";
 
   import { setLinguiContext } from "../core/context.ts";
   import RuntimeTrans from "./RuntimeTrans.svelte";
@@ -20,4 +20,8 @@
   setLinguiContext(untrack(() => getI18n()));
 </script>
 
-<RuntimeTrans {id} {message} {values} />
+<RuntimeTrans {id} {message} {values}>
+  {#snippet component_0(children: Snippet | undefined)}
+    <em>{@render children?.()}</em>
+  {/snippet}
+</RuntimeTrans>

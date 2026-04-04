@@ -12,7 +12,7 @@ const { nodes, components } = Astro.props;
 {
   nodes.map((node) => {
     const descriptor =
-      typeof node === "string" ? null : (components[node.name] ?? null);
+      typeof node === "string" ? null : (components[node.placeholder] ?? null);
 
     return typeof node === "string" ? (
       node

@@ -134,6 +134,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         &self,
         source_name: &str,
         source: &str,
+        _target: &CompileTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, RuntimeComponentError> {
         crate::compile::runtime_component::lower_runtime_component_markup(

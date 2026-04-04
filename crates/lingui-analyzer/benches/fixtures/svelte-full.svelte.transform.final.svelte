@@ -995,15 +995,10 @@
             message: "Imported digest: <0>{htmlDigest}</0>",
             values: {
               htmlDigest: htmlDigest
-            },
-            components: {
-              0: {
-                kind: "element",
-                tag: "span",
-                props: {}
-              }
             }
-          }} />
+          }}>
+          {#snippet component_0(children)}<span>{@render children?.()}</span>{/snippet}
+          </L4sRuntimeTrans>
         </p>
       </div>
     </div>

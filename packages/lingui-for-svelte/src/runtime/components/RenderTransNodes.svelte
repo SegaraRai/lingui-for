@@ -1,13 +1,18 @@
 <script lang="ts">
   import RenderTransNodes from "./RenderTransNodes.svelte";
-  import type { TransComponentMap, TransRenderNode } from "./types.ts";
+  import RenderTransSnippet from "./RenderTransSnippet.svelte";
+  import type {
+    TransComponentSnippet,
+    TransComponentSnippetMap,
+    TransRenderNode,
+  } from "./types.ts";
 
   let {
     nodes,
-    components,
+    snippets,
   }: {
     nodes: readonly TransRenderNode[];
-    components: TransComponentMap;
+    snippets: TransComponentSnippetMap;
   } = $props();
 </script>
 
@@ -15,18 +20,11 @@
   {#if typeof node === "string"}
     {node}
   {:else}
-    {@const component = components[node.name]}
-    {#if !component}
-      <RenderTransNodes nodes={node.children} {components} />
-    {:else if component.kind === "element"}
-      <svelte:element this={component.tag} {...component.props}>
-        <RenderTransNodes nodes={node.children} {components} />
-      </svelte:element>
+    {@const snippet: TransComponentSnippet | undefined = snippets[node.placeholder]}
+    {#if snippet}
+      <RenderTransSnippet {snippet} nodes={node.children} {snippets} />
     {:else}
-      {@const DynamicComponent = component.component}
-      <DynamicComponent {...component.props}>
-        <RenderTransNodes nodes={node.children} {components} />
-      </DynamicComponent>
+      <RenderTransNodes nodes={node.children} {snippets} />
     {/if}
   {/if}
 {/each}

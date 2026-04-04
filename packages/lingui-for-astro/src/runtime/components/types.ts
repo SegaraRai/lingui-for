@@ -1,3 +1,5 @@
+import type { TransRenderNode as SharedTransRenderNode } from "@lingui-for/internal-shared-runtime";
+
 export type TransComponentDescriptor =
   | {
       kind: "element";
@@ -14,11 +16,4 @@ export type TransComponentMap = Readonly<
   Record<string, TransComponentDescriptor>
 >;
 
-export type TransRenderNode =
-  | string
-  | {
-      kind: "component";
-      key: string;
-      name: string;
-      children: readonly TransRenderNode[];
-    };
+export type TransRenderNode = SharedTransRenderNode;

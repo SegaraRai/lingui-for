@@ -1,50 +1,17 @@
 /**
- * Description of one embeddable node that may appear in a translated rich-text message.
+ * Mapping from rich-text placeholder names to framework-specific renderers or descriptors.
  *
- * Entries are keyed by the placeholder name used in the translated message, for example `"0"` or
- * `"link"`.
+ * The parser only uses this map to determine whether a placeholder is known. The value type
+ * remains generic so each framework can attach its own runtime contract.
  */
-export type GenericTransComponentDescriptor<TComponent> =
-  | {
-      /**
-       * Renders the placeholder as a plain HTML element such as `strong` or `a`.
-       */
-      kind: "element";
-      /**
-       * HTML tag name emitted by the runtime renderer.
-       */
-      tag: string;
-      /**
-       * Props/attributes applied to the rendered element.
-       */
-      props?: Readonly<Record<string, unknown>>;
-    }
-  | {
-      /**
-       * Renders the placeholder as a framework component.
-       */
-      kind: "component";
-      /**
-       * Component value used for the placeholder.
-       */
-      component: TComponent;
-      /**
-       * Props forwarded to the rendered component.
-       */
-      props?: Readonly<Record<string, unknown>>;
-    };
-
-/**
- * Mapping from rich-text placeholder names to their runtime render descriptors.
- */
-export type GenericTransComponentMap<TComponent> = Readonly<
-  Record<string, GenericTransComponentDescriptor<TComponent>>
+export type GenericTransPlaceholderMap<TPlaceholder> = Readonly<
+  Record<string, TPlaceholder>
 >;
 
 /**
  * Tree node produced by parsing a translated rich-text string.
  *
- * Nodes are either raw text segments or placeholder-backed component nodes with child content.
+ * Nodes are either raw text segments or placeholder-backed nodes with child content.
  */
 export type TransRenderNode =
   | string
@@ -52,15 +19,15 @@ export type TransRenderNode =
       /**
        * Discriminator for non-text render nodes.
        */
-      kind: "component";
+      kind: "placeholder";
       /**
        * Stable key used while rendering the parsed tree.
        */
       key: string;
       /**
-       * Placeholder name that resolves into an entry in the component map.
+       * Placeholder name that resolves into an entry in the placeholder map.
        */
-      name: string;
+      placeholder: string;
       /**
        * Parsed children nested inside the placeholder.
        */
@@ -68,22 +35,22 @@ export type TransRenderNode =
     };
 
 /**
- * Parses a translated rich-text message into renderable text/component nodes.
+ * Parses a translated rich-text message into renderable text/placeholder nodes.
  *
  * Unknown placeholders are treated as transparent wrappers and malformed tags fall back to plain
  * text so translation issues do not crash rendering.
  */
-export function formatRichTextTranslation<TComponent>(
+export function formatRichTextTranslation<TPlaceholder>(
   value: string,
-  components: GenericTransComponentMap<TComponent> = {},
+  placeholders: GenericTransPlaceholderMap<TPlaceholder> = {},
 ): TransRenderNode[] {
-  return parseNodes(value, 0, components, undefined, new Map()).nodes;
+  return parseNodes(value, 0, placeholders, undefined, new Map()).nodes;
 }
 
-function parseNodes<TComponent>(
+function parseNodes<TPlaceholder>(
   value: string,
   start: number,
-  components: GenericTransComponentMap<TComponent>,
+  placeholders: GenericTransPlaceholderMap<TPlaceholder>,
   expectedClosingTag?: string,
   keyCounters: Map<string, number> = new Map(),
 ): {
@@ -126,11 +93,11 @@ function parseNodes<TComponent>(
 
     const selfClosing = matchSelfClosingTag(value, tagStart);
     if (selfClosing) {
-      if (components[selfClosing.name]) {
+      if (placeholders[selfClosing.name]) {
         nodes.push({
-          kind: "component",
+          kind: "placeholder",
           key: allocateStableNodeKey(selfClosing.name, keyCounters),
-          name: selfClosing.name,
+          placeholder: selfClosing.name,
           children: [],
         });
       }
@@ -148,7 +115,7 @@ function parseNodes<TComponent>(
     const parsedChildren = parseNodes(
       value,
       opening.end,
-      components,
+      placeholders,
       opening.name,
       keyCounters,
     );
@@ -159,11 +126,11 @@ function parseNodes<TComponent>(
       continue;
     }
 
-    if (components[opening.name]) {
+    if (placeholders[opening.name]) {
       nodes.push({
-        kind: "component",
+        kind: "placeholder",
         key: allocateStableNodeKey(opening.name, keyCounters),
-        name: opening.name,
+        placeholder: opening.name,
         children: parsedChildren.nodes,
       });
     } else {

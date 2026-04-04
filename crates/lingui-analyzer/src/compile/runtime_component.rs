@@ -4,7 +4,9 @@ use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, MappedTextError, RenderedMappedText, Span,
     build_span_anchor_map,
 };
-use crate::framework::parse::{ParseError, parse_tsx};
+use crate::framework::parse::{ParseError, parse_svelte, parse_tsx};
+
+use super::CompileTarget;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RuntimeComponentError {
@@ -56,6 +58,12 @@ pub enum RuntimeComponentError {
     UnsupportedJsxPropKind { kind: String },
     #[error("translated node offset became negative")]
     TranslatedNodeOffsetNegative,
+    #[error("missing original Svelte Trans node for runtime component lowering")]
+    MissingOriginalSvelteTransNode,
+    #[error("missing tag name while lowering Svelte snippet")]
+    MissingTagNameWhileLoweringSvelteSnippet,
+    #[error("mismatched Svelte runtime component placeholders: expected {expected}, found {found}")]
+    MismatchedSvelteRuntimeComponentPlaceholderCount { expected: usize, found: usize },
 }
 
 pub(crate) fn lower_runtime_component_markup(
@@ -87,6 +95,44 @@ pub(crate) fn lower_runtime_component_markup(
         declaration.indexed_source_map.as_ref(),
         &declaration_source,
         &mapped_input,
+        value,
+        -(wrapper_prefix.len() as isize),
+        runtime_component_name,
+    )
+}
+
+pub(crate) fn lower_runtime_component_markup_svelte(
+    source_name: &str,
+    original_source: &str,
+    target: &CompileTarget,
+    declaration: &RenderedMappedText,
+    runtime_component_name: &str,
+) -> Result<RenderedMappedText, RuntimeComponentError> {
+    let declaration_source = IndexedText::new(&declaration.code);
+    let original_source = IndexedText::new(original_source);
+    let mapped_input = MappedText::from_rendered(
+        source_name,
+        original_source.as_str(),
+        &declaration.code,
+        declaration.indexed_source_map.as_ref(),
+    );
+    let wrapper_prefix = "const __lf = ";
+    let wrapped = format!("{wrapper_prefix}{};", declaration.code);
+    let tree = parse_tsx(&wrapped)?;
+    let root = tree.root_node();
+    let declarator = find_first_named_descendant(root, "variable_declarator")
+        .ok_or(RuntimeComponentError::MissingVariableDeclaratorForTransformedComponent)?;
+    let value = declarator
+        .child_by_field_name("value")
+        .ok_or(RuntimeComponentError::MissingInitializerForTransformedComponent)?;
+
+    convert_runtime_trans_root_svelte(
+        &original_source,
+        declaration.indexed_source_map.as_ref(),
+        &declaration_source,
+        &mapped_input,
+        source_name,
+        target,
         value,
         -(wrapper_prefix.len() as isize),
         runtime_component_name,
@@ -140,6 +186,560 @@ fn convert_runtime_trans_root(
         root_span.end,
     );
     mapped.into_rendered().map_err(RuntimeComponentError::from)
+}
+
+fn convert_runtime_trans_root_svelte(
+    original_source: &IndexedText<'_>,
+    declaration_source_map: Option<&IndexedSourceMap>,
+    source: &IndexedText<'_>,
+    input: &MappedText<'_>,
+    source_name: &str,
+    target: &CompileTarget,
+    node: Node<'_>,
+    base_offset: isize,
+    runtime_component_name: &str,
+) -> Result<RenderedMappedText, RuntimeComponentError> {
+    let opening = match node.kind() {
+        "jsx_element" => node.child_by_field_name("open_tag"),
+        "jsx_self_closing_element" => Some(node),
+        _ => None,
+    }
+    .ok_or(RuntimeComponentError::ExpectedJsxElementInitializerForTransformedComponent)?;
+
+    let mut mapped = input.empty_like();
+    let root_span = translated_span(node, base_offset)?;
+    let mut snippets = Vec::new();
+    let original_input = MappedText::from_rendered(
+        source_name,
+        original_source.as_str(),
+        original_source.as_str(),
+        None,
+    );
+
+    push_anchor_mapped(
+        &mut mapped,
+        declaration_source_map,
+        source,
+        original_source,
+        "<",
+        root_span.start,
+    );
+    push_anchor_mapped(
+        &mut mapped,
+        declaration_source_map,
+        source,
+        original_source,
+        runtime_component_name,
+        root_span.start,
+    );
+
+    let mut cursor = opening.walk();
+    for child in opening.children_by_field_name("attribute", &mut cursor) {
+        match child.kind() {
+            "jsx_expression" => {
+                let spread = spread_element_node(child)
+                    .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
+                let argument = spread_argument_node(spread)
+                    .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
+
+                if let Some(object) = lowerable_object_expression_node(argument) {
+                    let spread_span = translated_span(spread, base_offset)?;
+                    let object_span = translated_span(object, base_offset)?;
+                    let lowered = lower_svelte_object_expression_span(
+                        source.as_str(),
+                        input,
+                        &original_input,
+                        original_source.as_str(),
+                        target,
+                        object_span,
+                        0,
+                    )?;
+                    mapped.push_unmapped(" {...");
+                    let prefix_start = (spread_span.start + 3).min(object_span.start);
+                    let prefix_trimmed_start = source.as_str()[prefix_start..object_span.start]
+                        .find(|char: char| !char.is_ascii_whitespace())
+                        .map(|offset| prefix_start + offset);
+                    if let Some(prefix_trimmed_start) = prefix_trimmed_start {
+                        push_copied_span(
+                            &mut mapped,
+                            input,
+                            Span::new(prefix_trimmed_start, object_span.start),
+                        )?;
+                    }
+                    append_rendered(&mut mapped, lowered.props);
+                    let suffix_trimmed_end = source.as_str()[object_span.end..spread_span.end]
+                        .rfind(|char: char| !char.is_ascii_whitespace())
+                        .map(|offset| object_span.end + offset + 1);
+                    if let Some(suffix_trimmed_end) = suffix_trimmed_end {
+                        push_copied_span(
+                            &mut mapped,
+                            input,
+                            Span::new(object_span.end, suffix_trimmed_end),
+                        )?;
+                    }
+                    mapped.push_unmapped("}");
+                    snippets.extend(lowered.snippets);
+                    continue;
+                }
+
+                mapped.push_unmapped(" ");
+                push_copied_span(&mut mapped, input, translated_span(child, base_offset)?)?;
+            }
+            "jsx_attribute" => {
+                let name_node = jsx_attribute_name_node(child)
+                    .ok_or(RuntimeComponentError::MissingJsxAttributeName)?;
+                let name = source_slice(source.as_str(), name_node, base_offset)?;
+                let value_node = jsx_attribute_value_node(child);
+
+                if name == "components" {
+                    if let Some(value) = value_node.filter(|value| value.kind() == "jsx_expression")
+                    {
+                        if let Some(expression) = first_named_child(value) {
+                            if let Some(component_snippets) = collect_svelte_component_snippets(
+                                &original_input,
+                                original_source.as_str(),
+                                target,
+                                source.as_str(),
+                                expression,
+                                base_offset,
+                            )? {
+                                snippets.extend(component_snippets);
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                append_rendered(
+                    &mut mapped,
+                    convert_jsx_named_attribute(source.as_str(), input, child, base_offset)?,
+                );
+            }
+            other => {
+                return Err(RuntimeComponentError::UnsupportedJsxAttributeNodeKind {
+                    kind: other.to_string(),
+                });
+            }
+        }
+    }
+
+    if snippets.is_empty() {
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            " />",
+            root_span.end,
+        );
+    } else {
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            ">",
+            root_span.end,
+        );
+        mapped.push_unmapped("\n");
+        for snippet in snippets {
+            append_rendered(&mut mapped, snippet);
+            mapped.push_unmapped("\n");
+        }
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            "</",
+            root_span.end,
+        );
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            runtime_component_name,
+            root_span.end,
+        );
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            ">",
+            root_span.end,
+        );
+    }
+
+    mapped.into_rendered().map_err(RuntimeComponentError::from)
+}
+
+struct SvelteLoweredObjectExpression {
+    props: RenderedMappedText,
+    snippets: Vec<RenderedMappedText>,
+}
+
+fn lower_svelte_object_expression_span(
+    source: &str,
+    input: &MappedText<'_>,
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    span: Span,
+    indent_level: usize,
+) -> Result<SvelteLoweredObjectExpression, RuntimeComponentError> {
+    let text = &source[span.start..span.end];
+    let wrapper_prefix = "const __expr = (";
+    let wrapped = format!("{wrapper_prefix}{text});");
+    let tree = parse_tsx(&wrapped)?;
+    let root = tree.root_node();
+    let declarator = find_first_named_descendant(root, "variable_declarator")
+        .ok_or(RuntimeComponentError::MissingVariableDeclaratorWhileLoweringObjectExpression)?;
+    let value = declarator
+        .child_by_field_name("value")
+        .ok_or(RuntimeComponentError::MissingObjectExpressionInitializer)?;
+    let object = if value.kind() == "parenthesized_expression" {
+        first_named_child(value).unwrap_or(value)
+    } else {
+        value
+    };
+    if object.kind() != "object" {
+        return Ok(SvelteLoweredObjectExpression {
+            props: copy_span(input, span)?,
+            snippets: Vec::new(),
+        });
+    }
+
+    convert_svelte_object_expression(
+        source,
+        input,
+        original_input,
+        original_source,
+        target,
+        object,
+        span.start as isize - wrapper_prefix.len() as isize,
+        indent_level,
+    )
+}
+
+fn convert_svelte_object_expression(
+    source: &str,
+    input: &MappedText<'_>,
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    node: Node<'_>,
+    base_offset: isize,
+    indent_level: usize,
+) -> Result<SvelteLoweredObjectExpression, RuntimeComponentError> {
+    let indent = "  ".repeat(indent_level);
+    let child_indent = "  ".repeat(indent_level + 1);
+    let mut rendered = input.empty_like();
+    let mut snippets = Vec::new();
+    let mut cursor = node.walk();
+    let mut wrote_entry = false;
+
+    rendered.push_unmapped("{");
+
+    for child in node.named_children(&mut cursor) {
+        match child.kind() {
+            "pair" => {
+                let key = child
+                    .child_by_field_name("key")
+                    .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
+                let value = child
+                    .child_by_field_name("value")
+                    .ok_or(RuntimeComponentError::MissingObjectPairValue)?;
+                let key_name = key_name(source, key, base_offset);
+                if key_name.as_deref() == Some("components") {
+                    if let Some(component_snippets) = collect_svelte_component_snippets(
+                        original_input,
+                        original_source,
+                        target,
+                        source,
+                        value,
+                        base_offset,
+                    )? {
+                        snippets.extend(component_snippets);
+                        continue;
+                    }
+                }
+
+                if wrote_entry {
+                    rendered.push_unmapped(",\n");
+                } else {
+                    rendered.push_unmapped("\n");
+                    wrote_entry = true;
+                }
+                rendered.push_unmapped(&child_indent);
+                push_copied_span(&mut rendered, input, translated_span(key, base_offset)?)?;
+                rendered.push_unmapped(": ");
+                append_rendered(
+                    &mut rendered,
+                    convert_svelte_expression_for_runtime_trans(
+                        source,
+                        input,
+                        original_input,
+                        original_source,
+                        target,
+                        value,
+                        base_offset,
+                        indent_level + 1,
+                    )?,
+                );
+            }
+            "spread_element" => {
+                let argument = spread_argument_node(child)
+                    .ok_or(RuntimeComponentError::MissingSpreadArgumentInObjectExpression)?;
+                if wrote_entry {
+                    rendered.push_unmapped(",\n");
+                } else {
+                    rendered.push_unmapped("\n");
+                    wrote_entry = true;
+                }
+                rendered.push_unmapped(&child_indent);
+                rendered.push_unmapped("...");
+                append_rendered(
+                    &mut rendered,
+                    convert_svelte_expression_for_runtime_trans(
+                        source,
+                        input,
+                        original_input,
+                        original_source,
+                        target,
+                        argument,
+                        base_offset,
+                        indent_level + 1,
+                    )?,
+                );
+            }
+            "shorthand_property_identifier" => {
+                if wrote_entry {
+                    rendered.push_unmapped(",\n");
+                } else {
+                    rendered.push_unmapped("\n");
+                    wrote_entry = true;
+                }
+                rendered.push_unmapped(&child_indent);
+                push_copied_span(&mut rendered, input, translated_span(child, base_offset)?)?;
+            }
+            other => {
+                return Err(RuntimeComponentError::UnsupportedObjectChildKind {
+                    kind: other.to_string(),
+                });
+            }
+        }
+    }
+
+    if !wrote_entry {
+        rendered.push_unmapped("}");
+    } else {
+        rendered.push_unmapped("\n");
+        rendered.push_unmapped(&indent);
+        rendered.push_unmapped("}");
+    }
+
+    Ok(SvelteLoweredObjectExpression {
+        props: rendered
+            .into_rendered()
+            .map_err(RuntimeComponentError::from)?,
+        snippets,
+    })
+}
+
+fn collect_svelte_component_snippets(
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    transformed_source: &str,
+    node: Node<'_>,
+    base_offset: isize,
+) -> Result<Option<Vec<RenderedMappedText>>, RuntimeComponentError> {
+    if node.kind() != "object" {
+        return Err(RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents);
+    }
+
+    let mut keys = Vec::new();
+    let mut cursor = node.walk();
+    for child in node.named_children(&mut cursor) {
+        if child.kind() != "pair" {
+            return Err(RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents);
+        }
+        let Some(key) = child.child_by_field_name("key") else {
+            return Err(RuntimeComponentError::MissingObjectPairKey);
+        };
+        let Some(key_name) = key_name(transformed_source, key, base_offset) else {
+            return Err(RuntimeComponentError::MissingObjectPairKey);
+        };
+        keys.push(key_name);
+    }
+
+    Ok(Some(collect_svelte_component_snippets_from_source(
+        original_input,
+        original_source,
+        target,
+        &keys,
+    )?))
+}
+
+fn collect_svelte_component_snippets_from_source(
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    keys: &[String],
+) -> Result<Vec<RenderedMappedText>, RuntimeComponentError> {
+    let tree = parse_svelte(original_source)?;
+    let root = tree.root_node();
+    let component_node = find_node_by_span(root, target.original_span)
+        .ok_or(RuntimeComponentError::MissingOriginalSvelteTransNode)?;
+    let mut wrappers = Vec::new();
+    collect_svelte_runtime_component_wrappers(component_node, original_source, &mut wrappers);
+
+    if wrappers.len() != keys.len() {
+        return Err(
+            RuntimeComponentError::MismatchedSvelteRuntimeComponentPlaceholderCount {
+                expected: keys.len(),
+                found: wrappers.len(),
+            },
+        );
+    }
+
+    keys.iter()
+        .zip(wrappers)
+        .map(|(key, wrapper)| {
+            lower_original_svelte_wrapper_to_snippet(
+                original_input,
+                original_source,
+                wrapper,
+                &format!("component_{key}"),
+            )
+        })
+        .collect()
+}
+
+fn collect_svelte_runtime_component_wrappers<'a>(
+    node: Node<'a>,
+    source: &str,
+    wrappers: &mut Vec<Node<'a>>,
+) {
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        match child.kind() {
+            "element" => {
+                if let Some(self_closing_tag) = child
+                    .children(&mut child.walk())
+                    .find(|grandchild| grandchild.kind() == "self_closing_tag")
+                {
+                    if !is_skipped_svelte_runtime_component_wrapper(source, self_closing_tag) {
+                        wrappers.push(self_closing_tag);
+                    }
+                    continue;
+                }
+
+                if !is_skipped_svelte_runtime_component_wrapper(source, child) {
+                    wrappers.push(child);
+                }
+                collect_svelte_runtime_component_wrappers(child, source, wrappers);
+            }
+            "self_closing_tag" => {
+                if !is_skipped_svelte_runtime_component_wrapper(source, child) {
+                    wrappers.push(child);
+                }
+            }
+            _ => collect_svelte_runtime_component_wrappers(child, source, wrappers),
+        }
+    }
+}
+
+fn is_skipped_svelte_runtime_component_wrapper(source: &str, node: Node<'_>) -> bool {
+    matches!(
+        svelte_tag_name(source, node),
+        Some("Plural" | "Select" | "SelectOrdinal" | "Trans")
+    )
+}
+
+fn svelte_tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
+    match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag")
+            .and_then(|start_tag| {
+                start_tag
+                    .children(&mut start_tag.walk())
+                    .find(|child| child.kind() == "tag_name")
+            })
+            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+        "self_closing_tag" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "tag_name")
+            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+        _ => None,
+    }
+}
+
+fn lower_original_svelte_wrapper_to_snippet(
+    input: &MappedText<'_>,
+    source: &str,
+    node: Node<'_>,
+    snippet_name: &str,
+) -> Result<RenderedMappedText, RuntimeComponentError> {
+    let mut rendered = input.empty_like();
+    rendered.push_unmapped("{#snippet ");
+    rendered.push_unmapped(snippet_name);
+    rendered.push_unmapped("(children)}");
+
+    match node.kind() {
+        "element" => {
+            let start_tag = node
+                .children(&mut node.walk())
+                .find(|child| child.kind() == "start_tag")
+                .ok_or(RuntimeComponentError::ExpectedJsxElementDescriptor)?;
+            let end_tag = node
+                .children(&mut node.walk())
+                .find(|child| child.kind() == "end_tag")
+                .ok_or(RuntimeComponentError::ExpectedJsxElementDescriptor)?;
+            let content_start = start_tag.end_byte();
+            let content_end = end_tag.start_byte();
+            push_copied_span(
+                &mut rendered,
+                input,
+                Span::new(node.start_byte(), content_start),
+            )?;
+            rendered.push_unmapped("{@render children?.()}");
+            push_copied_span(
+                &mut rendered,
+                input,
+                Span::new(content_end, node.end_byte()),
+            )?;
+        }
+        "self_closing_tag" => {
+            let tag_name = node
+                .children(&mut node.walk())
+                .find(|child| child.kind() == "tag_name")
+                .ok_or(RuntimeComponentError::MissingTagNameWhileLoweringSvelteSnippet)?;
+            let tag_name_span = Span::from_node(tag_name);
+            let node_span = Span::from_node(node);
+            let source_slice = &source[node_span.start..node_span.end];
+            let self_closing_offset = source_slice
+                .rfind("/>")
+                .ok_or(RuntimeComponentError::ExpectedJsxElementDescriptor)?;
+            push_copied_span(
+                &mut rendered,
+                input,
+                Span::new(node_span.start, node_span.start + self_closing_offset),
+            )?;
+            rendered.push_unmapped(">{@render children?.()}</");
+            push_copied_span(&mut rendered, input, tag_name_span)?;
+            rendered.push_unmapped(">");
+        }
+        _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor),
+    }
+
+    rendered.push_unmapped("{/snippet}");
+    rendered
+        .into_rendered()
+        .map_err(RuntimeComponentError::from)
 }
 
 fn push_anchor_mapped(
@@ -361,6 +961,32 @@ fn convert_expression_for_runtime_trans(
         "object" => {
             convert_object_expression(source, input, node, base_offset, false, indent_level)
         }
+        _ => copy_node(source, input, node, base_offset),
+    }
+}
+
+fn convert_svelte_expression_for_runtime_trans(
+    source: &str,
+    input: &MappedText<'_>,
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    node: Node<'_>,
+    base_offset: isize,
+    indent_level: usize,
+) -> Result<RenderedMappedText, RuntimeComponentError> {
+    match node.kind() {
+        "object" => convert_svelte_object_expression(
+            source,
+            input,
+            original_input,
+            original_source,
+            target,
+            node,
+            base_offset,
+            indent_level,
+        )
+        .map(|lowered| lowered.props),
         _ => copy_node(source, input, node, base_offset),
     }
 }
@@ -801,6 +1427,25 @@ fn find_first_named_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a
     None
 }
 
+fn find_node_by_span(node: Node<'_>, span: Span) -> Option<Node<'_>> {
+    if node.start_byte() > span.start || node.end_byte() < span.end {
+        return None;
+    }
+
+    let mut cursor = node.walk();
+    for child in node.named_children(&mut cursor) {
+        if let Some(found) = find_node_by_span(child, span) {
+            return Some(found);
+        }
+    }
+
+    if node.start_byte() == span.start && node.end_byte() == span.end {
+        Some(node)
+    } else {
+        None
+    }
+}
+
 fn is_intrinsic_jsx_name(
     source: &str,
     name: Node<'_>,
@@ -818,6 +1463,9 @@ fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
         "property_identifier" | "identifier" => source_slice(source, key, base_offset)
             .ok()
             .map(ToString::to_string),
+        "number" => source_slice(source, key, base_offset)
+            .ok()
+            .map(ToString::to_string),
         "string" => {
             let span = translated_span(key, base_offset).ok()?;
             Some(source[span.start + 1..span.end.saturating_sub(1)].to_string())
@@ -828,9 +1476,30 @@ fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::lower_runtime_component_markup;
-    use crate::common::RenderedMappedText;
+    use super::{lower_runtime_component_markup, lower_runtime_component_markup_svelte};
+    use crate::common::{RenderedMappedText, Span};
+    use crate::compile::{
+        CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
+    };
+    use crate::framework::MacroFlavor;
+    use crate::synthesis::NormalizedSegment;
     use indoc::indoc;
+
+    fn svelte_component_target(source: &str) -> CompileTarget {
+        CompileTarget {
+            declaration_id: "__trans".to_string(),
+            original_span: Span::new(0, source.len()),
+            normalized_span: Span::new(0, source.len()),
+            source_map_anchor: None,
+            local_name: "Trans".to_string(),
+            imported_name: "Trans".to_string(),
+            flavor: MacroFlavor::Direct,
+            context: CompileTargetContext::Template,
+            output_kind: CompileTargetOutputKind::Component,
+            translation_mode: CompileTranslationMode::Contextual,
+            normalized_segments: Vec::<NormalizedSegment>::new(),
+        }
+    }
 
     #[test]
     fn preserves_non_object_spread_without_duplicate_prefix() {
@@ -978,5 +1647,155 @@ mod tests {
             "#}
             .trim_end()
         );
+    }
+
+    #[test]
+    fn lowers_svelte_components_to_implicit_snippets() {
+        let source = "<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { 0: <a href=\"/docs\" /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = svelte_component_target(&source);
+
+        let lowered = lower_runtime_component_markup_svelte(
+            "Component.svelte",
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4sRuntimeTrans {.../*i18n*/ {
+                  id: "demo.docs",
+                  message: "Read the <0>docs</0>."
+                }}>
+                {#snippet component_0(children)}<a href="/docs">{@render children?.()}</a>{/snippet}
+                </L4sRuntimeTrans>
+            "#}
+            .trim_end()
+        );
+    }
+
+    #[test]
+    fn lowers_svelte_components_from_original_source_wrappers() {
+        let source =
+            "<Trans>Read <strong><DocLink href=\"/docs\">carefully</DocLink></strong>.</Trans>"
+                .to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read <0><1>carefully</1></0>.\", components: { 0: <strong />, 1: <DocLink href=\"/docs\" /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = svelte_component_target(&source);
+
+        let lowered = lower_runtime_component_markup_svelte(
+            "Component.svelte",
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4sRuntimeTrans {.../*i18n*/ {
+                  id: "demo.docs",
+                  message: "Read <0><1>carefully</1></0>."
+                }}>
+                {#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}
+                {#snippet component_1(children)}<DocLink href="/docs">{@render children?.()}</DocLink>{/snippet}
+                </L4sRuntimeTrans>
+            "#}
+            .trim_end()
+        );
+    }
+
+    #[test]
+    fn skips_svelte_component_macros_inside_runtime_trans_wrappers() {
+        let source = indoc! {r##"
+            <Trans>
+              You have{" "}
+              <strong>
+                <Plural
+                  value={count}
+                  _0="no unread messages"
+                  one="# unread message"
+                  other="# unread messages"
+                />
+              </strong>.
+            </Trans>
+        "##}
+        .trim()
+        .to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.plural\", message: \"You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.\", values: { count }, components: { 0: <strong /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = svelte_component_target(&source);
+
+        let lowered = lower_runtime_component_markup_svelte(
+            "Component.svelte",
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert!(lowered.code.contains(
+            "{#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}"
+        ));
+    }
+
+    #[test]
+    fn skips_nested_svelte_component_macro_wrappers_inside_runtime_trans() {
+        let source = indoc! {r##"
+            <Trans>
+              Before{" "}
+              <strong>
+                <Plural
+                  value={count}
+                  _0={selectOrdinal(rank, {
+                    1: select(role, {
+                      admin: "zero first admin",
+                      other: "zero first other",
+                    }),
+                    other: select(role, {
+                      admin: "zero later admin",
+                      other: "zero later other",
+                    }),
+                  })}
+                  other="fallback"
+                />
+              </strong>{" "}
+              after.
+            </Trans>
+        "##}
+        .trim()
+        .to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.deep\", message: \"Before <0>{count, plural, =0 {{rank, selectordinal, one {{role, select, admin {zero first admin} other {zero first other}}} other {{role, select, admin {zero later admin} other {zero later other}}}} other {fallback}}</0> after.\", values: { count, rank, role }, components: { 0: <strong /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = svelte_component_target(&source);
+
+        let lowered = lower_runtime_component_markup_svelte(
+            "Component.svelte",
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert!(lowered.code.contains(
+            "{#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}"
+        ));
     }
 }
