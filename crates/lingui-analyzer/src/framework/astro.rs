@@ -1,7 +1,7 @@
 use tree_sitter::Node;
 
 use crate::common::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_single_diagnostic, make_diagnostic,
+    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_unsupported_trans_child_syntax,
 };
 use crate::conventions::FrameworkConventions;
 
@@ -611,11 +611,7 @@ fn validate_runtime_lowerable_astro_component(
     node: Node<'_>,
     options: &AnalyzeOptions,
 ) -> Result<(), AstroFrameworkError> {
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        validate_astro_component_node(source, child, options)?;
-    }
-    Ok(())
+    validate_astro_component_node(source, node, options)
 }
 
 fn validate_astro_component_node(
@@ -664,11 +660,13 @@ fn validate_astro_element_like(
         };
         let attribute_name = text(source, name_node);
         if is_unsupported_astro_directive(attribute_name) {
-            return Err(unsupported_component_syntax_error(
-                source,
-                options,
-                Span::from_node(name_node),
-                format!("Astro directive `{attribute_name}` is not supported inside <Trans>."),
+            return Err(AstroFrameworkError::InvalidMacroUsage(
+                format_unsupported_trans_child_syntax(
+                    source,
+                    &options.source_name,
+                    Span::from_node(name_node),
+                    format!("Astro directive `{attribute_name}`"),
+                ),
             ));
         }
     }
@@ -685,17 +683,6 @@ fn is_unsupported_astro_directive(attribute_name: &str) -> bool {
         || attribute_name == "is:inline"
         || attribute_name.starts_with("client:")
         || attribute_name.starts_with("server:")
+        || attribute_name.starts_with("transition:")
         || attribute_name.starts_with("is:")
-}
-
-fn unsupported_component_syntax_error(
-    source: &str,
-    options: &AnalyzeOptions,
-    span: Span,
-    message: impl Into<String>,
-) -> AstroFrameworkError {
-    AstroFrameworkError::InvalidMacroUsage(format_single_diagnostic(
-        source,
-        &make_diagnostic(options.source_name.clone(), span, message),
-    ))
 }

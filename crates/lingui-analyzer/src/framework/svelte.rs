@@ -3,7 +3,8 @@ use std::borrow::Cow;
 use tree_sitter::Node;
 
 use crate::common::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_single_diagnostic, make_diagnostic,
+    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_invalid_macro_usage,
+    format_unsupported_trans_child_syntax,
 };
 use crate::conventions::{FrameworkConventions, MacroConventionsError, MacroPackageKind};
 
@@ -1315,13 +1316,11 @@ fn validate_module_script_macro_imports(
     };
 
     Err(SvelteFrameworkError::InvalidMacroUsage(
-        format_single_diagnostic(
+        format_invalid_macro_usage(
             source,
-            &make_diagnostic(
-                source_name,
-                offending_import.span,
-                "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`.".to_string(),
-            ),
+            source_name,
+            offending_import.span,
+            "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`.",
         ),
     ))
 }
@@ -1492,13 +1491,11 @@ pub fn validate_svelte_extract_candidates(
 
     if let Some(candidate) = offending_candidate {
         return Err(SvelteFrameworkError::InvalidMacroUsage(
-            format_single_diagnostic(
+            format_invalid_macro_usage(
                 source,
-                &make_diagnostic(
-                    source_name,
-                    candidate.outer_span,
-                    bare_direct_macro_message(candidate.imported_name.as_str()),
-                ),
+                source_name,
+                candidate.outer_span,
+                bare_direct_macro_message(candidate.imported_name.as_str()),
             ),
         ));
     }
@@ -1518,28 +1515,34 @@ fn validate_runtime_lowerable_svelte_component(
     ) -> Result<(), SvelteFrameworkError> {
         match node.kind() {
             "html_tag" => {
-                return Err(unsupported_component_syntax_error(
-                    source,
-                    options,
-                    Span::from_node(node),
-                    "Svelte `{@html ...}` is not supported inside <Trans>.",
+                return Err(SvelteFrameworkError::InvalidMacroUsage(
+                    format_unsupported_trans_child_syntax(
+                        source,
+                        &options.source_name,
+                        Span::from_node(node),
+                        "Svelte `{@html ...}`",
+                    ),
                 ));
             }
             "render_tag" => {
-                return Err(unsupported_component_syntax_error(
-                    source,
-                    options,
-                    Span::from_node(node),
-                    "Svelte `{@render ...}` is not supported inside <Trans>.",
+                return Err(SvelteFrameworkError::InvalidMacroUsage(
+                    format_unsupported_trans_child_syntax(
+                        source,
+                        &options.source_name,
+                        Span::from_node(node),
+                        "Svelte `{@render ...}`",
+                    ),
                 ));
             }
             "if_statement" | "each_statement" | "await_statement" | "key_statement"
             | "snippet_statement" | "const_tag" => {
-                return Err(unsupported_component_syntax_error(
-                    source,
-                    options,
-                    Span::from_node(node),
-                    "Svelte block syntax is not supported inside <Trans>.",
+                return Err(SvelteFrameworkError::InvalidMacroUsage(
+                    format_unsupported_trans_child_syntax(
+                        source,
+                        &options.source_name,
+                        Span::from_node(node),
+                        "Svelte block syntax",
+                    ),
                 ));
             }
             "element" | "self_closing_tag" => {
@@ -1586,11 +1589,13 @@ fn validate_svelte_element_like(
     {
         let tag_name = text(source, tag_name_node);
         if tag_name == "slot" || tag_name.starts_with("svelte:") {
-            return Err(unsupported_component_syntax_error(
-                source,
-                options,
-                Span::from_node(tag_name_node),
-                format!("Svelte special element `<{tag_name}>` is not supported inside <Trans>."),
+            return Err(SvelteFrameworkError::InvalidMacroUsage(
+                format_unsupported_trans_child_syntax(
+                    source,
+                    &options.source_name,
+                    Span::from_node(tag_name_node),
+                    format!("Svelte special element `<{tag_name}>`"),
+                ),
             ));
         }
     }
@@ -1609,11 +1614,13 @@ fn validate_svelte_element_like(
         };
         let attribute_name = text(source, name_node);
         if is_unsupported_svelte_directive(attribute_name) {
-            return Err(unsupported_component_syntax_error(
-                source,
-                options,
-                Span::from_node(name_node),
-                format!("Svelte directive `{attribute_name}` is not supported inside <Trans>."),
+            return Err(SvelteFrameworkError::InvalidMacroUsage(
+                format_unsupported_trans_child_syntax(
+                    source,
+                    &options.source_name,
+                    Span::from_node(name_node),
+                    format!("Svelte directive `{attribute_name}`"),
+                ),
             ));
         }
     }
@@ -1635,18 +1642,6 @@ fn is_unsupported_svelte_directive(attribute_name: &str) -> bool {
     ]
     .iter()
     .any(|prefix| attribute_name.starts_with(prefix))
-}
-
-fn unsupported_component_syntax_error(
-    source: &str,
-    options: &AnalyzeOptions,
-    span: Span,
-    message: impl Into<String>,
-) -> SvelteFrameworkError {
-    SvelteFrameworkError::InvalidMacroUsage(format_single_diagnostic(
-        source,
-        &make_diagnostic(options.source_name.clone(), span, message),
-    ))
 }
 
 #[cfg(test)]

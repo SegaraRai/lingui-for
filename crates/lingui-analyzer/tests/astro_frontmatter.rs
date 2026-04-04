@@ -289,4 +289,57 @@ fn rejects_unsupported_astro_trans_child_directives_with_location() {
 
     assert!(rendered.contains("Unsupported.astro:6:8"));
     assert!(rendered.contains("set:html"));
+    assert!(rendered.contains("cannot be lowered to a runtime message"));
+}
+
+#[test]
+fn rejects_transition_directives_inside_astro_trans_children_with_location() {
+    let source = indoc! {r#"
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans>
+          <div transition:name="fade" />
+        </Trans>
+    "#};
+
+    let error = AstroCompilePlan::build(
+        source,
+        "Unsupported.astro",
+        "Unsupported.astro?compile",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect_err("compile plan should fail");
+    let rendered = error.to_string();
+
+    assert!(rendered.contains("Unsupported.astro:6:8"));
+    assert!(rendered.contains("transition:name"));
+    assert!(rendered.contains("cannot be lowered to a runtime message"));
+}
+
+#[test]
+fn rejects_directives_on_the_astro_trans_tag_itself() {
+    let source = indoc! {r#"
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans set:html={content}>Ignored</Trans>
+    "#};
+
+    let error = AstroCompilePlan::build(
+        source,
+        "Unsupported.astro",
+        "Unsupported.astro?compile",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect_err("compile plan should fail");
+    let rendered = error.to_string();
+
+    assert!(rendered.contains("Unsupported.astro:5:8"));
+    assert!(rendered.contains("set:html"));
+    assert!(rendered.contains("cannot be lowered to a runtime message"));
 }

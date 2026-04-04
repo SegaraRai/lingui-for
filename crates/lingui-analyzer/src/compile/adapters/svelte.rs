@@ -6,7 +6,7 @@ use tsify::Tsify;
 
 use crate::common::{
     EmbeddedScriptRegion, IndexedText, MappedText, MappedTextError, RenderedMappedText, ScriptLang,
-    Span, build_copy_map, build_span_anchor_map,
+    Span, build_copy_map, build_span_anchor_map, format_single_diagnostic, make_diagnostic,
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::helpers::text::find_pattern_near_start;
@@ -525,9 +525,9 @@ pub(crate) fn validate_compile_targets(
 
     if let Some(candidate) = offending_candidate {
         return Err(SvelteAdapterError::InvalidMacroUsage(
-            crate::common::format_single_diagnostic(
+            format_single_diagnostic(
                 source,
-                &crate::common::make_diagnostic(
+                &make_diagnostic(
                     source_name,
                     candidate.outer_span,
                     bare_direct_macro_message(candidate.imported_name.as_str()),

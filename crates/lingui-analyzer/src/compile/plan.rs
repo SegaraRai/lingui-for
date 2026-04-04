@@ -101,12 +101,6 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
         .into_iter()
         .map(|candidate| (candidate.id.clone(), candidate))
         .collect::<std::collections::BTreeMap<_, _>>();
-    for prototype in prototypes.iter_mut() {
-        if let Some(candidate) = merged_by_id.get(prototype.candidate.id.as_str()) {
-            prototype.candidate.normalization_edits = candidate.normalization_edits.clone();
-        }
-    }
-
     prototypes.sort_by_key(|prototype| {
         (
             prototype.candidate.outer_span.start,
@@ -117,6 +111,11 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
         .retain(|prototype| prototype.candidate.strategy == MacroCandidateStrategy::Standalone);
     // Keep a final dedupe pass as a safety net against duplicate prototypes.
     prototypes.dedup_by(|left, right| left == right);
+    for prototype in prototypes.iter_mut() {
+        if let Some(candidate) = merged_by_id.get(prototype.candidate.id.as_str()) {
+            prototype.candidate.normalization_edits = candidate.normalization_edits.clone();
+        }
+    }
 }
 
 fn build_compile_synthetic_source(
