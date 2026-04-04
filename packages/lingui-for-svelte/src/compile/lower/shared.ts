@@ -1,5 +1,5 @@
 import { transformFromAstSync, transformSync } from "@babel/core";
-import * as BabelTypes from "@babel/types";
+import { cloneNode, type File } from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
@@ -19,7 +19,7 @@ import {
 export interface LinguiLoweredProgram {
   filename: string;
   source: string;
-  ast: BabelTypes.File;
+  ast: File;
   inputSourceMap?: BabelSourceMap;
 }
 
@@ -34,7 +34,7 @@ export interface LinguiProgramLoweringRequest {
 export interface ProgramTransform {
   filename: string;
   code: string;
-  ast: BabelTypes.File;
+  ast: File;
   map: CanonicalSourceMap | null;
 }
 
@@ -83,7 +83,7 @@ export function finalizeSvelteProgram(
   request: SvelteMacroPostprocessRequest,
 ): ProgramTransform {
   const result = transformFromAstSync(
-    BabelTypes.cloneNode(lowered.ast, true),
+    cloneNode(lowered.ast, true),
     lowered.source,
     {
       ast: true,

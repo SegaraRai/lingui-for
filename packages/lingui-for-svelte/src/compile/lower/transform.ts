@@ -27,8 +27,10 @@ export function lowerSvelteTransformPrograms(
   code: string,
   request: SvelteTransformProgramRequest,
 ): SvelteTransformPrograms {
+  const { runtimeBindings, ...loweringRequest } = request;
+
   const linguiLowered = lowerProgramWithLingui(code, {
-    ...request,
+    ...loweringRequest,
     extract: false,
   });
 
@@ -38,7 +40,7 @@ export function lowerSvelteTransformPrograms(
     }),
     contextual: finalizeSvelteProgram(linguiLowered, {
       translationMode: "contextual",
-      runtimeBindings: request.runtimeBindings,
+      runtimeBindings,
     }),
   };
 }

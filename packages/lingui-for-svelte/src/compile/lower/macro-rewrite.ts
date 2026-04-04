@@ -204,7 +204,6 @@ export function createSvelteMacroPostprocessPlugin(
           if (translated && t.isExpression(translated)) {
             path.replaceWith(t.cloneNode(translated));
           }
-
           return;
         }
 
@@ -243,11 +242,6 @@ export function createSvelteMacroPostprocessPlugin(
               [t.cloneNode(descriptor)],
             ),
           );
-          return;
-        }
-
-        if (request.translationMode === "lowered") {
-          return;
         }
       },
     },

@@ -1,5 +1,5 @@
 import { transformSync } from "@babel/core";
-import * as BabelTypes from "@babel/types";
+import type { File } from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
@@ -17,7 +17,7 @@ import {
 
 export interface ProgramTransform {
   code: string;
-  ast: BabelTypes.File;
+  ast: File;
   map: CanonicalSourceMap | null;
 }
 

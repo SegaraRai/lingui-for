@@ -16,10 +16,7 @@ export function lowerAstroExtractProgram(
 ): ProgramTransform {
   return transformAstroProgram(
     code,
-    {
-      ...request,
-      extract: true,
-    },
+    { ...request, extract: true },
     { translationMode: "extract" },
   );
 }
