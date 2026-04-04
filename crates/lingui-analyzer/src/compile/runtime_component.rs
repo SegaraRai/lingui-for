@@ -647,7 +647,9 @@ pub(super) fn validate_runtime_placeholder_key(
 }
 
 fn render_js_object_key(key: &str) -> String {
-    if is_safe_unquoted_js_object_key(key) {
+    if key == "__proto__" {
+        r#"["__proto__"]"#.to_string()
+    } else if is_safe_unquoted_js_object_key(key) {
         key.to_string()
     } else {
         format!("{key:?}")
@@ -676,6 +678,7 @@ mod tests {
         assert_eq!(render_js_object_key("data-foo"), "\"data-foo\"");
         assert_eq!(render_js_object_key("aria-label"), "\"aria-label\"");
         assert_eq!(render_js_object_key("0"), "\"0\"");
+        assert_eq!(render_js_object_key("__proto__"), r#"["__proto__"]"#);
     }
 
     #[test]
