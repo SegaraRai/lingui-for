@@ -625,7 +625,9 @@ fn rejects_unsupported_svelte_trans_child_syntax_with_location() {
         </script>
 
         <Trans>
-          {@html content}
+          {#if visible}
+            <span>Visible</span>
+          {/if}
         </Trans>
     "#};
 
@@ -641,6 +643,6 @@ fn rejects_unsupported_svelte_trans_child_syntax_with_location() {
     let rendered = error.to_string();
 
     assert!(rendered.contains("Unsupported.svelte:6:3"));
-    assert!(rendered.contains("{@html ...}"));
+    assert!(rendered.contains("Svelte block syntax"));
     assert!(rendered.contains("cannot be lowered to a runtime message"));
 }
