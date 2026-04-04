@@ -1600,48 +1600,7 @@ fn validate_svelte_element_like(
         }
     }
 
-    let mut cursor = tag.walk();
-    for child in tag.children(&mut cursor) {
-        if child.kind() != "attribute" {
-            continue;
-        }
-
-        let Some(name_node) = child
-            .children(&mut child.walk())
-            .find(|grandchild| grandchild.kind() == "attribute_name")
-        else {
-            continue;
-        };
-        let attribute_name = text(source, name_node);
-        if is_unsupported_svelte_directive(attribute_name) {
-            return Err(SvelteFrameworkError::InvalidMacroUsage(
-                format_unsupported_trans_child_syntax(
-                    source,
-                    &options.source_name,
-                    Span::from_node(name_node),
-                    format!("Svelte directive `{attribute_name}`"),
-                ),
-            ));
-        }
-    }
-
     Ok(())
-}
-
-fn is_unsupported_svelte_directive(attribute_name: &str) -> bool {
-    [
-        "bind:",
-        "on:",
-        "class:",
-        "use:",
-        "transition:",
-        "in:",
-        "out:",
-        "animate:",
-        "let:",
-    ]
-    .iter()
-    .any(|prefix| attribute_name.starts_with(prefix))
 }
 
 #[cfg(test)]

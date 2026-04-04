@@ -293,7 +293,7 @@ fn rejects_unsupported_astro_trans_child_directives_with_location() {
 }
 
 #[test]
-fn rejects_transition_directives_inside_astro_trans_children_with_location() {
+fn allows_transition_directives_inside_astro_trans_children() {
     let source = indoc! {r#"
         ---
         import { Trans } from "lingui-for-astro/macro";
@@ -301,6 +301,28 @@ fn rejects_transition_directives_inside_astro_trans_children_with_location() {
 
         <Trans>
           <div transition:name="fade" />
+        </Trans>
+    "#};
+
+    AstroCompilePlan::build(
+        source,
+        "Allowed.astro",
+        "Allowed.astro?compile",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect("compile plan should succeed");
+}
+
+#[test]
+fn rejects_style_elements_inside_astro_trans_children_with_location() {
+    let source = indoc! {r#"
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans>
+          <style>p { color: red; }</style>
         </Trans>
     "#};
 
@@ -314,8 +336,8 @@ fn rejects_transition_directives_inside_astro_trans_children_with_location() {
     .expect_err("compile plan should fail");
     let rendered = error.to_string();
 
-    assert!(rendered.contains("Unsupported.astro:6:8"));
-    assert!(rendered.contains("transition:name"));
+    assert!(rendered.contains("Unsupported.astro:6:4"));
+    assert!(rendered.contains("Astro special element `<style>`"));
     assert!(rendered.contains("cannot be lowered to a runtime message"));
 }
 
