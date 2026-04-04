@@ -11,7 +11,7 @@ use crate::common::{
 use crate::compile::{
     CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
     CompileTargetPrototype, FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
-    build_compile_plan_for_framework,
+    RuntimeWarningOptions, build_compile_plan_for_framework,
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::{
@@ -54,6 +54,7 @@ pub enum AstroAdapterError {
 pub struct AstroCompilePlan {
     pub common: CommonCompilePlan,
     pub runtime_requirements: RuntimeRequirements,
+    pub runtime_warnings: RuntimeWarningOptions,
     pub runtime_bindings: AstroCompileRuntimeBindings,
     pub frontmatter: Option<AstroCompileFrontmatterRegion>,
 }
@@ -129,11 +130,13 @@ impl FrameworkCompilePlan for AstroCompilePlan {
     fn assemble_plan(
         common: CommonCompilePlan,
         runtime_requirements: RuntimeRequirements,
+        runtime_warnings: RuntimeWarningOptions,
         analysis: Self::Analysis,
     ) -> Self {
         Self {
             common,
             runtime_requirements,
+            runtime_warnings,
             runtime_bindings: analysis.runtime_bindings,
             frontmatter: analysis.frontmatter,
         }
@@ -156,6 +159,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
             target,
             declaration,
             self.runtime_bindings.runtime_trans.as_str(),
+            self.runtime_warnings.trans_content_override,
         )
         .map_err(AdapterError::from)
     }
@@ -177,6 +181,7 @@ impl AstroCompilePlan {
         synthetic_name: &str,
         whitespace_mode: WhitespaceMode,
         conventions: FrameworkConventions,
+        runtime_warnings: RuntimeWarningOptions,
     ) -> Result<Self, CompileError> {
         build_compile_plan_for_framework::<Self>(
             source,
@@ -184,6 +189,7 @@ impl AstroCompilePlan {
             synthetic_name,
             whitespace_mode,
             conventions,
+            runtime_warnings,
         )
     }
 }

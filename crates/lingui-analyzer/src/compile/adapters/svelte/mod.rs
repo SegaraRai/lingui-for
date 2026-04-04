@@ -14,7 +14,8 @@ use crate::common::{
 use crate::compile::{
     CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
     CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype, FrameworkCompilePlan,
-    RuntimeComponentError, RuntimeRequirements, build_compile_plan_for_framework,
+    RuntimeComponentError, RuntimeRequirements, RuntimeWarningOptions,
+    build_compile_plan_for_framework,
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::svelte::bare_direct_macro_message;
@@ -90,6 +91,7 @@ pub struct SvelteCompileScriptRegion {
 pub struct SvelteCompilePlan {
     pub common: CommonCompilePlan,
     pub runtime_requirements: RuntimeRequirements,
+    pub runtime_warnings: RuntimeWarningOptions,
     pub runtime_bindings: SvelteCompileRuntimeBindings,
     pub instance_script: Option<SvelteCompileScriptRegion>,
     pub module_script: Option<SvelteCompileScriptRegion>,
@@ -135,11 +137,13 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     fn assemble_plan(
         common: CommonCompilePlan,
         runtime_requirements: RuntimeRequirements,
+        runtime_warnings: RuntimeWarningOptions,
         analysis: Self::Analysis,
     ) -> Self {
         Self {
             common,
             runtime_requirements,
+            runtime_warnings,
             runtime_bindings: analysis.runtime_bindings,
             instance_script: analysis.instance_script,
             module_script: analysis.module_script,
@@ -163,6 +167,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
             target,
             declaration,
             self.runtime_bindings.trans_component.as_str(),
+            self.runtime_warnings.trans_content_override,
         )
         .map_err(AdapterError::from)
     }
@@ -184,6 +189,7 @@ impl SvelteCompilePlan {
         synthetic_name: &str,
         whitespace_mode: WhitespaceMode,
         conventions: FrameworkConventions,
+        runtime_warnings: RuntimeWarningOptions,
     ) -> Result<Self, CompileError> {
         build_compile_plan_for_framework::<Self>(
             source,
@@ -191,6 +197,7 @@ impl SvelteCompilePlan {
             synthetic_name,
             whitespace_mode,
             conventions,
+            runtime_warnings,
         )
     }
 }

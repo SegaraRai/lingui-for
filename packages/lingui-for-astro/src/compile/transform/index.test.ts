@@ -2,6 +2,7 @@ import { TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
+import type { RuntimeWarningOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   assertRangeMapping,
   type Detection,
@@ -17,11 +18,13 @@ async function expectTransformed(
   source: string,
   options: {
     filename?: string;
+    runtimeWarnings?: RuntimeWarningOptions;
     whitespace?: "jsx" | "auto" | "astro" | "svelte";
   } = {},
 ) {
   const result = await transformAstro(source, {
     filename: options.filename ?? "/virtual/App.astro",
+    runtimeWarnings: options.runtimeWarnings,
     whitespace: options.whitespace,
   });
   expect.assert(result != null);
@@ -136,6 +139,28 @@ describe("transformAstro", () => {
     );
     expect(code).toContain(
       "<article set:text={content}>Ignored child</article>",
+    );
+  });
+
+  test("supports disabling content-override runtime warnings", async () => {
+    const source = dedent`
+      ---
+      import { Trans as LocalTrans } from "lingui-for-astro/macro";
+      const content = "<em>fallback</em>";
+      ---
+
+      <LocalTrans><article set:html={content}>Ignored child</article></LocalTrans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+      runtimeWarnings: { transContentOverride: "off" },
+    });
+    const code = compact(result.code);
+
+    expect(code).not.toContain("console.warn(");
+    expect(code).toContain(
+      '<fragment slot="component_0">{(children) => <article set:html={content}>Ignored child</article>}</fragment>',
     );
   });
 

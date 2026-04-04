@@ -59,6 +59,30 @@ pub enum CompileTranslationMode {
     Contextual,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify, Default)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub enum RuntimeWarningMode {
+    Off,
+    #[default]
+    Dev,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeWarningOptions {
+    pub trans_content_override: RuntimeWarningMode,
+}
+
+impl Default for RuntimeWarningOptions {
+    fn default() -> Self {
+        Self {
+            trans_content_override: RuntimeWarningMode::Dev,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
@@ -127,6 +151,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     fn assemble_plan(
         common: CommonCompilePlan,
         runtime_requirements: RuntimeRequirements,
+        runtime_warnings: RuntimeWarningOptions,
         analysis: Self::Analysis,
     ) -> Self;
 

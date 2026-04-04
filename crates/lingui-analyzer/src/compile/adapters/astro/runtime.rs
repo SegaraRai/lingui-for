@@ -1,14 +1,14 @@
 use tree_sitter::Node;
 
 use crate::common::{IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span};
-use crate::compile::CompileTarget;
 use crate::compile::runtime_component::{
-    RuntimeComponentError, append_rendered, convert_expression_for_runtime_trans,
-    convert_jsx_named_attribute, copy_span, find_first_named_descendant, find_node_by_span,
-    first_named_child, jsx_attribute_name_node, jsx_attribute_value_node, key_name,
-    lowerable_object_expression_node, push_anchor_mapped, push_copied_span, source_slice,
-    spread_argument_node, spread_element_node, translated_span, validate_runtime_placeholder_key,
+    RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_span,
+    find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
+    jsx_attribute_value_node, key_name, lowerable_object_expression_node, push_anchor_mapped,
+    push_copied_span, source_slice, spread_argument_node, spread_element_node, translated_span,
+    validate_runtime_placeholder_key,
 };
+use crate::compile::{CompileTarget, RuntimeWarningMode};
 use crate::framework::parse::{parse_astro, parse_tsx};
 
 use super::AstroAdapterError;
@@ -35,6 +35,7 @@ pub(crate) fn lower_runtime_component_markup(
     target: &CompileTarget,
     declaration: &RenderedMappedText,
     runtime_component_name: &str,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, AstroAdapterError> {
     let declaration_source = IndexedText::new(&declaration.code);
     let original_source = IndexedText::new(original_source);
@@ -69,13 +70,19 @@ pub(crate) fn lower_runtime_component_markup(
         runtime_component_name,
     };
 
-    convert_runtime_trans_root(&context, value, -(wrapper_prefix.len() as isize))
+    convert_runtime_trans_root(
+        &context,
+        value,
+        -(wrapper_prefix.len() as isize),
+        runtime_warning_mode,
+    )
 }
 
 fn convert_runtime_trans_root(
     context: &AstroRuntimeLoweringContext<'_>,
     node: Node<'_>,
     base_offset: isize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, AstroAdapterError> {
     let opening = match node.kind() {
         "jsx_element" => node.child_by_field_name("open_tag"),
@@ -119,7 +126,12 @@ fn convert_runtime_trans_root(
                 if let Some(object) = lowerable_object_expression_node(argument) {
                     let spread_span = translated_span(spread, base_offset)?;
                     let object_span = translated_span(object, base_offset)?;
-                    let lowered = lower_object_expression_span(context, object_span, 0)?;
+                    let lowered = lower_object_expression_span(
+                        context,
+                        object_span,
+                        0,
+                        runtime_warning_mode,
+                    )?;
                     attributes.push_unmapped(" {...");
                     let prefix_start = (spread_span.start + 3).min(object_span.start);
                     let prefix_trimmed_start = context.source.as_str()
@@ -174,6 +186,7 @@ fn convert_runtime_trans_root(
                         context.source.as_str(),
                         expression,
                         base_offset,
+                        runtime_warning_mode,
                     )?
                 {
                     slot_callbacks.extend(component_slots.slot_callbacks);
@@ -267,6 +280,7 @@ fn lower_object_expression_span(
     context: &AstroRuntimeLoweringContext<'_>,
     span: Span,
     indent_level: usize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<AstroLoweredObjectExpression, AstroAdapterError> {
     let text = &context.source.as_str()[span.start..span.end];
     let wrapper_prefix = "const __expr = (";
@@ -296,6 +310,7 @@ fn lower_object_expression_span(
         object,
         span.start as isize - wrapper_prefix.len() as isize,
         indent_level,
+        runtime_warning_mode,
     )
 }
 
@@ -304,6 +319,7 @@ fn convert_object_expression(
     node: Node<'_>,
     base_offset: isize,
     indent_level: usize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<AstroLoweredObjectExpression, AstroAdapterError> {
     let indent = "  ".repeat(indent_level);
     let child_indent = "  ".repeat(indent_level + 1);
@@ -333,6 +349,7 @@ fn convert_object_expression(
                         context.source.as_str(),
                         value,
                         base_offset,
+                        runtime_warning_mode,
                     )?
                 {
                     slot_callbacks.extend(component_slots.slot_callbacks);
@@ -356,11 +373,11 @@ fn convert_object_expression(
                 append_rendered(
                     &mut rendered,
                     convert_expression_for_runtime_trans(
-                        context.source.as_str(),
-                        context.input,
+                        context,
                         value,
                         base_offset,
                         indent_level + 1,
+                        runtime_warning_mode,
                     )?,
                 );
             }
@@ -378,11 +395,11 @@ fn convert_object_expression(
                 append_rendered(
                     &mut rendered,
                     convert_expression_for_runtime_trans(
-                        context.source.as_str(),
-                        context.input,
+                        context,
                         argument,
                         base_offset,
                         indent_level + 1,
+                        runtime_warning_mode,
                     )?,
                 );
             }
@@ -423,6 +440,34 @@ fn convert_object_expression(
     })
 }
 
+fn convert_expression_for_runtime_trans(
+    context: &AstroRuntimeLoweringContext<'_>,
+    node: Node<'_>,
+    base_offset: isize,
+    indent_level: usize,
+    runtime_warning_mode: RuntimeWarningMode,
+) -> Result<RenderedMappedText, AstroAdapterError> {
+    match node.kind() {
+        "object" => convert_object_expression(
+            context,
+            node,
+            base_offset,
+            indent_level,
+            runtime_warning_mode,
+        )
+        .map(|lowered| lowered.props),
+        _ => Ok(
+            crate::compile::runtime_component::convert_expression_for_runtime_trans(
+                context.source.as_str(),
+                context.input,
+                node,
+                base_offset,
+                indent_level,
+            )?,
+        ),
+    }
+}
+
 fn collect_component_slot_callbacks(
     original_input: &MappedText<'_>,
     original_source: &str,
@@ -430,6 +475,7 @@ fn collect_component_slot_callbacks(
     transformed_source: &str,
     node: Node<'_>,
     base_offset: isize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<Option<AstroLoweredComponentSlots>, AstroAdapterError> {
     let node = match node.kind() {
         "parenthesized_expression" => first_named_child(node).unwrap_or(node),
@@ -462,6 +508,7 @@ fn collect_component_slot_callbacks(
         original_source,
         target,
         &keys,
+        runtime_warning_mode,
     )?))
 }
 
@@ -470,6 +517,7 @@ fn collect_component_slot_callbacks_from_source(
     original_source: &str,
     target: &CompileTarget,
     keys: &[String],
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<AstroLoweredComponentSlots, AstroAdapterError> {
     let tree = parse_astro(original_source)?;
     let root = tree.root_node();
@@ -496,6 +544,7 @@ fn collect_component_slot_callbacks_from_source(
                 original_source,
                 wrapper,
                 &format!("component_{key}"),
+                runtime_warning_mode,
             )
         })
         .collect::<Result<Vec<_>, _>>()?;
@@ -585,6 +634,7 @@ fn lower_original_wrapper_to_slot_callback(
     source: &str,
     node: Node<'_>,
     slot_name: &str,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, AstroAdapterError> {
     let mut rendered = input.empty_like();
     rendered.push_unmapped("<fragment slot=\"");
@@ -594,7 +644,7 @@ fn lower_original_wrapper_to_slot_callback(
     rendered.push_unmapped("(children)");
     rendered.push_unmapped(" => ");
 
-    if has_content_hole {
+    if has_content_hole && runtime_warning_mode == RuntimeWarningMode::Dev {
         rendered.push_unmapped(
             "(import.meta.env.DEV && children !== \"\" && console.warn(\"[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead.\"), ",
         );
@@ -637,7 +687,7 @@ fn lower_original_wrapper_to_slot_callback(
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
 
-    if has_content_hole {
+    if has_content_hole && runtime_warning_mode == RuntimeWarningMode::Dev {
         rendered.push_unmapped(")");
     }
     rendered.push_unmapped("}</fragment>");
@@ -686,6 +736,7 @@ mod tests {
     use crate::common::{RenderedMappedText, Span};
     use crate::compile::{
         CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
+        RuntimeWarningMode,
     };
     use crate::framework::MacroFlavor;
     use crate::synthesis::NormalizedSegment;
@@ -722,6 +773,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("astro runtime component lowering succeeds");
 
@@ -756,6 +808,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("astro runtime component lowering succeeds");
 
@@ -789,6 +842,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect_err("unsafe placeholder key should be rejected");
 
@@ -812,6 +866,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("astro html-hole lowering succeeds");
 
@@ -836,6 +891,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("astro text-hole lowering succeeds");
 
@@ -859,6 +915,7 @@ mod tests {
             &html_target,
             &html_declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("astro html-hole lowering succeeds");
 
@@ -880,6 +937,7 @@ mod tests {
             &text_target,
             &text_declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("astro text-hole lowering succeeds");
 
@@ -906,6 +964,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("astro html-hole lowering succeeds");
 
@@ -941,6 +1000,7 @@ mod tests {
             &target,
             &declaration,
             "L4aRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("astro html-hole lowering succeeds");
 
@@ -950,5 +1010,31 @@ mod tests {
                 .contains("<article set:html={html} set:text={text} />")
         );
         assert!(!lowered.code.contains("hole."));
+    }
+
+    #[test]
+    fn omits_content_override_warning_when_runtime_warning_mode_is_off() {
+        let source =
+            "<Trans><article set:html={content}>Ignored child</article></Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content}>Ignored child</article> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            "Component.astro",
+            &source,
+            &target,
+            &declaration,
+            "L4aRuntimeTrans",
+            RuntimeWarningMode::Off,
+        )
+        .expect("astro html-hole lowering succeeds");
+
+        assert!(!lowered.code.contains("console.warn("));
+        assert!(lowered.code.contains(
+            "<fragment slot=\"component_0\">{(children) => <article set:html={content}>Ignored child</article>}</fragment>"
+        ));
     }
 }

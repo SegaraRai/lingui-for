@@ -2,6 +2,7 @@ import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
+import type { RuntimeWarningOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   assertRangeMapping,
   findUniqueRange,
@@ -25,11 +26,13 @@ async function expectTransformed(
   source: string,
   options: {
     filename?: string;
+    runtimeWarnings?: RuntimeWarningOptions;
     whitespace?: "jsx" | "auto" | "astro" | "svelte";
   } = {},
 ) {
   const result = await transformSvelte(source, {
     filename: options.filename ?? "/virtual/App.svelte",
+    runtimeWarnings: options.runtimeWarnings,
     whitespace: options.whitespace,
   });
   expect.assert(result != null);
@@ -244,6 +247,30 @@ describe("transformSvelte", () => {
     );
     expect(result.code).toContain(
       '{#snippet component_1(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@render row(item)}{/snippet}',
+    );
+  });
+
+  test("supports disabling content-override runtime warnings", async () => {
+    const result = await expectTransformed(
+      dedent`
+        <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+
+          let content = "<strong>unsafe</strong>";
+        </script>
+
+        <Trans>
+          {@html content}
+        </Trans>
+      `,
+      {
+        runtimeWarnings: { transContentOverride: "off" },
+      },
+    );
+
+    expect(result.code).not.toContain("console.warn(");
+    expect(result.code).toContain(
+      "{#snippet component_0(children)}{@html content}{/snippet}",
     );
   });
 

@@ -3,6 +3,7 @@ import type { LinguiConfig } from "@lingui/conf";
 import {
   buildSvelteCompilePlan,
   finishSvelteCompile,
+  type RuntimeWarningOptions,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
@@ -44,6 +45,10 @@ export interface LinguiSvelteTransformOptions {
    * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#svelte
    */
   whitespace?: RichTextWhitespaceMode | undefined;
+  /**
+   * Runtime warning configuration forwarded to the analyzer while compiling `.svelte` files.
+   */
+  runtimeWarnings?: RuntimeWarningOptions | undefined;
 }
 
 /**
@@ -121,6 +126,7 @@ export async function transformSvelte(
     linguiConfig: linguiConfigPartial,
     sveltePackages,
     whitespace = "auto",
+    runtimeWarnings,
   } = options;
   const linguiConfig = normalizeLinguiConfig(linguiConfigPartial, {
     sveltePackages,
@@ -133,6 +139,7 @@ export async function transformSvelte(
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
     whitespace: resolveSvelteWhitespace(whitespace),
+    runtimeWarnings,
     conventions: createSvelteFrameworkConventions(linguiConfig, {
       sveltePackages,
     }),

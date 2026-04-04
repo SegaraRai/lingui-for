@@ -9,7 +9,7 @@ use crate::synthesis::{
 
 use super::{
     AdapterError, CommonCompilePlan, CompileError, CompileTarget, CompileTargetPrototype,
-    FrameworkCompilePlan,
+    FrameworkCompilePlan, RuntimeWarningOptions,
 };
 
 pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
@@ -18,6 +18,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     synthetic_name: &str,
     whitespace_mode: WhitespaceMode,
     conventions: FrameworkConventions,
+    runtime_warnings: RuntimeWarningOptions,
 ) -> Result<P, CompileError> {
     let mut analysis = P::analyze(source, source_name, whitespace_mode, &conventions)?;
     let (imports, prototypes, import_removals, synthetic_lang, source_anchors) = {
@@ -88,7 +89,12 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         import_removals,
     };
 
-    Ok(P::assemble_plan(common, runtime_requirements, analysis))
+    Ok(P::assemble_plan(
+        common,
+        runtime_requirements,
+        runtime_warnings,
+        analysis,
+    ))
 }
 
 fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {

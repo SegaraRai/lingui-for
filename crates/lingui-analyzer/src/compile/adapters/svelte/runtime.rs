@@ -1,7 +1,6 @@
 use tree_sitter::Node;
 
 use crate::common::{IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span};
-use crate::compile::CompileTarget;
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_node, copy_span,
     find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
@@ -9,6 +8,7 @@ use crate::compile::runtime_component::{
     push_copied_span, source_slice, spread_argument_node, spread_element_node, translated_span,
     validate_runtime_placeholder_key,
 };
+use crate::compile::{CompileTarget, RuntimeWarningMode};
 use crate::framework::parse::{parse_svelte, parse_tsx};
 
 use super::SvelteAdapterError;
@@ -34,6 +34,7 @@ pub(crate) fn lower_runtime_component_markup(
     target: &CompileTarget,
     declaration: &RenderedMappedText,
     runtime_component_name: &str,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
     let declaration_source = IndexedText::new(&declaration.code);
     let original_source = IndexedText::new(original_source);
@@ -68,13 +69,19 @@ pub(crate) fn lower_runtime_component_markup(
         runtime_component_name,
     };
 
-    convert_runtime_trans_root(&context, value, -(wrapper_prefix.len() as isize))
+    convert_runtime_trans_root(
+        &context,
+        value,
+        -(wrapper_prefix.len() as isize),
+        runtime_warning_mode,
+    )
 }
 
 fn convert_runtime_trans_root(
     context: &SvelteRuntimeLoweringContext<'_>,
     node: Node<'_>,
     base_offset: isize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
     let opening = match node.kind() {
         "jsx_element" => node.child_by_field_name("open_tag"),
@@ -116,7 +123,12 @@ fn convert_runtime_trans_root(
                 if let Some(object) = lowerable_object_expression_node(argument) {
                     let spread_span = translated_span(spread, base_offset)?;
                     let object_span = translated_span(object, base_offset)?;
-                    let lowered = lower_object_expression_span(context, object_span, 0)?;
+                    let lowered = lower_object_expression_span(
+                        context,
+                        object_span,
+                        0,
+                        runtime_warning_mode,
+                    )?;
                     mapped.push_unmapped(" {...");
                     let prefix_start = (spread_span.start + 3).min(object_span.start);
                     let prefix_trimmed_start = context.source.as_str()
@@ -170,6 +182,7 @@ fn convert_runtime_trans_root(
                         context.source.as_str(),
                         expression,
                         base_offset,
+                        runtime_warning_mode,
                     )?
                 {
                     snippets.extend(component_snippets);
@@ -250,6 +263,7 @@ fn lower_object_expression_span(
     context: &SvelteRuntimeLoweringContext<'_>,
     span: Span,
     indent_level: usize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<SvelteLoweredObjectExpression, SvelteAdapterError> {
     let text = &context.source.as_str()[span.start..span.end];
     let wrapper_prefix = "const __expr = (";
@@ -278,6 +292,7 @@ fn lower_object_expression_span(
         object,
         span.start as isize - wrapper_prefix.len() as isize,
         indent_level,
+        runtime_warning_mode,
     )
 }
 
@@ -286,6 +301,7 @@ fn convert_object_expression(
     node: Node<'_>,
     base_offset: isize,
     indent_level: usize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<SvelteLoweredObjectExpression, SvelteAdapterError> {
     let indent = "  ".repeat(indent_level);
     let child_indent = "  ".repeat(indent_level + 1);
@@ -314,6 +330,7 @@ fn convert_object_expression(
                         context.source.as_str(),
                         value,
                         base_offset,
+                        runtime_warning_mode,
                     )?
                 {
                     snippets.extend(component_snippets);
@@ -340,6 +357,7 @@ fn convert_object_expression(
                         value,
                         base_offset,
                         indent_level + 1,
+                        runtime_warning_mode,
                     )?,
                 );
             }
@@ -361,6 +379,7 @@ fn convert_object_expression(
                         argument,
                         base_offset,
                         indent_level + 1,
+                        runtime_warning_mode,
                     )?,
                 );
             }
@@ -405,10 +424,17 @@ fn convert_expression_for_runtime_trans(
     node: Node<'_>,
     base_offset: isize,
     indent_level: usize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
     match node.kind() {
-        "object" => convert_object_expression(context, node, base_offset, indent_level)
-            .map(|lowered| lowered.props),
+        "object" => convert_object_expression(
+            context,
+            node,
+            base_offset,
+            indent_level,
+            runtime_warning_mode,
+        )
+        .map(|lowered| lowered.props),
         _ => Ok(copy_node(
             context.source.as_str(),
             context.input,
@@ -425,6 +451,7 @@ fn collect_component_snippets(
     transformed_source: &str,
     node: Node<'_>,
     base_offset: isize,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<Option<Vec<RenderedMappedText>>, SvelteAdapterError> {
     if node.kind() != "object" {
         return Err(
@@ -454,6 +481,7 @@ fn collect_component_snippets(
         original_source,
         target,
         &keys,
+        runtime_warning_mode,
     )?))
 }
 
@@ -462,6 +490,7 @@ fn collect_component_snippets_from_source(
     original_source: &str,
     target: &CompileTarget,
     keys: &[String],
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<Vec<RenderedMappedText>, SvelteAdapterError> {
     let tree = parse_svelte(original_source)?;
     let root = tree.root_node();
@@ -487,6 +516,7 @@ fn collect_component_snippets_from_source(
                 original_source,
                 wrapper,
                 &format!("component_{key}"),
+                runtime_warning_mode,
             )
         })
         .collect()
@@ -560,6 +590,7 @@ fn lower_original_wrapper_to_snippet(
     source: &str,
     node: Node<'_>,
     snippet_name: &str,
+    runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
     let mut rendered = input.empty_like();
     rendered.push_unmapped("{#snippet ");
@@ -611,7 +642,7 @@ fn lower_original_wrapper_to_snippet(
             rendered.push_unmapped(">");
         }
         "html_tag" | "render_tag" => {
-            push_runtime_content_override_warning(&mut rendered);
+            push_runtime_content_override_warning(&mut rendered, runtime_warning_mode);
             push_copied_span(&mut rendered, input, Span::from_node(node))?;
         }
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
@@ -621,7 +652,13 @@ fn lower_original_wrapper_to_snippet(
     rendered.into_rendered().map_err(SvelteAdapterError::from)
 }
 
-fn push_runtime_content_override_warning(rendered: &mut MappedText<'_>) {
+fn push_runtime_content_override_warning(
+    rendered: &mut MappedText<'_>,
+    runtime_warning_mode: RuntimeWarningMode,
+) {
+    if runtime_warning_mode == RuntimeWarningMode::Off {
+        return;
+    }
     rendered.push_unmapped(
         "{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn(",
     );
@@ -635,6 +672,7 @@ mod tests {
     use crate::common::{RenderedMappedText, Span};
     use crate::compile::{
         CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
+        RuntimeWarningMode,
     };
     use crate::framework::MacroFlavor;
     use crate::synthesis::NormalizedSegment;
@@ -671,6 +709,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -705,6 +744,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -752,6 +792,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -798,6 +839,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -821,6 +863,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect_err("unsafe placeholder key should be rejected");
 
@@ -844,6 +887,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -876,6 +920,7 @@ mod tests {
             &target,
             &declaration,
             "L4sRuntimeTrans",
+            RuntimeWarningMode::Dev,
         )
         .expect("svelte runtime component lowering succeeds");
 
@@ -890,6 +935,33 @@ mod tests {
                 </L4sRuntimeTrans>
             "#}
             .trim_end()
+        );
+    }
+
+    #[test]
+    fn omits_content_override_warning_when_runtime_warning_mode_is_off() {
+        let source = "<Trans>{@html content}</Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <LinguiForSvelteHtml value={content} /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+            RuntimeWarningMode::Off,
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert!(!lowered.code.contains("console.warn("));
+        assert!(
+            lowered
+                .code
+                .contains("{#snippet component_0(children)}{@html content}{/snippet}")
         );
     }
 }

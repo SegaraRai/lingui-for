@@ -176,6 +176,7 @@ fn compile_plan_options(case: &FixtureCase) -> CompilePlanOptions {
         synthetic_name: Some(format!("{}?compile.tsx", case.source_name)),
         whitespace: Some(whitespace(case.framework)),
         conventions: conventions(case.framework),
+        runtime_warnings: None,
     }
 }
 

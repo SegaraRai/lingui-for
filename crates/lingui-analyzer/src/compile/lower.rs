@@ -201,7 +201,7 @@ mod tests {
     use crate::{
         CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
         CompileTranslationMode, FrameworkConventions, FrameworkKind, MacroFlavor,
-        NormalizedSegment, RuntimeRequirements, TransformedPrograms,
+        NormalizedSegment, RuntimeRequirements, RuntimeWarningOptions, TransformedPrograms,
         common::{ScriptLang, Span},
         compile::adapters::{
             SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
@@ -296,6 +296,7 @@ mod tests {
                 needs_runtime_i18n_binding: true,
                 needs_runtime_trans_component: false,
             },
+            runtime_warnings: RuntimeWarningOptions::default(),
             runtime_bindings: SvelteCompileRuntimeBindings {
                 create_lingui_accessors: "createLinguiAccessors".to_string(),
                 context: "__l4s_ctx".to_string(),
