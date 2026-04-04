@@ -259,6 +259,54 @@ const status = translate(msg`Status summary: active`);
 }
 
 #[test]
+fn avoids_runtime_i18n_binding_for_descriptor_only_astro_targets() {
+    let source = r#"---
+import { msg } from "lingui-for-astro/macro";
+
+const descriptor = msg`Status summary: active`;
+---
+
+<p>{descriptor.message}</p>
+"#;
+
+    let plan = AstroCompilePlan::build(
+        source,
+        "/virtual/Page.astro",
+        "/virtual/Page.astro?compile.tsx",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+        RuntimeWarningOptions::default(),
+    )
+    .expect("astro compile plan should build");
+
+    assert!(!plan.runtime_requirements.needs_runtime_i18n_binding);
+    assert!(!plan.runtime_requirements.needs_runtime_trans_component);
+}
+
+#[test]
+fn avoids_runtime_i18n_binding_for_component_only_astro_targets() {
+    let source = r#"---
+import { Trans } from "lingui-for-astro/macro";
+---
+
+<Trans>Hello <strong>world</strong></Trans>
+"#;
+
+    let plan = AstroCompilePlan::build(
+        source,
+        "/virtual/Page.astro",
+        "/virtual/Page.astro?compile.tsx",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+        RuntimeWarningOptions::default(),
+    )
+    .expect("astro compile plan should build");
+
+    assert!(!plan.runtime_requirements.needs_runtime_i18n_binding);
+    assert!(plan.runtime_requirements.needs_runtime_trans_component);
+}
+
+#[test]
 fn avoids_duplicate_astro_template_targets_for_attribute_conditional_expression() {
     let source = r#"---
 import { t } from "lingui-for-astro/macro";

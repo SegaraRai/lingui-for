@@ -1,5 +1,5 @@
 ---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -539,6 +539,7 @@ function rowTone(state: DecisionRow["state"]): string {
       ? "bg-sky-100 text-sky-700"
       : "bg-slate-100 text-slate-700";
 }
+__l4a_i18n.prime();
 ---
 
 <html lang="en">

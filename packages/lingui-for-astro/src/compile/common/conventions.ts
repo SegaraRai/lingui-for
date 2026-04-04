@@ -8,7 +8,7 @@ import type {
 import { LINGUI_STANDARD_CORE_MACRO_PACKAGES } from "@lingui-for/internal-shared-compile";
 
 import {
-  EXPORT_CREATE_FRONTMATTER_I18N,
+  EXPORT_CREATE_LINGUI_ACCESSORS,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
   RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
@@ -44,7 +44,7 @@ export function createAstroFrameworkConventions(
       package: PACKAGE_RUNTIME,
       exports: {
         trans: "RuntimeTrans",
-        i18nAccessor: EXPORT_CREATE_FRONTMATTER_I18N,
+        i18nAccessor: EXPORT_CREATE_LINGUI_ACCESSORS,
       },
     },
     bindings: {

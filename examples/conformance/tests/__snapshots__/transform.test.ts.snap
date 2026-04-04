@@ -2,8 +2,6 @@
 
 exports[`NODE_ENV=development > 'component-whitespacing' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
 
@@ -118,8 +116,6 @@ exports[`NODE_ENV=development > 'component-whitespacing' > svelte transform 1`] 
 
 exports[`NODE_ENV=development > 'component-whitespacing-auto' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
 
@@ -234,8 +230,6 @@ exports[`NODE_ENV=development > 'component-whitespacing-auto' > svelte transform
 
 exports[`NODE_ENV=development > 'deep-rich-text-trans' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const action = "deploy";
@@ -313,8 +307,6 @@ exports[`NODE_ENV=development > 'deep-rich-text-trans' > svelte transform 1`] = 
 
 exports[`NODE_ENV=development > 'exact-number-component' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const count = 2;
@@ -394,7 +386,7 @@ exports[`NODE_ENV=development > 'exact-number-component' > svelte transform 1`] 
 
 exports[`NODE_ENV=development > 'nested-icu-core' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 
 const count = 0;
@@ -410,6 +402,7 @@ const deepCore = __l4a_i18n._(
     role: role
   }
 });
+__l4a_i18n.prime();
 ---
 
 <p>{deepCore}</p>"
@@ -459,8 +452,6 @@ exports[`NODE_ENV=development > 'nested-icu-core' > svelte transform 1`] = `
 
 exports[`NODE_ENV=development > 'rich-text-trans' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const name = "Ada";
@@ -518,8 +509,6 @@ exports[`NODE_ENV=development > 'rich-text-trans' > svelte transform 1`] = `
 
 exports[`NODE_ENV=development > 'trans-with-deeply-nested-component-icu' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const count = 0;
@@ -670,8 +659,6 @@ exports[`NODE_ENV=development > 'trans-with-deeply-nested-component-icu' > svelt
 
 exports[`NODE_ENV=development > 'trans-with-plural' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const count = 0;
@@ -729,8 +716,6 @@ exports[`NODE_ENV=development > 'trans-with-plural' > svelte transform 1`] = `
 
 exports[`NODE_ENV=development > 'unicode-adjacent-text' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const name = "世界";
@@ -800,8 +785,6 @@ exports[`NODE_ENV=development > 'unicode-adjacent-text' > svelte transform 1`] =
 
 exports[`NODE_ENV=development > 'unicode-zwj-adjacent-text' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const name = "世界";
@@ -871,8 +854,6 @@ exports[`NODE_ENV=development > 'unicode-zwj-adjacent-text' > svelte transform 1
 
 exports[`NODE_ENV=development > 'with-id-context-comment-component' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const value = "foo";
@@ -1084,10 +1065,11 @@ exports[`NODE_ENV=development > 'with-id-context-comment-component' > svelte tra
 
 exports[`NODE_ENV=development > 'with-id-context-comment-core' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 
 const value = "foo";
+__l4a_i18n.prime();
 ---
 
 <p id="v1a">{__l4a_i18n._(
@@ -1331,8 +1313,6 @@ exports[`NODE_ENV=development > 'with-id-context-comment-core' > svelte transfor
 
 exports[`NODE_ENV=production > 'component-whitespacing' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
 
@@ -1435,8 +1415,6 @@ exports[`NODE_ENV=production > 'component-whitespacing' > svelte transform 1`] =
 
 exports[`NODE_ENV=production > 'component-whitespacing-auto' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
 
@@ -1539,8 +1517,6 @@ exports[`NODE_ENV=production > 'component-whitespacing-auto' > svelte transform 
 
 exports[`NODE_ENV=production > 'deep-rich-text-trans' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const action = "deploy";
@@ -1615,8 +1591,6 @@ exports[`NODE_ENV=production > 'deep-rich-text-trans' > svelte transform 1`] = `
 
 exports[`NODE_ENV=production > 'exact-number-component' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const count = 2;
@@ -1690,7 +1664,7 @@ exports[`NODE_ENV=production > 'exact-number-component' > svelte transform 1`] =
 
 exports[`NODE_ENV=production > 'nested-icu-core' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 
 const count = 0;
@@ -1705,6 +1679,7 @@ const deepCore = __l4a_i18n._(
     role: role
   }
 });
+__l4a_i18n.prime();
 ---
 
 <p>{deepCore}</p>"
@@ -1752,8 +1727,6 @@ exports[`NODE_ENV=production > 'nested-icu-core' > svelte transform 1`] = `
 
 exports[`NODE_ENV=production > 'rich-text-trans' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const name = "Ada";
@@ -1808,8 +1781,6 @@ exports[`NODE_ENV=production > 'rich-text-trans' > svelte transform 1`] = `
 
 exports[`NODE_ENV=production > 'trans-with-deeply-nested-component-icu' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const count = 0;
@@ -1948,8 +1919,6 @@ exports[`NODE_ENV=production > 'trans-with-deeply-nested-component-icu' > svelte
 
 exports[`NODE_ENV=production > 'trans-with-plural' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const count = 0;
@@ -2004,8 +1973,6 @@ exports[`NODE_ENV=production > 'trans-with-plural' > svelte transform 1`] = `
 
 exports[`NODE_ENV=production > 'unicode-adjacent-text' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const name = "世界";
@@ -2072,8 +2039,6 @@ exports[`NODE_ENV=production > 'unicode-adjacent-text' > svelte transform 1`] = 
 
 exports[`NODE_ENV=production > 'unicode-zwj-adjacent-text' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const name = "世界";
@@ -2140,8 +2105,6 @@ exports[`NODE_ENV=production > 'unicode-zwj-adjacent-text' > svelte transform 1`
 
 exports[`NODE_ENV=production > 'with-id-context-comment-component' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
-const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const value = "foo";
@@ -2313,10 +2276,11 @@ exports[`NODE_ENV=production > 'with-id-context-comment-component' > svelte tran
 
 exports[`NODE_ENV=production > 'with-id-context-comment-core' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 
 const value = "foo";
+__l4a_i18n.prime();
 ---
 
 <p id="v1a">{__l4a_i18n._(
