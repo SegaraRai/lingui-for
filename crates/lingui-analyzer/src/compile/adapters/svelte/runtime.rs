@@ -521,6 +521,9 @@ fn collect_runtime_component_wrappers<'a>(
                     wrappers.push(child);
                 }
             }
+            "html_tag" | "render_tag" => {
+                wrappers.push(child);
+            }
             _ => collect_runtime_component_wrappers(child, source, wrappers),
         }
     }
@@ -607,11 +610,21 @@ fn lower_original_wrapper_to_snippet(
             push_copied_span(&mut rendered, input, tag_name_span)?;
             rendered.push_unmapped(">");
         }
+        "html_tag" | "render_tag" => {
+            push_runtime_content_override_warning(&mut rendered);
+            push_copied_span(&mut rendered, input, Span::from_node(node))?;
+        }
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
 
     rendered.push_unmapped("{/snippet}");
     rendered.into_rendered().map_err(SvelteAdapterError::from)
+}
+
+fn push_runtime_content_override_warning(rendered: &mut MappedText<'_>) {
+    rendered.push_unmapped("{import.meta.env.DEV && children && console.warn(");
+    rendered.push_unmapped("\"[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.\"");
+    rendered.push_unmapped(")}");
 }
 
 #[cfg(test)]
@@ -812,5 +825,69 @@ mod tests {
         assert!(error.to_string().contains(
             "runtime component placeholder key contains unsupported characters: bad-key"
         ));
+    }
+
+    #[test]
+    fn lowers_html_tags_to_source_based_snippets_with_dev_warning() {
+        let source = "<Trans>{@html content}</Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <LinguiForSvelteHtml value={content} /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4sRuntimeTrans {.../*i18n*/ {
+                  id: "demo.html",
+                  message: "<0/>"
+                }}>
+                {#snippet component_0(children)}{import.meta.env.DEV && children && console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{@html content}{/snippet}
+                </L4sRuntimeTrans>
+            "#}
+            .trim_end()
+        );
+    }
+
+    #[test]
+    fn lowers_render_tags_to_source_based_snippets_with_dev_warning() {
+        let source = "<Trans>{@render row(item)}</Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.render\", message: \"<0/>\", components: { 0: <LinguiForSvelteRender value={row(item)} /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4sRuntimeTrans {.../*i18n*/ {
+                  id: "demo.render",
+                  message: "<0/>"
+                }}>
+                {#snippet component_0(children)}{import.meta.env.DEV && children && console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{@render row(item)}{/snippet}
+                </L4sRuntimeTrans>
+            "#}
+            .trim_end()
+        );
     }
 }

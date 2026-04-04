@@ -991,15 +991,37 @@
       <div class="rounded-2xl border border-dashed border-slate-200 p-4">
         <p class="text-sm text-slate-600">
           <L4sRuntimeTrans {.../*i18n*/ {
-            id: "YqL2gS",
-            message: "Imported digest: <0>{htmlDigest}</0>",
-            values: {
-              htmlDigest: htmlDigest
-            }
+            id: "FJeYAi",
+            message: "Imported digest: <0><1/></0>"
           }}>
           {#snippet component_0(children)}<span>{@render children?.()}</span>{/snippet}
+          {#snippet component_1(children)}{import.meta.env.DEV && children && console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{@html htmlDigest}{/snippet}
           </L4sRuntimeTrans>
         </p>
+        <p>
+          <L4sRuntimeTrans {.../*i18n*/ {
+            id: "JUNx+G",
+            message: "Also we can embed some text and <0/> directly in translations."
+          }}>
+          {#snippet component_0(children)}{import.meta.env.DEV && children && console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{@html "<em>some HTML</em>"}{/snippet}
+          </L4sRuntimeTrans>
+        </p>
+        <div>
+          <L4sRuntimeTrans {.../*i18n*/ {
+            id: "cKxDiJ",
+            message: "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
+            values: {
+              0: highlightedQueue.length,
+              selectedRegion: selectedRegion
+            }
+          }}>
+          {#snippet component_0(children)}<p>{@render children?.()}</p>{/snippet}
+          {#snippet component_1(children)}<ul>{@render children?.()}</ul>{/snippet}
+          {#snippet component_2(children)}<li>{@render children?.()}</li>{/snippet}
+          {#snippet component_3(children)}<em>{@render children?.()}</em>{/snippet}
+          {#snippet component_4(children)}<li>{@render children?.()}</li>{/snippet}
+          </L4sRuntimeTrans>
+        </div>
       </div>
     </div>
 

@@ -129,8 +129,8 @@ fn allows_wrapper_directives_with_source_based_runtime_lowering() {
 }
 
 #[test]
-fn rejects_raw_html_and_render_tags_inside_trans() {
-    assert_svelte_trans_rejected(
+fn allows_html_and_render_tags_inside_trans() {
+    let cases = [
         indoc! {r#"
             <script>
               import { Trans } from "lingui-for-svelte/macro";
@@ -138,10 +138,6 @@ fn rejects_raw_html_and_render_tags_inside_trans() {
 
             <Trans>{@html html}</Trans>
         "#},
-        "Svelte `{@html ...}`",
-    );
-
-    assert_svelte_trans_rejected(
         indoc! {r#"
             <script>
               import { Trans } from "lingui-for-svelte/macro";
@@ -149,8 +145,11 @@ fn rejects_raw_html_and_render_tags_inside_trans() {
 
             <Trans>{@render snippet()}</Trans>
         "#},
-        "Svelte `{@render ...}`",
-    );
+    ];
+
+    for source in cases {
+        assert_svelte_trans_allowed(source);
+    }
 }
 
 #[test]

@@ -68,20 +68,32 @@ const __lf_40 = __lingui_for_svelte_reactive_translation__(translate(
                 ), "translate");
 const __lf_41 = __lingui_for_svelte_reactive_translation__(translate`Activity stream`, "translate");
 const __lf_42 = <Trans>
-            Imported digest:{" "}<span>{htmlDigest}</span>
+            Imported digest:{" "}<span><LinguiForSvelteHtml value={htmlDigest} /></span>
           </Trans>;
-const __lf_43 = __lingui_for_svelte_reactive_translation__(translate`Status digest`, "translate");
-const __lf_44 = <Plural
+const __lf_43 = <Trans>
+            Also we can embed{" "}{"some text"}{" "}and{" "}<LinguiForSvelteHtml value={"<em>some HTML</em>"} />{" "}directly
+            in translations.
+          </Trans>;
+const __lf_44 = <Trans>
+            <p>Maybe we even have some nested content to summarize, like</p>{" "}<ul>
+              <li>
+                <em>{highlightedQueue.length} highlighted queue items</em> and
+              </li>
+              <li>a selected region of {selectedRegion}.</li>
+            </ul>
+          </Trans>;
+const __lf_45 = __lingui_for_svelte_reactive_translation__(translate`Status digest`, "translate");
+const __lf_46 = <Plural
         value={$highlightedQueue.length}
         one={translate`There is one highlighted queue item.`}
         other={translate(
           msg`There are ${String($highlightedQueue.length)} highlighted queue items.`,
         )}
       />;
-const __lf_45 = __lingui_for_svelte_reactive_translation__(translate(
+const __lf_47 = __lingui_for_svelte_reactive_translation__(translate(
           msg`The queue is ${String(filteredQueue.length > 8 ? "very busy" : "manageable")} and ${String($highlightedQueue.length > 2 ? "requires escalation" : "is within normal review limits")}.`,
         ), "translate");
-const __lf_46 = __lingui_for_svelte_reactive_translation__(translate(
+const __lf_48 = __lingui_for_svelte_reactive_translation__(translate(
           msg`Nested expression summary: ${String(
             $highlightedQueue.length > 0
               ? `highlighted:${$highlightedQueue[0]?.id ?? "none"}`

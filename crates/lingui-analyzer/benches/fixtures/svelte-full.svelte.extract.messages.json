@@ -457,14 +457,35 @@
     ]
   },
   {
-    "id": "YqL2gS",
-    "message": "Imported digest: <0>{htmlDigest}</0>",
-    "placeholders": {
-      "htmlDigest": "htmlDigest"
-    },
+    "id": "FJeYAi",
+    "message": "Imported digest: <0><1/></0>",
+    "placeholders": {},
     "origin": [
       "svelte-full.svelte",
       797,
+      10
+    ]
+  },
+  {
+    "id": "JUNx+G",
+    "message": "Also we can embed some text and <0/> directly in translations.",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      803,
+      10
+    ]
+  },
+  {
+    "id": "cKxDiJ",
+    "message": "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
+    "placeholders": {
+      "0": "highlightedQueue.length",
+      "selectedRegion": "selectedRegion"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      809,
       10
     ]
   },
@@ -474,7 +495,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      809,
+      826,
       10
     ]
   },
@@ -488,7 +509,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      811,
+      828,
       6
     ]
   },
@@ -498,7 +519,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      813,
+      830,
       13
     ]
   },
@@ -510,7 +531,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      815,
+      832,
       0
     ]
   },
@@ -523,7 +544,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      820,
+      837,
       0
     ]
   },
@@ -535,7 +556,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      825,
+      842,
       0
     ]
   }

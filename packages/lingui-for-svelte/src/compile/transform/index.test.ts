@@ -220,6 +220,33 @@ describe("transformSvelte", () => {
     );
   });
 
+  test("lowers html and render tags inside Trans through implicit snippets", async () => {
+    const result = await expectTransformed(
+      dedent`
+        <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+
+          let content = "<strong>unsafe</strong>";
+          let row = $props().row;
+          let item = $state("Ada");
+        </script>
+
+        <Trans>
+          {@html content}
+          {@render row(item)}
+        </Trans>
+      `,
+    );
+
+    expect(compact(result.code)).toContain('message: "<0/> <1/>"');
+    expect(result.code).toContain(
+      '{#snippet component_0(children)}{import.meta.env.DEV && children && console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{@html content}{/snippet}',
+    );
+    expect(result.code).toContain(
+      '{#snippet component_1(children)}{import.meta.env.DEV && children && console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{@render row(item)}{/snippet}',
+    );
+  });
+
   test("treats escaped-whitespace string expressions as explicit spacing", async () => {
     const result = await expectTransformed(
       dedent`

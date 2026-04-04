@@ -17,5 +17,9 @@
   } = $props();
 </script>
 
-{#snippet children()}<RenderTransNodes {nodes} {snippets} />{/snippet}
-{@render snippet(children)}
+{#if nodes.length === 0}
+  {@render snippet()}
+{:else}
+  {#snippet children()}<RenderTransNodes {nodes} {snippets} />{/snippet}
+  {@render snippet(children)}
+{/if}
