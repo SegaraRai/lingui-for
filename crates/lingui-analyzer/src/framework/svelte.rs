@@ -5,7 +5,7 @@ use tree_sitter::Node;
 use crate::common::{
     EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_single_diagnostic, make_diagnostic,
 };
-use crate::conventions::FrameworkConventions;
+use crate::conventions::{FrameworkConventions, MacroConventionsError, MacroPackageKind};
 
 use super::helpers::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
 use super::helpers::components::first_non_whitespace_child_anchor;
@@ -32,6 +32,8 @@ pub enum SvelteFrameworkError {
     Parse(#[from] ParseError),
     #[error(transparent)]
     Js(#[from] JsAnalysisError),
+    #[error(transparent)]
+    Conventions(#[from] MacroConventionsError),
     #[error("{0}")]
     InvalidMacroUsage(String),
     #[error("script element should have start tag")]
@@ -1297,9 +1299,13 @@ fn validate_module_script_macro_imports(
         return Ok(());
     }
 
+    let svelte_packages = conventions
+        .macro_
+        .required_package(MacroPackageKind::Svelte)?;
+
     let Some(offending_import) = macro_imports
         .iter()
-        .find(|import_decl| import_decl.source == conventions.macro_.primary_package)
+        .find(|import_decl| svelte_packages.contains(&import_decl.source))
     else {
         return Ok(());
     };

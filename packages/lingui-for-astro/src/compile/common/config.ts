@@ -4,10 +4,10 @@ import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 import type { WhitespaceMode } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   getParserPlugins as getSharedParserPlugins,
-  LINGUI_CORE_MACRO_PACKAGE,
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
   LINGUI_RUNTIME_TRANS_EXPORT,
+  LINGUI_STANDARD_CORE_MACRO_PACKAGES,
 } from "@lingui-for/internal-shared-compile";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
@@ -58,16 +58,17 @@ export function normalizeLinguiConfig(
     PACKAGE_MACRO,
     ...(options?.astroPackages ?? []),
   ]);
+  const corePackages = uniqueStrings([
+    PACKAGE_MACRO,
+    ...LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+    ...(config?.macro?.corePackage ?? []),
+  ]);
 
   return {
     ...config,
     macro: {
       ...config?.macro,
-      corePackage: uniqueStrings([
-        PACKAGE_MACRO,
-        LINGUI_CORE_MACRO_PACKAGE,
-        ...(config?.macro?.corePackage ?? []),
-      ]),
+      corePackage: corePackages,
       // We have to override `jsxPackage` here to ensure the macro plugin recognizes `lingui-for-astro/macro` imports in synthetic modules
       jsxPackage: astroPackages,
     },

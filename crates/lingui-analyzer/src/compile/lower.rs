@@ -196,6 +196,8 @@ fn collect_declaration_value_starts(source: &str) -> Result<BTreeMap<String, usi
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
     use crate::{
         CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
         CompileTranslationMode, FrameworkConventions, FrameworkKind, MacroFlavor,
@@ -205,8 +207,8 @@ mod tests {
             SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
         },
         conventions::{
-            MacroConventions, RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions,
-            SyntheticConventions, WrapperConventions,
+            MacroConventions, MacroPackage, MacroPackageKind, RuntimeBindingSeeds,
+            RuntimeConventions, RuntimeExportConventions, SyntheticConventions, WrapperConventions,
         },
     };
 
@@ -216,11 +218,20 @@ mod tests {
         FrameworkConventions {
             framework: FrameworkKind::Svelte,
             macro_: MacroConventions {
-                primary_package: "lingui-for-svelte/macro".to_string(),
-                accepted_packages: vec![
-                    "lingui-for-svelte/macro".to_string(),
-                    "@lingui/core/macro".to_string(),
-                ],
+                packages: BTreeMap::from([
+                    (
+                        MacroPackageKind::Core,
+                        MacroPackage {
+                            packages: vec!["@lingui/core/macro".to_string()],
+                        },
+                    ),
+                    (
+                        MacroPackageKind::Svelte,
+                        MacroPackage {
+                            packages: vec!["lingui-for-svelte/macro".to_string()],
+                        },
+                    ),
+                ]),
             },
             runtime: RuntimeConventions {
                 package: "lingui-for-svelte/runtime".to_string(),

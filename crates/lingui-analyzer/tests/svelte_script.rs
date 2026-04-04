@@ -1,10 +1,13 @@
 #[path = "support/svelte.rs"]
 mod svelte_support;
 
+use std::collections::BTreeMap;
+
 use indoc::indoc;
 
 use lingui_analyzer::{
     MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, SvelteCompilePlan, WhitespaceMode,
+    conventions::{MacroConventions, MacroPackage, MacroPackageKind},
     framework::{FrameworkAdapter, svelte::SvelteAdapter},
 };
 
@@ -196,6 +199,50 @@ fn rejects_svelte_macro_imports_in_module_script() {
 
     assert!(error.to_string().contains("@lingui/core/macro"));
     assert!(error.to_string().contains("lingui-for-svelte/macro"));
+}
+
+#[test]
+fn allows_core_macro_alias_packages_in_module_script() {
+    let source = indoc! {r#"
+        <script module>
+          import { t } from "@acme/lingui-core";
+
+          const label = t`Module label`;
+        </script>
+    "#};
+    let mut options = analyze_options_for_svelte(WhitespaceMode::Svelte);
+    options.conventions.macro_ = MacroConventions {
+        packages: BTreeMap::from([
+            (
+                MacroPackageKind::Core,
+                MacroPackage {
+                    packages: vec![
+                        "@lingui/core/macro".to_string(),
+                        "@acme/lingui-core".to_string(),
+                    ],
+                },
+            ),
+            (
+                MacroPackageKind::Svelte,
+                MacroPackage {
+                    packages: vec![
+                        "lingui-for-svelte/macro".to_string(),
+                        "lingui-for-svelte/macro/alias".to_string(),
+                    ],
+                },
+            ),
+        ]),
+    };
+
+    let analysis = SvelteAdapter
+        .analyze(source, &options)
+        .expect("analysis should allow core macro aliases in module scripts");
+
+    assert!(analysis.scripts[0].is_module);
+    assert_eq!(
+        analysis.scripts[0].macro_imports[0].source,
+        "@acme/lingui-core"
+    );
 }
 
 #[test]

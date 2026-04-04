@@ -1,5 +1,13 @@
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
+
+#[derive(thiserror::Error, Debug, Clone, PartialEq, Eq)]
+pub enum MacroConventionsError {
+    #[error("framework conventions are missing macro package kind `{kind}`")]
+    MissingMacroPackageKind { kind: &'static str },
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -12,9 +20,70 @@ pub enum FrameworkKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
+pub struct MacroPackage {
+    pub packages: Vec<String>,
+}
+
+impl MacroPackage {
+    pub fn contains(&self, specifier: &str) -> bool {
+        self.packages.iter().any(|candidate| candidate == specifier)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub enum MacroPackageKind {
+    Core,
+    React,
+    Svelte,
+    Astro,
+}
+
+impl MacroPackageKind {
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Core => "core",
+            Self::React => "react",
+            Self::Svelte => "svelte",
+            Self::Astro => "astro",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
 pub struct MacroConventions {
-    pub primary_package: String,
-    pub accepted_packages: Vec<String>,
+    pub packages: BTreeMap<MacroPackageKind, MacroPackage>,
+}
+
+impl MacroConventions {
+    pub fn accepts_package(&self, specifier: &str) -> bool {
+        self.packages
+            .values()
+            .any(|package_group| package_group.contains(specifier))
+    }
+
+    pub fn package_kind(&self, specifier: &str) -> Option<MacroPackageKind> {
+        self.packages
+            .iter()
+            .find_map(|(kind, package_group)| package_group.contains(specifier).then_some(*kind))
+    }
+
+    pub fn package(&self, kind: MacroPackageKind) -> Option<&MacroPackage> {
+        self.packages.get(&kind)
+    }
+
+    pub fn required_package(
+        &self,
+        kind: MacroPackageKind,
+    ) -> Result<&MacroPackage, MacroConventionsError> {
+        self.package(kind)
+            .ok_or(MacroConventionsError::MissingMacroPackageKind {
+                kind: kind.as_str(),
+            })
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -88,9 +157,6 @@ pub struct FrameworkConventions {
 
 impl FrameworkConventions {
     pub fn accepts_macro_package(&self, specifier: &str) -> bool {
-        self.macro_
-            .accepted_packages
-            .iter()
-            .any(|candidate| candidate == specifier)
+        self.macro_.accepts_package(specifier)
     }
 }
