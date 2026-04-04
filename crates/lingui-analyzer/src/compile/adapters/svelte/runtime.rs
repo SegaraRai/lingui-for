@@ -622,9 +622,11 @@ fn lower_original_wrapper_to_snippet(
 }
 
 fn push_runtime_content_override_warning(rendered: &mut MappedText<'_>) {
-    rendered.push_unmapped("{import.meta.env.DEV && children && console.warn(");
+    rendered.push_unmapped(
+        "{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn(",
+    );
     rendered.push_unmapped("\"[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.\"");
-    rendered.push_unmapped(")}");
+    rendered.push_unmapped(")}{/if}");
 }
 
 #[cfg(test)]
@@ -852,7 +854,7 @@ mod tests {
                   id: "demo.html",
                   message: "<0/>"
                 }}>
-                {#snippet component_0(children)}{import.meta.env.DEV && children && console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{@html content}{/snippet}
+                {#snippet component_0(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html content}{/snippet}
                 </L4sRuntimeTrans>
             "#}
             .trim_end()
@@ -884,7 +886,7 @@ mod tests {
                   id: "demo.render",
                   message: "<0/>"
                 }}>
-                {#snippet component_0(children)}{import.meta.env.DEV && children && console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{@render row(item)}{/snippet}
+                {#snippet component_0(children)}{#if import.meta.env.DEV && children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@render row(item)}{/snippet}
                 </L4sRuntimeTrans>
             "#}
             .trim_end()
