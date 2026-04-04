@@ -7,6 +7,7 @@ use crate::compile::runtime_component::{
     find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
     jsx_attribute_value_node, key_name, lowerable_object_expression_node, push_anchor_mapped,
     push_copied_span, source_slice, spread_argument_node, spread_element_node, translated_span,
+    validate_runtime_placeholder_key,
 };
 use crate::framework::parse::{parse_svelte, parse_tsx};
 
@@ -459,7 +460,7 @@ fn collect_component_snippets(
         let Some(key_name) = key_name(transformed_source, key, base_offset) else {
             return Err(RuntimeComponentError::MissingObjectPairKey.into());
         };
-        keys.push(key_name);
+        keys.push(validate_runtime_placeholder_key(key_name)?);
     }
 
     Ok(Some(collect_component_snippets_from_source(
@@ -801,6 +802,29 @@ mod tests {
 
         assert!(lowered.code.contains(
             "{#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}"
+        ));
+    }
+
+    #[test]
+    fn rejects_unsafe_placeholder_keys() {
+        let source = "<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { \"bad-key\": <a href=\"/docs\" /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let error = lower_runtime_component_markup(
+            "Component.svelte",
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+        )
+        .expect_err("unsafe placeholder key should be rejected");
+
+        assert!(error.to_string().contains(
+            "runtime component placeholder key contains unsupported characters: bad-key"
         ));
     }
 }

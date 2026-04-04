@@ -34,6 +34,8 @@ pub enum RuntimeComponentError {
     ExpectedObjectExpressionForRuntimeTransComponents,
     #[error("missing object pair key")]
     MissingObjectPairKey,
+    #[error("runtime component placeholder key contains unsupported characters: {key}")]
+    InvalidRuntimePlaceholderKey { key: String },
     #[error("missing object pair value")]
     MissingObjectPairValue,
     #[error("missing spread argument in object expression")]
@@ -634,5 +636,19 @@ pub(super) fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Optio
             Some(source[span.start + 1..span.end.saturating_sub(1)].to_string())
         }
         _ => None,
+    }
+}
+
+pub(super) fn validate_runtime_placeholder_key(
+    key: String,
+) -> Result<String, RuntimeComponentError> {
+    if !key.is_empty()
+        && key
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || character == '_')
+    {
+        Ok(key)
+    } else {
+        Err(RuntimeComponentError::InvalidRuntimePlaceholderKey { key })
     }
 }

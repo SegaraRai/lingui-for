@@ -7,7 +7,7 @@ use crate::compile::runtime_component::{
     convert_jsx_named_attribute, copy_span, find_first_named_descendant, find_node_by_span,
     first_named_child, jsx_attribute_name_node, jsx_attribute_value_node, key_name,
     lowerable_object_expression_node, push_anchor_mapped, push_copied_span, source_slice,
-    spread_argument_node, spread_element_node, translated_span,
+    spread_argument_node, spread_element_node, translated_span, validate_runtime_placeholder_key,
 };
 use crate::framework::parse::{parse_astro, parse_tsx};
 
@@ -195,7 +195,7 @@ fn convert_runtime_trans_root(
 
     if !placeholder_keys.is_empty() {
         mapped.push_unmapped(" placeholders={");
-        mapped.push_unmapped(&render_placeholder_keys_inline(&placeholder_keys));
+        mapped.push_unmapped(render_placeholder_keys_inline(&placeholder_keys));
         mapped.push_unmapped("}");
     }
     append_rendered(
@@ -452,7 +452,7 @@ fn collect_component_slot_callbacks(
         let Some(key_name) = key_name(transformed_source, key, base_offset) else {
             return Err(RuntimeComponentError::MissingObjectPairKey.into());
         };
-        keys.push(key_name);
+        keys.push(validate_runtime_placeholder_key(key_name)?);
     }
 
     Ok(Some(collect_component_slot_callbacks_from_source(
@@ -716,5 +716,28 @@ mod tests {
             "#}
             .trim_end()
         );
+    }
+
+    #[test]
+    fn rejects_unsafe_placeholder_keys() {
+        let source = "<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { \"bad-key\": <a href=\"/docs\" /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let error = lower_runtime_component_markup(
+            "Component.astro",
+            &source,
+            &target,
+            &declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect_err("unsafe placeholder key should be rejected");
+
+        assert!(error.to_string().contains(
+            "runtime component placeholder key contains unsupported characters: bad-key"
+        ));
     }
 }
