@@ -18,6 +18,16 @@ struct SvelteLoweredObjectExpression {
     snippets: Vec<RenderedMappedText>,
 }
 
+struct SvelteRuntimeLoweringContext<'a> {
+    original_source: &'a IndexedText<'a>,
+    declaration_source_map: Option<&'a IndexedSourceMap>,
+    source: &'a IndexedText<'a>,
+    input: &'a MappedText<'a>,
+    original_input: MappedText<'a>,
+    target: &'a CompileTarget,
+    runtime_component_name: &'a str,
+}
+
 pub(crate) fn lower_runtime_component_markup(
     source_name: &str,
     original_source: &str,
@@ -42,30 +52,29 @@ pub(crate) fn lower_runtime_component_markup(
     let value = declarator
         .child_by_field_name("value")
         .ok_or(RuntimeComponentError::MissingInitializerForTransformedComponent)?;
-
-    convert_runtime_trans_root(
-        &original_source,
-        declaration.indexed_source_map.as_ref(),
-        &declaration_source,
-        &mapped_input,
+    let original_input = MappedText::from_rendered(
         source_name,
+        original_source.as_str(),
+        original_source.as_str(),
+        None,
+    );
+    let context = SvelteRuntimeLoweringContext {
+        original_source: &original_source,
+        declaration_source_map: declaration.indexed_source_map.as_ref(),
+        source: &declaration_source,
+        input: &mapped_input,
+        original_input,
         target,
-        value,
-        -(wrapper_prefix.len() as isize),
         runtime_component_name,
-    )
+    };
+
+    convert_runtime_trans_root(&context, value, -(wrapper_prefix.len() as isize))
 }
 
 fn convert_runtime_trans_root(
-    original_source: &IndexedText<'_>,
-    declaration_source_map: Option<&IndexedSourceMap>,
-    source: &IndexedText<'_>,
-    input: &MappedText<'_>,
-    source_name: &str,
-    target: &CompileTarget,
+    context: &SvelteRuntimeLoweringContext<'_>,
     node: Node<'_>,
     base_offset: isize,
-    runtime_component_name: &str,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
     let opening = match node.kind() {
         "jsx_element" => node.child_by_field_name("open_tag"),
@@ -74,30 +83,24 @@ fn convert_runtime_trans_root(
     }
     .ok_or(RuntimeComponentError::ExpectedJsxElementInitializerForTransformedComponent)?;
 
-    let mut mapped = input.empty_like();
+    let mut mapped = context.input.empty_like();
     let root_span = translated_span(node, base_offset)?;
     let mut snippets = Vec::new();
-    let original_input = MappedText::from_rendered(
-        source_name,
-        original_source.as_str(),
-        original_source.as_str(),
-        None,
-    );
 
     push_anchor_mapped(
         &mut mapped,
-        declaration_source_map,
-        source,
-        original_source,
+        context.declaration_source_map,
+        context.source,
+        context.original_source,
         "<",
         root_span.start,
     );
     push_anchor_mapped(
         &mut mapped,
-        declaration_source_map,
-        source,
-        original_source,
-        runtime_component_name,
+        context.declaration_source_map,
+        context.source,
+        context.original_source,
+        context.runtime_component_name,
         root_span.start,
     );
 
@@ -113,35 +116,29 @@ fn convert_runtime_trans_root(
                 if let Some(object) = lowerable_object_expression_node(argument) {
                     let spread_span = translated_span(spread, base_offset)?;
                     let object_span = translated_span(object, base_offset)?;
-                    let lowered = lower_object_expression_span(
-                        source.as_str(),
-                        input,
-                        &original_input,
-                        original_source.as_str(),
-                        target,
-                        object_span,
-                        0,
-                    )?;
+                    let lowered = lower_object_expression_span(context, object_span, 0)?;
                     mapped.push_unmapped(" {...");
                     let prefix_start = (spread_span.start + 3).min(object_span.start);
-                    let prefix_trimmed_start = source.as_str()[prefix_start..object_span.start]
+                    let prefix_trimmed_start = context.source.as_str()
+                        [prefix_start..object_span.start]
                         .find(|char: char| !char.is_ascii_whitespace())
                         .map(|offset| prefix_start + offset);
                     if let Some(prefix_trimmed_start) = prefix_trimmed_start {
                         push_copied_span(
                             &mut mapped,
-                            input,
+                            context.input,
                             Span::new(prefix_trimmed_start, object_span.start),
                         )?;
                     }
                     append_rendered(&mut mapped, lowered.props);
-                    let suffix_trimmed_end = source.as_str()[object_span.end..spread_span.end]
+                    let suffix_trimmed_end = context.source.as_str()
+                        [object_span.end..spread_span.end]
                         .rfind(|char: char| !char.is_ascii_whitespace())
                         .map(|offset| object_span.end + offset + 1);
                     if let Some(suffix_trimmed_end) = suffix_trimmed_end {
                         push_copied_span(
                             &mut mapped,
-                            input,
+                            context.input,
                             Span::new(object_span.end, suffix_trimmed_end),
                         )?;
                     }
@@ -151,22 +148,26 @@ fn convert_runtime_trans_root(
                 }
 
                 mapped.push_unmapped(" ");
-                push_copied_span(&mut mapped, input, translated_span(child, base_offset)?)?;
+                push_copied_span(
+                    &mut mapped,
+                    context.input,
+                    translated_span(child, base_offset)?,
+                )?;
             }
             "jsx_attribute" => {
                 let name_node = jsx_attribute_name_node(child)
                     .ok_or(RuntimeComponentError::MissingJsxAttributeName)?;
-                let name = source_slice(source.as_str(), name_node, base_offset)?;
+                let name = source_slice(context.source.as_str(), name_node, base_offset)?;
                 let value_node = jsx_attribute_value_node(child);
 
                 if name == "components"
                     && let Some(value) = value_node.filter(|value| value.kind() == "jsx_expression")
                     && let Some(expression) = first_named_child(value)
                     && let Some(component_snippets) = collect_component_snippets(
-                        &original_input,
-                        original_source.as_str(),
-                        target,
-                        source.as_str(),
+                        &context.original_input,
+                        context.original_source.as_str(),
+                        context.target,
+                        context.source.as_str(),
                         expression,
                         base_offset,
                     )?
@@ -177,7 +178,12 @@ fn convert_runtime_trans_root(
 
                 append_rendered(
                     &mut mapped,
-                    convert_jsx_named_attribute(source.as_str(), input, child, base_offset)?,
+                    convert_jsx_named_attribute(
+                        context.source.as_str(),
+                        context.input,
+                        child,
+                        base_offset,
+                    )?,
                 );
             }
             other => {
@@ -191,18 +197,18 @@ fn convert_runtime_trans_root(
     if snippets.is_empty() {
         push_anchor_mapped(
             &mut mapped,
-            declaration_source_map,
-            source,
-            original_source,
+            context.declaration_source_map,
+            context.source,
+            context.original_source,
             " />",
             root_span.end,
         );
     } else {
         push_anchor_mapped(
             &mut mapped,
-            declaration_source_map,
-            source,
-            original_source,
+            context.declaration_source_map,
+            context.source,
+            context.original_source,
             ">",
             root_span.end,
         );
@@ -213,25 +219,25 @@ fn convert_runtime_trans_root(
         }
         push_anchor_mapped(
             &mut mapped,
-            declaration_source_map,
-            source,
-            original_source,
+            context.declaration_source_map,
+            context.source,
+            context.original_source,
             "</",
             root_span.end,
         );
         push_anchor_mapped(
             &mut mapped,
-            declaration_source_map,
-            source,
-            original_source,
-            runtime_component_name,
+            context.declaration_source_map,
+            context.source,
+            context.original_source,
+            context.runtime_component_name,
             root_span.end,
         );
         push_anchor_mapped(
             &mut mapped,
-            declaration_source_map,
-            source,
-            original_source,
+            context.declaration_source_map,
+            context.source,
+            context.original_source,
             ">",
             root_span.end,
         );
@@ -241,15 +247,11 @@ fn convert_runtime_trans_root(
 }
 
 fn lower_object_expression_span(
-    source: &str,
-    input: &MappedText<'_>,
-    original_input: &MappedText<'_>,
-    original_source: &str,
-    target: &CompileTarget,
+    context: &SvelteRuntimeLoweringContext<'_>,
     span: Span,
     indent_level: usize,
 ) -> Result<SvelteLoweredObjectExpression, SvelteAdapterError> {
-    let text = &source[span.start..span.end];
+    let text = &context.source.as_str()[span.start..span.end];
     let wrapper_prefix = "const __expr = (";
     let wrapped = format!("{wrapper_prefix}{text});");
     let tree = parse_tsx(&wrapped)?;
@@ -266,17 +268,13 @@ fn lower_object_expression_span(
     };
     if object.kind() != "object" {
         return Ok(SvelteLoweredObjectExpression {
-            props: copy_span(input, span)?,
+            props: copy_span(context.input, span)?,
             snippets: Vec::new(),
         });
     }
 
     convert_object_expression(
-        source,
-        input,
-        original_input,
-        original_source,
-        target,
+        context,
         object,
         span.start as isize - wrapper_prefix.len() as isize,
         indent_level,
@@ -284,18 +282,14 @@ fn lower_object_expression_span(
 }
 
 fn convert_object_expression(
-    source: &str,
-    input: &MappedText<'_>,
-    original_input: &MappedText<'_>,
-    original_source: &str,
-    target: &CompileTarget,
+    context: &SvelteRuntimeLoweringContext<'_>,
     node: Node<'_>,
     base_offset: isize,
     indent_level: usize,
 ) -> Result<SvelteLoweredObjectExpression, SvelteAdapterError> {
     let indent = "  ".repeat(indent_level);
     let child_indent = "  ".repeat(indent_level + 1);
-    let mut rendered = input.empty_like();
+    let mut rendered = context.input.empty_like();
     let mut snippets = Vec::new();
     let mut cursor = node.walk();
     let mut wrote_entry = false;
@@ -311,13 +305,13 @@ fn convert_object_expression(
                 let value = child
                     .child_by_field_name("value")
                     .ok_or(RuntimeComponentError::MissingObjectPairValue)?;
-                let key_name = key_name(source, key, base_offset);
+                let key_name = key_name(context.source.as_str(), key, base_offset);
                 if key_name.as_deref() == Some("components")
                     && let Some(component_snippets) = collect_component_snippets(
-                        original_input,
-                        original_source,
-                        target,
-                        source,
+                        &context.original_input,
+                        context.original_source.as_str(),
+                        context.target,
+                        context.source.as_str(),
                         value,
                         base_offset,
                     )?
@@ -333,16 +327,16 @@ fn convert_object_expression(
                     wrote_entry = true;
                 }
                 rendered.push_unmapped(&child_indent);
-                push_copied_span(&mut rendered, input, translated_span(key, base_offset)?)?;
+                push_copied_span(
+                    &mut rendered,
+                    context.input,
+                    translated_span(key, base_offset)?,
+                )?;
                 rendered.push_unmapped(": ");
                 append_rendered(
                     &mut rendered,
                     convert_expression_for_runtime_trans(
-                        source,
-                        input,
-                        original_input,
-                        original_source,
-                        target,
+                        context,
                         value,
                         base_offset,
                         indent_level + 1,
@@ -363,11 +357,7 @@ fn convert_object_expression(
                 append_rendered(
                     &mut rendered,
                     convert_expression_for_runtime_trans(
-                        source,
-                        input,
-                        original_input,
-                        original_source,
-                        target,
+                        context,
                         argument,
                         base_offset,
                         indent_level + 1,
@@ -382,7 +372,11 @@ fn convert_object_expression(
                     wrote_entry = true;
                 }
                 rendered.push_unmapped(&child_indent);
-                push_copied_span(&mut rendered, input, translated_span(child, base_offset)?)?;
+                push_copied_span(
+                    &mut rendered,
+                    context.input,
+                    translated_span(child, base_offset)?,
+                )?;
             }
             other => {
                 return Err(
@@ -407,28 +401,20 @@ fn convert_object_expression(
 }
 
 fn convert_expression_for_runtime_trans(
-    source: &str,
-    input: &MappedText<'_>,
-    original_input: &MappedText<'_>,
-    original_source: &str,
-    target: &CompileTarget,
+    context: &SvelteRuntimeLoweringContext<'_>,
     node: Node<'_>,
     base_offset: isize,
     indent_level: usize,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
     match node.kind() {
-        "object" => convert_object_expression(
-            source,
-            input,
-            original_input,
-            original_source,
-            target,
+        "object" => convert_object_expression(context, node, base_offset, indent_level)
+            .map(|lowered| lowered.props),
+        _ => Ok(copy_node(
+            context.source.as_str(),
+            context.input,
             node,
             base_offset,
-            indent_level,
-        )
-        .map(|lowered| lowered.props),
-        _ => Ok(copy_node(source, input, node, base_offset)?),
+        )?),
     }
 }
 
