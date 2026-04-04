@@ -287,6 +287,6 @@ fn rejects_unsupported_astro_trans_child_directives_with_location() {
     .expect_err("compile plan should fail");
     let rendered = error.to_string();
 
-    assert!(rendered.contains("Unsupported.astro:"));
+    assert!(rendered.contains("Unsupported.astro:6:8"));
     assert!(rendered.contains("set:html"));
 }
