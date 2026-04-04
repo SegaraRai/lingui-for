@@ -1,8 +1,6 @@
 use std::collections::{BTreeMap, HashMap};
 
-use crate::common::{
-    IndexedSourceMap, MappedText, MappedTextError, Span, build_segmented_map, source_map_to_json,
-};
+use crate::common::{IndexedSourceMap, MappedText, MappedTextError, Span, source_map_to_json};
 use crate::extract::{SyntheticMapping, SyntheticModule};
 use crate::framework::{MacroCandidate, MacroImport, render_macro_import_line};
 use crate::synthesis::{SynthesisPlan, SynthesisTarget, build_synthesis_plan};
@@ -25,7 +23,7 @@ pub fn build_synthetic_module(
     candidates: &[MacroCandidate],
     source_anchors: &[usize],
 ) -> Result<SyntheticModule, BuildSyntheticModuleError> {
-    let plan = build_synthesis_plan(source, imports, candidates);
+    let plan = build_synthesis_plan(source, source_name, imports, candidates, source_anchors)?;
     build_synthetic_module_from_plan(source, source_name, synthetic_name, &plan, source_anchors)
 }
 
@@ -136,7 +134,7 @@ fn build_synthetic_source_map(
     import_line: Option<&str>,
     targets_by_id: &HashMap<&str, &SynthesisTarget>,
     declaration_ids: &[String],
-    source_anchors: &[usize],
+    _source_anchors: &[usize],
 ) -> Result<Option<IndexedSourceMap>, BuildSyntheticModuleError> {
     let mut mapped = MappedText::new(source_name, source);
 
@@ -151,13 +149,7 @@ fn build_synthetic_source_map(
                 declaration_id: declaration_id.clone(),
             });
         };
-        let declaration_map = build_segmented_map(
-            source_name,
-            source,
-            &target.normalized_code,
-            &target.normalized_segments,
-            source_anchors,
-        )?;
+        let declaration_map = target.normalized_rendered.indexed_source_map.clone();
 
         mapped.push_unmapped("const ");
         mapped.push_unmapped(&target.declaration_id);
@@ -178,7 +170,7 @@ fn build_synthetic_source_map(
 
 #[cfg(test)]
 mod tests {
-    use crate::common::Span;
+    use crate::common::{RenderedMappedText, Span};
     use crate::framework::{
         MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
     };
@@ -204,6 +196,10 @@ mod tests {
                 strategy: MacroCandidateStrategy::Standalone,
             },
             normalized_code: "t".to_string(),
+            normalized_rendered: RenderedMappedText {
+                code: "t".to_string(),
+                indexed_source_map: None,
+            },
             normalized_segments: Vec::new(),
         };
         let plan = SynthesisPlan {

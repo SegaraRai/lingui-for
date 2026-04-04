@@ -7,7 +7,9 @@ mod runtime_component;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{IndexedSourceMap, RenderedMappedText, ScriptLang, Span, source_map_to_json};
+use crate::common::{
+    IndexedSourceMap, MappedTextError, RenderedMappedText, ScriptLang, Span, source_map_to_json,
+};
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidate, MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
@@ -31,6 +33,8 @@ pub enum CompileError {
     Lower(#[from] LowerError),
     #[error(transparent)]
     Emit(#[from] EmitError),
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -141,7 +145,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     fn wrap_compile_source(
         analysis: &Self::Analysis,
         prototype: &CompileTargetPrototype,
-        normalized_source: &str,
+        normalized_source: &RenderedMappedText,
     ) -> Result<RenderedMappedText, CompileError>;
 
     fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]);

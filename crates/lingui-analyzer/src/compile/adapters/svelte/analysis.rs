@@ -1,8 +1,8 @@
 use std::collections::BTreeSet;
 
 use crate::common::{
-    EmbeddedScriptRegion, IndexedText, MappedText, RenderedMappedText, ScriptLang, Span,
-    build_copy_map, build_span_anchor_map,
+    EmbeddedScriptRegion, IndexedSourceMap, IndexedText, MappedText, RenderedMappedText,
+    ScriptLang, Span, build_copy_map, build_span_anchor_map,
 };
 use crate::compile::{
     CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
@@ -159,10 +159,14 @@ pub(crate) fn compile_script_region(
 pub(crate) fn wrap_compile_source(
     analysis: &SvelteFrameworkCompileAnalysis,
     prototype: &CompileTargetPrototype,
-    normalized_source: &str,
+    normalized_source: &RenderedMappedText,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
-    let indexed_source = IndexedText::new(normalized_source);
-    let mut mapped = MappedText::new("__normalized", normalized_source);
+    let indexed_source = IndexedText::new(&normalized_source.code);
+    let copy_anchors = collect_normalized_copy_anchors(
+        &indexed_source,
+        normalized_source.indexed_source_map.as_ref(),
+    );
+    let mut mapped = MappedText::new("__normalized", &normalized_source.code);
     if prototype.output_kind == CompileTargetOutputKind::Expression {
         match prototype.candidate.flavor {
             MacroFlavor::Reactive => {
@@ -178,13 +182,14 @@ pub(crate) fn wrap_compile_source(
                 push_wrapped_copy(
                     &mut mapped,
                     &indexed_source,
-                    Span::new(0, normalized_source.len()),
+                    Span::new(0, normalized_source.code.len()),
+                    &copy_anchors,
                 );
                 push_wrapper_anchor(
                     &mut mapped,
                     &indexed_source,
                     &format!(", {:?})", prototype.candidate.local_name),
-                    normalized_source.len(),
+                    normalized_source.code.len(),
                 );
                 return mapped.into_rendered().map_err(SvelteAdapterError::from);
             }
@@ -201,9 +206,15 @@ pub(crate) fn wrap_compile_source(
                 push_wrapped_copy(
                     &mut mapped,
                     &indexed_source,
-                    Span::new(0, normalized_source.len()),
+                    Span::new(0, normalized_source.code.len()),
+                    &copy_anchors,
                 );
-                push_wrapper_anchor(&mut mapped, &indexed_source, ")", normalized_source.len());
+                push_wrapper_anchor(
+                    &mut mapped,
+                    &indexed_source,
+                    ")",
+                    normalized_source.code.len(),
+                );
                 return mapped.into_rendered().map_err(SvelteAdapterError::from);
             }
             MacroFlavor::Direct => {}
@@ -213,7 +224,8 @@ pub(crate) fn wrap_compile_source(
     push_wrapped_copy(
         &mut mapped,
         &indexed_source,
-        Span::new(0, normalized_source.len()),
+        Span::new(0, normalized_source.code.len()),
+        &copy_anchors,
     );
     mapped.into_rendered().map_err(SvelteAdapterError::from)
 }
@@ -236,12 +248,39 @@ fn push_wrapper_anchor(
     mapped.push_pre_mapped(text, map);
 }
 
-fn push_wrapped_copy(mapped: &mut MappedText<'_>, normalized_source: &IndexedText<'_>, span: Span) {
-    if let Some(map) = build_copy_map("__normalized", normalized_source, span, &[]) {
+fn push_wrapped_copy(
+    mapped: &mut MappedText<'_>,
+    normalized_source: &IndexedText<'_>,
+    span: Span,
+    copy_anchors: &[usize],
+) {
+    if let Some(map) = build_copy_map("__normalized", normalized_source, span, copy_anchors) {
         mapped.push_pre_mapped(&normalized_source.as_str()[span.start..span.end], map);
     } else {
         mapped.push_unmapped(&normalized_source.as_str()[span.start..span.end]);
     }
+}
+
+fn collect_normalized_copy_anchors(
+    normalized_source: &IndexedText<'_>,
+    normalized_map: Option<&IndexedSourceMap>,
+) -> Vec<usize> {
+    let Some(normalized_map) = normalized_map else {
+        return Vec::new();
+    };
+
+    normalized_map
+        .tokens()
+        .iter()
+        .filter_map(|token| {
+            normalized_source.line_utf16_col_to_byte(
+                token.generated_position().0 as usize,
+                token.generated_position().1 as usize,
+            )
+        })
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
 }
 
 pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {

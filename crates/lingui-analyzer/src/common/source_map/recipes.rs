@@ -362,15 +362,12 @@ fn collect_copy_anchor_points(
             .copied()
             .filter(|anchor| *anchor > original_span.start && *anchor < original_span.end),
     );
-
-    if anchors.len() <= 2 {
-        anchors.extend(
-            collect_snippet_anchors(copied_text)
-                .into_iter()
-                .map(|anchor| original_span.start + anchor)
-                .filter(|anchor| *anchor > original_span.start && *anchor < original_span.end),
-        );
-    }
+    anchors.extend(
+        collect_snippet_anchors(copied_text)
+            .into_iter()
+            .map(|anchor| original_span.start + anchor)
+            .filter(|anchor| *anchor > original_span.start && *anchor < original_span.end),
+    );
 
     anchors.into_iter().collect()
 }

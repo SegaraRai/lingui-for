@@ -5,9 +5,7 @@ mod runtime;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{
-    IndexedText, MappedText, MappedTextError, RenderedMappedText, Span, build_copy_map,
-};
+use crate::common::{MappedTextError, RenderedMappedText, Span};
 use crate::compile::{
     CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
     CompileTargetPrototype, FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
@@ -101,24 +99,12 @@ impl FrameworkCompilePlan for AstroCompilePlan {
     fn wrap_compile_source(
         _analysis: &Self::Analysis,
         _prototype: &CompileTargetPrototype,
-        normalized_source: &str,
+        normalized_source: &RenderedMappedText,
     ) -> Result<RenderedMappedText, CompileError> {
-        let indexed_source = IndexedText::new(normalized_source);
-        let mut mapped = MappedText::new("__normalized", normalized_source);
-        if let Some(map) = build_copy_map(
-            "__normalized",
-            &indexed_source,
-            Span::new(0, normalized_source.len()),
-            &[],
-        ) {
-            mapped.push_pre_mapped(normalized_source, map);
-        } else {
-            mapped.push_unmapped(normalized_source);
-        }
-        mapped
-            .into_rendered()
-            .map_err(AdapterError::from)
-            .map_err(CompileError::from)
+        Ok(RenderedMappedText {
+            code: normalized_source.code.clone(),
+            indexed_source_map: None,
+        })
     }
 
     fn repair_compile_targets(_source: &str, _targets: &mut [CompileTarget]) {}

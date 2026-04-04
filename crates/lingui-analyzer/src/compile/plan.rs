@@ -1,6 +1,4 @@
-use crate::common::{
-    MappedText, RenderedMappedText, build_segmented_map, compose_source_maps, source_map_to_json,
-};
+use crate::common::{MappedText, RenderedMappedText, compose_source_maps, source_map_to_json};
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_import_line};
 use crate::synthesis::{
@@ -37,7 +35,8 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         .iter()
         .map(|prototype| prototype.candidate.clone())
         .collect::<Vec<_>>();
-    let synthetic_plan = build_synthesis_plan(source, &imports, &candidates);
+    let synthetic_plan =
+        build_synthesis_plan(source, source_name, &imports, &candidates, &source_anchors)?;
     let synthetic = build_compile_synthetic_source(
         source,
         source_name,
@@ -56,19 +55,19 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     let mut targets = prototypes
         .clone()
         .into_iter()
-        .zip(synthetic_plan.targets.iter())
+        .zip(synthetic_plan.targets)
         .map(|(prototype, target)| CompileTarget {
-            declaration_id: target.declaration_id.clone(),
+            declaration_id: target.declaration_id,
             original_span: target.candidate.outer_span,
             normalized_span: prototype.candidate.normalized_span,
             source_map_anchor: target.candidate.source_map_anchor,
-            local_name: target.candidate.local_name.clone(),
-            imported_name: target.candidate.imported_name.clone(),
+            local_name: target.candidate.local_name,
+            imported_name: target.candidate.imported_name,
             flavor: target.candidate.flavor,
             context: prototype.context,
             output_kind: prototype.output_kind,
             translation_mode: prototype.translation_mode,
-            normalized_segments: target.normalized_segments.clone(),
+            normalized_segments: target.normalized_segments,
         })
         .collect::<Vec<_>>();
 
@@ -129,10 +128,10 @@ fn build_compile_synthetic_source(
     source_name: &str,
     synthetic_plan: &SynthesisPlan,
     prototypes: &[CompileTargetPrototype],
-    source_anchors: &[usize],
+    _source_anchors: &[usize],
     wrap_compile_source: impl Fn(
         &CompileTargetPrototype,
-        &str,
+        &RenderedMappedText,
     ) -> Result<RenderedMappedText, CompileError>,
 ) -> Result<RenderedMappedText, CompileError> {
     let mut output = MappedText::new(source_name, source);
@@ -143,28 +142,22 @@ fn build_compile_synthetic_source(
     }
 
     for (prototype, target) in prototypes.iter().zip(synthetic_plan.targets.iter()) {
-        let normalized_map = build_segmented_map(
-            source_name,
-            source,
-            &target.normalized_code,
-            &target.normalized_segments,
-            source_anchors,
-        )
-        .map_err(AdapterError::from)
-        .map_err(CompileError::from)?;
-        let wrapped = wrap_compile_source(prototype, &target.normalized_code)?;
+        let wrapped = wrap_compile_source(prototype, &target.normalized_rendered)?;
         let RenderedMappedText {
             code: wrapped_code,
             indexed_source_map: wrapped_source_map,
         } = wrapped;
-        let wrapped_map = match (wrapped_source_map, normalized_map) {
+        let wrapped_map = match (
+            wrapped_source_map,
+            &target.normalized_rendered.indexed_source_map,
+        ) {
             (Some(upper), Some(lower)) => Some(
-                compose_source_maps(upper.source_map(), &lower)
+                compose_source_maps(upper.source_map(), lower)
                     .map_err(AdapterError::from)
                     .map_err(CompileError::from)?,
             ),
             (Some(upper), None) => Some(upper),
-            (None, Some(lower)) => Some(lower),
+            (None, Some(lower)) => Some(lower.clone()),
             (None, None) => None,
         };
 
@@ -296,6 +289,10 @@ mod tests {
                 declaration_id: "__lf_0".to_string(),
                 candidate: candidate(Span::new(0, source.len())),
                 normalized_code: normalized_code.clone(),
+                normalized_rendered: RenderedMappedText {
+                    code: normalized_code.clone(),
+                    indexed_source_map: None,
+                },
                 normalized_segments: Vec::new(),
             }],
         };
@@ -310,11 +307,11 @@ mod tests {
             |_, normalized_source| {
                 let indexed_source = IndexedText::new(source);
                 Ok(RenderedMappedText {
-                    code: normalized_source.to_string(),
+                    code: normalized_source.code.clone(),
                     indexed_source_map: build_span_anchor_map(
                         "test.ts",
                         &indexed_source,
-                        normalized_source,
+                        &normalized_source.code,
                         1,
                         4,
                     ),
@@ -339,12 +336,23 @@ mod tests {
     #[test]
     fn preserves_normalized_source_map_when_wrapped_map_is_missing() {
         let source = "t`hello`";
+        let indexed_source = IndexedText::new(source);
         let synthetic_plan = SynthesisPlan {
             imports: Vec::new(),
             targets: vec![SynthesisTarget {
                 declaration_id: "__lf_0".to_string(),
                 candidate: candidate(Span::new(0, source.len())),
                 normalized_code: source.to_string(),
+                normalized_rendered: RenderedMappedText {
+                    code: source.to_string(),
+                    indexed_source_map: build_span_anchor_map(
+                        "test.ts",
+                        &indexed_source,
+                        source,
+                        0,
+                        source.len(),
+                    ),
+                },
                 normalized_segments: vec![NormalizedSegment {
                     original_start: 0,
                     generated_start: 0,
@@ -362,7 +370,7 @@ mod tests {
             &[0, source.len()],
             |_, normalized_source| {
                 Ok(RenderedMappedText {
-                    code: normalized_source.to_string(),
+                    code: normalized_source.code.clone(),
                     indexed_source_map: None,
                 })
             },

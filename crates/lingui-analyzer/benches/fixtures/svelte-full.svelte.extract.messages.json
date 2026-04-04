@@ -207,7 +207,7 @@
     "origin": [
       "svelte-full.svelte",
       590,
-      0
+      16
     ]
   },
   {
@@ -269,7 +269,7 @@
     "origin": [
       "svelte-full.svelte",
       647,
-      0
+      14
     ]
   },
   {
@@ -283,7 +283,7 @@
     "origin": [
       "svelte-full.svelte",
       653,
-      0
+      12
     ]
   },
   {
@@ -298,7 +298,7 @@
     "origin": [
       "svelte-full.svelte",
       663,
-      0
+      18
     ]
   },
   {
@@ -311,7 +311,7 @@
     "origin": [
       "svelte-full.svelte",
       666,
-      0
+      18
     ]
   },
   {
@@ -363,7 +363,7 @@
     "origin": [
       "svelte-full.svelte",
       699,
-      20
+      30
     ]
   },
   {
@@ -395,7 +395,7 @@
     "origin": [
       "svelte-full.svelte",
       722,
-      0
+      14
     ]
   },
   {
@@ -420,7 +420,7 @@
     "origin": [
       "svelte-full.svelte",
       738,
-      0
+      20
     ]
   },
   {
@@ -443,7 +443,7 @@
     "origin": [
       "svelte-full.svelte",
       766,
-      0
+      18
     ]
   },
   {
@@ -532,7 +532,7 @@
     "origin": [
       "svelte-full.svelte",
       832,
-      0
+      10
     ]
   },
   {
@@ -545,7 +545,7 @@
     "origin": [
       "svelte-full.svelte",
       837,
-      0
+      10
     ]
   },
   {
@@ -557,7 +557,7 @@
     "origin": [
       "svelte-full.svelte",
       842,
-      0
+      10
     ]
   }
 ]

@@ -2,21 +2,24 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use tsify::Tsify;
 
-use crate::common::Span;
+use crate::common::{
+    IndexedText, MappedText, MappedTextError, RenderedMappedText, Span, build_copy_map,
+};
 use crate::framework::helpers::normalization::sort_and_dedup_normalization_edits;
 use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport, NormalizationEdit};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SynthesisPlan {
     pub imports: Vec<MacroImport>,
     pub targets: Vec<SynthesisTarget>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SynthesisTarget {
     pub declaration_id: String,
     pub candidate: MacroCandidate,
     pub normalized_code: String,
+    pub(crate) normalized_rendered: RenderedMappedText,
     pub normalized_segments: Vec<NormalizedSegment>,
 }
 
@@ -31,11 +34,20 @@ pub struct NormalizedSegment {
 
 type OwnedNormalizationEdit = (String, Span, Vec<NormalizationEdit>);
 
+struct MappedNormalizationContext<'a> {
+    source: &'a IndexedText<'a>,
+    source_name: &'a str,
+    source_anchors: &'a [usize],
+    insertions: &'a [(usize, String)],
+}
+
 pub fn build_synthesis_plan(
     source: &str,
+    source_name: &str,
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
-) -> SynthesisPlan {
+    source_anchors: &[usize],
+) -> Result<SynthesisPlan, MappedTextError> {
     let mut merged_candidates = candidates.to_vec();
     merge_owned_candidate_normalization_edits(&mut merged_candidates);
     let targets = merged_candidates
@@ -46,19 +58,22 @@ pub fn build_synthesis_plan(
             let declaration_id = format!("__lf_{index}");
             let (normalized_code, normalized_segments) =
                 normalize_candidate_source(source, candidate);
-            SynthesisTarget {
+            let normalized_rendered =
+                render_normalized_candidate_source(source, source_name, candidate, source_anchors)?;
+            Ok(SynthesisTarget {
                 declaration_id,
                 candidate: candidate.clone(),
                 normalized_code,
+                normalized_rendered,
                 normalized_segments,
-            }
+            })
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>, MappedTextError>>()?;
 
-    SynthesisPlan {
+    Ok(SynthesisPlan {
         imports: imports.to_vec(),
         targets,
-    }
+    })
 }
 
 pub fn merge_owned_candidate_normalization_edits(candidates: &mut [MacroCandidate]) {
@@ -162,6 +177,65 @@ fn normalize_candidate_source(
     (generated, segments)
 }
 
+fn render_normalized_candidate_source(
+    source: &str,
+    source_name: &str,
+    candidate: &MacroCandidate,
+    source_anchors: &[usize],
+) -> Result<RenderedMappedText, MappedTextError> {
+    let (strips, insertions) = collect_normalization_operations(candidate, source.len());
+    let indexed_source = IndexedText::new(source);
+    let mut rendered = MappedText::new(source_name, source);
+    let mut cursor = candidate.outer_span.start;
+    let mut insertion_index = 0usize;
+    let mapped_context = MappedNormalizationContext {
+        source: &indexed_source,
+        source_name,
+        source_anchors,
+        insertions: &insertions,
+    };
+
+    for strip in strips {
+        if strip.start > cursor {
+            append_mapped_chunk(
+                &mapped_context,
+                &mut rendered,
+                cursor,
+                strip.start,
+                &mut insertion_index,
+            );
+        }
+
+        while insertion_index < insertions.len() && insertions[insertion_index].0 == strip.start {
+            rendered.push_unmapped(&insertions[insertion_index].1);
+            insertion_index += 1;
+        }
+
+        cursor = cursor.max(strip.end);
+    }
+
+    if cursor < candidate.outer_span.end {
+        append_mapped_chunk(
+            &mapped_context,
+            &mut rendered,
+            cursor,
+            candidate.outer_span.end,
+            &mut insertion_index,
+        );
+    }
+
+    while insertion_index < insertions.len()
+        && insertions[insertion_index].0 <= candidate.outer_span.end
+    {
+        if insertions[insertion_index].0 == candidate.outer_span.end {
+            rendered.push_unmapped(&insertions[insertion_index].1);
+        }
+        insertion_index += 1;
+    }
+
+    rendered.into_rendered()
+}
+
 fn collect_normalization_operations(
     candidate: &MacroCandidate,
     source_len: usize,
@@ -247,6 +321,68 @@ fn append_chunk(
         }
         cursor = next_insertion;
     }
+}
+
+fn append_mapped_chunk(
+    context: &MappedNormalizationContext<'_>,
+    rendered: &mut MappedText<'_>,
+    start: usize,
+    end: usize,
+    insertion_index: &mut usize,
+) {
+    let mut cursor = start;
+
+    while cursor < end {
+        while *insertion_index < context.insertions.len()
+            && context.insertions[*insertion_index].0 == cursor
+        {
+            rendered.push_unmapped(&context.insertions[*insertion_index].1);
+            *insertion_index += 1;
+        }
+
+        let next_insertion = context
+            .insertions
+            .get(*insertion_index)
+            .filter(|(at, _)| *at > cursor && *at < end)
+            .map(|(at, _)| *at)
+            .unwrap_or(end);
+        let span = Span::new(cursor, next_insertion);
+        if let Some(chunk) = context.source.as_str().get(span.start..span.end)
+            && !chunk.is_empty()
+        {
+            let chunk_anchors =
+                collect_chunk_copy_anchors(context.source.as_str(), span, context.source_anchors);
+            if let Some(map) =
+                build_copy_map(context.source_name, context.source, span, &chunk_anchors)
+            {
+                rendered.push_pre_mapped(chunk, map);
+            } else {
+                rendered.push_unmapped(chunk);
+            }
+        }
+        cursor = next_insertion;
+    }
+}
+
+fn collect_chunk_copy_anchors(source: &str, span: Span, source_anchors: &[usize]) -> Vec<usize> {
+    let mut anchors = BTreeSet::new();
+    anchors.extend(
+        source_anchors
+            .iter()
+            .copied()
+            .filter(|anchor| *anchor > span.start && *anchor < span.end),
+    );
+
+    for (offset, byte) in source.as_bytes()[span.start..span.end].iter().enumerate() {
+        if *byte == b'\n' {
+            let anchor = span.start + offset + 1;
+            if anchor > span.start && anchor < span.end {
+                anchors.insert(anchor);
+            }
+        }
+    }
+
+    anchors.into_iter().collect()
 }
 
 #[cfg(test)]

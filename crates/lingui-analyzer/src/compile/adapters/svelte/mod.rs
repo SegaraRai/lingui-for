@@ -119,7 +119,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     fn wrap_compile_source(
         analysis: &Self::Analysis,
         prototype: &CompileTargetPrototype,
-        normalized_source: &str,
+        normalized_source: &RenderedMappedText,
     ) -> Result<RenderedMappedText, CompileError> {
         wrap_compile_source(analysis, prototype, normalized_source)
             .map_err(AdapterError::from)
