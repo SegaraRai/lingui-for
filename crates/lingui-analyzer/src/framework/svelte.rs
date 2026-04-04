@@ -1264,10 +1264,21 @@ fn start_tag_is_module(source: &str, start_tag: Node<'_>) -> bool {
             continue;
         }
 
-        let attribute_text = text(source, child);
-        if attribute_text.trim() == "module"
-            || (attribute_text.contains("context") && attribute_text.contains("module"))
-        {
+        let attribute_text = text(source, child).trim();
+        if attribute_text == "module" {
+            return true;
+        }
+
+        let Some((name, raw_value)) = attribute_text.split_once('=') else {
+            continue;
+        };
+
+        if name.trim() != "context" {
+            continue;
+        }
+
+        let value = raw_value.trim().trim_matches('"').trim_matches('\'');
+        if value == "module" {
             return true;
         }
     }
