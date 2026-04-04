@@ -39,6 +39,10 @@ pub enum SvelteAdapterError {
     SvelteFramework(#[from] SvelteFrameworkError),
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
+    #[error(transparent)]
+    Parse(#[from] crate::framework::parse::ParseError),
+    #[error(transparent)]
+    RuntimeComponent(#[from] RuntimeComponentError),
     #[error("{0}")]
     InvalidMacroUsage(String),
     #[error(
@@ -51,6 +55,12 @@ pub enum SvelteAdapterError {
     BareDirectMacroRequiresReactiveOrEager { imported_name: Cow<'static, str> },
     #[error("missing Svelte convention field: {0}")]
     MissingConvention(&'static str),
+    #[error("missing original Svelte Trans node for runtime component lowering")]
+    MissingOriginalSvelteTransNode,
+    #[error("missing tag name while lowering Svelte snippet")]
+    MissingTagNameWhileLoweringSvelteSnippet,
+    #[error("mismatched Svelte runtime component placeholders: expected {expected}, found {found}")]
+    MismatchedSvelteRuntimeComponentPlaceholderCount { expected: usize, found: usize },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
@@ -145,7 +155,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         source: &str,
         target: &CompileTarget,
         declaration: &RenderedMappedText,
-    ) -> Result<RenderedMappedText, RuntimeComponentError> {
+    ) -> Result<RenderedMappedText, AdapterError> {
         lower_runtime_component_markup(
             source_name,
             source,
@@ -153,6 +163,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
             declaration,
             self.runtime_bindings.trans_component.as_str(),
         )
+        .map_err(AdapterError::from)
     }
 
     fn append_runtime_injection_replacements(

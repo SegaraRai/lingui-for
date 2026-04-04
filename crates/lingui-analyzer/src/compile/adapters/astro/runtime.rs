@@ -11,6 +11,8 @@ use crate::compile::runtime_component::{
 };
 use crate::framework::parse::{parse_astro, parse_tsx};
 
+use super::AstroAdapterError;
+
 struct AstroLoweredObjectExpression {
     props: RenderedMappedText,
     slot_callbacks: Vec<RenderedMappedText>,
@@ -22,7 +24,7 @@ pub(crate) fn lower_runtime_component_markup(
     target: &CompileTarget,
     declaration: &RenderedMappedText,
     runtime_component_name: &str,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
+) -> Result<RenderedMappedText, AstroAdapterError> {
     let declaration_source = IndexedText::new(&declaration.code);
     let original_source = IndexedText::new(original_source);
     let mapped_input = MappedText::from_rendered(
@@ -64,7 +66,7 @@ fn convert_runtime_trans_root(
     node: Node<'_>,
     base_offset: isize,
     runtime_component_name: &str,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
+) -> Result<RenderedMappedText, AstroAdapterError> {
     let opening = match node.kind() {
         "jsx_element" => node.child_by_field_name("open_tag"),
         "jsx_self_closing_element" => Some(node),
@@ -181,7 +183,8 @@ fn convert_runtime_trans_root(
             other => {
                 return Err(RuntimeComponentError::UnsupportedJsxAttributeNodeKind {
                     kind: other.to_string(),
-                });
+                }
+                .into());
             }
         }
     }
@@ -235,7 +238,7 @@ fn convert_runtime_trans_root(
         );
     }
 
-    mapped.into_rendered().map_err(RuntimeComponentError::from)
+    mapped.into_rendered().map_err(Into::into)
 }
 
 fn lower_object_expression_span(
@@ -246,7 +249,7 @@ fn lower_object_expression_span(
     target: &CompileTarget,
     span: Span,
     indent_level: usize,
-) -> Result<AstroLoweredObjectExpression, RuntimeComponentError> {
+) -> Result<AstroLoweredObjectExpression, AstroAdapterError> {
     let text = &source[span.start..span.end];
     let wrapper_prefix = "const __expr = (";
     let wrapped = format!("{wrapper_prefix}{text});");
@@ -290,7 +293,7 @@ fn convert_object_expression(
     node: Node<'_>,
     base_offset: isize,
     indent_level: usize,
-) -> Result<AstroLoweredObjectExpression, RuntimeComponentError> {
+) -> Result<AstroLoweredObjectExpression, AstroAdapterError> {
     let indent = "  ".repeat(indent_level);
     let child_indent = "  ".repeat(indent_level + 1);
     let mut rendered = input.empty_like();
@@ -379,7 +382,8 @@ fn convert_object_expression(
             other => {
                 return Err(RuntimeComponentError::UnsupportedObjectChildKind {
                     kind: other.to_string(),
-                });
+                }
+                .into());
             }
         }
     }
@@ -393,9 +397,7 @@ fn convert_object_expression(
     }
 
     Ok(AstroLoweredObjectExpression {
-        props: rendered
-            .into_rendered()
-            .map_err(RuntimeComponentError::from)?,
+        props: rendered.into_rendered().map_err(AstroAdapterError::from)?,
         slot_callbacks,
     })
 }
@@ -407,7 +409,7 @@ fn collect_component_slot_callbacks(
     transformed_source: &str,
     node: Node<'_>,
     base_offset: isize,
-) -> Result<Option<Vec<RenderedMappedText>>, RuntimeComponentError> {
+) -> Result<Option<Vec<RenderedMappedText>>, AstroAdapterError> {
     let node = match node.kind() {
         "parenthesized_expression" => first_named_child(node).unwrap_or(node),
         _ => node,
@@ -421,13 +423,15 @@ fn collect_component_slot_callbacks(
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
         if child.kind() != "pair" {
-            return Err(RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents);
+            return Err(
+                RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents.into(),
+            );
         }
         let Some(key) = child.child_by_field_name("key") else {
-            return Err(RuntimeComponentError::MissingObjectPairKey);
+            return Err(RuntimeComponentError::MissingObjectPairKey.into());
         };
         let Some(key_name) = key_name(transformed_source, key, base_offset) else {
-            return Err(RuntimeComponentError::MissingObjectPairKey);
+            return Err(RuntimeComponentError::MissingObjectPairKey.into());
         };
         keys.push(key_name);
     }
@@ -445,17 +449,17 @@ fn collect_component_slot_callbacks_from_source(
     original_source: &str,
     target: &CompileTarget,
     keys: &[String],
-) -> Result<Vec<RenderedMappedText>, RuntimeComponentError> {
+) -> Result<Vec<RenderedMappedText>, AstroAdapterError> {
     let tree = parse_astro(original_source)?;
     let root = tree.root_node();
     let component_node = find_node_by_span(root, target.original_span)
-        .ok_or(RuntimeComponentError::MissingOriginalAstroTransNode)?;
+        .ok_or(AstroAdapterError::MissingOriginalAstroTransNode)?;
     let mut wrappers = Vec::new();
     collect_runtime_component_wrappers(component_node, original_source, &mut wrappers);
 
     if wrappers.len() != keys.len() {
         return Err(
-            RuntimeComponentError::MismatchedAstroRuntimeComponentPlaceholderCount {
+            AstroAdapterError::MismatchedAstroRuntimeComponentPlaceholderCount {
                 expected: keys.len(),
                 found: wrappers.len(),
             },
@@ -538,7 +542,7 @@ fn lower_original_wrapper_to_slot_callback(
     input: &MappedText<'_>,
     node: Node<'_>,
     slot_name: &str,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
+) -> Result<RenderedMappedText, AstroAdapterError> {
     let mut rendered = input.empty_like();
     rendered.push_unmapped("<fragment slot=\"");
     rendered.push_unmapped(slot_name);
@@ -571,16 +575,14 @@ fn lower_original_wrapper_to_slot_callback(
         "self_closing_tag" => {
             node.children(&mut node.walk())
                 .find(|child| child.kind() == "tag_name")
-                .ok_or(RuntimeComponentError::MissingTagNameWhileLoweringAstroSlotCallback)?;
+                .ok_or(AstroAdapterError::MissingTagNameWhileLoweringAstroSlotCallback)?;
             push_copied_span(&mut rendered, input, Span::from_node(node))?;
         }
-        _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor),
+        _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
 
     rendered.push_unmapped("}</fragment>");
-    rendered
-        .into_rendered()
-        .map_err(RuntimeComponentError::from)
+    rendered.into_rendered().map_err(Into::into)
 }
 
 #[cfg(test)]

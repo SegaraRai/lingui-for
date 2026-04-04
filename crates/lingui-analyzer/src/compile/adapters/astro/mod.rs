@@ -5,7 +5,9 @@ mod runtime;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{IndexedText, MappedText, RenderedMappedText, Span, build_copy_map};
+use crate::common::{
+    IndexedText, MappedText, MappedTextError, RenderedMappedText, Span, build_copy_map,
+};
 use crate::compile::{
     CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
     CompileTargetPrototype, FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
@@ -30,8 +32,18 @@ pub enum AstroAdapterError {
     Js(#[from] crate::framework::js::JsAnalysisError),
     #[error(transparent)]
     Parse(#[from] crate::framework::parse::ParseError),
+    #[error(transparent)]
+    MappedText(#[from] MappedTextError),
+    #[error(transparent)]
+    RuntimeComponent(#[from] RuntimeComponentError),
     #[error("missing Astro convention field: {0}")]
     MissingConvention(&'static str),
+    #[error("missing original Astro Trans node for runtime component lowering")]
+    MissingOriginalAstroTransNode,
+    #[error("missing tag name while lowering Astro slot callback")]
+    MissingTagNameWhileLoweringAstroSlotCallback,
+    #[error("mismatched Astro runtime component placeholders: expected {expected}, found {found}")]
+    MismatchedAstroRuntimeComponentPlaceholderCount { expected: usize, found: usize },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -135,7 +147,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         source: &str,
         target: &CompileTarget,
         declaration: &RenderedMappedText,
-    ) -> Result<RenderedMappedText, RuntimeComponentError> {
+    ) -> Result<RenderedMappedText, AdapterError> {
         lower_runtime_component_markup(
             source_name,
             source,
@@ -143,6 +155,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
             declaration,
             self.runtime_bindings.runtime_trans.as_str(),
         )
+        .map_err(AdapterError::from)
     }
 
     fn append_runtime_injection_replacements(

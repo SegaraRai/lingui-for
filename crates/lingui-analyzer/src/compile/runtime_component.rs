@@ -56,18 +56,6 @@ pub enum RuntimeComponentError {
     UnsupportedJsxPropKind { kind: String },
     #[error("translated node offset became negative")]
     TranslatedNodeOffsetNegative,
-    #[error("missing original Astro Trans node for runtime component lowering")]
-    MissingOriginalAstroTransNode,
-    #[error("missing original Svelte Trans node for runtime component lowering")]
-    MissingOriginalSvelteTransNode,
-    #[error("missing tag name while lowering Svelte snippet")]
-    MissingTagNameWhileLoweringSvelteSnippet,
-    #[error("missing tag name while lowering Astro slot callback")]
-    MissingTagNameWhileLoweringAstroSlotCallback,
-    #[error("mismatched Astro runtime component placeholders: expected {expected}, found {found}")]
-    MismatchedAstroRuntimeComponentPlaceholderCount { expected: usize, found: usize },
-    #[error("mismatched Svelte runtime component placeholders: expected {expected}, found {found}")]
-    MismatchedSvelteRuntimeComponentPlaceholderCount { expected: usize, found: usize },
 }
 
 pub(super) fn push_anchor_mapped(

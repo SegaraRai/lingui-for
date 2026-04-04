@@ -31,8 +31,6 @@ pub enum CompileError {
     Lower(#[from] LowerError),
     #[error(transparent)]
     Emit(#[from] EmitError),
-    #[error(transparent)]
-    RuntimeComponent(#[from] RuntimeComponentError),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -140,7 +138,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         _source: &str,
         _target: &CompileTarget,
         declaration: &RenderedMappedText,
-    ) -> Result<RenderedMappedText, RuntimeComponentError>;
+    ) -> Result<RenderedMappedText, AdapterError>;
 
     fn append_runtime_injection_replacements(
         &self,

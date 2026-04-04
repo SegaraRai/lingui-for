@@ -9,10 +9,9 @@ use crate::framework::parse::{ParseError, parse_tsx};
 use super::emit::{
     EmitError, collect_compile_replacements_internal, finish_compile_from_internal_replacements,
 };
-use super::runtime_component::RuntimeComponentError;
 use super::{
-    CompileTargetOutputKind, CompileTranslationMode, FinishedCompileInternal, FrameworkCompilePlan,
-    TransformedPrograms,
+    AdapterError, CompileTargetOutputKind, CompileTranslationMode, FinishedCompileInternal,
+    FrameworkCompilePlan, TransformedPrograms,
 };
 
 #[derive(thiserror::Error, Debug)]
@@ -22,7 +21,7 @@ pub enum LowerError {
     #[error(transparent)]
     Emit(#[from] EmitError),
     #[error(transparent)]
-    RuntimeComponent(#[from] RuntimeComponentError),
+    Adapter(#[from] AdapterError),
     #[error(transparent)]
     CollectDeclarations(#[from] CollectDeclarationsError),
 }

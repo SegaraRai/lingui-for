@@ -10,6 +10,8 @@ use crate::compile::runtime_component::{
 };
 use crate::framework::parse::{parse_svelte, parse_tsx};
 
+use super::SvelteAdapterError;
+
 struct SvelteLoweredObjectExpression {
     props: RenderedMappedText,
     snippets: Vec<RenderedMappedText>,
@@ -21,7 +23,7 @@ pub(crate) fn lower_runtime_component_markup(
     target: &CompileTarget,
     declaration: &RenderedMappedText,
     runtime_component_name: &str,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
+) -> Result<RenderedMappedText, SvelteAdapterError> {
     let declaration_source = IndexedText::new(&declaration.code);
     let original_source = IndexedText::new(original_source);
     let mapped_input = MappedText::from_rendered(
@@ -63,7 +65,7 @@ fn convert_runtime_trans_root(
     node: Node<'_>,
     base_offset: isize,
     runtime_component_name: &str,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
+) -> Result<RenderedMappedText, SvelteAdapterError> {
     let opening = match node.kind() {
         "jsx_element" => node.child_by_field_name("open_tag"),
         "jsx_self_closing_element" => Some(node),
@@ -180,7 +182,8 @@ fn convert_runtime_trans_root(
             other => {
                 return Err(RuntimeComponentError::UnsupportedJsxAttributeNodeKind {
                     kind: other.to_string(),
-                });
+                }
+                .into());
             }
         }
     }
@@ -234,7 +237,7 @@ fn convert_runtime_trans_root(
         );
     }
 
-    mapped.into_rendered().map_err(RuntimeComponentError::from)
+    mapped.into_rendered().map_err(SvelteAdapterError::from)
 }
 
 fn lower_object_expression_span(
@@ -245,7 +248,7 @@ fn lower_object_expression_span(
     target: &CompileTarget,
     span: Span,
     indent_level: usize,
-) -> Result<SvelteLoweredObjectExpression, RuntimeComponentError> {
+) -> Result<SvelteLoweredObjectExpression, SvelteAdapterError> {
     let text = &source[span.start..span.end];
     let wrapper_prefix = "const __expr = (";
     let wrapped = format!("{wrapper_prefix}{text});");
@@ -289,7 +292,7 @@ fn convert_object_expression(
     node: Node<'_>,
     base_offset: isize,
     indent_level: usize,
-) -> Result<SvelteLoweredObjectExpression, RuntimeComponentError> {
+) -> Result<SvelteLoweredObjectExpression, SvelteAdapterError> {
     let indent = "  ".repeat(indent_level);
     let child_indent = "  ".repeat(indent_level + 1);
     let mut rendered = input.empty_like();
@@ -384,7 +387,8 @@ fn convert_object_expression(
             other => {
                 return Err(RuntimeComponentError::UnsupportedObjectChildKind {
                     kind: other.to_string(),
-                });
+                }
+                .into());
             }
         }
     }
@@ -398,9 +402,7 @@ fn convert_object_expression(
     }
 
     Ok(SvelteLoweredObjectExpression {
-        props: rendered
-            .into_rendered()
-            .map_err(RuntimeComponentError::from)?,
+        props: rendered.into_rendered().map_err(SvelteAdapterError::from)?,
         snippets,
     })
 }
@@ -414,7 +416,7 @@ fn convert_expression_for_runtime_trans(
     node: Node<'_>,
     base_offset: isize,
     indent_level: usize,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
+) -> Result<RenderedMappedText, SvelteAdapterError> {
     match node.kind() {
         "object" => convert_object_expression(
             source,
@@ -427,7 +429,7 @@ fn convert_expression_for_runtime_trans(
             indent_level,
         )
         .map(|lowered| lowered.props),
-        _ => copy_node(source, input, node, base_offset),
+        _ => Ok(copy_node(source, input, node, base_offset)?),
     }
 }
 
@@ -438,22 +440,26 @@ fn collect_component_snippets(
     transformed_source: &str,
     node: Node<'_>,
     base_offset: isize,
-) -> Result<Option<Vec<RenderedMappedText>>, RuntimeComponentError> {
+) -> Result<Option<Vec<RenderedMappedText>>, SvelteAdapterError> {
     if node.kind() != "object" {
-        return Err(RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents);
+        return Err(
+            RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents.into(),
+        );
     }
 
     let mut keys = Vec::new();
     let mut cursor = node.walk();
     for child in node.named_children(&mut cursor) {
         if child.kind() != "pair" {
-            return Err(RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents);
+            return Err(
+                RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents.into(),
+            );
         }
         let Some(key) = child.child_by_field_name("key") else {
-            return Err(RuntimeComponentError::MissingObjectPairKey);
+            return Err(RuntimeComponentError::MissingObjectPairKey.into());
         };
         let Some(key_name) = key_name(transformed_source, key, base_offset) else {
-            return Err(RuntimeComponentError::MissingObjectPairKey);
+            return Err(RuntimeComponentError::MissingObjectPairKey.into());
         };
         keys.push(key_name);
     }
@@ -471,17 +477,17 @@ fn collect_component_snippets_from_source(
     original_source: &str,
     target: &CompileTarget,
     keys: &[String],
-) -> Result<Vec<RenderedMappedText>, RuntimeComponentError> {
+) -> Result<Vec<RenderedMappedText>, SvelteAdapterError> {
     let tree = parse_svelte(original_source)?;
     let root = tree.root_node();
     let component_node = find_node_by_span(root, target.original_span)
-        .ok_or(RuntimeComponentError::MissingOriginalSvelteTransNode)?;
+        .ok_or(SvelteAdapterError::MissingOriginalSvelteTransNode)?;
     let mut wrappers = Vec::new();
     collect_runtime_component_wrappers(component_node, original_source, &mut wrappers);
 
     if wrappers.len() != keys.len() {
         return Err(
-            RuntimeComponentError::MismatchedSvelteRuntimeComponentPlaceholderCount {
+            SvelteAdapterError::MismatchedSvelteRuntimeComponentPlaceholderCount {
                 expected: keys.len(),
                 found: wrappers.len(),
             },
@@ -566,7 +572,7 @@ fn lower_original_wrapper_to_snippet(
     source: &str,
     node: Node<'_>,
     snippet_name: &str,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
+) -> Result<RenderedMappedText, SvelteAdapterError> {
     let mut rendered = input.empty_like();
     rendered.push_unmapped("{#snippet ");
     rendered.push_unmapped(snippet_name);
@@ -600,7 +606,7 @@ fn lower_original_wrapper_to_snippet(
             let tag_name = node
                 .children(&mut node.walk())
                 .find(|child| child.kind() == "tag_name")
-                .ok_or(RuntimeComponentError::MissingTagNameWhileLoweringSvelteSnippet)?;
+                .ok_or(SvelteAdapterError::MissingTagNameWhileLoweringSvelteSnippet)?;
             let tag_name_span = Span::from_node(tag_name);
             let node_span = Span::from_node(node);
             let source_slice = &source[node_span.start..node_span.end];
@@ -616,13 +622,11 @@ fn lower_original_wrapper_to_snippet(
             push_copied_span(&mut rendered, input, tag_name_span)?;
             rendered.push_unmapped(">");
         }
-        _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor),
+        _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
 
     rendered.push_unmapped("{/snippet}");
-    rendered
-        .into_rendered()
-        .map_err(RuntimeComponentError::from)
+    rendered.into_rendered().map_err(SvelteAdapterError::from)
 }
 
 #[cfg(test)]
