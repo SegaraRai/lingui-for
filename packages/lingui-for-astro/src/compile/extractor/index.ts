@@ -20,7 +20,7 @@ import {
   type RichTextWhitespaceMode,
 } from "../common/config.ts";
 import { createAstroFrameworkConventions } from "../common/conventions.ts";
-import { transformProgram } from "../lower/babel-transform.ts";
+import { lowerAstroExtractProgram } from "../lower/extract.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
 
@@ -76,11 +76,9 @@ export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
           },
         ),
       });
-      const transformed = transformProgram(synthetic.source, {
-        translationMode: "extract",
+      const transformed = lowerAstroExtractProgram(synthetic.source, {
         filename: syntheticName,
         linguiConfig: extractorCtx.linguiConfig,
-        runtimeBinding: null,
         inputSourceMap: toBabelSourceMap(
           parseCanonicalSourceMap(synthetic.sourceMapJson),
         ),

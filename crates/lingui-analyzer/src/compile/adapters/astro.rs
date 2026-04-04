@@ -214,7 +214,7 @@ pub(crate) fn analyze_astro_compile(
                 output_kind: CompileTargetOutputKind::Expression,
                 candidate,
                 context: CompileTargetContext::Frontmatter,
-                translation_mode: CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Contextual,
             }),
     );
     for expression in &analysis.template_expressions {
@@ -223,7 +223,7 @@ pub(crate) fn analyze_astro_compile(
                 output_kind: CompileTargetOutputKind::Expression,
                 candidate,
                 context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Contextual,
             }
         }));
     }
@@ -236,7 +236,7 @@ pub(crate) fn analyze_astro_compile(
                 output_kind: CompileTargetOutputKind::Component,
                 candidate: component.candidate,
                 context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Contextual,
             }),
     );
 

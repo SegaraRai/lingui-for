@@ -33,19 +33,21 @@ struct FixtureCase {
 
 #[derive(Clone, Copy)]
 struct StaticTransformedPrograms {
-    raw_code: Option<&'static str>,
-    raw_source_map_json: Option<&'static str>,
-    context_code: Option<&'static str>,
-    context_source_map_json: Option<&'static str>,
+    lowered_code: Option<&'static str>,
+    lowered_source_map_json: Option<&'static str>,
+    contextual_code: Option<&'static str>,
+    contextual_source_map_json: Option<&'static str>,
 }
 
 impl From<StaticTransformedPrograms> for TransformedPrograms {
     fn from(value: StaticTransformedPrograms) -> Self {
         TransformedPrograms {
-            context_code: value.context_code.map(|code| code.to_string()),
-            context_source_map_json: value.context_source_map_json.map(|json| json.to_string()),
-            raw_code: value.raw_code.map(|code| code.to_string()),
-            raw_source_map_json: value.raw_source_map_json.map(|json| json.to_string()),
+            contextual_code: value.contextual_code.map(|code| code.to_string()),
+            contextual_source_map_json: value
+                .contextual_source_map_json
+                .map(|json| json.to_string()),
+            lowered_code: value.lowered_code.map(|code| code.to_string()),
+            lowered_source_map_json: value.lowered_source_map_json.map(|json| json.to_string()),
         }
     }
 }
@@ -70,12 +72,12 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
         source_name: "astro-full.astro",
         source: include_str!("fixtures/astro-full.astro"),
         transformed_programs: StaticTransformedPrograms {
-            raw_code: None,
-            raw_source_map_json: None,
-            context_code: Some(include_str!(
+            lowered_code: None,
+            lowered_source_map_json: None,
+            contextual_code: Some(include_str!(
                 "fixtures/astro-full.astro.transform.context.tsx"
             )),
-            context_source_map_json: Some(include_str!(
+            contextual_source_map_json: Some(include_str!(
                 "fixtures/astro-full.astro.transform.context.tsx.map"
             )),
         },
@@ -86,12 +88,12 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
         source_name: "astro-unicode.astro",
         source: include_str!("fixtures/astro-unicode.astro"),
         transformed_programs: StaticTransformedPrograms {
-            raw_code: None,
-            raw_source_map_json: None,
-            context_code: Some(include_str!(
+            lowered_code: None,
+            lowered_source_map_json: None,
+            contextual_code: Some(include_str!(
                 "fixtures/astro-unicode.astro.transform.context.tsx"
             )),
-            context_source_map_json: Some(include_str!(
+            contextual_source_map_json: Some(include_str!(
                 "fixtures/astro-unicode.astro.transform.context.tsx.map"
             )),
         },
@@ -102,16 +104,16 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
         source_name: "svelte-full.svelte",
         source: include_str!("fixtures/svelte-full.svelte"),
         transformed_programs: StaticTransformedPrograms {
-            raw_code: Some(include_str!(
+            lowered_code: Some(include_str!(
                 "fixtures/svelte-full.svelte.transform.raw.tsx"
             )),
-            raw_source_map_json: Some(include_str!(
+            lowered_source_map_json: Some(include_str!(
                 "fixtures/svelte-full.svelte.transform.raw.tsx.map"
             )),
-            context_code: Some(include_str!(
+            contextual_code: Some(include_str!(
                 "fixtures/svelte-full.svelte.transform.context.tsx"
             )),
-            context_source_map_json: Some(include_str!(
+            contextual_source_map_json: Some(include_str!(
                 "fixtures/svelte-full.svelte.transform.context.tsx.map"
             )),
         },
@@ -122,16 +124,16 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
         source_name: "svelte-unicode.svelte",
         source: include_str!("fixtures/svelte-unicode.svelte"),
         transformed_programs: StaticTransformedPrograms {
-            raw_code: Some(include_str!(
+            lowered_code: Some(include_str!(
                 "fixtures/svelte-unicode.svelte.transform.raw.tsx"
             )),
-            raw_source_map_json: Some(include_str!(
+            lowered_source_map_json: Some(include_str!(
                 "fixtures/svelte-unicode.svelte.transform.raw.tsx.map"
             )),
-            context_code: Some(include_str!(
+            contextual_code: Some(include_str!(
                 "fixtures/svelte-unicode.svelte.transform.context.tsx"
             )),
-            context_source_map_json: Some(include_str!(
+            contextual_source_map_json: Some(include_str!(
                 "fixtures/svelte-unicode.svelte.transform.context.tsx.map"
             )),
         },

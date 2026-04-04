@@ -226,9 +226,9 @@ pub(crate) fn analyze_svelte_compile(
             CompileTargetContext::InstanceScript
         };
         let translation_mode = if script.is_module {
-            CompileTranslationMode::Raw
+            CompileTranslationMode::Lowered
         } else {
-            CompileTranslationMode::Context
+            CompileTranslationMode::Contextual
         };
 
         prototypes.extend(script.candidates.iter().cloned().map(|candidate| {
@@ -247,7 +247,7 @@ pub(crate) fn analyze_svelte_compile(
                 output_kind: CompileTargetOutputKind::Expression,
                 candidate,
                 context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Contextual,
             }
         }));
     }
@@ -261,7 +261,7 @@ pub(crate) fn analyze_svelte_compile(
                 output_kind: CompileTargetOutputKind::Component,
                 candidate: component.candidate,
                 context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Contextual,
             }),
     );
 
@@ -409,7 +409,7 @@ fn push_wrapped_copy(mapped: &mut MappedText<'_>, normalized_source: &IndexedTex
 pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
     RuntimeRequirements {
         needs_runtime_i18n_binding: targets.iter().any(|target| {
-            target.translation_mode == CompileTranslationMode::Context
+            target.translation_mode == CompileTranslationMode::Contextual
                 && target.output_kind == CompileTargetOutputKind::Expression
                 && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
         }),

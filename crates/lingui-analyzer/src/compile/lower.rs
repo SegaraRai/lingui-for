@@ -109,27 +109,27 @@ fn collect_transformed_declarations(
     programs: &TransformedPrograms,
 ) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, LoweredDeclaration>>, LowerError> {
     let mut declarations = BTreeMap::new();
-    let raw_source_map = programs
-        .raw_source_map_json
+    let lowered_source_map = programs
+        .lowered_source_map_json
         .as_deref()
         .and_then(parse_source_map)
         .map(IndexedSourceMap::new);
-    let context_source_map = programs
-        .context_source_map_json
+    let contextual_source_map = programs
+        .contextual_source_map_json
         .as_deref()
         .and_then(parse_source_map)
         .map(IndexedSourceMap::new);
 
-    if let Some(code) = &programs.raw_code {
+    if let Some(code) = &programs.lowered_code {
         declarations.insert(
-            CompileTranslationMode::Raw,
-            collect_declarations_from_program(code, raw_source_map.as_ref())?,
+            CompileTranslationMode::Lowered,
+            collect_declarations_from_program(code, lowered_source_map.as_ref())?,
         );
     }
-    if let Some(code) = &programs.context_code {
+    if let Some(code) = &programs.contextual_code {
         declarations.insert(
-            CompileTranslationMode::Context,
-            collect_declarations_from_program(code, context_source_map.as_ref())?,
+            CompileTranslationMode::Contextual,
+            collect_declarations_from_program(code, contextual_source_map.as_ref())?,
         );
     }
 
@@ -272,7 +272,7 @@ mod tests {
                     flavor: MacroFlavor::Reactive,
                     context: CompileTargetContext::Template,
                     output_kind: CompileTargetOutputKind::Expression,
-                    translation_mode: CompileTranslationMode::Context,
+                    translation_mode: CompileTranslationMode::Contextual,
                     normalized_segments: vec![NormalizedSegment {
                         original_start: 8,
                         generated_start: 0,
@@ -301,7 +301,7 @@ mod tests {
         };
         let source = "<script>\n  let x = 1;\n</script>\n<p>\n  {$t`hello`}\n</p>";
         let transformed = TransformedPrograms {
-            context_code: Some(
+            contextual_code: Some(
                 "const __lf_0 = __l4s_translate({id:\"a\",message:\"hello\"});".to_string(),
             ),
             ..TransformedPrograms::default()

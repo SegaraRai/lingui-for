@@ -85,7 +85,10 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .iter()
         .find(|target| target.context == CompileTargetContext::ModuleScript)
         .expect("module target");
-    assert_eq!(module_target.translation_mode, CompileTranslationMode::Raw);
+    assert_eq!(
+        module_target.translation_mode,
+        CompileTranslationMode::Lowered
+    );
     assert_eq!(
         module_target.output_kind,
         CompileTargetOutputKind::Expression
@@ -102,7 +105,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .expect("instance expression target");
     assert_eq!(
         instance_target.translation_mode,
-        CompileTranslationMode::Context
+        CompileTranslationMode::Contextual
     );
 
     let template_expression_target = plan
@@ -116,7 +119,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .expect("template expression target");
     assert_eq!(
         template_expression_target.translation_mode,
-        CompileTranslationMode::Context
+        CompileTranslationMode::Contextual
     );
 
     let component_target = plan
@@ -128,7 +131,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     assert_eq!(component_target.context, CompileTargetContext::Template);
     assert_eq!(
         component_target.translation_mode,
-        CompileTranslationMode::Context
+        CompileTranslationMode::Contextual
     );
 }
 
@@ -234,7 +237,7 @@ const status = translate(msg`Status summary: active`);
         plan.common
             .targets
             .iter()
-            .all(|target| { target.translation_mode == CompileTranslationMode::Context })
+            .all(|target| { target.translation_mode == CompileTranslationMode::Contextual })
     );
     assert!(
         plan.common

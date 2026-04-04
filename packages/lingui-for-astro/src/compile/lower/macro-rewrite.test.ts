@@ -2,9 +2,8 @@ import { transformSync, type PluginItem } from "@babel/core";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import { normalizeLinguiConfig } from "../common/config.ts";
 import { createAstroMacroPostprocessPlugin } from "./macro-rewrite.ts";
-import type { ProgramTransformRequest } from "./types.ts";
+import type { AstroMacroPostprocessRequest } from "./types.ts";
 
 function runWithPlugin(
   code: string,
@@ -32,15 +31,13 @@ function runWithPlugin(
 }
 
 function createRequest(
-  overrides: Partial<ProgramTransformRequest> = {},
-): ProgramTransformRequest {
+  overrides: Partial<AstroMacroPostprocessRequest> = {},
+): AstroMacroPostprocessRequest {
   return {
     translationMode: "extract",
-    filename: "/virtual/Page.astro?frontmatter",
-    linguiConfig: normalizeLinguiConfig(),
     runtimeBinding: null,
     ...overrides,
-  } as ProgramTransformRequest;
+  };
 }
 
 describe("createAstroMacroPostprocessPlugin", () => {

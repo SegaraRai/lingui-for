@@ -224,7 +224,7 @@ mod tests {
             candidate: candidate(outer_span),
             context: CompileTargetContext::Template,
             output_kind: CompileTargetOutputKind::Expression,
-            translation_mode: CompileTranslationMode::Context,
+            translation_mode: CompileTranslationMode::Contextual,
         }
     }
 

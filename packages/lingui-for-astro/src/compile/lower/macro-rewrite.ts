@@ -7,7 +7,7 @@ import {
   LINGUI_TRANSLATE_METHOD,
 } from "@lingui-for/internal-shared-compile";
 
-import type { ProgramTransformRequest } from "./types.ts";
+import type { AstroMacroPostprocessRequest } from "./types.ts";
 
 type MacroRewriteState = {
   runtimeI18nLocals: Set<string>;
@@ -80,7 +80,7 @@ function removeRuntimeI18nImports(
  * when Astro binds translations through its own context local.
  */
 export function createAstroMacroPostprocessPlugin(
-  request: ProgramTransformRequest,
+  request: AstroMacroPostprocessRequest,
 ): PluginObj<MacroRewriteState> {
   return {
     name: "lingui-for-astro-macro-postprocess",

@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -14,11 +14,27 @@ const FIXTURE_DIR = path.join(
   "crates/lingui-analyzer/benches/fixtures",
 );
 
-const FILES = (await readdir(FIXTURE_DIR)).filter((file) =>
+const allFiles = await readdir(FIXTURE_DIR);
+const sourceFiles = allFiles.filter((file) =>
   /^[^.]+\.(?:astro|svelte)$/.test(file),
 );
 
-for (const file of FILES) {
+const cleanMode = process.argv[2] === "clean" || process.argv[2] === "--clean";
+if (cleanMode) {
+  const cleanFiles = allFiles.filter((file) =>
+    sourceFiles.some((source) => file.startsWith(source + ".")),
+  );
+
+  for (const file of cleanFiles) {
+    const filepath = path.join(FIXTURE_DIR, file);
+    await rm(filepath);
+    console.log(`Removed artifact ${file}`);
+  }
+
+  process.exit(0);
+}
+
+for (const file of sourceFiles) {
   const framework = file.endsWith(".astro") ? "astro" : "svelte";
   const filepath = path.join(FIXTURE_DIR, file);
   const source = await readFile(filepath, "utf8");

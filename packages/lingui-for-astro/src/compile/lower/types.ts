@@ -12,18 +12,20 @@ export interface ProgramTransform {
   map: CanonicalSourceMap | null;
 }
 
-export type ProgramTransformRequest =
-  | {
-      translationMode: "extract";
-      filename: string;
-      linguiConfig: LinguiConfigNormalized;
-      runtimeBinding: null;
-      inputSourceMap?: BabelSourceMap;
-    }
-  | {
-      translationMode: "astro-context";
-      filename: string;
-      linguiConfig: LinguiConfigNormalized;
-      runtimeBinding: string;
-      inputSourceMap?: BabelSourceMap;
-    };
+export interface AstroMacroPostprocessRequest {
+  translationMode: "extract" | "astro-context";
+  runtimeBinding: string | null;
+}
+
+export interface AstroExtractProgramRequest {
+  filename: string;
+  linguiConfig: LinguiConfigNormalized;
+  inputSourceMap?: BabelSourceMap;
+}
+
+export interface AstroTransformProgramRequest {
+  filename: string;
+  linguiConfig: LinguiConfigNormalized;
+  runtimeBinding: string;
+  inputSourceMap?: BabelSourceMap;
+}

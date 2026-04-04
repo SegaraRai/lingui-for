@@ -18,7 +18,7 @@ import {
   type RichTextWhitespaceMode,
 } from "../common/config.ts";
 import { createSvelteFrameworkConventions } from "../common/conventions.ts";
-import { transformProgram } from "../lower/babel-transform.ts";
+import { lowerSvelteExtractProgram } from "../lower/extract.ts";
 
 export type { RichTextWhitespaceMode } from "../common/config.ts";
 
@@ -79,12 +79,10 @@ export function svelteExtractor(
         return;
       }
 
-      const transformed = transformProgram(synthetic.source, {
+      const transformed = lowerSvelteExtractProgram(synthetic.source, {
         filename: syntheticName,
         lang: "ts",
         linguiConfig: extractorCtx.linguiConfig,
-        extract: true,
-        translationMode: "extract",
         inputSourceMap: toBabelSourceMap(
           parseCanonicalSourceMap(synthetic.sourceMapJson),
         ),

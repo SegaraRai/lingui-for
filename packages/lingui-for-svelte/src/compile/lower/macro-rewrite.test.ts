@@ -2,9 +2,8 @@ import { transformSync, type PluginItem } from "@babel/core";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import { normalizeLinguiConfig } from "../common/config.ts";
 import { createSvelteMacroPostprocessPlugin } from "./macro-rewrite.ts";
-import type { ProgramTransformRequest } from "./types.ts";
+import type { SvelteMacroPostprocessRequest } from "./types.ts";
 
 function runWithPlugin(
   code: string,
@@ -32,20 +31,16 @@ function runWithPlugin(
 }
 
 function createRequest(
-  overrides: Partial<ProgramTransformRequest> = {},
-): ProgramTransformRequest {
+  overrides: Partial<SvelteMacroPostprocessRequest> = {},
+): SvelteMacroPostprocessRequest {
   return {
-    extract: false,
-    filename: "/virtual/file.ts",
-    lang: "ts",
-    linguiConfig: normalizeLinguiConfig(),
-    translationMode: "raw",
+    translationMode: "lowered",
     ...overrides,
   };
 }
 
 describe("createMacroPostprocessPlugin", () => {
-  test("rewrites reactive wrappers to context-aware translator calls in svelte-context mode", () => {
+  test("rewrites reactive wrappers to context-aware translator calls in contextual mode", () => {
     const code = runWithPlugin(
       dedent`
         import { i18n as runtimeI18n } from "lingui-for-svelte/runtime";
@@ -67,7 +62,7 @@ describe("createMacroPostprocessPlugin", () => {
       `,
       createSvelteMacroPostprocessPlugin(
         createRequest({
-          translationMode: "svelte-context",
+          translationMode: "contextual",
           runtimeBindings: {
             createLinguiAccessors: "createLinguiAccessors",
             context: "__l4s_ctx",
@@ -113,7 +108,7 @@ describe("createMacroPostprocessPlugin", () => {
       `,
       createSvelteMacroPostprocessPlugin(
         createRequest({
-          translationMode: "svelte-context",
+          translationMode: "contextual",
           runtimeBindings: {
             createLinguiAccessors: "createLinguiAccessors",
             context: "__l4s_ctx",
@@ -150,7 +145,6 @@ describe("createMacroPostprocessPlugin", () => {
       `,
       createSvelteMacroPostprocessPlugin(
         createRequest({
-          extract: true,
           translationMode: "extract",
         }),
       ),
@@ -165,7 +159,7 @@ describe("createMacroPostprocessPlugin", () => {
     `);
   });
 
-  test("keeps reactive wrappers intact in raw mode without inventing runtime t imports", () => {
+  test("keeps reactive wrappers intact in lowered mode without inventing runtime t imports", () => {
     const code = runWithPlugin(
       dedent`
         import { i18n as runtimeI18n } from "@lingui/core";
@@ -185,7 +179,7 @@ describe("createMacroPostprocessPlugin", () => {
       `,
       createSvelteMacroPostprocessPlugin(
         createRequest({
-          translationMode: "raw",
+          translationMode: "lowered",
         }),
       ),
     );
@@ -208,7 +202,7 @@ describe("createMacroPostprocessPlugin", () => {
       `,
       createSvelteMacroPostprocessPlugin(
         createRequest({
-          translationMode: "svelte-context",
+          translationMode: "contextual",
           runtimeBindings: {
             createLinguiAccessors: "createLinguiAccessors",
             context: "__l4s_ctx",

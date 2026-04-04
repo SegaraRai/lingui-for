@@ -4,24 +4,31 @@ import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import { fromBabelSourceMap } from "@lingui-for/internal-shared-compile";
 
 import { getParserPlugins } from "../common/config.ts";
-import { createSvelteMacroPostprocessPlugin } from "./macro-rewrite.ts";
-import type { ProgramTransform, ProgramTransformRequest } from "./types.ts";
+import { createAstroMacroPostprocessPlugin } from "./macro-rewrite.ts";
+import type {
+  AstroExtractProgramRequest,
+  AstroMacroPostprocessRequest,
+  AstroTransformProgramRequest,
+  ProgramTransform,
+} from "./types.ts";
 
-/**
- * Runs the full Babel-based transform pipeline for one JS/TS program.
- *
- * @param code Program source text to transform.
- * @param request Transform configuration describing filename, parser mode, Lingui config,
- * extraction mode, translation mode, and runtime bindings.
- * @returns A {@link ProgramTransform} containing transformed code and transformed AST.
- *
- * The pipeline has two stages:
- * 1. run the official Lingui Babel macro plugin on Rust-prepared synthetic code
- * 2. postprocess Lingui's output into this project's raw, extract, or Svelte-context form
- */
-export function transformProgram(
+export function transformAstroProgram(
   code: string,
-  request: ProgramTransformRequest,
+  request:
+    | {
+        filename: AstroExtractProgramRequest["filename"];
+        linguiConfig: AstroExtractProgramRequest["linguiConfig"];
+        inputSourceMap?: AstroExtractProgramRequest["inputSourceMap"];
+        extract: boolean;
+        postprocess: AstroMacroPostprocessRequest;
+      }
+    | {
+        filename: AstroTransformProgramRequest["filename"];
+        linguiConfig: AstroTransformProgramRequest["linguiConfig"];
+        inputSourceMap?: AstroTransformProgramRequest["inputSourceMap"];
+        extract: boolean;
+        postprocess: AstroMacroPostprocessRequest;
+      },
 ): ProgramTransform {
   const result = transformSync(code, {
     ast: true,
@@ -32,7 +39,7 @@ export function transformProgram(
     inputSourceMap: request.inputSourceMap ?? undefined,
     parserOpts: {
       sourceType: "module",
-      plugins: getParserPlugins(request.lang),
+      plugins: getParserPlugins(),
     },
     plugins: [
       [
@@ -43,7 +50,7 @@ export function transformProgram(
           stripMessageField: request.extract ? false : undefined,
         },
       ],
-      createSvelteMacroPostprocessPlugin(request),
+      createAstroMacroPostprocessPlugin(request.postprocess),
     ],
     sourceMaps: true,
   });

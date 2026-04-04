@@ -57,8 +57,8 @@ pub enum CompileTargetOutputKind {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub enum CompileTranslationMode {
-    Raw,
-    Context,
+    Lowered,
+    Contextual,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -261,10 +261,10 @@ impl FinishedCompileInternal {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct TransformedPrograms {
-    pub raw_code: Option<String>,
-    pub raw_source_map_json: Option<String>,
-    pub context_code: Option<String>,
-    pub context_source_map_json: Option<String>,
+    pub lowered_code: Option<String>,
+    pub lowered_source_map_json: Option<String>,
+    pub contextual_code: Option<String>,
+    pub contextual_source_map_json: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

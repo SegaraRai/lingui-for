@@ -26,6 +26,36 @@ async function collectMessages(
 }
 
 describe("svelteExtractor", () => {
+  test("preserves original origins without query suffixes for indexed source maps", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+
+        const label = t.eager\`Script origin message\`;
+      </script>
+
+      <p>{label}</p>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        extractor.extract(
+          "/virtual/origin-check.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(messages).toHaveLength(1);
+    expect(messages[0]?.origin).toEqual([
+      "/virtual/origin-check.svelte",
+      4,
+      16,
+    ]);
+  });
+
   test("extracts tagged template literals from svelte sources", async () => {
     const source = dedent`
       <script lang="ts">

@@ -12,7 +12,7 @@ import {
   PACKAGE_RUNTIME,
   REACTIVE_TRANSLATION_WRAPPER,
 } from "../common/constants.ts";
-import type { ProgramTransformRequest } from "./types.ts";
+import type { SvelteMacroPostprocessRequest } from "./types.ts";
 
 type MacroRewriteState = {
   runtimeI18nLocals: ReadonlySet<string>;
@@ -151,7 +151,7 @@ function removeRuntimeI18nImports(
  * Svelte-oriented form.
  */
 export function createSvelteMacroPostprocessPlugin(
-  request: ProgramTransformRequest,
+  request: SvelteMacroPostprocessRequest,
 ): PluginObj<MacroRewriteState> {
   return {
     name: "lingui-for-svelte-macro-postprocess",
@@ -161,7 +161,7 @@ export function createSvelteMacroPostprocessPlugin(
     visitor: {
       Program: {
         exit(path, state) {
-          if (request.translationMode === "svelte-context") {
+          if (request.translationMode === "contextual") {
             state.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
             removeRuntimeI18nImports(path.node, state.runtimeI18nLocals);
           }
@@ -169,7 +169,7 @@ export function createSvelteMacroPostprocessPlugin(
       },
       CallExpression(path) {
         if (
-          request.translationMode === "svelte-context" &&
+          request.translationMode === "contextual" &&
           request.runtimeBindings &&
           isRuntimeI18nCall(path)
         ) {
@@ -223,7 +223,7 @@ export function createSvelteMacroPostprocessPlugin(
         }
 
         if (
-          request.translationMode === "svelte-context" &&
+          request.translationMode === "contextual" &&
           request.runtimeBindings
         ) {
           path.replaceWith(
@@ -235,7 +235,7 @@ export function createSvelteMacroPostprocessPlugin(
           return;
         }
 
-        if (request.translationMode === "raw") {
+        if (request.translationMode === "lowered") {
           return;
         }
       },

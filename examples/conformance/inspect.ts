@@ -267,8 +267,8 @@ export async function runTransform(
     await writeArtifacts(options, [
       makeCodeArtifact("transform.synthetic", result.syntheticSource, "tsx"),
       makeMapArtifact("transform.synthetic", result.syntheticMap, "tsx"),
-      makeCodeArtifact("transform.context", result.context.code, "tsx"),
-      makeMapArtifact("transform.context", result.context.map, "tsx"),
+      makeCodeArtifact("transform.contextual", result.contextual.code, "tsx"),
+      makeMapArtifact("transform.contextual", result.contextual.map, "tsx"),
       makeCodeArtifact("transform.final", result.final.code, "astro"),
       makeMapArtifact("transform.final", result.final.map, "astro"),
     ]);
@@ -279,10 +279,10 @@ export async function runTransform(
   await writeArtifacts(options, [
     makeCodeArtifact("transform.synthetic", result.syntheticSource, "tsx"),
     makeMapArtifact("transform.synthetic", result.syntheticMap, "tsx"),
-    makeCodeArtifact("transform.raw", result.raw.code, "tsx"),
-    makeMapArtifact("transform.raw", result.raw.map, "tsx"),
-    makeCodeArtifact("transform.context", result.context.code, "tsx"),
-    makeMapArtifact("transform.context", result.context.map, "tsx"),
+    makeCodeArtifact("transform.lowered", result.lowered.code, "tsx"),
+    makeMapArtifact("transform.lowered", result.lowered.map, "tsx"),
+    makeCodeArtifact("transform.contextual", result.contextual.code, "tsx"),
+    makeMapArtifact("transform.contextual", result.contextual.map, "tsx"),
     makeCodeArtifact("transform.final", result.final.code, "svelte"),
     makeMapArtifact("transform.final", result.final.map, "svelte"),
   ]);
@@ -338,8 +338,8 @@ async function inspectSvelteTransform(source: string, options: CliOptions) {
   return {
     syntheticMap: result.artifacts.synthetic.map,
     syntheticSource: result.artifacts.synthetic.code,
-    raw: result.artifacts.raw,
-    context: result.artifacts.context,
+    lowered: result.artifacts.lowered,
+    contextual: result.artifacts.contextual,
     final: result.artifacts.final,
   };
 }
@@ -357,7 +357,7 @@ async function inspectAstroTransform(source: string, options: CliOptions) {
   return {
     syntheticMap: result.artifacts.synthetic.map,
     syntheticSource: result.artifacts.synthetic.code,
-    context: result.artifacts.context,
+    contextual: result.artifacts.contextual,
     final: result.artifacts.final,
   };
 }
