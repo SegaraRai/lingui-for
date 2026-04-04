@@ -267,14 +267,14 @@ fn collects_template_components_from_frontmatter_imports() {
 }
 
 #[test]
-fn rejects_define_vars_on_astro_trans_children_with_location() {
+fn rejects_is_raw_on_astro_trans_children_with_location() {
     let source = indoc! {r#"
         ---
         import { Trans } from "lingui-for-astro/macro";
         ---
 
         <Trans>
-          <div define:vars={{ color: "red" }} />
+          <Katex is:raw>Some conflicting {syntax} here</Katex>
         </Trans>
     "#};
 
@@ -289,8 +289,8 @@ fn rejects_define_vars_on_astro_trans_children_with_location() {
     .expect_err("compile plan should fail");
     let rendered = error.to_string();
 
-    assert!(rendered.contains("Unsupported.astro:6:8"));
-    assert!(rendered.contains("define:vars"));
+    assert!(rendered.contains("Unsupported.astro:6:10"));
+    assert!(rendered.contains("is:raw"));
     assert!(rendered.contains("cannot be lowered to a runtime message"));
 }
 
@@ -352,7 +352,7 @@ fn rejects_unsupported_directives_on_the_astro_trans_tag_itself() {
         import { Trans } from "lingui-for-astro/macro";
         ---
 
-        <Trans define:vars={{ color: "red" }}>Ignored</Trans>
+        <Trans is:raw>Ignored</Trans>
     "#};
 
     let error = AstroCompilePlan::build(
@@ -367,6 +367,6 @@ fn rejects_unsupported_directives_on_the_astro_trans_tag_itself() {
     let rendered = error.to_string();
 
     assert!(rendered.contains("Unsupported.astro:5:8"));
-    assert!(rendered.contains("define:vars"));
+    assert!(rendered.contains("is:raw"));
     assert!(rendered.contains("cannot be lowered to a runtime message"));
 }

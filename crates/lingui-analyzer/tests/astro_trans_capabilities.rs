@@ -184,9 +184,9 @@ fn rejects_directives_that_conflict_with_runtime_trans_output() {
                 import { Trans } from "lingui-for-astro/macro";
                 ---
 
-                <Trans><div define:vars={{ color: "red" }}>Label</div></Trans>
+                <Trans><Katex is:raw>Some conflicting {syntax} here</Katex></Trans>
             "#},
-            "Astro directive `define:vars`",
+            "Astro directive `is:raw`",
         ),
         (
             indoc! {r#"
@@ -233,9 +233,9 @@ fn rejects_mixed_conflicting_astro_directives() {
                 import { Trans } from "lingui-for-astro/macro";
                 ---
 
-                <Trans><article define:vars={{ color: "red" }} transition:name="fade" /></Trans>
+                <Trans><article is:raw transition:name="fade">Literal</article></Trans>
             "#},
-        "Astro directive `define:vars`",
+        "Astro directive `is:raw`",
     )];
 
     for (source, needle) in cases {
