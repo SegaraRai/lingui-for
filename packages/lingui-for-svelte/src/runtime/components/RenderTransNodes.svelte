@@ -20,6 +20,11 @@
     {#if snippet}
       <RenderTransSnippet {snippet} nodes={node.children} {snippets} />
     {:else}
+      {#if import.meta.env.DEV}
+        {@const _ = void console.warn(
+          `[lingui-for-svelte] No snippet found for placeholder "${node.placeholder}". Make sure your translation includes the correct placeholder.`,
+        )}
+      {/if}
       <RenderTransNodes nodes={node.children} {snippets} />
     {/if}
   {/if}

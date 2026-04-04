@@ -45,6 +45,11 @@ async function renderNodes(
       const childrenHtml = await renderNodes(node.children);
       const slotName = `component_${node.placeholder}`;
       if (!Astro.slots.has(slotName)) {
+        if (import.meta.env.DEV) {
+          console.warn(
+            `[lingui-for-astro] No slot found for placeholder "${node.placeholder}". Make sure your translation includes the correct placeholder.`,
+          );
+        }
         return childrenHtml;
       }
 
