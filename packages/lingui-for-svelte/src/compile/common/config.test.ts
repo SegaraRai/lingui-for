@@ -7,9 +7,12 @@ describe("normalizeLinguiConfig", () => {
     const config = normalizeLinguiConfig();
     const macro = config.macro!;
 
-    expect(macro.corePackage).toContain("lingui-for-svelte/macro");
-    expect(macro.corePackage).toContain("@lingui/core/macro");
-    expect(macro.jsxPackage).toContain("lingui-for-svelte/macro");
+    expect(macro.corePackage).toEqual([
+      "lingui-for-svelte/macro",
+      "@lingui/core/macro",
+      "@lingui/macro",
+    ]);
+    expect(macro.jsxPackage).toEqual(["lingui-for-svelte/macro"]);
     expect(config.runtimeConfigModule.i18n).toEqual(["@lingui/core", "i18n"]);
     expect(config.runtimeConfigModule.Trans).toEqual([
       "lingui-for-svelte/runtime",
@@ -40,6 +43,7 @@ describe("normalizeLinguiConfig", () => {
     expect(macro.corePackage).toContain("custom-macro");
     expect(macro.corePackage).toContain("lingui-for-svelte/macro");
     expect(macro.jsxPackage).toContain("custom-svelte-macro");
+    expect(macro.jsxPackage).toContain("lingui-for-svelte/macro");
   });
 });
 

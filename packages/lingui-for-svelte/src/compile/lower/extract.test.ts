@@ -2,22 +2,20 @@ import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import { normalizeLinguiConfig } from "../common/config.ts";
-import { transformProgram } from "./babel-transform.ts";
+import { lowerSvelteExtractProgram } from "./extract.ts";
 
-describe("transformProgram", () => {
-  test("runs the official Lingui transform for raw JavaScript macros", () => {
-    const result = transformProgram(
+describe("lowerSvelteExtractProgram", () => {
+  test("runs the official Lingui transform for extracted JavaScript macros", () => {
+    const result = lowerSvelteExtractProgram(
       dedent`
         import { t } from "@lingui/core/macro";
 
         const label = t\`Hello \${name}\`;
       `,
       {
-        extract: false,
         filename: "/virtual/file.ts",
         lang: "ts",
         linguiConfig: normalizeLinguiConfig(),
-        translationMode: "raw",
       },
     );
 
@@ -37,56 +35,17 @@ describe("transformProgram", () => {
     `);
   });
 
-  test("lowers reactive wrappers to translator bindings in svelte-context mode", () => {
-    const result = transformProgram(
-      dedent`
-        import { t } from "lingui-for-svelte/macro";
-
-        const __lingui_for_svelte_expr_0 = __lingui_for_svelte_reactive_translation__(t\`Hello \${name}\`, "t");
-      `,
-      {
-        extract: false,
-        filename: "/virtual/App.instance.ts",
-        lang: "ts",
-        linguiConfig: normalizeLinguiConfig(),
-        translationMode: "svelte-context",
-        runtimeBindings: {
-          createLinguiAccessors: "createLinguiAccessors",
-          context: "__l4s_ctx",
-          getI18n: "__l4s_getI18n",
-          translate: "__l4s_translate",
-        },
-      },
-    );
-
-    expect(result.code).toContain("$__l4s_translate(");
-    expect(result.code).not.toContain("$derived(");
-    expect(result.code).toMatchInlineSnapshot(`
-      "const __lingui_for_svelte_expr_0 = $__l4s_translate(
-      /*i18n*/
-      {
-        id: "OVaF9k",
-        message: "Hello {name}",
-        values: {
-          name: name
-        }
-      });"
-    `);
-  });
-
   test("keeps extraction output in Lingui-friendly form", () => {
-    const result = transformProgram(
+    const result = lowerSvelteExtractProgram(
       dedent`
         import { t } from "lingui-for-svelte/macro";
 
         const __lingui_for_svelte_expr_0 = __lingui_for_svelte_reactive_translation__(t({ id: "demo.save", message: "Save" }), "t");
       `,
       {
-        extract: true,
         filename: "/virtual/App.instance.ts",
         lang: "ts",
         linguiConfig: normalizeLinguiConfig(),
-        translationMode: "extract",
       },
     );
 

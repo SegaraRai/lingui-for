@@ -57,8 +57,8 @@ pub enum CompileTargetOutputKind {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub enum CompileTranslationMode {
-    Raw,
-    Context,
+    Lowered,
+    Contextual,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -107,6 +107,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
 
     fn analyze(
         source: &str,
+        source_name: &str,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, CompileError>;
@@ -260,10 +261,10 @@ impl FinishedCompileInternal {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct TransformedPrograms {
-    pub raw_code: Option<String>,
-    pub raw_source_map_json: Option<String>,
-    pub context_code: Option<String>,
-    pub context_source_map_json: Option<String>,
+    pub lowered_code: Option<String>,
+    pub lowered_source_map_json: Option<String>,
+    pub contextual_code: Option<String>,
+    pub contextual_source_map_json: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

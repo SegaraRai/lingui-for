@@ -2,9 +2,7 @@ import { transformSync, type PluginItem } from "@babel/core";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import { normalizeLinguiConfig } from "../common/config.ts";
 import { createAstroMacroPostprocessPlugin } from "./macro-rewrite.ts";
-import type { ProgramTransformRequest } from "./types.ts";
 
 function runWithPlugin(
   code: string,
@@ -31,18 +29,6 @@ function runWithPlugin(
   return result.code;
 }
 
-function createRequest(
-  overrides: Partial<ProgramTransformRequest> = {},
-): ProgramTransformRequest {
-  return {
-    translationMode: "extract",
-    filename: "/virtual/Page.astro?frontmatter",
-    linguiConfig: normalizeLinguiConfig(),
-    runtimeBinding: null,
-    ...overrides,
-  } as ProgramTransformRequest;
-}
-
 describe("createAstroMacroPostprocessPlugin", () => {
   test("rewrites runtime i18n calls to the Astro context binding and removes the i18n import", () => {
     const code = runWithPlugin(
@@ -56,12 +42,10 @@ describe("createAstroMacroPostprocessPlugin", () => {
 
         setupI18n();
       `,
-      createAstroMacroPostprocessPlugin(
-        createRequest({
-          translationMode: "astro-context",
-          runtimeBinding: "__l4a_i18n",
-        }),
-      ),
+      createAstroMacroPostprocessPlugin({
+        translationMode: "contextual",
+        runtimeBinding: "__l4a_i18n",
+      }),
     );
 
     expect(code).toMatchInlineSnapshot(`
@@ -84,7 +68,9 @@ describe("createAstroMacroPostprocessPlugin", () => {
           message: "Save"
         });
       `,
-      createAstroMacroPostprocessPlugin(createRequest()),
+      createAstroMacroPostprocessPlugin({
+        translationMode: "extract",
+      }),
     );
 
     expect(code).toMatchInlineSnapshot(`

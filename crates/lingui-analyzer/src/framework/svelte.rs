@@ -2,8 +2,11 @@ use std::borrow::Cow;
 
 use tree_sitter::Node;
 
-use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
-use crate::conventions::FrameworkConventions;
+use crate::common::{
+    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_invalid_macro_usage,
+    format_unsupported_trans_child_syntax,
+};
+use crate::conventions::{FrameworkConventions, MacroConventionsError, MacroPackageKind};
 
 use super::helpers::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
 use super::helpers::components::first_non_whitespace_child_anchor;
@@ -30,6 +33,10 @@ pub enum SvelteFrameworkError {
     Parse(#[from] ParseError),
     #[error(transparent)]
     Js(#[from] JsAnalysisError),
+    #[error(transparent)]
+    Conventions(#[from] MacroConventionsError),
+    #[error("{0}")]
+    InvalidMacroUsage(String),
     #[error("script element should have start tag")]
     MissingScriptStartTag,
     #[error(
@@ -40,6 +47,10 @@ pub enum SvelteFrameworkError {
         "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
     )]
     BareDirectMacroRequiresReactiveOrEager { imported_name: Cow<'static, str> },
+    #[error(
+        "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`."
+    )]
+    ModuleScriptMustUseCoreMacroPackage,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -198,9 +209,13 @@ fn analyze_script_block(
 
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
     let language = script_language(source, start_tag);
+    debug_assert!(
+        !matches!(language, JsLikeLanguage::Tsx),
+        "Svelte scripts should not be parsed as TSX"
+    );
     let script_tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(script_source)?,
-        JsLikeLanguage::TypeScript => parse_typescript(script_source)?,
+        JsLikeLanguage::TypeScript | JsLikeLanguage::Tsx => parse_typescript(script_source)?,
     };
     extend_shifted_node_start_anchors(
         script_source,
@@ -216,6 +231,14 @@ fn analyze_script_block(
         content_region.inner_span.start,
         &options.conventions,
     )?;
+    let is_module = start_tag_is_module(source, start_tag);
+    validate_module_script_macro_imports(
+        source,
+        &macro_imports,
+        is_module,
+        &options.conventions,
+        &options.source_name,
+    )?;
     let macro_import_statement_spans = collect_script_macro_import_statement_spans(
         script_source,
         script_root,
@@ -230,14 +253,18 @@ fn analyze_script_block(
         script_root,
         &macro_imports,
         content_region.inner_span.start,
-        JsMacroSyntax::Svelte,
+        if is_module {
+            JsMacroSyntax::Standard
+        } else {
+            JsMacroSyntax::Svelte
+        },
         &[],
     );
 
     Ok(Some(SvelteScriptBlock {
         region: content_region,
-        is_module: start_tag_has_context_module(source, start_tag),
-        is_typescript: language == JsLikeLanguage::TypeScript,
+        is_module,
+        is_typescript: matches!(language, JsLikeLanguage::TypeScript | JsLikeLanguage::Tsx),
         declared_names,
         macro_imports,
         macro_import_statement_spans,
@@ -535,7 +562,7 @@ fn visit_element_like(
     context: &mut CollectContext,
 ) -> Result<(), SvelteFrameworkError> {
     if let Some(candidate) =
-        component_candidate_from_element(source, node, imports, options, context)
+        component_candidate_from_element(source, node, imports, options, context)?
     {
         context.components.push(candidate);
         return Ok(());
@@ -567,20 +594,26 @@ fn component_candidate_from_element(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
     context: &mut CollectContext,
-) -> Option<SvelteTemplateComponent> {
+) -> Result<Option<SvelteTemplateComponent>, SvelteFrameworkError> {
     let tag = match node.kind() {
         "element" => node
             .children(&mut node.walk())
-            .find(|child| child.kind() == "start_tag")?,
-        "self_closing_tag" => node,
-        _ => return None,
+            .find(|child| child.kind() == "start_tag"),
+        "self_closing_tag" => Some(node),
+        _ => return Ok(None),
+    };
+    let Some(tag) = tag else {
+        return Ok(None);
     };
     let tag_name_node = tag
         .children(&mut tag.walk())
-        .find(|child| child.kind() == "tag_name")?;
+        .find(|child| child.kind() == "tag_name");
+    let Some(tag_name_node) = tag_name_node else {
+        return Ok(None);
+    };
     let tag_name = text(source, tag_name_node);
     if !is_component_tag_name(tag_name) {
-        return None;
+        return Ok(None);
     }
 
     let shadowed_names = context
@@ -589,12 +622,16 @@ fn component_candidate_from_element(
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
     if shadowed_names.iter().any(|name| name == tag_name) {
-        return None;
+        return Ok(None);
     }
 
     let import_decl = imports
         .iter()
-        .find(|import_decl| import_decl.local_name == tag_name)?;
+        .find(|import_decl| import_decl.local_name == tag_name);
+    let Some(import_decl) = import_decl else {
+        return Ok(None);
+    };
+    validate_runtime_lowerable_svelte_component(source, node, options)?;
     let mut normalization_edits = Vec::new();
     collect_component_normalization_edits(
         source,
@@ -603,10 +640,9 @@ fn component_candidate_from_element(
         options,
         context,
         &mut normalization_edits,
-    )
-    .ok()?;
+    )?;
     sort_and_dedup_normalization_edits(&mut normalization_edits);
-    Some(SvelteTemplateComponent {
+    Ok(Some(SvelteTemplateComponent {
         candidate: MacroCandidate {
             id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
             kind: MacroCandidateKind::Component,
@@ -621,7 +657,7 @@ fn component_candidate_from_element(
             strategy: MacroCandidateStrategy::Standalone,
         },
         shadowed_names,
-    })
+    }))
 }
 
 fn collect_component_normalization_edits(
@@ -999,7 +1035,7 @@ fn visit_component_element_like(
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), SvelteFrameworkError> {
     if let Some(candidate) =
-        component_candidate_from_element(source, node, imports, options, context)
+        component_candidate_from_element(source, node, imports, options, context)?
     {
         normalization_edits.extend(candidate.candidate.normalization_edits);
         return Ok(());
@@ -1228,20 +1264,65 @@ fn expand_import_removal_span_in_source(source: &str, span: Span) -> Span {
     Span::new(start, end)
 }
 
-fn start_tag_has_context_module(source: &str, start_tag: Node<'_>) -> bool {
+fn start_tag_is_module(source: &str, start_tag: Node<'_>) -> bool {
     let mut cursor = start_tag.walk();
     for child in start_tag.children(&mut cursor) {
         if child.kind() != "attribute" {
             continue;
         }
 
-        let attribute_text = text(source, child);
-        if attribute_text.contains("context") && attribute_text.contains("module") {
+        let attribute_text = text(source, child).trim();
+        if attribute_text == "module" {
+            return true;
+        }
+
+        let Some((name, raw_value)) = attribute_text.split_once('=') else {
+            continue;
+        };
+
+        if name.trim() != "context" {
+            continue;
+        }
+
+        let value = raw_value.trim().trim_matches('"').trim_matches('\'');
+        if value == "module" {
             return true;
         }
     }
 
     false
+}
+
+fn validate_module_script_macro_imports(
+    source: &str,
+    macro_imports: &[MacroImport],
+    is_module: bool,
+    conventions: &FrameworkConventions,
+    source_name: &str,
+) -> Result<(), SvelteFrameworkError> {
+    if !is_module {
+        return Ok(());
+    }
+
+    let svelte_packages = conventions
+        .macro_
+        .required_package(MacroPackageKind::Svelte)?;
+
+    let Some(offending_import) = macro_imports
+        .iter()
+        .find(|import_decl| svelte_packages.contains(&import_decl.source))
+    else {
+        return Ok(());
+    };
+
+    Err(SvelteFrameworkError::InvalidMacroUsage(
+        format_invalid_macro_usage(
+            source,
+            source_name,
+            offending_import.span,
+            "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`.",
+        ),
+    ))
 }
 
 fn script_language(source: &str, start_tag: Node<'_>) -> JsLikeLanguage {
@@ -1382,26 +1463,185 @@ fn bare_direct_macro_error(imported_name: &str) -> SvelteFrameworkError {
     }
 }
 
+pub(crate) fn bare_direct_macro_message(imported_name: &str) -> String {
+    match bare_direct_macro_error(imported_name) {
+        SvelteFrameworkError::BareDirectTNotAllowed => {
+            "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()
+        }
+        SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager { imported_name } => format!(
+            "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
+        ),
+        _ => unreachable!("unexpected bare direct macro error variant"),
+    }
+}
+
 pub fn validate_svelte_extract_candidates(
+    source_name: &str,
+    source: &str,
     candidates: &[MacroCandidate],
 ) -> Result<(), SvelteFrameworkError> {
-    let offending_macro = candidates
-        .iter()
-        .find(|candidate| {
-            candidate.strategy == MacroCandidateStrategy::Standalone
-                && candidate.flavor == MacroFlavor::Direct
-                && matches!(
-                    candidate.imported_name.as_str(),
-                    "t" | "plural" | "select" | "selectOrdinal"
-                )
-        })
-        .map(|candidate| candidate.imported_name.as_str());
+    let offending_candidate = candidates.iter().find(|candidate| {
+        candidate.strategy == MacroCandidateStrategy::Standalone
+            && candidate.flavor == MacroFlavor::Direct
+            && matches!(
+                candidate.imported_name.as_str(),
+                "t" | "plural" | "select" | "selectOrdinal"
+            )
+    });
 
-    if let Some(imported_name) = offending_macro {
-        return Err(bare_direct_macro_error(imported_name));
+    if let Some(candidate) = offending_candidate {
+        return Err(SvelteFrameworkError::InvalidMacroUsage(
+            format_invalid_macro_usage(
+                source,
+                source_name,
+                candidate.outer_span,
+                bare_direct_macro_message(candidate.imported_name.as_str()),
+            ),
+        ));
     }
 
     Ok(())
+}
+
+fn validate_runtime_lowerable_svelte_component(
+    source: &str,
+    node: Node<'_>,
+    options: &AnalyzeOptions,
+) -> Result<(), SvelteFrameworkError> {
+    fn validate_node(
+        source: &str,
+        node: Node<'_>,
+        options: &AnalyzeOptions,
+    ) -> Result<(), SvelteFrameworkError> {
+        match node.kind() {
+            "html_tag" => {
+                return Err(SvelteFrameworkError::InvalidMacroUsage(
+                    format_unsupported_trans_child_syntax(
+                        source,
+                        &options.source_name,
+                        Span::from_node(node),
+                        "Svelte `{@html ...}`",
+                    ),
+                ));
+            }
+            "render_tag" => {
+                return Err(SvelteFrameworkError::InvalidMacroUsage(
+                    format_unsupported_trans_child_syntax(
+                        source,
+                        &options.source_name,
+                        Span::from_node(node),
+                        "Svelte `{@render ...}`",
+                    ),
+                ));
+            }
+            "if_statement" | "each_statement" | "await_statement" | "key_statement"
+            | "snippet_statement" | "const_tag" => {
+                return Err(SvelteFrameworkError::InvalidMacroUsage(
+                    format_unsupported_trans_child_syntax(
+                        source,
+                        &options.source_name,
+                        Span::from_node(node),
+                        "Svelte block syntax",
+                    ),
+                ));
+            }
+            "element" | "self_closing_tag" => {
+                validate_svelte_element_like(source, node, options)?;
+            }
+            _ => {}
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            validate_node(source, child, options)?;
+        }
+
+        Ok(())
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        validate_node(source, child, options)?;
+    }
+
+    Ok(())
+}
+
+fn validate_svelte_element_like(
+    source: &str,
+    node: Node<'_>,
+    options: &AnalyzeOptions,
+) -> Result<(), SvelteFrameworkError> {
+    let tag = match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag"),
+        "self_closing_tag" => Some(node),
+        _ => None,
+    };
+    let Some(tag) = tag else {
+        return Ok(());
+    };
+
+    if let Some(tag_name_node) = tag
+        .children(&mut tag.walk())
+        .find(|child| child.kind() == "tag_name")
+    {
+        let tag_name = text(source, tag_name_node);
+        if tag_name == "slot" || tag_name.starts_with("svelte:") {
+            return Err(SvelteFrameworkError::InvalidMacroUsage(
+                format_unsupported_trans_child_syntax(
+                    source,
+                    &options.source_name,
+                    Span::from_node(tag_name_node),
+                    format!("Svelte special element `<{tag_name}>`"),
+                ),
+            ));
+        }
+    }
+
+    let mut cursor = tag.walk();
+    for child in tag.children(&mut cursor) {
+        if child.kind() != "attribute" {
+            continue;
+        }
+
+        let Some(name_node) = child
+            .children(&mut child.walk())
+            .find(|grandchild| grandchild.kind() == "attribute_name")
+        else {
+            continue;
+        };
+        let attribute_name = text(source, name_node);
+        if is_unsupported_svelte_directive(attribute_name) {
+            return Err(SvelteFrameworkError::InvalidMacroUsage(
+                format_unsupported_trans_child_syntax(
+                    source,
+                    &options.source_name,
+                    Span::from_node(name_node),
+                    format!("Svelte directive `{attribute_name}`"),
+                ),
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn is_unsupported_svelte_directive(attribute_name: &str) -> bool {
+    [
+        "bind:",
+        "on:",
+        "class:",
+        "use:",
+        "transition:",
+        "in:",
+        "out:",
+        "animate:",
+        "let:",
+    ]
+    .iter()
+    .any(|prefix| attribute_name.starts_with(prefix))
 }
 
 #[cfg(test)]

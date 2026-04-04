@@ -45,13 +45,13 @@ pub(crate) fn whitespace_replacement_edits(
 }
 
 pub(crate) fn sort_and_dedup_normalization_edits(edits: &mut Vec<NormalizationEdit>) {
+    fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, String) {
+        match edit {
+            NormalizationEdit::Delete { span } => (span.start, span.end, 0, String::new()),
+            NormalizationEdit::Insert { at, text } => (*at, *at, 1, text.clone()),
+        }
+    }
+
     edits.sort_by_key(normalization_edit_sort_key);
     edits.dedup();
-}
-
-fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, String) {
-    match edit {
-        NormalizationEdit::Delete { span } => (span.start, span.end, 0, String::new()),
-        NormalizationEdit::Insert { at, text } => (*at, *at, 1, text.clone()),
-    }
 }

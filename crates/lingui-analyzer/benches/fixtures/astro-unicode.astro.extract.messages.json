@@ -1,0 +1,72 @@
+[
+  {
+    "id": "bzKC4u",
+    "message": "ようこそ {localeLabel}",
+    "placeholders": {
+      "localeLabel": "localeLabel"
+    },
+    "origin": [
+      "astro-unicode.astro",
+      9,
+      17
+    ]
+  },
+  {
+    "id": "DSRd7/",
+    "message": "参照中のパスは {0} で、候補は {1} です。",
+    "placeholders": {
+      "0": "String(selectedPath ?? _i18n._(\n    /*i18n*/\n    {\n      id: \"ggPEgU\",\n      message: \"\\u672A\\u8A2D\\u5B9A\"\n    }))",
+      "1": "String(relatedPaths[1] ?? _i18n._(\n    /*i18n*/\n    {\n      id: \"gkv1jV\",\n      message: \"\\u3042\\u308A\\u307E\\u305B\\u3093\"\n    }))"
+    },
+    "origin": [
+      "astro-unicode.astro",
+      13,
+      2
+    ]
+  },
+  {
+    "id": "ggPEgU",
+    "message": "未設定",
+    "placeholders": {},
+    "origin": [
+      "astro-unicode.astro",
+      13,
+      39
+    ]
+  },
+  {
+    "id": "gkv1jV",
+    "message": "ありません",
+    "placeholders": {},
+    "origin": [
+      "astro-unicode.astro",
+      14,
+      23
+    ]
+  },
+  {
+    "id": "fgdhx6",
+    "message": "ロケール <0>{localeLabel}</0> で <1>{0}</1> を確認しています。",
+    "placeholders": {
+      "0": "String(selectedPath ?? \"\")",
+      "localeLabel": "localeLabel"
+    },
+    "origin": [
+      "astro-unicode.astro",
+      23,
+      4
+    ]
+  },
+  {
+    "id": "AUUW5v",
+    "message": "候補パス: {0}",
+    "placeholders": {
+      "0": "String(path ?? \"\")"
+    },
+    "origin": [
+      "astro-unicode.astro",
+      33,
+      11
+    ]
+  }
+]

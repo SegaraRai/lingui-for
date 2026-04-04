@@ -17,7 +17,7 @@ import {
   type RichTextWhitespaceMode,
 } from "../common/config.ts";
 import { createSvelteFrameworkConventions } from "../common/conventions.ts";
-import { transformProgram } from "../lower/babel-transform.ts";
+import { lowerSvelteTransformPrograms } from "../lower/transform.ts";
 
 /**
  * Options for {@link transformSvelte}.
@@ -67,13 +67,13 @@ export interface LinguiSvelteTransformResult {
      */
     synthetic: LinguiSvelteTransformArtifact;
     /**
-     * The Babel/Lingui transform of the synthetic module before Svelte-specific runtime rewriting.
+     * The Babel/Lingui transform of the synthetic module before framework contextual runtime rewriting.
      */
-    raw: LinguiSvelteTransformArtifact;
+    lowered: LinguiSvelteTransformArtifact;
     /**
-     * The Babel/Lingui transform of the synthetic module with Svelte runtime bindings applied.
+     * The Babel/Lingui transform of the synthetic module with framework runtime bindings applied.
      */
-    context: LinguiSvelteTransformArtifact;
+    contextual: LinguiSvelteTransformArtifact;
     /**
      * The final `.svelte` output after Rust reinserts the transformed declarations into the original source.
      */
@@ -150,35 +150,30 @@ export async function transformSvelte(
     getI18n: compilePlan.runtimeBindings.getI18n,
     translate: compilePlan.runtimeBindings.translate,
   };
-  const rawFilename = `${compilePlan.common.syntheticName}?raw`;
-  const raw = transformProgram(compilePlan.common.syntheticSource, {
-    extract: false,
-    filename: rawFilename,
-    inputSourceMap: toBabelSourceMap(syntheticMap),
-    lang: compilePlan.common.syntheticLang,
-    linguiConfig,
-    translationMode: "raw",
-  });
-  const contextFilename = `${compilePlan.common.syntheticName}?svelte-context`;
-  const context = transformProgram(compilePlan.common.syntheticSource, {
-    extract: false,
-    filename: contextFilename,
-    inputSourceMap: toBabelSourceMap(syntheticMap),
-    lang: compilePlan.common.syntheticLang,
-    linguiConfig,
-    translationMode: "svelte-context",
-    runtimeBindings,
-  });
+  const loweredFilename = `${compilePlan.common.syntheticName}?lowered`;
+  const contextualFilename = `${compilePlan.common.syntheticName}?contextual`;
+  const { lowered, contextual } = lowerSvelteTransformPrograms(
+    compilePlan.common.syntheticSource,
+    {
+      loweredFilename,
+      contextualFilename,
+      inputSourceMap: toBabelSourceMap(syntheticMap),
+      lang: compilePlan.common.syntheticLang,
+      linguiConfig,
+      runtimeBindings,
+    },
+  );
 
   const finished = finishSvelteCompile({
     plan: compilePlan,
     source,
     transformedPrograms: {
-      rawCode: raw.code,
-      rawSourceMapJson: raw.map != null ? JSON.stringify(raw.map) : undefined,
-      contextCode: context.code,
-      contextSourceMapJson:
-        context.map != null ? JSON.stringify(context.map) : undefined,
+      loweredCode: lowered.code,
+      loweredSourceMapJson:
+        lowered.map != null ? JSON.stringify(lowered.map) : undefined,
+      contextualCode: contextual.code,
+      contextualSourceMapJson:
+        contextual.map != null ? JSON.stringify(contextual.map) : undefined,
     },
   });
   const finalMap = parseCanonicalSourceMap(finished.sourceMapJson);
@@ -192,15 +187,15 @@ export async function transformSvelte(
         code: compilePlan.common.syntheticSource,
         map: syntheticMap,
       },
-      raw: {
-        filename: rawFilename,
-        code: raw.code,
-        map: raw.map,
+      lowered: {
+        filename: lowered.filename,
+        code: lowered.code,
+        map: lowered.map,
       },
-      context: {
-        filename: contextFilename,
-        code: context.code,
-        map: context.map,
+      contextual: {
+        filename: contextual.filename,
+        code: contextual.code,
+        map: contextual.map,
       },
       final: {
         filename,

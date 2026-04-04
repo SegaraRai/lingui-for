@@ -1,17 +1,29 @@
+use std::collections::BTreeMap;
+
 use lingui_analyzer::conventions::{
-    FrameworkConventions, FrameworkKind, MacroConventions, RuntimeBindingSeeds, RuntimeConventions,
-    RuntimeExportConventions, SyntheticConventions, WrapperConventions,
+    FrameworkConventions, FrameworkKind, MacroConventions, MacroPackage, MacroPackageKind,
+    RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions, SyntheticConventions,
+    WrapperConventions,
 };
 
 pub fn svelte_default_conventions() -> FrameworkConventions {
     FrameworkConventions {
         framework: FrameworkKind::Svelte,
         macro_: MacroConventions {
-            primary_package: "lingui-for-svelte/macro".to_string(),
-            accepted_packages: vec![
-                "lingui-for-svelte/macro".to_string(),
-                "@lingui/core/macro".to_string(),
-            ],
+            packages: BTreeMap::from([
+                (
+                    MacroPackageKind::Core,
+                    MacroPackage {
+                        packages: vec!["@lingui/core/macro".to_string()],
+                    },
+                ),
+                (
+                    MacroPackageKind::Svelte,
+                    MacroPackage {
+                        packages: vec!["lingui-for-svelte/macro".to_string()],
+                    },
+                ),
+            ]),
         },
         runtime: RuntimeConventions {
             package: "lingui-for-svelte/runtime".to_string(),

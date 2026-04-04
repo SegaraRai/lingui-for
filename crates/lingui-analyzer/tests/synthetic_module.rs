@@ -5,7 +5,7 @@ use indoc::indoc;
 use sourcemap::DecodedMap;
 
 use lingui_analyzer::{
-    MacroFlavor, WhitespaceMode,
+    MacroFlavor, WhitespaceMode, build_synthetic_module_for_framework,
     extract::build_synthetic_module,
     framework::{FrameworkAdapter, svelte::SvelteAdapter},
 };
@@ -292,6 +292,73 @@ fn maps_component_declaration_start_to_component_message_anchor() {
     );
 
     assert!(source[original_offset..].starts_with("<T>Component origin "));
+}
+
+#[test]
+fn merges_owned_svelte_nested_macro_normalization_into_parent_synthetic_source() {
+    let source = indoc! {r#"
+        <script lang="ts">
+          import { msg, t as translate } from "lingui-for-svelte/macro";
+
+          const summary = $derived(
+            $translate(
+              msg`参照中のパスは ${String(selectedPath ?? $translate`未設定`)} で、候補は ${String(
+                relatedPaths[1] ?? $translate`ありません`,
+              )} です。`,
+            ),
+          );
+        </script>
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let script = &analysis.scripts[0];
+    let synthetic = build_synthetic_module(
+        source,
+        "source",
+        "synthetic.js",
+        &script.macro_imports,
+        &script.candidates,
+        &analysis.source_anchors,
+    )
+    .expect("synthetic module builds");
+
+    assert!(synthetic.source.contains("translate`未設定`"));
+    assert!(synthetic.source.contains("translate`ありません`"));
+    assert!(!synthetic.source.contains("$translate`未設定`"));
+    assert!(!synthetic.source.contains("$translate`ありません`"));
+}
+
+#[test]
+fn normalizes_owned_svelte_nested_macros_for_framework_extract_synthetic_source() {
+    let source = indoc! {r#"
+        <script lang="ts">
+          import { msg, t as translate } from "lingui-for-svelte/macro";
+
+          const summary = $derived(
+            $translate(
+              msg`参照中のパスは ${String(selectedPath ?? $translate`未設定`)} で、候補は ${String(
+                relatedPaths[1] ?? $translate`ありません`,
+              )} です。`,
+            ),
+          );
+        </script>
+    "#};
+
+    let synthetic = build_synthetic_module_for_framework(
+        source,
+        "source.svelte",
+        "source.svelte?extract.tsx",
+        Some(WhitespaceMode::Svelte),
+        &svelte_support::svelte_default_conventions(),
+    )
+    .expect("framework synthetic module builds");
+
+    assert!(synthetic.source.contains("translate`未設定`"));
+    assert!(synthetic.source.contains("translate`ありません`"));
+    assert!(!synthetic.source.contains("$translate`未設定`"));
+    assert!(!synthetic.source.contains("$translate`ありません`"));
 }
 
 fn offset_to_position(source: &str, offset: usize) -> (usize, usize) {

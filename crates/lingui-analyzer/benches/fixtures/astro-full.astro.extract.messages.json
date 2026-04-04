@@ -1,0 +1,532 @@
+[
+  {
+    "id": "8KhxNb",
+    "message": "Localization review dashboard",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      469,
+      17
+    ]
+  },
+  {
+    "id": "8+nA3Y",
+    "message": "Welcome back, {dashboardOwner}.",
+    "placeholders": {
+      "dashboardOwner": "dashboardOwner"
+    },
+    "origin": [
+      "astro-full.astro",
+      470,
+      22
+    ]
+  },
+  {
+    "id": "5kwh2a",
+    "message": "Showing {0} queue items for {1}.",
+    "placeholders": {
+      "0": "String(filteredQueue.length)",
+      "1": "selectedRegion === \"all\" ? \"all regions\" : selectedRegion"
+    },
+    "origin": [
+      "astro-full.astro",
+      472,
+      2
+    ]
+  },
+  {
+    "id": "wc9bP7",
+    "message": "{localeMode, select, en {English workflow} ja {Japanese workflow} fr {French workflow} other {Fallback workflow}}",
+    "placeholders": {
+      "localeMode": "localeMode"
+    },
+    "origin": [
+      "astro-full.astro",
+      474,
+      22
+    ]
+  },
+  {
+    "id": "C81jcY",
+    "message": "Escalation required: unresolved high-priority queue items remain.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      482,
+      6
+    ]
+  },
+  {
+    "id": "jJ+oTf",
+    "message": "Attention needed: high-priority items are waiting for review.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      484,
+      8
+    ]
+  },
+  {
+    "id": "GzY8qo",
+    "message": "All monitored queues are stable.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      485,
+      8
+    ]
+  },
+  {
+    "id": "lC/3w5",
+    "message": "Live snapshot latency: {0}.",
+    "placeholders": {
+      "0": "String(latencyMs > 250 ? `${latencyMs}ms (slow)` : `${latencyMs}ms`)"
+    },
+    "origin": [
+      "astro-full.astro",
+      487,
+      2
+    ]
+  },
+  {
+    "id": "B1MDds",
+    "message": "Operations",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      522,
+      15
+    ]
+  },
+  {
+    "id": "xdDw1Z",
+    "message": "Workspace mode:",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      535,
+      15
+    ]
+  },
+  {
+    "id": "5wic0R",
+    "message": "Editing tools are enabled for this workspace.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      541,
+      20
+    ]
+  },
+  {
+    "id": "oYLtG0",
+    "message": "Editing tools are read-only for this workspace.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      542,
+      20
+    ]
+  },
+  {
+    "id": "W3Ae0L",
+    "message": "{0} active reviewers available.",
+    "placeholders": {
+      "0": "String(card.reviewers)"
+    },
+    "origin": [
+      "astro-full.astro",
+      560,
+      0
+    ]
+  },
+  {
+    "id": "UbRKMZ",
+    "message": "Pending",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      570,
+      81
+    ]
+  },
+  {
+    "id": "FEPXtw",
+    "message": "Reviewed",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      576,
+      81
+    ]
+  },
+  {
+    "id": "3UYUtA",
+    "message": "Flagged",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      582,
+      81
+    ]
+  },
+  {
+    "id": "yiNL80",
+    "message": "Reviewers",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      588,
+      81
+    ]
+  },
+  {
+    "id": "mtE2Ev",
+    "message": "Queue details",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      606,
+      17
+    ]
+  },
+  {
+    "id": "gimT52",
+    "message": "{0} items match the current filters.",
+    "placeholders": {
+      "0": "String(filteredQueue.length)"
+    },
+    "origin": [
+      "astro-full.astro",
+      611,
+      0
+    ]
+  },
+  {
+    "id": "szWjCj",
+    "message": "{0} left {1} comments while {2} still has {3} unread updates.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "String(item.comments)",
+      "2": "item.assignee",
+      "3": "String(item.unread)"
+    },
+    "origin": [
+      "astro-full.astro",
+      624,
+      0
+    ]
+  },
+  {
+    "id": "IDpMOo",
+    "message": "{0} left {1} comments and the queue is fully read.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "String(item.comments)"
+    },
+    "origin": [
+      "astro-full.astro",
+      627,
+      0
+    ]
+  },
+  {
+    "id": "2TUOis",
+    "message": "Owner:",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      648,
+      25
+    ]
+  },
+  {
+    "id": "GRmQfp",
+    "message": "Assignee:",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      651,
+      25
+    ]
+  },
+  {
+    "id": "Y2+ZT9",
+    "message": "Comments:",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      654,
+      25
+    ]
+  },
+  {
+    "id": "jqmIfA",
+    "message": "Attachments:",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      657,
+      25
+    ]
+  },
+  {
+    "id": "lvcfoy",
+    "message": "Path {0}",
+    "placeholders": {
+      "0": "String(item.pathHint ?? \"\")"
+    },
+    "origin": [
+      "astro-full.astro",
+      673,
+      27
+    ]
+  },
+  {
+    "id": "pa6gX+",
+    "message": "No path",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      676,
+      75
+    ]
+  },
+  {
+    "id": "qbgW+C",
+    "message": "Highlights",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      692,
+      17
+    ]
+  },
+  {
+    "id": "ubwhkQ",
+    "message": "{0} items need attention.",
+    "placeholders": {
+      "0": "String(highlightedQueue.length)"
+    },
+    "origin": [
+      "astro-full.astro",
+      697,
+      0
+    ]
+  },
+  {
+    "id": "nj0sbN",
+    "message": "No highlighted queue items.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      706,
+      19
+    ]
+  },
+  {
+    "id": "i4y9D/",
+    "message": "{0} assigned {1} with {2} comments and {3} unread changes.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "item.assignee",
+      "2": "String(item.comments)",
+      "3": "String(item.unread)"
+    },
+    "origin": [
+      "astro-full.astro",
+      717,
+      0
+    ]
+  },
+  {
+    "id": "quM66o",
+    "message": "Decision log",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      731,
+      15
+    ]
+  },
+  {
+    "id": "LZB4fD",
+    "message": "{0} updated {1} during this step.",
+    "placeholders": {
+      "0": "row.changedBy",
+      "1": "String(row.path ?? \"the current workflow\")"
+    },
+    "origin": [
+      "astro-full.astro",
+      749,
+      0
+    ]
+  },
+  {
+    "id": "OcCQjb",
+    "message": "Activity stream",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      765,
+      13
+    ]
+  },
+  {
+    "id": "YqL2gS",
+    "message": "Imported digest: <0>{htmlDigest}</0>",
+    "placeholders": {
+      "htmlDigest": "htmlDigest"
+    },
+    "origin": [
+      "astro-full.astro",
+      785,
+      14
+    ]
+  },
+  {
+    "id": "UsgvkK",
+    "message": "Status digest",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      797,
+      13
+    ]
+  },
+  {
+    "id": "8p/xVT",
+    "message": "{0, plural, one {{1}} other {{2}}}",
+    "placeholders": {
+      "0": "highlightedQueue.length",
+      "1": "_i18n._(\n    /*i18n*/\n    {\n      id: \"s0sXxO\",\n      message: \"There is one highlighted queue item.\"\n    })",
+      "2": "_i18n._(\n    /*i18n*/\n    {\n      id: \"J4w9XN\",\n      message: \"There are {0} highlighted queue items.\",\n      values: {\n        0: String(highlightedQueue.length)\n      }\n    })"
+    },
+    "origin": [
+      "astro-full.astro",
+      799,
+      10
+    ]
+  },
+  {
+    "id": "s0sXxO",
+    "message": "There is one highlighted queue item.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      801,
+      17
+    ]
+  },
+  {
+    "id": "J4w9XN",
+    "message": "There are {0} highlighted queue items.",
+    "placeholders": {
+      "0": "String(highlightedQueue.length)"
+    },
+    "origin": [
+      "astro-full.astro",
+      803,
+      0
+    ]
+  },
+  {
+    "id": "pnokNm",
+    "message": "The queue is {0} and {1}.",
+    "placeholders": {
+      "0": "String(filteredQueue.length > 8 ? \"very busy\" : \"manageable\")",
+      "1": "String(highlightedQueue.length > 2 ? \"requires escalation\" : \"is within normal review limits\")"
+    },
+    "origin": [
+      "astro-full.astro",
+      809,
+      0
+    ]
+  },
+  {
+    "id": "d8ajL9",
+    "message": "Nested expression summary: {0}.",
+    "placeholders": {
+      "0": "String(highlightedQueue.length > 0 ? `highlighted:${highlightedQueue[0]?.id ?? \"none\"}` : `region:${selectedRegion}`)"
+    },
+    "origin": [
+      "astro-full.astro",
+      816,
+      0
+    ]
+  },
+  {
+    "id": "RDy8BL",
+    "message": "Reviewer notes",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      832,
+      13
+    ]
+  },
+  {
+    "id": "CNkP4q",
+    "message": "{0} recent notes are attached to this dashboard.",
+    "placeholders": {
+      "0": "String(activity.length)"
+    },
+    "origin": [
+      "astro-full.astro",
+      837,
+      0
+    ]
+  },
+  {
+    "id": "3mPwkK",
+    "message": "These notes mirror the kind of mixed script and template content that the compile benchmark should exercise.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      845,
+      12
+    ]
+  },
+  {
+    "id": "AzV+h+",
+    "message": "Note {0}",
+    "placeholders": {
+      "0": "String(index + 1)"
+    },
+    "origin": [
+      "astro-full.astro",
+      856,
+      21
+    ]
+  },
+  {
+    "id": "wXh6Ku",
+    "message": "{0} asked {1} to review {2} with {3} comments and {4} unread updates.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "item.assignee",
+      "2": "String(item.pathHint ?? \"the current record\")",
+      "3": "String(item.comments)",
+      "4": "String(item.unread)"
+    },
+    "origin": [
+      "astro-full.astro",
+      861,
+      0
+    ]
+  },
+  {
+    "id": "e3ghLa",
+    "message": "Priority {0}, region {1}, attachments {2}.",
+    "placeholders": {
+      "0": "String(item.priority)",
+      "1": "String(item.region)",
+      "2": "String(item.attachments)"
+    },
+    "origin": [
+      "astro-full.astro",
+      870,
+      0
+    ]
+  }
+]

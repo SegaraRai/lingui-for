@@ -12,16 +12,29 @@ import {
   PACKAGE_RUNTIME,
   REACTIVE_TRANSLATION_WRAPPER,
 } from "../common/constants.ts";
-import type { ProgramTransformRequest } from "./types.ts";
 
-type MacroRewriteState = {
-  runtimeTImports: Set<string>;
+export interface RuntimeBindingsForTransform {
+  createLinguiAccessors: string;
+  context: string;
+  getI18n: string;
+  translate: string;
+}
+
+export type SvelteMacroPostprocessRequest =
+  | {
+      translationMode: "extract" | "lowered";
+    }
+  | {
+      translationMode: "contextual";
+      runtimeBindings: RuntimeBindingsForTransform;
+    };
+
+interface MacroRewriteState {
   runtimeI18nLocals: ReadonlySet<string>;
-};
+}
 
 function createInitialState(): MacroRewriteState {
   return {
-    runtimeTImports: new Set<string>(),
     runtimeI18nLocals: new Set<string>(),
   };
 }
@@ -78,50 +91,6 @@ function extractDescriptorArgument(
 
   const descriptor = expression.arguments[0];
   return descriptor && t.isExpression(descriptor) ? descriptor : null;
-}
-
-function ensureRuntimeTImport(program: t.Program, localName: string): void {
-  const runtimeImport = program.body.find(
-    (statement): statement is t.ImportDeclaration =>
-      t.isImportDeclaration(statement) &&
-      statement.source.value === PACKAGE_RUNTIME,
-  );
-
-  const specifier = t.importSpecifier(
-    t.identifier(localName),
-    t.identifier("t"),
-  );
-
-  if (runtimeImport) {
-    const hasSpecifier = runtimeImport.specifiers.some(
-      (existing) =>
-        t.isImportSpecifier(existing) &&
-        t.isIdentifier(existing.imported, { name: "t" }) &&
-        t.isIdentifier(existing.local, { name: localName }),
-    );
-
-    if (!hasSpecifier) {
-      runtimeImport.specifiers.push(specifier);
-    }
-
-    return;
-  }
-
-  const firstImportIndex = program.body.findIndex((statement) =>
-    t.isImportDeclaration(statement),
-  );
-
-  const importDeclaration = t.importDeclaration(
-    [specifier],
-    t.stringLiteral(PACKAGE_RUNTIME),
-  );
-
-  if (firstImportIndex === -1) {
-    program.body.unshift(importDeclaration);
-    return;
-  }
-
-  program.body.splice(firstImportIndex, 0, importDeclaration);
 }
 
 function isRuntimeI18nCall(path: NodePath<t.CallExpression>): boolean {
@@ -197,7 +166,7 @@ function removeRuntimeI18nImports(
  * Svelte-oriented form.
  */
 export function createSvelteMacroPostprocessPlugin(
-  request: ProgramTransformRequest,
+  request: SvelteMacroPostprocessRequest,
 ): PluginObj<MacroRewriteState> {
   return {
     name: "lingui-for-svelte-macro-postprocess",
@@ -207,24 +176,15 @@ export function createSvelteMacroPostprocessPlugin(
     visitor: {
       Program: {
         exit(path, state) {
-          if (request.translationMode === "svelte-context") {
+          if (request.translationMode === "contextual") {
             state.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
             removeRuntimeI18nImports(path.node, state.runtimeI18nLocals);
           }
-
-          if (request.translationMode === "extract") {
-            return;
-          }
-
-          state.runtimeTImports.forEach((localName) => {
-            ensureRuntimeTImport(path.node, localName);
-          });
         },
       },
-      CallExpression(path, state) {
+      CallExpression(path) {
         if (
-          request.translationMode === "svelte-context" &&
-          request.runtimeBindings &&
+          request.translationMode === "contextual" &&
           isRuntimeI18nCall(path)
         ) {
           if (t.isMemberExpression(path.node.callee)) {
@@ -244,7 +204,6 @@ export function createSvelteMacroPostprocessPlugin(
           if (translated && t.isExpression(translated)) {
             path.replaceWith(t.cloneNode(translated));
           }
-
           return;
         }
 
@@ -276,23 +235,14 @@ export function createSvelteMacroPostprocessPlugin(
           return;
         }
 
-        if (
-          request.translationMode === "svelte-context" &&
-          request.runtimeBindings
-        ) {
+        if (request.translationMode === "contextual") {
           path.replaceWith(
             t.callExpression(
               t.identifier(`$${request.runtimeBindings.translate}`),
               [t.cloneNode(descriptor)],
             ),
           );
-          return;
         }
-
-        state.runtimeTImports.add(localName);
-        path.replaceWith(
-          t.callExpression(t.identifier(localName), [t.cloneNode(descriptor)]),
-        );
       },
     },
   };

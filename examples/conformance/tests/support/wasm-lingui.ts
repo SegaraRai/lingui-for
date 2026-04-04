@@ -21,9 +21,9 @@ import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
   babelTraverse,
   getParserPlugins,
-  LINGUI_CORE_MACRO_PACKAGE,
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
+  LINGUI_STANDARD_CORE_MACRO_PACKAGES,
   runBabelExtractionUnits,
 } from "@lingui-for/internal-shared-compile";
 
@@ -174,7 +174,7 @@ function createLinguiConfigForFramework(
     fallbackLocales: {},
     locales: [],
     macro: {
-      corePackage: [LINGUI_CORE_MACRO_PACKAGE, macroPackage],
+      corePackage: [...LINGUI_STANDARD_CORE_MACRO_PACKAGES, macroPackage],
       jsxPackage: [macroPackage],
     },
     orderBy: "messageId",
@@ -193,8 +193,10 @@ function createTestFrameworkConventions(framework: "astro" | "svelte") {
     return {
       framework,
       macro: {
-        primaryPackage: "lingui-for-astro/macro",
-        acceptedPackages: ["lingui-for-astro/macro", "@lingui/core/macro"],
+        packages: new Map([
+          ["core", { packages: [...LINGUI_STANDARD_CORE_MACRO_PACKAGES] }],
+          ["astro", { packages: ["lingui-for-astro/macro"] }],
+        ]),
       },
       runtime: {
         package: "lingui-for-astro/runtime",
@@ -214,8 +216,10 @@ function createTestFrameworkConventions(framework: "astro" | "svelte") {
   return {
     framework,
     macro: {
-      primaryPackage: "lingui-for-svelte/macro",
-      acceptedPackages: ["lingui-for-svelte/macro", "@lingui/core/macro"],
+      packages: new Map([
+        ["core", { packages: [...LINGUI_STANDARD_CORE_MACRO_PACKAGES] }],
+        ["svelte", { packages: ["lingui-for-svelte/macro"] }],
+      ]),
     },
     runtime: {
       package: "lingui-for-svelte/runtime",

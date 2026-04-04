@@ -46,7 +46,7 @@ pub fn build_synthetic_module_from_plan(
     let import_line = render_macro_import_line(&plan.imports);
 
     if let Some(line) = import_line.as_deref() {
-        out.push_str(&line);
+        out.push_str(line);
         out.push('\n');
     }
 
@@ -115,9 +115,9 @@ pub fn build_synthetic_module_from_plan(
     })
 }
 
-fn build_targets_by_id<'a>(
-    plan: &'a SynthesisPlan,
-) -> Result<HashMap<&'a str, &'a SynthesisTarget>, BuildSyntheticModuleError> {
+fn build_targets_by_id(
+    plan: &SynthesisPlan,
+) -> Result<HashMap<&str, &SynthesisTarget>, BuildSyntheticModuleError> {
     let mut targets_by_id = HashMap::with_capacity(plan.targets.len());
     for target in &plan.targets {
         let declaration_id = target.declaration_id.as_str();

@@ -1,6 +1,11 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import type { FrameworkConventions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type {
+  FrameworkConventions,
+  MacroPackage,
+  MacroPackageKind,
+} from "@lingui-for/internal-lingui-analyzer-wasm";
+import { LINGUI_STANDARD_CORE_MACRO_PACKAGES } from "@lingui-for/internal-shared-compile";
 
 import {
   EXPORT_CREATE_FRONTMATTER_I18N,
@@ -20,8 +25,20 @@ export function createAstroFrameworkConventions(
   return {
     framework: "astro",
     macro: {
-      primaryPackage: PACKAGE_MACRO,
-      acceptedPackages: getAcceptedMacroPackages(linguiConfig, options),
+      packages: new Map<MacroPackageKind, MacroPackage>([
+        [
+          "core",
+          createMacroPackage(
+            linguiConfig.macro?.corePackage ?? [
+              ...LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+            ],
+          ),
+        ],
+        [
+          "astro",
+          createMacroPackage(options?.astroPackages ?? [PACKAGE_MACRO]),
+        ],
+      ]),
     },
     runtime: {
       package: PACKAGE_RUNTIME,
@@ -38,17 +55,8 @@ export function createAstroFrameworkConventions(
   };
 }
 
-function getAcceptedMacroPackages(
-  linguiConfig: LinguiConfigNormalized,
-  options?: {
-    astroPackages?: readonly string[] | undefined;
-  },
-): string[] {
-  return [
-    ...new Set([
-      ...(linguiConfig.macro?.corePackage ?? []),
-      PACKAGE_MACRO,
-      ...(options?.astroPackages ?? []),
-    ]),
-  ];
+function createMacroPackage(packageNames: readonly string[]): MacroPackage {
+  return {
+    packages: [...new Set(packageNames)],
+  };
 }

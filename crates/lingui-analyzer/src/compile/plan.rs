@@ -3,7 +3,9 @@ use crate::common::{
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_import_line};
-use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
+use crate::synthesis::{
+    SynthesisPlan, build_synthesis_plan, merge_owned_candidate_normalization_edits,
+};
 
 use super::{
     AdapterError, CommonCompilePlan, CompileError, CompileTarget, CompileTargetPrototype,
@@ -17,7 +19,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     whitespace_mode: WhitespaceMode,
     conventions: FrameworkConventions,
 ) -> Result<P, CompileError> {
-    let mut analysis = P::analyze(source, whitespace_mode, &conventions)?;
+    let mut analysis = P::analyze(source, source_name, whitespace_mode, &conventions)?;
     let (imports, prototypes, import_removals, synthetic_lang, source_anchors) = {
         let common_analysis = P::common_analysis(&mut analysis);
         retain_standalone_prototypes(&mut common_analysis.prototypes);
@@ -90,6 +92,15 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
 }
 
 fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
+    let mut candidates = prototypes
+        .iter()
+        .map(|prototype| prototype.candidate.clone())
+        .collect::<Vec<_>>();
+    merge_owned_candidate_normalization_edits(&mut candidates);
+    let merged_by_id = candidates
+        .into_iter()
+        .map(|candidate| (candidate.id.clone(), candidate))
+        .collect::<std::collections::BTreeMap<_, _>>();
     prototypes.sort_by_key(|prototype| {
         (
             prototype.candidate.outer_span.start,
@@ -100,6 +111,11 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
         .retain(|prototype| prototype.candidate.strategy == MacroCandidateStrategy::Standalone);
     // Keep a final dedupe pass as a safety net against duplicate prototypes.
     prototypes.dedup_by(|left, right| left == right);
+    for prototype in prototypes.iter_mut() {
+        if let Some(candidate) = merged_by_id.get(prototype.candidate.id.as_str()) {
+            prototype.candidate.normalization_edits = candidate.normalization_edits.clone();
+        }
+    }
 }
 
 fn build_compile_synthetic_source(
@@ -207,7 +223,7 @@ mod tests {
             candidate: candidate(outer_span),
             context: CompileTargetContext::Template,
             output_kind: CompileTargetOutputKind::Expression,
-            translation_mode: CompileTranslationMode::Context,
+            translation_mode: CompileTranslationMode::Contextual,
         }
     }
 

@@ -1,14 +1,14 @@
 /** Canonical package specifier for Lingui's core runtime module. */
 export const LINGUI_CORE_PACKAGE = "@lingui/core";
 
-/** Canonical package specifier for Lingui's generic macro entry. */
-export const LINGUI_MACRO_PACKAGE = "@lingui/macro";
-
 /** Canonical package specifier for Lingui's core-only macro entry. */
 export const LINGUI_CORE_MACRO_PACKAGE = "@lingui/core/macro";
 
 /** Canonical package specifier for Lingui's React macro entry. */
 export const LINGUI_REACT_MACRO_PACKAGE = "@lingui/react/macro";
+
+/** Canonical package specifier for Lingui's generic macro entry. */
+export const LINGUI_DEPRECATED_MACRO_PACKAGE = "@lingui/macro";
 
 /** Named export used by Lingui to expose the global translation runtime. */
 export const LINGUI_I18N_EXPORT = "i18n";
@@ -51,14 +51,14 @@ export const LINGUI_MACRO_MSG = "msg";
 
 /** Standard core macro packages recognized by Lingui config. */
 export const LINGUI_STANDARD_CORE_MACRO_PACKAGES = [
-  LINGUI_MACRO_PACKAGE,
   LINGUI_CORE_MACRO_PACKAGE,
+  LINGUI_DEPRECATED_MACRO_PACKAGE,
 ] as const;
 
 /** Standard JSX macro packages recognized by Lingui config. */
 export const LINGUI_STANDARD_JSX_MACRO_PACKAGES = [
-  LINGUI_MACRO_PACKAGE,
   LINGUI_REACT_MACRO_PACKAGE,
+  LINGUI_DEPRECATED_MACRO_PACKAGE,
 ] as const;
 
 /** Component-style macro imports that lower to runtime rich-text rendering. */

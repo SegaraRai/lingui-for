@@ -1,10 +1,13 @@
 #[path = "support/svelte.rs"]
 mod svelte_support;
 
+use std::collections::BTreeMap;
+
 use indoc::indoc;
 
 use lingui_analyzer::{
     MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, SvelteCompilePlan, WhitespaceMode,
+    conventions::{MacroConventions, MacroPackage, MacroPackageKind},
     framework::{FrameworkAdapter, svelte::SvelteAdapter},
 };
 
@@ -152,6 +155,94 @@ fn ignores_shadowed_names_in_svelte_script() {
     assert_eq!(script.candidates.len(), 1);
     assert_eq!(script.candidates[0].imported_name, "t");
     assert_eq!(script.candidates[0].flavor, MacroFlavor::Direct);
+}
+
+#[test]
+fn treats_module_script_macros_as_plain_js_ts_macros() {
+    let source = indoc! {r#"
+        <script module lang="ts">
+          import { t, plural } from "@lingui/core/macro";
+
+          const direct = t`Hello`;
+          const nested = t({ message: "{count, plural, one {item} other {items}}", values: { count } });
+          const notMacro = plural.eager(count, { one: "item", other: "items" });
+        </script>
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let script = &analysis.scripts[0];
+
+    assert!(script.is_module);
+    assert_eq!(script.macro_imports.len(), 2);
+    assert_eq!(script.candidates.len(), 2);
+    assert_eq!(script.candidates[0].imported_name, "t");
+    assert_eq!(script.candidates[0].flavor, MacroFlavor::Direct);
+    assert_eq!(script.candidates[1].imported_name, "t");
+    assert_eq!(script.candidates[1].flavor, MacroFlavor::Direct);
+}
+
+#[test]
+fn rejects_svelte_macro_imports_in_module_script() {
+    let source = indoc! {r#"
+        <script module>
+          import { t } from "lingui-for-svelte/macro";
+
+          const label = t`Module label`;
+        </script>
+    "#};
+
+    let error = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect_err("analysis should reject Svelte macro imports in module scripts");
+
+    assert!(error.to_string().contains("@lingui/core/macro"));
+    assert!(error.to_string().contains("lingui-for-svelte/macro"));
+}
+
+#[test]
+fn allows_core_macro_alias_packages_in_module_script() {
+    let source = indoc! {r#"
+        <script module>
+          import { t } from "@acme/lingui-core";
+
+          const label = t`Module label`;
+        </script>
+    "#};
+    let mut options = analyze_options_for_svelte(WhitespaceMode::Svelte);
+    options.conventions.macro_ = MacroConventions {
+        packages: BTreeMap::from([
+            (
+                MacroPackageKind::Core,
+                MacroPackage {
+                    packages: vec![
+                        "@lingui/core/macro".to_string(),
+                        "@acme/lingui-core".to_string(),
+                    ],
+                },
+            ),
+            (
+                MacroPackageKind::Svelte,
+                MacroPackage {
+                    packages: vec![
+                        "lingui-for-svelte/macro".to_string(),
+                        "lingui-for-svelte/macro/alias".to_string(),
+                    ],
+                },
+            ),
+        ]),
+    };
+
+    let analysis = SvelteAdapter
+        .analyze(source, &options)
+        .expect("analysis should allow core macro aliases in module scripts");
+
+    assert!(analysis.scripts[0].is_module);
+    assert_eq!(
+        analysis.scripts[0].macro_imports[0].source,
+        "@acme/lingui-core"
+    );
 }
 
 #[test]
@@ -522,4 +613,31 @@ fn keeps_full_outer_span_for_later_reactive_plural_template_expressions() {
 
     assert!(outer.starts_with("$plural("));
     assert!(normalized.starts_with("$plural("));
+}
+
+#[test]
+fn rejects_unsupported_svelte_trans_child_syntax_with_location() {
+    let source = indoc! {r#"
+        <script>
+          import { Trans } from "lingui-for-svelte/macro";
+        </script>
+
+        <Trans>
+          {@html content}
+        </Trans>
+    "#};
+
+    let error = SvelteCompilePlan::build(
+        source,
+        "Unsupported.svelte",
+        "Unsupported.svelte?compile",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
+    )
+    .expect_err("compile plan should fail");
+    let rendered = error.to_string();
+
+    assert!(rendered.contains("Unsupported.svelte:6:3"));
+    assert!(rendered.contains("{@html ...}"));
+    assert!(rendered.contains("cannot be lowered to a runtime message"));
 }

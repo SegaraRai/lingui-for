@@ -1,6 +1,8 @@
 use tree_sitter::Node;
 
-use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
+use crate::common::{
+    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_unsupported_trans_child_syntax,
+};
 use crate::conventions::FrameworkConventions;
 
 use super::helpers::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
@@ -26,6 +28,8 @@ pub enum AstroFrameworkError {
     Parse(#[from] ParseError),
     #[error(transparent)]
     Js(#[from] JsAnalysisError),
+    #[error("{0}")]
+    InvalidMacroUsage(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -198,23 +202,33 @@ fn collect_template_expressions(
     ) -> Result<(), AstroFrameworkError> {
         match node.kind() {
             "html_interpolation" => {
-                // Only treat pure JS/TS interpolations as standalone expression containers here.
-                // Mixed markup cases recurse into child nodes so nested containers are handled once.
-                if is_pure_html_interpolation_expression(node) {
-                    push_template_expression(
-                        source,
-                        Span::from_node(node),
-                        inner_range_from_delimiters(node, 1, 1),
-                        imports,
-                        context,
-                        expressions,
-                    )?;
+                let outer_span = Span::from_node(node);
+                let inner_span = inner_range_from_delimiters(node, 1, 1);
+                let is_pure_expression = is_pure_html_interpolation_expression(node);
+                let excluded_nested_spans = if is_pure_expression {
+                    Vec::new()
+                } else {
+                    collect_nested_expression_container_spans(node)
+                };
+                push_template_expression(
+                    source,
+                    imports,
+                    context,
+                    expressions,
+                    TemplateExpressionRequest {
+                        outer_span,
+                        inner_span,
+                        language: JsLikeLanguage::Tsx,
+                        excluded_nested_spans: &excluded_nested_spans,
+                    },
+                )?;
+                if is_pure_expression {
                     return Ok(());
                 }
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, node, imports, options, context)
+                    component_candidate_from_element(source, node, imports, options)?
                 {
                     components.push(component);
                     return Ok(());
@@ -228,22 +242,30 @@ fn collect_template_expressions(
                     .unwrap_or_else(|| inner_range_from_delimiters(node, 1, 1));
                 push_template_expression(
                     source,
-                    Span::from_node(node),
-                    inner,
                     imports,
                     context,
                     expressions,
+                    TemplateExpressionRequest {
+                        outer_span: Span::from_node(node),
+                        inner_span: inner,
+                        language: JsLikeLanguage::TypeScript,
+                        excluded_nested_spans: &[],
+                    },
                 )?;
                 return Ok(());
             }
             "attribute_backtick_string" => {
                 push_template_expression(
                     source,
-                    Span::from_node(node),
-                    inner_range_from_delimiters(node, 1, 1),
                     imports,
                     context,
                     expressions,
+                    TemplateExpressionRequest {
+                        outer_span: Span::from_node(node),
+                        inner_span: inner_range_from_delimiters(node, 1, 1),
+                        language: JsLikeLanguage::TypeScript,
+                        excluded_nested_spans: &[],
+                    },
                 )?;
                 return Ok(());
             }
@@ -281,21 +303,32 @@ fn collect_template_expressions(
     Ok((expressions, components))
 }
 
-fn push_template_expression(
-    source: &str,
+struct TemplateExpressionRequest<'a> {
     outer_span: Span,
     inner_span: Span,
+    language: JsLikeLanguage,
+    excluded_nested_spans: &'a [Span],
+}
+
+fn push_template_expression(
+    source: &str,
     imports: &[MacroImport],
     context: &mut AstroCollectContext,
     expressions: &mut Vec<AstroTemplateExpression>,
+    request: TemplateExpressionRequest<'_>,
 ) -> Result<(), AstroFrameworkError> {
+    let TemplateExpressionRequest {
+        outer_span,
+        inner_span,
+        language,
+        excluded_nested_spans,
+    } = request;
     let expression_source = &source[inner_span.start..inner_span.end];
-    let tree =
-        context
-            .expression_parse_cache
-            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let tree = context
+        .expression_parse_cache
+        .parse(source, inner_span, language)?;
 
-    let candidates = collect_macro_candidates(
+    let mut candidates = collect_macro_candidates(
         expression_source,
         tree.root_node(),
         imports,
@@ -303,6 +336,13 @@ fn push_template_expression(
         JsMacroSyntax::Standard,
         &[],
     );
+    if !excluded_nested_spans.is_empty() {
+        candidates.retain(|candidate| {
+            !excluded_nested_spans.iter().any(|span| {
+                span.start <= candidate.outer_span.start && span.end >= candidate.outer_span.end
+            })
+        });
+    }
     expressions.push(AstroTemplateExpression {
         outer_span,
         inner_span,
@@ -311,32 +351,73 @@ fn push_template_expression(
     Ok(())
 }
 
+fn collect_nested_expression_container_spans(node: Node<'_>) -> Vec<Span> {
+    fn collect(node: Node<'_>, spans: &mut Vec<Span>) {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            match child.kind() {
+                "html_interpolation" => {
+                    spans.push(inner_range_from_delimiters(child, 1, 1));
+                    collect(child, spans);
+                }
+                "attribute_interpolation" => {
+                    let inner = child
+                        .children(&mut child.walk())
+                        .find(|grandchild| grandchild.kind() == "attribute_js_expr")
+                        .map(Span::from_node)
+                        .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
+                    spans.push(inner);
+                    collect(child, spans);
+                }
+                "attribute_backtick_string" => {
+                    spans.push(inner_range_from_delimiters(child, 1, 1));
+                    collect(child, spans);
+                }
+                _ => collect(child, spans),
+            }
+        }
+    }
+
+    let mut spans = Vec::new();
+    collect(node, &mut spans);
+    spans
+}
+
 fn component_candidate_from_element(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-    context: &mut AstroCollectContext,
-) -> Option<AstroTemplateComponent> {
+) -> Result<Option<AstroTemplateComponent>, AstroFrameworkError> {
     let mut cursor = node.walk();
     let tag_node = node
         .children(&mut cursor)
-        .find(|child| child.kind() == "start_tag" || child.kind() == "self_closing_tag")?;
+        .find(|child| child.kind() == "start_tag" || child.kind() == "self_closing_tag");
+    let Some(tag_node) = tag_node else {
+        return Ok(None);
+    };
     let tag_name_node = tag_node
         .children(&mut tag_node.walk())
-        .find(|child| child.kind() == "tag_name")?;
+        .find(|child| child.kind() == "tag_name");
+    let Some(tag_name_node) = tag_name_node else {
+        return Ok(None);
+    };
     let tag_name = text(source, tag_name_node);
     if !is_component_tag_name(tag_name) {
-        return None;
+        return Ok(None);
     }
 
     let import_decl = imports
         .iter()
-        .find(|import_decl| import_decl.local_name == tag_name)?;
+        .find(|import_decl| import_decl.local_name == tag_name);
+    let Some(import_decl) = import_decl else {
+        return Ok(None);
+    };
+    validate_runtime_lowerable_astro_component(source, node, options)?;
     let normalization_edits =
-        collect_component_normalization_edits(source, node, imports, options, context);
+        collect_component_normalization_edits(source, node, imports, options)?;
 
-    Some(AstroTemplateComponent {
+    Ok(Some(AstroTemplateComponent {
         candidate: MacroCandidate {
             id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
             kind: MacroCandidateKind::Component,
@@ -351,7 +432,7 @@ fn component_candidate_from_element(
             strategy: MacroCandidateStrategy::Standalone,
         },
         shadowed_names: Vec::new(),
-    })
+    }))
 }
 
 fn component_source_map_anchor(source: &str, node: Node<'_>) -> Option<Span> {
@@ -387,13 +468,11 @@ fn collect_component_normalization_edits(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-    context: &mut AstroCollectContext,
-) -> Vec<NormalizationEdit> {
-    let mut edits =
-        collect_nested_component_normalization_edits(source, node, imports, options, context);
+) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
+    let mut edits = collect_nested_component_normalization_edits(source, node, imports, options)?;
     edits.extend(component_whitespace_edits(source, node, options));
     sort_and_dedup_normalization_edits(&mut edits);
-    edits
+    Ok(edits)
 }
 
 fn collect_nested_component_normalization_edits(
@@ -401,8 +480,8 @@ fn collect_nested_component_normalization_edits(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-    context: &mut AstroCollectContext,
-) -> Vec<NormalizationEdit> {
+) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
+    let mut context = AstroCollectContext::default();
     let mut edits = Vec::new();
     let mut cursor = node.walk();
 
@@ -411,11 +490,7 @@ fn collect_nested_component_normalization_edits(
             "frontmatter_js_block" => {}
             "html_interpolation" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                if let Ok(tree) =
-                    context
-                        .expression_parse_cache
-                        .parse(source, inner, JsLikeLanguage::TypeScript)
-                {
+                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
                     let candidates = collect_macro_candidates(
                         &source[inner.start..inner.end],
                         tree.root_node(),
@@ -435,11 +510,7 @@ fn collect_nested_component_normalization_edits(
                     .find(|grandchild| grandchild.kind() == "attribute_js_expr")
                     .map(Span::from_node)
                     .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
-                if let Ok(tree) =
-                    context
-                        .expression_parse_cache
-                        .parse(source, inner, JsLikeLanguage::TypeScript)
-                {
+                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
                     let candidates = collect_macro_candidates(
                         &source[inner.start..inner.end],
                         tree.root_node(),
@@ -455,11 +526,7 @@ fn collect_nested_component_normalization_edits(
             }
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                if let Ok(tree) =
-                    context
-                        .expression_parse_cache
-                        .parse(source, inner, JsLikeLanguage::TypeScript)
-                {
+                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
                     let candidates = collect_macro_candidates(
                         &source[inner.start..inner.end],
                         tree.root_node(),
@@ -475,24 +542,41 @@ fn collect_nested_component_normalization_edits(
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, child, imports, options, context)
+                    component_candidate_from_element(source, child, imports, options)?
                 {
                     edits.extend(component.candidate.normalization_edits);
                     continue;
                 }
                 edits.extend(collect_nested_component_normalization_edits(
-                    source, child, imports, options, context,
-                ));
+                    source, child, imports, options,
+                )?);
             }
             _ => {
                 edits.extend(collect_nested_component_normalization_edits(
-                    source, child, imports, options, context,
-                ));
+                    source, child, imports, options,
+                )?);
             }
         }
     }
 
-    edits
+    Ok(edits)
+}
+
+fn parse_nested_component_expression(
+    context: &mut AstroCollectContext,
+    source: &str,
+    inner: Span,
+) -> Option<tree_sitter::Tree> {
+    context
+        .expression_parse_cache
+        .parse(source, inner, JsLikeLanguage::TypeScript)
+        .ok()
+        .or_else(|| {
+            context
+                .expression_parse_cache
+                .parse(source, inner, JsLikeLanguage::Tsx)
+                .ok()
+        })
 }
 
 fn component_whitespace_edits(
@@ -520,4 +604,85 @@ fn is_explicit_space_expression(source: &str, node: Node<'_>) -> bool {
     let span = Span::from_node(node);
     let text = source[span.start..span.end].trim();
     is_explicit_whitespace_string_expression(text)
+}
+
+fn validate_runtime_lowerable_astro_component(
+    source: &str,
+    node: Node<'_>,
+    options: &AnalyzeOptions,
+) -> Result<(), AstroFrameworkError> {
+    validate_astro_component_node(source, node, options)
+}
+
+fn validate_astro_component_node(
+    source: &str,
+    node: Node<'_>,
+    options: &AnalyzeOptions,
+) -> Result<(), AstroFrameworkError> {
+    if matches!(node.kind(), "element" | "self_closing_tag") {
+        validate_astro_element_like(source, node, options)?;
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        validate_astro_component_node(source, child, options)?;
+    }
+
+    Ok(())
+}
+
+fn validate_astro_element_like(
+    source: &str,
+    node: Node<'_>,
+    options: &AnalyzeOptions,
+) -> Result<(), AstroFrameworkError> {
+    let tag = match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag"),
+        "self_closing_tag" => Some(node),
+        _ => None,
+    };
+    let Some(tag) = tag else {
+        return Ok(());
+    };
+
+    let mut cursor = tag.walk();
+    for child in tag.children(&mut cursor) {
+        if child.kind() != "attribute" {
+            continue;
+        }
+        let Some(name_node) = child
+            .children(&mut child.walk())
+            .find(|grandchild| grandchild.kind() == "attribute_name")
+        else {
+            continue;
+        };
+        let attribute_name = text(source, name_node);
+        if is_unsupported_astro_directive(attribute_name) {
+            return Err(AstroFrameworkError::InvalidMacroUsage(
+                format_unsupported_trans_child_syntax(
+                    source,
+                    &options.source_name,
+                    Span::from_node(name_node),
+                    format!("Astro directive `{attribute_name}`"),
+                ),
+            ));
+        }
+    }
+
+    Ok(())
+}
+
+fn is_unsupported_astro_directive(attribute_name: &str) -> bool {
+    attribute_name == "class:list"
+        || attribute_name == "set:html"
+        || attribute_name == "set:text"
+        || attribute_name == "define:vars"
+        || attribute_name == "is:global"
+        || attribute_name == "is:inline"
+        || attribute_name.starts_with("client:")
+        || attribute_name.starts_with("server:")
+        || attribute_name.starts_with("transition:")
+        || attribute_name.starts_with("is:")
 }

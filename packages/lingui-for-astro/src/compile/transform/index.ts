@@ -17,7 +17,7 @@ import {
   type RichTextWhitespaceMode,
 } from "../common/config.ts";
 import { createAstroFrameworkConventions } from "../common/conventions.ts";
-import { transformProgram } from "../lower/babel-transform.ts";
+import { lowerAstroTransformProgram } from "../lower/transform.ts";
 
 /**
  * Options for {@link transformAstro}.
@@ -69,7 +69,7 @@ export interface LinguiAstroTransformResult {
     /**
      * The Babel/Lingui transform of the synthetic module with Astro runtime bindings applied.
      */
-    context: LinguiAstroTransformArtifact;
+    contextual: LinguiAstroTransformArtifact;
     /**
      * The final `.astro` output after Rust reinserts the transformed declarations into the original source.
      */
@@ -140,24 +140,26 @@ export async function transformAstro(
   const syntheticMap = parseCanonicalSourceMap(
     compilePlan.common.syntheticSourceMapJson,
   );
-  const contextFilename = `${compilePlan.common.syntheticName}?astro-context`;
-  const context = transformProgram(compilePlan.common.syntheticSource, {
-    translationMode: "astro-context",
-    filename: contextFilename,
-    linguiConfig,
-    inputSourceMap: toBabelSourceMap(syntheticMap),
-    runtimeBinding: compilePlan.runtimeBindings.i18n,
-  });
+  const contextualFilename = `${compilePlan.common.syntheticName}?contextual`;
+  const contextual = lowerAstroTransformProgram(
+    compilePlan.common.syntheticSource,
+    {
+      filename: contextualFilename,
+      linguiConfig,
+      inputSourceMap: toBabelSourceMap(syntheticMap),
+      runtimeBinding: compilePlan.runtimeBindings.i18n,
+    },
+  );
 
   const finished = finishAstroCompile({
     plan: compilePlan,
     source,
     transformedPrograms: {
-      contextCode: context.code,
-      contextSourceMapJson:
-        context.map != null ? JSON.stringify(context.map) : undefined,
-      rawCode: undefined,
-      rawSourceMapJson: undefined,
+      contextualCode: contextual.code,
+      contextualSourceMapJson:
+        contextual.map != null ? JSON.stringify(contextual.map) : undefined,
+      loweredCode: undefined,
+      loweredSourceMapJson: undefined,
     },
   });
   const finalMap = parseCanonicalSourceMap(finished.sourceMapJson);
@@ -171,10 +173,10 @@ export async function transformAstro(
         code: compilePlan.common.syntheticSource,
         map: syntheticMap,
       },
-      context: {
-        filename: contextFilename,
-        code: context.code,
-        map: context.map ?? null,
+      contextual: {
+        filename: contextualFilename,
+        code: contextual.code,
+        map: contextual.map ?? null,
       },
       final: {
         filename,

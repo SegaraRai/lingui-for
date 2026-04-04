@@ -16,6 +16,7 @@ use crate::extract::{ExtractError, build_synthetic_module, reinsert_transformed_
 use crate::framework::astro::AstroAdapter;
 use crate::framework::svelte::{SvelteAdapter, validate_svelte_extract_candidates};
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError};
+use crate::synthesis::merge_owned_candidate_normalization_edits;
 
 pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
@@ -57,6 +58,7 @@ pub fn build_synthetic_module_for_framework(
             let analysis = AstroAdapter.analyze(
                 source,
                 &AnalyzeOptions {
+                    source_name: source_name.to_string(),
                     whitespace: whitespace.unwrap_or(WhitespaceMode::Astro),
                     conventions: conventions.clone(),
                 },
@@ -90,6 +92,7 @@ pub fn build_synthetic_module_for_framework(
             let analysis = SvelteAdapter.analyze(
                 source,
                 &AnalyzeOptions {
+                    source_name: source_name.to_string(),
                     whitespace: whitespace.unwrap_or(WhitespaceMode::Svelte),
                     conventions: conventions.clone(),
                 },
@@ -116,9 +119,10 @@ pub fn build_synthetic_module_for_framework(
                     .into_iter()
                     .map(|component| component.candidate),
             );
-            validate_svelte_extract_candidates(&candidates).map_err(FrameworkError::from)?;
-            retain_standalone_candidates(&mut candidates);
             sort_candidates(&mut candidates);
+            validate_svelte_extract_candidates(source_name, source, &candidates)
+                .map_err(FrameworkError::from)?;
+            retain_standalone_candidates(&mut candidates);
             Ok(build_synthetic_module(
                 source,
                 source_name,
@@ -137,6 +141,7 @@ fn sort_candidates(candidates: &mut [MacroCandidate]) {
 }
 
 fn retain_standalone_candidates(candidates: &mut Vec<MacroCandidate>) {
+    merge_owned_candidate_normalization_edits(candidates);
     candidates.retain(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone);
 }
 

@@ -17,10 +17,10 @@ use svelte_support::svelte_default_conventions;
 #[test]
 fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     let source = r#"
-<script context="module" lang="ts">
-  import { t } from "lingui-for-svelte/macro";
+<script module lang="ts">
+  import { t } from "@lingui/core/macro";
 
-  const moduleLabel = t.eager`Module label`;
+  const moduleLabel = t`Module label`;
 </script>
 
 <script lang="ts">
@@ -54,6 +54,12 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     assert!(
         plan.common
             .synthetic_source
+            .contains("const __lf_0 = t`Module label`;")
+    );
+    assert!(
+        !plan
+            .common
+            .synthetic_source
             .contains("__lingui_for_svelte_eager_translation__(t`Module label`)")
     );
     assert!(
@@ -79,7 +85,10 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .iter()
         .find(|target| target.context == CompileTargetContext::ModuleScript)
         .expect("module target");
-    assert_eq!(module_target.translation_mode, CompileTranslationMode::Raw);
+    assert_eq!(
+        module_target.translation_mode,
+        CompileTranslationMode::Lowered
+    );
     assert_eq!(
         module_target.output_kind,
         CompileTargetOutputKind::Expression
@@ -96,7 +105,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .expect("instance expression target");
     assert_eq!(
         instance_target.translation_mode,
-        CompileTranslationMode::Context
+        CompileTranslationMode::Contextual
     );
 
     let template_expression_target = plan
@@ -110,7 +119,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .expect("template expression target");
     assert_eq!(
         template_expression_target.translation_mode,
-        CompileTranslationMode::Context
+        CompileTranslationMode::Contextual
     );
 
     let component_target = plan
@@ -122,17 +131,17 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     assert_eq!(component_target.context, CompileTargetContext::Template);
     assert_eq!(
         component_target.translation_mode,
-        CompileTranslationMode::Context
+        CompileTranslationMode::Contextual
     );
 }
 
 #[test]
 fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
     let source = indoc::indoc! {r#"
-        <script context="module">
-          import { t as moduleT } from "lingui-for-svelte/macro";
+        <script module>
+          import { t as moduleT } from "@lingui/core/macro";
 
-          const moduleLabel = moduleT.eager({ id: "module", message: "Module" });
+          const moduleLabel = moduleT({ id: "module", message: "Module" });
         </script>
 
         <script>
@@ -228,7 +237,7 @@ const status = translate(msg`Status summary: active`);
         plan.common
             .targets
             .iter()
-            .all(|target| { target.translation_mode == CompileTranslationMode::Context })
+            .all(|target| { target.translation_mode == CompileTranslationMode::Contextual })
     );
     assert!(
         plan.common
@@ -368,6 +377,53 @@ import { plural } from "lingui-for-astro/macro";
 }
 
 #[test]
+fn keeps_astro_callback_body_targets_inside_mixed_html_interpolations() {
+    let source = r#"---
+import { msg, t as translate } from "@lingui/core/macro";
+
+const filteredQueue = queueItems;
+---
+
+{
+  filteredQueue.map((item) => {
+    const nestedLabel =
+      item.unread > 0
+        ? translate(
+            msg`${item.owner} left ${String(item.comments)} comments while ${item.assignee} still has ${String(item.unread)} unread updates.`,
+          )
+        : translate(
+            msg`${item.owner} left ${String(item.comments)} comments and the queue is fully read.`,
+          );
+
+    return <p>{nestedLabel}</p>;
+  })
+}
+"#;
+
+    let plan = AstroCompilePlan::build(
+        source,
+        "/virtual/NestedCallback.astro",
+        "/virtual/NestedCallback.astro?compile.tsx",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect("astro compile plan should build");
+
+    let nested_label_targets = plan
+        .common
+        .targets
+        .iter()
+        .filter(|target| {
+            let text = &source[target.original_span.start..target.original_span.end];
+            text.starts_with("translate(")
+                && (text.contains("still has") || text.contains("fully read"))
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(nested_label_targets.len(), 2);
+}
+
+#[test]
 fn rejects_bare_direct_t_in_svelte_scripts() {
     let source = r#"
 <script lang="ts">
@@ -480,6 +536,46 @@ fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
             source[target.original_span.start..target.original_span.end].starts_with("$plural(")
         }),
         "expected a full-span target for the later template plural expression",
+    );
+}
+
+#[test]
+fn normalizes_owned_nested_svelte_macros_in_compile_synthetic_source() {
+    let source = indoc::indoc! {r#"
+        <script lang="ts">
+          import { msg, t as translate } from "lingui-for-svelte/macro";
+
+          const summary = $derived(
+            $translate(
+              msg`参照中のパスは ${String(selectedPath ?? $translate`未設定`)} で、候補は ${String(
+                relatedPaths[1] ?? $translate`ありません`,
+              )} です。`,
+            ),
+          );
+        </script>
+    "#};
+
+    let plan = SvelteCompilePlan::build(
+        source,
+        "/virtual/Nested.svelte",
+        "/virtual/Nested.svelte?compile.tsx",
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
+    )
+    .expect("svelte compile plan should build");
+
+    assert!(plan.common.synthetic_source.contains("translate`未設定`"));
+    assert!(
+        plan.common
+            .synthetic_source
+            .contains("translate`ありません`")
+    );
+    assert!(!plan.common.synthetic_source.contains("$translate`未設定`"));
+    assert!(
+        !plan
+            .common
+            .synthetic_source
+            .contains("$translate`ありません`")
     );
 }
 

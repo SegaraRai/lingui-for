@@ -70,11 +70,14 @@ impl FrameworkCompilePlan for AstroCompilePlan {
 
     fn analyze(
         source: &str,
+        source_name: &str,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, CompileError> {
-        Ok(analyze_astro_compile(source, whitespace_mode, conventions)
-            .map_err(AdapterError::from)?)
+        Ok(
+            analyze_astro_compile(source, source_name, whitespace_mode, conventions)
+                .map_err(AdapterError::from)?,
+        )
     }
 
     fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
@@ -178,12 +181,14 @@ pub(crate) struct AstroFrameworkCompileAnalysis {
 
 pub(crate) fn analyze_astro_compile(
     source: &str,
+    source_name: &str,
     whitespace: WhitespaceMode,
     conventions: &FrameworkConventions,
 ) -> Result<AstroFrameworkCompileAnalysis, AstroAdapterError> {
     let analysis = AstroAdapter.analyze(
         source,
         &AnalyzeOptions {
+            source_name: source_name.to_string(),
             whitespace,
             conventions: conventions.clone(),
         },
@@ -209,7 +214,7 @@ pub(crate) fn analyze_astro_compile(
                 output_kind: CompileTargetOutputKind::Expression,
                 candidate,
                 context: CompileTargetContext::Frontmatter,
-                translation_mode: CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Contextual,
             }),
     );
     for expression in &analysis.template_expressions {
@@ -218,7 +223,7 @@ pub(crate) fn analyze_astro_compile(
                 output_kind: CompileTargetOutputKind::Expression,
                 candidate,
                 context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Contextual,
             }
         }));
     }
@@ -231,7 +236,7 @@ pub(crate) fn analyze_astro_compile(
                 output_kind: CompileTargetOutputKind::Component,
                 candidate: component.candidate,
                 context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Context,
+                translation_mode: CompileTranslationMode::Contextual,
             }),
     );
 

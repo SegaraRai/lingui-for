@@ -1,6 +1,11 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import type { FrameworkConventions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type {
+  FrameworkConventions,
+  MacroPackage,
+  MacroPackageKind,
+} from "@lingui-for/internal-lingui-analyzer-wasm";
+import { LINGUI_STANDARD_CORE_MACRO_PACKAGES } from "@lingui-for/internal-shared-compile";
 
 import {
   EAGER_TRANSLATION_WRAPPER,
@@ -25,8 +30,20 @@ export function createSvelteFrameworkConventions(
   return {
     framework: "svelte",
     macro: {
-      primaryPackage: PACKAGE_MACRO,
-      acceptedPackages: getAcceptedMacroPackages(linguiConfig, options),
+      packages: new Map<MacroPackageKind, MacroPackage>([
+        [
+          "core",
+          createMacroPackage(
+            linguiConfig.macro?.corePackage ?? [
+              ...LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+            ],
+          ),
+        ],
+        [
+          "svelte",
+          createMacroPackage(options?.sveltePackages ?? [PACKAGE_MACRO]),
+        ],
+      ]),
     },
     runtime: {
       package: PACKAGE_RUNTIME,
@@ -53,17 +70,8 @@ export function createSvelteFrameworkConventions(
   };
 }
 
-function getAcceptedMacroPackages(
-  linguiConfig: LinguiConfigNormalized,
-  options?: {
-    sveltePackages?: readonly string[] | undefined;
-  },
-): string[] {
-  return [
-    ...new Set([
-      ...(linguiConfig.macro?.corePackage ?? []),
-      PACKAGE_MACRO,
-      ...(options?.sveltePackages ?? []),
-    ]),
-  ];
+function createMacroPackage(packageNames: readonly string[]): MacroPackage {
+  return {
+    packages: [...new Set(packageNames)],
+  };
 }

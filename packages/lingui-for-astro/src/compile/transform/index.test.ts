@@ -90,6 +90,30 @@ describe("transformAstro", () => {
     expect(code).toContain('href: "/docs"');
   });
 
+  test("lowers nested TSX macros inside Trans children", async () => {
+    const source = dedent`
+      ---
+      import { t, Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>
+        Before <em>{t\`inline emphasis\`}</em> after.
+      </Trans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      'import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";',
+    );
+    expect(code).toContain("__l4a_i18n._(");
+    expect(code).toContain("inline emphasis");
+    expect(code).not.toContain("{t`inline emphasis`}");
+  });
+
   test("keeps returned msg descriptors on the same line as the i18n marker", async () => {
     const result = await expectTransformed(
       dedent`
@@ -362,6 +386,44 @@ describe("transformAstro", () => {
       /0:\s*__l4a_i18n\._\(\s*\/\*i18n\*\/\s*\{ id: "SMt\/JO", message: "\{rank, selectordinal, =1 \{\{role, select, admin \{component zero first admin\} other \{component zero first other\}\}\}/,
     );
     expect(code).toContain("component many later admin");
+  });
+
+  test("lowers callback-body macros inside mixed html interpolations", async () => {
+    const source = dedent`
+      ---
+      import { msg, t as translate } from "lingui-for-astro/macro";
+
+      const filteredQueue = queueItems;
+      ---
+
+      {
+        filteredQueue.map((item) => {
+          const nestedLabel =
+            item.unread > 0
+              ? translate(
+                  msg\`\${item.owner} left \${String(item.comments)} comments while \${item.assignee} still has \${String(item.unread)} unread updates.\`,
+                )
+              : translate(
+                  msg\`\${item.owner} left \${String(item.comments)} comments and the queue is fully read.\`,
+                );
+
+          return <p>{nestedLabel}</p>;
+        })
+      }
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      "const nestedLabel = item.unread > 0 ? __l4a_i18n._(",
+    );
+    expect(code).toContain("still has");
+    expect(code).toContain("fully read");
+    expect(code).not.toContain("translate( msg`");
+    expect(code).not.toContain("translate(msg`");
   });
 
   test("leaves same-name non-macro components untouched", async () => {
