@@ -208,9 +208,13 @@ fn analyze_script_block(
 
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
     let language = script_language(source, start_tag);
+    debug_assert!(
+        !matches!(language, JsLikeLanguage::Tsx),
+        "Svelte scripts should not be parsed as TSX"
+    );
     let script_tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(script_source)?,
-        JsLikeLanguage::TypeScript => parse_typescript(script_source)?,
+        JsLikeLanguage::TypeScript | JsLikeLanguage::Tsx => parse_typescript(script_source)?,
     };
     extend_shifted_node_start_anchors(
         script_source,
@@ -259,7 +263,7 @@ fn analyze_script_block(
     Ok(Some(SvelteScriptBlock {
         region: content_region,
         is_module,
-        is_typescript: language == JsLikeLanguage::TypeScript,
+        is_typescript: matches!(language, JsLikeLanguage::TypeScript | JsLikeLanguage::Tsx),
         declared_names,
         macro_imports,
         macro_import_statement_spans,

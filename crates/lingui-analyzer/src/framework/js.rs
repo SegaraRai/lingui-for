@@ -5,7 +5,7 @@ use tree_sitter::{Node, Tree};
 use crate::common::Span;
 
 use super::helpers::text::{find_pattern_near_start, text};
-use super::parse::{ParseError, parse_javascript, parse_typescript};
+use super::parse::{ParseError, parse_javascript, parse_tsx, parse_typescript};
 use super::scope::LexicalScope;
 use super::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
@@ -28,6 +28,7 @@ pub enum JsMacroSyntax {
 pub enum JsLikeLanguage {
     JavaScript,
     TypeScript,
+    Tsx,
 }
 
 pub fn collect_macro_candidates(
@@ -66,6 +67,7 @@ pub fn collect_declared_names_from_binding_source(
     let tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(&wrapped)?,
         JsLikeLanguage::TypeScript => parse_typescript(&wrapped)?,
+        JsLikeLanguage::Tsx => parse_tsx(&wrapped)?,
     };
     let root = tree.root_node();
     let mut names = Vec::new();
@@ -80,6 +82,7 @@ pub fn collect_top_level_declared_names_in_javascript(
     let tree = match language {
         JsLikeLanguage::JavaScript => parse_javascript(source)?,
         JsLikeLanguage::TypeScript => parse_typescript(source)?,
+        JsLikeLanguage::Tsx => parse_tsx(source)?,
     };
     let root = tree.root_node();
     Ok(collect_top_level_declared_names_from_root(source, root))
@@ -149,6 +152,7 @@ impl ExpressionParseCache {
         let tree = match language {
             JsLikeLanguage::JavaScript => parse_javascript(slice)?,
             JsLikeLanguage::TypeScript => parse_typescript(slice)?,
+            JsLikeLanguage::Tsx => parse_tsx(slice)?,
         };
         self.trees.insert(key, tree.clone());
         Ok(tree)

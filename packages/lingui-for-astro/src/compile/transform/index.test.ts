@@ -364,6 +364,44 @@ describe("transformAstro", () => {
     expect(code).toContain("component many later admin");
   });
 
+  test("lowers callback-body macros inside mixed html interpolations", async () => {
+    const source = dedent`
+      ---
+      import { msg, t as translate } from "lingui-for-astro/macro";
+
+      const filteredQueue = queueItems;
+      ---
+
+      {
+        filteredQueue.map((item) => {
+          const nestedLabel =
+            item.unread > 0
+              ? translate(
+                  msg\`\${item.owner} left \${String(item.comments)} comments while \${item.assignee} still has \${String(item.unread)} unread updates.\`,
+                )
+              : translate(
+                  msg\`\${item.owner} left \${String(item.comments)} comments and the queue is fully read.\`,
+                );
+
+          return <p>{nestedLabel}</p>;
+        })
+      }
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      "const nestedLabel = item.unread > 0 ? __l4a_i18n._(",
+    );
+    expect(code).toContain("still has");
+    expect(code).toContain("fully read");
+    expect(code).not.toContain("translate( msg`");
+    expect(code).not.toContain("translate(msg`");
+  });
+
   test("leaves same-name non-macro components untouched", async () => {
     const source = dedent`
       ---

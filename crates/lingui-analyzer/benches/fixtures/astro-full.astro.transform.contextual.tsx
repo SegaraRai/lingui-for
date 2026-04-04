@@ -135,28 +135,50 @@ const __lf_18 = __l4a_i18n._(
 const __lf_19 = __l4a_i18n._(
 /*i18n*/
 {
+  id: "szWjCj",
+  message: "{0} left {1} comments while {2} still has {3} unread updates.",
+  values: {
+    0: item.owner,
+    1: String(item.comments),
+    2: item.assignee,
+    3: String(item.unread)
+  }
+});
+const __lf_20 = __l4a_i18n._(
+/*i18n*/
+{
+  id: "IDpMOo",
+  message: "{0} left {1} comments and the queue is fully read.",
+  values: {
+    0: item.owner,
+    1: String(item.comments)
+  }
+});
+const __lf_21 = __l4a_i18n._(
+/*i18n*/
+{
   id: "2TUOis",
   message: "Owner:"
 });
-const __lf_20 = __l4a_i18n._(
+const __lf_22 = __l4a_i18n._(
 /*i18n*/
 {
   id: "GRmQfp",
   message: "Assignee:"
 });
-const __lf_21 = __l4a_i18n._(
+const __lf_23 = __l4a_i18n._(
 /*i18n*/
 {
   id: "Y2+ZT9",
   message: "Comments:"
 });
-const __lf_22 = __l4a_i18n._(
+const __lf_24 = __l4a_i18n._(
 /*i18n*/
 {
   id: "jqmIfA",
   message: "Attachments:"
 });
-const __lf_23 = __l4a_i18n._(
+const __lf_25 = __l4a_i18n._(
 /*i18n*/
 {
   id: "lvcfoy",
@@ -165,19 +187,19 @@ const __lf_23 = __l4a_i18n._(
     0: String(item.pathHint ?? "")
   }
 });
-const __lf_24 = __l4a_i18n._(
+const __lf_26 = __l4a_i18n._(
 /*i18n*/
 {
   id: "pa6gX+",
   message: "No path"
 });
-const __lf_25 = __l4a_i18n._(
+const __lf_27 = __l4a_i18n._(
 /*i18n*/
 {
   id: "qbgW+C",
   message: "Highlights"
 });
-const __lf_26 = __l4a_i18n._(
+const __lf_28 = __l4a_i18n._(
 /*i18n*/
 {
   id: "ubwhkQ",
@@ -186,13 +208,13 @@ const __lf_26 = __l4a_i18n._(
     0: String(highlightedQueue.length)
   }
 });
-const __lf_27 = __l4a_i18n._(
+const __lf_29 = __l4a_i18n._(
 /*i18n*/
 {
   id: "nj0sbN",
   message: "No highlighted queue items."
 });
-const __lf_28 = __l4a_i18n._(
+const __lf_30 = __l4a_i18n._(
 /*i18n*/
 {
   id: "i4y9D/",
@@ -204,13 +226,13 @@ const __lf_28 = __l4a_i18n._(
     3: String(item.unread)
   }
 });
-const __lf_29 = __l4a_i18n._(
+const __lf_31 = __l4a_i18n._(
 /*i18n*/
 {
   id: "quM66o",
   message: "Decision log"
 });
-const __lf_30 = __l4a_i18n._(
+const __lf_32 = __l4a_i18n._(
 /*i18n*/
 {
   id: "LZB4fD",
@@ -220,13 +242,13 @@ const __lf_30 = __l4a_i18n._(
     1: String(row.path ?? "the current workflow")
   }
 });
-const __lf_31 = __l4a_i18n._(
+const __lf_33 = __l4a_i18n._(
 /*i18n*/
 {
   id: "OcCQjb",
   message: "Activity stream"
 });
-const __lf_32 = <_Trans {...
+const __lf_34 = <_Trans {...
 /*i18n*/
 {
   id: "YqL2gS",
@@ -238,13 +260,13 @@ const __lf_32 = <_Trans {...
     0: <span />
   }
 }} />;
-const __lf_33 = __l4a_i18n._(
+const __lf_35 = __l4a_i18n._(
 /*i18n*/
 {
   id: "UsgvkK",
   message: "Status digest"
 });
-const __lf_34 = <_Trans {...
+const __lf_36 = <_Trans {...
 /*i18n*/
 {
   id: "8p/xVT",
@@ -268,7 +290,7 @@ const __lf_34 = <_Trans {...
     })
   }
 }} />;
-const __lf_35 = __l4a_i18n._(
+const __lf_37 = __l4a_i18n._(
 /*i18n*/
 {
   id: "pnokNm",
@@ -278,7 +300,7 @@ const __lf_35 = __l4a_i18n._(
     1: String(highlightedQueue.length > 2 ? "requires escalation" : "is within normal review limits")
   }
 });
-const __lf_36 = __l4a_i18n._(
+const __lf_38 = __l4a_i18n._(
 /*i18n*/
 {
   id: "d8ajL9",
@@ -287,13 +309,13 @@ const __lf_36 = __l4a_i18n._(
     0: String(highlightedQueue.length > 0 ? `highlighted:${highlightedQueue[0]?.id ?? "none"}` : `region:${selectedRegion}`)
   }
 });
-const __lf_37 = __l4a_i18n._(
+const __lf_39 = __l4a_i18n._(
 /*i18n*/
 {
   id: "RDy8BL",
   message: "Reviewer notes"
 });
-const __lf_38 = __l4a_i18n._(
+const __lf_40 = __l4a_i18n._(
 /*i18n*/
 {
   id: "CNkP4q",
@@ -302,13 +324,13 @@ const __lf_38 = __l4a_i18n._(
     0: String(activity.length)
   }
 });
-const __lf_39 = __l4a_i18n._(
+const __lf_41 = __l4a_i18n._(
 /*i18n*/
 {
   id: "3mPwkK",
   message: "These notes mirror the kind of mixed script and template content that the compile benchmark should exercise."
 });
-const __lf_40 = __l4a_i18n._(
+const __lf_42 = __l4a_i18n._(
 /*i18n*/
 {
   id: "AzV+h+",
@@ -317,7 +339,7 @@ const __lf_40 = __l4a_i18n._(
     0: String(index + 1)
   }
 });
-const __lf_41 = __l4a_i18n._(
+const __lf_43 = __l4a_i18n._(
 /*i18n*/
 {
   id: "wXh6Ku",
@@ -330,7 +352,7 @@ const __lf_41 = __l4a_i18n._(
     4: String(item.unread)
   }
 });
-const __lf_42 = __l4a_i18n._(
+const __lf_44 = __l4a_i18n._(
 /*i18n*/
 {
   id: "e3ghLa",

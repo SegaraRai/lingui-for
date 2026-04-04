@@ -202,17 +202,27 @@ fn collect_template_expressions(
     ) -> Result<(), AstroFrameworkError> {
         match node.kind() {
             "html_interpolation" => {
-                // Only treat pure JS/TS interpolations as standalone expression containers here.
-                // Mixed markup cases recurse into child nodes so nested containers are handled once.
-                if is_pure_html_interpolation_expression(node) {
-                    push_template_expression(
-                        source,
-                        Span::from_node(node),
-                        inner_range_from_delimiters(node, 1, 1),
-                        imports,
-                        context,
-                        expressions,
-                    )?;
+                let outer_span = Span::from_node(node);
+                let inner_span = inner_range_from_delimiters(node, 1, 1);
+                let is_pure_expression = is_pure_html_interpolation_expression(node);
+                let excluded_nested_spans = if is_pure_expression {
+                    Vec::new()
+                } else {
+                    collect_nested_expression_container_spans(node)
+                };
+                push_template_expression(
+                    source,
+                    imports,
+                    context,
+                    expressions,
+                    TemplateExpressionRequest {
+                        outer_span,
+                        inner_span,
+                        language: JsLikeLanguage::Tsx,
+                        excluded_nested_spans: &excluded_nested_spans,
+                    },
+                )?;
+                if is_pure_expression {
                     return Ok(());
                 }
             }
@@ -232,22 +242,30 @@ fn collect_template_expressions(
                     .unwrap_or_else(|| inner_range_from_delimiters(node, 1, 1));
                 push_template_expression(
                     source,
-                    Span::from_node(node),
-                    inner,
                     imports,
                     context,
                     expressions,
+                    TemplateExpressionRequest {
+                        outer_span: Span::from_node(node),
+                        inner_span: inner,
+                        language: JsLikeLanguage::TypeScript,
+                        excluded_nested_spans: &[],
+                    },
                 )?;
                 return Ok(());
             }
             "attribute_backtick_string" => {
                 push_template_expression(
                     source,
-                    Span::from_node(node),
-                    inner_range_from_delimiters(node, 1, 1),
                     imports,
                     context,
                     expressions,
+                    TemplateExpressionRequest {
+                        outer_span: Span::from_node(node),
+                        inner_span: inner_range_from_delimiters(node, 1, 1),
+                        language: JsLikeLanguage::TypeScript,
+                        excluded_nested_spans: &[],
+                    },
                 )?;
                 return Ok(());
             }
@@ -285,21 +303,32 @@ fn collect_template_expressions(
     Ok((expressions, components))
 }
 
-fn push_template_expression(
-    source: &str,
+struct TemplateExpressionRequest<'a> {
     outer_span: Span,
     inner_span: Span,
+    language: JsLikeLanguage,
+    excluded_nested_spans: &'a [Span],
+}
+
+fn push_template_expression(
+    source: &str,
     imports: &[MacroImport],
     context: &mut AstroCollectContext,
     expressions: &mut Vec<AstroTemplateExpression>,
+    request: TemplateExpressionRequest<'_>,
 ) -> Result<(), AstroFrameworkError> {
+    let TemplateExpressionRequest {
+        outer_span,
+        inner_span,
+        language,
+        excluded_nested_spans,
+    } = request;
     let expression_source = &source[inner_span.start..inner_span.end];
-    let tree =
-        context
-            .expression_parse_cache
-            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let tree = context
+        .expression_parse_cache
+        .parse(source, inner_span, language)?;
 
-    let candidates = collect_macro_candidates(
+    let mut candidates = collect_macro_candidates(
         expression_source,
         tree.root_node(),
         imports,
@@ -307,12 +336,51 @@ fn push_template_expression(
         JsMacroSyntax::Standard,
         &[],
     );
+    if !excluded_nested_spans.is_empty() {
+        candidates.retain(|candidate| {
+            !excluded_nested_spans.iter().any(|span| {
+                span.start <= candidate.outer_span.start && span.end >= candidate.outer_span.end
+            })
+        });
+    }
     expressions.push(AstroTemplateExpression {
         outer_span,
         inner_span,
         candidates,
     });
     Ok(())
+}
+
+fn collect_nested_expression_container_spans(node: Node<'_>) -> Vec<Span> {
+    fn collect(node: Node<'_>, spans: &mut Vec<Span>) {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            match child.kind() {
+                "html_interpolation" => {
+                    spans.push(inner_range_from_delimiters(child, 1, 1));
+                    collect(child, spans);
+                }
+                "attribute_interpolation" => {
+                    let inner = child
+                        .children(&mut child.walk())
+                        .find(|grandchild| grandchild.kind() == "attribute_js_expr")
+                        .map(Span::from_node)
+                        .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
+                    spans.push(inner);
+                    collect(child, spans);
+                }
+                "attribute_backtick_string" => {
+                    spans.push(inner_range_from_delimiters(child, 1, 1));
+                    collect(child, spans);
+                }
+                _ => collect(child, spans),
+            }
+        }
+    }
+
+    let mut spans = Vec::new();
+    collect(node, &mut spans);
+    spans
 }
 
 fn component_candidate_from_element(

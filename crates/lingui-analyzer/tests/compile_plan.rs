@@ -377,6 +377,53 @@ import { plural } from "lingui-for-astro/macro";
 }
 
 #[test]
+fn keeps_astro_callback_body_targets_inside_mixed_html_interpolations() {
+    let source = r#"---
+import { msg, t as translate } from "@lingui/core/macro";
+
+const filteredQueue = queueItems;
+---
+
+{
+  filteredQueue.map((item) => {
+    const nestedLabel =
+      item.unread > 0
+        ? translate(
+            msg`${item.owner} left ${String(item.comments)} comments while ${item.assignee} still has ${String(item.unread)} unread updates.`,
+          )
+        : translate(
+            msg`${item.owner} left ${String(item.comments)} comments and the queue is fully read.`,
+          );
+
+    return <p>{nestedLabel}</p>;
+  })
+}
+"#;
+
+    let plan = AstroCompilePlan::build(
+        source,
+        "/virtual/NestedCallback.astro",
+        "/virtual/NestedCallback.astro?compile.tsx",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+    )
+    .expect("astro compile plan should build");
+
+    let nested_label_targets = plan
+        .common
+        .targets
+        .iter()
+        .filter(|target| {
+            let text = &source[target.original_span.start..target.original_span.end];
+            text.starts_with("translate(")
+                && (text.contains("still has") || text.contains("fully read"))
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(nested_label_targets.len(), 2);
+}
+
+#[test]
 fn rejects_bare_direct_t_in_svelte_scripts() {
     let source = r#"
 <script lang="ts">

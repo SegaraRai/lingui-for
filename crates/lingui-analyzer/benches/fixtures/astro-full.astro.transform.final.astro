@@ -703,12 +703,26 @@ function rowTone(state: DecisionRow["state"]): string {
               filteredQueue.map((item) => {
                 const nestedLabel =
                   item.unread > 0
-                    ? translate(
-                        msg`${item.owner} left ${String(item.comments)} comments while ${item.assignee} still has ${String(item.unread)} unread updates.`,
-                      )
-                    : translate(
-                        msg`${item.owner} left ${String(item.comments)} comments and the queue is fully read.`,
-                      );
+                    ? __l4a_i18n._(
+                    /*i18n*/ {
+                      id: "szWjCj",
+                      message: "{0} left {1} comments while {2} still has {3} unread updates.",
+                      values: {
+                        0: item.owner,
+                        1: String(item.comments),
+                        2: item.assignee,
+                        3: String(item.unread)
+                      }
+                    })
+                    : __l4a_i18n._(
+                    /*i18n*/ {
+                      id: "IDpMOo",
+                      message: "{0} left {1} comments and the queue is fully read.",
+                      values: {
+                        0: item.owner,
+                        1: String(item.comments)
+                      }
+                    });
 
                 return (
                   <article class="grid gap-3 rounded-2xl border border-slate-200 p-4">

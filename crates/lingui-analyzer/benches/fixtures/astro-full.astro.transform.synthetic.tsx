@@ -32,59 +32,65 @@ const __lf_17 = translate`Queue details`;
 const __lf_18 = translate(
                     msg`${String(filteredQueue.length)} items match the current filters.`,
                   );
-const __lf_19 = translate`Owner:`;
-const __lf_20 = translate`Assignee:`;
-const __lf_21 = translate`Comments:`;
-const __lf_22 = translate`Attachments:`;
-const __lf_23 = translate(msg`Path ${String(item.pathHint ?? "")}`);
-const __lf_24 = translate`No path`;
-const __lf_25 = translate`Highlights`;
-const __lf_26 = translate(
+const __lf_19 = translate(
+                        msg`${item.owner} left ${String(item.comments)} comments while ${item.assignee} still has ${String(item.unread)} unread updates.`,
+                      );
+const __lf_20 = translate(
+                        msg`${item.owner} left ${String(item.comments)} comments and the queue is fully read.`,
+                      );
+const __lf_21 = translate`Owner:`;
+const __lf_22 = translate`Assignee:`;
+const __lf_23 = translate`Comments:`;
+const __lf_24 = translate`Attachments:`;
+const __lf_25 = translate(msg`Path ${String(item.pathHint ?? "")}`);
+const __lf_26 = translate`No path`;
+const __lf_27 = translate`Highlights`;
+const __lf_28 = translate(
                     msg`${String(highlightedQueue.length)} items need attention.`,
                   );
-const __lf_27 = translate`No highlighted queue items.`;
-const __lf_28 = translate(
+const __lf_29 = translate`No highlighted queue items.`;
+const __lf_30 = translate(
                           msg`${item.owner} assigned ${item.assignee} with ${String(item.comments)} comments and ${String(item.unread)} unread changes.`,
                         );
-const __lf_29 = translate`Decision log`;
-const __lf_30 = translate(
+const __lf_31 = translate`Decision log`;
+const __lf_32 = translate(
                         msg`${row.changedBy} updated ${String(row.path ?? "the current workflow")} during this step.`,
                       );
-const __lf_31 = translate`Activity stream`;
-const __lf_32 = <Trans>
+const __lf_33 = translate`Activity stream`;
+const __lf_34 = <Trans>
                 Imported digest:{" "}<span>{htmlDigest}</span>
               </Trans>;
-const __lf_33 = translate`Status digest`;
-const __lf_34 = <Plural
+const __lf_35 = translate`Status digest`;
+const __lf_36 = <Plural
             value={highlightedQueue.length}
             one={translate`There is one highlighted queue item.`}
             other={translate(
               msg`There are ${String(highlightedQueue.length)} highlighted queue items.`,
             )}
           />;
-const __lf_35 = translate(
+const __lf_37 = translate(
                 msg`The queue is ${String(filteredQueue.length > 8 ? "very busy" : "manageable")} and ${String(highlightedQueue.length > 2 ? "requires escalation" : "is within normal review limits")}.`,
               );
-const __lf_36 = translate(
+const __lf_38 = translate(
                 msg`Nested expression summary: ${String(
                   highlightedQueue.length > 0
                     ? `highlighted:${highlightedQueue[0]?.id ?? "none"}`
                     : `region:${selectedRegion}`,
                 )}.`,
               );
-const __lf_37 = translate`Reviewer notes`;
-const __lf_38 = translate(
+const __lf_39 = translate`Reviewer notes`;
+const __lf_40 = translate(
                 msg`${String(activity.length)} recent notes are attached to this dashboard.`,
               );
-const __lf_39 = translate`These notes mirror the kind of mixed script and template content that the compile benchmark should exercise.`;
-const __lf_40 = translate(msg`Note ${String(index + 1)}`);
-const __lf_41 = translate(
+const __lf_41 = translate`These notes mirror the kind of mixed script and template content that the compile benchmark should exercise.`;
+const __lf_42 = translate(msg`Note ${String(index + 1)}`);
+const __lf_43 = translate(
                     msg`${item.owner} asked ${item.assignee} to review ${String(
                       item.pathHint ?? "the current record",
                     )} with ${String(item.comments)} comments and ${String(
                       item.unread,
                     )} unread updates.`,
                   );
-const __lf_42 = translate(
+const __lf_44 = translate(
                     msg`Priority ${String(item.priority)}, region ${String(item.region)}, attachments ${String(item.attachments)}.`,
                   );

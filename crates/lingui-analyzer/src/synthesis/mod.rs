@@ -3,6 +3,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use tsify::Tsify;
 
 use crate::common::Span;
+use crate::framework::helpers::normalization::sort_and_dedup_normalization_edits;
 use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport, NormalizationEdit};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -27,6 +28,8 @@ pub struct NormalizedSegment {
     pub generated_start: usize,
     pub len: usize,
 }
+
+type OwnedNormalizationEdit = (String, Span, Vec<NormalizationEdit>);
 
 pub fn build_synthesis_plan(
     source: &str,
@@ -59,8 +62,7 @@ pub fn build_synthesis_plan(
 }
 
 pub fn merge_owned_candidate_normalization_edits(candidates: &mut [MacroCandidate]) {
-    let mut owned_by_parent =
-        BTreeMap::<String, Vec<(String, Span, Vec<NormalizationEdit>)>>::new();
+    let mut owned_by_parent = BTreeMap::<String, Vec<OwnedNormalizationEdit>>::new();
     for candidate in candidates.iter() {
         if candidate.strategy == MacroCandidateStrategy::OwnedByParent
             && let Some(owner_id) = candidate.owner_id.as_deref()
@@ -89,7 +91,7 @@ pub fn merge_owned_candidate_normalization_edits(candidates: &mut [MacroCandidat
 
 fn collect_owned_normalization_edits(
     owner_id: &str,
-    owned_by_parent: &BTreeMap<String, Vec<(String, Span, Vec<NormalizationEdit>)>>,
+    owned_by_parent: &BTreeMap<String, Vec<OwnedNormalizationEdit>>,
     edits: &mut Vec<NormalizationEdit>,
 ) {
     let Some(children) = owned_by_parent.get(owner_id) else {
@@ -102,18 +104,6 @@ fn collect_owned_normalization_edits(
     for (child_id, _, child_edits) in sorted_children {
         edits.extend(child_edits);
         collect_owned_normalization_edits(child_id.as_str(), owned_by_parent, edits);
-    }
-}
-
-fn sort_and_dedup_normalization_edits(edits: &mut Vec<NormalizationEdit>) {
-    edits.sort_by_key(normalization_edit_sort_key);
-    edits.dedup();
-}
-
-fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, String) {
-    match edit {
-        NormalizationEdit::Delete { span } => (span.start, span.end, 0, String::new()),
-        NormalizationEdit::Insert { at, text } => (*at, *at, 1, text.clone()),
     }
 }
 

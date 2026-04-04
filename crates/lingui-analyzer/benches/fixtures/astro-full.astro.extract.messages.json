@@ -203,6 +203,34 @@
     ]
   },
   {
+    "id": "szWjCj",
+    "message": "{0} left {1} comments while {2} still has {3} unread updates.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "String(item.comments)",
+      "2": "item.assignee",
+      "3": "String(item.unread)"
+    },
+    "origin": [
+      "astro-full.astro",
+      624,
+      0
+    ]
+  },
+  {
+    "id": "IDpMOo",
+    "message": "{0} left {1} comments and the queue is fully read.",
+    "placeholders": {
+      "0": "item.owner",
+      "1": "String(item.comments)"
+    },
+    "origin": [
+      "astro-full.astro",
+      627,
+      0
+    ]
+  },
+  {
     "id": "2TUOis",
     "message": "Owner:",
     "placeholders": {},
