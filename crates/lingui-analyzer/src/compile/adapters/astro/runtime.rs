@@ -493,6 +493,7 @@ fn collect_component_slot_callbacks_from_source(
         .map(|(key, wrapper)| {
             lower_original_wrapper_to_slot_callback(
                 original_input,
+                original_source,
                 wrapper,
                 &format!("component_{key}"),
             )
@@ -581,13 +582,23 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
 
 fn lower_original_wrapper_to_slot_callback(
     input: &MappedText<'_>,
+    source: &str,
     node: Node<'_>,
     slot_name: &str,
 ) -> Result<RenderedMappedText, AstroAdapterError> {
     let mut rendered = input.empty_like();
     rendered.push_unmapped("<fragment slot=\"");
     rendered.push_unmapped(slot_name);
-    rendered.push_unmapped("\">{(children) => ");
+    let has_content_hole = has_content_hole(source, node);
+    rendered.push_unmapped("\">{");
+    rendered.push_unmapped("(children)");
+    rendered.push_unmapped(" => ");
+
+    if has_content_hole {
+        rendered.push_unmapped(
+            "(import.meta.env.DEV && children !== \"\" && console.warn(\"[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead.\"), ",
+        );
+    }
 
     match node.kind() {
         "element" => {
@@ -601,17 +612,21 @@ fn lower_original_wrapper_to_slot_callback(
                 .ok_or(RuntimeComponentError::ExpectedJsxElementDescriptor)?;
             let content_start = start_tag.end_byte();
             let content_end = end_tag.start_byte();
-            push_copied_span(
-                &mut rendered,
-                input,
-                Span::new(node.start_byte(), content_start),
-            )?;
-            rendered.push_unmapped("<Fragment set:html={children} />");
-            push_copied_span(
-                &mut rendered,
-                input,
-                Span::new(content_end, node.end_byte()),
-            )?;
+            if has_content_hole {
+                push_copied_span(&mut rendered, input, Span::from_node(node))?;
+            } else {
+                push_copied_span(
+                    &mut rendered,
+                    input,
+                    Span::new(node.start_byte(), content_start),
+                )?;
+                rendered.push_unmapped("<Fragment set:html={children} />");
+                push_copied_span(
+                    &mut rendered,
+                    input,
+                    Span::new(content_end, node.end_byte()),
+                )?;
+            }
         }
         "self_closing_tag" => {
             node.children(&mut node.walk())
@@ -622,8 +637,47 @@ fn lower_original_wrapper_to_slot_callback(
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
 
+    if has_content_hole {
+        rendered.push_unmapped(")");
+    }
     rendered.push_unmapped("}</fragment>");
     rendered.into_rendered().map_err(Into::into)
+}
+
+fn has_content_hole(source: &str, node: Node<'_>) -> bool {
+    let tag = match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag"),
+        "self_closing_tag" => Some(node),
+        _ => None,
+    };
+    let Some(tag) = tag else {
+        return false;
+    };
+
+    let mut cursor = tag.walk();
+    let attribute = tag.children(&mut cursor).find(|child| {
+        child.kind() == "attribute"
+            && child
+                .children(&mut child.walk())
+                .find(|grandchild| grandchild.kind() == "attribute_name")
+                .is_some_and(|name| {
+                    matches!(
+                        &source[name.start_byte()..name.end_byte()],
+                        "set:html" | "set:text"
+                    )
+                })
+    });
+    let Some(attribute) = attribute else {
+        return false;
+    };
+    attribute.children(&mut attribute.walk()).any(|child| {
+        matches!(
+            child.kind(),
+            "quoted_attribute_value" | "attribute_interpolation"
+        )
+    })
 }
 
 #[cfg(test)]
@@ -741,5 +795,160 @@ mod tests {
         assert!(error.to_string().contains(
             "runtime component placeholder key contains unsupported characters: bad-key"
         ));
+    }
+
+    #[test]
+    fn lowers_set_html_wrappers_to_children_html_holes() {
+        let source = "<Trans><article set:html={content} /></Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content} /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            "Component.astro",
+            &source,
+            &target,
+            &declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect("astro html-hole lowering succeeds");
+
+        assert!(lowered.code.contains(
+            "<fragment slot=\"component_0\">{(children) => (import.meta.env.DEV && children !== \"\" && console.warn("
+        ));
+        assert!(lowered.code.contains("<article set:html={content} />"));
+    }
+
+    #[test]
+    fn lowers_set_text_wrappers_to_children_text_holes() {
+        let source = "<Trans><article set:text={content} /></Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:text={content} /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            "Component.astro",
+            &source,
+            &target,
+            &declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect("astro text-hole lowering succeeds");
+
+        assert!(lowered.code.contains(
+            "<fragment slot=\"component_0\">{(children) => (import.meta.env.DEV && children !== \"\" && console.warn("
+        ));
+        assert!(lowered.code.contains("<article set:text={content} />"));
+    }
+
+    #[test]
+    fn rewrites_quoted_set_html_and_set_text_values_to_expressions() {
+        let html_source = "<Trans><article set:html=\"fallback\" /></Trans>".to_string();
+        let html_declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html=\"fallback\" /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let html_target = component_target(&html_source);
+        let html_lowered = lower_runtime_component_markup(
+            "Component.astro",
+            &html_source,
+            &html_target,
+            &html_declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect("astro html-hole lowering succeeds");
+
+        assert!(
+            html_lowered
+                .code
+                .contains("<article set:html=\"fallback\" />")
+        );
+
+        let text_source = "<Trans><article set:text=\"fallback\" /></Trans>".to_string();
+        let text_declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:text=\"fallback\" /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let text_target = component_target(&text_source);
+        let text_lowered = lower_runtime_component_markup(
+            "Component.astro",
+            &text_source,
+            &text_target,
+            &text_declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect("astro text-hole lowering succeeds");
+
+        assert!(
+            text_lowered
+                .code
+                .contains("<article set:text=\"fallback\" />")
+        );
+    }
+
+    #[test]
+    fn warns_in_dev_when_set_html_wrapper_also_has_explicit_children() {
+        let source =
+            "<Trans><article set:html={content}>Ignored child</article></Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content}>Ignored child</article> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            "Component.astro",
+            &source,
+            &target,
+            &declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect("astro html-hole lowering succeeds");
+
+        assert!(
+            lowered
+                .code
+                .contains("import.meta.env.DEV && children !== \"\" && console.warn(")
+        );
+        assert!(
+            lowered
+                .code
+                .contains("import.meta.env.DEV && children !== \"\" && console.warn(")
+        );
+        assert!(
+            lowered
+                .code
+                .contains("<article set:html={content}>Ignored child</article>")
+        );
+    }
+
+    #[test]
+    fn prefers_set_html_over_set_text_when_both_are_present() {
+        let source = "<Trans><article set:html={html} set:text={text} /></Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:html={html} set:text={text} /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            "Component.astro",
+            &source,
+            &target,
+            &declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect("astro html-hole lowering succeeds");
+
+        assert!(
+            lowered
+                .code
+                .contains("<article set:html={html} set:text={text} />")
+        );
+        assert!(!lowered.code.contains("hole."));
     }
 }

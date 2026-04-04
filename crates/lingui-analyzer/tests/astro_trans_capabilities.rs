@@ -124,6 +124,48 @@ fn allows_native_astro_directives_that_fit_the_new_runtime_contract() {
 
             <Trans><Button client:visible class:list={classes}>Label</Button></Trans>
         "#},
+        indoc! {r#"
+            ---
+            import { Trans } from "lingui-for-astro/macro";
+            ---
+
+            <Trans><article set:html={"<em>Docs</em>"} /></Trans>
+        "#},
+        indoc! {r#"
+            ---
+            import { Trans } from "lingui-for-astro/macro";
+            ---
+
+            <Trans><article set:html={"<em>Docs</em>"}>Ignored child</article></Trans>
+        "#},
+        indoc! {r#"
+            ---
+            import { Trans } from "lingui-for-astro/macro";
+            ---
+
+            <Trans><article set:html={"<em>Docs</em>"} transition:name="fade" /></Trans>
+        "#},
+        indoc! {r#"
+            ---
+            import { Trans } from "lingui-for-astro/macro";
+            ---
+
+            <Trans><article set:text={"Docs"} /></Trans>
+        "#},
+        indoc! {r#"
+            ---
+            import { Trans } from "lingui-for-astro/macro";
+            ---
+
+            <Trans><article set:text={"Docs"}>Ignored child</article></Trans>
+        "#},
+        indoc! {r#"
+            ---
+            import { Trans } from "lingui-for-astro/macro";
+            ---
+
+            <Trans><article set:text={"Docs"} transition:name="fade" /></Trans>
+        "#},
     ];
 
     for source in cases {
@@ -134,16 +176,6 @@ fn allows_native_astro_directives_that_fit_the_new_runtime_contract() {
 #[test]
 fn rejects_directives_that_conflict_with_runtime_trans_output() {
     let cases = [
-        (
-            indoc! {r#"
-                ---
-                import { Trans } from "lingui-for-astro/macro";
-                ---
-
-                <Trans><span set:text="text">Label</span></Trans>
-            "#},
-            "Astro directive `set:text`",
-        ),
         (
             indoc! {r#"
                 ---
@@ -192,20 +224,6 @@ fn rejects_directives_that_conflict_with_runtime_trans_output() {
 }
 
 #[test]
-fn rejects_set_html_wrappers_that_replace_the_child_hole() {
-    assert_astro_trans_rejected(
-        indoc! {r#"
-        ---
-        import { Trans } from "lingui-for-astro/macro";
-        ---
-
-        <Trans><article set:html={"<em>Docs</em>"} /></Trans>
-    "#},
-        "Astro directive `set:html`",
-    );
-}
-
-#[test]
 fn rejects_mixed_conflicting_astro_directives() {
     let cases = [(
         indoc! {r#"
@@ -213,9 +231,9 @@ fn rejects_mixed_conflicting_astro_directives() {
                 import { Trans } from "lingui-for-astro/macro";
                 ---
 
-                <Trans><article set:html={"<em>Docs</em>"} transition:name="fade" /></Trans>
+                <Trans><article define:vars={{ color: "red" }} transition:name="fade" /></Trans>
             "#},
-        "Astro directive `set:html`",
+        "Astro directive `define:vars`",
     )];
 
     for (source, needle) in cases {

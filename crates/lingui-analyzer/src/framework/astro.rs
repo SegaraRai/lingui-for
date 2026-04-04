@@ -747,5 +747,5 @@ fn astro_tag_name<'a>(source: &'a str, tag: Node<'_>) -> Option<(&'a str, Span)>
 }
 
 fn is_unsupported_astro_directive(attribute_name: &str) -> bool {
-    attribute_name == "set:html" || attribute_name == "set:text" || attribute_name == "define:vars"
+    attribute_name == "define:vars"
 }

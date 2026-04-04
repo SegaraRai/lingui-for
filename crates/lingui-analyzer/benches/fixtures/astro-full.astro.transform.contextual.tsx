@@ -251,22 +251,46 @@ const __lf_33 = __l4a_i18n._(
 const __lf_34 = <_Trans {...
 /*i18n*/
 {
-  id: "YqL2gS",
-  message: "Imported digest: <0>{htmlDigest}</0>",
-  values: {
-    htmlDigest: htmlDigest
-  },
+  id: "GM89YS",
+  message: "Imported digest: <0/>",
   components: {
-    0: <span />
+    0: <span set:html={htmlDigest} />
   }
 }} />;
-const __lf_35 = __l4a_i18n._(
+const __lf_35 = <_Trans {...
+/*i18n*/
+{
+  id: "8e7f33",
+  message: "Also we can embed <0/> and <1/> directly in translations.",
+  components: {
+    0: <span set:text="some text" />,
+    1: <span set:html="<em>some HTML</em>" />
+  }
+}} />;
+const __lf_36 = <_Trans {...
+/*i18n*/
+{
+  id: "cKxDiJ",
+  message: "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
+  values: {
+    0: highlightedQueue.length,
+    selectedRegion: selectedRegion
+  },
+  components: {
+    0: <p />,
+    1: <ul />,
+    2: <li />,
+    3: <em />,
+    4: <li />
+  }
+}} />;
+const __lf_37 = __l4a_i18n._(
 /*i18n*/
 {
   id: "UsgvkK",
   message: "Status digest"
 });
-const __lf_36 = <_Trans {...
+const __lf_38 = <_Trans {...
 /*i18n*/
 {
   id: "8p/xVT",
@@ -290,7 +314,7 @@ const __lf_36 = <_Trans {...
     })
   }
 }} />;
-const __lf_37 = __l4a_i18n._(
+const __lf_39 = __l4a_i18n._(
 /*i18n*/
 {
   id: "pnokNm",
@@ -300,7 +324,7 @@ const __lf_37 = __l4a_i18n._(
     1: String(highlightedQueue.length > 2 ? "requires escalation" : "is within normal review limits")
   }
 });
-const __lf_38 = __l4a_i18n._(
+const __lf_40 = __l4a_i18n._(
 /*i18n*/
 {
   id: "d8ajL9",
@@ -309,13 +333,13 @@ const __lf_38 = __l4a_i18n._(
     0: String(highlightedQueue.length > 0 ? `highlighted:${highlightedQueue[0]?.id ?? "none"}` : `region:${selectedRegion}`)
   }
 });
-const __lf_39 = __l4a_i18n._(
+const __lf_41 = __l4a_i18n._(
 /*i18n*/
 {
   id: "RDy8BL",
   message: "Reviewer notes"
 });
-const __lf_40 = __l4a_i18n._(
+const __lf_42 = __l4a_i18n._(
 /*i18n*/
 {
   id: "CNkP4q",
@@ -324,13 +348,13 @@ const __lf_40 = __l4a_i18n._(
     0: String(activity.length)
   }
 });
-const __lf_41 = __l4a_i18n._(
+const __lf_43 = __l4a_i18n._(
 /*i18n*/
 {
   id: "3mPwkK",
   message: "These notes mirror the kind of mixed script and template content that the compile benchmark should exercise."
 });
-const __lf_42 = __l4a_i18n._(
+const __lf_44 = __l4a_i18n._(
 /*i18n*/
 {
   id: "AzV+h+",
@@ -339,7 +363,7 @@ const __lf_42 = __l4a_i18n._(
     0: String(index + 1)
   }
 });
-const __lf_43 = __l4a_i18n._(
+const __lf_45 = __l4a_i18n._(
 /*i18n*/
 {
   id: "wXh6Ku",
@@ -352,7 +376,7 @@ const __lf_43 = __l4a_i18n._(
     4: String(item.unread)
   }
 });
-const __lf_44 = __l4a_i18n._(
+const __lf_46 = __l4a_i18n._(
 /*i18n*/
 {
   id: "e3ghLa",

@@ -373,14 +373,35 @@
     ]
   },
   {
-    "id": "YqL2gS",
-    "message": "Imported digest: <0>{htmlDigest}</0>",
-    "placeholders": {
-      "htmlDigest": "htmlDigest"
-    },
+    "id": "GM89YS",
+    "message": "Imported digest: <0/>",
+    "placeholders": {},
     "origin": [
       "astro-full.astro",
       785,
+      14
+    ]
+  },
+  {
+    "id": "8e7f33",
+    "message": "Also we can embed <0/> and <1/> directly in translations.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      791,
+      14
+    ]
+  },
+  {
+    "id": "cKxDiJ",
+    "message": "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
+    "placeholders": {
+      "0": "highlightedQueue.length",
+      "selectedRegion": "selectedRegion"
+    },
+    "origin": [
+      "astro-full.astro",
+      796,
       14
     ]
   },
@@ -390,7 +411,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      797,
+      811,
       13
     ]
   },
@@ -404,7 +425,7 @@
     },
     "origin": [
       "astro-full.astro",
-      799,
+      813,
       10
     ]
   },
@@ -414,7 +435,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      801,
+      815,
       17
     ]
   },
@@ -426,7 +447,7 @@
     },
     "origin": [
       "astro-full.astro",
-      803,
+      817,
       0
     ]
   },
@@ -439,7 +460,7 @@
     },
     "origin": [
       "astro-full.astro",
-      809,
+      823,
       0
     ]
   },
@@ -451,7 +472,7 @@
     },
     "origin": [
       "astro-full.astro",
-      816,
+      830,
       0
     ]
   },
@@ -461,7 +482,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      832,
+      846,
       13
     ]
   },
@@ -473,7 +494,7 @@
     },
     "origin": [
       "astro-full.astro",
-      837,
+      851,
       0
     ]
   },
@@ -483,7 +504,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      845,
+      859,
       12
     ]
   },
@@ -495,7 +516,7 @@
     },
     "origin": [
       "astro-full.astro",
-      856,
+      870,
       21
     ]
   },
@@ -511,7 +532,7 @@
     },
     "origin": [
       "astro-full.astro",
-      861,
+      875,
       0
     ]
   },
@@ -525,7 +546,7 @@
     },
     "origin": [
       "astro-full.astro",
-      870,
+      884,
       0
     ]
   }

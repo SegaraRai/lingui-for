@@ -93,6 +93,52 @@ describe("transformAstro", () => {
     expect(code).not.toContain("components: {");
   });
 
+  test("supports set:html wrappers as translated html holes", async () => {
+    const source = dedent`
+      ---
+      import { Trans as LocalTrans } from "lingui-for-astro/macro";
+      const content = "<em>fallback</em>";
+      ---
+
+      <LocalTrans><article set:html={content}>Ignored child</article></LocalTrans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      '<fragment slot="component_0">{(children) => (import.meta.env.DEV && children !== "" && console.warn(',
+    );
+    expect(code).toContain(
+      "<article set:html={content}>Ignored child</article>",
+    );
+  });
+
+  test("supports set:text wrappers as translated text holes", async () => {
+    const source = dedent`
+      ---
+      import { Trans as LocalTrans } from "lingui-for-astro/macro";
+      const content = "fallback";
+      ---
+
+      <LocalTrans><article set:text={content}>Ignored child</article></LocalTrans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      '<fragment slot="component_0">{(children) => (import.meta.env.DEV && children !== "" && console.warn(',
+    );
+    expect(code).toContain(
+      "<article set:text={content}>Ignored child</article>",
+    );
+  });
+
   test("lowers nested TSX macros inside Trans children", async () => {
     const source = dedent`
       ---
