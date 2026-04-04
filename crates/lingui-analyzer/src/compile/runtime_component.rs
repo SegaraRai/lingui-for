@@ -426,7 +426,8 @@ fn convert_jsx_attributes_to_object(
             "jsx_attribute" => {
                 let key = jsx_attribute_name_node(child)
                     .ok_or(RuntimeComponentError::MissingJsxPropName)?;
-                push_copied_span(&mut rendered, input, translated_span(key, base_offset)?)?;
+                let key_text = source_slice(source, key, base_offset)?;
+                rendered.push_unmapped(render_js_object_key(key_text));
                 rendered.push_unmapped(": ");
                 match jsx_attribute_value_node(child) {
                     None => rendered.push_unmapped("true"),
@@ -650,5 +651,46 @@ pub(super) fn validate_runtime_placeholder_key(
         Ok(key)
     } else {
         Err(RuntimeComponentError::InvalidRuntimePlaceholderKey { key })
+    }
+}
+
+fn render_js_object_key(key: &str) -> String {
+    if is_safe_unquoted_js_object_key(key) {
+        key.to_string()
+    } else {
+        format!("{key:?}")
+    }
+}
+
+fn is_safe_unquoted_js_object_key(key: &str) -> bool {
+    let mut chars = key.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+
+    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
+        return false;
+    }
+
+    chars.all(|character| character.is_ascii_alphanumeric() || character == '_' || character == '$')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::render_js_object_key;
+
+    #[test]
+    fn quotes_unsafe_js_object_keys() {
+        assert_eq!(render_js_object_key("data-foo"), "\"data-foo\"");
+        assert_eq!(render_js_object_key("aria-label"), "\"aria-label\"");
+        assert_eq!(render_js_object_key("0"), "\"0\"");
+    }
+
+    #[test]
+    fn keeps_safe_js_object_keys_unquoted() {
+        assert_eq!(render_js_object_key("title"), "title");
+        assert_eq!(render_js_object_key("_private"), "_private");
+        assert_eq!(render_js_object_key("$value"), "$value");
+        assert_eq!(render_js_object_key("camelCase123"), "camelCase123");
     }
 }
