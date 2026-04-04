@@ -817,17 +817,16 @@ fn push_original_anchor(
     text: &str,
     original_byte: usize,
 ) {
-    if let Some(map) = build_span_anchor_map(
-        rendered.source_name(),
-        source,
+    rendered.push(
         text,
-        original_byte,
-        original_byte,
-    ) {
-        rendered.push_pre_mapped(text, map);
-    } else {
-        rendered.push_unmapped(text);
-    }
+        build_span_anchor_map(
+            rendered.source_name(),
+            source,
+            text,
+            original_byte,
+            original_byte,
+        ),
+    );
 }
 
 fn push_original_span(
@@ -844,14 +843,10 @@ fn push_original_span(
                 end: span.end,
             },
         )?;
-
-    if let Some(map) =
-        build_span_anchor_map(rendered.source_name(), source, text, span.start, span.end)
-    {
-        rendered.push_pre_mapped(text, map);
-    } else {
-        rendered.push_unmapped(text);
-    }
+    rendered.push(
+        text,
+        build_span_anchor_map(rendered.source_name(), source, text, span.start, span.end),
+    );
     Ok(())
 }
 

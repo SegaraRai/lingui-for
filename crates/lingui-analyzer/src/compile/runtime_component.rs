@@ -68,26 +68,22 @@ pub(super) fn push_anchor_mapped(
     text: &str,
     declaration_byte: usize,
 ) {
-    let Some(original_byte) = project_declaration_byte_to_original_byte(
+    let map = project_declaration_byte_to_original_byte(
         declaration_source_map,
         declaration_source,
         original_source,
         declaration_byte,
-    ) else {
-        mapped.push_unmapped(text);
-        return;
-    };
-    let Some(map) = build_span_anchor_map(
-        mapped.source_name(),
-        original_source,
-        text,
-        original_byte,
-        original_byte,
-    ) else {
-        mapped.push_unmapped(text);
-        return;
-    };
-    mapped.push_pre_mapped(text, map);
+    )
+    .and_then(|original_byte| {
+        build_span_anchor_map(
+            mapped.source_name(),
+            original_source,
+            text,
+            original_byte,
+            original_byte,
+        )
+    });
+    mapped.push(text, map);
 }
 
 fn project_declaration_byte_to_original_byte(
@@ -481,11 +477,7 @@ fn convert_jsx_attributes_to_object(
 }
 
 pub(super) fn append_rendered(mapped: &mut MappedText<'_>, rendered: RenderedMappedText) {
-    if let Some(map) = rendered.indexed_source_map {
-        mapped.push_pre_mapped(rendered.code, map);
-    } else {
-        mapped.push_unmapped(rendered.code);
-    }
+    mapped.push(rendered.code, rendered.indexed_source_map);
 }
 
 pub(super) fn copy_node(

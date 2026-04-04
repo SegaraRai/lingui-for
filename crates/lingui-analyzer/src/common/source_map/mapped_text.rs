@@ -53,24 +53,30 @@ impl<'a> MappedText<'a> {
         }
     }
 
-    pub(crate) fn push_unmapped(&mut self, text: impl Into<String>) {
+    pub(crate) fn push(
+        &mut self,
+        text: impl Into<String>,
+        indexed_source_map: Option<IndexedSourceMap>,
+    ) {
         let text = text.into();
-        if !text.is_empty() {
+        if text.is_empty() {
+            return;
+        }
+
+        if let Some(map) = indexed_source_map {
+            self.segments.push(MappedSegment::PreMapped {
+                code: text,
+                indexed_source_map: Box::new(map),
+            });
+        } else {
             self.segments.push(MappedSegment::Unmapped(text));
         }
     }
 
-    pub(crate) fn push_pre_mapped(
-        &mut self,
-        code: impl Into<String>,
-        indexed_source_map: IndexedSourceMap,
-    ) {
-        let code = code.into();
-        if !code.is_empty() {
-            self.segments.push(MappedSegment::PreMapped {
-                code,
-                indexed_source_map: Box::new(indexed_source_map),
-            });
+    pub(crate) fn push_unmapped(&mut self, text: impl Into<String>) {
+        let text = text.into();
+        if !text.is_empty() {
+            self.segments.push(MappedSegment::Unmapped(text));
         }
     }
 

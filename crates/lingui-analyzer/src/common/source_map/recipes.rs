@@ -268,11 +268,10 @@ fn push_source_slice(
         .as_str()
         .get(span.start..span.end)
         .ok_or(MappedTextError::InvalidSegmentSlice)?;
-    if let Some(map) = build_copy_map(source_name, source, span, source_anchors) {
-        output.push_pre_mapped(text, map);
-    } else {
-        output.push_unmapped(text);
-    }
+    output.push(
+        text,
+        build_copy_map(source_name, source, span, source_anchors),
+    );
     Ok(())
 }
 
@@ -282,7 +281,7 @@ fn finalize_replacement_mapped<'a>(
     replacement: &FinalizedReplacement<'_>,
 ) -> Result<MappedText<'a>, MappedTextError> {
     let mut mapped = MappedText::new(source_name, source.as_str());
-    if let Some(source_map) = replacement
+    let source_map = replacement
         .indexed_source_map
         .as_ref()
         .map(|map| {
@@ -296,12 +295,8 @@ fn finalize_replacement_mapped<'a>(
                 &replacement.original_anchors,
             )
         })
-        .transpose()?
-    {
-        mapped.push_pre_mapped(replacement.code, source_map);
-    } else {
-        mapped.push_unmapped(replacement.code);
-    }
+        .transpose()?;
+    mapped.push(replacement.code, source_map);
     Ok(mapped)
 }
 

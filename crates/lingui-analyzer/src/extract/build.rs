@@ -155,11 +155,7 @@ fn build_synthetic_source_map(
         mapped.push_unmapped("const ");
         mapped.push_unmapped(&target.declaration_id);
         mapped.push_unmapped(" = ");
-        if let Some(map) = declaration_map {
-            mapped.push_pre_mapped(&target.normalized_code, map);
-        } else {
-            mapped.push_unmapped(&target.normalized_code);
-        }
+        mapped.push(&target.normalized_code, declaration_map);
         mapped.push_unmapped(";\n");
     }
 

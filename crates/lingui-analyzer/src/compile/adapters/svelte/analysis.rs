@@ -236,16 +236,16 @@ fn push_wrapper_anchor(
     text: &str,
     original_byte: usize,
 ) {
-    let Some(map) = build_span_anchor_map(
-        "__normalized",
-        normalized_source,
+    mapped.push(
         text,
-        original_byte,
-        original_byte,
-    ) else {
-        return;
-    };
-    mapped.push_pre_mapped(text, map);
+        build_span_anchor_map(
+            "__normalized",
+            normalized_source,
+            text,
+            original_byte,
+            original_byte,
+        ),
+    );
 }
 
 fn push_wrapped_copy(
@@ -254,11 +254,10 @@ fn push_wrapped_copy(
     span: Span,
     copy_anchors: &[usize],
 ) {
-    if let Some(map) = build_copy_map("__normalized", normalized_source, span, copy_anchors) {
-        mapped.push_pre_mapped(&normalized_source.as_str()[span.start..span.end], map);
-    } else {
-        mapped.push_unmapped(&normalized_source.as_str()[span.start..span.end]);
-    }
+    mapped.push(
+        &normalized_source.as_str()[span.start..span.end],
+        build_copy_map("__normalized", normalized_source, span, copy_anchors),
+    );
 }
 
 fn collect_normalized_copy_anchors(

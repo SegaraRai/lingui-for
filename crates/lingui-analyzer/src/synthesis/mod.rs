@@ -352,13 +352,10 @@ fn append_mapped_chunk(
         {
             let chunk_anchors =
                 collect_chunk_copy_anchors(context.source.as_str(), span, context.source_anchors);
-            if let Some(map) =
-                build_copy_map(context.source_name, context.source, span, &chunk_anchors)
-            {
-                rendered.push_pre_mapped(chunk, map);
-            } else {
-                rendered.push_unmapped(chunk);
-            }
+            rendered.push(
+                chunk,
+                build_copy_map(context.source_name, context.source, span, &chunk_anchors),
+            );
         }
         cursor = next_insertion;
     }

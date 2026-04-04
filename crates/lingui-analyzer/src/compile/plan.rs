@@ -164,11 +164,7 @@ fn build_compile_synthetic_source(
         output.push_unmapped("const ");
         output.push_unmapped(&target.declaration_id);
         output.push_unmapped(" = ");
-        if let Some(map) = wrapped_map {
-            output.push_pre_mapped(wrapped_code, map);
-        } else {
-            output.push_unmapped(wrapped_code);
-        }
+        output.push(wrapped_code, wrapped_map);
         output.push_unmapped(";\n");
     }
 
