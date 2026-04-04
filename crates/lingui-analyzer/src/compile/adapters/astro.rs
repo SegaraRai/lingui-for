@@ -262,7 +262,11 @@ pub(crate) fn analyze_astro_compile(
 
 pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
     RuntimeRequirements {
-        needs_runtime_i18n_binding: !targets.is_empty(),
+        needs_runtime_i18n_binding: targets.iter().any(|target| {
+            target.translation_mode == CompileTranslationMode::Contextual
+                && target.output_kind == CompileTargetOutputKind::Expression
+                && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
+        }),
         needs_runtime_trans_component: targets
             .iter()
             .any(|target| target.output_kind == CompileTargetOutputKind::Component),

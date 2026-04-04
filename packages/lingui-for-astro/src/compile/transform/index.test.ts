@@ -131,6 +131,46 @@ describe("transformAstro", () => {
     expect(result.code).toContain("return /*i18n*/ {");
   });
 
+  test("does not inject Astro i18n context for descriptor-only files", async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import { msg } from "lingui-for-astro/macro";
+
+        const descriptor = msg\`No images found.\`;
+        ---
+
+        <p>{descriptor.message}</p>
+      `,
+      { filename: "/virtual/Page.astro" },
+    );
+    const code = compact(result.code);
+
+    expect(code).not.toContain("createFrontmatterI18n");
+    expect(code).not.toContain("__l4a_i18n");
+    expect(code).toContain("const descriptor = /*i18n*/ {");
+  });
+
+  test("only injects RuntimeTrans for component-only files", async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans>Hello <strong>world</strong></Trans>
+      `,
+      { filename: "/virtual/Page.astro" },
+    );
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      'import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";',
+    );
+    expect(code).not.toContain("createFrontmatterI18n");
+    expect(code).not.toContain("__l4a_i18n");
+  });
+
   test("defaults rich-text whitespace handling to framework-aware spacing", async () => {
     const result = await expectTransformed(
       dedent`
