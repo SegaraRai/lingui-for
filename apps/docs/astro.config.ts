@@ -107,6 +107,13 @@ export default defineConfig({
               slug: "frameworks/svelte/reactive-macros",
             },
             {
+              label: "Trans",
+              translations: {
+                ja: "Trans",
+              },
+              slug: "frameworks/svelte/trans-component",
+            },
+            {
               label: "Locale Resolution",
               translations: {
                 ja: "ロケール解決",
@@ -148,6 +155,13 @@ export default defineConfig({
                 ja: "アイランドの使用",
               },
               slug: "frameworks/astro/using-islands",
+            },
+            {
+              label: "Trans",
+              translations: {
+                ja: "Trans",
+              },
+              slug: "frameworks/astro/trans-component",
             },
             {
               label: "Caveats",

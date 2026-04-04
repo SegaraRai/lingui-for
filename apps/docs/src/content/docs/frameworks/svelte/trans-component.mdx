@@ -1,0 +1,37 @@
+---
+title: "Svelte: Trans"
+description: Svelte-specific rich-text syntax supported inside the Trans component macro.
+---
+
+`Trans` in Svelte is lowered back into native Svelte wrapper syntax. That means the supported
+surface is broader than plain JSX-shaped rich text.
+
+## Supported inside `<Trans>`
+
+- interpolated values in text content
+- regular HTML and component wrappers
+- nested wrappers and self-closing wrappers
+- wrapper directives such as `bind:`, `on:`, `class:`, `style:`, `use:`, `transition:`, `in:`,
+  `out:`, and `animate:`
+- `let:` wrappers
+- `{@html ...}` wrappers
+- `{@render ...}` wrappers
+
+## Still unsupported
+
+`Trans` still expects wrapper-shaped rich text, not general template control flow.
+
+- block syntax such as `{#if}`, `{#each}`, `{#await}`, `{#key}`, and `{#snippet}`
+- `<slot>`
+- Svelte special elements such as `svelte:component`, `svelte:self`, `svelte:fragment`,
+  `svelte:head`, `svelte:window`, `svelte:document`, and related `svelte:*` forms
+
+## Notes on `{@html}` and `{@render}`
+
+`{@html}` and `{@render}` are treated as explicit content holes.
+
+- They are supported as part of the translated rich-text structure.
+- If a translation tries to place translated child content inside one of those holes, the generated
+  runtime code warns in development so that the mismatch is visible while authoring.
+
+For the framework-agnostic `Trans` model, see [Trans](/macros/trans-component).
