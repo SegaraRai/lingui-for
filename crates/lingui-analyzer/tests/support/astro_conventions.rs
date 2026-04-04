@@ -28,7 +28,7 @@ pub fn astro_default_conventions() -> FrameworkConventions {
             package: "lingui-for-astro/runtime".to_string(),
             exports: RuntimeExportConventions {
                 trans: "RuntimeTrans".to_string(),
-                i18n_accessor: Some("createFrontmatterI18n".to_string()),
+                i18n_accessor: Some("createLinguiAccessors".to_string()),
             },
         },
         bindings: RuntimeBindingSeeds {

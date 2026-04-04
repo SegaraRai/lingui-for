@@ -1,5 +1,5 @@
 ---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
@@ -35,6 +35,7 @@ const summary = __l4a_i18n._(
     }))
   }
 });
+__l4a_i18n.prime();
 ---
 
 <main class="grid gap-4 p-6">

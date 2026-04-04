@@ -7,10 +7,11 @@ export type {
   TransRenderNode,
 } from "./components/types.ts";
 export {
-  createFrontmatterI18n,
+  createLinguiAccessors,
   getLinguiContext,
   LINGUI_ASTRO_CONTEXT,
   setLinguiContext,
+  type LinguiAccessors,
   type LinguiContext,
 } from "./core/context.ts";
 

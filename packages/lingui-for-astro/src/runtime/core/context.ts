@@ -22,6 +22,23 @@ export interface LinguiContext {
 }
 
 /**
+ * Lazy runtime accessors used by generated Astro frontmatter code.
+ *
+ * Generated code can capture this accessor before user setup runs and call {@link prime} at the
+ * end of the frontmatter so later template expressions observe a stable request context.
+ */
+export interface LinguiAccessors {
+  /**
+   * Proxies to the active Lingui instance translation function.
+   */
+  _: I18n["_"];
+  /**
+   * Resolves and memoizes the current request context immediately.
+   */
+  prime: () => LinguiContext;
+}
+
+/**
  * Stores the active Lingui context on the current Astro request.
  *
  * @param locals `Astro.locals` object for the current request.
@@ -63,18 +80,28 @@ export function getLinguiContext(locals: object): LinguiContext {
 type Translate = I18n["_"];
 
 /**
- * Creates a lazy i18n accessor for use in Astro frontmatter.
+ * Creates lazy accessors for the current Lingui context.
  *
  * @param locals `Astro.locals` object for the current request.
- * @returns An object with a single `_` property that proxies to the active Lingui instance's
- * translation function.
+ * @returns Lazy accessors that proxy to the active Lingui instance and can be primed explicitly.
  *
  * This is used by the compiler to support translations in frontmatter. It defers reading the
  * Lingui context until the first call to `_`, allowing it to work when the context is set in
  * the same frontmatter block.
  */
-export function createFrontmatterI18n(locals: object): Pick<I18n, "_"> {
+export function createLinguiAccessors(locals: object): LinguiAccessors {
+  let cached: LinguiContext | null = null;
+
+  const resolve = (): LinguiContext => {
+    cached ??= getLinguiContext(locals);
+    return cached;
+  };
+
   const translate = ((...args: Parameters<Translate>) =>
-    getLinguiContext(locals).i18n._(...args)) as Translate;
-  return { _: translate };
+    resolve().i18n._(...args)) as Translate;
+
+  return {
+    _: translate,
+    prime: resolve,
+  };
 }

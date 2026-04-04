@@ -262,7 +262,11 @@ pub(crate) fn analyze_astro_compile(
 
 pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
     RuntimeRequirements {
-        needs_runtime_i18n_binding: !targets.is_empty(),
+        needs_runtime_i18n_binding: targets.iter().any(|target| {
+            target.translation_mode == CompileTranslationMode::Contextual
+                && target.output_kind == CompileTargetOutputKind::Expression
+                && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
+        }),
         needs_runtime_trans_component: targets
             .iter()
             .any(|target| target.output_kind == CompileTargetOutputKind::Component),
@@ -329,14 +333,16 @@ fn append_runtime_injection_replacements(
     replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
     let indexed_source = IndexedText::new(source);
-    let prelude = build_frontmatter_prelude(
+    let injections = build_frontmatter_injections(
         plan.runtime_requirements.needs_runtime_i18n_binding,
         plan.runtime_requirements.needs_runtime_trans_component,
         &plan.runtime_bindings,
         &plan.common.conventions,
     )?;
+    let prelude = injections.prelude;
+    let suffix = injections.suffix;
 
-    if prelude.is_empty() {
+    if prelude.is_empty() && suffix.is_empty() {
         return Ok(());
     }
 
@@ -383,10 +389,22 @@ fn append_runtime_injection_replacements(
                 Vec::new(),
             ));
         }
+
+        if !suffix.is_empty() {
+            replacements.push(CompileReplacementInternal::new(
+                "__runtime_frontmatter_suffix".to_string(),
+                frontmatter.content_span.end,
+                frontmatter.content_span.end,
+                suffix,
+                None,
+                Vec::new(),
+            ));
+        }
         return Ok(());
     }
 
-    let code = format!("---\n{prelude}\n---\n");
+    let newline_for_suffix = if suffix.is_empty() { "" } else { "\n" };
+    let code = format!("---\n{prelude}{suffix}{newline_for_suffix}---\n",);
     let source_map = build_span_anchor_map(
         plan.common.source_name.as_str(),
         &indexed_source,
@@ -405,13 +423,19 @@ fn append_runtime_injection_replacements(
     Ok(())
 }
 
-fn build_frontmatter_prelude(
+struct FrontmatterInjections {
+    prelude: String,
+    suffix: String,
+}
+
+fn build_frontmatter_injections(
     include_astro_context: bool,
     include_runtime_trans: bool,
     bindings: &AstroCompileRuntimeBindings,
     conventions: &FrameworkConventions,
-) -> Result<String, AstroAdapterError> {
-    let mut lines = String::new();
+) -> Result<FrontmatterInjections, AstroAdapterError> {
+    let mut prelude = String::new();
+    let mut suffix = String::new();
     let runtime_package = conventions.runtime.package.as_str();
     let trans_export = conventions.runtime.exports.trans.as_str();
     let i18n_accessor_export = conventions.runtime.exports.i18n_accessor.as_deref().ok_or(
@@ -419,24 +443,25 @@ fn build_frontmatter_prelude(
     )?;
 
     if include_astro_context {
-        lines.push_str(&format!(
+        prelude.push_str(&format!(
             "import {{ {} as {} }} from \"{}\";\n",
             i18n_accessor_export, bindings.create_i18n, runtime_package
         ));
-        lines.push_str(&format!(
+        prelude.push_str(&format!(
             "const {} = {}(Astro.locals);\n",
             bindings.i18n, bindings.create_i18n
         ));
+        suffix.push_str(&format!("\n{}.prime();", bindings.i18n));
     }
 
     if include_runtime_trans {
-        lines.push_str(&format!(
+        prelude.push_str(&format!(
             "import {{ {} as {} }} from \"{}\";\n",
             trans_export, bindings.runtime_trans, runtime_package
         ));
     }
 
-    Ok(lines)
+    Ok(FrontmatterInjections { prelude, suffix })
 }
 
 fn build_frontmatter_region(

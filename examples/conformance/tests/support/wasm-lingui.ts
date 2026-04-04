@@ -202,7 +202,7 @@ function createTestFrameworkConventions(framework: "astro" | "svelte") {
         package: "lingui-for-astro/runtime",
         exports: {
           trans: "RuntimeTrans",
-          i18nAccessor: "createFrontmatterI18n",
+          i18nAccessor: "createLinguiAccessors",
         },
       },
       bindings: {
