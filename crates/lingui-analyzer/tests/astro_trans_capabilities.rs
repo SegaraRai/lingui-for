@@ -3,7 +3,7 @@ mod astro_conventions;
 
 use indoc::indoc;
 
-use lingui_analyzer::{AstroCompilePlan, WhitespaceMode};
+use lingui_analyzer::{AstroCompilePlan, RuntimeWarningOptions, WhitespaceMode};
 
 use astro_conventions::astro_default_conventions;
 
@@ -14,6 +14,7 @@ fn assert_astro_trans_allowed(source: &str) {
         "Page.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("Astro <Trans> syntax should be allowed");
 }
@@ -25,6 +26,7 @@ fn assert_astro_trans_rejected(source: &str, needle: &str) {
         "Page.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("Astro <Trans> syntax should be rejected");
 

@@ -4,7 +4,7 @@ mod astro_support;
 use indoc::indoc;
 
 use lingui_analyzer::{
-    AstroCompilePlan, MacroCandidateKind, WhitespaceMode,
+    AstroCompilePlan, MacroCandidateKind, RuntimeWarningOptions, WhitespaceMode,
     framework::{FrameworkAdapter, astro::AstroAdapter},
 };
 
@@ -81,6 +81,7 @@ fn allocates_unique_runtime_bindings_for_astro_compile() {
         "Page.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("compile plan succeeds");
 
@@ -283,6 +284,7 @@ fn rejects_unsupported_astro_trans_child_directives_with_location() {
         "Unsupported.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("compile plan should fail");
     let rendered = error.to_string();
@@ -310,6 +312,7 @@ fn allows_transition_directives_inside_astro_trans_children() {
         "Allowed.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("compile plan should succeed");
 }
@@ -332,6 +335,7 @@ fn rejects_style_elements_inside_astro_trans_children_with_location() {
         "Unsupported.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("compile plan should fail");
     let rendered = error.to_string();
@@ -357,6 +361,7 @@ fn rejects_directives_on_the_astro_trans_tag_itself() {
         "Unsupported.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("compile plan should fail");
     let rendered = error.to_string();

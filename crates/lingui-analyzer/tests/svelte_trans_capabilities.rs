@@ -3,7 +3,7 @@ mod svelte_conventions;
 
 use indoc::indoc;
 
-use lingui_analyzer::{SvelteCompilePlan, WhitespaceMode};
+use lingui_analyzer::{RuntimeWarningOptions, SvelteCompilePlan, WhitespaceMode};
 
 use svelte_conventions::svelte_default_conventions;
 
@@ -14,6 +14,7 @@ fn assert_svelte_trans_allowed(source: &str) {
         "Component.svelte?compile",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("Svelte <Trans> syntax should be allowed");
 }
@@ -25,6 +26,7 @@ fn assert_svelte_trans_rejected(source: &str, needle: &str) {
         "Component.svelte?compile",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("Svelte <Trans> syntax should be rejected");
 

@@ -682,17 +682,17 @@ fn validate_astro_element_like(
         return Ok(());
     };
 
-    if let Some((tag_name, tag_name_span)) = astro_tag_name(source, tag) {
-        if tag_name == "script" || tag_name == "style" {
-            return Err(AstroFrameworkError::InvalidMacroUsage(
-                format_unsupported_trans_child_syntax(
-                    source,
-                    &options.source_name,
-                    tag_name_span,
-                    format!("Astro special element `<{tag_name}>`"),
-                ),
-            ));
-        }
+    if let Some((tag_name, tag_name_span)) = astro_tag_name(source, tag)
+        && (tag_name == "script" || tag_name == "style")
+    {
+        return Err(AstroFrameworkError::InvalidMacroUsage(
+            format_unsupported_trans_child_syntax(
+                source,
+                &options.source_name,
+                tag_name_span,
+                format!("Astro special element `<{tag_name}>`"),
+            ),
+        ));
     }
 
     let mut cursor = tag.walk();
