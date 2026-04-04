@@ -119,10 +119,10 @@ pub fn build_synthetic_module_for_framework(
                     .into_iter()
                     .map(|component| component.candidate),
             );
+            sort_candidates(&mut candidates);
             validate_svelte_extract_candidates(source_name, source, &candidates)
                 .map_err(FrameworkError::from)?;
             retain_standalone_candidates(&mut candidates);
-            sort_candidates(&mut candidates);
             Ok(build_synthetic_module(
                 source,
                 source_name,
