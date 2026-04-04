@@ -403,12 +403,8 @@ fn append_runtime_injection_replacements(
         return Ok(());
     }
 
-    let suffix_with_newline = if suffix.is_empty() {
-        String::new()
-    } else {
-        format!("{suffix}\n")
-    };
-    let code = format!("---\n{prelude}{suffix_with_newline}---\n");
+    let newline_for_suffix = if suffix.is_empty() { "" } else { "\n" };
+    let code = format!("---\n{prelude}{suffix}{newline_for_suffix}---\n",);
     let source_map = build_span_anchor_map(
         plan.common.source_name.as_str(),
         &indexed_source,
