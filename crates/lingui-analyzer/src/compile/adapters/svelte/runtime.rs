@@ -180,10 +180,9 @@ fn convert_runtime_trans_root(
                 );
             }
             other => {
-                return Err(RuntimeComponentError::UnsupportedJsxAttributeNodeKind {
-                    kind: other.to_string(),
-                }
-                .into());
+                return Err(
+                    RuntimeComponentError::UnsupportedJsxAttributeNodeKind { kind: other }.into(),
+                );
             }
         }
     }
@@ -385,10 +384,9 @@ fn convert_object_expression(
                 push_copied_span(&mut rendered, input, translated_span(child, base_offset)?)?;
             }
             other => {
-                return Err(RuntimeComponentError::UnsupportedObjectChildKind {
-                    kind: other.to_string(),
-                }
-                .into());
+                return Err(
+                    RuntimeComponentError::UnsupportedObjectChildKind { kind: other }.into(),
+                );
             }
         }
     }

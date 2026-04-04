@@ -19,13 +19,13 @@ pub enum RuntimeComponentError {
     #[error("expected JSX element initializer for transformed component")]
     ExpectedJsxElementInitializerForTransformedComponent,
     #[error("unsupported JSX attribute node kind: {kind}")]
-    UnsupportedJsxAttributeNodeKind { kind: String },
+    UnsupportedJsxAttributeNodeKind { kind: &'static str },
     #[error("expected spread element inside JSX spread attribute")]
     ExpectedSpreadElementInJsxSpreadAttribute,
     #[error("missing JSX attribute name")]
     MissingJsxAttributeName,
     #[error("unsupported JSX attribute value kind: {kind}")]
-    UnsupportedJsxAttributeValueKind { kind: String },
+    UnsupportedJsxAttributeValueKind { kind: &'static str },
     #[error("missing variable declarator while lowering object expression")]
     MissingVariableDeclaratorWhileLoweringObjectExpression,
     #[error("missing object expression initializer")]
@@ -39,7 +39,7 @@ pub enum RuntimeComponentError {
     #[error("missing spread argument in object expression")]
     MissingSpreadArgumentInObjectExpression,
     #[error("unsupported object child kind in runtime component lowering: {kind}")]
-    UnsupportedObjectChildKind { kind: String },
+    UnsupportedObjectChildKind { kind: &'static str },
     #[error("expected JSX element descriptor")]
     ExpectedJsxElementDescriptor,
     #[error("missing JSX name in component descriptor")]
@@ -53,7 +53,7 @@ pub enum RuntimeComponentError {
     #[error("missing JSX expression value")]
     MissingJsxExpressionValue,
     #[error("unsupported JSX prop kind: {kind}")]
-    UnsupportedJsxPropKind { kind: String },
+    UnsupportedJsxPropKind { kind: &'static str },
     #[error("translated node offset became negative")]
     TranslatedNodeOffsetNegative,
 }
@@ -165,7 +165,7 @@ pub(super) fn convert_jsx_named_attribute(
         }
         Some(other) => {
             return Err(RuntimeComponentError::UnsupportedJsxAttributeValueKind {
-                kind: other.kind().to_string(),
+                kind: other.kind(),
             });
         }
     }
@@ -289,9 +289,7 @@ fn convert_object_expression(
                 push_copied_span(&mut rendered, input, translated_span(child, base_offset)?)?;
             }
             other => {
-                return Err(RuntimeComponentError::UnsupportedObjectChildKind {
-                    kind: other.to_string(),
-                });
+                return Err(RuntimeComponentError::UnsupportedObjectChildKind { kind: other });
             }
         }
     }
@@ -461,9 +459,7 @@ fn convert_jsx_attributes_to_object(
                 }
             }
             other => {
-                return Err(RuntimeComponentError::UnsupportedJsxPropKind {
-                    kind: other.to_string(),
-                });
+                return Err(RuntimeComponentError::UnsupportedJsxPropKind { kind: other });
             }
         }
     }
