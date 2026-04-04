@@ -245,12 +245,27 @@ export const browserLoadCases: readonly BrowserLoadCase[] = [
     ],
   },
   {
+    path: "/rich-text?lang=en",
+    locale: "en",
+    expectedBody: [
+      "Rich text translations keep links and emphasis intact.",
+      "Imported review digest: Locale review digest",
+      "Translation previews can show plain text and highlighted markup in the same sentence.",
+      "The current locale review can summarize nested details such as",
+      "3 highlighted queue items, plus",
+      "the selected region Kansai.",
+    ],
+  },
+  {
     path: "/rich-text?lang=ja",
     locale: "ja",
     expectedBody: [
       "リッチテキスト翻訳でもリンクと強調表示を保てます。",
-      "Astro は翻訳された文の中でも設定リンクを保てます。",
-      "Svelte は翻訳結果の中でも強調表示を保てます。",
+      "取り込み済みレビュー要約: Locale review digest",
+      "翻訳プレビューでは、同じ文の中に plain text と highlighted markup を表示できます。",
+      "現在のロケールレビューでは、次のような詳細を要約できます",
+      "3 件の注目キュー項目と",
+      "選択中のリージョン Kansai。",
     ],
   },
   {
