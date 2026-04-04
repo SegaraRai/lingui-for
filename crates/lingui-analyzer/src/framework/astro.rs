@@ -490,11 +490,7 @@ fn collect_nested_component_normalization_edits(
             "frontmatter_js_block" => {}
             "html_interpolation" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                if let Ok(tree) =
-                    context
-                        .expression_parse_cache
-                        .parse(source, inner, JsLikeLanguage::TypeScript)
-                {
+                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
                     let candidates = collect_macro_candidates(
                         &source[inner.start..inner.end],
                         tree.root_node(),
@@ -514,11 +510,7 @@ fn collect_nested_component_normalization_edits(
                     .find(|grandchild| grandchild.kind() == "attribute_js_expr")
                     .map(Span::from_node)
                     .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
-                if let Ok(tree) =
-                    context
-                        .expression_parse_cache
-                        .parse(source, inner, JsLikeLanguage::TypeScript)
-                {
+                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
                     let candidates = collect_macro_candidates(
                         &source[inner.start..inner.end],
                         tree.root_node(),
@@ -534,11 +526,7 @@ fn collect_nested_component_normalization_edits(
             }
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                if let Ok(tree) =
-                    context
-                        .expression_parse_cache
-                        .parse(source, inner, JsLikeLanguage::TypeScript)
-                {
+                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
                     let candidates = collect_macro_candidates(
                         &source[inner.start..inner.end],
                         tree.root_node(),
@@ -572,6 +560,23 @@ fn collect_nested_component_normalization_edits(
     }
 
     Ok(edits)
+}
+
+fn parse_nested_component_expression(
+    context: &mut AstroCollectContext,
+    source: &str,
+    inner: Span,
+) -> Option<tree_sitter::Tree> {
+    context
+        .expression_parse_cache
+        .parse(source, inner, JsLikeLanguage::TypeScript)
+        .ok()
+        .or_else(|| {
+            context
+                .expression_parse_cache
+                .parse(source, inner, JsLikeLanguage::Tsx)
+                .ok()
+        })
 }
 
 fn component_whitespace_edits(

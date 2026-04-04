@@ -90,6 +90,30 @@ describe("transformAstro", () => {
     expect(code).toContain('href: "/docs"');
   });
 
+  test("lowers nested TSX macros inside Trans children", async () => {
+    const source = dedent`
+      ---
+      import { t, Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>
+        Before <em>{t\`inline emphasis\`}</em> after.
+      </Trans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      'import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";',
+    );
+    expect(code).toContain("__l4a_i18n._(");
+    expect(code).toContain("inline emphasis");
+    expect(code).not.toContain("{t`inline emphasis`}");
+  });
+
   test("keeps returned msg descriptors on the same line as the i18n marker", async () => {
     const result = await expectTransformed(
       dedent`
