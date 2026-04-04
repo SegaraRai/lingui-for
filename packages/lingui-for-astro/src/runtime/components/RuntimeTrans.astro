@@ -27,14 +27,10 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
-const placeholderMap =
-  placeholders && placeholders.length > 0
-    ? Object.fromEntries(
-        placeholders.map((placeholder) => [placeholder, true] as const),
-      )
-    : null;
-const nodes = placeholderMap
-  ? formatRichTextTranslation(translated, placeholderMap)
+const placeholderSet =
+  placeholders && placeholders.length > 0 ? new Set(placeholders) : null;
+const nodes = placeholderSet
+  ? formatRichTextTranslation(translated, placeholderSet)
   : [];
 
 async function renderNodes(
@@ -59,7 +55,7 @@ async function renderNodes(
   return chunks.join("");
 }
 
-const html = placeholderMap ? await renderNodes(nodes) : null;
+const html = placeholderSet ? await renderNodes(nodes) : null;
 ---
 
 {html == null ? translated : <Fragment set:html={html} />}

@@ -1,11 +1,7 @@
 <script lang="ts">
   import RenderTransNodes from "./RenderTransNodes.svelte";
   import RenderTransSnippet from "./RenderTransSnippet.svelte";
-  import type {
-    TransComponentSnippet,
-    TransComponentSnippetMap,
-    TransRenderNode,
-  } from "./types.ts";
+  import type { TransComponentSnippetMap, TransRenderNode } from "./types.ts";
 
   let {
     nodes,
@@ -20,7 +16,7 @@
   {#if typeof node === "string"}
     {node}
   {:else}
-    {@const snippet: TransComponentSnippet | undefined = snippets[node.placeholder]}
+    {@const snippet = snippets.get(node.placeholder)}
     {#if snippet}
       <RenderTransSnippet {snippet} nodes={node.children} {snippets} />
     {:else}

@@ -21,7 +21,7 @@
     message?: string | undefined;
     values?: Readonly<Record<string, unknown>> | undefined;
     children?: Snippet | undefined;
-    [key: `component_${string}`]: unknown;
+    [key: `component_${string}`]: TransComponentSnippet | undefined;
   } = $props();
 
   const { _ } = getLinguiContext();
@@ -29,13 +29,13 @@
   const snippets = $derived.by<TransComponentSnippetMap | null>(() => {
     const entries = Object.entries(snippetProps).flatMap(([name, value]) =>
       name.startsWith("component_") && value != null
-        ? [[name.slice("component_".length), value]]
-        : [],
-    ) as [string, TransComponentSnippet][];
+        ? ([[name.slice("component_".length), value]] as const)
+        : ([] as const),
+    );
     if (entries.length === 0) {
       return null;
     }
-    return Object.fromEntries(entries) as TransComponentSnippetMap;
+    return new Map(entries);
   });
 
   const translated = $derived.by(() => {

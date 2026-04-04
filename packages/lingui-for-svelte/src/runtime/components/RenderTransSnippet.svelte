@@ -18,8 +18,10 @@
 </script>
 
 {#if nodes.length === 0}
-  {@render snippet()}
+  {@render snippet(undefined)}
 {:else}
-  {#snippet children()}<RenderTransNodes {nodes} {snippets} />{/snippet}
+  {#snippet children()}
+    <RenderTransNodes {nodes} {snippets} />
+  {/snippet}
   {@render snippet(children)}
 {/if}

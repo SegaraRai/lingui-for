@@ -1,14 +1,4 @@
 /**
- * Mapping from rich-text placeholder names to framework-specific renderers or descriptors.
- *
- * The parser only uses this map to determine whether a placeholder is known. The value type
- * remains generic so each framework can attach its own runtime contract.
- */
-export type GenericTransPlaceholderMap<TPlaceholder> = Readonly<
-  Record<string, TPlaceholder>
->;
-
-/**
  * Tree node produced by parsing a translated rich-text string.
  *
  * Nodes are either raw text segments or placeholder-backed nodes with child content.
@@ -40,17 +30,17 @@ export type TransRenderNode =
  * Unknown placeholders are treated as transparent wrappers and malformed tags fall back to plain
  * text so translation issues do not crash rendering.
  */
-export function formatRichTextTranslation<TPlaceholder>(
+export function formatRichTextTranslation(
   value: string,
-  placeholders: GenericTransPlaceholderMap<TPlaceholder> = {},
+  placeholders: ReadonlySet<string> | ReadonlyMap<string, unknown>,
 ): TransRenderNode[] {
   return parseNodes(value, 0, placeholders, undefined, new Map()).nodes;
 }
 
-function parseNodes<TPlaceholder>(
+function parseNodes(
   value: string,
   start: number,
-  placeholders: GenericTransPlaceholderMap<TPlaceholder>,
+  placeholders: ReadonlySet<string> | ReadonlyMap<string, unknown>,
   expectedClosingTag?: string,
   keyCounters: Map<string, number> = new Map(),
 ): {
@@ -93,7 +83,7 @@ function parseNodes<TPlaceholder>(
 
     const selfClosing = matchSelfClosingTag(value, tagStart);
     if (selfClosing) {
-      if (placeholders[selfClosing.name]) {
+      if (placeholders.has(selfClosing.name)) {
         nodes.push({
           kind: "placeholder",
           key: allocateStableNodeKey(selfClosing.name, keyCounters),
@@ -126,7 +116,7 @@ function parseNodes<TPlaceholder>(
       continue;
     }
 
-    if (placeholders[opening.name]) {
+    if (placeholders.has(opening.name)) {
       nodes.push({
         kind: "placeholder",
         key: allocateStableNodeKey(opening.name, keyCounters),
