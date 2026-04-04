@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use tsify::Tsify;
 
 use crate::common::Span;
@@ -199,14 +199,22 @@ fn collect_normalization_operations(
         }
     }
 
+    let insertion_points = insertions
+        .iter()
+        .map(|(at, _)| *at)
+        .collect::<BTreeSet<_>>();
+
     strips.sort_by_key(|span| (span.start, span.end));
     let mut merged: Vec<Span> = Vec::new();
     for strip in strips {
-        if let Some(last) = merged.last_mut()
-            && strip.start <= last.end
-        {
-            last.end = last.end.max(strip.end);
-            continue;
+        if let Some(last) = merged.last_mut() {
+            let overlaps = strip.start < last.end;
+            let touches_without_boundary_insertion =
+                strip.start == last.end && !insertion_points.contains(&strip.start);
+            if overlaps || touches_without_boundary_insertion {
+                last.end = last.end.max(strip.end);
+                continue;
+            }
         }
         merged.push(strip);
     }
@@ -400,6 +408,74 @@ mod tests {
                     original_start: outer_start + "😀\r\n".len(),
                     generated_start: 1 + "😀".len(),
                     len: "Bé".len(),
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn preserves_boundary_insertions_between_touching_delete_ranges_after_owned_merge() {
+        let source = "abcdef";
+        let mut candidates = vec![
+            MacroCandidate {
+                id: "parent".to_string(),
+                kind: MacroCandidateKind::CallExpression,
+                imported_name: "t".to_string(),
+                local_name: "t".to_string(),
+                flavor: MacroFlavor::Direct,
+                outer_span: Span::new(0, source.len()),
+                normalized_span: Span::new(0, source.len()),
+                normalization_edits: vec![NormalizationEdit::Delete {
+                    span: Span::new(1, 3),
+                }],
+                source_map_anchor: None,
+                owner_id: None,
+                strategy: MacroCandidateStrategy::Standalone,
+            },
+            MacroCandidate {
+                id: "child".to_string(),
+                kind: MacroCandidateKind::CallExpression,
+                imported_name: "t".to_string(),
+                local_name: "t".to_string(),
+                flavor: MacroFlavor::Direct,
+                outer_span: Span::new(0, source.len()),
+                normalized_span: Span::new(0, source.len()),
+                normalization_edits: vec![
+                    NormalizationEdit::Insert {
+                        at: 3,
+                        text: "[]".to_string(),
+                    },
+                    NormalizationEdit::Delete {
+                        span: Span::new(3, 5),
+                    },
+                ],
+                source_map_anchor: None,
+                owner_id: Some("parent".to_string()),
+                strategy: MacroCandidateStrategy::OwnedByParent,
+            },
+        ];
+
+        merge_owned_candidate_normalization_edits(&mut candidates);
+        let parent = candidates
+            .iter()
+            .find(|candidate| candidate.id == "parent")
+            .expect("parent candidate should exist");
+
+        let (normalized, segments) = normalize_candidate_source(source, parent);
+
+        assert_eq!(normalized, "a[]f");
+        assert_eq!(
+            segments,
+            vec![
+                NormalizedSegment {
+                    original_start: 0,
+                    generated_start: 0,
+                    len: 1,
+                },
+                NormalizedSegment {
+                    original_start: 5,
+                    generated_start: 3,
+                    len: 1,
                 },
             ]
         );
