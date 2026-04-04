@@ -3,6 +3,7 @@ import SlotPassThrough from "../../components/framework/SlotPassThrough.astro";
 import SlotRenderHtml from "../../components/framework/SlotRenderHtml.astro";
 import SlotRenderHtmlWrapped from "../../components/framework/SlotRenderHtmlWrapped.astro";
 import FrameworkCounterIsland from "../../components/framework/FrameworkCounterIsland.tsx";
+import FrameworkServerIsland from "../../components/framework/FrameworkServerIsland.astro";
 
 import "../../styles/app.css";
 ---
@@ -43,6 +44,31 @@ import "../../styles/app.css";
             client:load
             mode="wrapped"
             label="Wrapped rendered HTML slot island"
+          />
+        </SlotRenderHtmlWrapped>
+      </div>
+      <div class="grid gap-4 xl:grid-cols-3">
+        <SlotPassThrough label="Direct server island slot">
+          <FrameworkServerIsland
+            server:defer
+            mode="direct"
+            label="Direct server island"
+          />
+        </SlotPassThrough>
+
+        <SlotRenderHtml label="Rendered HTML server island slot">
+          <FrameworkServerIsland
+            server:defer
+            mode="rendered"
+            label="Rendered HTML server island"
+          />
+        </SlotRenderHtml>
+
+        <SlotRenderHtmlWrapped label="Wrapped rendered HTML server island slot">
+          <FrameworkServerIsland
+            server:defer
+            mode="wrapped"
+            label="Wrapped rendered HTML server island"
           />
         </SlotRenderHtmlWrapped>
       </div>
