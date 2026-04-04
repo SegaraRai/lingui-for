@@ -58,14 +58,18 @@ const __lf_32 = translate(
                       );
 const __lf_33 = translate`Activity stream`;
 const __lf_34 = <Trans>
-                Imported digest:{" "}<span set:html={htmlDigest}></span>
+                Imported digest:{" "}<span set:html={htmlDigest} />
               </Trans>;
 const __lf_35 = <Trans>
-                Also we can embed{" "}<span set:text="some text"></span>{" "}and{" "}<span set:html="<em>some HTML</em>"></span>{" "}directly in translations.
+                Also we can embed{" "}<span set:text="some text" />{" "}and{" "}<span
+                  set:html="<em>some HTML</em>"
+                />{" "}directly in translations.
               </Trans>;
 const __lf_36 = <Trans>
                 <p>Maybe we even have some nested content to summarize, like</p>{" "}<ul>
-                  <li><em>{highlightedQueue.length} highlighted queue items</em> and</li>
+                  <li>
+                    <em>{highlightedQueue.length} highlighted queue items</em> and
+                  </li>
                   <li>a selected region of {selectedRegion}.</li>
                 </ul>
               </Trans>;

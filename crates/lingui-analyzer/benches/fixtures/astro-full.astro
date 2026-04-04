@@ -784,19 +784,23 @@ function rowTone(state: DecisionRow["state"]): string {
             <p class="text-sm text-slate-600">
               <Trans>
                 Imported digest:
-                <span set:html={htmlDigest}></span>
+                <span set:html={htmlDigest} />
               </Trans>
             </p>
             <p>
               <Trans>
-                Also we can embed <span set:text="some text"></span> and <span set:html="<em>some HTML</em>"></span> directly in translations.
+                Also we can embed <span set:text="some text" /> and <span
+                  set:html="<em>some HTML</em>"
+                /> directly in translations.
               </Trans>
             </p>
             <div>
               <Trans>
                 <p>Maybe we even have some nested content to summarize, like</p>
                 <ul>
-                  <li><em>{highlightedQueue.length} highlighted queue items</em> and</li>
+                  <li>
+                    <em>{highlightedQueue.length} highlighted queue items</em> and
+                  </li>
                   <li>a selected region of {selectedRegion}.</li>
                 </ul>
               </Trans>
