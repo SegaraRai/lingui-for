@@ -135,6 +135,8 @@ fn convert_runtime_trans_root(
                         runtime_warning_mode,
                     )?;
                     attributes.push_unmapped(" {...");
+                    // Skip the opening `{..` of the spread attribute before trimming and
+                    // copying any preserved prefix between `spread_span` and `object_span`.
                     let prefix_start = (spread_span.start + 3).min(object_span.start);
                     let prefix_trimmed_start = context.source.as_str()
                         [prefix_start..object_span.start]
@@ -697,7 +699,8 @@ fn lower_original_wrapper_to_slot_callback(
             }
         }
         "self_closing_tag" => {
-            node.children(&mut node.walk())
+            let _ = node
+                .children(&mut node.walk())
                 .find(|child| child.kind() == "tag_name")
                 .ok_or(AstroAdapterError::MissingTagNameWhileLoweringAstroSlotCallback)?;
             append_copied_wrapper_with_content_hole_anchors(
