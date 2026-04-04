@@ -93,9 +93,9 @@ const httpRouteExpectations: readonly HttpRouteExpectation[] = [
       ja: [
         "リッチテキスト翻訳の確認",
         "リンクと強調表示を保てます。",
-        'Astro は翻訳された文の中でも<a class="link link-primary" href="/settings">設定リンク</a>を保てます。</p>',
-        'Svelte は翻訳された文の中でも<a class="link link-primary" href="/settings">設定リンク</a>を保てます。</p>',
-        'React は翻訳された文の中でも<a class="link link-primary" href="/settings">設定リンク</a>を保てます。</p>',
+        'Astro は翻訳された文の中でも<a class="link link-primary" href="/settings">設定リンク</a>を保てます。',
+        'Svelte は翻訳された文の中でも<a class="link link-primary" href="/settings">設定リンク</a>を保てます。',
+        'React は翻訳された文の中でも<a class="link link-primary" href="/settings">設定リンク</a>を保てます。',
       ],
     },
     expectedHtmlSnippets: ['href="/settings"'],

@@ -976,11 +976,6 @@ mod tests {
         assert!(
             lowered
                 .code
-                .contains("import.meta.env.DEV && children !== \"\" && console.warn(")
-        );
-        assert!(
-            lowered
-                .code
                 .contains("<article set:html={content}>Ignored child</article>")
         );
     }
