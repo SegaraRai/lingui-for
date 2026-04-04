@@ -1463,7 +1463,7 @@ fn bare_direct_macro_error(imported_name: &str) -> SvelteFrameworkError {
     }
 }
 
-fn bare_direct_macro_message(imported_name: &str) -> String {
+pub(crate) fn bare_direct_macro_message(imported_name: &str) -> String {
     match bare_direct_macro_error(imported_name) {
         SvelteFrameworkError::BareDirectTNotAllowed => {
             "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()

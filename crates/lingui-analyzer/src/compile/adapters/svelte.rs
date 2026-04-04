@@ -10,7 +10,7 @@ use crate::common::{
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::helpers::text::find_pattern_near_start;
-use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError};
+use crate::framework::svelte::{SvelteAdapter, SvelteFrameworkError, bare_direct_macro_message};
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
     MacroCandidateStrategy, MacroFlavor, WhitespaceMode,
@@ -537,17 +537,6 @@ pub(crate) fn validate_compile_targets(
     }
 
     Ok(())
-}
-
-fn bare_direct_macro_message(imported_name: &str) -> String {
-    match imported_name {
-        "t" => {
-            "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()
-        }
-        other => format!(
-            "Bare `{other}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${other}` there or `{other}.eager(...)` for non-reactive script translations."
-        ),
-    }
 }
 
 pub(super) fn append_runtime_injection_replacements(
