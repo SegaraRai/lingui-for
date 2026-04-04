@@ -583,26 +583,27 @@ fn collect_runtime_component_wrappers<'a>(
                     .children(&mut child.walk())
                     .find(|grandchild| grandchild.kind() == "self_closing_tag")
                 {
-                    if !is_skipped_runtime_component_wrapper(source, self_closing_tag)
-                        || owns_runtime_component_content(source, self_closing_tag)
+                    if has_content_hole(source, self_closing_tag)
+                        || !is_skipped_runtime_component_wrapper(source, self_closing_tag)
                     {
                         wrappers.push(self_closing_tag);
                     }
                     continue;
                 }
 
-                let owns_content = owns_runtime_component_content(source, child);
-                if !is_skipped_runtime_component_wrapper(source, child) || owns_content {
+                if has_content_hole(source, child) {
                     wrappers.push(child);
-                }
-                if owns_content {
                     continue;
                 }
+                if is_skipped_runtime_component_wrapper(source, child) {
+                    continue;
+                }
+                wrappers.push(child);
                 collect_runtime_component_wrappers(child, source, wrappers);
             }
             "self_closing_tag" => {
-                if !is_skipped_runtime_component_wrapper(source, child)
-                    || owns_runtime_component_content(source, child)
+                if has_content_hole(source, child)
+                    || !is_skipped_runtime_component_wrapper(source, child)
                 {
                     wrappers.push(child);
                 }
@@ -617,10 +618,6 @@ fn is_skipped_runtime_component_wrapper(source: &str, node: Node<'_>) -> bool {
         tag_name(source, node),
         Some("Plural" | "Select" | "SelectOrdinal" | "Trans")
     )
-}
-
-fn owns_runtime_component_content(source: &str, node: Node<'_>) -> bool {
-    is_skipped_runtime_component_wrapper(source, node) || has_content_hole(source, node)
 }
 
 fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
