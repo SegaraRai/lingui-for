@@ -478,7 +478,7 @@ mod tests {
     fn slices_pre_mapped_segments() {
         let source = "abcdef";
         let mut mapped = MappedText::new("test.ts", source);
-        mapped.push_pre_mapped("cde", identity_submap("test.ts", source, 2, 5));
+        mapped.push("cde", Some(identity_submap("test.ts", source, 2, 5)));
 
         let sliced = mapped.slice(Span::new(1, 3)).expect("slice succeeds");
         let rendered = sliced.into_rendered().expect("render succeeds");
@@ -497,7 +497,7 @@ mod tests {
         let source = "abcdef";
         let mut mapped = MappedText::new("test.ts", source);
         mapped.push_unmapped("ab");
-        mapped.push_pre_mapped("cd", identity_submap("test.ts", source, 2, 4));
+        mapped.push("cd", Some(identity_submap("test.ts", source, 2, 4)));
         mapped.push_unmapped("ef");
 
         let replacement = MappedText::from_rendered("test.ts", source, "YZ", None);
