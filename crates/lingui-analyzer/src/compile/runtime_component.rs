@@ -4,7 +4,7 @@ use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, MappedTextError, RenderedMappedText, Span,
     build_span_anchor_map,
 };
-use crate::framework::parse::{ParseError, parse_svelte, parse_tsx};
+use crate::framework::parse::{ParseError, parse_astro, parse_svelte, parse_tsx};
 
 use super::CompileTarget;
 
@@ -58,10 +58,16 @@ pub enum RuntimeComponentError {
     UnsupportedJsxPropKind { kind: String },
     #[error("translated node offset became negative")]
     TranslatedNodeOffsetNegative,
+    #[error("missing original Astro Trans node for runtime component lowering")]
+    MissingOriginalAstroTransNode,
     #[error("missing original Svelte Trans node for runtime component lowering")]
     MissingOriginalSvelteTransNode,
     #[error("missing tag name while lowering Svelte snippet")]
     MissingTagNameWhileLoweringSvelteSnippet,
+    #[error("missing tag name while lowering Astro slot callback")]
+    MissingTagNameWhileLoweringAstroSlotCallback,
+    #[error("mismatched Astro runtime component placeholders: expected {expected}, found {found}")]
+    MismatchedAstroRuntimeComponentPlaceholderCount { expected: usize, found: usize },
     #[error("mismatched Svelte runtime component placeholders: expected {expected}, found {found}")]
     MismatchedSvelteRuntimeComponentPlaceholderCount { expected: usize, found: usize },
 }
@@ -127,6 +133,44 @@ pub(crate) fn lower_runtime_component_markup_svelte(
         .ok_or(RuntimeComponentError::MissingInitializerForTransformedComponent)?;
 
     convert_runtime_trans_root_svelte(
+        &original_source,
+        declaration.indexed_source_map.as_ref(),
+        &declaration_source,
+        &mapped_input,
+        source_name,
+        target,
+        value,
+        -(wrapper_prefix.len() as isize),
+        runtime_component_name,
+    )
+}
+
+pub(crate) fn lower_runtime_component_markup_astro(
+    source_name: &str,
+    original_source: &str,
+    target: &CompileTarget,
+    declaration: &RenderedMappedText,
+    runtime_component_name: &str,
+) -> Result<RenderedMappedText, RuntimeComponentError> {
+    let declaration_source = IndexedText::new(&declaration.code);
+    let original_source = IndexedText::new(original_source);
+    let mapped_input = MappedText::from_rendered(
+        source_name,
+        original_source.as_str(),
+        &declaration.code,
+        declaration.indexed_source_map.as_ref(),
+    );
+    let wrapper_prefix = "const __lf = ";
+    let wrapped = format!("{wrapper_prefix}{};", declaration.code);
+    let tree = parse_tsx(&wrapped)?;
+    let root = tree.root_node();
+    let declarator = find_first_named_descendant(root, "variable_declarator")
+        .ok_or(RuntimeComponentError::MissingVariableDeclaratorForTransformedComponent)?;
+    let value = declarator
+        .child_by_field_name("value")
+        .ok_or(RuntimeComponentError::MissingInitializerForTransformedComponent)?;
+
+    convert_runtime_trans_root_astro(
         &original_source,
         declaration.indexed_source_map.as_ref(),
         &declaration_source,
@@ -375,9 +419,201 @@ fn convert_runtime_trans_root_svelte(
     mapped.into_rendered().map_err(RuntimeComponentError::from)
 }
 
+fn convert_runtime_trans_root_astro(
+    original_source: &IndexedText<'_>,
+    declaration_source_map: Option<&IndexedSourceMap>,
+    source: &IndexedText<'_>,
+    input: &MappedText<'_>,
+    source_name: &str,
+    target: &CompileTarget,
+    node: Node<'_>,
+    base_offset: isize,
+    runtime_component_name: &str,
+) -> Result<RenderedMappedText, RuntimeComponentError> {
+    let opening = match node.kind() {
+        "jsx_element" => node.child_by_field_name("open_tag"),
+        "jsx_self_closing_element" => Some(node),
+        _ => None,
+    }
+    .ok_or(RuntimeComponentError::ExpectedJsxElementInitializerForTransformedComponent)?;
+
+    let mut mapped = input.empty_like();
+    let root_span = translated_span(node, base_offset)?;
+    let mut slot_callbacks = Vec::new();
+    let original_input = MappedText::from_rendered(
+        source_name,
+        original_source.as_str(),
+        original_source.as_str(),
+        None,
+    );
+
+    push_anchor_mapped(
+        &mut mapped,
+        declaration_source_map,
+        source,
+        original_source,
+        "<",
+        root_span.start,
+    );
+    push_anchor_mapped(
+        &mut mapped,
+        declaration_source_map,
+        source,
+        original_source,
+        runtime_component_name,
+        root_span.start,
+    );
+
+    let mut cursor = opening.walk();
+    for child in opening.children_by_field_name("attribute", &mut cursor) {
+        match child.kind() {
+            "jsx_expression" => {
+                let spread = spread_element_node(child)
+                    .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
+                let argument = spread_argument_node(spread)
+                    .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
+
+                if let Some(object) = lowerable_object_expression_node(argument) {
+                    let spread_span = translated_span(spread, base_offset)?;
+                    let object_span = translated_span(object, base_offset)?;
+                    let lowered = lower_astro_object_expression_span(
+                        source.as_str(),
+                        input,
+                        &original_input,
+                        original_source.as_str(),
+                        target,
+                        object_span,
+                        0,
+                    )?;
+                    mapped.push_unmapped(" {...");
+                    let prefix_start = (spread_span.start + 3).min(object_span.start);
+                    let prefix_trimmed_start = source.as_str()[prefix_start..object_span.start]
+                        .find(|char: char| !char.is_ascii_whitespace())
+                        .map(|offset| prefix_start + offset);
+                    if let Some(prefix_trimmed_start) = prefix_trimmed_start {
+                        push_copied_span(
+                            &mut mapped,
+                            input,
+                            Span::new(prefix_trimmed_start, object_span.start),
+                        )?;
+                    }
+                    append_rendered(&mut mapped, lowered.props);
+                    let suffix_trimmed_end = source.as_str()[object_span.end..spread_span.end]
+                        .rfind(|char: char| !char.is_ascii_whitespace())
+                        .map(|offset| object_span.end + offset + 1);
+                    if let Some(suffix_trimmed_end) = suffix_trimmed_end {
+                        push_copied_span(
+                            &mut mapped,
+                            input,
+                            Span::new(object_span.end, suffix_trimmed_end),
+                        )?;
+                    }
+                    mapped.push_unmapped("}");
+                    slot_callbacks.extend(lowered.slot_callbacks);
+                    continue;
+                }
+
+                mapped.push_unmapped(" ");
+                push_copied_span(&mut mapped, input, translated_span(child, base_offset)?)?;
+            }
+            "jsx_attribute" => {
+                let name_node = jsx_attribute_name_node(child)
+                    .ok_or(RuntimeComponentError::MissingJsxAttributeName)?;
+                let name = source_slice(source.as_str(), name_node, base_offset)?;
+                let value_node = jsx_attribute_value_node(child);
+
+                if name == "components" {
+                    if let Some(value) = value_node.filter(|value| value.kind() == "jsx_expression")
+                    {
+                        if let Some(expression) = first_named_child(value) {
+                            if let Some(component_slots) = collect_astro_component_slot_callbacks(
+                                &original_input,
+                                original_source.as_str(),
+                                target,
+                                source.as_str(),
+                                expression,
+                                base_offset,
+                            )? {
+                                slot_callbacks.extend(component_slots);
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                append_rendered(
+                    &mut mapped,
+                    convert_jsx_named_attribute(source.as_str(), input, child, base_offset)?,
+                );
+            }
+            other => {
+                return Err(RuntimeComponentError::UnsupportedJsxAttributeNodeKind {
+                    kind: other.to_string(),
+                });
+            }
+        }
+    }
+
+    if slot_callbacks.is_empty() {
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            " />",
+            root_span.end,
+        );
+    } else {
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            ">",
+            root_span.end,
+        );
+        mapped.push_unmapped("\n");
+        for slot_callback in slot_callbacks {
+            append_rendered(&mut mapped, slot_callback);
+            mapped.push_unmapped("\n");
+        }
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            "</",
+            root_span.end,
+        );
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            runtime_component_name,
+            root_span.end,
+        );
+        push_anchor_mapped(
+            &mut mapped,
+            declaration_source_map,
+            source,
+            original_source,
+            ">",
+            root_span.end,
+        );
+    }
+
+    mapped.into_rendered().map_err(RuntimeComponentError::from)
+}
+
 struct SvelteLoweredObjectExpression {
     props: RenderedMappedText,
     snippets: Vec<RenderedMappedText>,
+}
+
+struct AstroLoweredObjectExpression {
+    props: RenderedMappedText,
+    slot_callbacks: Vec<RenderedMappedText>,
 }
 
 fn lower_svelte_object_expression_span(
@@ -412,6 +648,49 @@ fn lower_svelte_object_expression_span(
     }
 
     convert_svelte_object_expression(
+        source,
+        input,
+        original_input,
+        original_source,
+        target,
+        object,
+        span.start as isize - wrapper_prefix.len() as isize,
+        indent_level,
+    )
+}
+
+fn lower_astro_object_expression_span(
+    source: &str,
+    input: &MappedText<'_>,
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    span: Span,
+    indent_level: usize,
+) -> Result<AstroLoweredObjectExpression, RuntimeComponentError> {
+    let text = &source[span.start..span.end];
+    let wrapper_prefix = "const __expr = (";
+    let wrapped = format!("{wrapper_prefix}{text});");
+    let tree = parse_tsx(&wrapped)?;
+    let root = tree.root_node();
+    let declarator = find_first_named_descendant(root, "variable_declarator")
+        .ok_or(RuntimeComponentError::MissingVariableDeclaratorWhileLoweringObjectExpression)?;
+    let value = declarator
+        .child_by_field_name("value")
+        .ok_or(RuntimeComponentError::MissingObjectExpressionInitializer)?;
+    let object = if value.kind() == "parenthesized_expression" {
+        first_named_child(value).unwrap_or(value)
+    } else {
+        value
+    };
+    if object.kind() != "object" {
+        return Ok(AstroLoweredObjectExpression {
+            props: copy_span(input, span)?,
+            slot_callbacks: Vec::new(),
+        });
+    }
+
+    convert_astro_object_expression(
         source,
         input,
         original_input,
@@ -548,6 +827,125 @@ fn convert_svelte_object_expression(
     })
 }
 
+fn convert_astro_object_expression(
+    source: &str,
+    input: &MappedText<'_>,
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    node: Node<'_>,
+    base_offset: isize,
+    indent_level: usize,
+) -> Result<AstroLoweredObjectExpression, RuntimeComponentError> {
+    let indent = "  ".repeat(indent_level);
+    let child_indent = "  ".repeat(indent_level + 1);
+    let mut rendered = input.empty_like();
+    let mut slot_callbacks = Vec::new();
+    let mut cursor = node.walk();
+    let mut wrote_entry = false;
+
+    rendered.push_unmapped("{");
+
+    for child in node.named_children(&mut cursor) {
+        match child.kind() {
+            "pair" => {
+                let key = child
+                    .child_by_field_name("key")
+                    .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
+                let value = child
+                    .child_by_field_name("value")
+                    .ok_or(RuntimeComponentError::MissingObjectPairValue)?;
+                let key_name = key_name(source, key, base_offset);
+                if key_name.as_deref() == Some("components") {
+                    if let Some(component_slots) = collect_astro_component_slot_callbacks(
+                        original_input,
+                        original_source,
+                        target,
+                        source,
+                        value,
+                        base_offset,
+                    )? {
+                        slot_callbacks.extend(component_slots);
+                        continue;
+                    }
+                }
+
+                if wrote_entry {
+                    rendered.push_unmapped(",\n");
+                } else {
+                    rendered.push_unmapped("\n");
+                    wrote_entry = true;
+                }
+                rendered.push_unmapped(&child_indent);
+                push_copied_span(&mut rendered, input, translated_span(key, base_offset)?)?;
+                rendered.push_unmapped(": ");
+                append_rendered(
+                    &mut rendered,
+                    convert_expression_for_runtime_trans(
+                        source,
+                        input,
+                        value,
+                        base_offset,
+                        indent_level + 1,
+                    )?,
+                );
+            }
+            "spread_element" => {
+                let argument = spread_argument_node(child)
+                    .ok_or(RuntimeComponentError::MissingSpreadArgumentInObjectExpression)?;
+                if wrote_entry {
+                    rendered.push_unmapped(",\n");
+                } else {
+                    rendered.push_unmapped("\n");
+                    wrote_entry = true;
+                }
+                rendered.push_unmapped(&child_indent);
+                rendered.push_unmapped("...");
+                append_rendered(
+                    &mut rendered,
+                    convert_expression_for_runtime_trans(
+                        source,
+                        input,
+                        argument,
+                        base_offset,
+                        indent_level + 1,
+                    )?,
+                );
+            }
+            "shorthand_property_identifier" => {
+                if wrote_entry {
+                    rendered.push_unmapped(",\n");
+                } else {
+                    rendered.push_unmapped("\n");
+                    wrote_entry = true;
+                }
+                rendered.push_unmapped(&child_indent);
+                push_copied_span(&mut rendered, input, translated_span(child, base_offset)?)?;
+            }
+            other => {
+                return Err(RuntimeComponentError::UnsupportedObjectChildKind {
+                    kind: other.to_string(),
+                });
+            }
+        }
+    }
+
+    if !wrote_entry {
+        rendered.push_unmapped("}");
+    } else {
+        rendered.push_unmapped("\n");
+        rendered.push_unmapped(&indent);
+        rendered.push_unmapped("}");
+    }
+
+    Ok(AstroLoweredObjectExpression {
+        props: rendered
+            .into_rendered()
+            .map_err(RuntimeComponentError::from)?,
+        slot_callbacks,
+    })
+}
+
 fn collect_svelte_component_snippets(
     original_input: &MappedText<'_>,
     original_source: &str,
@@ -583,6 +981,46 @@ fn collect_svelte_component_snippets(
     )?))
 }
 
+fn collect_astro_component_slot_callbacks(
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    transformed_source: &str,
+    node: Node<'_>,
+    base_offset: isize,
+) -> Result<Option<Vec<RenderedMappedText>>, RuntimeComponentError> {
+    let node = match node.kind() {
+        "parenthesized_expression" => first_named_child(node).unwrap_or(node),
+        _ => node,
+    };
+
+    if node.kind() != "object" {
+        return Ok(None);
+    }
+
+    let mut keys = Vec::new();
+    let mut cursor = node.walk();
+    for child in node.named_children(&mut cursor) {
+        if child.kind() != "pair" {
+            return Err(RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents);
+        }
+        let Some(key) = child.child_by_field_name("key") else {
+            return Err(RuntimeComponentError::MissingObjectPairKey);
+        };
+        let Some(key_name) = key_name(transformed_source, key, base_offset) else {
+            return Err(RuntimeComponentError::MissingObjectPairKey);
+        };
+        keys.push(key_name);
+    }
+
+    Ok(Some(collect_astro_component_slot_callbacks_from_source(
+        original_input,
+        original_source,
+        target,
+        &keys,
+    )?))
+}
+
 fn collect_svelte_component_snippets_from_source(
     original_input: &MappedText<'_>,
     original_source: &str,
@@ -611,6 +1049,40 @@ fn collect_svelte_component_snippets_from_source(
             lower_original_svelte_wrapper_to_snippet(
                 original_input,
                 original_source,
+                wrapper,
+                &format!("component_{key}"),
+            )
+        })
+        .collect()
+}
+
+fn collect_astro_component_slot_callbacks_from_source(
+    original_input: &MappedText<'_>,
+    original_source: &str,
+    target: &CompileTarget,
+    keys: &[String],
+) -> Result<Vec<RenderedMappedText>, RuntimeComponentError> {
+    let tree = parse_astro(original_source)?;
+    let root = tree.root_node();
+    let component_node = find_node_by_span(root, target.original_span)
+        .ok_or(RuntimeComponentError::MissingOriginalAstroTransNode)?;
+    let mut wrappers = Vec::new();
+    collect_astro_runtime_component_wrappers(component_node, original_source, &mut wrappers);
+
+    if wrappers.len() != keys.len() {
+        return Err(
+            RuntimeComponentError::MismatchedAstroRuntimeComponentPlaceholderCount {
+                expected: keys.len(),
+                found: wrappers.len(),
+            },
+        );
+    }
+
+    keys.iter()
+        .zip(wrappers)
+        .map(|(key, wrapper)| {
+            lower_original_astro_wrapper_to_slot_callback(
+                original_input,
                 wrapper,
                 &format!("component_{key}"),
             )
@@ -737,6 +1209,115 @@ fn lower_original_svelte_wrapper_to_snippet(
     }
 
     rendered.push_unmapped("{/snippet}");
+    rendered
+        .into_rendered()
+        .map_err(RuntimeComponentError::from)
+}
+
+fn collect_astro_runtime_component_wrappers<'a>(
+    node: Node<'a>,
+    source: &str,
+    wrappers: &mut Vec<Node<'a>>,
+) {
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        match child.kind() {
+            "element" => {
+                if let Some(self_closing_tag) = child
+                    .children(&mut child.walk())
+                    .find(|grandchild| grandchild.kind() == "self_closing_tag")
+                {
+                    if !is_skipped_astro_runtime_component_wrapper(source, self_closing_tag) {
+                        wrappers.push(self_closing_tag);
+                    }
+                    continue;
+                }
+
+                if !is_skipped_astro_runtime_component_wrapper(source, child) {
+                    wrappers.push(child);
+                }
+                collect_astro_runtime_component_wrappers(child, source, wrappers);
+            }
+            "self_closing_tag" => {
+                if !is_skipped_astro_runtime_component_wrapper(source, child) {
+                    wrappers.push(child);
+                }
+            }
+            _ => collect_astro_runtime_component_wrappers(child, source, wrappers),
+        }
+    }
+}
+
+fn is_skipped_astro_runtime_component_wrapper(source: &str, node: Node<'_>) -> bool {
+    matches!(
+        astro_tag_name(source, node),
+        Some("Plural" | "Select" | "SelectOrdinal" | "Trans")
+    )
+}
+
+fn astro_tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
+    match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag")
+            .and_then(|start_tag| {
+                start_tag
+                    .children(&mut start_tag.walk())
+                    .find(|child| child.kind() == "tag_name")
+            })
+            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+        "self_closing_tag" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "tag_name")
+            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+        _ => None,
+    }
+}
+
+fn lower_original_astro_wrapper_to_slot_callback(
+    input: &MappedText<'_>,
+    node: Node<'_>,
+    slot_name: &str,
+) -> Result<RenderedMappedText, RuntimeComponentError> {
+    let mut rendered = input.empty_like();
+    rendered.push_unmapped("<fragment slot=\"");
+    rendered.push_unmapped(slot_name);
+    rendered.push_unmapped("\">{(children) => ");
+
+    match node.kind() {
+        "element" => {
+            let start_tag = node
+                .children(&mut node.walk())
+                .find(|child| child.kind() == "start_tag")
+                .ok_or(RuntimeComponentError::ExpectedJsxElementDescriptor)?;
+            let end_tag = node
+                .children(&mut node.walk())
+                .find(|child| child.kind() == "end_tag")
+                .ok_or(RuntimeComponentError::ExpectedJsxElementDescriptor)?;
+            let content_start = start_tag.end_byte();
+            let content_end = end_tag.start_byte();
+            push_copied_span(
+                &mut rendered,
+                input,
+                Span::new(node.start_byte(), content_start),
+            )?;
+            rendered.push_unmapped("<Fragment set:html={children} />");
+            push_copied_span(
+                &mut rendered,
+                input,
+                Span::new(content_end, node.end_byte()),
+            )?;
+        }
+        "self_closing_tag" => {
+            node.children(&mut node.walk())
+                .find(|child| child.kind() == "tag_name")
+                .ok_or(RuntimeComponentError::MissingTagNameWhileLoweringAstroSlotCallback)?;
+            push_copied_span(&mut rendered, input, Span::from_node(node))?;
+        }
+        _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor),
+    }
+
+    rendered.push_unmapped("}</fragment>");
     rendered
         .into_rendered()
         .map_err(RuntimeComponentError::from)
@@ -1476,7 +2057,10 @@ fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{lower_runtime_component_markup, lower_runtime_component_markup_svelte};
+    use super::{
+        lower_runtime_component_markup, lower_runtime_component_markup_astro,
+        lower_runtime_component_markup_svelte,
+    };
     use crate::common::{RenderedMappedText, Span};
     use crate::compile::{
         CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
@@ -1486,6 +2070,22 @@ mod tests {
     use indoc::indoc;
 
     fn svelte_component_target(source: &str) -> CompileTarget {
+        CompileTarget {
+            declaration_id: "__trans".to_string(),
+            original_span: Span::new(0, source.len()),
+            normalized_span: Span::new(0, source.len()),
+            source_map_anchor: None,
+            local_name: "Trans".to_string(),
+            imported_name: "Trans".to_string(),
+            flavor: MacroFlavor::Direct,
+            context: CompileTargetContext::Template,
+            output_kind: CompileTargetOutputKind::Component,
+            translation_mode: CompileTranslationMode::Contextual,
+            normalized_segments: Vec::<NormalizedSegment>::new(),
+        }
+    }
+
+    fn astro_component_target(source: &str) -> CompileTarget {
         CompileTarget {
             declaration_id: "__trans".to_string(),
             original_span: Span::new(0, source.len()),
@@ -1797,5 +2397,72 @@ mod tests {
         assert!(lowered.code.contains(
             "{#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}"
         ));
+    }
+
+    #[test]
+    fn lowers_astro_components_to_named_slot_callbacks() {
+        let source = "<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>".to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { 0: <a href=\"/docs\" /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = astro_component_target(&source);
+
+        let lowered = lower_runtime_component_markup_astro(
+            "Component.astro",
+            &source,
+            &target,
+            &declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect("astro runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4aRuntimeTrans {.../*i18n*/ {
+                  id: "demo.docs",
+                  message: "Read the <0>docs</0>."
+                }}>
+                <fragment slot="component_0">{(children) => <a href="/docs"><Fragment set:html={children} /></a>}</fragment>
+                </L4aRuntimeTrans>
+            "#}
+            .trim_end()
+        );
+    }
+
+    #[test]
+    fn lowers_astro_components_from_original_source_wrappers() {
+        let source =
+            "<Trans>Read <strong><DocLink href=\"/docs\">carefully</DocLink></strong>.</Trans>"
+                .to_string();
+        let declaration = RenderedMappedText {
+            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read <0><1>carefully</1></0>.\", components: { 0: <strong />, 1: <DocLink href=\"/docs\" /> } }} />".to_string(),
+            indexed_source_map: None,
+        };
+        let target = astro_component_target(&source);
+
+        let lowered = lower_runtime_component_markup_astro(
+            "Component.astro",
+            &source,
+            &target,
+            &declaration,
+            "L4aRuntimeTrans",
+        )
+        .expect("astro runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4aRuntimeTrans {.../*i18n*/ {
+                  id: "demo.docs",
+                  message: "Read <0><1>carefully</1></0>."
+                }}>
+                <fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+                <fragment slot="component_1">{(children) => <DocLink href="/docs"><Fragment set:html={children} /></DocLink>}</fragment>
+                </L4aRuntimeTrans>
+            "#}
+            .trim_end()
+        );
     }
 }

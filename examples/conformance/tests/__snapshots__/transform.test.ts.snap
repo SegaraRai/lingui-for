@@ -250,25 +250,12 @@ const name = "Ada";
     name: name,
     count: count,
     action: action
-  },
-  components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    },
-    1: {
-      kind: "element",
-      tag: "em",
-      props: {}
-    },
-    2: {
-      kind: "element",
-      tag: "code",
-      props: {}
-    }
   }
-}} />"
+}}>
+<fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+<fragment slot="component_1">{(children) => <em><Fragment set:html={children} /></em>}</fragment>
+<fragment slot="component_2">{(children) => <code><Fragment set:html={children} /></code>}</fragment>
+</L4aRuntimeTrans>"
 `;
 
 exports[`NODE_ENV=development > 'deep-rich-text-trans' > official react transform 1`] = `
@@ -484,15 +471,10 @@ const name = "Ada";
   message: "Hello <0>{name}</0>.",
   values: {
     name: name
-  },
-  components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
   }
-}} />"
+}}>
+<fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+</L4aRuntimeTrans>"
 `;
 
 exports[`NODE_ENV=development > 'rich-text-trans' > official react transform 1`] = `
@@ -577,15 +559,10 @@ const role = "admin";
       }
     }),
     count: count
-  },
-  components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
   }
-}} />"
+}}>
+<fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+</L4aRuntimeTrans>"
 `;
 
 exports[`NODE_ENV=development > 'trans-with-deeply-nested-component-icu' > official react transform 1`] = `
@@ -705,15 +682,10 @@ const count = 0;
   message: "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
   values: {
     count: count
-  },
-  components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
   }
-}} />"
+}}>
+<fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+</L4aRuntimeTrans>"
 `;
 
 exports[`NODE_ENV=development > 'trans-with-plural' > official react transform 1`] = `
@@ -771,15 +743,10 @@ const name = "世界";
     message: "\\u3088\\u3046\\u3053\\u305D <0>{name}</0> \\u3055\\u3093\\uD83D\\uDE80",
     values: {
       name: name
-    },
-    components: {
-      0: {
-        kind: "element",
-        tag: "strong",
-        props: {}
-      }
     }
-  }} />
+  }}>
+  <fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+  </L4aRuntimeTrans>
   後置き🎉
 </section>"
 `;
@@ -847,15 +814,10 @@ const name = "世界";
     message: "\\u5BB6\\u65CF\\uD83D\\uDC68\\u200D\\uD83D\\uDC69\\u200D\\uD83D\\uDC67\\u200D\\uD83D\\uDC66 <0>{name}</0> \\u7D42\\u7AEF\\uD83D\\uDE80\\uD83C\\uDF89",
     values: {
       name: name
-    },
-    components: {
-      0: {
-        kind: "element",
-        tag: "strong",
-        props: {}
-      }
     }
-  }} />
+  }}>
+  <fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+  </L4aRuntimeTrans>
   末尾🍣🍜
 </section>"
 `;
@@ -1592,25 +1554,12 @@ const name = "Ada";
     name: name,
     count: count,
     action: action
-  },
-  components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    },
-    1: {
-      kind: "element",
-      tag: "em",
-      props: {}
-    },
-    2: {
-      kind: "element",
-      tag: "code",
-      props: {}
-    }
   }
-}} />"
+}}>
+<fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+<fragment slot="component_1">{(children) => <em><Fragment set:html={children} /></em>}</fragment>
+<fragment slot="component_2">{(children) => <code><Fragment set:html={children} /></code>}</fragment>
+</L4aRuntimeTrans>"
 `;
 
 exports[`NODE_ENV=production > 'deep-rich-text-trans' > official react transform 1`] = `
@@ -1814,15 +1763,10 @@ const name = "Ada";
   id: "9/omjw",
   values: {
     name: name
-  },
-  components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
   }
-}} />"
+}}>
+<fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+</L4aRuntimeTrans>"
 `;
 
 exports[`NODE_ENV=production > 'rich-text-trans' > official react transform 1`] = `
@@ -1901,15 +1845,10 @@ const role = "admin";
       }
     }),
     count: count
-  },
-  components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
   }
-}} />"
+}}>
+<fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+</L4aRuntimeTrans>"
 `;
 
 exports[`NODE_ENV=production > 'trans-with-deeply-nested-component-icu' > official react transform 1`] = `
@@ -2020,15 +1959,10 @@ const count = 0;
   id: "BWlbIC",
   values: {
     count: count
-  },
-  components: {
-    0: {
-      kind: "element",
-      tag: "strong",
-      props: {}
-    }
   }
-}} />"
+}}>
+<fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+</L4aRuntimeTrans>"
 `;
 
 exports[`NODE_ENV=production > 'trans-with-plural' > official react transform 1`] = `
@@ -2083,15 +2017,10 @@ const name = "世界";
     id: "5u37ZP",
     values: {
       name: name
-    },
-    components: {
-      0: {
-        kind: "element",
-        tag: "strong",
-        props: {}
-      }
     }
-  }} />
+  }}>
+  <fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+  </L4aRuntimeTrans>
   後置き🎉
 </section>"
 `;
@@ -2156,15 +2085,10 @@ const name = "世界";
     id: "jlsvLV",
     values: {
       name: name
-    },
-    components: {
-      0: {
-        kind: "element",
-        tag: "strong",
-        props: {}
-      }
     }
-  }} />
+  }}>
+  <fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+  </L4aRuntimeTrans>
   末尾🍣🍜
 </section>"
 `;

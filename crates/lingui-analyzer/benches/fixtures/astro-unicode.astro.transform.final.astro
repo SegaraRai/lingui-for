@@ -47,20 +47,11 @@ const summary = __l4a_i18n._(
       values: {
         0: String(selectedPath ?? ""),
         localeLabel: localeLabel
-      },
-      components: {
-        0: {
-          kind: "element",
-          tag: "strong",
-          props: {}
-        },
-        1: {
-          kind: "element",
-          tag: "span",
-          props: {}
-        }
       }
-    }} />
+    }}>
+    <fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
+    <fragment slot="component_1">{(children) => <span><Fragment set:html={children} /></span>}</fragment>
+    </L4aRuntimeTrans>
   </p>
   <ul class="grid gap-2">
     {

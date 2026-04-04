@@ -1,11 +1,6 @@
 import RuntimeTransComponent from "./components/RuntimeTrans.astro";
-import type { TransComponentMap } from "./components/types.ts";
 
-export type {
-  TransComponentDescriptor,
-  TransComponentMap,
-  TransRenderNode,
-} from "./components/types.ts";
+export type { TransRenderNode } from "./components/types.ts";
 export {
   createFrontmatterI18n,
   getLinguiContext,
@@ -33,10 +28,6 @@ interface RuntimeTransProps {
    * Runtime interpolation values merged into the final descriptor.
    */
   values?: Readonly<Record<string, unknown>> | undefined;
-  /**
-   * Rich-text component descriptors keyed by placeholder name.
-   */
-  components?: TransComponentMap | undefined;
 }
 
 /**

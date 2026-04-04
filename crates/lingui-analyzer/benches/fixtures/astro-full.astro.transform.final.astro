@@ -946,15 +946,10 @@ function rowTone(state: DecisionRow["state"]): string {
                 message: "Imported digest: <0>{htmlDigest}</0>",
                 values: {
                   htmlDigest: htmlDigest
-                },
-                components: {
-                  0: {
-                    kind: "element",
-                    tag: "span",
-                    props: {}
-                  }
                 }
-              }} />
+              }}>
+              <fragment slot="component_0">{(children) => <span><Fragment set:html={children} /></span>}</fragment>
+              </L4aRuntimeTrans>
             </p>
           </div>
         </div>

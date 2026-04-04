@@ -134,12 +134,13 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         &self,
         source_name: &str,
         source: &str,
-        _target: &CompileTarget,
+        target: &CompileTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, RuntimeComponentError> {
-        crate::compile::runtime_component::lower_runtime_component_markup(
+        crate::compile::runtime_component::lower_runtime_component_markup_astro(
             source_name,
             source,
+            target,
             declaration,
             self.runtime_bindings.runtime_trans.as_str(),
         )

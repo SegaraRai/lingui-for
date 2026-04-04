@@ -85,9 +85,10 @@ describe("transformAstro", () => {
     expect(code).toContain("<L4aRuntimeTrans {.../*i18n*/ {");
     expect(code).not.toContain("<LocalTrans");
     expect(code).toContain('message: "Read the <0>docs</0>, {name}."');
-    expect(code).toContain('kind: "element"');
-    expect(code).toContain('tag: "a"');
-    expect(code).toContain('href: "/docs"');
+    expect(code).toContain(
+      '<fragment slot="component_0">{(children) => <a href="/docs"><Fragment set:html={children} /></a>}</fragment>',
+    );
+    expect(code).not.toContain("components: {");
   });
 
   test("lowers nested TSX macros inside Trans children", async () => {
@@ -519,11 +520,6 @@ describe("transformAstro source map discipline", () => {
       original: /t`Range check with surrounding whitespace`/,
       generated:
         /__l4a_i18n\._\([^)]+message: "Range check with surrounding whitespace"[^)]+\)/,
-    },
-    {
-      name: "component transform",
-      original: "<Trans>Mapped component message</Trans>",
-      generated: /<L4aRuntimeTrans\b[\s\S]*?\/>/,
     },
     {
       name: "label binding is preserved",
