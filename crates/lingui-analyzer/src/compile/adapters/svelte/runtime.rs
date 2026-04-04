@@ -1,6 +1,8 @@
 use tree_sitter::Node;
 
-use crate::common::{IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span};
+use crate::common::{
+    IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
+};
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_node, copy_span,
     find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
@@ -467,12 +469,11 @@ fn collect_component_snippets(
                 RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents.into(),
             );
         }
-        let Some(key) = child.child_by_field_name("key") else {
-            return Err(RuntimeComponentError::MissingObjectPairKey.into());
-        };
-        let Some(key_name) = key_name(transformed_source, key, base_offset) else {
-            return Err(RuntimeComponentError::MissingObjectPairKey.into());
-        };
+        let key = child
+            .child_by_field_name("key")
+            .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
+        let key_name = key_name(transformed_source, key, base_offset)
+            .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
         keys.push(validate_runtime_placeholder_key(key_name)?);
     }
 
@@ -592,10 +593,14 @@ fn lower_original_wrapper_to_snippet(
     snippet_name: &str,
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
+    let indexed_source = IndexedText::new(source);
     let mut rendered = input.empty_like();
-    rendered.push_unmapped("{#snippet ");
-    rendered.push_unmapped(snippet_name);
-    rendered.push_unmapped("(children)}");
+    push_original_anchor(
+        &mut rendered,
+        &indexed_source,
+        &format!("{{#snippet {snippet_name}(children)}}"),
+        node.start_byte(),
+    );
 
     match node.kind() {
         "element" => {
@@ -648,7 +653,12 @@ fn lower_original_wrapper_to_snippet(
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
 
-    rendered.push_unmapped("{/snippet}");
+    push_original_anchor(
+        &mut rendered,
+        &indexed_source,
+        "{/snippet}",
+        node.end_byte(),
+    );
     rendered.into_rendered().map_err(SvelteAdapterError::from)
 }
 
@@ -662,6 +672,25 @@ fn push_runtime_content_override_warning(
     rendered.push_unmapped("{#if children}{@const __l4s_ignored = console.warn(");
     rendered.push_unmapped("\"[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.\"");
     rendered.push_unmapped(")}{/if}");
+}
+
+fn push_original_anchor(
+    rendered: &mut MappedText<'_>,
+    source: &IndexedText<'_>,
+    text: &str,
+    original_byte: usize,
+) {
+    if let Some(map) = build_span_anchor_map(
+        rendered.source_name(),
+        source,
+        text,
+        original_byte,
+        original_byte,
+    ) {
+        rendered.push_pre_mapped(text, map);
+    } else {
+        rendered.push_unmapped(text);
+    }
 }
 
 #[cfg(test)]

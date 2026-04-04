@@ -1,6 +1,8 @@
 use tree_sitter::Node;
 
-use crate::common::{IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span};
+use crate::common::{
+    IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
+};
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_span,
     find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
@@ -494,12 +496,11 @@ fn collect_component_slot_callbacks(
                 RuntimeComponentError::ExpectedObjectExpressionForRuntimeTransComponents.into(),
             );
         }
-        let Some(key) = child.child_by_field_name("key") else {
-            return Err(RuntimeComponentError::MissingObjectPairKey.into());
-        };
-        let Some(key_name) = key_name(transformed_source, key, base_offset) else {
-            return Err(RuntimeComponentError::MissingObjectPairKey.into());
-        };
+        let key = child
+            .child_by_field_name("key")
+            .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
+        let key_name = key_name(transformed_source, key, base_offset)
+            .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
         keys.push(validate_runtime_placeholder_key(key_name)?);
     }
 
@@ -636,13 +637,15 @@ fn lower_original_wrapper_to_slot_callback(
     slot_name: &str,
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, AstroAdapterError> {
+    let indexed_source = IndexedText::new(source);
     let mut rendered = input.empty_like();
-    rendered.push_unmapped("<fragment slot=\"");
-    rendered.push_unmapped(slot_name);
     let has_content_hole = has_content_hole(source, node);
-    rendered.push_unmapped("\">{");
-    rendered.push_unmapped("(children)");
-    rendered.push_unmapped(" => ");
+    push_original_anchor(
+        &mut rendered,
+        &indexed_source,
+        &format!("<fragment slot=\"{slot_name}\">{{(children) => "),
+        node.start_byte(),
+    );
 
     if has_content_hole && runtime_warning_mode == RuntimeWarningMode::On {
         rendered.push_unmapped(
@@ -663,7 +666,13 @@ fn lower_original_wrapper_to_slot_callback(
             let content_start = start_tag.end_byte();
             let content_end = end_tag.start_byte();
             if has_content_hole {
-                push_copied_span(&mut rendered, input, Span::from_node(node))?;
+                append_copied_wrapper_with_content_hole_anchors(
+                    &mut rendered,
+                    input,
+                    &indexed_source,
+                    start_tag,
+                    node,
+                )?;
             } else {
                 push_copied_span(
                     &mut rendered,
@@ -682,7 +691,13 @@ fn lower_original_wrapper_to_slot_callback(
             node.children(&mut node.walk())
                 .find(|child| child.kind() == "tag_name")
                 .ok_or(AstroAdapterError::MissingTagNameWhileLoweringAstroSlotCallback)?;
-            push_copied_span(&mut rendered, input, Span::from_node(node))?;
+            append_copied_wrapper_with_content_hole_anchors(
+                &mut rendered,
+                input,
+                &indexed_source,
+                node,
+                node,
+            )?;
         }
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
@@ -690,7 +705,12 @@ fn lower_original_wrapper_to_slot_callback(
     if has_content_hole && runtime_warning_mode == RuntimeWarningMode::On {
         rendered.push_unmapped(")");
     }
-    rendered.push_unmapped("}</fragment>");
+    push_original_anchor(
+        &mut rendered,
+        &indexed_source,
+        "}</fragment>",
+        node.end_byte(),
+    );
     rendered.into_rendered().map_err(Into::into)
 }
 
@@ -706,11 +726,74 @@ fn has_content_hole(source: &str, node: Node<'_>) -> bool {
         return false;
     };
 
+    !find_content_hole_attributes(source, tag).is_empty()
+}
+
+fn append_copied_wrapper_with_content_hole_anchors<'a>(
+    rendered: &mut MappedText<'a>,
+    input: &MappedText<'a>,
+    source: &IndexedText<'_>,
+    start_tag: Node<'_>,
+    wrapper_node: Node<'_>,
+) -> Result<(), AstroAdapterError> {
+    let attributes = find_content_hole_attributes(source.as_str(), start_tag);
+    if attributes.is_empty() {
+        push_copied_span(rendered, input, Span::from_node(wrapper_node))?;
+        return Ok(());
+    }
+
+    let mut cursor = wrapper_node.start_byte();
+    for attribute in attributes {
+        if cursor < attribute.start_byte() {
+            push_copied_span(rendered, input, Span::new(cursor, attribute.start_byte()))?;
+        }
+        append_copied_content_hole_attribute(rendered, input, source, attribute)?;
+        cursor = attribute.end_byte();
+    }
+
+    if cursor < wrapper_node.end_byte() {
+        push_copied_span(rendered, input, Span::new(cursor, wrapper_node.end_byte()))?;
+    }
+
+    Ok(())
+}
+
+fn append_copied_content_hole_attribute<'a>(
+    rendered: &mut MappedText<'a>,
+    input: &MappedText<'a>,
+    source: &IndexedText<'_>,
+    attribute: Node<'_>,
+) -> Result<(), AstroAdapterError> {
+    let Some(name) = attribute
+        .children(&mut attribute.walk())
+        .find(|child| child.kind() == "attribute_name")
+    else {
+        push_copied_span(rendered, input, Span::from_node(attribute))?;
+        return Ok(());
+    };
+
+    if attribute.start_byte() < name.start_byte() {
+        push_copied_span(
+            rendered,
+            input,
+            Span::new(attribute.start_byte(), name.start_byte()),
+        )?;
+    }
+    push_original_span(
+        rendered,
+        source,
+        Span::new(name.start_byte(), attribute.end_byte()),
+    )?;
+    Ok(())
+}
+
+fn find_content_hole_attributes<'a>(source: &'a str, tag: Node<'a>) -> Vec<Node<'a>> {
     let mut cursor = tag.walk();
-    let attribute = tag.children(&mut cursor).find(|child| {
-        child.kind() == "attribute"
-            && child
-                .children(&mut child.walk())
+    tag.children(&mut cursor)
+        .filter(|child| child.kind() == "attribute")
+        .filter(|attribute| {
+            attribute
+                .children(&mut attribute.walk())
                 .find(|grandchild| grandchild.kind() == "attribute_name")
                 .is_some_and(|name| {
                     matches!(
@@ -718,16 +801,58 @@ fn has_content_hole(source: &str, node: Node<'_>) -> bool {
                         "set:html" | "set:text"
                     )
                 })
-    });
-    let Some(attribute) = attribute else {
-        return false;
-    };
-    attribute.children(&mut attribute.walk()).any(|child| {
-        matches!(
-            child.kind(),
-            "quoted_attribute_value" | "attribute_interpolation"
-        )
-    })
+                && attribute.children(&mut attribute.walk()).any(|child| {
+                    matches!(
+                        child.kind(),
+                        "quoted_attribute_value" | "attribute_interpolation"
+                    )
+                })
+        })
+        .collect()
+}
+
+fn push_original_anchor(
+    rendered: &mut MappedText<'_>,
+    source: &IndexedText<'_>,
+    text: &str,
+    original_byte: usize,
+) {
+    if let Some(map) = build_span_anchor_map(
+        rendered.source_name(),
+        source,
+        text,
+        original_byte,
+        original_byte,
+    ) {
+        rendered.push_pre_mapped(text, map);
+    } else {
+        rendered.push_unmapped(text);
+    }
+}
+
+fn push_original_span(
+    rendered: &mut MappedText<'_>,
+    source: &IndexedText<'_>,
+    span: Span,
+) -> Result<(), AstroAdapterError> {
+    let text = source
+        .slice(span.start..span.end)
+        .map(|slice| slice.as_str())
+        .ok_or(
+            AstroAdapterError::InvalidOriginalSpanWhileLoweringAstroSourceMap {
+                start: span.start,
+                end: span.end,
+            },
+        )?;
+
+    if let Some(map) =
+        build_span_anchor_map(rendered.source_name(), source, text, span.start, span.end)
+    {
+        rendered.push_pre_mapped(text, map);
+    } else {
+        rendered.push_unmapped(text);
+    }
+    Ok(())
 }
 
 #[cfg(test)]

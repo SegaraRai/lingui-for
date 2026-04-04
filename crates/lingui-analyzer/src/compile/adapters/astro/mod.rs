@@ -42,6 +42,8 @@ pub enum AstroAdapterError {
     MissingOriginalAstroTransNode,
     #[error("missing tag name while lowering Astro slot callback")]
     MissingTagNameWhileLoweringAstroSlotCallback,
+    #[error("invalid original Astro span while lowering source map: {start}..{end}")]
+    InvalidOriginalSpanWhileLoweringAstroSourceMap { start: usize, end: usize },
     #[error("mismatched Astro runtime component placeholders: expected {expected}, found {found}")]
     MismatchedAstroRuntimeComponentPlaceholderCount { expected: usize, found: usize },
 }

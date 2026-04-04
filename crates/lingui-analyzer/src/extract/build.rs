@@ -144,11 +144,12 @@ fn build_synthetic_source_map(
     }
 
     for declaration_id in declaration_ids {
-        let Some(target) = targets_by_id.get(declaration_id.as_str()).copied() else {
-            return Err(BuildSyntheticModuleError::MissingSyntheticTarget {
+        let target = targets_by_id
+            .get(declaration_id.as_str())
+            .copied()
+            .ok_or_else(|| BuildSyntheticModuleError::MissingSyntheticTarget {
                 declaration_id: declaration_id.clone(),
-            });
-        };
+            })?;
         let declaration_map = target.normalized_rendered.indexed_source_map.clone();
 
         mapped.push_unmapped("const ");
