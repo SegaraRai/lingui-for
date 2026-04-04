@@ -3,7 +3,6 @@ import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import { createAstroMacroPostprocessPlugin } from "./macro-rewrite.ts";
-import type { AstroMacroPostprocessRequest } from "./types.ts";
 
 function runWithPlugin(
   code: string,
@@ -30,16 +29,6 @@ function runWithPlugin(
   return result.code;
 }
 
-function createRequest(
-  overrides: Partial<AstroMacroPostprocessRequest> = {},
-): AstroMacroPostprocessRequest {
-  return {
-    translationMode: "extract",
-    runtimeBinding: null,
-    ...overrides,
-  };
-}
-
 describe("createAstroMacroPostprocessPlugin", () => {
   test("rewrites runtime i18n calls to the Astro context binding and removes the i18n import", () => {
     const code = runWithPlugin(
@@ -53,12 +42,10 @@ describe("createAstroMacroPostprocessPlugin", () => {
 
         setupI18n();
       `,
-      createAstroMacroPostprocessPlugin(
-        createRequest({
-          translationMode: "astro-context",
-          runtimeBinding: "__l4a_i18n",
-        }),
-      ),
+      createAstroMacroPostprocessPlugin({
+        translationMode: "contextual",
+        runtimeBinding: "__l4a_i18n",
+      }),
     );
 
     expect(code).toMatchInlineSnapshot(`
@@ -81,7 +68,9 @@ describe("createAstroMacroPostprocessPlugin", () => {
           message: "Save"
         });
       `,
-      createAstroMacroPostprocessPlugin(createRequest()),
+      createAstroMacroPostprocessPlugin({
+        translationMode: "extract",
+      }),
     );
 
     expect(code).toMatchInlineSnapshot(`

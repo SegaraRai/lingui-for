@@ -1,5 +1,20 @@
-import { finalizeSvelteProgram, lowerProgramWithLingui } from "./shared.ts";
-import type { ProgramTransform, SvelteExtractProgramRequest } from "./types.ts";
+import type { LinguiConfigNormalized } from "@lingui/conf";
+
+import type { ScriptLang } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type { BabelSourceMap } from "@lingui-for/internal-shared-compile";
+
+import {
+  finalizeSvelteProgram,
+  lowerProgramWithLingui,
+  type ProgramTransform,
+} from "./shared.ts";
+
+export interface SvelteExtractProgramRequest {
+  filename: string;
+  lang: ScriptLang;
+  linguiConfig: LinguiConfigNormalized;
+  inputSourceMap?: BabelSourceMap;
+}
 
 export function lowerSvelteExtractProgram(
   code: string,

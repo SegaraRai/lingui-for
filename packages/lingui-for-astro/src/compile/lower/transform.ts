@@ -1,19 +1,26 @@
-import { transformAstroProgram } from "./shared.ts";
-import type {
-  AstroTransformProgramRequest,
-  ProgramTransform,
-} from "./types.ts";
+import type { LinguiConfigNormalized } from "@lingui/conf";
+
+import type { BabelSourceMap } from "@lingui-for/internal-shared-compile";
+
+import { transformAstroProgram, type ProgramTransform } from "./shared.ts";
+
+export interface AstroTransformProgramRequest {
+  filename: string;
+  linguiConfig: LinguiConfigNormalized;
+  runtimeBinding: string;
+  inputSourceMap?: BabelSourceMap;
+}
 
 export function lowerAstroTransformProgram(
   code: string,
   request: AstroTransformProgramRequest,
 ): ProgramTransform {
-  return transformAstroProgram(code, {
-    ...request,
-    extract: false,
-    postprocess: {
-      translationMode: "astro-context",
+  return transformAstroProgram(
+    code,
+    { ...request, extract: false },
+    {
+      translationMode: "contextual",
       runtimeBinding: request.runtimeBinding,
     },
-  });
+  );
 }

@@ -7,11 +7,18 @@ import {
   LINGUI_TRANSLATE_METHOD,
 } from "@lingui-for/internal-shared-compile";
 
-import type { AstroMacroPostprocessRequest } from "./types.ts";
+export type AstroMacroPostprocessRequest =
+  | {
+      translationMode: "extract";
+    }
+  | {
+      translationMode: "contextual";
+      runtimeBinding: string;
+    };
 
-type MacroRewriteState = {
+interface MacroRewriteState {
   runtimeI18nLocals: Set<string>;
-};
+}
 
 function createInitialState(): MacroRewriteState {
   return {
@@ -90,14 +97,14 @@ export function createAstroMacroPostprocessPlugin(
     visitor: {
       Program: {
         enter(path, state) {
-          if (request.translationMode !== "astro-context") {
+          if (request.translationMode !== "contextual") {
             return;
           }
 
           state.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
         },
         exit(path, state) {
-          if (request.translationMode !== "astro-context") {
+          if (request.translationMode !== "contextual") {
             return;
           }
 
@@ -105,7 +112,7 @@ export function createAstroMacroPostprocessPlugin(
         },
       },
       CallExpression(path, state) {
-        if (request.translationMode !== "astro-context") {
+        if (request.translationMode !== "contextual") {
           return;
         }
 

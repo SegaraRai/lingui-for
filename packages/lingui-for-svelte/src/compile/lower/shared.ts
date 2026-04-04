@@ -1,17 +1,42 @@
 import { transformFromAstSync, transformSync } from "@babel/core";
+import * as BabelTypes from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
-import * as t from "@babel/types";
+import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import { fromBabelSourceMap } from "@lingui-for/internal-shared-compile";
+import type { ScriptLang } from "@lingui-for/internal-lingui-analyzer-wasm";
+import {
+  fromBabelSourceMap,
+  type BabelSourceMap,
+  type CanonicalSourceMap,
+} from "@lingui-for/internal-shared-compile";
 
 import { getParserPlugins } from "../common/config.ts";
-import { createSvelteMacroPostprocessPlugin } from "./macro-rewrite.ts";
-import type {
-  LinguiLoweredProgram,
-  LinguiProgramLoweringRequest,
-  ProgramTransform,
-  SvelteMacroPostprocessRequest,
-} from "./types.ts";
+import {
+  createSvelteMacroPostprocessPlugin,
+  type SvelteMacroPostprocessRequest,
+} from "./macro-rewrite.ts";
+
+export interface LinguiLoweredProgram {
+  filename: string;
+  source: string;
+  ast: BabelTypes.File;
+  inputSourceMap?: BabelSourceMap;
+}
+
+export interface LinguiProgramLoweringRequest {
+  filename: string;
+  lang: ScriptLang;
+  linguiConfig: LinguiConfigNormalized;
+  inputSourceMap?: BabelSourceMap;
+  extract: boolean;
+}
+
+export interface ProgramTransform {
+  filename: string;
+  code: string;
+  ast: BabelTypes.File;
+  map: CanonicalSourceMap | null;
+}
 
 export function lowerProgramWithLingui(
   code: string,
@@ -58,7 +83,7 @@ export function finalizeSvelteProgram(
   request: SvelteMacroPostprocessRequest,
 ): ProgramTransform {
   const result = transformFromAstSync(
-    t.cloneNode(lowered.ast, true),
+    BabelTypes.cloneNode(lowered.ast, true),
     lowered.source,
     {
       ast: true,

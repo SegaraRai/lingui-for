@@ -12,11 +12,26 @@ import {
   PACKAGE_RUNTIME,
   REACTIVE_TRANSLATION_WRAPPER,
 } from "../common/constants.ts";
-import type { SvelteMacroPostprocessRequest } from "./types.ts";
 
-type MacroRewriteState = {
+export interface RuntimeBindingsForTransform {
+  createLinguiAccessors: string;
+  context: string;
+  getI18n: string;
+  translate: string;
+}
+
+export type SvelteMacroPostprocessRequest =
+  | {
+      translationMode: "extract" | "lowered";
+    }
+  | {
+      translationMode: "contextual";
+      runtimeBindings: RuntimeBindingsForTransform;
+    };
+
+interface MacroRewriteState {
   runtimeI18nLocals: ReadonlySet<string>;
-};
+}
 
 function createInitialState(): MacroRewriteState {
   return {
@@ -170,7 +185,6 @@ export function createSvelteMacroPostprocessPlugin(
       CallExpression(path) {
         if (
           request.translationMode === "contextual" &&
-          request.runtimeBindings &&
           isRuntimeI18nCall(path)
         ) {
           if (t.isMemberExpression(path.node.callee)) {
@@ -222,10 +236,7 @@ export function createSvelteMacroPostprocessPlugin(
           return;
         }
 
-        if (
-          request.translationMode === "contextual" &&
-          request.runtimeBindings
-        ) {
+        if (request.translationMode === "contextual") {
           path.replaceWith(
             t.callExpression(
               t.identifier(`$${request.runtimeBindings.translate}`),

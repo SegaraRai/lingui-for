@@ -1,8 +1,27 @@
-import { finalizeSvelteProgram, lowerProgramWithLingui } from "./shared.ts";
-import type {
-  SvelteTransformProgramRequest,
-  SvelteTransformPrograms,
-} from "./types.ts";
+import type { LinguiConfigNormalized } from "@lingui/conf";
+
+import type { ScriptLang } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type { BabelSourceMap } from "@lingui-for/internal-shared-compile";
+
+import type { RuntimeBindingsForTransform } from "./macro-rewrite.ts";
+import {
+  finalizeSvelteProgram,
+  lowerProgramWithLingui,
+  type ProgramTransform,
+} from "./shared.ts";
+
+export interface SvelteTransformProgramRequest {
+  filename: string;
+  lang: ScriptLang;
+  linguiConfig: LinguiConfigNormalized;
+  inputSourceMap?: BabelSourceMap;
+  runtimeBindings: RuntimeBindingsForTransform;
+}
+
+export interface SvelteTransformPrograms {
+  lowered: ProgramTransform;
+  contextual: ProgramTransform;
+}
 
 export function lowerSvelteTransformPrograms(
   code: string,

@@ -3,7 +3,6 @@ import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
 import { createSvelteMacroPostprocessPlugin } from "./macro-rewrite.ts";
-import type { SvelteMacroPostprocessRequest } from "./types.ts";
 
 function runWithPlugin(
   code: string,
@@ -30,15 +29,6 @@ function runWithPlugin(
   return result.code;
 }
 
-function createRequest(
-  overrides: Partial<SvelteMacroPostprocessRequest> = {},
-): SvelteMacroPostprocessRequest {
-  return {
-    translationMode: "lowered",
-    ...overrides,
-  };
-}
-
 describe("createMacroPostprocessPlugin", () => {
   test("rewrites reactive wrappers to context-aware translator calls in contextual mode", () => {
     const code = runWithPlugin(
@@ -60,17 +50,15 @@ describe("createMacroPostprocessPlugin", () => {
           message: "Inline"
         }), "t");
       `,
-      createSvelteMacroPostprocessPlugin(
-        createRequest({
-          translationMode: "contextual",
-          runtimeBindings: {
-            createLinguiAccessors: "createLinguiAccessors",
-            context: "__l4s_ctx",
-            getI18n: "__l4s_getI18n",
-            translate: "__l4s_translate",
-          },
-        }),
-      ),
+      createSvelteMacroPostprocessPlugin({
+        translationMode: "contextual",
+        runtimeBindings: {
+          createLinguiAccessors: "createLinguiAccessors",
+          context: "__l4s_ctx",
+          getI18n: "__l4s_getI18n",
+          translate: "__l4s_translate",
+        },
+      }),
     );
 
     expect(code).toMatchInlineSnapshot(`
@@ -106,17 +94,15 @@ describe("createMacroPostprocessPlugin", () => {
           message: "active"
         }), "t");
       `,
-      createSvelteMacroPostprocessPlugin(
-        createRequest({
-          translationMode: "contextual",
-          runtimeBindings: {
-            createLinguiAccessors: "createLinguiAccessors",
-            context: "__l4s_ctx",
-            getI18n: "__l4s_getI18n",
-            translate: "__l4s_translate",
-          },
-        }),
-      ),
+      createSvelteMacroPostprocessPlugin({
+        translationMode: "contextual",
+        runtimeBindings: {
+          createLinguiAccessors: "createLinguiAccessors",
+          context: "__l4s_ctx",
+          getI18n: "__l4s_getI18n",
+          translate: "__l4s_translate",
+        },
+      }),
     );
 
     expect(code).toMatchInlineSnapshot(`
@@ -143,11 +129,9 @@ describe("createMacroPostprocessPlugin", () => {
           message: "Hello"
         }), "t");
       `,
-      createSvelteMacroPostprocessPlugin(
-        createRequest({
-          translationMode: "extract",
-        }),
-      ),
+      createSvelteMacroPostprocessPlugin({
+        translationMode: "extract",
+      }),
     );
 
     expect(code).toMatchInlineSnapshot(`
@@ -177,11 +161,9 @@ describe("createMacroPostprocessPlugin", () => {
           }
         }), "select");
       `,
-      createSvelteMacroPostprocessPlugin(
-        createRequest({
-          translationMode: "lowered",
-        }),
-      ),
+      createSvelteMacroPostprocessPlugin({
+        translationMode: "lowered",
+      }),
     );
 
     expect(code).toContain("__lingui_for_svelte_reactive_translation__(");
@@ -200,17 +182,15 @@ describe("createMacroPostprocessPlugin", () => {
           message: "Hello"
         }));
       `,
-      createSvelteMacroPostprocessPlugin(
-        createRequest({
-          translationMode: "contextual",
-          runtimeBindings: {
-            createLinguiAccessors: "createLinguiAccessors",
-            context: "__l4s_ctx",
-            getI18n: "__l4s_getI18n",
-            translate: "__l4s_translate",
-          },
-        }),
-      ),
+      createSvelteMacroPostprocessPlugin({
+        translationMode: "contextual",
+        runtimeBindings: {
+          createLinguiAccessors: "createLinguiAccessors",
+          context: "__l4s_ctx",
+          getI18n: "__l4s_getI18n",
+          translate: "__l4s_translate",
+        },
+      }),
     );
 
     expect(code).toMatchInlineSnapshot(`
