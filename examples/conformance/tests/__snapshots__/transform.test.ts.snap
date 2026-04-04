@@ -412,7 +412,7 @@ exports[`NODE_ENV=development > 'exact-number-component' > svelte transform 1`] 
 
 exports[`NODE_ENV=development > 'nested-icu-core' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 
 const count = 0;
@@ -428,6 +428,7 @@ const deepCore = __l4a_i18n._(
     role: role
   }
 });
+__l4a_i18n.prime();
 ---
 
 <p>{deepCore}</p>"
@@ -1140,10 +1141,11 @@ exports[`NODE_ENV=development > 'with-id-context-comment-component' > svelte tra
 
 exports[`NODE_ENV=development > 'with-id-context-comment-core' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 
 const value = "foo";
+__l4a_i18n.prime();
 ---
 
 <p id="v1a">{__l4a_i18n._(
@@ -1764,7 +1766,7 @@ exports[`NODE_ENV=production > 'exact-number-component' > svelte transform 1`] =
 
 exports[`NODE_ENV=production > 'nested-icu-core' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 
 const count = 0;
@@ -1779,6 +1781,7 @@ const deepCore = __l4a_i18n._(
     role: role
   }
 });
+__l4a_i18n.prime();
 ---
 
 <p>{deepCore}</p>"
@@ -2425,10 +2428,11 @@ exports[`NODE_ENV=production > 'with-id-context-comment-component' > svelte tran
 
 exports[`NODE_ENV=production > 'with-id-context-comment-core' > astro transform 1`] = `
 "---
-import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
 const __l4a_i18n = __l4a_createI18n(Astro.locals);
 
 const value = "foo";
+__l4a_i18n.prime();
 ---
 
 <p id="v1a">{__l4a_i18n._(

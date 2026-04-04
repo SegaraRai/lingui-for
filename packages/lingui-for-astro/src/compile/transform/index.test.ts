@@ -48,14 +48,15 @@ describe("transformAstro", () => {
     const code = compact(result.code);
 
     expect(result.code).toContain(
-      '---\nimport { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";',
+      '---\nimport { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";',
     );
     expect(code).toContain(
-      'import { createFrontmatterI18n as __l4a_createI18n } from "lingui-for-astro/runtime";',
+      'import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";',
     );
     expect(code).toContain(
       "const __l4a_i18n = __l4a_createI18n(Astro.locals);",
     );
+    expect(code).toContain("__l4a_i18n.prime();");
     expect(code).not.toContain('from "lingui-for-astro/macro"');
     expect(code).toContain("const label = __l4a_i18n._(");
     expect(code).toContain("title={__l4a_i18n._(");
@@ -146,7 +147,7 @@ describe("transformAstro", () => {
     );
     const code = compact(result.code);
 
-    expect(code).not.toContain("createFrontmatterI18n");
+    expect(code).not.toContain("createLinguiAccessors");
     expect(code).not.toContain("__l4a_i18n");
     expect(code).toContain("const descriptor = /*i18n*/ {");
   });
@@ -167,8 +168,40 @@ describe("transformAstro", () => {
     expect(code).toContain(
       'import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";',
     );
-    expect(code).not.toContain("createFrontmatterI18n");
+    expect(code).not.toContain("createLinguiAccessors");
     expect(code).not.toContain("__l4a_i18n");
+  });
+
+  test("primes the Astro i18n accessor after same-frontmatter context setup", async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import { setupI18n } from "@lingui/core";
+        import { setLinguiContext } from "lingui-for-astro";
+        import { t } from "lingui-for-astro/macro";
+
+        const i18n = setupI18n({
+          locale: "en",
+          messages: { en: {} },
+        });
+
+        setLinguiContext(Astro.locals, i18n);
+        const label = t\`Ready\`;
+        ---
+
+        <p>{label}</p>
+      `,
+      { filename: "/virtual/Page.astro" },
+    );
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      "const __l4a_i18n = __l4a_createI18n(Astro.locals);",
+    );
+    expect(code).toContain("__l4a_i18n.prime();");
+    expect(code.indexOf("setLinguiContext(Astro.locals, i18n);")).toBeLessThan(
+      code.indexOf("__l4a_i18n.prime();"),
+    );
   });
 
   test("defaults rich-text whitespace handling to framework-aware spacing", async () => {
