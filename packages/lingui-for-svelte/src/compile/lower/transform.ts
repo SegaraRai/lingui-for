@@ -11,11 +11,12 @@ import {
 } from "./shared.ts";
 
 export interface SvelteTransformProgramRequest {
-  filename: string;
   lang: ScriptLang;
   linguiConfig: LinguiConfigNormalized;
   inputSourceMap?: BabelSourceMap;
   runtimeBindings: RuntimeBindingsForTransform;
+  loweredFilename: string;
+  contextualFilename: string;
 }
 
 export interface SvelteTransformPrograms {
@@ -27,20 +28,34 @@ export function lowerSvelteTransformPrograms(
   code: string,
   request: SvelteTransformProgramRequest,
 ): SvelteTransformPrograms {
-  const { runtimeBindings, ...loweringRequest } = request;
+  const {
+    runtimeBindings,
+    loweredFilename,
+    contextualFilename,
+    ...loweringRequest
+  } = request;
 
   const linguiLowered = lowerProgramWithLingui(code, {
     ...loweringRequest,
+    filename: loweredFilename,
     extract: false,
   });
 
   return {
-    lowered: finalizeSvelteProgram(linguiLowered, {
-      translationMode: "lowered",
-    }),
-    contextual: finalizeSvelteProgram(linguiLowered, {
-      translationMode: "contextual",
-      runtimeBindings,
-    }),
+    lowered: finalizeSvelteProgram(
+      linguiLowered,
+      {
+        translationMode: "lowered",
+      },
+      loweredFilename,
+    ),
+    contextual: finalizeSvelteProgram(
+      linguiLowered,
+      {
+        translationMode: "contextual",
+        runtimeBindings,
+      },
+      contextualFilename,
+    ),
   };
 }

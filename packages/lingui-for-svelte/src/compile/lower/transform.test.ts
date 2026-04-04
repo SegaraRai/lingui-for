@@ -13,7 +13,8 @@ describe("lowerSvelteTransformPrograms", () => {
         const __lingui_for_svelte_expr_0 = __lingui_for_svelte_reactive_translation__(t\`Hello \${name}\`, "t");
       `,
       {
-        filename: "/virtual/App.instance.ts",
+        loweredFilename: "/virtual/App.instance.ts?lowered",
+        contextualFilename: "/virtual/App.instance.ts?contextual",
         lang: "ts",
         linguiConfig: normalizeLinguiConfig(),
         runtimeBindings: {
@@ -30,6 +31,10 @@ describe("lowerSvelteTransformPrograms", () => {
     );
     expect(result.contextual.code).toContain("$__l4s_translate(");
     expect(result.contextual.code).not.toContain("$derived(");
+    expect(result.lowered.filename).toBe("/virtual/App.instance.ts?lowered");
+    expect(result.contextual.filename).toBe(
+      "/virtual/App.instance.ts?contextual",
+    );
     expect(result.contextual.code).toMatchInlineSnapshot(`
       "const __lingui_for_svelte_expr_0 = $__l4s_translate(
       /*i18n*/
@@ -55,7 +60,8 @@ describe("lowerSvelteTransformPrograms", () => {
         }), "select");
       `,
       {
-        filename: "/virtual/App.instance.ts",
+        loweredFilename: "/virtual/App.instance.ts?lowered",
+        contextualFilename: "/virtual/App.instance.ts?contextual",
         lang: "ts",
         linguiConfig: normalizeLinguiConfig(),
         runtimeBindings: {

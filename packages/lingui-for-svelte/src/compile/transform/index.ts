@@ -152,24 +152,17 @@ export async function transformSvelte(
   };
   const loweredFilename = `${compilePlan.common.syntheticName}?lowered`;
   const contextualFilename = `${compilePlan.common.syntheticName}?contextual`;
-  const transformed = lowerSvelteTransformPrograms(
+  const { lowered, contextual } = lowerSvelteTransformPrograms(
     compilePlan.common.syntheticSource,
     {
-      filename: loweredFilename,
+      loweredFilename,
+      contextualFilename,
       inputSourceMap: toBabelSourceMap(syntheticMap),
       lang: compilePlan.common.syntheticLang,
       linguiConfig,
       runtimeBindings,
     },
   );
-  const lowered = {
-    ...transformed.lowered,
-    filename: loweredFilename,
-  };
-  const contextual = {
-    ...transformed.contextual,
-    filename: contextualFilename,
-  };
 
   const finished = finishSvelteCompile({
     plan: compilePlan,

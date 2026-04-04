@@ -81,7 +81,9 @@ export function lowerProgramWithLingui(
 export function finalizeSvelteProgram(
   lowered: LinguiLoweredProgram,
   request: SvelteMacroPostprocessRequest,
+  filenameOverride?: string,
 ): ProgramTransform {
+  const filename = filenameOverride ?? lowered.filename;
   const result = transformFromAstSync(
     cloneNode(lowered.ast, true),
     lowered.source,
@@ -90,7 +92,7 @@ export function finalizeSvelteProgram(
       babelrc: false,
       code: true,
       configFile: false,
-      filename: lowered.filename,
+      filename,
       inputSourceMap: lowered.inputSourceMap ?? undefined,
       plugins: [createSvelteMacroPostprocessPlugin(request)],
       sourceMaps: true,
@@ -102,7 +104,7 @@ export function finalizeSvelteProgram(
   }
 
   return {
-    filename: lowered.filename,
+    filename,
     code: result.code,
     ast: result.ast,
     map: fromBabelSourceMap(result.map),
