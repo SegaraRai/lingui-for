@@ -1,0 +1,51 @@
+---
+import SlotPassThrough from "../../components/framework/SlotPassThrough.astro";
+import SlotRenderHtml from "../../components/framework/SlotRenderHtml.astro";
+import SlotRenderHtmlWrapped from "../../components/framework/SlotRenderHtmlWrapped.astro";
+import FrameworkCounterIsland from "../../components/framework/FrameworkCounterIsland.tsx";
+
+import "../../styles/app.css";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astro framework slot island checks</title>
+  </head>
+  <body class="min-h-screen">
+    <main class="mx-auto w-full max-w-7xl space-y-4 px-4 py-6 lg:px-6">
+      <p class="alert alert-info alert-soft">
+        This page checks that Astro islands work correctly when rendered through
+        slots in various ways. Each island contains a counter and some text to
+        verify that the island's state and props update as expected.
+      </p>
+      <div class="grid gap-4 xl:grid-cols-3">
+        <SlotPassThrough label="Direct slot">
+          <FrameworkCounterIsland
+            client:load
+            mode="direct"
+            label="Direct slot island"
+          />
+        </SlotPassThrough>
+
+        <SlotRenderHtml label="Rendered HTML slot">
+          <FrameworkCounterIsland
+            client:load
+            mode="rendered"
+            label="Rendered HTML slot island"
+          />
+        </SlotRenderHtml>
+
+        <SlotRenderHtmlWrapped label="Wrapped rendered HTML slot">
+          <FrameworkCounterIsland
+            client:load
+            mode="wrapped"
+            label="Wrapped rendered HTML slot island"
+          />
+        </SlotRenderHtmlWrapped>
+      </div>
+    </main>
+  </body>
+</html>
