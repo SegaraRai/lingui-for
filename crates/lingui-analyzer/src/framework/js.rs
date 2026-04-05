@@ -64,15 +64,6 @@ pub fn collect_declared_names_from_binding_source(
     Ok(names)
 }
 
-pub fn collect_top_level_declared_names_in_javascript(
-    source: &str,
-    language: ScriptLang,
-) -> Result<Vec<String>, JsAnalysisError> {
-    let tree = language.parse(source)?;
-    let root = tree.root_node();
-    Ok(collect_top_level_declared_names_from_root(source, root))
-}
-
 pub fn collect_top_level_declared_names_from_root(source: &str, root: Node<'_>) -> Vec<String> {
     let mut names = Vec::new();
     let mut cursor = root.walk();

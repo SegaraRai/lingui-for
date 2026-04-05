@@ -17,7 +17,10 @@ use super::helpers::normalization::{
     sort_and_dedup_normalization_edits, whitespace_replacement_edits,
 };
 use super::helpers::text::{is_component_tag_name, text, unquote};
-use super::js::{ExpressionParseCache, JsAnalysisError, JsMacroSyntax, collect_macro_candidates};
+use super::js::{
+    ExpressionParseCache, JsAnalysisError, JsMacroSyntax, collect_macro_candidates,
+    collect_top_level_declared_names_from_root,
+};
 use super::parse::{ParseError, parse_astro, parse_typescript};
 use super::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
@@ -53,6 +56,8 @@ pub struct AstroTemplateComponent {
 pub struct AstroFrontmatterAnalysis {
     pub frontmatter: Option<EmbeddedScriptRegion>,
     pub macro_imports: Vec<MacroImport>,
+    pub frontmatter_declared_names: Vec<String>,
+    pub frontmatter_import_statement_spans: Vec<Span>,
     pub frontmatter_candidates: Vec<MacroCandidate>,
     pub template_expressions: Vec<AstroTemplateExpression>,
     pub template_components: Vec<AstroTemplateComponent>,
@@ -89,7 +94,12 @@ fn analyze_astro(
     let mut source_anchors = collect_node_start_anchors(source, root);
     let frontmatter = find_frontmatter(root);
 
-    let (macro_imports, frontmatter_candidates) = if let Some(frontmatter_region) = &frontmatter {
+    let (
+        macro_imports,
+        frontmatter_declared_names,
+        frontmatter_import_statement_spans,
+        frontmatter_candidates,
+    ) = if let Some(frontmatter_region) = &frontmatter {
         let frontmatter_source =
             &source[frontmatter_region.inner_span.start..frontmatter_region.inner_span.end];
         let frontmatter_tree = parse_typescript(frontmatter_source)?;
@@ -100,7 +110,15 @@ fn analyze_astro(
             &mut source_anchors,
         );
         let frontmatter_root = frontmatter_tree.root_node();
+        let declared_names =
+            collect_top_level_declared_names_from_root(frontmatter_source, frontmatter_root);
         let macro_imports = collect_macro_imports(
+            frontmatter_source,
+            frontmatter_root,
+            frontmatter_region.inner_span.start,
+            &options.conventions,
+        );
+        let import_statement_spans = collect_macro_import_statement_spans_from_root(
             frontmatter_source,
             frontmatter_root,
             frontmatter_region.inner_span.start,
@@ -114,9 +132,14 @@ fn analyze_astro(
             JsMacroSyntax::Standard,
             &[],
         );
-        (macro_imports, candidates)
+        (
+            macro_imports,
+            declared_names,
+            import_statement_spans,
+            candidates,
+        )
     } else {
-        (Vec::new(), Vec::new())
+        (Vec::new(), Vec::new(), Vec::new(), Vec::new())
     };
 
     let (template_expressions, template_components) =
@@ -125,6 +148,8 @@ fn analyze_astro(
     Ok(AstroFrontmatterAnalysis {
         frontmatter,
         macro_imports,
+        frontmatter_declared_names,
+        frontmatter_import_statement_spans,
         frontmatter_candidates,
         template_expressions,
         template_components,
@@ -189,6 +214,42 @@ fn collect_macro_imports(
     imports
 }
 
+fn collect_macro_import_statement_spans_from_root(
+    source: &str,
+    root: Node<'_>,
+    base_offset: usize,
+    conventions: &FrameworkConventions,
+) -> Vec<Span> {
+    let mut spans = Vec::new();
+    let mut cursor = root.walk();
+
+    for child in root.children(&mut cursor) {
+        if child.kind() != "import_statement" {
+            continue;
+        }
+        let Some(source_node) = child.child_by_field_name("source") else {
+            continue;
+        };
+        let Some(module_specifier) = unquote(text(source, source_node)) else {
+            continue;
+        };
+        if !conventions.accepts_macro_package(&module_specifier) {
+            continue;
+        }
+
+        let mut end = child.end_byte();
+        while matches!(source.as_bytes().get(end), Some(b'\r' | b'\n')) {
+            end += 1;
+        }
+        spans.push(Span::new(
+            base_offset + child.start_byte(),
+            base_offset + end,
+        ));
+    }
+
+    spans
+}
+
 fn collect_template_expressions(
     source: &str,
     node: Node<'_>,
@@ -247,7 +308,7 @@ fn collect_template_expressions(
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, node, imports, options)?
+                    component_candidate_from_element(source, node, imports, options, context)?
                 {
                     components.push(component);
                     return Ok(());
@@ -462,6 +523,7 @@ fn component_candidate_from_element(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
+    context: &mut AstroCollectContext,
 ) -> Result<Option<AstroTemplateComponent>, AstroFrameworkError> {
     let mut cursor = node.walk();
     let tag_node = node
@@ -489,7 +551,7 @@ fn component_candidate_from_element(
     };
     validate_runtime_lowerable_astro_component(source, node, options)?;
     let normalization_edits =
-        collect_component_normalization_edits(source, node, imports, options)?;
+        collect_component_normalization_edits(source, node, imports, options, context)?;
 
     Ok(Some(AstroTemplateComponent {
         candidate: MacroCandidate {
@@ -542,8 +604,10 @@ fn collect_component_normalization_edits(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
+    context: &mut AstroCollectContext,
 ) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
-    let mut edits = collect_nested_component_normalization_edits(source, node, imports, options)?;
+    let mut edits =
+        collect_nested_component_normalization_edits(source, node, imports, options, context)?;
     edits.extend(component_whitespace_edits(source, node, options));
     sort_and_dedup_normalization_edits(&mut edits);
     Ok(edits)
@@ -554,8 +618,8 @@ fn collect_nested_component_normalization_edits(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
+    context: &mut AstroCollectContext,
 ) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
-    let mut context = AstroCollectContext::default();
     let mut edits = Vec::new();
     let mut cursor = node.walk();
 
@@ -620,18 +684,18 @@ fn collect_nested_component_normalization_edits(
             }
             "element" => {
                 if let Some(component) =
-                    component_candidate_from_element(source, child, imports, options)?
+                    component_candidate_from_element(source, child, imports, options, context)?
                 {
                     edits.extend(component.candidate.normalization_edits);
                     continue;
                 }
                 edits.extend(collect_nested_component_normalization_edits(
-                    source, child, imports, options,
+                    source, child, imports, options, context,
                 )?);
             }
             _ => {
                 edits.extend(collect_nested_component_normalization_edits(
-                    source, child, imports, options,
+                    source, child, imports, options, context,
                 )?);
             }
         }
