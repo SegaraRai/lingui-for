@@ -49,11 +49,7 @@ pub(super) fn component_candidate_from_element(
         return Ok(None);
     }
 
-    let shadowed_names = context
-        .scope_stack
-        .iter()
-        .flat_map(|frame| frame.iter().cloned())
-        .collect::<Vec<_>>();
+    let shadowed_names = context.shadowed_names();
     if shadowed_names.iter().any(|name| name == tag_name) {
         return Ok(None);
     }
@@ -302,11 +298,7 @@ fn append_expression_normalization_edits(
     };
     let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
 
-    let shadowed_names = context
-        .scope_stack
-        .iter()
-        .flat_map(|frame| frame.iter().cloned())
-        .collect::<Vec<_>>();
+    let shadowed_names = context.shadowed_names();
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
         .expression_parse_cache
@@ -339,11 +331,7 @@ fn append_raw_text_expression_normalization_edits(
         return Ok(());
     };
 
-    let shadowed_names = context
-        .scope_stack
-        .iter()
-        .flat_map(|frame| frame.iter().cloned())
-        .collect::<Vec<_>>();
+    let shadowed_names = context.shadowed_names();
     let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context

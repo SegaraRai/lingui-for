@@ -198,6 +198,15 @@ pub(super) struct CollectContext {
     pub(super) expression_parse_cache: ExpressionParseCache,
 }
 
+impl CollectContext {
+    pub(super) fn shadowed_names(&self) -> Vec<String> {
+        self.scope_stack
+            .iter()
+            .flat_map(|frame| frame.iter().cloned())
+            .collect()
+    }
+}
+
 fn collect_template_expressions(
     source: &str,
     node: Node<'_>,
@@ -280,11 +289,7 @@ fn push_expression(
     let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
     let outer_span = Span::from_node(node);
     let expression_source = &source[inner_span.start..inner_span.end];
-    let shadowed_names = context
-        .scope_stack
-        .iter()
-        .flat_map(|frame| frame.iter().cloned())
-        .collect::<Vec<_>>();
+    let shadowed_names = context.shadowed_names();
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
@@ -316,11 +321,7 @@ fn push_raw_text_expression(
     };
 
     let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
-    let shadowed_names = context
-        .scope_stack
-        .iter()
-        .flat_map(|frame| frame.iter().cloned())
-        .collect::<Vec<_>>();
+    let shadowed_names = context.shadowed_names();
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
         .expression_parse_cache
@@ -383,11 +384,7 @@ fn push_each_start_expression(
     };
 
     let inner_span = Span::from_node(identifier);
-    let shadowed_names = context
-        .scope_stack
-        .iter()
-        .flat_map(|frame| frame.iter().cloned())
-        .collect::<Vec<_>>();
+    let shadowed_names = context.shadowed_names();
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
@@ -822,10 +819,7 @@ fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
             let object_end = start + candidate.local_name.len();
             let property_end = start + pattern.len();
             candidate.outer_span = Span::new(start, candidate.outer_span.end);
-            candidate.normalized_span = Span::new(
-                object_end - candidate.local_name.len(),
-                candidate.normalized_span.end,
-            );
+            candidate.normalized_span = Span::new(start, candidate.normalized_span.end);
             candidate.normalization_edits = vec![NormalizationEdit::Delete {
                 span: Span::new(object_end, property_end),
             }];

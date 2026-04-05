@@ -44,7 +44,7 @@ This document is for repository developers working on `crates/lingui-analyzer`, 
 - Svelte-specific transform-time behavior goes in `src/compile/adapters/svelte/`.
 - Shared parsing belongs in `src/syntax/`.
 - Shared non-framework data structures/utilities belong in `src/common/`.
-- Shared diagnostics belong in `src/diagnostics/`, but callers should enter through framework-specific modules.
+- Place shared diagnostics in `src/diagnostics/`; callers should go through framework-specific modules.
 
 ## Extract Data Flow
 
