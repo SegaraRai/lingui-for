@@ -379,69 +379,116 @@ fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode
 }
 
 fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
-    let mut props = Vec::new();
-    let mut spreads = Vec::new();
+    let mut ordered = Vec::new();
+    let mut pending_props = Vec::new();
     let mut cursor = tag_node.walk();
     for child in tag_node.children(&mut cursor) {
         match child.kind() {
             "attribute" => {
                 if let Some(prop) = render_attribute(source, child)? {
-                    props.push(prop);
+                    pending_props.push(prop);
+                } else if let Some(spread) = render_spread_attribute(source, child) {
+                    if !pending_props.is_empty() {
+                        ordered.push(lower_props_object(std::mem::take(&mut pending_props)));
+                    }
+                    ordered.push(spread);
                 }
             }
-            "spread_attribute" => {
-                let spread = inner_range_from_delimiters(child, 1, 1);
-                spreads.push(lowered_trimmed_original(source, spread));
+            "spread_attribute" | "attribute_interpolation" => {
+                let Some(spread) = render_spread_attribute(source, child) else {
+                    continue;
+                };
+                if !pending_props.is_empty() {
+                    ordered.push(lower_props_object(std::mem::take(&mut pending_props)));
+                }
+                ordered.push(spread);
             }
             _ => {}
         }
     }
 
-    if spreads.is_empty() && props.is_empty() {
+    if !pending_props.is_empty() {
+        ordered.push(lower_props_object(pending_props));
+    }
+
+    if ordered.is_empty() {
         return Ok(LoweredNode {
             code: "null".to_string(),
             segments: Vec::new(),
         });
     }
 
-    let props_object = if props.is_empty() {
-        None
-    } else {
-        let mut builder = AstroIrBuilder::default();
-        builder.push_inserted("{ ");
-        for (index, prop) in props.into_iter().enumerate() {
-            if index > 0 {
-                builder.push_inserted(", ");
-            }
-            builder.push_lowered(prop);
-        }
-        builder.push_inserted(" }");
-        Some(builder.finish())
-    };
-
-    if spreads.is_empty() {
-        return Ok(props_object.unwrap_or(LoweredNode {
-            code: "null".to_string(),
-            segments: Vec::new(),
-        }));
+    if ordered.len() == 1 {
+        return Ok(ordered.remove(0));
     }
 
     let mut builder = AstroIrBuilder::default();
     builder.push_inserted("__astro_merge_props(");
-    let mut wrote_any = false;
-    if let Some(props_object) = props_object {
-        builder.push_lowered(props_object);
-        wrote_any = true;
-    }
-    for spread in spreads {
-        if wrote_any {
+    for (index, item) in ordered.into_iter().enumerate() {
+        if index > 0 {
             builder.push_inserted(", ");
         }
-        builder.push_lowered(spread);
-        wrote_any = true;
+        builder.push_lowered(item);
     }
     builder.push_inserted(")");
     Ok(builder.finish())
+}
+
+fn lower_props_object(props: Vec<LoweredNode>) -> LoweredNode {
+    let mut builder = AstroIrBuilder::default();
+    builder.push_inserted("{ ");
+    for (index, prop) in props.into_iter().enumerate() {
+        if index > 0 {
+            builder.push_inserted(", ");
+        }
+        builder.push_lowered(prop);
+    }
+    builder.push_inserted(" }");
+    builder.finish()
+}
+
+fn render_spread_attribute(source: &str, node: Node<'_>) -> Option<LoweredNode> {
+    let spread = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == "attribute_interpolation")
+        .unwrap_or(node);
+    let spread = spread
+        .children(&mut spread.walk())
+        .find(|child| child.kind() == "attribute_js_expr")
+        .map(Span::from_node)
+        .unwrap_or_else(|| inner_range_from_delimiters(spread, 1, 1));
+    let spread = lowered_trimmed_original(source, spread);
+    spread
+        .code
+        .starts_with("...")
+        .then(|| trim_leading_dots(spread))
+}
+
+fn trim_leading_dots(lowered: LoweredNode) -> LoweredNode {
+    let trimmed_code = lowered.code.trim_start_matches('.').to_string();
+    let leading_trim = lowered.code.len().saturating_sub(trimmed_code.len());
+    let segments = lowered
+        .segments
+        .into_iter()
+        .filter_map(|segment| {
+            let start = segment.generated.start.max(leading_trim);
+            let end = segment.generated.end;
+            if start >= end {
+                return None;
+            }
+            Some(AstroIrSegment {
+                generated: Span::new(start - leading_trim, end - leading_trim),
+                original: Span::new(
+                    segment.original.start + (start - segment.generated.start),
+                    segment.original.end,
+                ),
+            })
+        })
+        .collect();
+    LoweredNode {
+        code: trimmed_code,
+        segments,
+    }
 }
 
 fn render_attribute(
@@ -621,6 +668,24 @@ const label = "Read";
         assert_eq!(
             lowered[0].code,
             r#"__astro_el("a", { "title": `prefix ${label}`, "href": href }, "Docs")"#
+        );
+    }
+
+    #[test]
+    fn preserves_attribute_and_spread_order_in_props_expression() {
+        let source = r#"---
+const a = { first: 1 };
+const b = { second: 2 };
+const c = "tail";
+---
+{<Component foo="head" {...a} bar={b} {...b} baz={c} />}
+"#;
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+        assert_eq!(lowered.len(), 1);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_el(Component, __astro_merge_props({ "foo": "head" }, a, { "bar": b }, b, { "baz": c }))"#
         );
     }
 
