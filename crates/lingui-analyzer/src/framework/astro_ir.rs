@@ -1,0 +1,632 @@
+use tree_sitter::Node;
+
+use crate::common::Span;
+
+use super::helpers::text::{is_component_tag_name, text};
+use super::parse::{ParseError, parse_astro};
+
+#[derive(thiserror::Error, Debug)]
+pub enum AstroIrError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error("expected html_interpolation node")]
+    ExpectedHtmlInterpolation,
+    #[error("missing Astro tag name while lowering interpolation")]
+    MissingTagName,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AstroIrSegment {
+    pub generated: Span,
+    pub original: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LoweredAstroHtmlInterpolation {
+    pub outer_span: Span,
+    pub inner_span: Span,
+    pub original: String,
+    pub code: String,
+    pub segments: Vec<AstroIrSegment>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BundledAstroHtmlInterpolation {
+    pub outer_span: Span,
+    pub inner_span: Span,
+    pub synthetic_span: Span,
+    pub segments: Vec<AstroIrSegment>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct BundledAstroHtmlInterpolationModule {
+    pub code: String,
+    pub expressions: Vec<BundledAstroHtmlInterpolation>,
+}
+
+impl BundledAstroHtmlInterpolation {
+    pub fn remap_generated_span(&self, span: Span) -> Option<Span> {
+        let start = self.remap_generated_offset(span.start, false)?;
+        let end = self.remap_generated_offset(span.end, true)?;
+        Some(Span::new(start, end.max(start)))
+    }
+
+    fn remap_generated_offset(&self, offset: usize, allow_end_boundary: bool) -> Option<usize> {
+        self.segments.iter().find_map(|segment| {
+            if segment.generated.start <= offset && offset < segment.generated.end {
+                return Some(segment.original.start + (offset - segment.generated.start));
+            }
+            if allow_end_boundary && offset == segment.generated.end {
+                return Some(segment.original.end);
+            }
+            None
+        })
+    }
+}
+
+#[derive(Debug, Default)]
+struct AstroIrBuilder {
+    code: String,
+    segments: Vec<AstroIrSegment>,
+}
+
+impl AstroIrBuilder {
+    fn push_inserted(&mut self, text: &str) {
+        self.code.push_str(text);
+    }
+
+    fn push_original(&mut self, source: &str, span: Span) {
+        if span.start == span.end {
+            return;
+        }
+        let start = self.code.len();
+        self.code.push_str(&source[span.start..span.end]);
+        let end = self.code.len();
+        self.segments.push(AstroIrSegment {
+            generated: Span::new(start, end),
+            original: span,
+        });
+    }
+
+    fn push_quoted_literal(&mut self, value: &str) {
+        self.push_inserted(&format!("{value:?}"));
+    }
+
+    fn push_lowered(&mut self, lowered: LoweredNode) {
+        let base = self.code.len();
+        self.code.push_str(&lowered.code);
+        for segment in lowered.segments {
+            self.segments.push(AstroIrSegment {
+                generated: Span::new(base + segment.generated.start, base + segment.generated.end),
+                original: segment.original,
+            });
+        }
+    }
+
+    fn finish(self) -> LoweredNode {
+        LoweredNode {
+            code: self.code,
+            segments: self.segments,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct LoweredNode {
+    code: String,
+    segments: Vec<AstroIrSegment>,
+}
+
+pub fn lower_astro_html_interpolations(
+    source: &str,
+) -> Result<Vec<LoweredAstroHtmlInterpolation>, AstroIrError> {
+    let tree = parse_astro(source)?;
+    let root = tree.root_node();
+    let mut lowered = Vec::new();
+    collect_html_interpolations(source, root, &mut lowered)?;
+    Ok(lowered)
+}
+
+pub fn bundle_html_interpolations(
+    lowered: &[LoweredAstroHtmlInterpolation],
+) -> BundledAstroHtmlInterpolationModule {
+    let mut code = String::new();
+    let mut expressions = Vec::with_capacity(lowered.len());
+
+    for (index, interpolation) in lowered.iter().enumerate() {
+        let prefix = format!("const __astro_expr_{index}__ = (");
+        code.push_str(&prefix);
+        let synthetic_start = code.len();
+        code.push_str(&interpolation.code);
+        let synthetic_end = code.len();
+        code.push_str(");\n");
+
+        expressions.push(BundledAstroHtmlInterpolation {
+            outer_span: interpolation.outer_span,
+            inner_span: interpolation.inner_span,
+            synthetic_span: Span::new(synthetic_start, synthetic_end),
+            segments: interpolation
+                .segments
+                .iter()
+                .map(|segment| AstroIrSegment {
+                    generated: Span::new(
+                        synthetic_start + segment.generated.start,
+                        synthetic_start + segment.generated.end,
+                    ),
+                    original: segment.original,
+                })
+                .collect(),
+        });
+    }
+
+    BundledAstroHtmlInterpolationModule { code, expressions }
+}
+
+pub fn lower_html_interpolation_node(
+    source: &str,
+    node: Node<'_>,
+) -> Result<LoweredAstroHtmlInterpolation, AstroIrError> {
+    if node.kind() != "html_interpolation" {
+        return Err(AstroIrError::ExpectedHtmlInterpolation);
+    }
+
+    let outer_span = Span::from_node(node);
+    let inner_span = inner_range_from_delimiters(node, 1, 1);
+    let lowered = lower_interpolation_expression(source, node)?;
+    Ok(LoweredAstroHtmlInterpolation {
+        outer_span,
+        inner_span,
+        original: source[inner_span.start..inner_span.end].to_string(),
+        code: lowered.code,
+        segments: lowered.segments,
+    })
+}
+
+fn collect_html_interpolations(
+    source: &str,
+    node: Node<'_>,
+    lowered: &mut Vec<LoweredAstroHtmlInterpolation>,
+) -> Result<(), AstroIrError> {
+    if node.kind() == "html_interpolation" {
+        lowered.push(lower_html_interpolation_node(source, node)?);
+        return Ok(());
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        collect_html_interpolations(source, child, lowered)?;
+    }
+
+    Ok(())
+}
+
+fn lower_interpolation_expression(
+    source: &str,
+    interpolation: Node<'_>,
+) -> Result<LoweredNode, AstroIrError> {
+    let inner_span = inner_range_from_delimiters(interpolation, 1, 1);
+    let mut builder = AstroIrBuilder::default();
+    let mut cursor = inner_span.start;
+    let mut child_cursor = interpolation.walk();
+
+    for child in interpolation.named_children(&mut child_cursor) {
+        if child.end_byte() <= inner_span.start || child.start_byte() >= inner_span.end {
+            continue;
+        }
+        if cursor < child.start_byte() {
+            builder.push_original(source, Span::new(cursor, child.start_byte()));
+        }
+        builder.push_lowered(lower_expressionish_child(source, child)?);
+        cursor = child.end_byte();
+    }
+
+    if cursor < inner_span.end {
+        builder.push_original(source, Span::new(cursor, inner_span.end));
+    }
+
+    let lowered = builder.finish();
+    let trimmed_code = lowered.code.trim().to_string();
+    let trimmed_segments = trim_segments(&lowered.code, lowered.segments);
+    Ok(LoweredNode {
+        code: trimmed_code,
+        segments: trimmed_segments,
+    })
+}
+
+fn trim_segments(raw_code: &str, segments: Vec<AstroIrSegment>) -> Vec<AstroIrSegment> {
+    let leading_trim = raw_code.len().saturating_sub(raw_code.trim_start().len());
+    let trailing_trim = raw_code.len().saturating_sub(raw_code.trim_end().len());
+    let kept_end = raw_code.len().saturating_sub(trailing_trim);
+    segments
+        .into_iter()
+        .filter_map(|segment| {
+            let clamped_start = segment.generated.start.max(leading_trim);
+            let clamped_end = segment.generated.end.min(kept_end);
+            if clamped_start >= clamped_end {
+                return None;
+            }
+            let start = clamped_start - leading_trim;
+            let trimmed_end = clamped_end - leading_trim;
+            if start >= trimmed_end {
+                return None;
+            }
+            let original_start = segment.original.start + (clamped_start - segment.generated.start);
+            let original_end = segment.original.end - (segment.generated.end - clamped_end);
+            Some(AstroIrSegment {
+                generated: Span::new(start, trimmed_end),
+                original: Span::new(original_start, original_end),
+            })
+        })
+        .collect()
+}
+
+fn lower_expressionish_child(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    match node.kind() {
+        "element" => lower_element_like(source, node),
+        "self_closing_tag" => lower_self_closing_tag(source, node),
+        "html_interpolation" => lower_interpolation_expression(source, node),
+        _ => Ok(LoweredNode {
+            code: text(source, node).to_string(),
+            segments: vec![AstroIrSegment {
+                generated: Span::new(0, node.end_byte() - node.start_byte()),
+                original: Span::from_node(node),
+            }],
+        }),
+    }
+}
+
+fn lower_element_like(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    match node.kind() {
+        "element" => lower_element(source, node),
+        "self_closing_tag" => lower_self_closing_tag(source, node),
+        _ => Err(AstroIrError::MissingTagName),
+    }
+}
+
+fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    let mut cursor = node.walk();
+    let Some(start_or_self_closing_tag) = node
+        .children(&mut cursor)
+        .find(|child| child.kind() == "start_tag" || child.kind() == "self_closing_tag")
+    else {
+        return Err(AstroIrError::MissingTagName);
+    };
+    if start_or_self_closing_tag.kind() == "self_closing_tag" {
+        return lower_self_closing_tag(source, start_or_self_closing_tag);
+    }
+
+    let mut builder = AstroIrBuilder::default();
+    builder.push_inserted("__astro_el(");
+    builder.push_lowered(render_tag_expression(source, start_or_self_closing_tag)?);
+    builder.push_inserted(", ");
+    builder.push_lowered(render_props_expression(source, start_or_self_closing_tag)?);
+
+    let mut child_cursor = node.walk();
+    for child in node.children(&mut child_cursor) {
+        match child.kind() {
+            "start_tag" | "end_tag" => {}
+            _ => {
+                if let Some(rendered_child) = render_markup_child(source, child)? {
+                    builder.push_inserted(", ");
+                    builder.push_lowered(rendered_child);
+                }
+            }
+        }
+    }
+
+    builder.push_inserted(")");
+    Ok(builder.finish())
+}
+
+fn lower_self_closing_tag(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    let mut builder = AstroIrBuilder::default();
+    builder.push_inserted("__astro_el(");
+    builder.push_lowered(render_tag_expression(source, node)?);
+    builder.push_inserted(", ");
+    builder.push_lowered(render_props_expression(source, node)?);
+    builder.push_inserted(")");
+    Ok(builder.finish())
+}
+
+fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    let mut cursor = tag_node.walk();
+    let tag_name_node = tag_node
+        .children(&mut cursor)
+        .find(|child| child.kind() == "tag_name")
+        .ok_or(AstroIrError::MissingTagName)?;
+    let tag_name = text(source, tag_name_node);
+
+    Ok(if is_component_tag_name(tag_name) {
+        LoweredNode {
+            code: tag_name.to_string(),
+            segments: vec![AstroIrSegment {
+                generated: Span::new(0, tag_name.len()),
+                original: Span::from_node(tag_name_node),
+            }],
+        }
+    } else {
+        LoweredNode {
+            code: format!("{tag_name:?}"),
+            segments: Vec::new(),
+        }
+    })
+}
+
+fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    let mut props = Vec::new();
+    let mut spreads = Vec::new();
+    let mut cursor = tag_node.walk();
+    for child in tag_node.children(&mut cursor) {
+        match child.kind() {
+            "attribute" => {
+                if let Some(prop) = render_attribute(source, child)? {
+                    props.push(prop);
+                }
+            }
+            "spread_attribute" => {
+                let spread = inner_range_from_delimiters(child, 1, 1);
+                spreads.push(LoweredNode {
+                    code: source[spread.start..spread.end].trim().to_string(),
+                    segments: vec![AstroIrSegment {
+                        generated: Span::new(0, spread.end - spread.start),
+                        original: spread,
+                    }],
+                });
+            }
+            _ => {}
+        }
+    }
+
+    if spreads.is_empty() && props.is_empty() {
+        return Ok(LoweredNode {
+            code: "null".to_string(),
+            segments: Vec::new(),
+        });
+    }
+
+    let props_object = if props.is_empty() {
+        None
+    } else {
+        let mut builder = AstroIrBuilder::default();
+        builder.push_inserted("{ ");
+        for (index, prop) in props.into_iter().enumerate() {
+            if index > 0 {
+                builder.push_inserted(", ");
+            }
+            builder.push_lowered(prop);
+        }
+        builder.push_inserted(" }");
+        Some(builder.finish())
+    };
+
+    if spreads.is_empty() {
+        return Ok(props_object.unwrap_or(LoweredNode {
+            code: "null".to_string(),
+            segments: Vec::new(),
+        }));
+    }
+
+    let mut builder = AstroIrBuilder::default();
+    builder.push_inserted("__astro_merge_props(");
+    let mut wrote_any = false;
+    if let Some(props_object) = props_object {
+        builder.push_lowered(props_object);
+        wrote_any = true;
+    }
+    for spread in spreads {
+        if wrote_any {
+            builder.push_inserted(", ");
+        }
+        builder.push_lowered(spread);
+        wrote_any = true;
+    }
+    builder.push_inserted(")");
+    Ok(builder.finish())
+}
+
+fn render_attribute(
+    source: &str,
+    attribute: Node<'_>,
+) -> Result<Option<LoweredNode>, AstroIrError> {
+    let mut cursor = attribute.walk();
+    let Some(name_node) = attribute
+        .children(&mut cursor)
+        .find(|child| child.kind() == "attribute_name")
+    else {
+        return Ok(None);
+    };
+
+    let key = text(source, name_node);
+    let mut value = None;
+    let mut child_cursor = attribute.walk();
+    for child in attribute.children(&mut child_cursor) {
+        value = match child.kind() {
+            "quoted_attribute_value" => Some(render_quoted_attribute_value(source, child)?),
+            "attribute_interpolation" => Some(render_attribute_interpolation(source, child)),
+            "attribute_backtick_string" => {
+                let inner = inner_range_from_delimiters(child, 1, 1);
+                Some(LoweredNode {
+                    code: source[inner.start..inner.end].to_string(),
+                    segments: vec![AstroIrSegment {
+                        generated: Span::new(0, inner.end - inner.start),
+                        original: inner,
+                    }],
+                })
+            }
+            _ => value,
+        };
+    }
+
+    let mut builder = AstroIrBuilder::default();
+    builder.push_inserted(&format!("{key:?}: "));
+    builder.push_lowered(value.unwrap_or(LoweredNode {
+        code: "true".to_string(),
+        segments: Vec::new(),
+    }));
+    Ok(Some(builder.finish()))
+}
+
+fn render_quoted_attribute_value(
+    source: &str,
+    node: Node<'_>,
+) -> Result<LoweredNode, AstroIrError> {
+    let inner = inner_range_from_delimiters(node, 1, 1);
+    let mut parts = Vec::new();
+    let mut cursor = inner.start;
+    let mut child_cursor = node.walk();
+
+    for child in node.named_children(&mut child_cursor) {
+        if child.end_byte() <= inner.start || child.start_byte() >= inner.end {
+            continue;
+        }
+        if cursor < child.start_byte() {
+            let mut builder = AstroIrBuilder::default();
+            builder.push_quoted_literal(&source[cursor..child.start_byte()]);
+            parts.push(builder.finish());
+        }
+        match child.kind() {
+            "attribute_interpolation" => parts.push(render_attribute_interpolation(source, child)),
+            _ => {
+                let mut builder = AstroIrBuilder::default();
+                builder.push_quoted_literal(text(source, child));
+                parts.push(builder.finish());
+            }
+        }
+        cursor = child.end_byte();
+    }
+
+    if cursor < inner.end {
+        let mut builder = AstroIrBuilder::default();
+        builder.push_quoted_literal(&source[cursor..inner.end]);
+        parts.push(builder.finish());
+    }
+
+    if parts.is_empty() {
+        return Ok(LoweredNode {
+            code: "\"\"".to_string(),
+            segments: Vec::new(),
+        });
+    }
+
+    if parts.len() == 1 {
+        return Ok(parts.remove(0));
+    }
+
+    let mut builder = AstroIrBuilder::default();
+    for (index, part) in parts.into_iter().enumerate() {
+        if index > 0 {
+            builder.push_inserted(" + ");
+        }
+        builder.push_lowered(part);
+    }
+    Ok(builder.finish())
+}
+
+fn render_attribute_interpolation(source: &str, node: Node<'_>) -> LoweredNode {
+    let inner = node
+        .children(&mut node.walk())
+        .find(|child| child.kind() == "attribute_js_expr")
+        .map(Span::from_node)
+        .unwrap_or_else(|| inner_range_from_delimiters(node, 1, 1));
+    LoweredNode {
+        code: source[inner.start..inner.end].trim().to_string(),
+        segments: vec![AstroIrSegment {
+            generated: Span::new(0, inner.end - inner.start),
+            original: inner,
+        }],
+    }
+}
+
+fn render_markup_child(source: &str, node: Node<'_>) -> Result<Option<LoweredNode>, AstroIrError> {
+    match node.kind() {
+        "element" | "self_closing_tag" => lower_element_like(source, node).map(Some),
+        "html_interpolation" => Ok(Some(lower_interpolation_expression(source, node)?)),
+        "permissible_text" => {
+            let value = text(source, node);
+            if value.is_empty() {
+                Ok(None)
+            } else {
+                let mut builder = AstroIrBuilder::default();
+                builder.push_quoted_literal(value);
+                Ok(Some(builder.finish()))
+            }
+        }
+        "comment" => Ok(None),
+        _ => {
+            let value = text(source, node);
+            if value.trim().is_empty() {
+                Ok(None)
+            } else {
+                let mut builder = AstroIrBuilder::default();
+                builder.push_quoted_literal(value);
+                Ok(Some(builder.finish()))
+            }
+        }
+    }
+}
+
+fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: usize) -> Span {
+    let start = node.start_byte().saturating_add(prefix_len);
+    let end = node.end_byte().saturating_sub(suffix_len).max(start);
+    Span { start, end }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{bundle_html_interpolations, lower_astro_html_interpolations};
+    use crate::common::Span;
+
+    #[test]
+    fn lowers_nested_markup_inside_html_interpolation_to_astro_el_calls() {
+        let source = r#"---
+const bar = 1;
+const baz = 2;
+---
+{foo ? <A x={bar}><B />{baz}</A> : qux}
+"#;
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+        assert_eq!(lowered.len(), 1);
+        assert_eq!(
+            lowered[0].code,
+            r#"foo ? __astro_el(A, { "x": bar }, __astro_el(B, null), baz) : qux"#
+        );
+    }
+
+    #[test]
+    fn lowers_quoted_attribute_interpolations_inside_markup() {
+        let source = r#"---
+const href = "/docs";
+const label = "Read";
+---
+{<a title={`prefix ${label}`} href={href}>Docs</a>}
+"#;
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+        assert_eq!(lowered.len(), 1);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_el("a", { "title": `prefix ${label}`, "href": href }, "Docs")"#
+        );
+    }
+
+    #[test]
+    fn remaps_generated_offsets_back_to_original_spans() {
+        let source = r#"---
+const bar = 1;
+const baz = 2;
+---
+{foo ? <A x={bar}><B />{baz}</A> : qux}
+"#;
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+        let bundled = bundle_html_interpolations(&lowered);
+        let expression = &bundled.expressions[0];
+        let generated = bundled.code.find("bar").expect("bar exists");
+        let original = source.rfind("bar").expect("interpolation bar exists");
+        assert_eq!(
+            expression.remap_generated_span(Span::new(generated, generated + 3)),
+            Some(Span::new(original, original + 3))
+        );
+    }
+}

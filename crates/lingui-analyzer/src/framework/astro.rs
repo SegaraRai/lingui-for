@@ -5,6 +5,9 @@ use crate::common::{
 };
 use crate::conventions::FrameworkConventions;
 
+use super::astro_ir::{
+    BundledAstroHtmlInterpolation, bundle_html_interpolations, lower_html_interpolation_node,
+};
 use super::helpers::anchors::{collect_node_start_anchors, extend_shifted_node_start_anchors};
 use super::helpers::components::first_non_whitespace_child_anchor;
 use super::helpers::expressions::is_explicit_whitespace_string_expression;
@@ -28,6 +31,8 @@ pub enum AstroFrameworkError {
     Parse(#[from] ParseError),
     #[error(transparent)]
     Js(#[from] JsAnalysisError),
+    #[error(transparent)]
+    Ir(#[from] super::astro_ir::AstroIrError),
     #[error("{0}")]
     InvalidMacroUsage(String),
 }
@@ -61,6 +66,7 @@ pub struct AstroAdapter;
 #[derive(Debug, Default)]
 struct AstroCollectContext {
     expression_parse_cache: ExpressionParseCache,
+    lowered_html_interpolations: Vec<super::astro_ir::LoweredAstroHtmlInterpolation>,
 }
 
 impl FrameworkAdapter for AstroAdapter {
@@ -199,32 +205,46 @@ fn collect_template_expressions(
         context: &mut AstroCollectContext,
         expressions: &mut Vec<AstroTemplateExpression>,
         components: &mut Vec<AstroTemplateComponent>,
+        inside_lowered_html_interpolation: bool,
     ) -> Result<(), AstroFrameworkError> {
         match node.kind() {
             "html_interpolation" => {
-                let outer_span = Span::from_node(node);
-                let inner_span = inner_range_from_delimiters(node, 1, 1);
-                let is_pure_expression = is_pure_html_interpolation_expression(node);
-                let excluded_nested_spans = if is_pure_expression {
-                    Vec::new()
-                } else {
-                    collect_nested_expression_container_spans(node)
-                };
-                push_template_expression(
-                    source,
-                    imports,
-                    context,
-                    expressions,
-                    TemplateExpressionRequest {
-                        outer_span,
-                        inner_span,
-                        language: JsLikeLanguage::Tsx,
-                        excluded_nested_spans: &excluded_nested_spans,
-                    },
-                )?;
-                if is_pure_expression {
+                if inside_lowered_html_interpolation {
+                    let mut cursor = node.walk();
+                    for child in node.children(&mut cursor) {
+                        collect_template_expressions_impl(
+                            source,
+                            child,
+                            imports,
+                            options,
+                            context,
+                            expressions,
+                            components,
+                            true,
+                        )?;
+                    }
                     return Ok(());
                 }
+                context
+                    .lowered_html_interpolations
+                    .push(lower_html_interpolation_node(source, node)?);
+                if is_pure_html_interpolation_expression(node) {
+                    return Ok(());
+                }
+                let mut cursor = node.walk();
+                for child in node.children(&mut cursor) {
+                    collect_template_expressions_impl(
+                        source,
+                        child,
+                        imports,
+                        options,
+                        context,
+                        expressions,
+                        components,
+                        true,
+                    )?;
+                }
+                return Ok(());
             }
             "element" => {
                 if let Some(component) =
@@ -235,6 +255,9 @@ fn collect_template_expressions(
                 }
             }
             "attribute_interpolation" => {
+                if inside_lowered_html_interpolation {
+                    return Ok(());
+                }
                 let inner = node
                     .children(&mut node.walk())
                     .find(|child| child.kind() == "attribute_js_expr")
@@ -255,6 +278,9 @@ fn collect_template_expressions(
                 return Ok(());
             }
             "attribute_backtick_string" => {
+                if inside_lowered_html_interpolation {
+                    return Ok(());
+                }
                 push_template_expression(
                     source,
                     imports,
@@ -283,6 +309,7 @@ fn collect_template_expressions(
                 context,
                 expressions,
                 components,
+                inside_lowered_html_interpolation,
             )?;
         }
 
@@ -299,7 +326,14 @@ fn collect_template_expressions(
         &mut context,
         &mut expressions,
         &mut components,
+        false,
     )?;
+    push_lowered_html_interpolations(
+        imports,
+        &mut expressions,
+        &context.lowered_html_interpolations,
+    )?;
+    expressions.sort_by_key(|expression| (expression.outer_span.start, expression.outer_span.end));
     Ok((expressions, components))
 }
 
@@ -351,36 +385,77 @@ fn push_template_expression(
     Ok(())
 }
 
-fn collect_nested_expression_container_spans(node: Node<'_>) -> Vec<Span> {
-    fn collect(node: Node<'_>, spans: &mut Vec<Span>) {
-        let mut cursor = node.walk();
-        for child in node.children(&mut cursor) {
-            match child.kind() {
-                "html_interpolation" => {
-                    spans.push(inner_range_from_delimiters(child, 1, 1));
-                    collect(child, spans);
-                }
-                "attribute_interpolation" => {
-                    let inner = child
-                        .children(&mut child.walk())
-                        .find(|grandchild| grandchild.kind() == "attribute_js_expr")
-                        .map(Span::from_node)
-                        .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
-                    spans.push(inner);
-                    collect(child, spans);
-                }
-                "attribute_backtick_string" => {
-                    spans.push(inner_range_from_delimiters(child, 1, 1));
-                    collect(child, spans);
-                }
-                _ => collect(child, spans),
+fn push_lowered_html_interpolations(
+    imports: &[MacroImport],
+    expressions: &mut Vec<AstroTemplateExpression>,
+    lowered: &[super::astro_ir::LoweredAstroHtmlInterpolation],
+) -> Result<(), AstroFrameworkError> {
+    if lowered.is_empty() {
+        return Ok(());
+    }
+
+    let bundled = bundle_html_interpolations(lowered);
+    let tree = parse_typescript(&bundled.code)?;
+    let roots = collect_bundled_expression_roots(tree.root_node());
+    if roots.len() != bundled.expressions.len() {
+        return Err(ParseError::ParseFailed.into());
+    }
+
+    for (root, interpolation) in roots.into_iter().zip(bundled.expressions.iter()) {
+        let candidates = collect_macro_candidates(
+            &bundled.code,
+            root,
+            imports,
+            0,
+            JsMacroSyntax::Standard,
+            &[],
+        )
+        .into_iter()
+        .filter_map(|candidate| remap_bundled_candidate(candidate, interpolation))
+        .collect();
+
+        expressions.push(AstroTemplateExpression {
+            outer_span: interpolation.outer_span,
+            inner_span: interpolation.inner_span,
+            candidates,
+        });
+    }
+
+    Ok(())
+}
+
+fn collect_bundled_expression_roots(root: Node<'_>) -> Vec<Node<'_>> {
+    let mut expressions = Vec::new();
+    let mut cursor = root.walk();
+    for child in root.children(&mut cursor) {
+        if !matches!(child.kind(), "lexical_declaration" | "variable_declaration") {
+            continue;
+        }
+        let mut decl_cursor = child.walk();
+        for declarator in child.children(&mut decl_cursor) {
+            if declarator.kind() != "variable_declarator" {
+                continue;
+            }
+            if let Some(value) = declarator.child_by_field_name("value") {
+                expressions.push(value);
             }
         }
     }
+    expressions
+}
 
-    let mut spans = Vec::new();
-    collect(node, &mut spans);
-    spans
+fn remap_bundled_candidate(
+    mut candidate: MacroCandidate,
+    interpolation: &BundledAstroHtmlInterpolation,
+) -> Option<MacroCandidate> {
+    candidate.outer_span = interpolation.remap_generated_span(candidate.outer_span)?;
+    candidate.normalized_span = interpolation
+        .remap_generated_span(candidate.normalized_span)
+        .unwrap_or(candidate.outer_span);
+    candidate.source_map_anchor = candidate
+        .source_map_anchor
+        .and_then(|anchor| interpolation.remap_generated_span(anchor));
+    Some(candidate)
 }
 
 fn component_candidate_from_element(
@@ -489,19 +564,21 @@ fn collect_nested_component_normalization_edits(
         match child.kind() {
             "frontmatter_js_block" => {}
             "html_interpolation" => {
-                let inner = inner_range_from_delimiters(child, 1, 1);
-                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
-                    let candidates = collect_macro_candidates(
-                        &source[inner.start..inner.end],
-                        tree.root_node(),
-                        imports,
-                        inner.start,
-                        JsMacroSyntax::Standard,
-                        &[],
-                    );
-                    for candidate in candidates {
-                        edits.extend(candidate.normalization_edits);
-                    }
+                let lowered = lower_html_interpolation_node(source, child)?;
+                let tree = parse_typescript(&lowered.code)?;
+                let candidates = collect_macro_candidates(
+                    &lowered.code,
+                    tree.root_node(),
+                    imports,
+                    0,
+                    JsMacroSyntax::Standard,
+                    &[],
+                );
+                for candidate in candidates {
+                    edits.extend(remap_lowered_normalization_edits(
+                        candidate.normalization_edits,
+                        &lowered,
+                    ));
                 }
             }
             "attribute_interpolation" => {
@@ -510,34 +587,40 @@ fn collect_nested_component_normalization_edits(
                     .find(|grandchild| grandchild.kind() == "attribute_js_expr")
                     .map(Span::from_node)
                     .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
-                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
-                    let candidates = collect_macro_candidates(
-                        &source[inner.start..inner.end],
-                        tree.root_node(),
-                        imports,
-                        inner.start,
-                        JsMacroSyntax::Standard,
-                        &[],
-                    );
-                    for candidate in candidates {
-                        edits.extend(candidate.normalization_edits);
-                    }
+                let tree = context.expression_parse_cache.parse(
+                    source,
+                    inner,
+                    JsLikeLanguage::TypeScript,
+                )?;
+                let candidates = collect_macro_candidates(
+                    &source[inner.start..inner.end],
+                    tree.root_node(),
+                    imports,
+                    inner.start,
+                    JsMacroSyntax::Standard,
+                    &[],
+                );
+                for candidate in candidates {
+                    edits.extend(candidate.normalization_edits);
                 }
             }
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                if let Some(tree) = parse_nested_component_expression(&mut context, source, inner) {
-                    let candidates = collect_macro_candidates(
-                        &source[inner.start..inner.end],
-                        tree.root_node(),
-                        imports,
-                        inner.start,
-                        JsMacroSyntax::Standard,
-                        &[],
-                    );
-                    for candidate in candidates {
-                        edits.extend(candidate.normalization_edits);
-                    }
+                let tree = context.expression_parse_cache.parse(
+                    source,
+                    inner,
+                    JsLikeLanguage::TypeScript,
+                )?;
+                let candidates = collect_macro_candidates(
+                    &source[inner.start..inner.end],
+                    tree.root_node(),
+                    imports,
+                    inner.start,
+                    JsMacroSyntax::Standard,
+                    &[],
+                );
+                for candidate in candidates {
+                    edits.extend(candidate.normalization_edits);
                 }
             }
             "element" => {
@@ -562,21 +645,47 @@ fn collect_nested_component_normalization_edits(
     Ok(edits)
 }
 
-fn parse_nested_component_expression(
-    context: &mut AstroCollectContext,
-    source: &str,
-    inner: Span,
-) -> Option<tree_sitter::Tree> {
-    context
-        .expression_parse_cache
-        .parse(source, inner, JsLikeLanguage::TypeScript)
-        .ok()
-        .or_else(|| {
-            context
-                .expression_parse_cache
-                .parse(source, inner, JsLikeLanguage::Tsx)
-                .ok()
+fn remap_lowered_normalization_edits(
+    edits: Vec<NormalizationEdit>,
+    lowered: &super::astro_ir::LoweredAstroHtmlInterpolation,
+) -> Vec<NormalizationEdit> {
+    edits
+        .into_iter()
+        .filter_map(|edit| match edit {
+            NormalizationEdit::Delete { span } => {
+                remap_lowered_span(lowered, span).map(|span| NormalizationEdit::Delete { span })
+            }
+            NormalizationEdit::Insert { at, text } => {
+                remap_lowered_offset(lowered, at).map(|at| NormalizationEdit::Insert { at, text })
+            }
         })
+        .collect()
+}
+
+fn remap_lowered_span(
+    lowered: &super::astro_ir::LoweredAstroHtmlInterpolation,
+    span: Span,
+) -> Option<Span> {
+    let bundled = super::astro_ir::BundledAstroHtmlInterpolation {
+        outer_span: lowered.outer_span,
+        inner_span: lowered.inner_span,
+        synthetic_span: Span::new(0, lowered.code.len()),
+        segments: lowered.segments.clone(),
+    };
+    bundled.remap_generated_span(span)
+}
+
+fn remap_lowered_offset(
+    lowered: &super::astro_ir::LoweredAstroHtmlInterpolation,
+    offset: usize,
+) -> Option<usize> {
+    lowered.segments.iter().find_map(|segment| {
+        if segment.generated.start <= offset && offset <= segment.generated.end {
+            Some(segment.original.start + (offset - segment.generated.start))
+        } else {
+            None
+        }
+    })
 }
 
 fn component_whitespace_edits(
@@ -748,4 +857,92 @@ fn astro_tag_name<'a>(source: &'a str, tag: Node<'_>) -> Option<(&'a str, Span)>
 
 fn is_unsupported_astro_directive(attribute_name: &str) -> bool {
     attribute_name == "is:raw"
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use super::analyze_astro;
+    use crate::conventions::{
+        FrameworkConventions, FrameworkKind, MacroConventions, MacroPackage, MacroPackageKind,
+        RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions,
+    };
+    use crate::framework::{AnalyzeOptions, WhitespaceMode};
+
+    fn test_conventions() -> FrameworkConventions {
+        FrameworkConventions {
+            framework: FrameworkKind::Astro,
+            macro_: MacroConventions {
+                packages: BTreeMap::from([
+                    (
+                        MacroPackageKind::Core,
+                        MacroPackage {
+                            packages: vec!["@lingui/core/macro".to_string()],
+                        },
+                    ),
+                    (
+                        MacroPackageKind::Astro,
+                        MacroPackage {
+                            packages: vec!["lingui-for-astro/macro".to_string()],
+                        },
+                    ),
+                ]),
+            },
+            runtime: RuntimeConventions {
+                package: "lingui-for-astro/runtime".to_string(),
+                exports: RuntimeExportConventions {
+                    trans: "RuntimeTrans".to_string(),
+                    i18n_accessor: None,
+                },
+            },
+            bindings: RuntimeBindingSeeds {
+                i18n_accessor_factory: None,
+                context: None,
+                get_i18n: None,
+                translate: None,
+                i18n_instance: None,
+                runtime_trans_component: "RuntimeTrans".to_string(),
+            },
+            synthetic: None,
+            wrappers: None,
+        }
+    }
+
+    #[test]
+    fn analyzes_macros_inside_html_interpolation_via_astro_ir() {
+        let source = r#"---
+import { t as translate } from "@lingui/core/macro";
+const name = "Ada";
+const ready = true;
+---
+{ready ? <Card title={translate`Hello ${name}`}>{translate`Inner ${name}`}</Card> : null}
+"#;
+
+        let analysis = analyze_astro(
+            source,
+            &AnalyzeOptions {
+                source_name: "/virtual/Test.astro".to_string(),
+                whitespace: WhitespaceMode::Astro,
+                conventions: test_conventions(),
+            },
+        )
+        .expect("analysis succeeds");
+
+        let candidates = analysis
+            .template_expressions
+            .into_iter()
+            .flat_map(|expression| expression.candidates)
+            .collect::<Vec<_>>();
+
+        assert_eq!(candidates.len(), 2);
+        assert!(candidates.iter().any(|candidate| {
+            &source[candidate.outer_span.start..candidate.outer_span.end]
+                == "translate`Hello ${name}`"
+        }));
+        assert!(candidates.iter().any(|candidate| {
+            &source[candidate.outer_span.start..candidate.outer_span.end]
+                == "translate`Inner ${name}`"
+        }));
+    }
 }
