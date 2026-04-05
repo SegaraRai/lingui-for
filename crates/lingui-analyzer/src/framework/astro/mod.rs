@@ -1,3 +1,5 @@
+pub mod ir;
+
 use std::collections::HashMap;
 
 use tree_sitter::Node;
@@ -8,7 +10,7 @@ use crate::common::{
 };
 use crate::conventions::FrameworkConventions;
 
-use super::astro_ir::{
+use self::ir::{
     AstroIrError, BundledAstroHtmlInterpolation, bundle_html_interpolations,
     lower_astro_html_interpolations,
 };

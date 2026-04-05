@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use tree_sitter::{Node, Tree};
 
 use crate::common::{ScriptLang, Span};
+use crate::framework::{
+    MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
+    NormalizationEdit,
+};
 
 use super::helpers::text::{find_pattern_near_start, text};
 use super::parse::ParseError;
 use super::scope::LexicalScope;
-use super::{
-    MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
-    NormalizationEdit,
-};
 
 #[derive(thiserror::Error, Debug)]
 pub enum JsAnalysisError {
