@@ -1,10 +1,12 @@
 pub mod astro;
-pub mod astro_ir;
-pub(crate) mod helpers;
-pub mod js;
-pub mod parse;
-pub mod scope;
+mod shared;
 pub mod svelte;
+
+pub use astro::ir as astro_ir;
+pub(crate) use shared::helpers;
+pub use shared::js;
+pub use shared::parse;
+pub use shared::scope;
 
 use std::collections::{BTreeMap, BTreeSet};
 
