@@ -1,42 +1,14 @@
-use std::borrow::Cow;
-
 use tree_sitter::Node;
 
-use crate::common::{Span, format_invalid_macro_usage, format_unsupported_trans_child_syntax};
+use crate::common::Span;
+use crate::diagnostics::svelte::{
+    bare_direct_macro_usage, unsupported_block_syntax_in_trans,
+    unsupported_special_element_in_trans,
+};
 
 use super::super::shared::helpers::text::text;
 use super::super::{AnalyzeOptions, MacroCandidate, MacroCandidateStrategy, MacroFlavor};
 use super::SvelteFrameworkError;
-
-fn bare_direct_macro_error(imported_name: &str) -> SvelteFrameworkError {
-    match imported_name {
-        "t" => SvelteFrameworkError::BareDirectTNotAllowed,
-        "plural" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
-            imported_name: Cow::Borrowed("plural"),
-        },
-        "select" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
-            imported_name: Cow::Borrowed("select"),
-        },
-        "selectOrdinal" => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
-            imported_name: Cow::Borrowed("selectOrdinal"),
-        },
-        other => SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager {
-            imported_name: Cow::Owned(other.to_string()),
-        },
-    }
-}
-
-pub(crate) fn bare_direct_macro_message(imported_name: &str) -> String {
-    match bare_direct_macro_error(imported_name) {
-        SvelteFrameworkError::BareDirectTNotAllowed => {
-            "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations.".to_string()
-        }
-        SvelteFrameworkError::BareDirectMacroRequiresReactiveOrEager { imported_name } => format!(
-            "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
-        ),
-        _ => unreachable!("unexpected bare direct macro error variant"),
-    }
-}
 
 pub fn validate_svelte_extract_candidates(
     source_name: &str,
@@ -54,11 +26,11 @@ pub fn validate_svelte_extract_candidates(
 
     if let Some(candidate) = offending_candidate {
         return Err(SvelteFrameworkError::InvalidMacroUsage(
-            format_invalid_macro_usage(
+            bare_direct_macro_usage(
                 source,
                 source_name,
                 candidate.outer_span,
-                bare_direct_macro_message(candidate.imported_name.as_str()),
+                candidate.imported_name.as_str(),
             ),
         ));
     }
@@ -80,11 +52,10 @@ pub(super) fn validate_runtime_lowerable_svelte_component(
             "if_statement" | "each_statement" | "await_statement" | "key_statement"
             | "snippet_statement" | "const_tag" => {
                 return Err(SvelteFrameworkError::InvalidMacroUsage(
-                    format_unsupported_trans_child_syntax(
+                    unsupported_block_syntax_in_trans(
                         source,
                         &options.source_name,
                         Span::from_node(node),
-                        "Svelte block syntax",
                     ),
                 ));
             }
@@ -133,11 +104,11 @@ fn validate_svelte_element_like(
         let tag_name = text(source, tag_name_node);
         if tag_name == "slot" || tag_name.starts_with("svelte:") {
             return Err(SvelteFrameworkError::InvalidMacroUsage(
-                format_unsupported_trans_child_syntax(
+                unsupported_special_element_in_trans(
                     source,
                     &options.source_name,
                     Span::from_node(tag_name_node),
-                    format!("Svelte special element `<{tag_name}>`"),
+                    tag_name,
                 ),
             ));
         }

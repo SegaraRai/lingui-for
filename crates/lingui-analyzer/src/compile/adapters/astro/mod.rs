@@ -108,8 +108,6 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         })
     }
 
-    fn repair_compile_targets(_source: &str, _targets: &mut [CompileTarget]) {}
-
     fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
         compute_runtime_requirements(targets)
     }

@@ -23,7 +23,8 @@ use super::ir::{
     BundledAstroHtmlInterpolation, bundle_html_interpolations, lower_astro_html_interpolations,
 };
 use super::{
-    AstroFrameworkError, AstroFrontmatterAnalysis, AstroTemplateComponent, AstroTemplateExpression,
+    AstroFrameworkError, AstroFrontmatterAnalysis, AstroSemanticAnalysis, AstroSourceMetadata,
+    AstroTemplateComponent, AstroTemplateExpression,
 };
 
 #[derive(Debug, Default)]
@@ -100,14 +101,18 @@ pub fn analyze_astro(
         collect_template_expressions(source, root, &macro_imports, options)?;
 
     Ok(AstroFrontmatterAnalysis {
-        frontmatter,
-        macro_imports,
-        frontmatter_declared_names,
-        frontmatter_import_statement_spans,
-        frontmatter_candidates,
-        template_expressions,
-        template_components,
-        source_anchors,
+        semantic: AstroSemanticAnalysis {
+            macro_imports,
+            frontmatter_declared_names,
+            frontmatter_candidates,
+            template_expressions,
+            template_components,
+        },
+        metadata: AstroSourceMetadata {
+            frontmatter,
+            frontmatter_import_statement_spans,
+            source_anchors,
+        },
     })
 }
 
@@ -210,6 +215,12 @@ fn collect_template_expressions(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
 ) -> Result<(Vec<AstroTemplateExpression>, Vec<AstroTemplateComponent>), AstroFrameworkError> {
+    #[derive(Default)]
+    struct TemplateCollections {
+        expressions: Vec<AstroTemplateExpression>,
+        components: Vec<AstroTemplateComponent>,
+    }
+
     let mut context = AstroCollectContext {
         expression_parse_cache: ExpressionParseCache::default(),
         lowered_html_interpolations: analyze_lowered_html_interpolations(source, imports)?,
@@ -220,8 +231,7 @@ fn collect_template_expressions(
         imports: &[MacroImport],
         options: &AnalyzeOptions,
         context: &mut AstroCollectContext,
-        expressions: &mut Vec<AstroTemplateExpression>,
-        components: &mut Vec<AstroTemplateComponent>,
+        collected: &mut TemplateCollections,
         inside_lowered_html_interpolation: bool,
     ) -> Result<(), AstroFrameworkError> {
         match node.kind() {
@@ -230,20 +240,13 @@ fn collect_template_expressions(
                     let mut cursor = node.walk();
                     for child in node.children(&mut cursor) {
                         collect_template_expressions_impl(
-                            source,
-                            child,
-                            imports,
-                            options,
-                            context,
-                            expressions,
-                            components,
-                            true,
+                            source, child, imports, options, context, collected, true,
                         )?;
                     }
                     return Ok(());
                 }
                 let lowered = lowered_html_interpolation(context, node)?;
-                expressions.push(AstroTemplateExpression {
+                collected.expressions.push(AstroTemplateExpression {
                     outer_span: lowered.outer_span,
                     inner_span: lowered.inner_span,
                     candidates: lowered.candidates.clone(),
@@ -254,14 +257,7 @@ fn collect_template_expressions(
                 let mut cursor = node.walk();
                 for child in node.children(&mut cursor) {
                     collect_template_expressions_impl(
-                        source,
-                        child,
-                        imports,
-                        options,
-                        context,
-                        expressions,
-                        components,
-                        true,
+                        source, child, imports, options, context, collected, true,
                     )?;
                 }
                 return Ok(());
@@ -270,7 +266,7 @@ fn collect_template_expressions(
                 if let Some(component) =
                     component_candidate_from_element(source, node, imports, options, context)?
                 {
-                    components.push(component);
+                    collected.components.push(component);
                     return Ok(());
                 }
             }
@@ -287,7 +283,7 @@ fn collect_template_expressions(
                     source,
                     imports,
                     context,
-                    expressions,
+                    &mut collected.expressions,
                     TemplateExpressionRequest {
                         outer_span: Span::from_node(node),
                         inner_span: inner,
@@ -305,7 +301,7 @@ fn collect_template_expressions(
                     source,
                     imports,
                     context,
-                    expressions,
+                    &mut collected.expressions,
                     TemplateExpressionRequest {
                         outer_span: Span::from_node(node),
                         inner_span: inner_range_from_delimiters(node, 1, 1),
@@ -327,8 +323,7 @@ fn collect_template_expressions(
                 imports,
                 options,
                 context,
-                expressions,
-                components,
+                collected,
                 inside_lowered_html_interpolation,
             )?;
         }
@@ -336,20 +331,20 @@ fn collect_template_expressions(
         Ok(())
     }
 
-    let mut expressions = Vec::new();
-    let mut components = Vec::new();
+    let mut collected = TemplateCollections::default();
     collect_template_expressions_impl(
         source,
         node,
         imports,
         options,
         &mut context,
-        &mut expressions,
-        &mut components,
+        &mut collected,
         false,
     )?;
-    expressions.sort_by_key(|expression| (expression.outer_span.start, expression.outer_span.end));
-    Ok((expressions, components))
+    collected
+        .expressions
+        .sort_by_key(|expression| (expression.outer_span.start, expression.outer_span.end));
+    Ok((collected.expressions, collected.components))
 }
 
 fn analyze_lowered_html_interpolations(

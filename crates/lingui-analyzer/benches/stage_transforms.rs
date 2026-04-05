@@ -192,23 +192,25 @@ fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
             let analysis = AstroAdapter
                 .analyze(case.source, &analyze_options(case))
                 .expect("astro analysis succeeds");
-            let mut candidates = analysis.frontmatter_candidates.clone();
+            let mut candidates = analysis.semantic.frontmatter_candidates.clone();
             candidates.extend(
                 analysis
+                    .semantic
                     .template_expressions
                     .iter()
                     .flat_map(|expression| expression.candidates.iter().cloned()),
             );
             candidates.extend(
                 analysis
+                    .semantic
                     .template_components
                     .iter()
                     .map(|component| component.candidate.clone()),
             );
             ExtractInputs {
-                imports: analysis.macro_imports,
+                imports: analysis.semantic.macro_imports,
                 candidates: standalone_candidates(candidates),
-                source_anchors: analysis.source_anchors,
+                source_anchors: analysis.metadata.source_anchors,
             }
         }
         FrameworkKind::Svelte => {
@@ -216,23 +218,27 @@ fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
                 .analyze(case.source, &analyze_options(case))
                 .expect("svelte analysis succeeds");
             let imports = analysis
+                .semantic
                 .scripts
                 .iter()
                 .flat_map(|script| script.macro_imports.iter().cloned())
                 .collect::<Vec<_>>();
             let mut candidates = analysis
+                .semantic
                 .scripts
                 .iter()
                 .flat_map(|script| script.candidates.iter().cloned())
                 .collect::<Vec<_>>();
             candidates.extend(
                 analysis
+                    .semantic
                     .template_expressions
                     .iter()
                     .flat_map(|expression| expression.candidates.iter().cloned()),
             );
             candidates.extend(
                 analysis
+                    .semantic
                     .template_components
                     .iter()
                     .map(|component| component.candidate.clone()),
@@ -240,7 +246,7 @@ fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
             ExtractInputs {
                 imports,
                 candidates: standalone_candidates(candidates),
-                source_anchors: analysis.source_anchors,
+                source_anchors: analysis.metadata.source_anchors,
             }
         }
     }

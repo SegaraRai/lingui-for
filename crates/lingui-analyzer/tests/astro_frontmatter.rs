@@ -26,6 +26,7 @@ fn collects_aliased_frontmatter_macro_imports_and_candidates() {
         .expect("analysis succeeds");
 
     let imports = analysis
+        .semantic
         .macro_imports
         .iter()
         .map(|import_decl| {
@@ -38,6 +39,7 @@ fn collects_aliased_frontmatter_macro_imports_and_candidates() {
     assert_eq!(imports, vec![("t", "tt"), ("plural", "plural")]);
 
     let candidates = analysis
+        .semantic
         .frontmatter_candidates
         .iter()
         .map(|candidate| {
@@ -110,6 +112,7 @@ fn ignores_shadowed_bindings_in_nested_scopes() {
         .expect("analysis succeeds");
 
     let candidates = analysis
+        .semantic
         .frontmatter_candidates
         .iter()
         .map(|candidate| {
@@ -137,7 +140,7 @@ fn marks_frontmatter_content_region() {
     let analysis = AstroAdapter
         .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
-    let frontmatter = analysis.frontmatter.expect("frontmatter exists");
+    let frontmatter = analysis.metadata.frontmatter.expect("frontmatter exists");
     let extracted = &source[frontmatter.inner_span.start..frontmatter.inner_span.end];
 
     assert!(extracted.contains("import { t } from"));
@@ -160,6 +163,7 @@ fn collects_template_expression_candidates_from_frontmatter_imports() {
         .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
     let counts = analysis
+        .semantic
         .template_expressions
         .iter()
         .map(|expression| expression.candidates.len())
@@ -167,11 +171,11 @@ fn collects_template_expression_candidates_from_frontmatter_imports() {
 
     assert_eq!(counts, vec![1, 1, 0]);
     assert_eq!(
-        analysis.template_expressions[0].candidates[0].kind,
+        analysis.semantic.template_expressions[0].candidates[0].kind,
         MacroCandidateKind::TaggedTemplateExpression
     );
     assert_eq!(
-        analysis.template_expressions[1].candidates[0].kind,
+        analysis.semantic.template_expressions[1].candidates[0].kind,
         MacroCandidateKind::CallExpression
     );
 }
@@ -193,11 +197,14 @@ fn supports_typescript_syntax_in_frontmatter_and_template_expressions() {
         .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
 
-    assert_eq!(analysis.frontmatter_candidates.len(), 1);
-    assert_eq!(analysis.template_expressions.len(), 1);
-    assert_eq!(analysis.template_expressions[0].candidates.len(), 1);
+    assert_eq!(analysis.semantic.frontmatter_candidates.len(), 1);
+    assert_eq!(analysis.semantic.template_expressions.len(), 1);
     assert_eq!(
-        analysis.template_expressions[0].candidates[0].kind,
+        analysis.semantic.template_expressions[0].candidates.len(),
+        1
+    );
+    assert_eq!(
+        analysis.semantic.template_expressions[0].candidates[0].kind,
         MacroCandidateKind::TaggedTemplateExpression
     );
 }
@@ -216,6 +223,7 @@ fn anchors_frontmatter_translate_msg_candidates_to_the_outer_callee() {
         .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
     let candidate = analysis
+        .semantic
         .frontmatter_candidates
         .first()
         .expect("candidate exists");
@@ -246,6 +254,7 @@ fn collects_template_components_from_frontmatter_imports() {
         .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
         .expect("analysis succeeds");
     let summary = analysis
+        .semantic
         .template_components
         .iter()
         .map(|component| {

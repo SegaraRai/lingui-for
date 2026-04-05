@@ -1,6 +1,9 @@
 use tree_sitter::Node;
 
-use crate::common::{Span, format_unsupported_trans_child_syntax};
+use crate::common::Span;
+use crate::diagnostics::astro::{
+    unsupported_directive_in_trans, unsupported_special_element_in_trans,
+};
 
 use super::super::AnalyzeOptions;
 use super::super::shared::helpers::text::text;
@@ -21,11 +24,11 @@ fn validate_astro_component_node(
 ) -> Result<(), AstroFrameworkError> {
     if let Some((tag_name, tag_name_span)) = special_astro_tag_name(source, node) {
         return Err(AstroFrameworkError::InvalidMacroUsage(
-            format_unsupported_trans_child_syntax(
+            unsupported_special_element_in_trans(
                 source,
                 &options.source_name,
                 tag_name_span,
-                format!("Astro special element `<{tag_name}>`"),
+                tag_name,
             ),
         ));
     }
@@ -86,11 +89,11 @@ fn validate_astro_element_like(
         && (tag_name == "script" || tag_name == "style")
     {
         return Err(AstroFrameworkError::InvalidMacroUsage(
-            format_unsupported_trans_child_syntax(
+            unsupported_special_element_in_trans(
                 source,
                 &options.source_name,
                 tag_name_span,
-                format!("Astro special element `<{tag_name}>`"),
+                tag_name,
             ),
         ));
     }
@@ -109,11 +112,11 @@ fn validate_astro_element_like(
         let attribute_name = text(source, name_node);
         if is_unsupported_astro_directive(attribute_name) {
             return Err(AstroFrameworkError::InvalidMacroUsage(
-                format_unsupported_trans_child_syntax(
+                unsupported_directive_in_trans(
                     source,
                     &options.source_name,
                     Span::from_node(name_node),
-                    format!("Astro directive `{attribute_name}`"),
+                    attribute_name,
                 ),
             ));
         }

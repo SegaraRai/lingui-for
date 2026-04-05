@@ -7,10 +7,7 @@ use std::borrow::Cow;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{
-    MappedTextError, RenderedMappedText, ScriptLang, Span, format_single_diagnostic,
-    make_diagnostic,
-};
+use crate::common::{MappedTextError, RenderedMappedText, ScriptLang, Span};
 use crate::compile::{
     CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
     CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype, FrameworkCompilePlan,
@@ -18,7 +15,8 @@ use crate::compile::{
     build_compile_plan_for_framework,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::svelte::bare_direct_macro_message;
+use crate::diagnostics::LinguiAnalyzerDiagnostic;
+use crate::diagnostics::svelte::bare_direct_macro_usage;
 use crate::framework::{
     FrameworkError, MacroCandidate, MacroCandidateStrategy, MacroFlavor, SvelteFrameworkError,
     WhitespaceMode,
@@ -27,10 +25,7 @@ use crate::syntax::parse::ParseError;
 
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 
-use analysis::{
-    analyze_svelte_compile, compute_runtime_requirements, repair_compile_targets,
-    wrap_compile_source,
-};
+use analysis::{analyze_svelte_compile, compute_runtime_requirements, wrap_compile_source};
 use injection::append_runtime_injection_replacements;
 use runtime::lower_runtime_component_markup;
 
@@ -47,7 +42,7 @@ pub enum SvelteAdapterError {
     #[error(transparent)]
     RuntimeComponent(#[from] RuntimeComponentError),
     #[error("{0}")]
-    InvalidMacroUsage(String),
+    InvalidMacroUsage(LinguiAnalyzerDiagnostic),
     #[error(
         "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations."
     )]
@@ -125,10 +120,6 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         wrap_compile_source(analysis, prototype, normalized_source)
             .map_err(AdapterError::from)
             .map_err(CompileError::from)
-    }
-
-    fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]) {
-        repair_compile_targets(source, targets);
     }
 
     fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
@@ -226,13 +217,11 @@ pub(crate) fn validate_compile_targets(
 
     if let Some(candidate) = offending_candidate {
         return Err(SvelteAdapterError::InvalidMacroUsage(
-            format_single_diagnostic(
+            bare_direct_macro_usage(
                 source,
-                &make_diagnostic(
-                    source_name,
-                    candidate.outer_span,
-                    bare_direct_macro_message(candidate.imported_name.as_str()),
-                ),
+                source_name,
+                candidate.outer_span,
+                candidate.imported_name.as_str(),
             ),
         ));
     }

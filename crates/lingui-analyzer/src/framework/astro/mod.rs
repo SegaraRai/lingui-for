@@ -4,6 +4,7 @@ pub mod ir;
 mod validation;
 
 use crate::common::{EmbeddedScriptRegion, Span};
+use crate::diagnostics::LinguiAnalyzerDiagnostic;
 
 use super::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, JsAnalysisError, MacroCandidate, MacroImport,
@@ -23,7 +24,7 @@ pub enum AstroFrameworkError {
     #[error(transparent)]
     Ir(#[from] AstroIrError),
     #[error("{0}")]
-    InvalidMacroUsage(String),
+    InvalidMacroUsage(LinguiAnalyzerDiagnostic),
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -55,15 +56,25 @@ pub struct AstroTemplateComponent {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct AstroFrontmatterAnalysis {
-    pub frontmatter: Option<EmbeddedScriptRegion>,
+pub struct AstroSemanticAnalysis {
     pub macro_imports: Vec<MacroImport>,
     pub frontmatter_declared_names: Vec<String>,
-    pub frontmatter_import_statement_spans: Vec<Span>,
     pub frontmatter_candidates: Vec<MacroCandidate>,
     pub template_expressions: Vec<AstroTemplateExpression>,
     pub template_components: Vec<AstroTemplateComponent>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AstroSourceMetadata {
+    pub frontmatter: Option<EmbeddedScriptRegion>,
+    pub frontmatter_import_statement_spans: Vec<Span>,
     pub source_anchors: Vec<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AstroFrontmatterAnalysis {
+    pub semantic: AstroSemanticAnalysis,
+    pub metadata: AstroSourceMetadata,
 }
 
 #[cfg(test)]
@@ -137,6 +148,7 @@ const ready = true;
         .expect("analysis succeeds");
 
         let expression = analysis
+            .semantic
             .template_expressions
             .iter()
             .find(|expression| {

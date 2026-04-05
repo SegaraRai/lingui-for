@@ -1,5 +1,4 @@
 mod declarations;
-mod diagnostics;
 mod indexed_text;
 mod lang;
 mod normalization;
@@ -9,10 +8,6 @@ mod text_search;
 
 pub(crate) use declarations::{
     CollectDeclarationsError, collect_variable_initializer_declarations,
-};
-pub(crate) use diagnostics::{
-    format_invalid_macro_usage, format_single_diagnostic, format_unsupported_trans_child_syntax,
-    make_diagnostic,
 };
 pub use indexed_text::{IndexedText, IndexedTextSlice};
 pub use lang::ScriptLang;

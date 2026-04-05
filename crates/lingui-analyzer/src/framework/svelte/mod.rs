@@ -6,6 +6,7 @@ use std::borrow::Cow;
 
 use crate::common::{EmbeddedScriptRegion, Span};
 use crate::conventions::MacroConventionsError;
+use crate::diagnostics::LinguiAnalyzerDiagnostic;
 
 use super::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, JsAnalysisError, MacroCandidate, MacroImport,
@@ -13,7 +14,6 @@ use super::{
 };
 
 pub use analysis::analyze_svelte;
-pub(crate) use validation::bare_direct_macro_message;
 pub use validation::validate_svelte_extract_candidates;
 
 #[derive(thiserror::Error, Debug)]
@@ -25,7 +25,7 @@ pub enum SvelteFrameworkError {
     #[error(transparent)]
     Conventions(#[from] MacroConventionsError),
     #[error("{0}")]
-    InvalidMacroUsage(String),
+    InvalidMacroUsage(LinguiAnalyzerDiagnostic),
     #[error("script element should have start tag")]
     MissingScriptStartTag,
     #[error(
@@ -43,11 +43,21 @@ pub enum SvelteFrameworkError {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct SvelteScriptAnalysis {
+pub struct SvelteSemanticAnalysis {
     pub scripts: Vec<SvelteScriptBlock>,
     pub template_expressions: Vec<SvelteTemplateExpression>,
     pub template_components: Vec<SvelteTemplateComponent>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SvelteSourceMetadata {
     pub source_anchors: Vec<usize>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SvelteScriptAnalysis {
+    pub semantic: SvelteSemanticAnalysis,
+    pub metadata: SvelteSourceMetadata,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

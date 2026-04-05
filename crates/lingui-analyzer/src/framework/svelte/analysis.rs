@@ -2,9 +2,10 @@ use tree_sitter::Node;
 
 use crate::common::{
     EmbeddedScriptKind, EmbeddedScriptRegion, NormalizationEdit, ScriptLang, Span,
-    find_pattern_near_start, format_invalid_macro_usage,
+    find_pattern_near_start,
 };
 use crate::conventions::{FrameworkConventions, MacroPackageKind};
+use crate::diagnostics::svelte::module_script_must_use_core_macro_package;
 use crate::syntax::parse::parse_svelte;
 
 use super::super::shared::helpers::anchors::{
@@ -20,8 +21,8 @@ use super::super::shared::js::{
 use super::super::{AnalyzeOptions, MacroCandidate, MacroFlavor, MacroImport};
 use super::components::{component_candidate_from_element, let_bindings_from_element};
 use super::{
-    SvelteFrameworkError, SvelteScriptAnalysis, SvelteScriptBlock, SvelteTemplateComponent,
-    SvelteTemplateExpression,
+    SvelteFrameworkError, SvelteScriptAnalysis, SvelteScriptBlock, SvelteSemanticAnalysis,
+    SvelteSourceMetadata, SvelteTemplateComponent, SvelteTemplateExpression,
 };
 
 pub fn analyze_svelte(
@@ -63,10 +64,12 @@ pub fn analyze_svelte(
         repair_svelte_candidates(source, &mut expression.candidates);
     }
     Ok(SvelteScriptAnalysis {
-        scripts,
-        template_expressions: context.expressions,
-        template_components: context.components,
-        source_anchors,
+        semantic: SvelteSemanticAnalysis {
+            scripts,
+            template_expressions: context.expressions,
+            template_components: context.components,
+        },
+        metadata: SvelteSourceMetadata { source_anchors },
     })
 }
 
@@ -679,12 +682,7 @@ fn validate_module_script_macro_imports(
     };
 
     Err(SvelteFrameworkError::InvalidMacroUsage(
-        format_invalid_macro_usage(
-            source,
-            source_name,
-            offending_import.span,
-            "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`.",
-        ),
+        module_script_must_use_core_macro_package(source, source_name, offending_import.span),
     ))
 }
 

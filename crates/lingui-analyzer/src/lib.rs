@@ -1,6 +1,7 @@
 pub mod common;
 pub mod compile;
 pub mod conventions;
+pub(crate) mod diagnostics;
 pub mod extract;
 pub mod framework;
 pub mod syntax;
@@ -64,15 +65,17 @@ pub fn build_synthetic_module_for_framework(
                     conventions: conventions.clone(),
                 },
             )?;
-            let mut candidates = analysis.frontmatter_candidates;
+            let mut candidates = analysis.semantic.frontmatter_candidates;
             candidates.extend(
                 analysis
+                    .semantic
                     .template_expressions
                     .into_iter()
                     .flat_map(|expression| expression.candidates),
             );
             candidates.extend(
                 analysis
+                    .semantic
                     .template_components
                     .into_iter()
                     .map(|component| component.candidate),
@@ -83,9 +86,9 @@ pub fn build_synthetic_module_for_framework(
                 source,
                 source_name,
                 synthetic_name,
-                &analysis.macro_imports,
+                &analysis.semantic.macro_imports,
                 &candidates,
-                &analysis.source_anchors,
+                &analysis.metadata.source_anchors,
             )
             .map_err(ExtractError::from)?)
         }
@@ -99,23 +102,27 @@ pub fn build_synthetic_module_for_framework(
                 },
             )?;
             let imports = analysis
+                .semantic
                 .scripts
                 .iter()
                 .flat_map(|script| script.macro_imports.iter().cloned())
                 .collect::<Vec<_>>();
             let mut candidates = analysis
+                .semantic
                 .scripts
                 .into_iter()
                 .flat_map(|script| script.candidates)
                 .collect::<Vec<_>>();
             candidates.extend(
                 analysis
+                    .semantic
                     .template_expressions
                     .into_iter()
                     .flat_map(|expression| expression.candidates),
             );
             candidates.extend(
                 analysis
+                    .semantic
                     .template_components
                     .into_iter()
                     .map(|component| component.candidate),
@@ -130,7 +137,7 @@ pub fn build_synthetic_module_for_framework(
                 synthetic_name,
                 &imports,
                 &candidates,
-                &analysis.source_anchors,
+                &analysis.metadata.source_anchors,
             )
             .map_err(ExtractError::from)?)
         }
