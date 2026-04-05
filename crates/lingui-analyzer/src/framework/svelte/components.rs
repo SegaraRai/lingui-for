@@ -49,11 +49,11 @@ pub(super) fn component_candidate_from_element(
         return Ok(None);
     }
 
-    let shadowed_names = context.shadowed_names().cloned().collect::<Vec<_>>();
-    if shadowed_names.iter().any(|name| name == tag_name) {
+    if context.shadowed_names().any(|name| name == tag_name) {
         return Ok(None);
     }
 
+    let shadowed_names = context.shadowed_names().cloned().collect::<Vec<_>>();
     let import_decl = imports
         .iter()
         .find(|import_decl| import_decl.local_name == tag_name);
@@ -352,34 +352,36 @@ fn append_raw_text_expression_normalization_edits(
     );
     match node.kind() {
         "html_tag" => append_virtual_trans_child_wrapper_edits(
-            source,
             node,
             inner_span,
             "LinguiForSvelteHtml",
             normalization_edits,
-        ),
+        )?,
         "render_tag" => append_virtual_trans_child_wrapper_edits(
-            source,
             node,
             inner_span,
             "LinguiForSvelteRender",
             normalization_edits,
-        ),
+        )?,
         _ => {}
     }
     Ok(())
 }
 
 fn append_virtual_trans_child_wrapper_edits(
-    _source: &str,
     node: Node<'_>,
     inner_span: Span,
     tag_name: &str,
     normalization_edits: &mut Vec<NormalizationEdit>,
-) {
+) -> Result<(), SvelteFrameworkError> {
     let outer_span = Span::from_node(node);
     if inner_span.start < outer_span.start || inner_span.end > outer_span.end {
-        return;
+        return Err(SvelteFrameworkError::InvalidVirtualTransChildWrapperSpan {
+            outer_start: outer_span.start,
+            outer_end: outer_span.end,
+            inner_start: inner_span.start,
+            inner_end: inner_span.end,
+        });
     }
 
     if outer_span.start < inner_span.start {
@@ -401,6 +403,7 @@ fn append_virtual_trans_child_wrapper_edits(
         at: inner_span.end,
         text: "} />".to_string(),
     });
+    Ok(())
 }
 
 fn visit_component_each_statement(

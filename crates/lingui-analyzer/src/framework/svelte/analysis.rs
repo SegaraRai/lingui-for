@@ -48,7 +48,7 @@ pub fn analyze_svelte(
                 .any(|import_decl| import_decl.local_name == *name)
         })
         .collect::<Vec<_>>();
-    template_shadowed_names.sort();
+    template_shadowed_names.sort_unstable();
     template_shadowed_names.dedup();
     let mut context = CollectContext {
         scope_stack: vec![template_shadowed_names],
@@ -200,9 +200,7 @@ pub(super) struct CollectContext {
 
 impl CollectContext {
     pub(super) fn shadowed_names(&self) -> impl Iterator<Item = &String> {
-        self.scope_stack
-            .iter()
-            .flat_map(|frame| frame.iter())
+        self.scope_stack.iter().flat_map(|frame| frame.iter())
     }
 }
 
@@ -213,6 +211,10 @@ fn collect_template_expressions(
     options: &AnalyzeOptions,
     context: &mut CollectContext,
 ) -> Result<(), SvelteFrameworkError> {
+    // Keep this traversal structurally parallel to
+    // `collect_component_normalization_edits_inner` in `components.rs`.
+    // TODO: extract a shared visitor abstraction if duplication grows or the
+    // traversal rules need to change in lockstep.
     match node.kind() {
         "script_element" | "style_element" => return Ok(()),
         "expression" => {
@@ -754,6 +756,11 @@ pub(super) fn repair_svelte_expression_inner_span(
     repair_svelte_raw_expression_span(source, raw_span)
 }
 
+/// Expand `raw_span.start` leftward to include Svelte reactive markers while
+/// preserving the original end. The first branch covers a two-byte prefix made
+/// of `$` plus an identifier byte, using `is_js_identifier_byte` to detect the
+/// identifier character; the second branch handles a lone `$` immediately
+/// before the span.
 pub(super) fn repair_svelte_raw_expression_span(source: &str, raw_span: Span) -> Span {
     let mut start = raw_span.start;
     if start >= 2

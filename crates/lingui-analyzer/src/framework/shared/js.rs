@@ -98,7 +98,7 @@ pub fn collect_top_level_declared_names_from_root(source: &str, root: Node<'_>) 
         }
     }
 
-    names.sort();
+    names.sort_unstable();
     names.dedup();
     names
 }

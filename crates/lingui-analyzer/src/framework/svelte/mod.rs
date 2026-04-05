@@ -40,6 +40,15 @@ pub enum SvelteFrameworkError {
         "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`."
     )]
     ModuleScriptMustUseCoreMacroPackage,
+    #[error(
+        "invalid virtual Trans child wrapper span: outer=({outer_start}, {outer_end}), inner=({inner_start}, {inner_end})"
+    )]
+    InvalidVirtualTransChildWrapperSpan {
+        outer_start: usize,
+        outer_end: usize,
+        inner_start: usize,
+        inner_end: usize,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
