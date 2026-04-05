@@ -1,5 +1,7 @@
 use std::collections::BTreeSet;
 
+use lean_string::LeanString;
+
 use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
 use crate::compile::{
     CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
@@ -16,15 +18,15 @@ use super::{
 };
 
 pub(crate) fn analyze_astro_compile(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     whitespace: WhitespaceMode,
     conventions: &FrameworkConventions,
 ) -> Result<AstroFrameworkCompileAnalysis, AstroAdapterError> {
     let analysis = AstroAdapter.analyze(
         source,
         &AnalyzeOptions {
-            source_name: source_name.to_string(),
+            source_name: source_name.clone(),
             whitespace,
             conventions: conventions.clone(),
         },
@@ -104,7 +106,7 @@ pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> Runtime
 }
 
 fn create_runtime_bindings(
-    declared_names: &[String],
+    declared_names: &[LeanString],
     conventions: &FrameworkConventions,
 ) -> Result<AstroCompileRuntimeBindings, AstroAdapterError> {
     let mut used = declared_names.iter().cloned().collect::<BTreeSet<_>>();
@@ -112,35 +114,34 @@ fn create_runtime_bindings(
     Ok(AstroCompileRuntimeBindings {
         create_i18n: allocate_unique_binding_name(
             &mut used,
-            conventions
-                .bindings
-                .i18n_accessor_factory
-                .as_deref()
-                .ok_or(AstroAdapterError::MissingConvention(
-                    "bindings.i18n_accessor_factory",
-                ))?,
+            conventions.bindings.i18n_accessor_factory.clone().ok_or(
+                AstroAdapterError::MissingConvention("bindings.i18n_accessor_factory"),
+            )?,
         ),
         i18n: allocate_unique_binding_name(
             &mut used,
-            conventions.bindings.i18n_instance.as_deref().ok_or(
+            conventions.bindings.i18n_instance.clone().ok_or(
                 AstroAdapterError::MissingConvention("bindings.i18n_instance"),
             )?,
         ),
         runtime_trans: allocate_unique_binding_name(
             &mut used,
-            conventions.bindings.runtime_trans_component.as_str(),
+            conventions.bindings.runtime_trans_component.clone(),
         ),
     })
 }
 
-fn allocate_unique_binding_name(used: &mut BTreeSet<String>, preferred: &str) -> String {
-    if used.insert(preferred.to_string()) {
-        return preferred.to_string();
+fn allocate_unique_binding_name(
+    used: &mut BTreeSet<LeanString>,
+    preferred: LeanString,
+) -> LeanString {
+    if used.insert(preferred.clone()) {
+        return preferred;
     }
 
     let mut index = 1usize;
     loop {
-        let candidate = format!("{preferred}_{index}");
+        let candidate = LeanString::from(format!("{preferred}_{index}"));
         if used.insert(candidate.clone()) {
             return candidate;
         }

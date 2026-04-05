@@ -2,6 +2,7 @@ mod analysis;
 mod injection;
 mod runtime;
 
+use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
@@ -62,9 +63,9 @@ pub struct AstroCompilePlan {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct AstroCompileRuntimeBindings {
-    pub create_i18n: String,
-    pub i18n: String,
-    pub runtime_trans: String,
+    pub create_i18n: LeanString,
+    pub i18n: LeanString,
+    pub runtime_trans: LeanString,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -82,8 +83,8 @@ impl FrameworkCompilePlan for AstroCompilePlan {
     type Analysis = AstroFrameworkCompileAnalysis;
 
     fn analyze(
-        source: &str,
-        source_name: &str,
+        source: &LeanString,
+        source_name: &LeanString,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, CompileError> {
@@ -133,8 +134,8 @@ impl FrameworkCompilePlan for AstroCompilePlan {
 
     fn lower_runtime_component_markup(
         &self,
-        source_name: &str,
-        source: &str,
+        source_name: &LeanString,
+        source: &LeanString,
         target: &CompileTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, AdapterError> {
@@ -143,7 +144,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
             source,
             target,
             declaration,
-            self.runtime_bindings.runtime_trans.as_str(),
+            self.runtime_bindings.runtime_trans.clone(),
             self.runtime_warnings.trans_content_override,
         )
         .map_err(AdapterError::from)
@@ -151,7 +152,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
 
     fn append_runtime_injection_replacements(
         &self,
-        source: &str,
+        source: &LeanString,
         replacements: &mut Vec<CompileReplacementInternal>,
     ) -> Result<(), AdapterError> {
         append_runtime_injection_replacements(self, source, replacements)
@@ -161,9 +162,9 @@ impl FrameworkCompilePlan for AstroCompilePlan {
 
 impl AstroCompilePlan {
     pub fn build(
-        source: &str,
-        source_name: &str,
-        synthetic_name: &str,
+        source: &LeanString,
+        source_name: &LeanString,
+        synthetic_name: &LeanString,
         whitespace_mode: WhitespaceMode,
         conventions: FrameworkConventions,
         runtime_warnings: RuntimeWarningOptions,

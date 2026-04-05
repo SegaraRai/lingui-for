@@ -4,6 +4,7 @@ mod lower;
 mod plan;
 mod runtime_component;
 
+use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
@@ -91,14 +92,14 @@ impl Default for RuntimeWarningOptions {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct CommonCompilePlan {
-    pub source_name: String,
-    pub synthetic_name: String,
-    pub synthetic_source: String,
-    pub synthetic_source_map_json: Option<String>,
+    pub source_name: LeanString,
+    pub synthetic_name: LeanString,
+    pub synthetic_source: LeanString,
+    pub synthetic_source_map_json: Option<LeanString>,
     pub source_anchors: Vec<usize>,
     pub synthetic_lang: ScriptLang,
     pub conventions: FrameworkConventions,
-    pub declaration_ids: Vec<String>,
+    pub declaration_ids: Vec<LeanString>,
     pub targets: Vec<CompileTarget>,
     pub import_removals: Vec<Span>,
 }
@@ -107,12 +108,12 @@ pub struct CommonCompilePlan {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct CompileTarget {
-    pub declaration_id: String,
+    pub declaration_id: LeanString,
     pub original_span: Span,
     pub normalized_span: Span,
     pub source_map_anchor: Option<Span>,
-    pub local_name: String,
-    pub imported_name: String,
+    pub local_name: LeanString,
+    pub imported_name: LeanString,
     pub flavor: MacroFlavor,
     pub context: CompileTargetContext,
     pub output_kind: CompileTargetOutputKind,
@@ -132,8 +133,8 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     type Analysis;
 
     fn analyze(
-        source: &str,
-        source_name: &str,
+        source: &LeanString,
+        source_name: &LeanString,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, CompileError>;
@@ -161,15 +162,15 @@ pub(crate) trait FrameworkCompilePlan: Sized {
 
     fn lower_runtime_component_markup(
         &self,
-        _source_name: &str,
-        _source: &str,
+        _source_name: &LeanString,
+        _source: &LeanString,
         _target: &CompileTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, AdapterError>;
 
     fn append_runtime_injection_replacements(
         &self,
-        _source: &str,
+        _source: &LeanString,
         _replacements: &mut Vec<CompileReplacementInternal>,
     ) -> Result<(), AdapterError> {
         Ok(())
@@ -178,20 +179,20 @@ pub(crate) trait FrameworkCompilePlan: Sized {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct CompileReplacementInternal {
-    pub(crate) declaration_id: String,
+    pub(crate) declaration_id: LeanString,
     pub(crate) start: usize,
     pub(crate) end: usize,
-    pub(crate) code: String,
+    pub(crate) code: LeanString,
     pub(crate) indexed_source_map: Option<IndexedSourceMap>,
     pub(crate) original_anchors: Vec<usize>,
 }
 
 impl CompileReplacementInternal {
     pub(crate) fn new(
-        declaration_id: String,
+        declaration_id: LeanString,
         start: usize,
         end: usize,
-        code: String,
+        code: LeanString,
         indexed_source_map: Option<IndexedSourceMap>,
         original_anchors: Vec<usize>,
     ) -> Self {
@@ -210,10 +211,10 @@ impl CompileReplacementInternal {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct CompileReplacement {
-    pub declaration_id: String,
+    pub declaration_id: LeanString,
     pub start: usize,
     pub end: usize,
-    pub code: String,
+    pub code: LeanString,
     pub source_map_json: Option<String>,
 }
 
@@ -221,18 +222,18 @@ pub struct CompileReplacement {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct FinishedCompile {
-    pub code: String,
-    pub source_name: String,
+    pub code: LeanString,
+    pub source_name: LeanString,
     pub source_map_json: Option<String>,
     pub replacements: Vec<CompileReplacement>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct CompileReplacementOutputInternal {
-    pub(crate) declaration_id: String,
+    pub(crate) declaration_id: LeanString,
     pub(crate) start: usize,
     pub(crate) end: usize,
-    pub(crate) code: String,
+    pub(crate) code: LeanString,
     pub(crate) indexed_source_map: Option<IndexedSourceMap>,
 }
 
@@ -250,8 +251,8 @@ impl From<CompileReplacementInternal> for CompileReplacementOutputInternal {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct FinishedCompileInternal {
-    pub(crate) code: String,
-    pub(crate) source_name: String,
+    pub(crate) code: LeanString,
+    pub(crate) source_name: LeanString,
     pub(crate) source_map: Option<IndexedSourceMap>,
     pub(crate) replacements: Vec<CompileReplacementOutputInternal>,
 }
@@ -287,10 +288,10 @@ impl FinishedCompileInternal {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct TransformedPrograms {
-    pub lowered_code: Option<String>,
-    pub lowered_source_map_json: Option<String>,
-    pub contextual_code: Option<String>,
-    pub contextual_source_map_json: Option<String>,
+    pub lowered_code: Option<LeanString>,
+    pub lowered_source_map_json: Option<LeanString>,
+    pub contextual_code: Option<LeanString>,
+    pub contextual_source_map_json: Option<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

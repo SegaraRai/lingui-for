@@ -1,3 +1,5 @@
+use lean_string::LeanString;
+
 use crate::common::{
     CollectDeclarationsError, FinalizedReplacement, IndexedSourceMap, MappedTextError,
     build_final_output, collect_variable_initializer_declarations, parse_source_map,
@@ -8,7 +10,7 @@ use crate::extract::{ExtractTransformedProgram, ReinsertedModule, SyntheticModul
 #[derive(thiserror::Error, Debug)]
 pub enum ReinsertError {
     #[error("missing transformed declaration: {0}")]
-    MissingTransformedDeclaration(String),
+    MissingTransformedDeclaration(LeanString),
     #[error("synthetic mappings overlap around byte {0}")]
     OverlappingMappings(usize),
     #[error(transparent)]
@@ -18,8 +20,8 @@ pub enum ReinsertError {
 }
 
 pub fn reinsert_transformed_declarations(
-    original_source: &str,
-    source_name: &str,
+    original_source: &LeanString,
+    source_name: &LeanString,
     synthetic_module: &SyntheticModule,
     transformed_program: &ExtractTransformedProgram,
 ) -> Result<ReinsertedModule, ReinsertError> {
@@ -81,10 +83,11 @@ pub fn reinsert_transformed_declarations(
     )?;
     Ok(ReinsertedModule {
         code: rendered.code,
-        source_name: source_name.to_string(),
+        source_name: source_name.clone(),
         source_map_json: rendered
             .indexed_source_map
             .as_ref()
-            .and_then(|map| source_map_to_json(map.source_map())),
+            .and_then(|map| source_map_to_json(map.source_map()))
+            .map(LeanString::from),
     })
 }

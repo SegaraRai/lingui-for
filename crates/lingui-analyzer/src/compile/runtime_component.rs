@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
@@ -211,8 +212,8 @@ fn convert_object_expression(
     components_mode: bool,
     indent_level: usize,
 ) -> Result<RenderedMappedText, RuntimeComponentError> {
-    let indent = "  ".repeat(indent_level);
-    let child_indent = "  ".repeat(indent_level + 1);
+    let indent = LeanString::from("  ".repeat(indent_level));
+    let child_indent = LeanString::from("  ".repeat(indent_level + 1));
     let mut rendered = input.empty_like();
     let mut cursor = node.walk();
     let mut wrote_entry = false;
@@ -226,7 +227,7 @@ fn convert_object_expression(
             rendered.push_unmapped("\n");
             wrote_entry = true;
         }
-        rendered.push_unmapped(&child_indent);
+        rendered.push_unmapped_dynamic(&child_indent);
 
         match child.kind() {
             "pair" => {
@@ -249,7 +250,7 @@ fn convert_object_expression(
                             base_offset,
                             indent_level + 1,
                         )?
-                    } else if key_name.as_deref() == Some("components") {
+                    } else if key_name == Some("components") {
                         convert_components_expression(
                             source,
                             input,
@@ -296,7 +297,7 @@ fn convert_object_expression(
         rendered.push_unmapped("}");
     } else {
         rendered.push_unmapped("\n");
-        rendered.push_unmapped(&indent);
+        rendered.push_unmapped_dynamic(&indent);
         rendered.push_unmapped("}");
     }
 
@@ -344,10 +345,10 @@ fn convert_jsx_element_descriptor(
     let mut rendered = input.empty_like();
 
     rendered.push_unmapped("{\n");
-    rendered.push_unmapped(&child_indent);
+    rendered.push_unmapped_dynamic(&child_indent);
     if is_intrinsic_jsx_name(source, name_node, base_offset)? {
         rendered.push_unmapped("kind: \"element\",\n");
-        rendered.push_unmapped(&child_indent);
+        rendered.push_unmapped_dynamic(&child_indent);
         rendered.push_unmapped("tag: \"");
         push_copied_span(
             &mut rendered,
@@ -357,7 +358,7 @@ fn convert_jsx_element_descriptor(
         rendered.push_unmapped("\",\n");
     } else {
         rendered.push_unmapped("kind: \"component\",\n");
-        rendered.push_unmapped(&child_indent);
+        rendered.push_unmapped_dynamic(&child_indent);
         rendered.push_unmapped("component: ");
         push_copied_span(
             &mut rendered,
@@ -366,11 +367,11 @@ fn convert_jsx_element_descriptor(
         )?;
         rendered.push_unmapped(",\n");
     }
-    rendered.push_unmapped(&child_indent);
+    rendered.push_unmapped_dynamic(&child_indent);
     rendered.push_unmapped("props: ");
     append_rendered(&mut rendered, props);
     rendered.push_unmapped("\n");
-    rendered.push_unmapped(&indent);
+    rendered.push_unmapped_dynamic(&indent);
     rendered.push_unmapped("}");
     rendered
         .into_rendered()
@@ -399,7 +400,7 @@ fn convert_jsx_attributes_to_object(
             rendered.push_unmapped("\n");
             wrote_entry = true;
         }
-        rendered.push_unmapped(&child_indent);
+        rendered.push_unmapped_dynamic(&child_indent);
 
         match child.kind() {
             "jsx_expression" => {
@@ -423,7 +424,7 @@ fn convert_jsx_attributes_to_object(
                 let key = jsx_attribute_name_node(child)
                     .ok_or(RuntimeComponentError::MissingJsxPropName)?;
                 let key_text = source_slice(source, key, base_offset)?;
-                rendered.push_unmapped(render_js_object_key(key_text));
+                rendered.push_unmapped_dynamic(render_js_object_key(key_text));
                 rendered.push_unmapped(": ");
                 match jsx_attribute_value_node(child) {
                     None => rendered.push_unmapped("true"),
@@ -467,7 +468,7 @@ fn convert_jsx_attributes_to_object(
         rendered.push_unmapped("}");
     } else {
         rendered.push_unmapped("\n");
-        rendered.push_unmapped(&indent);
+        rendered.push_unmapped_dynamic(&indent);
         rendered.push_unmapped("}");
     }
 
@@ -616,25 +617,19 @@ fn is_intrinsic_jsx_name(
         .unwrap_or(false))
 }
 
-pub(super) fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
+pub(super) fn key_name<'a>(source: &'a str, key: Node<'_>, base_offset: isize) -> Option<&'a str> {
     match key.kind() {
-        "property_identifier" | "identifier" => source_slice(source, key, base_offset)
-            .ok()
-            .map(ToString::to_string),
-        "number" => source_slice(source, key, base_offset)
-            .ok()
-            .map(ToString::to_string),
+        "property_identifier" | "identifier" => source_slice(source, key, base_offset).ok(),
+        "number" => source_slice(source, key, base_offset).ok(),
         "string" => {
             let span = translated_span(key, base_offset).ok()?;
-            Some(source[span.start + 1..span.end.saturating_sub(1)].to_string())
+            Some(&source[span.start + 1..span.end.saturating_sub(1)])
         }
         _ => None,
     }
 }
 
-pub(super) fn validate_runtime_placeholder_key(
-    key: String,
-) -> Result<String, RuntimeComponentError> {
+pub(super) fn validate_runtime_placeholder_key(key: &str) -> Result<&str, RuntimeComponentError> {
     if !key.is_empty()
         && key
             .chars()
@@ -642,7 +637,9 @@ pub(super) fn validate_runtime_placeholder_key(
     {
         Ok(key)
     } else {
-        Err(RuntimeComponentError::InvalidRuntimePlaceholderKey { key })
+        Err(RuntimeComponentError::InvalidRuntimePlaceholderKey {
+            key: key.to_string(),
+        })
     }
 }
 

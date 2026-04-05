@@ -4,7 +4,7 @@ pub(crate) fn text<'a>(source: &'a str, node: Node<'_>) -> &'a str {
     &source[node.start_byte()..node.end_byte()]
 }
 
-pub(crate) fn unquote(text: &str) -> Option<String> {
+pub(crate) fn unquote(text: &str) -> Option<&str> {
     if text.len() < 2 {
         return None;
     }
@@ -19,7 +19,7 @@ pub(crate) fn unquote(text: &str) -> Option<String> {
         return None;
     }
 
-    Some(text[1..text.len() - 1].to_string())
+    Some(&text[1..text.len() - 1])
 }
 
 pub(crate) fn is_component_tag_name(tag_name: &str) -> bool {

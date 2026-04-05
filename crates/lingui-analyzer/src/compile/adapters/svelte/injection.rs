@@ -1,3 +1,5 @@
+use lean_string::LeanString;
+
 use crate::common::{IndexedText, Span, build_span_anchor_map};
 use crate::compile::CompileReplacementInternal;
 use crate::conventions::FrameworkConventions;
@@ -6,7 +8,7 @@ use super::{SvelteAdapterError, SvelteCompilePlan, SvelteCompileRuntimeBindings}
 
 pub(super) fn append_runtime_injection_replacements(
     plan: &SvelteCompilePlan,
-    source: &str,
+    source: &LeanString,
     replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), SvelteAdapterError> {
     let indexed_source = IndexedText::new(source);
@@ -50,7 +52,7 @@ pub(super) fn append_runtime_injection_replacements(
                 anchor_span.end,
             );
             replacements.push(CompileReplacementInternal::new(
-                "__runtime_prelude".to_string(),
+                LeanString::from_static_str("__runtime_prelude"),
                 insertion_start,
                 insertion_start,
                 prelude,
@@ -61,7 +63,7 @@ pub(super) fn append_runtime_injection_replacements(
 
         if !injections.suffix.is_empty() {
             replacements.push(CompileReplacementInternal::new(
-                "__runtime_suffix".to_string(),
+                LeanString::from_static_str("__runtime_suffix"),
                 instance_script.content_span.end,
                 instance_script.content_span.end,
                 injections.suffix,
@@ -87,9 +89,9 @@ pub(super) fn append_runtime_injection_replacements(
         .map(|region| region.outer_span.end)
         .unwrap_or(0);
     let code = if plan.module_script.is_some() {
-        format!("\n\n{block}")
+        LeanString::from(format!("\n\n{block}"))
     } else {
-        format!("{block}\n\n")
+        LeanString::from(format!("{block}\n\n"))
     };
 
     let source_map = build_span_anchor_map(
@@ -100,7 +102,7 @@ pub(super) fn append_runtime_injection_replacements(
         insertion_start,
     );
     replacements.push(CompileReplacementInternal::new(
-        "__runtime_script_block".to_string(),
+        LeanString::from_static_str("__runtime_script_block"),
         insertion_start,
         insertion_start,
         code,
@@ -111,8 +113,8 @@ pub(super) fn append_runtime_injection_replacements(
 }
 
 struct RuntimeInsertions {
-    prelude: String,
-    suffix: String,
+    prelude: LeanString,
+    suffix: LeanString,
 }
 
 fn create_runtime_binding_insertions(
@@ -122,8 +124,8 @@ fn create_runtime_binding_insertions(
     include_trans_component: bool,
     conventions: &FrameworkConventions,
 ) -> Result<RuntimeInsertions, SvelteAdapterError> {
-    let mut prelude = String::new();
-    let mut suffix = String::new();
+    let mut prelude = LeanString::new();
+    let mut suffix = LeanString::new();
     let runtime_package = conventions.runtime.package.as_str();
     let trans_export = conventions.runtime.exports.trans.as_str();
     let i18n_accessor_export = conventions.runtime.exports.i18n_accessor.as_deref().ok_or(
@@ -167,12 +169,12 @@ fn create_runtime_binding_insertions(
     let indent = detect_script_indent(original_script_content);
     Ok(RuntimeInsertions {
         prelude: if prelude.is_empty() {
-            String::new()
+            LeanString::new()
         } else {
             format_inserted_script(&prelude, &indent, false, false)
         },
         suffix: if suffix.is_empty() {
-            String::new()
+            LeanString::new()
         } else {
             format_inserted_script(&suffix, &indent, true, false)
         },
@@ -208,7 +210,7 @@ fn format_inserted_script(
     indent: &str,
     leading_newline: bool,
     trailing_blank_line: bool,
-) -> String {
+) -> LeanString {
     let body = code
         .trim_end_matches('\n')
         .split('\n')
@@ -223,5 +225,5 @@ fn format_inserted_script(
         .join("\n");
     let leading = if leading_newline { "\n" } else { "" };
     let trailing = if trailing_blank_line { "\n\n" } else { "\n" };
-    format!("{leading}{body}{trailing}")
+    LeanString::from(format!("{leading}{body}{trailing}"))
 }

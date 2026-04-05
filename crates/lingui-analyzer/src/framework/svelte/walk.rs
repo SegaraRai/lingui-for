@@ -1,8 +1,10 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::ScriptLang;
 
 use super::super::AnalyzeOptions;
+use super::super::shared::helpers::text::text;
 use super::super::shared::js::{
     BindingParseMode, ExpressionParseCache, collect_declared_names_from_binding_source,
 };
@@ -10,12 +12,12 @@ use super::SvelteFrameworkError;
 
 #[derive(Debug, Default)]
 pub(super) struct TemplateWalkContext {
-    pub(super) scope_stack: Vec<Vec<String>>,
+    pub(super) scope_stack: Vec<Vec<LeanString>>,
     pub(super) expression_parse_cache: ExpressionParseCache,
 }
 
 impl TemplateWalkContext {
-    pub(super) fn shadowed_names(&self) -> impl Iterator<Item = &String> {
+    pub(super) fn shadowed_names(&self) -> impl Iterator<Item = &LeanString> {
         self.scope_stack.iter().flat_map(|frame| frame.iter())
     }
 }
@@ -232,7 +234,7 @@ fn visit_snippet_statement<V: SvelteTemplateVisitor>(
     Ok(())
 }
 
-pub(super) fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<String> {
+pub(super) fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<LeanString> {
     let tag = match node.kind() {
         "element" => node
             .children(&mut node.walk())
@@ -258,7 +260,7 @@ pub(super) fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<Str
         };
         let attribute_name = super::super::shared::helpers::text::text(source, name_node);
         if let Some(local_name) = attribute_name.strip_prefix("let:") {
-            names.push(local_name.to_string());
+            names.push(LeanString::from(local_name));
         }
     }
     names
@@ -267,7 +269,7 @@ pub(super) fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<Str
 pub(super) fn declared_names_from_const_tag(
     source: &str,
     node: Node<'_>,
-) -> Result<Vec<String>, SvelteFrameworkError> {
+) -> Result<Vec<LeanString>, SvelteFrameworkError> {
     declared_names_from_optional_raw_text(source, node, BindingParseMode::VariableDeclarator)
         .map(|names| names.unwrap_or_default())
 }
@@ -275,12 +277,12 @@ pub(super) fn declared_names_from_const_tag(
 pub(super) fn declared_names_from_each_start(
     source: &str,
     node: Node<'_>,
-) -> Result<Vec<String>, SvelteFrameworkError> {
+) -> Result<Vec<LeanString>, SvelteFrameworkError> {
     let Some(parameter) = node.child_by_field_name("parameter") else {
         return Ok(Vec::new());
     };
     Ok(collect_declared_names_from_binding_source(
-        super::super::shared::helpers::text::text(source, parameter),
+        text(source, parameter),
         BindingParseMode::FunctionParams,
         ScriptLang::Ts,
     )?)
@@ -290,16 +292,13 @@ pub(super) fn declared_names_from_optional_raw_text(
     source: &str,
     node: Node<'_>,
     mode: BindingParseMode,
-) -> Result<Option<Vec<String>>, SvelteFrameworkError> {
+) -> Result<Option<Vec<LeanString>>, SvelteFrameworkError> {
     let raw_text = find_first_descendant(node, "svelte_raw_text");
     let Some(raw_text) = raw_text else {
         return Ok(None);
     };
-    let names = collect_declared_names_from_binding_source(
-        super::super::shared::helpers::text::text(source, raw_text),
-        mode,
-        ScriptLang::Ts,
-    )?;
+    let names =
+        collect_declared_names_from_binding_source(text(source, raw_text), mode, ScriptLang::Ts)?;
     Ok(Some(names))
 }
 

@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
@@ -21,7 +22,7 @@ pub enum FrameworkKind {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct MacroPackage {
-    pub packages: Vec<String>,
+    pub packages: Vec<LeanString>,
 }
 
 impl MacroPackage {
@@ -90,16 +91,16 @@ impl MacroConventions {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeExportConventions {
-    pub trans: String,
+    pub trans: LeanString,
     #[tsify(optional)]
-    pub i18n_accessor: Option<String>,
+    pub i18n_accessor: Option<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeConventions {
-    pub package: String,
+    pub package: LeanString,
     pub exports: RuntimeExportConventions,
 }
 
@@ -108,16 +109,16 @@ pub struct RuntimeConventions {
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeBindingSeeds {
     #[tsify(optional)]
-    pub i18n_accessor_factory: Option<String>,
+    pub i18n_accessor_factory: Option<LeanString>,
     #[tsify(optional)]
-    pub context: Option<String>,
+    pub context: Option<LeanString>,
     #[tsify(optional)]
-    pub get_i18n: Option<String>,
+    pub get_i18n: Option<LeanString>,
     #[tsify(optional)]
-    pub translate: Option<String>,
+    pub translate: Option<LeanString>,
     #[tsify(optional)]
-    pub i18n_instance: Option<String>,
-    pub runtime_trans_component: String,
+    pub i18n_instance: Option<LeanString>,
+    pub runtime_trans_component: LeanString,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -125,9 +126,9 @@ pub struct RuntimeBindingSeeds {
 #[serde(rename_all = "camelCase")]
 pub struct SyntheticConventions {
     #[tsify(optional)]
-    pub expression_prefix: Option<String>,
+    pub expression_prefix: Option<LeanString>,
     #[tsify(optional)]
-    pub component_prefix: Option<String>,
+    pub component_prefix: Option<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -135,9 +136,9 @@ pub struct SyntheticConventions {
 #[serde(rename_all = "camelCase")]
 pub struct WrapperConventions {
     #[tsify(optional)]
-    pub reactive_translation: Option<String>,
+    pub reactive_translation: Option<LeanString>,
     #[tsify(optional)]
-    pub eager_translation: Option<String>,
+    pub eager_translation: Option<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]

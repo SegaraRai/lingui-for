@@ -7,6 +7,7 @@ pub mod framework;
 pub mod syntax;
 pub mod synthesis;
 
+use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::{Ts, Tsify};
 use wasm_bindgen::JsError;
@@ -49,9 +50,9 @@ pub enum AnalyzerError {
 }
 
 pub fn build_synthetic_module_for_framework(
-    source: &str,
-    source_name: &str,
-    synthetic_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
+    synthetic_name: &LeanString,
     whitespace: Option<WhitespaceMode>,
     conventions: &FrameworkConventions,
 ) -> Result<SyntheticModule, AnalyzerError> {
@@ -60,7 +61,7 @@ pub fn build_synthetic_module_for_framework(
             let analysis = AstroAdapter.analyze(
                 source,
                 &AnalyzeOptions {
-                    source_name: source_name.to_string(),
+                    source_name: source_name.clone(),
                     whitespace: whitespace.unwrap_or(WhitespaceMode::Astro),
                     conventions: conventions.clone(),
                 },
@@ -96,7 +97,7 @@ pub fn build_synthetic_module_for_framework(
             let analysis = SvelteAdapter.analyze(
                 source,
                 &AnalyzeOptions {
-                    source_name: source_name.to_string(),
+                    source_name: source_name.clone(),
                     whitespace: whitespace.unwrap_or(WhitespaceMode::Svelte),
                     conventions: conventions.clone(),
                 },
@@ -158,11 +159,14 @@ pub fn build_svelte_compile_plan(
 ) -> Result<SvelteCompilePlan, CompileError> {
     SvelteCompilePlan::build(
         &options.source,
-        options.source_name.as_deref().unwrap_or("source"),
+        options
+            .source_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("source")),
         options
             .synthetic_name
-            .as_deref()
-            .unwrap_or("synthetic-compile.tsx"),
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
         options.whitespace.unwrap_or(WhitespaceMode::Svelte),
         options.conventions.clone(),
         options.runtime_warnings.clone().unwrap_or_default(),
@@ -174,11 +178,14 @@ pub fn build_astro_compile_plan(
 ) -> Result<AstroCompilePlan, CompileError> {
     AstroCompilePlan::build(
         &options.source,
-        options.source_name.as_deref().unwrap_or("source"),
+        options
+            .source_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("source")),
         options
             .synthetic_name
-            .as_deref()
-            .unwrap_or("synthetic-compile.tsx"),
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
         options.whitespace.unwrap_or(WhitespaceMode::Astro),
         options.conventions.clone(),
         options.runtime_warnings.clone().unwrap_or_default(),
@@ -218,8 +225,14 @@ pub fn wasm_build_synthetic_module(
     let options = options.to_rust()?;
     let result = build_synthetic_module_for_framework(
         &options.source,
-        options.source_name.as_deref().unwrap_or("source"),
-        options.synthetic_name.as_deref().unwrap_or("synthetic.js"),
+        options
+            .source_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("source")),
+        options
+            .synthetic_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("synthetic.js")),
         options.whitespace,
         &options.conventions,
     )?;
@@ -230,9 +243,9 @@ pub fn wasm_build_synthetic_module(
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct CompilePlanOptions {
-    pub source: String,
-    pub source_name: Option<String>,
-    pub synthetic_name: Option<String>,
+    pub source: LeanString,
+    pub source_name: Option<LeanString>,
+    pub synthetic_name: Option<LeanString>,
     pub whitespace: Option<WhitespaceMode>,
     pub runtime_warnings: Option<RuntimeWarningOptions>,
     pub conventions: FrameworkConventions,
@@ -243,7 +256,7 @@ pub struct CompilePlanOptions {
 #[serde(rename_all = "camelCase")]
 pub struct SvelteFinishCompileOptions {
     pub plan: SvelteCompilePlan,
-    pub source: String,
+    pub source: LeanString,
     pub transformed_programs: TransformedPrograms,
 }
 
@@ -252,7 +265,7 @@ pub struct SvelteFinishCompileOptions {
 #[serde(rename_all = "camelCase")]
 pub struct AstroFinishCompileOptions {
     pub plan: AstroCompilePlan,
-    pub source: String,
+    pub source: LeanString,
     pub transformed_programs: TransformedPrograms,
 }
 
@@ -276,7 +289,10 @@ pub fn wasm_reinsert_transformed_declarations(
     let options = options.to_rust()?;
     let result = reinsert_transformed_declarations(
         &options.original_source,
-        options.source_name.as_deref().unwrap_or("source"),
+        options
+            .source_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("source")),
         &options.synthetic_module,
         &options.transformed_program,
     )?;

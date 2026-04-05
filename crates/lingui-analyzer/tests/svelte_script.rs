@@ -4,6 +4,7 @@ mod svelte_support;
 use std::collections::BTreeMap;
 
 use indoc::indoc;
+use lean_string::LeanString;
 
 use lingui_analyzer::{
     MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, RuntimeWarningOptions,
@@ -13,6 +14,10 @@ use lingui_analyzer::{
 };
 
 use svelte_support::{analyze_options_for_svelte, svelte_default_conventions};
+
+fn ls(text: &str) -> LeanString {
+    LeanString::from(text)
+}
 
 #[test]
 fn collects_svelte_script_macros_with_reactive_and_eager_flavors() {
@@ -115,9 +120,9 @@ fn allocates_unique_runtime_bindings_for_svelte_compile() {
     "#};
 
     let plan = SvelteCompilePlan::build(
-        source,
-        "Component.svelte",
-        "Component.svelte?compile",
+        &ls(source),
+        &ls("Component.svelte"),
+        &ls("Component.svelte?compile"),
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
         RuntimeWarningOptions::default(),
@@ -218,18 +223,15 @@ fn allows_core_macro_alias_packages_in_module_script() {
             (
                 MacroPackageKind::Core,
                 MacroPackage {
-                    packages: vec![
-                        "@lingui/core/macro".to_string(),
-                        "@acme/lingui-core".to_string(),
-                    ],
+                    packages: vec![ls("@lingui/core/macro"), ls("@acme/lingui-core")],
                 },
             ),
             (
                 MacroPackageKind::Svelte,
                 MacroPackage {
                     packages: vec![
-                        "lingui-for-svelte/macro".to_string(),
-                        "lingui-for-svelte/macro/alias".to_string(),
+                        ls("lingui-for-svelte/macro"),
+                        ls("lingui-for-svelte/macro/alias"),
                     ],
                 },
             ),
@@ -296,12 +298,12 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
         .collect::<Vec<_>>();
 
     assert!(summary.contains(&("t`root`", 1, vec![])));
-    assert!(summary.contains(&("t`each-shadowed`", 0, vec!["t".to_string()],)));
-    assert!(summary.contains(&("t`then-shadowed`", 0, vec!["t".to_string()],)));
-    assert!(summary.contains(&("t`catch-shadowed`", 0, vec!["t".to_string()],)));
-    assert!(summary.contains(&("t`snippet-shadowed`", 0, vec!["t".to_string()],)));
-    assert!(summary.contains(&("t`const-shadowed`", 0, vec!["t".to_string()],)));
-    assert!(summary.contains(&("t`let-shadowed`", 0, vec!["t".to_string()],)));
+    assert!(summary.contains(&("t`each-shadowed`", 0, vec![ls("t")],)));
+    assert!(summary.contains(&("t`then-shadowed`", 0, vec![ls("t")],)));
+    assert!(summary.contains(&("t`catch-shadowed`", 0, vec![ls("t")],)));
+    assert!(summary.contains(&("t`snippet-shadowed`", 0, vec![ls("t")],)));
+    assert!(summary.contains(&("t`const-shadowed`", 0, vec![ls("t")],)));
+    assert!(summary.contains(&("t`let-shadowed`", 0, vec![ls("t")],)));
     assert!(summary.contains(&("t`after-widget`", 1, vec![])));
     assert_eq!(
         analysis
@@ -353,16 +355,8 @@ fn treats_aliased_svelte_template_string_macros_as_shadowed_inside_binders() {
         .collect::<Vec<_>>();
 
     assert!(summary.contains(&("{$translate`root`}", 1, vec![])));
-    assert!(summary.contains(&(
-        "{$translate`each-shadowed`}",
-        0,
-        vec!["translate".to_string()],
-    )));
-    assert!(summary.contains(&(
-        "{$translate`slot-shadowed`}",
-        0,
-        vec!["translate".to_string()],
-    )));
+    assert!(summary.contains(&("{$translate`each-shadowed`}", 0, vec![ls("translate")],)));
+    assert!(summary.contains(&("{$translate`slot-shadowed`}", 0, vec![ls("translate")],)));
     assert!(summary.contains(&("{$translate`after`}", 1, vec![])));
 }
 
@@ -822,9 +816,9 @@ fn rejects_unsupported_svelte_trans_child_syntax_with_location() {
     "#};
 
     let error = SvelteCompilePlan::build(
-        source,
-        "Unsupported.svelte",
-        "Unsupported.svelte?compile",
+        &ls(source),
+        &ls("Unsupported.svelte"),
+        &ls("Unsupported.svelte?compile"),
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
         RuntimeWarningOptions::default(),

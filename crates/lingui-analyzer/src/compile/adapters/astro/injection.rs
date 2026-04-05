@@ -1,3 +1,5 @@
+use lean_string::LeanString;
+
 use crate::common::{IndexedText, Span, build_span_anchor_map};
 use crate::compile::CompileReplacementInternal;
 use crate::conventions::FrameworkConventions;
@@ -6,7 +8,7 @@ use super::{AstroAdapterError, AstroCompilePlan, AstroCompileRuntimeBindings};
 
 pub(super) fn append_runtime_injection_replacements(
     plan: &AstroCompilePlan,
-    source: &str,
+    source: &LeanString,
     replacements: &mut Vec<CompileReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
     let indexed_source = IndexedText::new(source);
@@ -25,7 +27,7 @@ pub(super) fn append_runtime_injection_replacements(
 
     if let Some(frontmatter) = &plan.frontmatter {
         let code = if frontmatter.has_remaining_content_after_import_removal {
-            format!("{prelude}\n")
+            LeanString::from(format!("{prelude}\n"))
         } else {
             prelude
         };
@@ -46,7 +48,7 @@ pub(super) fn append_runtime_injection_replacements(
             anchor_span.end,
         );
         replacements.push(CompileReplacementInternal::new(
-            "__runtime_frontmatter_prelude".to_string(),
+            LeanString::from_static_str("__runtime_frontmatter_prelude"),
             frontmatter.prelude_insert_point,
             frontmatter.prelude_insert_point,
             code,
@@ -58,10 +60,10 @@ pub(super) fn append_runtime_injection_replacements(
             && let Some(range) = frontmatter.trailing_whitespace_range
         {
             replacements.push(CompileReplacementInternal::new(
-                "__runtime_frontmatter_trailing_ws".to_string(),
+                LeanString::from_static_str("__runtime_frontmatter_trailing_ws"),
                 range.start,
                 range.end,
-                String::new(),
+                LeanString::new(),
                 None,
                 Vec::new(),
             ));
@@ -69,7 +71,7 @@ pub(super) fn append_runtime_injection_replacements(
 
         if !suffix.is_empty() {
             replacements.push(CompileReplacementInternal::new(
-                "__runtime_frontmatter_suffix".to_string(),
+                LeanString::from_static_str("__runtime_frontmatter_suffix"),
                 frontmatter.content_span.end,
                 frontmatter.content_span.end,
                 suffix,
@@ -81,7 +83,7 @@ pub(super) fn append_runtime_injection_replacements(
     }
 
     let newline_for_suffix = if suffix.is_empty() { "" } else { "\n" };
-    let code = format!("---\n{prelude}{suffix}{newline_for_suffix}---\n");
+    let code = LeanString::from(format!("---\n{prelude}{suffix}{newline_for_suffix}---\n"));
     let source_map = build_span_anchor_map(
         plan.common.source_name.as_str(),
         &indexed_source,
@@ -90,7 +92,7 @@ pub(super) fn append_runtime_injection_replacements(
         0,
     );
     replacements.push(CompileReplacementInternal::new(
-        "__runtime_frontmatter_block".to_string(),
+        LeanString::from_static_str("__runtime_frontmatter_block"),
         0,
         0,
         code,
@@ -101,8 +103,8 @@ pub(super) fn append_runtime_injection_replacements(
 }
 
 struct FrontmatterInjections {
-    prelude: String,
-    suffix: String,
+    prelude: LeanString,
+    suffix: LeanString,
 }
 
 fn build_frontmatter_injections(
@@ -111,8 +113,8 @@ fn build_frontmatter_injections(
     bindings: &AstroCompileRuntimeBindings,
     conventions: &FrameworkConventions,
 ) -> Result<FrontmatterInjections, AstroAdapterError> {
-    let mut prelude = String::new();
-    let mut suffix = String::new();
+    let mut prelude = LeanString::new();
+    let mut suffix = LeanString::new();
     let runtime_package = conventions.runtime.package.as_str();
     let trans_export = conventions.runtime.exports.trans.as_str();
     let i18n_accessor_export = conventions.runtime.exports.i18n_accessor.as_deref().ok_or(

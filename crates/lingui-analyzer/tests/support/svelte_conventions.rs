@@ -1,10 +1,15 @@
 use std::collections::BTreeMap;
 
+use lean_string::LeanString;
 use lingui_analyzer::conventions::{
     FrameworkConventions, FrameworkKind, MacroConventions, MacroPackage, MacroPackageKind,
     RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions, SyntheticConventions,
     WrapperConventions,
 };
+
+fn ls(text: &str) -> LeanString {
+    LeanString::from(text)
+}
 
 pub fn svelte_default_conventions() -> FrameworkConventions {
     FrameworkConventions {
@@ -14,39 +19,39 @@ pub fn svelte_default_conventions() -> FrameworkConventions {
                 (
                     MacroPackageKind::Core,
                     MacroPackage {
-                        packages: vec!["@lingui/core/macro".to_string()],
+                        packages: vec![ls("@lingui/core/macro")],
                     },
                 ),
                 (
                     MacroPackageKind::Svelte,
                     MacroPackage {
-                        packages: vec!["lingui-for-svelte/macro".to_string()],
+                        packages: vec![ls("lingui-for-svelte/macro")],
                     },
                 ),
             ]),
         },
         runtime: RuntimeConventions {
-            package: "lingui-for-svelte/runtime".to_string(),
+            package: ls("lingui-for-svelte/runtime"),
             exports: RuntimeExportConventions {
-                trans: "RuntimeTrans".to_string(),
-                i18n_accessor: Some("createLinguiAccessors".to_string()),
+                trans: ls("RuntimeTrans"),
+                i18n_accessor: Some(ls("createLinguiAccessors")),
             },
         },
         bindings: RuntimeBindingSeeds {
-            i18n_accessor_factory: Some("createLinguiAccessors".to_string()),
-            context: Some("__l4s_ctx".to_string()),
-            get_i18n: Some("__l4s_getI18n".to_string()),
-            translate: Some("__l4s_translate".to_string()),
+            i18n_accessor_factory: Some(ls("createLinguiAccessors")),
+            context: Some(ls("__l4s_ctx")),
+            get_i18n: Some(ls("__l4s_getI18n")),
+            translate: Some(ls("__l4s_translate")),
             i18n_instance: None,
-            runtime_trans_component: "L4sRuntimeTrans".to_string(),
+            runtime_trans_component: ls("L4sRuntimeTrans"),
         },
         synthetic: Some(SyntheticConventions {
-            expression_prefix: Some("__lingui_for_svelte_expr_".to_string()),
-            component_prefix: Some("__lingui_for_svelte_component_".to_string()),
+            expression_prefix: Some(ls("__lingui_for_svelte_expr_")),
+            component_prefix: Some(ls("__lingui_for_svelte_component_")),
         }),
         wrappers: Some(WrapperConventions {
-            reactive_translation: Some("__lingui_for_svelte_reactive_translation__".to_string()),
-            eager_translation: Some("__lingui_for_svelte_eager_translation__".to_string()),
+            reactive_translation: Some(ls("__lingui_for_svelte_reactive_translation__")),
+            eager_translation: Some(ls("__lingui_for_svelte_eager_translation__")),
         }),
     }
 }

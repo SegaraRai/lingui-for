@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 
+use lean_string::LeanString;
+
 use crate::common::{
     FinalizedReplacement, IndexedSourceMap, IndexedText, MappedTextError, RenderedMappedText,
     build_final_output, indent_rendered_text, overlay_source_map_with_single_anchor,
@@ -23,17 +25,17 @@ pub enum EmitError {
 
 pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
     plan: &P,
-    source: &str,
-    transformed_declarations: &BTreeMap<String, RenderedMappedText>,
+    source: &LeanString,
+    transformed_declarations: &BTreeMap<LeanString, RenderedMappedText>,
 ) -> Result<Vec<CompileReplacementInternal>, EmitError> {
     let mut replacements = Vec::new();
     let common = plan.common();
     replacements.extend(common.import_removals.iter().map(|range| {
         CompileReplacementInternal::new(
-            format!("__import_remove_{}_{}", range.start, range.end),
+            LeanString::from(format!("__import_remove_{}_{}", range.start, range.end)),
             range.start,
             range.end,
-            String::new(),
+            LeanString::new(),
             None,
             Vec::new(),
         )
@@ -76,8 +78,8 @@ pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
 }
 
 pub(crate) fn finish_compile_from_internal_replacements(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     source_anchors: &[usize],
     replacements: Vec<CompileReplacementInternal>,
 ) -> Result<FinishedCompileInternal, EmitError> {
@@ -90,15 +92,15 @@ pub(crate) fn finish_compile_from_internal_replacements(
 
     Ok(FinishedCompileInternal {
         code: mapped.code,
-        source_name: source_name.to_string(),
+        source_name: source_name.clone(),
         source_map: mapped.indexed_source_map,
         replacements,
     })
 }
 
 fn assemble_output_with_source_map(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     source_anchors: &[usize],
     replacements: &[CompileReplacementInternal],
 ) -> Result<RenderedMappedText, EmitError> {

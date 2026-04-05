@@ -1,5 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 
+use lean_string::LeanString;
+
 use crate::common::{IndexedSourceMap, MappedText, MappedTextError, Span, source_map_to_json};
 use crate::extract::{SyntheticMapping, SyntheticModule};
 use crate::framework::{MacroCandidate, MacroImport, render_macro_import_line};
@@ -8,16 +10,16 @@ use crate::synthesis::{SynthesisPlan, SynthesisTarget, build_synthesis_plan};
 #[derive(thiserror::Error, Debug)]
 pub enum BuildSyntheticModuleError {
     #[error("missing synthetic target: {declaration_id}")]
-    MissingSyntheticTarget { declaration_id: String },
+    MissingSyntheticTarget { declaration_id: LeanString },
     #[error("duplicate synthetic target declaration_id `{declaration_id}`")]
-    DuplicateSyntheticTarget { declaration_id: String },
+    DuplicateSyntheticTarget { declaration_id: LeanString },
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
 }
 
 pub fn build_synthetic_module(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     synthetic_name: &str,
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
@@ -28,8 +30,8 @@ pub fn build_synthetic_module(
 }
 
 pub fn build_synthetic_module_from_plan(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     synthetic_name: &str,
     plan: &SynthesisPlan,
     source_anchors: &[usize],
@@ -71,7 +73,7 @@ pub fn build_synthetic_module_from_plan(
     let mappings = declaration_ids
         .iter()
         .map(|id| {
-            let target = targets_by_id.get(id.as_str()).copied().ok_or_else(|| {
+            let target = targets_by_id.get(id).copied().ok_or_else(|| {
                 BuildSyntheticModuleError::MissingSyntheticTarget {
                     declaration_id: id.clone(),
                 }
@@ -92,7 +94,7 @@ pub fn build_synthetic_module_from_plan(
     let source_map_json = build_synthetic_source_map(
         source,
         source_name,
-        import_line.as_deref(),
+        import_line.as_ref(),
         &targets_by_id,
         &declaration_ids,
         source_anchors,
@@ -101,10 +103,10 @@ pub fn build_synthetic_module_from_plan(
     .and_then(|map| source_map_to_json(map.source_map()));
 
     Ok(SyntheticModule {
-        source: out,
-        source_name: source_name.to_string(),
-        synthetic_name: synthetic_name.to_string(),
-        source_map_json,
+        source: LeanString::from(out),
+        source_name: LeanString::from(source_name),
+        synthetic_name: LeanString::from(synthetic_name),
+        source_map_json: source_map_json.map(LeanString::from),
         source_anchors: source_anchors.to_vec(),
         declaration_ids,
         original_spans,
@@ -115,10 +117,10 @@ pub fn build_synthetic_module_from_plan(
 
 fn build_targets_by_id(
     plan: &SynthesisPlan,
-) -> Result<HashMap<&str, &SynthesisTarget>, BuildSyntheticModuleError> {
+) -> Result<HashMap<&LeanString, &SynthesisTarget>, BuildSyntheticModuleError> {
     let mut targets_by_id = HashMap::with_capacity(plan.targets.len());
     for target in &plan.targets {
-        let declaration_id = target.declaration_id.as_str();
+        let declaration_id = &target.declaration_id;
         if targets_by_id.insert(declaration_id, target).is_some() {
             return Err(BuildSyntheticModuleError::DuplicateSyntheticTarget {
                 declaration_id: target.declaration_id.clone(),
@@ -129,31 +131,30 @@ fn build_targets_by_id(
 }
 
 fn build_synthetic_source_map(
-    source: &str,
-    source_name: &str,
-    import_line: Option<&str>,
-    targets_by_id: &HashMap<&str, &SynthesisTarget>,
-    declaration_ids: &[String],
+    source: &LeanString,
+    source_name: &LeanString,
+    import_line: Option<&LeanString>,
+    targets_by_id: &HashMap<&LeanString, &SynthesisTarget>,
+    declaration_ids: &[LeanString],
     _source_anchors: &[usize],
 ) -> Result<Option<IndexedSourceMap>, BuildSyntheticModuleError> {
     let mut mapped = MappedText::new(source_name, source);
 
     if let Some(line) = import_line {
-        mapped.push_unmapped(line);
+        mapped.push_unmapped_dynamic(line);
         mapped.push_unmapped("\n");
     }
 
     for declaration_id in declaration_ids {
-        let target = targets_by_id
-            .get(declaration_id.as_str())
-            .copied()
-            .ok_or_else(|| BuildSyntheticModuleError::MissingSyntheticTarget {
+        let target = targets_by_id.get(declaration_id).copied().ok_or_else(|| {
+            BuildSyntheticModuleError::MissingSyntheticTarget {
                 declaration_id: declaration_id.clone(),
-            })?;
+            }
+        })?;
         let declaration_map = target.normalized_rendered.indexed_source_map.clone();
 
         mapped.push_unmapped("const ");
-        mapped.push_unmapped(&target.declaration_id);
+        mapped.push_unmapped_dynamic(&target.declaration_id);
         mapped.push_unmapped(" = ");
         mapped.push(&target.normalized_code, declaration_map);
         mapped.push_unmapped(";\n");
@@ -167,6 +168,8 @@ fn build_synthetic_source_map(
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
+
     use crate::common::{RenderedMappedText, Span};
     use crate::framework::{
         MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
@@ -175,15 +178,19 @@ mod tests {
 
     use super::{BuildSyntheticModuleError, build_synthetic_module_from_plan};
 
+    fn ls(text: &str) -> LeanString {
+        LeanString::from(text)
+    }
+
     #[test]
     fn rejects_duplicate_synthetic_target_ids() {
         let target = SynthesisTarget {
-            declaration_id: "__lf_dup".to_string(),
+            declaration_id: ls("__lf_dup"),
             candidate: MacroCandidate {
-                id: "__mc_0_1".to_string(),
+                id: ls("__mc_0_1"),
                 kind: MacroCandidateKind::CallExpression,
-                imported_name: "t".to_string(),
-                local_name: "t".to_string(),
+                imported_name: ls("t"),
+                local_name: ls("t"),
                 flavor: MacroFlavor::Direct,
                 outer_span: Span::new(0, 1),
                 normalized_span: Span::new(0, 1),
@@ -192,9 +199,9 @@ mod tests {
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
             },
-            normalized_code: "t".to_string(),
+            normalized_code: ls("t"),
             normalized_rendered: RenderedMappedText {
-                code: "t".to_string(),
+                code: ls("t"),
                 indexed_source_map: None,
             },
             normalized_segments: Vec::new(),
@@ -204,8 +211,11 @@ mod tests {
             targets: vec![target.clone(), target],
         };
 
-        let error = build_synthetic_module_from_plan("t", "test.ts", "synthetic.ts", &plan, &[])
-            .expect_err("duplicate declaration ids should fail");
+        let source = ls("t");
+        let source_name = ls("test.ts");
+        let error =
+            build_synthetic_module_from_plan(&source, &source_name, "synthetic.ts", &plan, &[])
+                .expect_err("duplicate declaration ids should fail");
 
         assert!(matches!(
             error,

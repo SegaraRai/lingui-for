@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span};
@@ -377,7 +378,7 @@ fn collect_script_macro_imports(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(&module_specifier, conventions) {
+        if !is_macro_module_specifier(module_specifier, conventions) {
             continue;
         }
 
@@ -385,7 +386,7 @@ fn collect_script_macro_imports(
             source,
             child,
             base_offset,
-            &module_specifier,
+            &LeanString::from(module_specifier),
             &mut imports,
         );
     }
@@ -413,7 +414,7 @@ fn collect_script_macro_import_statement_spans(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(&module_specifier, conventions) {
+        if !is_macro_module_specifier(module_specifier, conventions) {
             continue;
         }
 
@@ -532,7 +533,7 @@ fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
             .map(|value_node| {
                 let raw_value = text(source, value_node);
                 unquote(raw_value)
-                    .unwrap_or_else(|| raw_value.to_string())
+                    .unwrap_or(raw_value)
                     .trim()
                     .to_ascii_lowercase()
             });

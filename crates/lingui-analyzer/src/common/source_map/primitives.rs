@@ -1,6 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::io::Cursor;
 
+use lean_string::LeanString;
 use sourcemap::{SourceMap, SourceMapBuilder};
 
 use crate::common::{IndexedText, MappedTextError};
@@ -143,8 +144,8 @@ pub(crate) struct IndexedToken {
     dst_col: u32,
     src_line: u32,
     src_col: u32,
-    source: String,
-    name: Option<String>,
+    source: LeanString,
+    name: Option<LeanString>,
 }
 
 impl IndexedToken {
@@ -204,7 +205,7 @@ impl IndexedSourceMap {
     pub(crate) fn clone_with_inserted_projections(
         &self,
         extras: impl IntoIterator<Item = OriginalAnchorProjection>,
-        fallback_source: &str,
+        fallback_source: &LeanString,
     ) -> Self {
         let mut extras = extras
             .into_iter()
@@ -214,9 +215,7 @@ impl IndexedSourceMap {
                 dst_col: projection.dst_col,
                 src_line: projection.src_line,
                 src_col: projection.src_col,
-                source: projection
-                    .source
-                    .unwrap_or_else(|| fallback_source.to_string()),
+                source: projection.source.unwrap_or_else(|| fallback_source.clone()),
                 name: None,
             })
             .collect::<Vec<_>>();
@@ -271,8 +270,8 @@ fn collect_indexed_tokens(source_map: &SourceMap) -> Vec<IndexedToken> {
                 dst_col: token.get_dst_col(),
                 src_line: token.get_src_line(),
                 src_col: token.get_src_col(),
-                source: token.get_source()?.to_string(),
-                name: token.get_name().map(str::to_string),
+                source: LeanString::from(token.get_source()?),
+                name: token.get_name().map(LeanString::from),
             })
         })
         .collect()
@@ -530,8 +529,8 @@ pub(crate) fn project_generated_position_to_original(
 pub(crate) struct IndexedProjection {
     pub(crate) src_line: u32,
     pub(crate) src_col: u32,
-    pub(crate) source: String,
-    pub(crate) name: Option<String>,
+    pub(crate) source: LeanString,
+    pub(crate) name: Option<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -540,7 +539,7 @@ pub(crate) struct OriginalAnchorProjection {
     pub(crate) dst_col: u32,
     pub(crate) src_line: u32,
     pub(crate) src_col: u32,
-    pub(crate) source: Option<String>,
+    pub(crate) source: Option<LeanString>,
 }
 
 impl IndexedProjection {

@@ -1,3 +1,5 @@
+use lean_string::LeanString;
+
 use crate::common::{MappedText, RenderedMappedText, compose_source_maps, source_map_to_json};
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_import_line};
@@ -11,9 +13,9 @@ use super::{
 };
 
 pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
-    source: &str,
-    source_name: &str,
-    synthetic_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
+    synthetic_name: &LeanString,
     whitespace_mode: WhitespaceMode,
     conventions: FrameworkConventions,
     runtime_warnings: RuntimeWarningOptions,
@@ -72,12 +74,13 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
 
     let runtime_requirements = P::compute_runtime_requirements(&targets);
     let common = CommonCompilePlan {
-        source_name: source_name.to_string(),
-        synthetic_name: synthetic_name.to_string(),
+        source_name: source_name.clone(),
+        synthetic_name: synthetic_name.clone(),
         synthetic_source: synthetic.code,
         synthetic_source_map_json: synthetic
             .indexed_source_map
-            .and_then(|map| source_map_to_json(map.source_map())),
+            .and_then(|map| source_map_to_json(map.source_map()))
+            .map(LeanString::from),
         source_anchors,
         synthetic_lang,
         conventions,
@@ -122,8 +125,8 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
 }
 
 fn build_compile_synthetic_source(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     synthetic_plan: &SynthesisPlan,
     prototypes: &[CompileTargetPrototype],
     _source_anchors: &[usize],
@@ -135,7 +138,7 @@ fn build_compile_synthetic_source(
     let mut output = MappedText::new(source_name, source);
 
     if let Some(line) = render_macro_import_line(&synthetic_plan.imports) {
-        output.push_unmapped(line);
+        output.push_unmapped_dynamic(line);
         output.push_unmapped("\n");
     }
 
@@ -160,7 +163,7 @@ fn build_compile_synthetic_source(
         };
 
         output.push_unmapped("const ");
-        output.push_unmapped(&target.declaration_id);
+        output.push_unmapped_dynamic(&target.declaration_id);
         output.push_unmapped(" = ");
         output.push(wrapped_code, wrapped_map);
         output.push_unmapped(";\n");
@@ -174,6 +177,8 @@ fn build_compile_synthetic_source(
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
+
     use super::build_compile_synthetic_source;
     use crate::common::{IndexedText, RenderedMappedText, Span, build_span_anchor_map};
     use crate::compile::{
@@ -186,21 +191,25 @@ mod tests {
     };
     use crate::synthesis::{NormalizedSegment, SynthesisPlan, SynthesisTarget};
 
+    fn ls(text: &str) -> LeanString {
+        LeanString::from(text)
+    }
+
     fn import(source: &str, imported_name: &str, local_name: &str) -> MacroImport {
         MacroImport {
-            source: source.to_string(),
-            imported_name: imported_name.to_string(),
-            local_name: local_name.to_string(),
+            source: ls(source),
+            imported_name: ls(imported_name),
+            local_name: ls(local_name),
             span: Span::new(0, 0),
         }
     }
 
     fn candidate(outer_span: Span) -> MacroCandidate {
         MacroCandidate {
-            id: "candidate".to_string(),
+            id: ls("candidate"),
             kind: MacroCandidateKind::TaggedTemplateExpression,
-            imported_name: "t".to_string(),
-            local_name: "t".to_string(),
+            imported_name: ls("t"),
+            local_name: ls("t"),
             flavor: MacroFlavor::Direct,
             outer_span,
             normalized_span: outer_span,
@@ -230,7 +239,9 @@ mod tests {
 
         assert_eq!(
             render_macro_import_line(&imports),
-            Some("import { alpha, beta as bLocal, zeta as zLocal } from \"pkg\";".to_string())
+            Some(ls(
+                "import { alpha, beta as bLocal, zeta as zLocal } from \"pkg\";"
+            ))
         );
     }
 
@@ -249,8 +260,9 @@ mod tests {
             import("pkg", "alpha", "alpha"),
         ];
 
-        let rendered =
-            Some("import { alpha, beta as bLocal, zeta as zLocal } from \"pkg\";".to_string());
+        let rendered = Some(ls(
+            "import { alpha, beta as bLocal, zeta as zLocal } from \"pkg\";",
+        ));
 
         assert_eq!(render_macro_import_line(&ordered), rendered);
         assert_eq!(render_macro_import_line(&reversed), rendered);
@@ -268,7 +280,7 @@ mod tests {
             render_macro_import_line(&imports),
             Some(
                 "import { alpha, zeta as zLocal } from \"a-pkg\";\nimport { beta } from \"z-pkg\";"
-                    .to_string()
+                    .into()
             )
         );
     }
@@ -276,15 +288,17 @@ mod tests {
     #[test]
     fn preserves_wrapped_source_map_when_normalized_map_is_missing() {
         let source = "source";
+        let source_text = ls(source);
+        let source_name = ls("test.ts");
         let normalized_code = "wrapped".to_string();
         let synthetic_plan = SynthesisPlan {
             imports: Vec::new(),
             targets: vec![SynthesisTarget {
-                declaration_id: "__lf_0".to_string(),
+                declaration_id: ls("__lf_0"),
                 candidate: candidate(Span::new(0, source.len())),
-                normalized_code: normalized_code.clone(),
+                normalized_code: LeanString::from(normalized_code.clone()),
                 normalized_rendered: RenderedMappedText {
-                    code: normalized_code.clone(),
+                    code: LeanString::from(normalized_code.clone()),
                     indexed_source_map: None,
                 },
                 normalized_segments: Vec::new(),
@@ -293,13 +307,13 @@ mod tests {
         let prototypes = vec![prototype(Span::new(0, source.len()))];
 
         let rendered = build_compile_synthetic_source(
-            source,
-            "test.ts",
+            &source_text,
+            &source_name,
             &synthetic_plan,
             &prototypes,
             &[0, source.len()],
             |_, normalized_source| {
-                let indexed_source = IndexedText::new(source);
+                let indexed_source = IndexedText::new(&source_text);
                 Ok(RenderedMappedText {
                     code: normalized_source.code.clone(),
                     indexed_source_map: build_span_anchor_map(
@@ -330,15 +344,17 @@ mod tests {
     #[test]
     fn preserves_normalized_source_map_when_wrapped_map_is_missing() {
         let source = "t`hello`";
-        let indexed_source = IndexedText::new(source);
+        let source_text = ls(source);
+        let source_name = ls("test.ts");
+        let indexed_source = IndexedText::new(&source_text);
         let synthetic_plan = SynthesisPlan {
             imports: Vec::new(),
             targets: vec![SynthesisTarget {
-                declaration_id: "__lf_0".to_string(),
+                declaration_id: ls("__lf_0"),
                 candidate: candidate(Span::new(0, source.len())),
-                normalized_code: source.to_string(),
+                normalized_code: ls(source),
                 normalized_rendered: RenderedMappedText {
-                    code: source.to_string(),
+                    code: ls(source),
                     indexed_source_map: build_span_anchor_map(
                         "test.ts",
                         &indexed_source,
@@ -357,8 +373,8 @@ mod tests {
         let prototypes = vec![prototype(Span::new(0, source.len()))];
 
         let rendered = build_compile_synthetic_source(
-            source,
-            "test.ts",
+            &source_text,
+            &source_name,
             &synthetic_plan,
             &prototypes,
             &[0, source.len()],
