@@ -58,20 +58,11 @@
       values: {
         0: String(selectedPath ?? ""),
         localeLabel: localeLabel
-      },
-      components: {
-        0: {
-          kind: "element",
-          tag: "strong",
-          props: {}
-        },
-        1: {
-          kind: "element",
-          tag: "span",
-          props: {}
-        }
       }
-    }} />
+    }}>
+    {#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}
+    {#snippet component_1(children)}<span>{@render children?.()}</span>{/snippet}
+    </L4sRuntimeTrans>
   </p>
   <ul class="grid gap-2">
     {#each relatedPaths as path}

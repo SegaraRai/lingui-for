@@ -63,6 +63,11 @@ msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} 
 msgid "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
 msgstr "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
 
+#. placeholder {0}: highlightedQueue.length
+#: src/routes/playground/rich-text/+page.svelte:52
+msgid "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
+msgstr "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
+
 #: src/routes/playground/+page.svelte:26
 #: src/routes/playground/syntax/+page.svelte:32
 msgid "$t across Svelte syntax positions"
@@ -211,7 +216,7 @@ msgid "Each route keeps one category of Lingui-for-Svelte behavior easy to inspe
 msgstr "Each route keeps one category of Lingui-for-Svelte behavior easy to inspect, extract, compile, and test."
 
 #: src/routes/playground/+page.svelte:32
-#: src/routes/playground/rich-text/+page.svelte:13
+#: src/routes/playground/rich-text/+page.svelte:17
 msgid "Embedded elements and components inside Trans"
 msgstr "Embedded elements and components inside Trans"
 
@@ -307,6 +312,10 @@ msgstr "Idle"
 #: src/routes/playground/basic/+page.svelte:32
 msgid "Immediate translation in markup."
 msgstr "Immediate translation in markup."
+
+#: src/routes/playground/rich-text/+page.svelte:40
+msgid "Imported review digest: <0/>"
+msgstr "Imported review digest: <0/>"
 
 #: src/routes/playground/components/+page.svelte:31
 #: src/routes/playground/reactive/+page.svelte:67
@@ -432,7 +441,7 @@ msgstr "Reactive"
 msgid "Reactivity"
 msgstr "Reactivity"
 
-#: src/routes/playground/rich-text/+page.svelte:21
+#: src/routes/playground/rich-text/+page.svelte:25
 msgid "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
 msgstr "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
 
@@ -442,11 +451,11 @@ msgstr "Real app"
 
 #: src/lib/app/PlaygroundNav.svelte:51
 #: src/routes/playground/+page.svelte:31
-#: src/routes/playground/rich-text/+page.svelte:10
+#: src/routes/playground/rich-text/+page.svelte:14
 msgid "Rich text"
 msgstr "Rich text"
 
-#: src/routes/playground/rich-text/+page.svelte:30
+#: src/routes/playground/rich-text/+page.svelte:34
 msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 msgstr "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 
@@ -604,7 +613,7 @@ msgstr "This placeholder comes from $t inside an attribute"
 msgid "This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte."
 msgstr "This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte."
 
-#: src/routes/playground/rich-text/+page.svelte:16
+#: src/routes/playground/rich-text/+page.svelte:20
 msgid "This route focuses on translated markup with both native elements and Svelte components."
 msgstr "This route focuses on translated markup with both native elements and Svelte components."
 
@@ -649,6 +658,10 @@ msgstr "Toggle status"
 #: src/routes/playground/syntax/+page.svelte:54
 msgid "Toggle the status branch"
 msgstr "Toggle the status branch"
+
+#: src/routes/playground/rich-text/+page.svelte:46
+msgid "Translation previews can show <0/> and <1/> in the same sentence."
+msgstr "Translation previews can show <0/> and <1/> in the same sentence."
 
 #: src/routes/playground/syntax/+page.svelte:44
 msgid "Type to filter syntax examples"

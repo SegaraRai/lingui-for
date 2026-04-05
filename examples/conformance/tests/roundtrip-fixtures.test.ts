@@ -735,7 +735,6 @@ const fixtures: readonly DetectionFixture[] = [
       },
       {
         contract: "boundary-preservation",
-        fails: true, // runtime component lowering in the synthetic roundtrip still coalesces the object root inside the lowered values payload
         name: "complex component data start",
         original: /markupData(?=\.location\.path \?\? "")/,
         generated: /(?<=String\()markupData(?=\.location\.path \?\? "")/,
@@ -743,7 +742,6 @@ const fixtures: readonly DetectionFixture[] = [
       },
       {
         contract: "boundary-preservation",
-        fails: true, // runtime component lowering in the synthetic roundtrip still coalesces the member-access chain inside the lowered values payload
         name: "complex component location start",
         original: /(?<=markupData\.)location\.path \?\?/,
         generated: /(?<=String\(markupData\.)location\.path \?\?/,
@@ -751,7 +749,6 @@ const fixtures: readonly DetectionFixture[] = [
       },
       {
         contract: "boundary-preservation",
-        fails: true, // runtime component lowering in the synthetic roundtrip still coalesces the property access and following nullish expression
         name: "complex component path start",
         original: /(?<=markupData\.location\.)path \?\? ""/,
         generated: /(?<=String\(markupData\.location\.)path \?\? ""/,
@@ -767,7 +764,6 @@ const fixtures: readonly DetectionFixture[] = [
       },
       {
         contract: "boundary-preservation",
-        fails: true, // runtime component lowering in the synthetic roundtrip does not preserve a stable token start for the empty-string literal
         name: "complex component empty string start",
         original: /(?<=markupData\.location\.path \?\? )""/,
         generated: /(?<=String\(markupData\.location\.path \?\? )""/,
@@ -851,7 +847,6 @@ const fixtures: readonly DetectionFixture[] = [
       },
       {
         contract: "boundary-preservation",
-        fails: true, // runtime component lowering in the synthetic roundtrip still coalesces the object root inside the lowered values payload
         name: "complex component data start",
         original: /markupData(?=\.location\.path \?\? "")/,
         generated: /(?<=String\()markupData(?=\.location\.path \?\? "")/,
@@ -859,7 +854,6 @@ const fixtures: readonly DetectionFixture[] = [
       },
       {
         contract: "boundary-preservation",
-        fails: true, // runtime component lowering in the synthetic roundtrip still coalesces the member-access chain inside the lowered values payload
         name: "complex component location start",
         original: /(?<=markupData\.)location\.path \?\?/,
         generated: /(?<=String\(markupData\.)location\.path \?\?/,
@@ -867,7 +861,6 @@ const fixtures: readonly DetectionFixture[] = [
       },
       {
         contract: "boundary-preservation",
-        fails: true, // runtime component lowering in the synthetic roundtrip still coalesces the property access and following nullish expression
         name: "complex component path start",
         original: /(?<=markupData\.location\.)path \?\? ""/,
         generated: /(?<=String\(markupData\.location\.)path \?\? ""/,
@@ -883,7 +876,6 @@ const fixtures: readonly DetectionFixture[] = [
       },
       {
         contract: "boundary-preservation",
-        fails: true, // runtime component lowering in the synthetic roundtrip does not preserve a stable token start for the empty-string literal
         name: "complex component empty string start",
         original: /(?<=markupData\.location\.path \?\? )""/,
         generated: /(?<=String\(markupData\.location\.path \?\? )""/,

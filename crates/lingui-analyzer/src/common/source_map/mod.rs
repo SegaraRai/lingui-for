@@ -3,7 +3,7 @@ mod primitives;
 mod recipes;
 
 pub use mapped_text::MappedTextError;
-pub(crate) use mapped_text::{MappedText, RenderedMappedText, build_segmented_map};
+pub(crate) use mapped_text::{MappedText, RenderedMappedText};
 pub(crate) use primitives::{
     IndexedSourceMap, compose_source_maps, extract_local_submap,
     overlay_source_map_with_single_anchor, parse_source_map, source_map_to_json,

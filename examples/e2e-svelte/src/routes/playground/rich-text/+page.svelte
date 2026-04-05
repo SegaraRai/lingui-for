@@ -2,6 +2,10 @@
   import { t, Trans } from "lingui-for-svelte/macro";
 
   import InlineBadge from "$lib/playground/InlineBadge.svelte";
+
+  const htmlDigest = "<strong>Locale review digest</strong>";
+  const highlightedQueue = ["North", "West", "South"];
+  let selectedRegion = $state("Kansai");
 </script>
 
 <section class="card border-base-300 bg-base-100 border shadow-lg">
@@ -32,6 +36,32 @@
           Lingui's message extraction flow.
         </Trans>
       </p>
+      <p>
+        <Trans>
+          Imported review digest:
+          {@html htmlDigest}
+        </Trans>
+      </p>
+      <p>
+        <Trans>
+          Translation previews can show {@render textSummary()} and
+          {@render htmlSummary()} in the same sentence.
+        </Trans>
+      </p>
+      <div>
+        <Trans>
+          <p>The current locale review can summarize nested details such as</p>
+          <ul>
+            <li>
+              <em>{highlightedQueue.length} highlighted queue items</em>, plus
+            </li>
+            <li>the selected region {selectedRegion}.</li>
+          </ul>
+        </Trans>
+      </div>
     </div>
   </div>
 </section>
+
+{#snippet textSummary()}<span>plain text</span>{/snippet}
+{#snippet htmlSummary()}<span><em>highlighted markup</em></span>{/snippet}

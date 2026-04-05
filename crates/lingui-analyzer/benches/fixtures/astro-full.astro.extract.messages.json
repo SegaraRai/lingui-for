@@ -137,7 +137,7 @@
     "origin": [
       "astro-full.astro",
       560,
-      0
+      22
     ]
   },
   {
@@ -199,7 +199,7 @@
     "origin": [
       "astro-full.astro",
       611,
-      0
+      20
     ]
   },
   {
@@ -214,7 +214,7 @@
     "origin": [
       "astro-full.astro",
       624,
-      0
+      24
     ]
   },
   {
@@ -227,7 +227,7 @@
     "origin": [
       "astro-full.astro",
       627,
-      0
+      24
     ]
   },
   {
@@ -279,7 +279,7 @@
     "origin": [
       "astro-full.astro",
       673,
-      27
+      37
     ]
   },
   {
@@ -311,7 +311,7 @@
     "origin": [
       "astro-full.astro",
       697,
-      0
+      20
     ]
   },
   {
@@ -336,7 +336,7 @@
     "origin": [
       "astro-full.astro",
       717,
-      0
+      26
     ]
   },
   {
@@ -359,7 +359,7 @@
     "origin": [
       "astro-full.astro",
       749,
-      0
+      24
     ]
   },
   {
@@ -373,14 +373,35 @@
     ]
   },
   {
-    "id": "YqL2gS",
-    "message": "Imported digest: <0>{htmlDigest}</0>",
-    "placeholders": {
-      "htmlDigest": "htmlDigest"
-    },
+    "id": "GM89YS",
+    "message": "Imported digest: <0/>",
+    "placeholders": {},
     "origin": [
       "astro-full.astro",
       785,
+      14
+    ]
+  },
+  {
+    "id": "8e7f33",
+    "message": "Also we can embed <0/> and <1/> directly in translations.",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      791,
+      14
+    ]
+  },
+  {
+    "id": "cKxDiJ",
+    "message": "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
+    "placeholders": {
+      "0": "highlightedQueue.length",
+      "selectedRegion": "selectedRegion"
+    },
+    "origin": [
+      "astro-full.astro",
+      798,
       14
     ]
   },
@@ -390,7 +411,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      797,
+      815,
       13
     ]
   },
@@ -404,7 +425,7 @@
     },
     "origin": [
       "astro-full.astro",
-      799,
+      817,
       10
     ]
   },
@@ -414,7 +435,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      801,
+      819,
       17
     ]
   },
@@ -426,8 +447,8 @@
     },
     "origin": [
       "astro-full.astro",
-      803,
-      0
+      821,
+      14
     ]
   },
   {
@@ -439,8 +460,8 @@
     },
     "origin": [
       "astro-full.astro",
-      809,
-      0
+      827,
+      16
     ]
   },
   {
@@ -451,8 +472,8 @@
     },
     "origin": [
       "astro-full.astro",
-      816,
-      0
+      834,
+      16
     ]
   },
   {
@@ -461,7 +482,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      832,
+      850,
       13
     ]
   },
@@ -473,8 +494,8 @@
     },
     "origin": [
       "astro-full.astro",
-      837,
-      0
+      855,
+      16
     ]
   },
   {
@@ -483,7 +504,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      845,
+      863,
       12
     ]
   },
@@ -495,8 +516,8 @@
     },
     "origin": [
       "astro-full.astro",
-      856,
-      21
+      874,
+      31
     ]
   },
   {
@@ -511,8 +532,8 @@
     },
     "origin": [
       "astro-full.astro",
-      861,
-      0
+      879,
+      20
     ]
   },
   {
@@ -525,8 +546,8 @@
     },
     "origin": [
       "astro-full.astro",
-      870,
-      0
+      888,
+      20
     ]
   }
 ]

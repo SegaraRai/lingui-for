@@ -2,30 +2,65 @@
 import { formatRichTextTranslation } from "@lingui-for/internal-shared-runtime";
 
 import { getLinguiContext } from "../core/context.ts";
-import RenderTransNodes from "./RenderTransNodes.astro";
-import type { TransComponentMap } from "./types.ts";
+import type { TransRenderNode } from "./types.ts";
 
 interface Props {
   id: string;
   message?: string | undefined;
   values?: Readonly<Record<string, unknown>> | undefined;
-  components?: TransComponentMap | undefined;
+  placeholders?: readonly string[] | undefined;
 }
 
-const { id, message, values = {}, components } = Astro.props;
+const { id, message, values = {}, placeholders } = Astro.props;
 const options = message != null ? { message } : {};
 
 const { i18n } = getLinguiContext(Astro.locals);
 const translated = i18n._(id, values, options);
-const nodes = components
-  ? formatRichTextTranslation(translated, components)
+
+function escapeHtml(value: string): string {
+  // Matches with Astro's html escaping, which uses html-escaper.
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+const placeholderSet =
+  placeholders && placeholders.length > 0 ? new Set(placeholders) : null;
+const nodes = placeholderSet
+  ? formatRichTextTranslation(translated, placeholderSet)
   : [];
+
+async function renderNodes(
+  nodesToRender: readonly TransRenderNode[],
+): Promise<string> {
+  const chunks = await Promise.all(
+    nodesToRender.map(async (node) => {
+      if (typeof node === "string") {
+        return escapeHtml(node);
+      }
+
+      const childrenHtml = await renderNodes(node.children);
+      const slotName = `component_${node.placeholder}`;
+      if (!Astro.slots.has(slotName)) {
+        if (import.meta.env.DEV) {
+          console.warn(
+            `[lingui-for-astro] No slot found for placeholder "${node.placeholder}". Make sure your translation includes the correct placeholder.`,
+          );
+        }
+        return childrenHtml;
+      }
+
+      return await Astro.slots.render(slotName, [childrenHtml]);
+    }),
+  );
+
+  return chunks.join("");
+}
+
+const html = placeholderSet ? await renderNodes(nodes) : null;
 ---
 
-{
-  components ? (
-    <RenderTransNodes nodes={nodes} components={components} />
-  ) : (
-    translated
-  )
-}
+{html == null ? translated : <Fragment set:html={html} />}

@@ -140,17 +140,16 @@ fn normalize_i18n_comment_layout_rendered(
 
     for span in collapse_spans {
         mapped.append_slice_from(&original, Span::new(cursor, span.start))?;
-        if let Some(map) = build_span_anchor_map(
-            source_name.as_str(),
-            &indexed_input,
+        mapped.push(
             " ",
-            span.start,
-            span.end,
-        ) {
-            mapped.push_pre_mapped(" ", map);
-        } else {
-            mapped.push_unmapped(" ");
-        }
+            build_span_anchor_map(
+                source_name.as_str(),
+                &indexed_input,
+                " ",
+                span.start,
+                span.end,
+            ),
+        );
         cursor = span.end;
     }
 

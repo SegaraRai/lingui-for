@@ -147,7 +147,7 @@ msgstr "Result tabs"
 msgid "Say hello to Lingui."
 msgstr "Say hello to Lingui."
 
-#: src/components/MacroFamilyOverview.astro:115
+#: src/components/MacroFamilyOverview.astro:118
 msgid "See full demo"
 msgstr "See full demo"
 
@@ -167,7 +167,7 @@ msgstr "selectOrdinal"
 msgid "SelectOrdinal"
 msgstr "SelectOrdinal"
 
-#: src/components/MacroFamilyOverview.astro:95
+#: src/components/MacroFamilyOverview.astro:98
 msgid "Snippet"
 msgstr "Snippet"
 

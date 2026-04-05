@@ -2,6 +2,7 @@ import { TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
+import type { RuntimeWarningOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   assertRangeMapping,
   type Detection,
@@ -17,11 +18,13 @@ async function expectTransformed(
   source: string,
   options: {
     filename?: string;
+    runtimeWarnings?: RuntimeWarningOptions;
     whitespace?: "jsx" | "auto" | "astro" | "svelte";
   } = {},
 ) {
   const result = await transformAstro(source, {
     filename: options.filename ?? "/virtual/App.astro",
+    runtimeWarnings: options.runtimeWarnings,
     whitespace: options.whitespace,
   });
   expect.assert(result != null);
@@ -83,12 +86,83 @@ describe("transformAstro", () => {
     expect(code).toContain(
       'import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";',
     );
-    expect(code).toContain("<L4aRuntimeTrans {.../*i18n*/ {");
+    expect(code).toContain(
+      '<L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {',
+    );
     expect(code).not.toContain("<LocalTrans");
     expect(code).toContain('message: "Read the <0>docs</0>, {name}."');
-    expect(code).toContain('kind: "element"');
-    expect(code).toContain('tag: "a"');
-    expect(code).toContain('href: "/docs"');
+    expect(code).toContain(
+      '<fragment slot="component_0">{(children) => <a href="/docs"><Fragment set:html={children} /></a>}</fragment>',
+    );
+    expect(code).not.toContain("components: {");
+  });
+
+  test("supports set:html wrappers as translated html holes", async () => {
+    const source = dedent`
+      ---
+      import { Trans as LocalTrans } from "lingui-for-astro/macro";
+      const content = "<em>fallback</em>";
+      ---
+
+      <LocalTrans><article set:html={content}>Ignored child</article></LocalTrans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      '<fragment slot="component_0">{(children) => (children !== "" && console.warn(',
+    );
+    expect(code).toContain(
+      "<article set:html={content}>Ignored child</article>",
+    );
+  });
+
+  test("supports set:text wrappers as translated text holes", async () => {
+    const source = dedent`
+      ---
+      import { Trans as LocalTrans } from "lingui-for-astro/macro";
+      const content = "fallback";
+      ---
+
+      <LocalTrans><article set:text={content}>Ignored child</article></LocalTrans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      '<fragment slot="component_0">{(children) => (children !== "" && console.warn(',
+    );
+    expect(code).toContain(
+      "<article set:text={content}>Ignored child</article>",
+    );
+  });
+
+  test("supports disabling content-override runtime warnings", async () => {
+    const source = dedent`
+      ---
+      import { Trans as LocalTrans } from "lingui-for-astro/macro";
+      const content = "<em>fallback</em>";
+      ---
+
+      <LocalTrans><article set:html={content}>Ignored child</article></LocalTrans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+      runtimeWarnings: { transContentOverride: "off" },
+    });
+    const code = compact(result.code);
+
+    expect(code).not.toContain("console.warn(");
+    expect(code).toContain(
+      '<fragment slot="component_0">{(children) => <article set:html={content}>Ignored child</article>}</fragment>',
+    );
   });
 
   test("lowers nested TSX macros inside Trans children", async () => {
@@ -592,11 +666,6 @@ describe("transformAstro source map discipline", () => {
       original: /t`Range check with surrounding whitespace`/,
       generated:
         /__l4a_i18n\._\([^)]+message: "Range check with surrounding whitespace"[^)]+\)/,
-    },
-    {
-      name: "component transform",
-      original: "<Trans>Mapped component message</Trans>",
-      generated: /<L4aRuntimeTrans\b[\s\S]*?\/>/,
     },
     {
       name: "label binding is preserved",

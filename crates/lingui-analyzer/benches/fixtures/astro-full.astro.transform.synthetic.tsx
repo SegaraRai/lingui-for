@@ -58,39 +58,52 @@ const __lf_32 = translate(
                       );
 const __lf_33 = translate`Activity stream`;
 const __lf_34 = <Trans>
-                Imported digest:{" "}<span>{htmlDigest}</span>
+                Imported digest:{" "}<span set:html={htmlDigest} />
               </Trans>;
-const __lf_35 = translate`Status digest`;
-const __lf_36 = <Plural
+const __lf_35 = <Trans>
+                Also we can embed{" "}<span set:text="some text" />{" "}and{" "}<span
+                  set:html="<em>some HTML</em>"
+                />{" "}directly in translations.
+              </Trans>;
+const __lf_36 = <Trans>
+                <p>Maybe we even have some nested content to summarize, like</p>{" "}<ul>
+                  <li>
+                    <em>{highlightedQueue.length} highlighted queue items</em> and
+                  </li>
+                  <li>a selected region of {selectedRegion}.</li>
+                </ul>
+              </Trans>;
+const __lf_37 = translate`Status digest`;
+const __lf_38 = <Plural
             value={highlightedQueue.length}
             one={translate`There is one highlighted queue item.`}
             other={translate(
               msg`There are ${String(highlightedQueue.length)} highlighted queue items.`,
             )}
           />;
-const __lf_37 = translate(
+const __lf_39 = translate(
                 msg`The queue is ${String(filteredQueue.length > 8 ? "very busy" : "manageable")} and ${String(highlightedQueue.length > 2 ? "requires escalation" : "is within normal review limits")}.`,
               );
-const __lf_38 = translate(
+const __lf_40 = translate(
                 msg`Nested expression summary: ${String(
                   highlightedQueue.length > 0
                     ? `highlighted:${highlightedQueue[0]?.id ?? "none"}`
                     : `region:${selectedRegion}`,
                 )}.`,
               );
-const __lf_39 = translate`Reviewer notes`;
-const __lf_40 = translate(
+const __lf_41 = translate`Reviewer notes`;
+const __lf_42 = translate(
                 msg`${String(activity.length)} recent notes are attached to this dashboard.`,
               );
-const __lf_41 = translate`These notes mirror the kind of mixed script and template content that the compile benchmark should exercise.`;
-const __lf_42 = translate(msg`Note ${String(index + 1)}`);
-const __lf_43 = translate(
+const __lf_43 = translate`These notes mirror the kind of mixed script and template content that the compile benchmark should exercise.`;
+const __lf_44 = translate(msg`Note ${String(index + 1)}`);
+const __lf_45 = translate(
                     msg`${item.owner} asked ${item.assignee} to review ${String(
                       item.pathHint ?? "the current record",
                     )} with ${String(item.comments)} comments and ${String(
                       item.unread,
                     )} unread updates.`,
                   );
-const __lf_44 = translate(
+const __lf_46 = translate(
                     msg`Priority ${String(item.priority)}, region ${String(item.region)}, attachments ${String(item.attachments)}.`,
                   );

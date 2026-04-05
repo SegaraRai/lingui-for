@@ -12,7 +12,9 @@ import transWorkbench from "virtual:macro-workbench?demo=src/demos/macros/trans-
 
 Use `Trans` when a translator needs to preserve links, emphasis, or other embedded structure. It can
 also be used for non-rich-text messages, but its clearest advantage shows up when the message is
-naturally authored as markup.
+naturally authored as markup. Embedded markup is preserved as structured placeholders, interpolated
+values remain values instead of being baked into text, and translators can reorder or re-nest those
+placeholders when the target language reads better that way.
 
 For the framework-agnostic Lingui semantics, see the
 [official `Trans` reference](https://lingui.dev/ref/macro#trans).
@@ -67,9 +69,38 @@ function Component() {
 
 ## When `Trans` is a good fit
 
-- the translation includes links or emphasis
-- the structure matters to translators
+- the message includes links, emphasis, or other embedded markup
+- text and markup belong to the same translated sentence
+- translators may need to move or re-nest wrappers in the target language
 - the message reads more naturally as markup than as a string template
+
+## Supported content at a glance
+
+`lingui-for-svelte` and `lingui-for-astro` both support the common rich-text core:
+
+- plain text and interpolated values
+- nested HTML and component wrappers
+- self-closing wrappers used as placeholders
+
+Framework-native rich-text holes are also supported:
+
+| Feature             | Svelte          | Astro            |
+| ------------------- | --------------- | ---------------- |
+| Raw HTML hole       | `{@html ...}`   | `set:html={...}` |
+| Render/snippet hole | `{@render ...}` | n/a              |
+| Text hole           | n/a             | `set:text={...}` |
+
+## Framework-specific notes
+
+The exact set of allowed wrapper syntax depends on the template language.
+
+- Svelte supports wrapper directives, `let:`, `{@html}`, and `{@render}` inside `Trans`. See
+  [Trans in Svelte](/frameworks/svelte/trans-component).
+- Astro supports `class:list`, `transition:*`, `client:*`, `server:*`, `set:html`, and `set:text`
+  inside `Trans`. See [Trans in Astro](/frameworks/astro/trans-component).
+
+Some constructs are still intentionally unsupported because they are not wrapper-shaped rich-text
+content. Examples include block syntax in Svelte and `script`, `style`, or `is:raw` in Astro.
 
 ## Whitespace between child nodes
 

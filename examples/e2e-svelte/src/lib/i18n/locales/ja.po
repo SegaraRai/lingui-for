@@ -63,6 +63,11 @@ msgstr "{rank, selectordinal, =1 {近道をする} =2 {遠回りをする} other
 msgid "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
 msgstr "{role, select, female {彼女はロケール切り替えを承認しました。} other {彼らはロケール切り替えを承認しました。}}"
 
+#. placeholder {0}: highlightedQueue.length
+#: src/routes/playground/rich-text/+page.svelte:52
+msgid "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
+msgstr "<0>現在のロケールレビューでは、次のような詳細を要約できます</0> <1><2><3>{0} 件の注目キュー項目</3>と</2><4>選択中のリージョン {selectedRegion}。</4></1>"
+
 #: src/routes/playground/+page.svelte:26
 #: src/routes/playground/syntax/+page.svelte:32
 msgid "$t across Svelte syntax positions"
@@ -211,7 +216,7 @@ msgid "Each route keeps one category of Lingui-for-Svelte behavior easy to inspe
 msgstr "各ルートは Lingui for Svelte の 1 つの挙動に絞り、インスペクト、抽出、コンパイル、テストをしやすくしています。"
 
 #: src/routes/playground/+page.svelte:32
-#: src/routes/playground/rich-text/+page.svelte:13
+#: src/routes/playground/rich-text/+page.svelte:17
 msgid "Embedded elements and components inside Trans"
 msgstr "Trans 内の埋め込み要素とコンポーネント"
 
@@ -307,6 +312,10 @@ msgstr "アイドル"
 #: src/routes/playground/basic/+page.svelte:32
 msgid "Immediate translation in markup."
 msgstr "マークアップ内でそのまま翻訳する例。"
+
+#: src/routes/playground/rich-text/+page.svelte:40
+msgid "Imported review digest: <0/>"
+msgstr "取り込み済みレビュー要約: <0/>"
 
 #: src/routes/playground/components/+page.svelte:31
 #: src/routes/playground/reactive/+page.svelte:67
@@ -432,7 +441,7 @@ msgstr "リアクティブ"
 msgid "Reactivity"
 msgstr "リアクティビティ"
 
-#: src/routes/playground/rich-text/+page.svelte:21
+#: src/routes/playground/rich-text/+page.svelte:25
 msgid "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
 msgstr "<0>設定ページ</0>を開いて、<1>クッキーで保持されるロケール</1>の挙動を確認してください。"
 
@@ -442,11 +451,11 @@ msgstr "実アプリ"
 
 #: src/lib/app/PlaygroundNav.svelte:51
 #: src/routes/playground/+page.svelte:31
-#: src/routes/playground/rich-text/+page.svelte:10
+#: src/routes/playground/rich-text/+page.svelte:14
 msgid "Rich text"
 msgstr "リッチテキスト"
 
-#: src/routes/playground/rich-text/+page.svelte:30
+#: src/routes/playground/rich-text/+page.svelte:34
 msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 msgstr "リッチテキストでも<0>意味のある強調</0>を保ったまま、Lingui のメッセージ抽出フローを使えます。"
 
@@ -604,7 +613,7 @@ msgstr "このプレースホルダーは属性内の $t から来ています"
 msgid "This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte."
 msgstr "このルートでは、Svelte の @const、属性、スニペット、キー付きブロックなどの式位置を確認します。"
 
-#: src/routes/playground/rich-text/+page.svelte:16
+#: src/routes/playground/rich-text/+page.svelte:20
 msgid "This route focuses on translated markup with both native elements and Svelte components."
 msgstr "このルートでは、ネイティブ要素と Svelte コンポーネントの両方を含む翻訳済みマークアップに絞って確認します。"
 
@@ -649,6 +658,10 @@ msgstr "状態を切り替える"
 #: src/routes/playground/syntax/+page.svelte:54
 msgid "Toggle the status branch"
 msgstr "状態分岐を切り替える"
+
+#: src/routes/playground/rich-text/+page.svelte:46
+msgid "Translation previews can show <0/> and <1/> in the same sentence."
+msgstr "翻訳プレビューでは、同じ文の中に <0/> と <1/> を表示できます。"
 
 #: src/routes/playground/syntax/+page.svelte:44
 msgid "Type to filter syntax examples"

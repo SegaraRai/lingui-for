@@ -4,7 +4,7 @@ use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, MappedTextError, RenderedMappedText, Span,
     build_span_anchor_map,
 };
-use crate::framework::parse::{ParseError, parse_tsx};
+use crate::framework::parse::ParseError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RuntimeComponentError {
@@ -19,13 +19,13 @@ pub enum RuntimeComponentError {
     #[error("expected JSX element initializer for transformed component")]
     ExpectedJsxElementInitializerForTransformedComponent,
     #[error("unsupported JSX attribute node kind: {kind}")]
-    UnsupportedJsxAttributeNodeKind { kind: String },
+    UnsupportedJsxAttributeNodeKind { kind: &'static str },
     #[error("expected spread element inside JSX spread attribute")]
     ExpectedSpreadElementInJsxSpreadAttribute,
     #[error("missing JSX attribute name")]
     MissingJsxAttributeName,
     #[error("unsupported JSX attribute value kind: {kind}")]
-    UnsupportedJsxAttributeValueKind { kind: String },
+    UnsupportedJsxAttributeValueKind { kind: &'static str },
     #[error("missing variable declarator while lowering object expression")]
     MissingVariableDeclaratorWhileLoweringObjectExpression,
     #[error("missing object expression initializer")]
@@ -34,12 +34,14 @@ pub enum RuntimeComponentError {
     ExpectedObjectExpressionForRuntimeTransComponents,
     #[error("missing object pair key")]
     MissingObjectPairKey,
+    #[error("runtime component placeholder key contains unsupported characters: {key}")]
+    InvalidRuntimePlaceholderKey { key: String },
     #[error("missing object pair value")]
     MissingObjectPairValue,
     #[error("missing spread argument in object expression")]
     MissingSpreadArgumentInObjectExpression,
     #[error("unsupported object child kind in runtime component lowering: {kind}")]
-    UnsupportedObjectChildKind { kind: String },
+    UnsupportedObjectChildKind { kind: &'static str },
     #[error("expected JSX element descriptor")]
     ExpectedJsxElementDescriptor,
     #[error("missing JSX name in component descriptor")]
@@ -53,96 +55,12 @@ pub enum RuntimeComponentError {
     #[error("missing JSX expression value")]
     MissingJsxExpressionValue,
     #[error("unsupported JSX prop kind: {kind}")]
-    UnsupportedJsxPropKind { kind: String },
+    UnsupportedJsxPropKind { kind: &'static str },
     #[error("translated node offset became negative")]
     TranslatedNodeOffsetNegative,
 }
 
-pub(crate) fn lower_runtime_component_markup(
-    source_name: &str,
-    original_source: &str,
-    declaration: &RenderedMappedText,
-    runtime_component_name: &str,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
-    let declaration_source = IndexedText::new(&declaration.code);
-    let original_source = IndexedText::new(original_source);
-    let mapped_input = MappedText::from_rendered(
-        source_name,
-        original_source.as_str(),
-        &declaration.code,
-        declaration.indexed_source_map.as_ref(),
-    );
-    let wrapper_prefix = "const __lf = ";
-    let wrapped = format!("{wrapper_prefix}{};", declaration.code);
-    let tree = parse_tsx(&wrapped)?;
-    let root = tree.root_node();
-    let declarator = find_first_named_descendant(root, "variable_declarator")
-        .ok_or(RuntimeComponentError::MissingVariableDeclaratorForTransformedComponent)?;
-    let value = declarator
-        .child_by_field_name("value")
-        .ok_or(RuntimeComponentError::MissingInitializerForTransformedComponent)?;
-
-    convert_runtime_trans_root(
-        &original_source,
-        declaration.indexed_source_map.as_ref(),
-        &declaration_source,
-        &mapped_input,
-        value,
-        -(wrapper_prefix.len() as isize),
-        runtime_component_name,
-    )
-}
-
-fn convert_runtime_trans_root(
-    original_source: &IndexedText<'_>,
-    declaration_source_map: Option<&IndexedSourceMap>,
-    source: &IndexedText<'_>,
-    input: &MappedText<'_>,
-    node: Node<'_>,
-    base_offset: isize,
-    runtime_component_name: &str,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
-    let opening = match node.kind() {
-        "jsx_element" => node.child_by_field_name("open_tag"),
-        "jsx_self_closing_element" => Some(node),
-        _ => None,
-    }
-    .ok_or(RuntimeComponentError::ExpectedJsxElementInitializerForTransformedComponent)?;
-
-    let mut mapped = input.empty_like();
-    let root_span = translated_span(node, base_offset)?;
-    push_anchor_mapped(
-        &mut mapped,
-        declaration_source_map,
-        source,
-        original_source,
-        "<",
-        root_span.start,
-    );
-    push_anchor_mapped(
-        &mut mapped,
-        declaration_source_map,
-        source,
-        original_source,
-        runtime_component_name,
-        root_span.start,
-    );
-    append_rendered(
-        &mut mapped,
-        collect_jsx_attributes(source.as_str(), input, opening, base_offset)?,
-    );
-    push_anchor_mapped(
-        &mut mapped,
-        declaration_source_map,
-        source,
-        original_source,
-        " />",
-        root_span.end,
-    );
-    mapped.into_rendered().map_err(RuntimeComponentError::from)
-}
-
-fn push_anchor_mapped(
+pub(super) fn push_anchor_mapped(
     mapped: &mut MappedText<'_>,
     declaration_source_map: Option<&IndexedSourceMap>,
     declaration_source: &IndexedText<'_>,
@@ -150,26 +68,22 @@ fn push_anchor_mapped(
     text: &str,
     declaration_byte: usize,
 ) {
-    let Some(original_byte) = project_declaration_byte_to_original_byte(
+    let map = project_declaration_byte_to_original_byte(
         declaration_source_map,
         declaration_source,
         original_source,
         declaration_byte,
-    ) else {
-        mapped.push_unmapped(text);
-        return;
-    };
-    let Some(map) = build_span_anchor_map(
-        mapped.source_name(),
-        original_source,
-        text,
-        original_byte,
-        original_byte,
-    ) else {
-        mapped.push_unmapped(text);
-        return;
-    };
-    mapped.push_pre_mapped(text, map);
+    )
+    .and_then(|original_byte| {
+        build_span_anchor_map(
+            mapped.source_name(),
+            original_source,
+            text,
+            original_byte,
+            original_byte,
+        )
+    });
+    mapped.push(text, map);
 }
 
 fn project_declaration_byte_to_original_byte(
@@ -187,7 +101,7 @@ fn project_declaration_byte_to_original_byte(
     Some(byte)
 }
 
-fn push_copied_span<'a>(
+pub(super) fn push_copied_span<'a>(
     mapped: &mut MappedText<'a>,
     input: &MappedText<'a>,
     span: Span,
@@ -197,97 +111,7 @@ fn push_copied_span<'a>(
         .map_err(RuntimeComponentError::from)
 }
 
-fn collect_jsx_attributes(
-    source: &str,
-    input: &MappedText<'_>,
-    node: Node<'_>,
-    base_offset: isize,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
-    let mut rendered = input.empty_like();
-    let mut cursor = node.walk();
-    for child in node.children_by_field_name("attribute", &mut cursor) {
-        append_rendered(
-            &mut rendered,
-            convert_jsx_attribute(source, input, child, base_offset)?,
-        );
-    }
-    rendered
-        .into_rendered()
-        .map_err(RuntimeComponentError::from)
-}
-
-fn convert_jsx_attribute(
-    source: &str,
-    input: &MappedText<'_>,
-    node: Node<'_>,
-    base_offset: isize,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
-    match node.kind() {
-        "jsx_expression" => convert_jsx_spread_attribute(source, input, node, base_offset),
-        "jsx_attribute" => convert_jsx_named_attribute(source, input, node, base_offset),
-        other => Err(RuntimeComponentError::UnsupportedJsxAttributeNodeKind {
-            kind: other.to_string(),
-        }),
-    }
-}
-
-fn convert_jsx_spread_attribute(
-    source: &str,
-    input: &MappedText<'_>,
-    node: Node<'_>,
-    base_offset: isize,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
-    let span = translated_span(node, base_offset)?;
-    let spread = spread_element_node(node)
-        .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
-    let argument = spread_argument_node(spread)
-        .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
-
-    if let Some(object) = lowerable_object_expression_node(argument) {
-        let spread_span = translated_span(spread, base_offset)?;
-        let object_span = translated_span(object, base_offset)?;
-        let mut rendered = input.empty_like();
-        rendered.push_unmapped(" {...");
-        let prefix_start = (spread_span.start + 3).min(object_span.start);
-        let prefix_trimmed_start = source[prefix_start..object_span.start]
-            .find(|char: char| !char.is_ascii_whitespace())
-            .map(|offset| prefix_start + offset);
-        if let Some(prefix_trimmed_start) = prefix_trimmed_start {
-            push_copied_span(
-                &mut rendered,
-                input,
-                Span::new(prefix_trimmed_start, object_span.start),
-            )?;
-        }
-        append_rendered(
-            &mut rendered,
-            lower_object_expression_span(source, input, object_span, false, 0)?,
-        );
-        let suffix_trimmed_end = source[object_span.end..spread_span.end]
-            .rfind(|char: char| !char.is_ascii_whitespace())
-            .map(|offset| object_span.end + offset + 1);
-        if let Some(suffix_trimmed_end) = suffix_trimmed_end {
-            push_copied_span(
-                &mut rendered,
-                input,
-                Span::new(object_span.end, suffix_trimmed_end),
-            )?;
-        }
-        rendered.push_unmapped("}");
-        return rendered
-            .into_rendered()
-            .map_err(RuntimeComponentError::from);
-    }
-
-    let mut rendered = input.empty_like();
-    rendered.push_unmapped(" ");
-    push_copied_span(&mut rendered, input, span)?;
-    rendered
-        .into_rendered()
-        .map_err(RuntimeComponentError::from)
-}
-
-fn convert_jsx_named_attribute(
+pub(super) fn convert_jsx_named_attribute(
     source: &str,
     input: &MappedText<'_>,
     node: Node<'_>,
@@ -339,7 +163,7 @@ fn convert_jsx_named_attribute(
         }
         Some(other) => {
             return Err(RuntimeComponentError::UnsupportedJsxAttributeValueKind {
-                kind: other.kind().to_string(),
+                kind: other.kind(),
             });
         }
     }
@@ -350,7 +174,7 @@ fn convert_jsx_named_attribute(
         .map_err(RuntimeComponentError::from)
 }
 
-fn convert_expression_for_runtime_trans(
+pub(super) fn convert_expression_for_runtime_trans(
     source: &str,
     input: &MappedText<'_>,
     node: Node<'_>,
@@ -365,43 +189,7 @@ fn convert_expression_for_runtime_trans(
     }
 }
 
-fn lower_object_expression_span(
-    source: &str,
-    input: &MappedText<'_>,
-    span: Span,
-    components_mode: bool,
-    indent_level: usize,
-) -> Result<RenderedMappedText, RuntimeComponentError> {
-    let text = &source[span.start..span.end];
-    let wrapper_prefix = "const __expr = (";
-    let wrapped = format!("{wrapper_prefix}{text});");
-    let tree = parse_tsx(&wrapped)?;
-    let root = tree.root_node();
-    let declarator = find_first_named_descendant(root, "variable_declarator")
-        .ok_or(RuntimeComponentError::MissingVariableDeclaratorWhileLoweringObjectExpression)?;
-    let value = declarator
-        .child_by_field_name("value")
-        .ok_or(RuntimeComponentError::MissingObjectExpressionInitializer)?;
-    let object = if value.kind() == "parenthesized_expression" {
-        first_named_child(value).unwrap_or(value)
-    } else {
-        value
-    };
-    if object.kind() != "object" {
-        return copy_span(input, span);
-    }
-
-    convert_object_expression(
-        source,
-        input,
-        object,
-        span.start as isize - wrapper_prefix.len() as isize,
-        components_mode,
-        indent_level,
-    )
-}
-
-fn convert_components_expression(
+pub(super) fn convert_components_expression(
     source: &str,
     input: &MappedText<'_>,
     node: Node<'_>,
@@ -499,9 +287,7 @@ fn convert_object_expression(
                 push_copied_span(&mut rendered, input, translated_span(child, base_offset)?)?;
             }
             other => {
-                return Err(RuntimeComponentError::UnsupportedObjectChildKind {
-                    kind: other.to_string(),
-                });
+                return Err(RuntimeComponentError::UnsupportedObjectChildKind { kind: other });
             }
         }
     }
@@ -636,7 +422,8 @@ fn convert_jsx_attributes_to_object(
             "jsx_attribute" => {
                 let key = jsx_attribute_name_node(child)
                     .ok_or(RuntimeComponentError::MissingJsxPropName)?;
-                push_copied_span(&mut rendered, input, translated_span(key, base_offset)?)?;
+                let key_text = source_slice(source, key, base_offset)?;
+                rendered.push_unmapped(render_js_object_key(key_text));
                 rendered.push_unmapped(": ");
                 match jsx_attribute_value_node(child) {
                     None => rendered.push_unmapped("true"),
@@ -671,9 +458,7 @@ fn convert_jsx_attributes_to_object(
                 }
             }
             other => {
-                return Err(RuntimeComponentError::UnsupportedJsxPropKind {
-                    kind: other.to_string(),
-                });
+                return Err(RuntimeComponentError::UnsupportedJsxPropKind { kind: other });
             }
         }
     }
@@ -691,15 +476,11 @@ fn convert_jsx_attributes_to_object(
         .map_err(RuntimeComponentError::from)
 }
 
-fn append_rendered(mapped: &mut MappedText<'_>, rendered: RenderedMappedText) {
-    if let Some(map) = rendered.indexed_source_map {
-        mapped.push_pre_mapped(rendered.code, map);
-    } else {
-        mapped.push_unmapped(rendered.code);
-    }
+pub(super) fn append_rendered(mapped: &mut MappedText<'_>, rendered: RenderedMappedText) {
+    mapped.push(rendered.code, rendered.indexed_source_map);
 }
 
-fn copy_node(
+pub(super) fn copy_node(
     _source: &str,
     input: &MappedText<'_>,
     node: Node<'_>,
@@ -708,7 +489,7 @@ fn copy_node(
     copy_span(input, translated_span(node, base_offset)?)
 }
 
-fn copy_span(
+pub(super) fn copy_span(
     input: &MappedText<'_>,
     span: Span,
 ) -> Result<RenderedMappedText, RuntimeComponentError> {
@@ -717,7 +498,10 @@ fn copy_span(
     mapped.into_rendered().map_err(RuntimeComponentError::from)
 }
 
-fn translated_span(node: Node<'_>, base_offset: isize) -> Result<Span, RuntimeComponentError> {
+pub(super) fn translated_span(
+    node: Node<'_>,
+    base_offset: isize,
+) -> Result<Span, RuntimeComponentError> {
     let start = translated_offset(node.start_byte(), base_offset)?;
     let end = translated_offset(node.end_byte(), base_offset)?;
     Ok(Span::new(start, end))
@@ -731,7 +515,7 @@ fn translated_offset(offset: usize, base_offset: isize) -> Result<usize, Runtime
     Ok(translated as usize)
 }
 
-fn source_slice<'a>(
+pub(super) fn source_slice<'a>(
     source: &'a str,
     node: Node<'_>,
     base_offset: isize,
@@ -740,14 +524,14 @@ fn source_slice<'a>(
     Ok(&source[span.start..span.end])
 }
 
-fn jsx_attribute_name_node(node: Node<'_>) -> Option<Node<'_>> {
+pub(super) fn jsx_attribute_name_node(node: Node<'_>) -> Option<Node<'_>> {
     node.child_by_field_name("name").or_else(|| {
         node.named_children(&mut node.walk())
             .find(|child| !matches!(child.kind(), "jsx_expression" | "string"))
     })
 }
 
-fn jsx_attribute_value_node(node: Node<'_>) -> Option<Node<'_>> {
+pub(super) fn jsx_attribute_value_node(node: Node<'_>) -> Option<Node<'_>> {
     node.child_by_field_name("value").or_else(|| {
         let mut found_name = false;
         node.named_children(&mut node.walk()).find(|_| {
@@ -761,7 +545,7 @@ fn jsx_attribute_value_node(node: Node<'_>) -> Option<Node<'_>> {
     })
 }
 
-fn lowerable_object_expression_node(node: Node<'_>) -> Option<Node<'_>> {
+pub(super) fn lowerable_object_expression_node(node: Node<'_>) -> Option<Node<'_>> {
     match node.kind() {
         "object" => Some(node),
         "parenthesized_expression" => {
@@ -771,23 +555,23 @@ fn lowerable_object_expression_node(node: Node<'_>) -> Option<Node<'_>> {
     }
 }
 
-fn first_named_child(node: Node<'_>) -> Option<Node<'_>> {
+pub(super) fn first_named_child(node: Node<'_>) -> Option<Node<'_>> {
     node.named_children(&mut node.walk()).next()
 }
 
-fn spread_element_node(node: Node<'_>) -> Option<Node<'_>> {
+pub(super) fn spread_element_node(node: Node<'_>) -> Option<Node<'_>> {
     node.named_children(&mut node.walk())
         .find(|child| child.kind() == "spread_element")
 }
 
-fn spread_argument_node(node: Node<'_>) -> Option<Node<'_>> {
+pub(super) fn spread_argument_node(node: Node<'_>) -> Option<Node<'_>> {
     node.child_by_field_name("argument").or_else(|| {
         node.named_children(&mut node.walk())
             .find(|child| child.kind() != "comment")
     })
 }
 
-fn find_first_named_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
+pub(super) fn find_first_named_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
     if node.kind() == kind {
         return Some(node);
     }
@@ -799,6 +583,25 @@ fn find_first_named_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a
         }
     }
     None
+}
+
+pub(super) fn find_node_by_span(node: Node<'_>, span: Span) -> Option<Node<'_>> {
+    if node.start_byte() > span.start || node.end_byte() < span.end {
+        return None;
+    }
+
+    let mut cursor = node.walk();
+    for child in node.named_children(&mut cursor) {
+        if let Some(found) = find_node_by_span(child, span) {
+            return Some(found);
+        }
+    }
+
+    if node.start_byte() == span.start && node.end_byte() == span.end {
+        Some(node)
+    } else {
+        None
+    }
 }
 
 fn is_intrinsic_jsx_name(
@@ -813,9 +616,12 @@ fn is_intrinsic_jsx_name(
         .unwrap_or(false))
 }
 
-fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
+pub(super) fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
     match key.kind() {
         "property_identifier" | "identifier" => source_slice(source, key, base_offset)
+            .ok()
+            .map(ToString::to_string),
+        "number" => source_slice(source, key, base_offset)
             .ok()
             .map(ToString::to_string),
         "string" => {
@@ -826,157 +632,60 @@ fn key_name(source: &str, key: Node<'_>, base_offset: isize) -> Option<String> {
     }
 }
 
+pub(super) fn validate_runtime_placeholder_key(
+    key: String,
+) -> Result<String, RuntimeComponentError> {
+    if !key.is_empty()
+        && key
+            .chars()
+            .all(|character| character.is_ascii_alphanumeric() || character == '_')
+    {
+        Ok(key)
+    } else {
+        Err(RuntimeComponentError::InvalidRuntimePlaceholderKey { key })
+    }
+}
+
+fn render_js_object_key(key: &str) -> String {
+    if key == "__proto__" {
+        r#"["__proto__"]"#.to_string()
+    } else if is_safe_unquoted_js_object_key(key) {
+        key.to_string()
+    } else {
+        format!("{key:?}")
+    }
+}
+
+fn is_safe_unquoted_js_object_key(key: &str) -> bool {
+    let mut chars = key.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+
+    if !(first.is_ascii_alphabetic() || first == '_' || first == '$') {
+        return false;
+    }
+
+    chars.all(|character| character.is_ascii_alphanumeric() || character == '_' || character == '$')
+}
+
 #[cfg(test)]
 mod tests {
-    use super::lower_runtime_component_markup;
-    use crate::common::RenderedMappedText;
-    use indoc::indoc;
+    use super::render_js_object_key;
 
     #[test]
-    fn preserves_non_object_spread_without_duplicate_prefix() {
-        let source = "<Trans {...foo()} />".to_string();
-        let declaration = RenderedMappedText {
-            code: source.clone(),
-            indexed_source_map: None,
-        };
-
-        let lowered = lower_runtime_component_markup(
-            "Component.svelte",
-            &source,
-            &declaration,
-            "L4sRuntimeTrans",
-        )
-        .expect("runtime component lowering succeeds");
-
-        assert_eq!(lowered.code, "<L4sRuntimeTrans {...foo()} />");
+    fn quotes_unsafe_js_object_keys() {
+        assert_eq!(render_js_object_key("data-foo"), "\"data-foo\"");
+        assert_eq!(render_js_object_key("aria-label"), "\"aria-label\"");
+        assert_eq!(render_js_object_key("0"), "\"0\"");
+        assert_eq!(render_js_object_key("__proto__"), r#"["__proto__"]"#);
     }
 
     #[test]
-    fn preserves_conditional_spread_wrapping_object_literals() {
-        let source = "<Trans {...(cond ? { title: <strong /> } : other)} />".to_string();
-        let declaration = RenderedMappedText {
-            code: source.clone(),
-            indexed_source_map: None,
-        };
-
-        let lowered = lower_runtime_component_markup(
-            "Component.svelte",
-            &source,
-            &declaration,
-            "L4sRuntimeTrans",
-        )
-        .expect("runtime component lowering succeeds");
-
-        assert_eq!(
-            lowered.code,
-            "<L4sRuntimeTrans {...(cond ? { title: <strong /> } : other)} />"
-        );
-    }
-
-    #[test]
-    fn preserves_call_wrapped_object_literal_spreads() {
-        let source = "<Trans {...fn({ title: <strong /> })} />".to_string();
-        let declaration = RenderedMappedText {
-            code: source.clone(),
-            indexed_source_map: None,
-        };
-
-        let lowered = lower_runtime_component_markup(
-            "Component.svelte",
-            &source,
-            &declaration,
-            "L4sRuntimeTrans",
-        )
-        .expect("runtime component lowering succeeds");
-
-        assert_eq!(
-            lowered.code,
-            "<L4sRuntimeTrans {...fn({ title: <strong /> })} />"
-        );
-    }
-
-    #[test]
-    fn lowers_object_spread_through_prefixed_object_path() {
-        let source = "<Trans {...{}} />".to_string();
-        let declaration = RenderedMappedText {
-            code: source.clone(),
-            indexed_source_map: None,
-        };
-
-        let lowered = lower_runtime_component_markup(
-            "Component.svelte",
-            &source,
-            &declaration,
-            "L4sRuntimeTrans",
-        )
-        .expect("runtime component lowering succeeds");
-
-        assert_eq!(lowered.code, "<L4sRuntimeTrans {...{}} />");
-    }
-
-    #[test]
-    fn lowers_object_spread_with_leading_comment_prefix() {
-        let source =
-            "<Trans {.../*i18n*/ { components: { 0: <a href=\"/docs\" /> } }} />".to_string();
-        let declaration = RenderedMappedText {
-            code: source.clone(),
-            indexed_source_map: None,
-        };
-
-        let lowered = lower_runtime_component_markup(
-            "Component.svelte",
-            &source,
-            &declaration,
-            "L4sRuntimeTrans",
-        )
-        .expect("lower succeeds");
-
-        assert_eq!(
-            lowered.code,
-            indoc! {r#"
-                <L4sRuntimeTrans {.../*i18n*/ {
-                  components: {
-                    0: {
-                      kind: "element",
-                      tag: "a",
-                      props: {
-                        href: "/docs"
-                      }
-                    }
-                  }
-                }} />
-            "#}
-            .trim_end()
-        );
-    }
-
-    #[test]
-    fn lowers_parenthesized_object_spread() {
-        let source = "<Trans {...({ count: 1, nested: { ok: true } })} />".to_string();
-        let declaration = RenderedMappedText {
-            code: source.clone(),
-            indexed_source_map: None,
-        };
-
-        let lowered = lower_runtime_component_markup(
-            "Component.svelte",
-            &source,
-            &declaration,
-            "L4sRuntimeTrans",
-        )
-        .expect("runtime component lowering succeeds");
-
-        assert_eq!(
-            lowered.code,
-            indoc! {r#"
-                <L4sRuntimeTrans {...({
-                  count: 1,
-                  nested: {
-                    ok: true
-                  }
-                })} />
-            "#}
-            .trim_end()
-        );
+    fn keeps_safe_js_object_keys_unquoted() {
+        assert_eq!(render_js_object_key("title"), "title");
+        assert_eq!(render_js_object_key("_private"), "_private");
+        assert_eq!(render_js_object_key("$value"), "$value");
+        assert_eq!(render_js_object_key("camelCase123"), "camelCase123");
     }
 }

@@ -6,7 +6,8 @@ use std::collections::BTreeMap;
 use indoc::indoc;
 
 use lingui_analyzer::{
-    MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, SvelteCompilePlan, WhitespaceMode,
+    MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, RuntimeWarningOptions,
+    SvelteCompilePlan, WhitespaceMode,
     conventions::{MacroConventions, MacroPackage, MacroPackageKind},
     framework::{FrameworkAdapter, svelte::SvelteAdapter},
 };
@@ -119,6 +120,7 @@ fn allocates_unique_runtime_bindings_for_svelte_compile() {
         "Component.svelte?compile",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("compile plan succeeds");
 
@@ -623,7 +625,9 @@ fn rejects_unsupported_svelte_trans_child_syntax_with_location() {
         </script>
 
         <Trans>
-          {@html content}
+          {#if visible}
+            <span>Visible</span>
+          {/if}
         </Trans>
     "#};
 
@@ -633,11 +637,12 @@ fn rejects_unsupported_svelte_trans_child_syntax_with_location() {
         "Unsupported.svelte?compile",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("compile plan should fail");
     let rendered = error.to_string();
 
     assert!(rendered.contains("Unsupported.svelte:6:3"));
-    assert!(rendered.contains("{@html ...}"));
+    assert!(rendered.contains("Svelte block syntax"));
     assert!(rendered.contains("cannot be lowered to a runtime message"));
 }

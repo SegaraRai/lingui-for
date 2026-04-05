@@ -1,11 +1,11 @@
-import type { Component } from "svelte";
+import type { Component, Snippet } from "svelte";
 
 import RuntimeTransComponent from "./components/RuntimeTrans.svelte";
-import type { TransComponentMap } from "./components/types.ts";
+import type { TransComponentSnippet } from "./components/types.ts";
 
 export type {
-  TransComponentDescriptor,
-  TransComponentMap,
+  TransComponentSnippet,
+  TransComponentSnippetMap,
 } from "./components/types.ts";
 export {
   createLinguiAccessors,
@@ -36,9 +36,13 @@ type RuntimeTransType = Component<{
    */
   values?: Readonly<Record<string, unknown>> | undefined;
   /**
-   * Rich-text component descriptors keyed by placeholder name.
+   * Implicit snippet children keyed as `component_<placeholder>`.
    */
-  components?: TransComponentMap | undefined;
+  [key: `component_${string}`]: TransComponentSnippet | undefined;
+  /**
+   * Unused children prop to allow arbitrary content without type errors.
+   */
+  children?: Snippet | undefined;
 }>;
 
 /**

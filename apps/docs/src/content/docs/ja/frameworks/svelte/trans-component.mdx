@@ -1,0 +1,34 @@
+---
+title: "Svelte: Trans"
+description: Svelte 固有の、Trans コンポーネントマクロ内で使えるリッチテキスト構文
+---
+
+Svelte の `Trans` は、JSX 専用の形に留まらず、ネイティブな Svelte のラッパー構文へ戻されます。
+そのため、サポートされる構文の範囲は、単純な JSX 風リッチテキストより広くなります。
+
+## `<Trans>` 内でサポートされるもの
+
+- テキスト内の補間値
+- 通常の HTML ラッパーとコンポーネントラッパー
+- 入れ子のラッパーと自己完結型ラッパー
+- `bind:`、`class:`、`style:`、`use:`、`transition:`、`in:`、`out:`、`animate:` などの wrapper directive
+- `let:` ラッパー
+- `{@html ...}` ラッパー
+- `{@render ...}` ラッパー
+
+## まだサポートされないもの
+
+`Trans` はあくまでラッパー形のリッチテキストを想定しており、一般的なテンプレート制御構文は対象ではありません。
+
+- `{#if}`、`{#each}`、`{#await}`、`{#key}`、`{#snippet}` などのブロック構文
+- `<slot>`
+- `svelte:component`、`svelte:self`、`svelte:fragment`、`svelte:head`、`svelte:window`、`svelte:document` などの Svelte 特殊要素 と、そのほかの `svelte:*` 形式
+
+## `{@html}` と `{@render}` に関する注意
+
+`{@html}` と `{@render}` は、明示的なコンテンツホールとして扱われます。
+
+- どちらも翻訳後のリッチテキスト構造の一部としてサポートされます。
+- これらのホールの中に翻訳済みの子コンテンツを入れようとした場合、生成されたランタイムコードは開発時に警告を出し、著者が不一致に気づけるようにします。
+
+フレームワークに依存しない `Trans` のモデルについては、[Trans](/ja/macros/trans-component) を参照してください。

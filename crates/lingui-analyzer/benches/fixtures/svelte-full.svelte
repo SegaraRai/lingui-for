@@ -796,9 +796,26 @@
         <p class="text-sm text-slate-600">
           <Trans>
             Imported digest:
-            <span>{htmlDigest}</span>
+            <span>{@html htmlDigest}</span>
           </Trans>
         </p>
+        <p>
+          <Trans>
+            Also we can embed {"some text"} and {@html "<em>some HTML</em>"} directly
+            in translations.
+          </Trans>
+        </p>
+        <div>
+          <Trans>
+            <p>Maybe we even have some nested content to summarize, like</p>
+            <ul>
+              <li>
+                <em>{highlightedQueue.length} highlighted queue items</em> and
+              </li>
+              <li>a selected region of {selectedRegion}.</li>
+            </ul>
+          </Trans>
+        </div>
       </div>
     </div>
 

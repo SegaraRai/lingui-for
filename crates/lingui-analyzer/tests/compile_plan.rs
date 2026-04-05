@@ -7,8 +7,8 @@ use sourcemap::DecodedMap;
 
 use lingui_analyzer::{
     AstroCompilePlan, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-    SvelteCompilePlan, SvelteFinishCompileOptions, TransformedPrograms, WhitespaceMode,
-    build_synthetic_module_for_framework, finish_svelte_compile,
+    RuntimeWarningOptions, SvelteCompilePlan, SvelteFinishCompileOptions, TransformedPrograms,
+    WhitespaceMode, build_synthetic_module_for_framework, finish_svelte_compile,
 };
 
 use astro_support::astro_default_conventions;
@@ -40,6 +40,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         "/virtual/App.svelte?compile.tsx",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("svelte compile plan should build");
 
@@ -158,6 +159,7 @@ fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
         "/virtual/App.svelte?compile.tsx",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("svelte compile plan should build");
 
@@ -210,6 +212,7 @@ const status = translate(msg`Status summary: active`);
         "/virtual/Page.astro?compile.tsx",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("astro compile plan should build");
 
@@ -272,6 +275,7 @@ const descriptor = msg`Status summary: active`;
         "/virtual/Page.astro?compile.tsx",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("astro compile plan should build");
 
@@ -294,6 +298,7 @@ import { Trans } from "lingui-for-astro/macro";
         "/virtual/Page.astro?compile.tsx",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("astro compile plan should build");
 
@@ -326,6 +331,7 @@ const control = {
         "/virtual/ControlField.astro?compile.tsx",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("astro compile plan should build");
 
@@ -360,6 +366,7 @@ const showDemo = true;
         "/virtual/Nested.astro?compile.tsx",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("astro compile plan should build");
 
@@ -399,6 +406,7 @@ import { plural } from "lingui-for-astro/macro";
         "/virtual/Formats.astro?compile.tsx",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("astro compile plan should build");
 
@@ -452,6 +460,7 @@ const filteredQueue = queueItems;
         "/virtual/NestedCallback.astro?compile.tsx",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("astro compile plan should build");
 
@@ -485,6 +494,7 @@ fn rejects_bare_direct_t_in_svelte_scripts() {
         "/virtual/App.svelte?compile.tsx",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("bare direct t should be rejected in svelte scripts");
 
@@ -557,6 +567,7 @@ fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
         "/virtual/+page.svelte?compile.tsx",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("svelte compile plan should build");
 
@@ -607,6 +618,7 @@ fn normalizes_owned_nested_svelte_macros_in_compile_synthetic_source() {
         "/virtual/Nested.svelte?compile.tsx",
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("svelte compile plan should build");
 

@@ -1,11 +1,6 @@
 import RuntimeTransComponent from "./components/RuntimeTrans.astro";
-import type { TransComponentMap } from "./components/types.ts";
 
-export type {
-  TransComponentDescriptor,
-  TransComponentMap,
-  TransRenderNode,
-} from "./components/types.ts";
+export type { TransRenderNode } from "./components/types.ts";
 export {
   createLinguiAccessors,
   getLinguiContext,
@@ -35,9 +30,9 @@ interface RuntimeTransProps {
    */
   values?: Readonly<Record<string, unknown>> | undefined;
   /**
-   * Rich-text component descriptors keyed by placeholder name.
+   * Rich-text placeholder names used by the translated message.
    */
-  components?: TransComponentMap | undefined;
+  placeholders?: readonly string[] | undefined;
 }
 
 /**

@@ -902,7 +902,57 @@ fn append_raw_text_expression_normalization_edits(
             .into_iter()
             .flat_map(|candidate| candidate.normalization_edits.into_iter()),
     );
+    match node.kind() {
+        "html_tag" => append_virtual_trans_child_wrapper_edits(
+            source,
+            node,
+            inner_span,
+            "LinguiForSvelteHtml",
+            normalization_edits,
+        ),
+        "render_tag" => append_virtual_trans_child_wrapper_edits(
+            source,
+            node,
+            inner_span,
+            "LinguiForSvelteRender",
+            normalization_edits,
+        ),
+        _ => {}
+    }
     Ok(())
+}
+
+fn append_virtual_trans_child_wrapper_edits(
+    _source: &str,
+    node: Node<'_>,
+    inner_span: Span,
+    tag_name: &str,
+    normalization_edits: &mut Vec<NormalizationEdit>,
+) {
+    let outer_span = Span::from_node(node);
+    if inner_span.start < outer_span.start || inner_span.end > outer_span.end {
+        return;
+    }
+
+    if outer_span.start < inner_span.start {
+        normalization_edits.push(NormalizationEdit::Delete {
+            span: Span::new(outer_span.start, inner_span.start),
+        });
+    }
+    normalization_edits.push(NormalizationEdit::Insert {
+        at: outer_span.start,
+        text: format!("<{tag_name} value={{"),
+    });
+
+    if inner_span.end < outer_span.end {
+        normalization_edits.push(NormalizationEdit::Delete {
+            span: Span::new(inner_span.end, outer_span.end),
+        });
+    }
+    normalization_edits.push(NormalizationEdit::Insert {
+        at: inner_span.end,
+        text: "} />".to_string(),
+    });
 }
 
 fn visit_component_each_statement(
@@ -1514,26 +1564,6 @@ fn validate_runtime_lowerable_svelte_component(
         options: &AnalyzeOptions,
     ) -> Result<(), SvelteFrameworkError> {
         match node.kind() {
-            "html_tag" => {
-                return Err(SvelteFrameworkError::InvalidMacroUsage(
-                    format_unsupported_trans_child_syntax(
-                        source,
-                        &options.source_name,
-                        Span::from_node(node),
-                        "Svelte `{@html ...}`",
-                    ),
-                ));
-            }
-            "render_tag" => {
-                return Err(SvelteFrameworkError::InvalidMacroUsage(
-                    format_unsupported_trans_child_syntax(
-                        source,
-                        &options.source_name,
-                        Span::from_node(node),
-                        "Svelte `{@render ...}`",
-                    ),
-                ));
-            }
             "if_statement" | "each_statement" | "await_statement" | "key_statement"
             | "snippet_statement" | "const_tag" => {
                 return Err(SvelteFrameworkError::InvalidMacroUsage(
@@ -1600,48 +1630,7 @@ fn validate_svelte_element_like(
         }
     }
 
-    let mut cursor = tag.walk();
-    for child in tag.children(&mut cursor) {
-        if child.kind() != "attribute" {
-            continue;
-        }
-
-        let Some(name_node) = child
-            .children(&mut child.walk())
-            .find(|grandchild| grandchild.kind() == "attribute_name")
-        else {
-            continue;
-        };
-        let attribute_name = text(source, name_node);
-        if is_unsupported_svelte_directive(attribute_name) {
-            return Err(SvelteFrameworkError::InvalidMacroUsage(
-                format_unsupported_trans_child_syntax(
-                    source,
-                    &options.source_name,
-                    Span::from_node(name_node),
-                    format!("Svelte directive `{attribute_name}`"),
-                ),
-            ));
-        }
-    }
-
     Ok(())
-}
-
-fn is_unsupported_svelte_directive(attribute_name: &str) -> bool {
-    [
-        "bind:",
-        "on:",
-        "class:",
-        "use:",
-        "transition:",
-        "in:",
-        "out:",
-        "animate:",
-        "let:",
-    ]
-    .iter()
-    .any(|prefix| attribute_name.starts_with(prefix))
 }
 
 #[cfg(test)]

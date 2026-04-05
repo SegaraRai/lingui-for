@@ -109,6 +109,12 @@ msgstr "{rank, selectordinal, =1 {{role, select, admin {component zero first adm
 msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 
+#. placeholder {0}: highlightedQueue.length
+#: src/components/astro/AstroRichText.astro:44
+#: src/components/svelte/SvelteRichTextIsland.svelte:49
+msgid "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
+msgstr "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
+
 #: src/components/TransitionShowcase.astro:49
 msgid "1. Increment one or more counters in Svelte or React."
 msgstr "1. Increment one or more counters in Svelte or React."
@@ -121,7 +127,7 @@ msgstr "2. Switch between English and Japanese in the header and watch the local
 msgid "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 msgstr "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 
-#: src/components/astro/AstroRichText.astro:21
+#: src/components/astro/AstroRichText.astro:25
 msgid "Astro can preserve <0>strong emphasis</0> in translated output."
 msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 
@@ -129,7 +135,7 @@ msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 msgid "Astro formats"
 msgstr "Astro formats"
 
-#: src/components/astro/AstroRichText.astro:14
+#: src/components/astro/AstroRichText.astro:18
 msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Astro keeps the <0>settings link</0> inside a translated sentence."
 
@@ -137,11 +143,11 @@ msgstr "Astro keeps the <0>settings link</0> inside a translated sentence."
 msgid "Astro pages render request-scoped translations through locals."
 msgstr "Astro pages render request-scoped translations through locals."
 
-#: src/components/astro/AstroRichText.astro:8
+#: src/components/astro/AstroRichText.astro:12
 msgid "Astro rich text"
 msgstr "Astro rich text"
 
-#: src/components/astro/AstroRichText.astro:11
+#: src/components/astro/AstroRichText.astro:15
 msgid "Astro rich text keeps component placeholders intact."
 msgstr "Astro rich text keeps component placeholders intact."
 
@@ -266,6 +272,11 @@ msgstr "Home"
 #: src/components/TransitionShowcase.astro:46
 msgid "How to use this demo"
 msgstr "How to use this demo"
+
+#: src/components/astro/AstroRichText.astro:31
+#: src/components/svelte/SvelteRichTextIsland.svelte:37
+msgid "Imported review digest: <0/>"
+msgstr "Imported review digest: <0/>"
 
 #: src/components/react/ReactTransitionCounterIsland.tsx:56
 #: src/components/svelte/SvelteTransitionCounterIsland.svelte:52
@@ -544,7 +555,7 @@ msgstr "Svelte activates Lingui inside its island."
 msgid "Svelte and React islands read the same active locale."
 msgstr "Svelte and React islands read the same active locale."
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:28
+#: src/components/svelte/SvelteRichTextIsland.svelte:31
 msgid "Svelte can preserve <0>strong emphasis</0> in translated output."
 msgstr "Svelte can preserve <0>strong emphasis</0> in translated output."
 
@@ -560,7 +571,7 @@ msgstr "Svelte island"
 msgid "Svelte islands"
 msgstr "Svelte islands"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:21
+#: src/components/svelte/SvelteRichTextIsland.svelte:24
 msgid "Svelte keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Svelte keeps the <0>settings link</0> inside a translated sentence."
 
@@ -572,11 +583,11 @@ msgstr "Svelte macros keep working inside Astro."
 msgid "Svelte props say {pageLabel} in {localeLabel}."
 msgstr "Svelte props say {pageLabel} in {localeLabel}."
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:15
+#: src/components/svelte/SvelteRichTextIsland.svelte:18
 msgid "Svelte rich text"
 msgstr "Svelte rich text"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:18
+#: src/components/svelte/SvelteRichTextIsland.svelte:21
 msgid "Svelte rich text keeps component placeholders intact."
 msgstr "Svelte rich text keeps component placeholders intact."
 
@@ -686,6 +697,11 @@ msgstr "Transitions"
 #: src/pages/transitions.astro:7
 msgid "Transitions page"
 msgstr "Transitions page"
+
+#: src/components/astro/AstroRichText.astro:37
+#: src/components/svelte/SvelteRichTextIsland.svelte:43
+msgid "Translation previews can show <0/> and <1/> in the same sentence."
+msgstr "Translation previews can show <0/> and <1/> in the same sentence."
 
 #: src/pages/index.astro:119
 msgid "Use cookies to keep the next request aligned."

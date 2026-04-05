@@ -1,6 +1,5 @@
 use sourcemap::{SourceMap, SourceMapBuilder};
 
-use crate::NormalizedSegment;
 use crate::common::{IndexedText, Span};
 
 use super::primitives::{
@@ -54,24 +53,30 @@ impl<'a> MappedText<'a> {
         }
     }
 
-    pub(crate) fn push_unmapped(&mut self, text: impl Into<String>) {
+    pub(crate) fn push(
+        &mut self,
+        text: impl Into<String>,
+        indexed_source_map: Option<IndexedSourceMap>,
+    ) {
         let text = text.into();
-        if !text.is_empty() {
+        if text.is_empty() {
+            return;
+        }
+
+        if let Some(map) = indexed_source_map {
+            self.segments.push(MappedSegment::PreMapped {
+                code: text,
+                indexed_source_map: Box::new(map),
+            });
+        } else {
             self.segments.push(MappedSegment::Unmapped(text));
         }
     }
 
-    pub(crate) fn push_pre_mapped(
-        &mut self,
-        code: impl Into<String>,
-        indexed_source_map: IndexedSourceMap,
-    ) {
-        let code = code.into();
-        if !code.is_empty() {
-            self.segments.push(MappedSegment::PreMapped {
-                code,
-                indexed_source_map: Box::new(indexed_source_map),
-            });
+    pub(crate) fn push_unmapped(&mut self, text: impl Into<String>) {
+        let text = text.into();
+        if !text.is_empty() {
+            self.segments.push(MappedSegment::Unmapped(text));
         }
     }
 
@@ -211,69 +216,6 @@ pub(crate) fn render_mapped_text(
     })
 }
 
-pub(crate) fn build_segmented_map(
-    source_name: &str,
-    source_text: &str,
-    generated_text: &str,
-    segments: &[NormalizedSegment],
-    source_anchors: &[usize],
-) -> Result<Option<IndexedSourceMap>, MappedTextError> {
-    if segments.is_empty() {
-        return Ok(None);
-    }
-
-    let source = IndexedText::new(source_text);
-    let generated = IndexedText::new(generated_text);
-
-    let mut builder = SourceMapBuilder::new(Some(source_name));
-    builder.set_file(Some(source_name));
-    let src_id = builder.add_source(source_name);
-    builder.set_source_contents(src_id, Some(source_text));
-    let mut saw_mapping = false;
-
-    for segment in segments {
-        let segment_start = segment.original_start;
-        let segment_end = segment.original_start + segment.len;
-        let lower = source_anchors.partition_point(|anchor| *anchor < segment_start);
-        let upper = source_anchors.partition_point(|anchor| *anchor < segment_end);
-
-        add_segment_mapping_point(
-            &mut builder,
-            source_name,
-            &source,
-            &generated,
-            segment,
-            segment_start,
-        )?;
-        saw_mapping = true;
-
-        for anchor in source_anchors[lower..upper].iter().copied() {
-            if anchor == segment_start {
-                continue;
-            }
-            add_segment_mapping_point(
-                &mut builder,
-                source_name,
-                &source,
-                &generated,
-                segment,
-                anchor,
-            )?;
-        }
-
-        add_segment_mapping_point(
-            &mut builder,
-            source_name,
-            &source,
-            &generated,
-            segment,
-            segment_end,
-        )?;
-    }
-
-    Ok(saw_mapping.then(|| IndexedSourceMap::new(builder.into_sourcemap())))
-}
-
 fn apply_shifted_map(builder: &mut SourceMapBuilder, map: &SourceMap, offset: GeneratedOffset) {
     for token in map.tokens() {
         let Some(source) = token.get_source() else {
@@ -339,34 +281,6 @@ fn slice_segment(
             }))
         }
     }
-}
-
-fn add_segment_mapping_point(
-    builder: &mut SourceMapBuilder,
-    source_name: &str,
-    source: &IndexedText<'_>,
-    generated: &IndexedText<'_>,
-    segment: &NormalizedSegment,
-    original_byte: usize,
-) -> Result<(), MappedTextError> {
-    let clamped = original_byte.min(segment.original_start + segment.len);
-    let generated_byte = segment.generated_start + clamped.saturating_sub(segment.original_start);
-    let (original_line, original_col) = source
-        .byte_to_line_utf16_col(clamped)
-        .ok_or(MappedTextError::InvalidSegmentSlice)?;
-    let (generated_line, generated_col) = generated
-        .byte_to_line_utf16_col(generated_byte)
-        .ok_or(MappedTextError::InvalidSegmentSlice)?;
-    builder.add(
-        generated_line as u32,
-        generated_col as u32,
-        original_line as u32,
-        original_col as u32,
-        Some(source_name),
-        None::<&str>,
-        false,
-    );
-    Ok(())
 }
 
 fn append_rendered_segments(
@@ -564,7 +478,7 @@ mod tests {
     fn slices_pre_mapped_segments() {
         let source = "abcdef";
         let mut mapped = MappedText::new("test.ts", source);
-        mapped.push_pre_mapped("cde", identity_submap("test.ts", source, 2, 5));
+        mapped.push("cde", Some(identity_submap("test.ts", source, 2, 5)));
 
         let sliced = mapped.slice(Span::new(1, 3)).expect("slice succeeds");
         let rendered = sliced.into_rendered().expect("render succeeds");
@@ -583,7 +497,7 @@ mod tests {
         let source = "abcdef";
         let mut mapped = MappedText::new("test.ts", source);
         mapped.push_unmapped("ab");
-        mapped.push_pre_mapped("cd", identity_submap("test.ts", source, 2, 4));
+        mapped.push("cd", Some(identity_submap("test.ts", source, 2, 4)));
         mapped.push_unmapped("ef");
 
         let replacement = MappedText::from_rendered("test.ts", source, "YZ", None);

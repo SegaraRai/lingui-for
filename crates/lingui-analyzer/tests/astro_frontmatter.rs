@@ -4,7 +4,7 @@ mod astro_support;
 use indoc::indoc;
 
 use lingui_analyzer::{
-    AstroCompilePlan, MacroCandidateKind, WhitespaceMode,
+    AstroCompilePlan, MacroCandidateKind, RuntimeWarningOptions, WhitespaceMode,
     framework::{FrameworkAdapter, astro::AstroAdapter},
 };
 
@@ -81,6 +81,7 @@ fn allocates_unique_runtime_bindings_for_astro_compile() {
         "Page.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect("compile plan succeeds");
 
@@ -266,14 +267,14 @@ fn collects_template_components_from_frontmatter_imports() {
 }
 
 #[test]
-fn rejects_unsupported_astro_trans_child_directives_with_location() {
+fn rejects_is_raw_on_astro_trans_children_with_location() {
     let source = indoc! {r#"
         ---
         import { Trans } from "lingui-for-astro/macro";
         ---
 
         <Trans>
-          <div set:html={content} />
+          <Katex is:raw>Some conflicting {syntax} here</Katex>
         </Trans>
     "#};
 
@@ -283,17 +284,18 @@ fn rejects_unsupported_astro_trans_child_directives_with_location() {
         "Unsupported.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("compile plan should fail");
     let rendered = error.to_string();
 
-    assert!(rendered.contains("Unsupported.astro:6:8"));
-    assert!(rendered.contains("set:html"));
+    assert!(rendered.contains("Unsupported.astro:6:10"));
+    assert!(rendered.contains("is:raw"));
     assert!(rendered.contains("cannot be lowered to a runtime message"));
 }
 
 #[test]
-fn rejects_transition_directives_inside_astro_trans_children_with_location() {
+fn allows_transition_directives_inside_astro_trans_children() {
     let source = indoc! {r#"
         ---
         import { Trans } from "lingui-for-astro/macro";
@@ -304,29 +306,27 @@ fn rejects_transition_directives_inside_astro_trans_children_with_location() {
         </Trans>
     "#};
 
-    let error = AstroCompilePlan::build(
+    AstroCompilePlan::build(
         source,
-        "Unsupported.astro",
-        "Unsupported.astro?compile",
+        "Allowed.astro",
+        "Allowed.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
-    .expect_err("compile plan should fail");
-    let rendered = error.to_string();
-
-    assert!(rendered.contains("Unsupported.astro:6:8"));
-    assert!(rendered.contains("transition:name"));
-    assert!(rendered.contains("cannot be lowered to a runtime message"));
+    .expect("compile plan should succeed");
 }
 
 #[test]
-fn rejects_directives_on_the_astro_trans_tag_itself() {
+fn rejects_style_elements_inside_astro_trans_children_with_location() {
     let source = indoc! {r#"
         ---
         import { Trans } from "lingui-for-astro/macro";
         ---
 
-        <Trans set:html={content}>Ignored</Trans>
+        <Trans>
+          <style>p { color: red; }</style>
+        </Trans>
     "#};
 
     let error = AstroCompilePlan::build(
@@ -335,11 +335,38 @@ fn rejects_directives_on_the_astro_trans_tag_itself() {
         "Unsupported.astro?compile",
         WhitespaceMode::Astro,
         astro_default_conventions(),
+        RuntimeWarningOptions::default(),
+    )
+    .expect_err("compile plan should fail");
+    let rendered = error.to_string();
+
+    assert!(rendered.contains("Unsupported.astro:6:4"));
+    assert!(rendered.contains("Astro special element `<style>`"));
+    assert!(rendered.contains("cannot be lowered to a runtime message"));
+}
+
+#[test]
+fn rejects_unsupported_directives_on_the_astro_trans_tag_itself() {
+    let source = indoc! {r#"
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
+
+        <Trans is:raw>Ignored</Trans>
+    "#};
+
+    let error = AstroCompilePlan::build(
+        source,
+        "Unsupported.astro",
+        "Unsupported.astro?compile",
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+        RuntimeWarningOptions::default(),
     )
     .expect_err("compile plan should fail");
     let rendered = error.to_string();
 
     assert!(rendered.contains("Unsupported.astro:5:8"));
-    assert!(rendered.contains("set:html"));
+    assert!(rendered.contains("is:raw"));
     assert!(rendered.contains("cannot be lowered to a runtime message"));
 }

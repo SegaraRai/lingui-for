@@ -1,5 +1,9 @@
 ---
 import { Trans } from "lingui-for-astro/macro";
+
+const htmlDigest = "<strong>Locale review digest</strong>";
+const highlightedQueue = ["North", "West", "South"];
+const selectedRegion = "Kansai";
 ---
 
 <section class="card border-base-300 bg-base-100 border shadow-lg">
@@ -23,5 +27,29 @@ import { Trans } from "lingui-for-astro/macro";
         translated output.
       </Trans>
     </p>
+    <p class="text-base-content/70">
+      <Trans>
+        Imported review digest:
+        <span set:html={htmlDigest} />
+      </Trans>
+    </p>
+    <p class="text-base-content/70">
+      <Trans>
+        Translation previews can show <span set:text="plain text" /> and <span
+          set:html="<em>highlighted markup</em>"
+        /> in the same sentence.
+      </Trans>
+    </p>
+    <div class="text-base-content/70">
+      <Trans>
+        <p>The current locale review can summarize nested details such as</p>
+        <ul>
+          <li>
+            <em>{highlightedQueue.length} highlighted queue items</em>, plus
+          </li>
+          <li>the selected region {selectedRegion}.</li>
+        </ul>
+      </Trans>
+    </div>
   </div>
 </section>

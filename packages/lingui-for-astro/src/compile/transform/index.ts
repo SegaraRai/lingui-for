@@ -3,6 +3,7 @@ import type { LinguiConfig } from "@lingui/conf";
 import {
   buildAstroCompilePlan,
   finishAstroCompile,
+  type RuntimeWarningOptions,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
@@ -44,6 +45,10 @@ export interface LinguiAstroTransformOptions {
    * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#astro
    */
   whitespace?: RichTextWhitespaceMode | undefined;
+  /**
+   * Runtime warning configuration forwarded to the analyzer while compiling `.astro` files.
+   */
+  runtimeWarnings?: RuntimeWarningOptions | undefined;
 }
 
 /**
@@ -117,11 +122,11 @@ export async function transformAstro(
     linguiConfig: linguiConfigPartial,
     astroPackages,
     whitespace = "auto",
+    runtimeWarnings,
   } = options;
   const linguiConfig = normalizeLinguiConfig(linguiConfigPartial, {
     astroPackages,
   });
-
   await initWasmOnce();
 
   const compilePlan = buildAstroCompilePlan({
@@ -129,6 +134,7 @@ export async function transformAstro(
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
     whitespace: resolveAstroWhitespace(whitespace),
+    runtimeWarnings,
     conventions: createAstroFrameworkConventions(linguiConfig, {
       astroPackages,
     }),

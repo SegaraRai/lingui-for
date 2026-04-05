@@ -5,28 +5,22 @@ import { formatRichTextTranslation } from "./rich-text.ts";
 describe("formatRichTextTranslation", () => {
   test("parses paired and self-closing placeholder tags", () => {
     expect(
-      formatRichTextTranslation("Read the <0>docs</0><1/>.", {
-        0: {
-          kind: "element",
-          tag: "a",
-        },
-        1: {
-          kind: "element",
-          tag: "br",
-        },
-      }),
+      formatRichTextTranslation(
+        "Read the <0>docs</0><1/>.",
+        new Set(["0", "1"]),
+      ),
     ).toEqual([
       "Read the ",
       {
-        kind: "component",
+        kind: "placeholder",
         key: "0:0",
-        name: "0",
+        placeholder: "0",
         children: ["docs"],
       },
       {
-        kind: "component",
+        kind: "placeholder",
         key: "1:0",
-        name: "1",
+        placeholder: "1",
         children: [],
       },
       ".",
@@ -35,26 +29,23 @@ describe("formatRichTextTranslation", () => {
 
   test("preserves nested placeholder structure", () => {
     expect(
-      formatRichTextTranslation("<0><1>Deep</1></0>", {
-        0: {
-          kind: "element",
-          tag: "strong",
-        },
-        1: {
-          kind: "element",
-          tag: "em",
-        },
-      }),
+      formatRichTextTranslation(
+        "<0><1>Deep</1></0>",
+        new Map([
+          ["0", "foo"],
+          ["1", "bar"],
+        ]),
+      ),
     ).toEqual([
       {
-        kind: "component",
+        kind: "placeholder",
         key: "0:0",
-        name: "0",
+        placeholder: "0",
         children: [
           {
-            kind: "component",
+            kind: "placeholder",
             key: "1:0",
-            name: "1",
+            placeholder: "1",
             children: ["Deep"],
           },
         ],
@@ -63,7 +54,7 @@ describe("formatRichTextTranslation", () => {
   });
 
   test("flattens tags that do not have component entries", () => {
-    expect(formatRichTextTranslation("Read <0>docs</0>", {})).toEqual([
+    expect(formatRichTextTranslation("Read <0>docs</0>", new Set())).toEqual([
       "Read ",
       "docs",
     ]);
@@ -71,18 +62,13 @@ describe("formatRichTextTranslation", () => {
 
   test("preserves known placeholders nested inside unknown wrappers", () => {
     expect(
-      formatRichTextTranslation("Read <x><0>docs</0></x> now.", {
-        0: {
-          kind: "element",
-          tag: "strong",
-        },
-      }),
+      formatRichTextTranslation("Read <x><0>docs</0></x> now.", new Set(["0"])),
     ).toEqual([
       "Read ",
       {
-        kind: "component",
+        kind: "placeholder",
         key: "0:0",
-        name: "0",
+        placeholder: "0",
         children: ["docs"],
       },
       " now.",
@@ -91,24 +77,19 @@ describe("formatRichTextTranslation", () => {
 
   test("allocates stable keys for repeated placeholder occurrences", () => {
     expect(
-      formatRichTextTranslation("<0>One</0> and <0>Two</0>", {
-        0: {
-          kind: "element",
-          tag: "strong",
-        },
-      }),
+      formatRichTextTranslation("<0>One</0> and <0>Two</0>", new Set(["0"])),
     ).toEqual([
       {
-        kind: "component",
+        kind: "placeholder",
         key: "0:0",
-        name: "0",
+        placeholder: "0",
         children: ["One"],
       },
       " and ",
       {
-        kind: "component",
+        kind: "placeholder",
         key: "0:1",
-        name: "0",
+        placeholder: "0",
         children: ["Two"],
       },
     ]);
@@ -116,44 +97,36 @@ describe("formatRichTextTranslation", () => {
 
   test("falls back to literal text for malformed placeholder markup", () => {
     expect(
-      formatRichTextTranslation("Read <0>docs</1> and <0>later", {
-        0: {
-          kind: "element",
-          tag: "strong",
-        },
-      }),
+      formatRichTextTranslation(
+        "Read <0>docs</1> and <0>later",
+        new Set(["0"]),
+      ),
     ).toEqual(["Read <0>docs</1> and <0>later"]);
   });
 
   test("drops unknown self-closing placeholders while preserving adjacent text", () => {
-    expect(formatRichTextTranslation("Line<1/>break", {})).toEqual([
+    expect(formatRichTextTranslation("Line<1/>break", new Set())).toEqual([
       "Linebreak",
     ]);
   });
 
   test("parses rich-text translations into stable render nodes", () => {
     expect(
-      formatRichTextTranslation("Read <0><1>Ada</1></0> carefully.", {
-        0: {
-          kind: "element",
-          tag: "strong",
-        },
-        1: {
-          kind: "component",
-          component: () => {},
-        },
-      }),
+      formatRichTextTranslation(
+        "Read <0><1>Ada</1></0> carefully.",
+        new Set(["0", "1"]),
+      ),
     ).toEqual([
       "Read ",
       {
-        kind: "component",
+        kind: "placeholder",
         key: "0:0",
-        name: "0",
+        placeholder: "0",
         children: [
           {
-            kind: "component",
+            kind: "placeholder",
             key: "1:0",
-            name: "1",
+            placeholder: "1",
             children: ["Ada"],
           },
         ],
@@ -164,19 +137,17 @@ describe("formatRichTextTranslation", () => {
 
   test("treats unknown rich-text tags as transparent wrappers", () => {
     expect(
-      formatRichTextTranslation("Read <0>the <1>docs</1></0> carefully.", {
-        1: {
-          kind: "element",
-          tag: "em",
-        },
-      }),
+      formatRichTextTranslation(
+        "Read <0>the <1>docs</1></0> carefully.",
+        new Set(["1"]),
+      ),
     ).toEqual([
       "Read ",
       "the ",
       {
-        kind: "component",
+        kind: "placeholder",
         key: "1:0",
-        name: "1",
+        placeholder: "1",
         children: ["docs"],
       },
       " carefully.",

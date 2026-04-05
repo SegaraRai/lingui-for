@@ -1,0 +1,38 @@
+---
+title: "Astro: Trans"
+description: Astro-specific rich-text syntax supported inside the Trans component macro.
+---
+
+`Trans` in Astro is lowered back into native Astro wrapper syntax rather than staying in a
+JSX-only shape.
+
+## Supported inside `<Trans>`
+
+- interpolated values in text content
+- regular HTML and component wrappers
+- nested wrappers and self-closing wrappers
+- `class:list`
+- `transition:*`
+- `client:*`
+- `server:*`
+- `set:html`
+- `set:text`
+
+## Still unsupported
+
+Some Astro constructs conflict with runtime rich-text rendering and are intentionally rejected.
+
+- `<script>`
+- `<style>`
+- `is:raw`
+
+## Notes on `set:html` and `set:text`
+
+`set:html` and `set:text` are treated as explicit content holes.
+
+- `set:html` takes precedence if both `set:html` and `set:text` appear on the same wrapper.
+- If a wrapper uses one of these holes and also has explicit child content, the generated runtime
+  code warns by default in development so that the override is visible while authoring. You can
+  disable that behavior through the unplugin `runtimeWarnings` option if you want to opt out.
+
+For the framework-agnostic `Trans` model, see [Trans](/macros/trans-component).

@@ -2,8 +2,9 @@ import { setupI18n } from "@lingui/core";
 import { render } from "svelte/server";
 import { describe, expect, test } from "vite-plus/test";
 
-import RuntimeTransFixtureLink from "./RuntimeTransFixtureLink.test.svelte";
+import RuntimeTransEmphasisHarness from "./RuntimeTransEmphasisHarness.test.svelte";
 import RuntimeTransHarness from "./RuntimeTransHarness.test.svelte";
+import RuntimeTransRichTextHarness from "./RuntimeTransRichTextHarness.test.svelte";
 
 function normalizeSsrBody(body: string): string {
   return body.replaceAll(/<!--[\w[\]-]*-->/g, "");
@@ -44,29 +45,13 @@ describe("RuntimeTrans SSR", () => {
       },
     });
 
-    const result = render(RuntimeTransHarness, {
+    const result = render(RuntimeTransRichTextHarness, {
       props: {
         getI18n: () => i18n,
         id: "demo.docs",
         message: "Read <0><1>{name}</1></0> carefully before shipping.",
         values: {
           name: "Runtime Ada",
-        },
-        components: {
-          0: {
-            kind: "element",
-            tag: "strong",
-            props: {
-              class: "outer",
-            },
-          },
-          1: {
-            kind: "component",
-            component: RuntimeTransFixtureLink,
-            props: {
-              href: "/docs",
-            },
-          },
         },
       },
     });
@@ -88,19 +73,13 @@ describe("RuntimeTrans SSR", () => {
       },
     });
 
-    const result = render(RuntimeTransHarness, {
+    const result = render(RuntimeTransEmphasisHarness, {
       props: {
         getI18n: () => i18n,
         id: "demo.fallback",
         message: "Fallback <0>copy</0> for {name}.",
         values: {
           name: "Ada",
-        },
-        components: {
-          0: {
-            kind: "element",
-            tag: "em",
-          },
         },
       },
     });

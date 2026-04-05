@@ -2,6 +2,7 @@ import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
+import type { RuntimeWarningOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   assertRangeMapping,
   findUniqueRange,
@@ -25,11 +26,13 @@ async function expectTransformed(
   source: string,
   options: {
     filename?: string;
+    runtimeWarnings?: RuntimeWarningOptions;
     whitespace?: "jsx" | "auto" | "astro" | "svelte";
   } = {},
 ) {
   const result = await transformSvelte(source, {
     filename: options.filename ?? "/virtual/App.svelte",
+    runtimeWarnings: options.runtimeWarnings,
     whitespace: options.whitespace,
   });
   expect.assert(result != null);
@@ -217,6 +220,57 @@ describe("transformSvelte", () => {
     );
     expect(compact(result.code)).not.toContain(
       'message: "<0>Read</0>  <1>carefully</1>"',
+    );
+  });
+
+  test("lowers html and render tags inside Trans through implicit snippets", async () => {
+    const result = await expectTransformed(
+      dedent`
+        <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+
+          let content = "<strong>unsafe</strong>";
+          let row = $props().row;
+          let item = $state("Ada");
+        </script>
+
+        <Trans>
+          {@html content}
+          {@render row(item)}
+        </Trans>
+      `,
+    );
+
+    expect(compact(result.code)).toContain('message: "<0/> <1/>"');
+    expect(result.code).toContain(
+      '{#snippet component_0(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html content}{/snippet}',
+    );
+    expect(result.code).toContain(
+      '{#snippet component_1(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@render row(item)}{/snippet}',
+    );
+  });
+
+  test("supports disabling content-override runtime warnings", async () => {
+    const result = await expectTransformed(
+      dedent`
+        <script lang="ts">
+          import { Trans } from "lingui-for-svelte/macro";
+
+          let content = "<strong>unsafe</strong>";
+        </script>
+
+        <Trans>
+          {@html content}
+        </Trans>
+      `,
+      {
+        runtimeWarnings: { transContentOverride: "off" },
+      },
+    );
+
+    expect(result.code).not.toContain("console.warn(");
+    expect(result.code).toContain(
+      "{#snippet component_0(children)}{@html content}{/snippet}",
     );
   });
 
@@ -954,17 +1008,10 @@ describe("transformSvelte", () => {
     	  message: "Read the <0>docs</0>, {name}.",
     	  values: {
     	    name: name
-    	  },
-    	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "a",
-    	      props: {
-    	        href: "/docs"
-    	      }
-    	    }
     	  }
-    	}} />"
+    	}}>
+    	{#snippet component_0(children)}<a href="/docs">{@render children?.()}</a>{/snippet}
+    	</L4sRuntimeTrans>"
     `);
   });
 
@@ -998,22 +1045,11 @@ describe("transformSvelte", () => {
     	  message: "Read <0><1>{name}</1></0> carefully.",
     	  values: {
     	    name: name
-    	  },
-    	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "strong",
-    	      props: {}
-    	    },
-    	    1: {
-    	      kind: "component",
-    	      component: DocLink,
-    	      props: {
-    	        href: "/docs"
-    	      }
-    	    }
     	  }
-    	}} />"
+    	}}>
+    	{#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}
+    	{#snippet component_1(children)}<DocLink href="/docs">{@render children?.()}</DocLink>{/snippet}
+    	</L4sRuntimeTrans>"
     `);
   });
 
@@ -1038,17 +1074,10 @@ describe("transformSvelte", () => {
 
     	<L4sRuntimeTrans {.../*i18n*/ {
     	  id: "demo.docs",
-    	  message: "Read the <0>docs</0>.",
-    	  components: {
-    	    0: {
-    	      kind: "element",
-    	      tag: "a",
-    	      props: {
-    	        href: "/docs"
-    	      }
-    	    }
-    	  }
-    	}} />"
+    	  message: "Read the <0>docs</0>."
+    	}}>
+    	{#snippet component_0(children)}<a href="/docs">{@render children?.()}</a>{/snippet}
+    	</L4sRuntimeTrans>"
     `);
   });
 
@@ -1558,7 +1587,7 @@ describe("transformSvelte source map discipline", () => {
     {
       name: "component transform",
       original: "<Trans>Mapped component message</Trans>",
-      generated: /<L4sRuntimeTrans\b[\s\S]*?\/>/,
+      generated: /<L4sRuntimeTrans\b[\s\S]*?(?:\/>|<\/L4sRuntimeTrans>)/,
     },
     {
       name: "label binding is preserved",

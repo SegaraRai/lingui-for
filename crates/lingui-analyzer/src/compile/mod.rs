@@ -7,7 +7,9 @@ mod runtime_component;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{IndexedSourceMap, RenderedMappedText, ScriptLang, Span, source_map_to_json};
+use crate::common::{
+    IndexedSourceMap, MappedTextError, RenderedMappedText, ScriptLang, Span, source_map_to_json,
+};
 use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidate, MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
@@ -32,7 +34,7 @@ pub enum CompileError {
     #[error(transparent)]
     Emit(#[from] EmitError),
     #[error(transparent)]
-    RuntimeComponent(#[from] RuntimeComponentError),
+    MappedText(#[from] MappedTextError),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -59,6 +61,30 @@ pub enum CompileTargetOutputKind {
 pub enum CompileTranslationMode {
     Lowered,
     Contextual,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify, Default)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub enum RuntimeWarningMode {
+    Off,
+    #[default]
+    On,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct RuntimeWarningOptions {
+    pub trans_content_override: RuntimeWarningMode,
+}
+
+impl Default for RuntimeWarningOptions {
+    fn default() -> Self {
+        Self {
+            trans_content_override: RuntimeWarningMode::On,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -119,7 +145,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     fn wrap_compile_source(
         analysis: &Self::Analysis,
         prototype: &CompileTargetPrototype,
-        normalized_source: &str,
+        normalized_source: &RenderedMappedText,
     ) -> Result<RenderedMappedText, CompileError>;
 
     fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]);
@@ -129,6 +155,7 @@ pub(crate) trait FrameworkCompilePlan: Sized {
     fn assemble_plan(
         common: CommonCompilePlan,
         runtime_requirements: RuntimeRequirements,
+        runtime_warnings: RuntimeWarningOptions,
         analysis: Self::Analysis,
     ) -> Self;
 
@@ -138,8 +165,9 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         &self,
         _source_name: &str,
         _source: &str,
+        _target: &CompileTarget,
         declaration: &RenderedMappedText,
-    ) -> Result<RenderedMappedText, RuntimeComponentError>;
+    ) -> Result<RenderedMappedText, AdapterError>;
 
     fn append_runtime_injection_replacements(
         &self,

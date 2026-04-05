@@ -2,21 +2,24 @@ use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use tsify::Tsify;
 
-use crate::common::Span;
+use crate::common::{
+    IndexedText, MappedText, MappedTextError, RenderedMappedText, Span, build_copy_map,
+};
 use crate::framework::helpers::normalization::sort_and_dedup_normalization_edits;
 use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport, NormalizationEdit};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SynthesisPlan {
     pub imports: Vec<MacroImport>,
     pub targets: Vec<SynthesisTarget>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct SynthesisTarget {
     pub declaration_id: String,
     pub candidate: MacroCandidate,
     pub normalized_code: String,
+    pub(crate) normalized_rendered: RenderedMappedText,
     pub normalized_segments: Vec<NormalizedSegment>,
 }
 
@@ -31,11 +34,25 @@ pub struct NormalizedSegment {
 
 type OwnedNormalizationEdit = (String, Span, Vec<NormalizationEdit>);
 
+struct MappedNormalizationContext<'a> {
+    source: &'a IndexedText<'a>,
+    source_name: &'a str,
+    source_anchors: &'a [usize],
+    insertions: &'a [(usize, String)],
+}
+
+struct NormalizedCandidateOutput {
+    rendered: RenderedMappedText,
+    segments: Vec<NormalizedSegment>,
+}
+
 pub fn build_synthesis_plan(
     source: &str,
+    source_name: &str,
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
-) -> SynthesisPlan {
+    source_anchors: &[usize],
+) -> Result<SynthesisPlan, MappedTextError> {
     let mut merged_candidates = candidates.to_vec();
     merge_owned_candidate_normalization_edits(&mut merged_candidates);
     let targets = merged_candidates
@@ -44,21 +61,25 @@ pub fn build_synthesis_plan(
         .enumerate()
         .map(|(index, candidate)| {
             let declaration_id = format!("__lf_{index}");
-            let (normalized_code, normalized_segments) =
-                normalize_candidate_source(source, candidate);
-            SynthesisTarget {
+            let NormalizedCandidateOutput {
+                rendered: normalized_rendered,
+                segments: normalized_segments,
+            } = normalize_candidate_output(source, source_name, candidate, source_anchors)?;
+            let normalized_code = normalized_rendered.code.clone();
+            Ok(SynthesisTarget {
                 declaration_id,
                 candidate: candidate.clone(),
                 normalized_code,
+                normalized_rendered,
                 normalized_segments,
-            }
+            })
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>, MappedTextError>>()?;
 
-    SynthesisPlan {
+    Ok(SynthesisPlan {
         imports: imports.to_vec(),
         targets,
-    }
+    })
 }
 
 pub fn merge_owned_candidate_normalization_edits(candidates: &mut [MacroCandidate]) {
@@ -107,31 +128,42 @@ fn collect_owned_normalization_edits(
     }
 }
 
-fn normalize_candidate_source(
+fn normalize_candidate_output(
     source: &str,
+    source_name: &str,
     candidate: &MacroCandidate,
-) -> (String, Vec<NormalizedSegment>) {
+    source_anchors: &[usize],
+) -> Result<NormalizedCandidateOutput, MappedTextError> {
     let (strips, insertions) = collect_normalization_operations(candidate, source.len());
-    let mut generated = String::new();
+    let indexed_source = IndexedText::new(source);
+    let mut rendered = MappedText::new(source_name, source);
     let mut segments = Vec::new();
+    let mut generated_len = 0usize;
     let mut cursor = candidate.outer_span.start;
     let mut insertion_index = 0usize;
+    let mapped_context = MappedNormalizationContext {
+        source: &indexed_source,
+        source_name,
+        source_anchors,
+        insertions: &insertions,
+    };
 
     for strip in strips {
         if strip.start > cursor {
-            append_chunk(
-                source,
-                &mut generated,
+            append_normalized_chunk(
+                &mapped_context,
+                &mut rendered,
                 &mut segments,
+                &mut generated_len,
                 cursor,
                 strip.start,
-                &insertions,
                 &mut insertion_index,
             );
         }
 
         while insertion_index < insertions.len() && insertions[insertion_index].0 == strip.start {
-            generated.push_str(&insertions[insertion_index].1);
+            rendered.push_unmapped(&insertions[insertion_index].1);
+            generated_len += insertions[insertion_index].1.len();
             insertion_index += 1;
         }
 
@@ -139,13 +171,13 @@ fn normalize_candidate_source(
     }
 
     if cursor < candidate.outer_span.end {
-        append_chunk(
-            source,
-            &mut generated,
+        append_normalized_chunk(
+            &mapped_context,
+            &mut rendered,
             &mut segments,
+            &mut generated_len,
             cursor,
             candidate.outer_span.end,
-            &insertions,
             &mut insertion_index,
         );
     }
@@ -154,12 +186,15 @@ fn normalize_candidate_source(
         && insertions[insertion_index].0 <= candidate.outer_span.end
     {
         if insertions[insertion_index].0 == candidate.outer_span.end {
-            generated.push_str(&insertions[insertion_index].1);
+            rendered.push_unmapped(&insertions[insertion_index].1);
         }
         insertion_index += 1;
     }
 
-    (generated, segments)
+    Ok(NormalizedCandidateOutput {
+        rendered: rendered.into_rendered()?,
+        segments,
+    })
 }
 
 fn collect_normalization_operations(
@@ -213,40 +248,72 @@ fn collect_normalization_operations(
     (merged, insertions)
 }
 
-fn append_chunk(
-    source: &str,
-    generated: &mut String,
+fn append_normalized_chunk(
+    context: &MappedNormalizationContext<'_>,
+    rendered: &mut MappedText<'_>,
     segments: &mut Vec<NormalizedSegment>,
+    generated_len: &mut usize,
     start: usize,
     end: usize,
-    insertions: &[(usize, String)],
     insertion_index: &mut usize,
 ) {
     let mut cursor = start;
 
     while cursor < end {
-        while *insertion_index < insertions.len() && insertions[*insertion_index].0 == cursor {
-            generated.push_str(&insertions[*insertion_index].1);
+        while *insertion_index < context.insertions.len()
+            && context.insertions[*insertion_index].0 == cursor
+        {
+            rendered.push_unmapped(&context.insertions[*insertion_index].1);
+            *generated_len += context.insertions[*insertion_index].1.len();
             *insertion_index += 1;
         }
 
-        let next_insertion = insertions
+        let next_insertion = context
+            .insertions
             .get(*insertion_index)
             .filter(|(at, _)| *at > cursor && *at < end)
             .map(|(at, _)| *at)
             .unwrap_or(end);
-        let chunk = &source[cursor..next_insertion];
-        if !chunk.is_empty() {
-            let generated_start = generated.len();
-            generated.push_str(chunk);
+        let span = Span::new(cursor, next_insertion);
+        if let Some(chunk) = context.source.as_str().get(span.start..span.end)
+            && !chunk.is_empty()
+        {
             segments.push(NormalizedSegment {
                 original_start: cursor,
-                generated_start,
+                generated_start: *generated_len,
                 len: chunk.len(),
             });
+            let chunk_anchors =
+                collect_chunk_copy_anchors(context.source.as_str(), span, context.source_anchors);
+            rendered.push(
+                chunk,
+                build_copy_map(context.source_name, context.source, span, &chunk_anchors),
+            );
+            *generated_len += chunk.len();
         }
         cursor = next_insertion;
     }
+}
+
+fn collect_chunk_copy_anchors(source: &str, span: Span, source_anchors: &[usize]) -> Vec<usize> {
+    let mut anchors = BTreeSet::new();
+    anchors.extend(
+        source_anchors
+            .iter()
+            .copied()
+            .filter(|anchor| *anchor > span.start && *anchor < span.end),
+    );
+
+    for (offset, byte) in source.as_bytes()[span.start..span.end].iter().enumerate() {
+        if *byte == b'\n' {
+            let anchor = span.start + offset + 1;
+            if anchor > span.start && anchor < span.end {
+                anchors.insert(anchor);
+            }
+        }
+    }
+
+    anchors.into_iter().collect()
 }
 
 #[cfg(test)]
@@ -270,6 +337,15 @@ mod tests {
         }
     }
 
+    fn normalize_for_test(
+        source: &str,
+        candidate: &MacroCandidate,
+    ) -> (String, Vec<NormalizedSegment>) {
+        let output = normalize_candidate_output(source, "test.tsx", candidate, &[])
+            .expect("normalized candidate output should succeed");
+        (output.rendered.code, output.segments)
+    }
+
     #[test]
     fn applies_insertions_at_outer_span_boundaries() {
         let source = "prefix<VALUE>suffix";
@@ -289,7 +365,7 @@ mod tests {
             ],
         );
 
-        let (normalized, segments) = normalize_candidate_source(source, &candidate);
+        let (normalized, segments) = normalize_for_test(source, &candidate);
 
         assert_eq!(normalized, "[VALUE]");
         assert_eq!(
@@ -322,7 +398,7 @@ mod tests {
             ],
         );
 
-        let (normalized, segments) = normalize_candidate_source(source, &candidate);
+        let (normalized, segments) = normalize_for_test(source, &candidate);
 
         assert_eq!(normalized, "a[]de");
         assert_eq!(
@@ -354,7 +430,7 @@ mod tests {
             }],
         );
 
-        let (normalized, segments) = normalize_candidate_source(source, &candidate);
+        let (normalized, segments) = normalize_for_test(source, &candidate);
 
         assert_eq!(normalized, "");
         assert!(segments.is_empty());
@@ -383,7 +459,7 @@ mod tests {
             ],
         );
 
-        let (normalized, segments) = normalize_candidate_source(source, &candidate);
+        let (normalized, segments) = normalize_for_test(source, &candidate);
 
         assert_eq!(normalized, "<😀Bé>");
         assert_eq!(
@@ -451,7 +527,7 @@ mod tests {
             .find(|candidate| candidate.id == "parent")
             .expect("parent candidate should exist");
 
-        let (normalized, segments) = normalize_candidate_source(source, parent);
+        let (normalized, segments) = normalize_for_test(source, parent);
 
         assert_eq!(normalized, "a[]f");
         assert_eq!(
@@ -469,5 +545,37 @@ mod tests {
                 },
             ]
         );
+    }
+
+    #[test]
+    fn normalization_string_and_mapped_render_paths_emit_identical_code() {
+        let source = "prefix<A😀\r\nBéZ>suffix";
+        let outer_start = "prefix<".len();
+        let outer_end = outer_start + "A😀\r\nBéZ".len();
+        let candidate = candidate(
+            Span::new(outer_start, outer_end),
+            vec![
+                NormalizationEdit::Insert {
+                    at: outer_start,
+                    text: "(".to_string(),
+                },
+                NormalizationEdit::Delete {
+                    span: Span::new(outer_start + "A".len(), outer_start + "A😀\r\n".len()),
+                },
+                NormalizationEdit::Insert {
+                    at: outer_start + "A😀\r\n".len(),
+                    text: "::".to_string(),
+                },
+                NormalizationEdit::Insert {
+                    at: outer_end,
+                    text: ")".to_string(),
+                },
+            ],
+        );
+
+        let output = normalize_candidate_output(source, "test.tsx", &candidate, &[])
+            .expect("unified normalization should succeed");
+
+        assert_eq!(output.rendered.code, "(A::BéZ)");
     }
 }

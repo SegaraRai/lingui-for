@@ -1,26 +1,11 @@
-import type { Component } from "svelte";
+import type { TransRenderNode as SharedTransRenderNode } from "@lingui-for/internal-shared-runtime";
+import type { Snippet } from "svelte";
 
-export type TransComponentDescriptor =
-  | {
-      kind: "element";
-      tag: string;
-      props?: Readonly<Record<string, unknown>>;
-    }
-  | {
-      kind: "component";
-      component: Component<any>;
-      props?: Readonly<Record<string, unknown>>;
-    };
+export type TransComponentSnippet = Snippet<[Snippet | undefined]>;
 
-export type TransComponentMap = Readonly<
-  Record<string, TransComponentDescriptor>
+export type TransComponentSnippetMap = ReadonlyMap<
+  string,
+  TransComponentSnippet
 >;
 
-export type TransRenderNode =
-  | string
-  | {
-      kind: "component";
-      key: string;
-      name: string;
-      children: readonly TransRenderNode[];
-    };
+export type TransRenderNode = SharedTransRenderNode;

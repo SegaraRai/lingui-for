@@ -55,7 +55,9 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
       expect(html).toContain(`<html lang="${locale}">`);
 
       for (const expectedText of expectedBody) {
-        expect(html).toContain(expectedText);
+        expect(html, `Expected body to contain: ${expectedText}`).toContain(
+          expectedText,
+        );
       }
     },
   );

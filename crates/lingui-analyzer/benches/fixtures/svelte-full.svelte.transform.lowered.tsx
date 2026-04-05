@@ -305,22 +305,46 @@ const __lf_41 = __lingui_for_svelte_reactive_translation__(_i18n._(
 const __lf_42 = <_Trans {...
 /*i18n*/
 {
-  id: "YqL2gS",
-  message: "Imported digest: <0>{htmlDigest}</0>",
-  values: {
-    htmlDigest: htmlDigest
-  },
+  id: "FJeYAi",
+  message: "Imported digest: <0><1/></0>",
   components: {
-    0: <span />
+    0: <span />,
+    1: <LinguiForSvelteHtml value={htmlDigest} />
   }
 }} />;
-const __lf_43 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_43 = <_Trans {...
+/*i18n*/
+{
+  id: "JUNx+G",
+  message: "Also we can embed some text and <0/> directly in translations.",
+  components: {
+    0: <LinguiForSvelteHtml value={"<em>some HTML</em>"} />
+  }
+}} />;
+const __lf_44 = <_Trans {...
+/*i18n*/
+{
+  id: "cKxDiJ",
+  message: "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
+  values: {
+    0: highlightedQueue.length,
+    selectedRegion: selectedRegion
+  },
+  components: {
+    0: <p />,
+    1: <ul />,
+    2: <li />,
+    3: <em />,
+    4: <li />
+  }
+}} />;
+const __lf_45 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
   id: "UsgvkK",
   message: "Status digest"
 }), "translate");
-const __lf_44 = <_Trans {...
+const __lf_46 = <_Trans {...
 /*i18n*/
 {
   id: "8p/xVT",
@@ -344,7 +368,7 @@ const __lf_44 = <_Trans {...
     })
   }
 }} />;
-const __lf_45 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_47 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
   id: "pnokNm",
@@ -354,7 +378,7 @@ const __lf_45 = __lingui_for_svelte_reactive_translation__(_i18n._(
     1: String($highlightedQueue.length > 2 ? "requires escalation" : "is within normal review limits")
   }
 }), "translate");
-const __lf_46 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_48 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
   id: "d8ajL9",

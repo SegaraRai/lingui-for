@@ -203,9 +203,27 @@ export const browserRouteExpectations: readonly BrowserRouteExpectation[] = [
     ],
   },
   {
+    path: "/playground/rich-text?lang=en",
+    locale: "en",
+    expectedBody: [
+      "Embedded elements and components inside Trans",
+      "Imported review digest: Locale review digest",
+      "Translation previews can show plain text and highlighted markup in the same sentence.",
+      "The current locale review can summarize nested details such as",
+      "3 highlighted queue items, plus",
+      "the selected region Kansai.",
+    ],
+  },
+  {
     path: "/playground/rich-text?lang=ja",
     locale: "ja",
-    expectedBody: ["クッキーで保持されるロケール", "意味のある強調"],
+    expectedBody: [
+      "取り込み済みレビュー要約: Locale review digest",
+      "翻訳プレビューでは、同じ文の中に plain text と highlighted markup を表示できます。",
+      "現在のロケールレビューでは、次のような詳細を要約できます",
+      "3 件の注目キュー項目と",
+      "選択中のリージョン Kansai。",
+    ],
   },
   {
     path: "/playground/reactivity?lang=ja",

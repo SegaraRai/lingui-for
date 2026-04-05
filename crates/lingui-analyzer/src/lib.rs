@@ -22,8 +22,8 @@ pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
     AstroCompilePlan, CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
     CompileTargetOutputKind, CompileTranslationMode, FinishedCompile, RuntimeRequirements,
-    SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
-    TransformedPrograms,
+    RuntimeWarningMode, RuntimeWarningOptions, SvelteCompilePlan, SvelteCompileRuntimeBindings,
+    SvelteCompileScriptRegion, TransformedPrograms,
 };
 pub use conventions::FrameworkKind;
 pub use extract::{
@@ -157,6 +157,7 @@ pub fn build_svelte_compile_plan(
             .unwrap_or("synthetic-compile.tsx"),
         options.whitespace.unwrap_or(WhitespaceMode::Svelte),
         options.conventions.clone(),
+        options.runtime_warnings.clone().unwrap_or_default(),
     )
 }
 
@@ -172,6 +173,7 @@ pub fn build_astro_compile_plan(
             .unwrap_or("synthetic-compile.tsx"),
         options.whitespace.unwrap_or(WhitespaceMode::Astro),
         options.conventions.clone(),
+        options.runtime_warnings.clone().unwrap_or_default(),
     )
 }
 
@@ -221,12 +223,10 @@ pub fn wasm_build_synthetic_module(
 #[serde(rename_all = "camelCase")]
 pub struct CompilePlanOptions {
     pub source: String,
-    #[tsify(optional)]
     pub source_name: Option<String>,
-    #[tsify(optional)]
     pub synthetic_name: Option<String>,
-    #[tsify(optional)]
     pub whitespace: Option<WhitespaceMode>,
+    pub runtime_warnings: Option<RuntimeWarningOptions>,
     pub conventions: FrameworkConventions,
 }
 

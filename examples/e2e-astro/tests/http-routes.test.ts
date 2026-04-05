@@ -3,6 +3,19 @@ import { afterAll, beforeAll, describe, expect, test } from "vite-plus/test";
 import { AppServer, serverModes } from "./support/app-server.ts";
 import { httpRouteCases } from "./support/expectations.ts";
 
+function cleanupHtml(html: string): string {
+  return (
+    html
+      // Astro dev
+      .replaceAll(
+        /\s*data-astro-source-file="[^"]+"\s+data-astro-source-loc="[^"]+"\s*>/g,
+        ">",
+      )
+      // Svelte SSR
+      .replaceAll(/<!--[\w[\]-]*-->/g, "")
+  );
+}
+
 describe.sequential.for(serverModes)("%s http rendering", (mode) => {
   const server = new AppServer(mode);
 
@@ -18,17 +31,23 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
     "renders $path in $locale",
     async ({ expectedBody, expectedHtmlSnippets, locale, path }) => {
       const response = await server.fetch(`${path}?lang=${locale}`);
-      const html = await response.text();
+      const originalHtml = await response.text();
+      const html = cleanupHtml(originalHtml);
 
       expect(response.status).toBe(200);
       expect(html).toContain(`<html lang="${locale}">`);
 
       for (const expectedText of expectedBody) {
-        expect(html).toContain(expectedText);
+        expect(html, `Expected body to contain: ${expectedText}`).toContain(
+          expectedText,
+        );
       }
 
       for (const expectedText of expectedHtmlSnippets) {
-        expect(html).toContain(expectedText);
+        expect(
+          html,
+          `Expected HTML snippet to contain: ${expectedText}`,
+        ).toContain(expectedText);
       }
     },
   );

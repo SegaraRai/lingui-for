@@ -1,0 +1,15 @@
+---
+interface Props {
+  label: string;
+  mode: string;
+}
+
+const { label, mode } = Astro.props;
+---
+
+<section
+  class="rounded-box border-base-300 border p-4"
+  data-testid={`framework-server-${mode}-content`}
+>
+  <p data-testid={`framework-server-${mode}-label`}>{label}</p>
+</section>

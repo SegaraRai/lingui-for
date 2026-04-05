@@ -9,10 +9,9 @@ use crate::framework::parse::{ParseError, parse_tsx};
 use super::emit::{
     EmitError, collect_compile_replacements_internal, finish_compile_from_internal_replacements,
 };
-use super::runtime_component::RuntimeComponentError;
 use super::{
-    CompileTargetOutputKind, CompileTranslationMode, FinishedCompileInternal, FrameworkCompilePlan,
-    TransformedPrograms,
+    AdapterError, CompileTargetOutputKind, CompileTranslationMode, FinishedCompileInternal,
+    FrameworkCompilePlan, TransformedPrograms,
 };
 
 #[derive(thiserror::Error, Debug)]
@@ -22,7 +21,7 @@ pub enum LowerError {
     #[error(transparent)]
     Emit(#[from] EmitError),
     #[error(transparent)]
-    RuntimeComponent(#[from] RuntimeComponentError),
+    Adapter(#[from] AdapterError),
     #[error(transparent)]
     CollectDeclarations(#[from] CollectDeclarationsError),
 }
@@ -81,6 +80,7 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
             let lowered = plan.lower_runtime_component_markup(
                 &plan.common().source_name,
                 source,
+                target,
                 &RenderedMappedText {
                     code: declaration.code,
                     indexed_source_map: declaration.indexed_source_map,
@@ -201,7 +201,7 @@ mod tests {
     use crate::{
         CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
         CompileTranslationMode, FrameworkConventions, FrameworkKind, MacroFlavor,
-        NormalizedSegment, RuntimeRequirements, TransformedPrograms,
+        NormalizedSegment, RuntimeRequirements, RuntimeWarningOptions, TransformedPrograms,
         common::{ScriptLang, Span},
         compile::adapters::{
             SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
@@ -296,6 +296,7 @@ mod tests {
                 needs_runtime_i18n_binding: true,
                 needs_runtime_trans_component: false,
             },
+            runtime_warnings: RuntimeWarningOptions::default(),
             runtime_bindings: SvelteCompileRuntimeBindings {
                 create_lingui_accessors: "createLinguiAccessors".to_string(),
                 context: "__l4s_ctx".to_string(),

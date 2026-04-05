@@ -1504,7 +1504,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
     "origin": [
       "/virtual/with-id-context-comment-core.astro",
       8,
-      13,
+      15,
     ],
     "placeholders": {
       "value": "value",
@@ -1518,7 +1518,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
     "origin": [
       "/virtual/with-id-context-comment-core.astro",
       11,
-      12,
+      14,
     ],
     "placeholders": {
       "value": "value",
@@ -1532,7 +1532,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
     "origin": [
       "/virtual/with-id-context-comment-core.astro",
       15,
-      12,
+      14,
     ],
     "placeholders": {
       "value": "value",
@@ -1546,7 +1546,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
     "origin": [
       "/virtual/with-id-context-comment-core.astro",
       19,
-      12,
+      14,
     ],
     "placeholders": {
       "value": "value",
@@ -1572,7 +1572,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
     "origin": [
       "/virtual/with-id-context-comment-core.astro",
       25,
-      13,
+      15,
     ],
     "placeholders": {},
   },
@@ -1584,7 +1584,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
     "origin": [
       "/virtual/with-id-context-comment-core.astro",
       28,
-      12,
+      14,
     ],
     "placeholders": {},
   },
@@ -1596,7 +1596,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
     "origin": [
       "/virtual/with-id-context-comment-core.astro",
       32,
-      12,
+      14,
     ],
     "placeholders": {},
   },
@@ -1608,7 +1608,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
     "origin": [
       "/virtual/with-id-context-comment-core.astro",
       36,
-      12,
+      14,
     ],
     "placeholders": {},
   },
@@ -1774,7 +1774,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1
     "origin": [
       "/virtual/with-id-context-comment-core.svelte",
       8,
-      14,
+      16,
     ],
     "placeholders": {
       "value": "value",
@@ -1788,7 +1788,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1
     "origin": [
       "/virtual/with-id-context-comment-core.svelte",
       11,
-      13,
+      15,
     ],
     "placeholders": {
       "value": "value",
@@ -1802,7 +1802,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1
     "origin": [
       "/virtual/with-id-context-comment-core.svelte",
       15,
-      13,
+      15,
     ],
     "placeholders": {
       "value": "value",
@@ -1816,7 +1816,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1
     "origin": [
       "/virtual/with-id-context-comment-core.svelte",
       19,
-      13,
+      15,
     ],
     "placeholders": {
       "value": "value",
@@ -1842,7 +1842,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1
     "origin": [
       "/virtual/with-id-context-comment-core.svelte",
       25,
-      14,
+      16,
     ],
     "placeholders": {},
   },
@@ -1854,7 +1854,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1
     "origin": [
       "/virtual/with-id-context-comment-core.svelte",
       28,
-      13,
+      15,
     ],
     "placeholders": {},
   },
@@ -1866,7 +1866,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1
     "origin": [
       "/virtual/with-id-context-comment-core.svelte",
       32,
-      13,
+      15,
     ],
     "placeholders": {},
   },
@@ -1878,7 +1878,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1
     "origin": [
       "/virtual/with-id-context-comment-core.svelte",
       36,
-      13,
+      15,
     ],
     "placeholders": {},
   },
