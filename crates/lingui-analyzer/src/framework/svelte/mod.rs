@@ -1,6 +1,7 @@
 mod analysis;
 mod components;
 mod validation;
+mod walk;
 
 use std::borrow::Cow;
 

@@ -14,12 +14,13 @@ use super::super::shared::helpers::anchors::{
 use super::super::shared::helpers::imports::collect_import_specifiers_from_node;
 use super::super::shared::helpers::text::{text, unquote};
 use super::super::shared::js::{
-    BindingParseMode, ExpressionParseCache, JsMacroSyntax,
-    collect_declared_names_from_binding_source, collect_macro_candidates,
-    collect_top_level_declared_names_from_root,
+    JsMacroSyntax, collect_macro_candidates, collect_top_level_declared_names_from_root,
 };
 use super::super::{AnalyzeOptions, MacroCandidate, MacroFlavor, MacroImport};
-use super::components::{component_candidate_from_element, let_bindings_from_element};
+use super::components::component_candidate_from_element;
+use super::walk::{
+    SvelteTemplateVisitor, TemplateWalkContext, find_first_descendant, walk_svelte_template,
+};
 use super::{
     SvelteFrameworkError, SvelteScriptAnalysis, SvelteScriptBlock, SvelteSemanticAnalysis,
     SvelteSourceMetadata, SvelteTemplateComponent, SvelteTemplateExpression,
@@ -52,22 +53,22 @@ pub fn analyze_svelte(
     template_shadowed_names.dedup();
     let mut context = CollectContext {
         scope_stack: vec![template_shadowed_names],
-        expressions: Vec::new(),
-        components: Vec::new(),
-        expression_parse_cache: ExpressionParseCache::default(),
+        expression_parse_cache: Default::default(),
     };
-    collect_template_expressions(source, root, &template_imports, options, &mut context)?;
+    let mut visitor = AnalysisVisitor::new(&template_imports, options);
+    walk_svelte_template(source, root, options, &mut context, &mut visitor)?;
+    let (mut expressions, components) = visitor.finish();
     for script in &mut scripts {
         repair_svelte_candidates(source, &mut script.candidates);
     }
-    for expression in &mut context.expressions {
+    for expression in &mut expressions {
         repair_svelte_candidates(source, &mut expression.candidates);
     }
     Ok(SvelteScriptAnalysis {
         semantic: SvelteSemanticAnalysis {
             scripts,
-            template_expressions: context.expressions,
-            template_components: context.components,
+            template_expressions: expressions,
+            template_components: components,
         },
         metadata: SvelteSourceMetadata { source_anchors },
     })
@@ -190,96 +191,82 @@ fn analyze_script_block(
     }))
 }
 
-#[derive(Debug, Default)]
-pub(super) struct CollectContext {
-    pub(super) scope_stack: Vec<Vec<String>>,
-    pub(super) expressions: Vec<SvelteTemplateExpression>,
-    pub(super) components: Vec<SvelteTemplateComponent>,
-    pub(super) expression_parse_cache: ExpressionParseCache,
+pub(super) type CollectContext = TemplateWalkContext;
+
+struct AnalysisVisitor<'a> {
+    imports: &'a [MacroImport],
+    options: &'a AnalyzeOptions,
+    expressions: Vec<SvelteTemplateExpression>,
+    components: Vec<SvelteTemplateComponent>,
 }
 
-impl CollectContext {
-    pub(super) fn shadowed_names(&self) -> impl Iterator<Item = &String> {
-        self.scope_stack.iter().flat_map(|frame| frame.iter())
+impl<'a> AnalysisVisitor<'a> {
+    fn new(imports: &'a [MacroImport], options: &'a AnalyzeOptions) -> Self {
+        Self {
+            imports,
+            options,
+            expressions: Vec::new(),
+            components: Vec::new(),
+        }
     }
 }
 
-fn collect_template_expressions(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-) -> Result<(), SvelteFrameworkError> {
-    // Keep this traversal structurally parallel to
-    // `collect_component_normalization_edits_inner` in `components.rs`.
-    // TODO: extract a shared visitor abstraction if duplication grows or the
-    // traversal rules need to change in lockstep.
-    match node.kind() {
-        "script_element" | "style_element" => return Ok(()),
-        "expression" => {
-            push_expression(source, node, imports, context)?;
-            return Ok(());
-        }
-        "html_tag" | "render_tag" | "key_start" | "await_start" | "if_start" | "else_if_start" => {
-            push_raw_text_expression(source, node, imports, context)?;
-        }
-        "const_tag" => {
-            push_raw_text_expression(source, node, imports, context)?;
-            let names = declared_names_from_const_tag(source, node)?;
-            if !names.is_empty() {
-                if let Some(frame) = context.scope_stack.last_mut() {
-                    frame.extend(names);
-                } else {
-                    context.scope_stack.push(names);
-                }
-            }
-            return Ok(());
-        }
-        "if_statement" | "else_block" | "else_if_block" | "key_statement" => {
-            context.scope_stack.push(Vec::new());
-            let mut cursor = node.walk();
-            for child in node.children(&mut cursor) {
-                collect_template_expressions(source, child, imports, options, context)?;
-            }
-            context.scope_stack.pop();
-            return Ok(());
-        }
-        "each_statement" => {
-            visit_each_statement(source, node, imports, options, context)?;
-            return Ok(());
-        }
-        "then_block" => {
-            visit_named_block(source, node, imports, options, context, "then_start")?;
-            return Ok(());
-        }
-        "catch_block" => {
-            visit_named_block(source, node, imports, options, context, "catch_start")?;
-            return Ok(());
-        }
-        "snippet_statement" => {
-            visit_snippet_statement(source, node, imports, options, context)?;
-            return Ok(());
-        }
-        "element" | "self_closing_tag" => {
-            visit_element_like(source, node, imports, options, context)?;
-            return Ok(());
-        }
-        _ => {}
+impl SvelteTemplateVisitor for AnalysisVisitor<'_> {
+    type Output = (Vec<SvelteTemplateExpression>, Vec<SvelteTemplateComponent>);
+
+    fn visit_expression(
+        &mut self,
+        source: &str,
+        node: Node<'_>,
+        context: &mut TemplateWalkContext,
+    ) -> Result<(), SvelteFrameworkError> {
+        push_expression(source, node, self.imports, context, &mut self.expressions)
     }
 
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_template_expressions(source, child, imports, options, context)?;
+    fn visit_raw_text_expression(
+        &mut self,
+        source: &str,
+        node: Node<'_>,
+        context: &mut TemplateWalkContext,
+    ) -> Result<(), SvelteFrameworkError> {
+        push_raw_text_expression(source, node, self.imports, context, &mut self.expressions)
     }
-    Ok(())
+
+    fn visit_each_start(
+        &mut self,
+        source: &str,
+        node: Node<'_>,
+        context: &mut TemplateWalkContext,
+    ) -> Result<(), SvelteFrameworkError> {
+        push_each_start_expression(source, node, self.imports, context, &mut self.expressions)
+    }
+
+    fn visit_element_like(
+        &mut self,
+        source: &str,
+        node: Node<'_>,
+        context: &mut TemplateWalkContext,
+    ) -> Result<bool, SvelteFrameworkError> {
+        if let Some(candidate) =
+            component_candidate_from_element(source, node, self.imports, self.options, context)?
+        {
+            self.components.push(candidate);
+            return Ok(true);
+        }
+        Ok(false)
+    }
+
+    fn finish(self) -> Self::Output {
+        (self.expressions, self.components)
+    }
 }
 
 fn push_expression(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    context: &mut CollectContext,
+    context: &mut TemplateWalkContext,
+    expressions: &mut Vec<SvelteTemplateExpression>,
 ) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = node
         .children(&mut node.walk())
@@ -287,7 +274,7 @@ fn push_expression(
     else {
         return Ok(());
     };
-    let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
+    let inner_span = Span::from_node(raw_text);
     let outer_span = Span::from_node(node);
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
@@ -302,7 +289,7 @@ fn push_expression(
         JsMacroSyntax::Svelte,
         shadowed_names.iter(),
     );
-    context.expressions.push(SvelteTemplateExpression {
+    expressions.push(SvelteTemplateExpression {
         outer_span,
         inner_span,
         candidates,
@@ -315,13 +302,14 @@ fn push_raw_text_expression(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    context: &mut CollectContext,
+    context: &mut TemplateWalkContext,
+    expressions: &mut Vec<SvelteTemplateExpression>,
 ) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
         return Ok(());
     };
 
-    let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
+    let inner_span = Span::from_node(raw_text);
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
         .expression_parse_cache
@@ -335,7 +323,7 @@ fn push_raw_text_expression(
         JsMacroSyntax::Svelte,
         shadowed_names.iter(),
     );
-    context.expressions.push(SvelteTemplateExpression {
+    expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(node),
         inner_span,
         candidates,
@@ -344,41 +332,12 @@ fn push_raw_text_expression(
     Ok(())
 }
 
-fn visit_each_statement(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-) -> Result<(), SvelteFrameworkError> {
-    let start = node
-        .children(&mut node.walk())
-        .find(|child| child.kind() == "each_start");
-    if let Some(start) = start {
-        push_each_start_expression(source, start, imports, context)?;
-    }
-    let frame = start
-        .map(|start| declared_names_from_each_start(source, start))
-        .transpose()?
-        .unwrap_or_default();
-
-    context.scope_stack.push(frame);
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if child.kind() == "each_start" || child.kind() == "each_end" {
-            continue;
-        }
-        collect_template_expressions(source, child, imports, options, context)?;
-    }
-    context.scope_stack.pop();
-    Ok(())
-}
-
 fn push_each_start_expression(
     source: &str,
     each_start: Node<'_>,
     imports: &[MacroImport],
-    context: &mut CollectContext,
+    context: &mut TemplateWalkContext,
+    expressions: &mut Vec<SvelteTemplateExpression>,
 ) -> Result<(), SvelteFrameworkError> {
     let Some(identifier) = each_start.child_by_field_name("identifier") else {
         return Ok(());
@@ -398,144 +357,13 @@ fn push_each_start_expression(
         JsMacroSyntax::Svelte,
         shadowed_names.iter(),
     );
-    context.expressions.push(SvelteTemplateExpression {
+    expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(each_start),
         inner_span,
         candidates,
         shadowed_names,
     });
     Ok(())
-}
-
-fn visit_named_block(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-    start_kind: &str,
-) -> Result<(), SvelteFrameworkError> {
-    let start = node
-        .children(&mut node.walk())
-        .find(|child| child.kind() == start_kind);
-    let frame = start
-        .map(|start| {
-            declared_names_from_optional_raw_text(source, start, BindingParseMode::SingleParam)
-        })
-        .transpose()?
-        .flatten()
-        .unwrap_or_default();
-
-    context.scope_stack.push(frame);
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if child.kind() == start_kind {
-            continue;
-        }
-        collect_template_expressions(source, child, imports, options, context)?;
-    }
-    context.scope_stack.pop();
-    Ok(())
-}
-
-fn visit_snippet_statement(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-) -> Result<(), SvelteFrameworkError> {
-    let start = node
-        .children(&mut node.walk())
-        .find(|child| child.kind() == "snippet_start");
-    let frame = start
-        .map(|start| {
-            declared_names_from_optional_raw_text(source, start, BindingParseMode::FunctionParams)
-        })
-        .transpose()?
-        .flatten()
-        .unwrap_or_default();
-
-    context.scope_stack.push(frame);
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if child.kind() == "snippet_start" || child.kind() == "snippet_end" {
-            continue;
-        }
-        collect_template_expressions(source, child, imports, options, context)?;
-    }
-    context.scope_stack.pop();
-    Ok(())
-}
-
-fn visit_element_like(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-) -> Result<(), SvelteFrameworkError> {
-    if let Some(candidate) =
-        component_candidate_from_element(source, node, imports, options, context)?
-    {
-        context.components.push(candidate);
-        return Ok(());
-    }
-
-    let let_bindings = let_bindings_from_element(source, node);
-    let has_let_bindings = !let_bindings.is_empty();
-    if has_let_bindings {
-        context.scope_stack.push(let_bindings);
-    }
-
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if node.kind() == "element" && child.kind() == "end_tag" {
-            continue;
-        }
-        collect_template_expressions(source, child, imports, options, context)?;
-    }
-
-    if has_let_bindings {
-        context.scope_stack.pop();
-    }
-    Ok(())
-}
-
-pub(super) fn declared_names_from_const_tag(
-    source: &str,
-    node: Node<'_>,
-) -> Result<Vec<String>, SvelteFrameworkError> {
-    declared_names_from_optional_raw_text(source, node, BindingParseMode::VariableDeclarator)
-        .map(|names| names.unwrap_or_default())
-}
-
-pub(super) fn declared_names_from_each_start(
-    source: &str,
-    node: Node<'_>,
-) -> Result<Vec<String>, SvelteFrameworkError> {
-    let Some(parameter) = node.child_by_field_name("parameter") else {
-        return Ok(Vec::new());
-    };
-    Ok(collect_declared_names_from_binding_source(
-        text(source, parameter),
-        BindingParseMode::FunctionParams,
-        ScriptLang::Ts,
-    )?)
-}
-
-pub(super) fn declared_names_from_optional_raw_text(
-    source: &str,
-    node: Node<'_>,
-    mode: BindingParseMode,
-) -> Result<Option<Vec<String>>, SvelteFrameworkError> {
-    let raw_text = find_first_descendant(node, "svelte_raw_text");
-    let Some(raw_text) = raw_text else {
-        return Ok(None);
-    };
-    let names =
-        collect_declared_names_from_binding_source(text(source, raw_text), mode, ScriptLang::Ts)?;
-    Ok(Some(names))
 }
 
 fn collect_script_macro_imports(
@@ -727,56 +555,6 @@ fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
 
 fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
     conventions.accepts_macro_package(specifier)
-}
-
-pub(super) fn find_first_descendant<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
-    if node.kind() == kind {
-        return Some(node);
-    }
-
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if let Some(found) = find_first_descendant(child, kind) {
-            return Some(found);
-        }
-    }
-
-    None
-}
-
-pub(super) fn repair_svelte_expression_inner_span(
-    source: &str,
-    node: Node<'_>,
-    raw_span: Span,
-) -> Span {
-    if node.kind() != "expression" {
-        return repair_svelte_raw_expression_span(source, raw_span);
-    }
-
-    repair_svelte_raw_expression_span(source, raw_span)
-}
-
-/// Expand `raw_span.start` leftward to include Svelte reactive markers while
-/// preserving the original end. The first branch covers a two-byte prefix made
-/// of `$` plus an identifier byte, using `is_js_identifier_byte` to detect the
-/// identifier character; the second branch handles a lone `$` immediately
-/// before the span.
-pub(super) fn repair_svelte_raw_expression_span(source: &str, raw_span: Span) -> Span {
-    let mut start = raw_span.start;
-    if start >= 2
-        && source.as_bytes()[start - 2] == b'$'
-        && is_js_identifier_byte(source.as_bytes()[start - 1])
-    {
-        start -= 2;
-    } else if start >= 1 && source.as_bytes()[start - 1] == b'$' {
-        start -= 1;
-    }
-
-    Span::new(start, raw_span.end)
-}
-
-fn is_js_identifier_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$'
 }
 
 fn repair_svelte_candidates(source: &str, candidates: &mut [MacroCandidate]) {

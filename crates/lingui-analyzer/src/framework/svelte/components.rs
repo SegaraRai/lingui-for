@@ -8,17 +8,15 @@ use crate::common::{
 use super::super::shared::helpers::components::first_non_whitespace_child_anchor;
 use super::super::shared::helpers::expressions::is_explicit_whitespace_string_expression;
 use super::super::shared::helpers::text::{is_component_tag_name, text};
-use super::super::shared::js::{BindingParseMode, JsMacroSyntax, collect_macro_candidates};
+use super::super::shared::js::{JsMacroSyntax, collect_macro_candidates};
 use super::super::{
     AnalyzeOptions, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
     MacroImport, WhitespaceMode,
 };
-use super::analysis::{
-    CollectContext, declared_names_from_const_tag, declared_names_from_each_start,
-    declared_names_from_optional_raw_text, find_first_descendant,
-    repair_svelte_expression_inner_span, repair_svelte_raw_expression_span,
-};
 use super::validation::validate_runtime_lowerable_svelte_component;
+use super::walk::{
+    SvelteTemplateVisitor, TemplateWalkContext, find_first_descendant, walk_svelte_template,
+};
 use super::{SvelteFrameworkError, SvelteTemplateComponent};
 
 pub(super) fn component_candidate_from_element(
@@ -26,7 +24,7 @@ pub(super) fn component_candidate_from_element(
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-    context: &mut CollectContext,
+    context: &mut TemplateWalkContext,
 ) -> Result<Option<SvelteTemplateComponent>, SvelteFrameworkError> {
     let tag = match node.kind() {
         "element" => node
@@ -89,205 +87,116 @@ pub(super) fn component_candidate_from_element(
     }))
 }
 
-pub(super) fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<String> {
-    let tag = match node.kind() {
-        "element" => node
-            .children(&mut node.walk())
-            .find(|child| child.kind() == "start_tag"),
-        "self_closing_tag" => Some(node),
-        _ => None,
-    };
-    let Some(tag) = tag else {
-        return Vec::new();
-    };
-
-    let mut names = Vec::new();
-    let mut cursor = tag.walk();
-    for child in tag.children(&mut cursor) {
-        if child.kind() != "attribute" {
-            continue;
-        }
-        let Some(name_node) = child
-            .children(&mut child.walk())
-            .find(|grandchild| grandchild.kind() == "attribute_name")
-        else {
-            continue;
-        };
-        let attribute_name = text(source, name_node);
-        if let Some(local_name) = attribute_name.strip_prefix("let:") {
-            names.push(local_name.to_string());
-        }
-    }
-    names
-}
-
 fn collect_component_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
     options: &AnalyzeOptions,
-    context: &mut CollectContext,
+    context: &mut TemplateWalkContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), SvelteFrameworkError> {
     let org_scope_stack = context.scope_stack.clone();
+    let mut visitor = NormalizationVisitor::new(imports, options);
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        collect_component_normalization_edits_inner(
-            source,
-            child,
-            imports,
-            options,
-            context,
-            normalization_edits,
-        )?;
+        walk_svelte_template(source, child, options, context, &mut visitor)?;
     }
     context.scope_stack = org_scope_stack;
+    normalization_edits.extend(visitor.finish());
     normalization_edits.extend(component_whitespace_edits(source, node, options));
     Ok(())
 }
 
-fn collect_component_normalization_edits_inner(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-    normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), SvelteFrameworkError> {
-    match node.kind() {
-        "script_element" | "style_element" => return Ok(()),
-        "expression" => {
-            append_expression_normalization_edits(
-                source,
-                node,
-                imports,
-                context,
-                normalization_edits,
-            )?;
-            return Ok(());
-        }
-        "html_tag" | "render_tag" | "key_start" | "await_start" | "if_start" | "else_if_start" => {
-            append_raw_text_expression_normalization_edits(
-                source,
-                node,
-                imports,
-                context,
-                normalization_edits,
-            )?;
-        }
-        "const_tag" => {
-            append_raw_text_expression_normalization_edits(
-                source,
-                node,
-                imports,
-                context,
-                normalization_edits,
-            )?;
-            let names = declared_names_from_const_tag(source, node)?;
-            if !names.is_empty() {
-                if let Some(frame) = context.scope_stack.last_mut() {
-                    frame.extend(names);
-                } else {
-                    context.scope_stack.push(names);
-                }
-            }
-            return Ok(());
-        }
-        "if_statement" | "else_block" | "else_if_block" | "key_statement" => {
-            context.scope_stack.push(Vec::new());
-            let mut cursor = node.walk();
-            for child in node.children(&mut cursor) {
-                collect_component_normalization_edits_inner(
-                    source,
-                    child,
-                    imports,
-                    options,
-                    context,
-                    normalization_edits,
-                )?;
-            }
-            context.scope_stack.pop();
-            return Ok(());
-        }
-        "each_statement" => {
-            visit_component_each_statement(
-                source,
-                node,
-                imports,
-                options,
-                context,
-                normalization_edits,
-            )?;
-            return Ok(());
-        }
-        "then_block" => {
-            visit_component_named_block(
-                source,
-                node,
-                imports,
-                options,
-                context,
-                normalization_edits,
-                "then_start",
-            )?;
-            return Ok(());
-        }
-        "catch_block" => {
-            visit_component_named_block(
-                source,
-                node,
-                imports,
-                options,
-                context,
-                normalization_edits,
-                "catch_start",
-            )?;
-            return Ok(());
-        }
-        "snippet_statement" => {
-            visit_component_snippet_statement(
-                source,
-                node,
-                imports,
-                options,
-                context,
-                normalization_edits,
-            )?;
-            return Ok(());
-        }
-        "element" | "self_closing_tag" => {
-            visit_component_element_like(
-                source,
-                node,
-                imports,
-                options,
-                context,
-                normalization_edits,
-            )?;
-            return Ok(());
-        }
-        _ => {}
-    }
+struct NormalizationVisitor<'a> {
+    imports: &'a [MacroImport],
+    options: &'a AnalyzeOptions,
+    normalization_edits: Vec<NormalizationEdit>,
+}
 
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_component_normalization_edits_inner(
-            source,
-            child,
+impl<'a> NormalizationVisitor<'a> {
+    fn new(imports: &'a [MacroImport], options: &'a AnalyzeOptions) -> Self {
+        Self {
             imports,
             options,
-            context,
-            normalization_edits,
-        )?;
+            normalization_edits: Vec::new(),
+        }
     }
-    Ok(())
+}
+
+impl SvelteTemplateVisitor for NormalizationVisitor<'_> {
+    type Output = Vec<NormalizationEdit>;
+
+    fn visit_expression(
+        &mut self,
+        source: &str,
+        node: Node<'_>,
+        context: &mut TemplateWalkContext,
+    ) -> Result<(), SvelteFrameworkError> {
+        append_expression_normalization_edits(
+            source,
+            node,
+            self.imports,
+            context,
+            &mut self.normalization_edits,
+        )
+    }
+
+    fn visit_raw_text_expression(
+        &mut self,
+        source: &str,
+        node: Node<'_>,
+        context: &mut TemplateWalkContext,
+    ) -> Result<(), SvelteFrameworkError> {
+        append_raw_text_expression_normalization_edits(
+            source,
+            node,
+            self.imports,
+            context,
+            &mut self.normalization_edits,
+        )
+    }
+
+    fn visit_each_start(
+        &mut self,
+        source: &str,
+        node: Node<'_>,
+        context: &mut TemplateWalkContext,
+    ) -> Result<(), SvelteFrameworkError> {
+        append_raw_text_expression_normalization_edits(
+            source,
+            node,
+            self.imports,
+            context,
+            &mut self.normalization_edits,
+        )
+    }
+
+    fn visit_element_like(
+        &mut self,
+        source: &str,
+        node: Node<'_>,
+        context: &mut TemplateWalkContext,
+    ) -> Result<bool, SvelteFrameworkError> {
+        if let Some(candidate) =
+            component_candidate_from_element(source, node, self.imports, self.options, context)?
+        {
+            self.normalization_edits
+                .extend(candidate.candidate.normalization_edits);
+            return Ok(true);
+        }
+        Ok(false)
+    }
+
+    fn finish(self) -> Self::Output {
+        self.normalization_edits
+    }
 }
 
 fn append_expression_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    context: &mut CollectContext,
+    context: &mut TemplateWalkContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = node
@@ -296,7 +205,7 @@ fn append_expression_normalization_edits(
     else {
         return Ok(());
     };
-    let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
+    let inner_span = Span::from_node(raw_text);
 
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
@@ -324,14 +233,14 @@ fn append_raw_text_expression_normalization_edits(
     source: &str,
     node: Node<'_>,
     imports: &[MacroImport],
-    context: &mut CollectContext,
+    context: &mut TemplateWalkContext,
     normalization_edits: &mut Vec<NormalizationEdit>,
 ) -> Result<(), SvelteFrameworkError> {
     let Some(raw_text) = find_first_descendant(node, "svelte_raw_text") else {
         return Ok(());
     };
 
-    let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
+    let inner_span = Span::from_node(raw_text);
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
         .expression_parse_cache
@@ -403,169 +312,6 @@ fn append_virtual_trans_child_wrapper_edits(
         at: inner_span.end,
         text: "} />".to_string(),
     });
-    Ok(())
-}
-
-fn visit_component_each_statement(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-    normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), SvelteFrameworkError> {
-    let start = node
-        .children(&mut node.walk())
-        .find(|child| child.kind() == "each_start");
-    if let Some(start) = start {
-        append_raw_text_expression_normalization_edits(
-            source,
-            start,
-            imports,
-            context,
-            normalization_edits,
-        )?;
-    }
-    let frame = start
-        .map(|start| declared_names_from_each_start(source, start))
-        .transpose()?
-        .unwrap_or_default();
-
-    context.scope_stack.push(frame);
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if child.kind() == "each_start" || child.kind() == "each_end" {
-            continue;
-        }
-        collect_component_normalization_edits_inner(
-            source,
-            child,
-            imports,
-            options,
-            context,
-            normalization_edits,
-        )?;
-    }
-    context.scope_stack.pop();
-    Ok(())
-}
-
-fn visit_component_named_block(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-    normalization_edits: &mut Vec<NormalizationEdit>,
-    start_kind: &str,
-) -> Result<(), SvelteFrameworkError> {
-    let start = node
-        .children(&mut node.walk())
-        .find(|child| child.kind() == start_kind);
-    let frame = start
-        .map(|start| {
-            declared_names_from_optional_raw_text(source, start, BindingParseMode::SingleParam)
-        })
-        .transpose()?
-        .flatten()
-        .unwrap_or_default();
-
-    context.scope_stack.push(frame);
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if child.kind() == start_kind {
-            continue;
-        }
-        collect_component_normalization_edits_inner(
-            source,
-            child,
-            imports,
-            options,
-            context,
-            normalization_edits,
-        )?;
-    }
-    context.scope_stack.pop();
-    Ok(())
-}
-
-fn visit_component_snippet_statement(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-    normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), SvelteFrameworkError> {
-    let start = node
-        .children(&mut node.walk())
-        .find(|child| child.kind() == "snippet_start");
-    let frame = start
-        .map(|start| {
-            declared_names_from_optional_raw_text(source, start, BindingParseMode::FunctionParams)
-        })
-        .transpose()?
-        .flatten()
-        .unwrap_or_default();
-
-    context.scope_stack.push(frame);
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if child.kind() == "snippet_start" || child.kind() == "snippet_end" {
-            continue;
-        }
-        collect_component_normalization_edits_inner(
-            source,
-            child,
-            imports,
-            options,
-            context,
-            normalization_edits,
-        )?;
-    }
-    context.scope_stack.pop();
-    Ok(())
-}
-
-fn visit_component_element_like(
-    source: &str,
-    node: Node<'_>,
-    imports: &[MacroImport],
-    options: &AnalyzeOptions,
-    context: &mut CollectContext,
-    normalization_edits: &mut Vec<NormalizationEdit>,
-) -> Result<(), SvelteFrameworkError> {
-    if let Some(candidate) =
-        component_candidate_from_element(source, node, imports, options, context)?
-    {
-        normalization_edits.extend(candidate.candidate.normalization_edits);
-        return Ok(());
-    }
-
-    let let_bindings = let_bindings_from_element(source, node);
-    let has_let_bindings = !let_bindings.is_empty();
-    if has_let_bindings {
-        context.scope_stack.push(let_bindings);
-    }
-
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        if node.kind() == "element" && child.kind() == "end_tag" {
-            continue;
-        }
-        collect_component_normalization_edits_inner(
-            source,
-            child,
-            imports,
-            options,
-            context,
-            normalization_edits,
-        )?;
-    }
-
-    if has_let_bindings {
-        context.scope_stack.pop();
-    }
     Ok(())
 }
 

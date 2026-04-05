@@ -320,6 +320,88 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
 }
 
 #[test]
+fn preserves_reactive_alias_prefix_in_markup_expression_spans_without_repair() {
+    let source = indoc! {r#"
+        <script>
+          import { t as translate } from "lingui-for-svelte/macro";
+        </script>
+
+        <p>{$translate`Hello from markup-only component`}</p>
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let expression = analysis
+        .semantic
+        .template_expressions
+        .iter()
+        .find_map(|expression| {
+            expression
+                .candidates
+                .iter()
+                .find(|candidate| {
+                    candidate.imported_name == "t"
+                        && candidate.local_name == "translate"
+                        && candidate.flavor == MacroFlavor::Reactive
+                })
+                .map(|candidate| (expression, candidate))
+        })
+        .expect("reactive translate candidate exists");
+
+    let (expression, candidate) = expression;
+    assert!(
+        source[expression.inner_span.start..expression.inner_span.end].starts_with("translate`"),
+        "inner raw_text span should already include the alias identifier"
+    );
+    assert!(
+        source[candidate.outer_span.start..candidate.outer_span.end].starts_with("$translate`"),
+        "candidate span should include the reactive prefix without extra repair"
+    );
+}
+
+#[test]
+fn preserves_reactive_alias_prefix_in_html_tag_spans_without_repair() {
+    let source = indoc! {r#"
+        <script>
+          import { msg, t as translate } from "lingui-for-svelte/macro";
+        </script>
+
+        {@html $translate(msg`Hello from html tag`)}
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let expression = analysis
+        .semantic
+        .template_expressions
+        .iter()
+        .find_map(|expression| {
+            expression
+                .candidates
+                .iter()
+                .find(|candidate| {
+                    candidate.imported_name == "t"
+                        && candidate.local_name == "translate"
+                        && candidate.flavor == MacroFlavor::Reactive
+                })
+                .map(|candidate| (expression, candidate))
+        })
+        .expect("reactive translate candidate exists in html tag");
+
+    let (expression, candidate) = expression;
+    assert!(
+        source[expression.inner_span.start..expression.inner_span.end].starts_with("translate("),
+        "html tag raw_text span should already include the alias identifier"
+    );
+    assert!(
+        source[candidate.outer_span.start..candidate.outer_span.end].starts_with("$translate("),
+        "candidate span should include the reactive prefix without extra repair"
+    );
+}
+
+#[test]
 fn treats_instance_script_non_macro_bindings_as_template_shadowing() {
     let source = indoc! {r#"
         <script lang="ts">
