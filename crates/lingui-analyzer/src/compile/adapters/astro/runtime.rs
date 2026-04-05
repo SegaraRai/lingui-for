@@ -4,11 +4,12 @@ use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
 };
 use crate::compile::runtime_component::{
-    RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_span,
-    find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
-    jsx_attribute_value_node, key_name, lowerable_object_expression_node, push_anchor_mapped,
-    push_copied_span, source_slice, spread_argument_node, spread_element_node, translated_span,
-    validate_runtime_placeholder_key,
+    RuntimeComponentError, append_rendered,
+    convert_expression_for_runtime_trans as convert_expression_for_runtime_trans_shared,
+    convert_jsx_named_attribute, copy_span, find_first_named_descendant, find_node_by_span,
+    first_named_child, jsx_attribute_name_node, jsx_attribute_value_node, key_name,
+    lowerable_object_expression_node, push_anchor_mapped, push_copied_span, source_slice,
+    spread_argument_node, spread_element_node, translated_span, validate_runtime_placeholder_key,
 };
 use crate::compile::{CompileTarget, RuntimeWarningMode};
 use crate::framework::parse::{parse_astro, parse_tsx};
@@ -128,9 +129,10 @@ fn convert_runtime_trans_root(
                 if let Some(object) = lowerable_object_expression_node(argument) {
                     let spread_span = translated_span(spread, base_offset)?;
                     let object_span = translated_span(object, base_offset)?;
-                    let lowered = lower_object_expression_span(
+                    let lowered = lower_object_expression_node(
                         context,
-                        object_span,
+                        object,
+                        base_offset,
                         0,
                         runtime_warning_mode,
                     )?;
@@ -280,28 +282,16 @@ fn convert_runtime_trans_root(
     mapped.into_rendered().map_err(Into::into)
 }
 
-fn lower_object_expression_span(
+fn lower_object_expression_node(
     context: &AstroRuntimeLoweringContext<'_>,
-    span: Span,
+    node: Node<'_>,
+    base_offset: isize,
     indent_level: usize,
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<AstroLoweredObjectExpression, AstroAdapterError> {
-    let text = &context.source.as_str()[span.start..span.end];
-    let wrapper_prefix = "const __expr = (";
-    let wrapped = format!("{wrapper_prefix}{text});");
-    let tree = parse_tsx(&wrapped)?;
-    let root = tree.root_node();
-    let declarator = find_first_named_descendant(root, "variable_declarator")
-        .ok_or(RuntimeComponentError::MissingVariableDeclaratorWhileLoweringObjectExpression)?;
-    let value = declarator
-        .child_by_field_name("value")
-        .ok_or(RuntimeComponentError::MissingObjectExpressionInitializer)?;
-    let object = if value.kind() == "parenthesized_expression" {
-        first_named_child(value).unwrap_or(value)
-    } else {
-        value
-    };
+    let object = lowerable_object_expression_node(node).unwrap_or(node);
     if object.kind() != "object" {
+        let span = translated_span(node, base_offset)?;
         return Ok(AstroLoweredObjectExpression {
             props: copy_span(context.input, span)?,
             slot_callbacks: Vec::new(),
@@ -312,7 +302,7 @@ fn lower_object_expression_span(
     convert_object_expression(
         context,
         object,
-        span.start as isize - wrapper_prefix.len() as isize,
+        base_offset,
         indent_level,
         runtime_warning_mode,
     )
@@ -460,15 +450,13 @@ fn convert_expression_for_runtime_trans(
             runtime_warning_mode,
         )
         .map(|lowered| lowered.props),
-        _ => Ok(
-            crate::compile::runtime_component::convert_expression_for_runtime_trans(
-                context.source.as_str(),
-                context.input,
-                node,
-                base_offset,
-                indent_level,
-            )?,
-        ),
+        _ => Ok(convert_expression_for_runtime_trans_shared(
+            context.source.as_str(),
+            context.input,
+            node,
+            base_offset,
+            indent_level,
+        )?),
     }
 }
 

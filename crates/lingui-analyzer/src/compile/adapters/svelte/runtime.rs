@@ -125,9 +125,10 @@ fn convert_runtime_trans_root(
                 if let Some(object) = lowerable_object_expression_node(argument) {
                     let spread_span = translated_span(spread, base_offset)?;
                     let object_span = translated_span(object, base_offset)?;
-                    let lowered = lower_object_expression_span(
+                    let lowered = lower_object_expression_node(
                         context,
-                        object_span,
+                        object,
+                        base_offset,
                         0,
                         runtime_warning_mode,
                     )?;
@@ -261,28 +262,16 @@ fn convert_runtime_trans_root(
     mapped.into_rendered().map_err(SvelteAdapterError::from)
 }
 
-fn lower_object_expression_span(
+fn lower_object_expression_node(
     context: &SvelteRuntimeLoweringContext<'_>,
-    span: Span,
+    node: Node<'_>,
+    base_offset: isize,
     indent_level: usize,
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<SvelteLoweredObjectExpression, SvelteAdapterError> {
-    let text = &context.source.as_str()[span.start..span.end];
-    let wrapper_prefix = "const __expr = (";
-    let wrapped = format!("{wrapper_prefix}{text});");
-    let tree = parse_tsx(&wrapped)?;
-    let root = tree.root_node();
-    let declarator = find_first_named_descendant(root, "variable_declarator")
-        .ok_or(RuntimeComponentError::MissingVariableDeclaratorWhileLoweringObjectExpression)?;
-    let value = declarator
-        .child_by_field_name("value")
-        .ok_or(RuntimeComponentError::MissingObjectExpressionInitializer)?;
-    let object = if value.kind() == "parenthesized_expression" {
-        first_named_child(value).unwrap_or(value)
-    } else {
-        value
-    };
+    let object = lowerable_object_expression_node(node).unwrap_or(node);
     if object.kind() != "object" {
+        let span = translated_span(node, base_offset)?;
         return Ok(SvelteLoweredObjectExpression {
             props: copy_span(context.input, span)?,
             snippets: Vec::new(),
@@ -292,7 +281,7 @@ fn lower_object_expression_span(
     convert_object_expression(
         context,
         object,
-        span.start as isize - wrapper_prefix.len() as isize,
+        base_offset,
         indent_level,
         runtime_warning_mode,
     )

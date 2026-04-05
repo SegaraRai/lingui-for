@@ -15,6 +15,7 @@ use super::{
 pub(crate) struct TransformedDeclaration {
     pub(crate) code: String,
     pub(crate) indexed_source_map: Option<IndexedSourceMap>,
+    pub(crate) synthetic_start: usize,
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -75,6 +76,7 @@ pub(crate) fn collect_variable_initializer_declarations(
                 TransformedDeclaration {
                     code,
                     indexed_source_map,
+                    synthetic_start: value_start,
                 },
             );
         }

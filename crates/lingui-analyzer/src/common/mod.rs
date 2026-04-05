@@ -21,5 +21,4 @@ pub(crate) use source_map::{
 pub use span::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub(crate) use transformed_declaration::{
     CollectDeclarationsError, TransformedDeclaration, collect_variable_initializer_declarations,
-    initializer_start_for_declarator,
 };

@@ -226,6 +226,12 @@ fn lower_interpolation_expression(
 
     let lowered = builder.finish();
     let trimmed_code = lowered.code.trim().to_string();
+    if trimmed_code.starts_with("...") {
+        return Ok(LoweredNode {
+            code: "__astro_spread_child__".to_string(),
+            segments: Vec::new(),
+        });
+    }
     let trimmed_segments = trim_segments(&lowered.code, lowered.segments);
     Ok(LoweredNode {
         code: trimmed_code,
@@ -265,6 +271,13 @@ fn lower_expressionish_child(source: &str, node: Node<'_>) -> Result<LoweredNode
         "element" => lower_element_like(source, node),
         "self_closing_tag" => lower_self_closing_tag(source, node),
         "html_interpolation" => lower_interpolation_expression(source, node),
+        // Bare spread children like `{...props}` are valid in Astro markup but not in plain
+        // TypeScript expressions. Lower them to an opaque placeholder so validation can still
+        // run on the original Astro tree without making the analysis IR unparsable.
+        "spread_element" => Ok(LoweredNode {
+            code: "__astro_spread_child__".to_string(),
+            segments: Vec::new(),
+        }),
         _ => Ok(LoweredNode {
             code: text(source, node).to_string(),
             segments: vec![AstroIrSegment {
@@ -607,6 +620,22 @@ const label = "Read";
         assert_eq!(
             lowered[0].code,
             r#"__astro_el("a", { "title": `prefix ${label}`, "href": href }, "Docs")"#
+        );
+    }
+
+    #[test]
+    fn lowers_bare_spread_children_to_opaque_placeholders() {
+        let source = r#"---
+const props = { name: "Ada" };
+---
+{<Trans>Hello {...props}</Trans>}
+"#;
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+        assert_eq!(lowered.len(), 1);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_el(Trans, null, "Hello", __astro_spread_child__)"#
         );
     }
 
