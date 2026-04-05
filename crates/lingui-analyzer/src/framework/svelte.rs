@@ -1367,8 +1367,30 @@ fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
             continue;
         }
 
-        let attribute_text = text(source, child);
-        if attribute_text.contains("lang") && attribute_text.contains("ts") {
+        let mut attribute_cursor = child.walk();
+        let Some(name_node) = child
+            .children(&mut attribute_cursor)
+            .find(|grandchild| grandchild.kind() == "attribute_name")
+        else {
+            continue;
+        };
+
+        if text(source, name_node) != "lang" {
+            continue;
+        }
+
+        let mut value_cursor = child.walk();
+        let value = child
+            .named_children(&mut value_cursor)
+            .find(|grandchild| grandchild.kind() != "attribute_name")
+            .map(|value_node| {
+                let raw_value = text(source, value_node);
+                unquote(raw_value)
+                    .unwrap_or_else(|| raw_value.to_string())
+                    .trim()
+                    .to_ascii_lowercase()
+            });
+        if matches!(value.as_deref(), Some("ts" | "typescript")) {
             return ScriptLang::Ts;
         }
     }
@@ -1620,7 +1642,10 @@ fn validate_svelte_element_like(
 
 #[cfg(test)]
 mod tests {
+    use super::script_language;
+    use crate::common::ScriptLang;
     use crate::framework::helpers::text::find_pattern_near_start;
+    use crate::framework::parse::parse_svelte;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
@@ -1636,5 +1661,39 @@ mod tests {
 
         assert_eq!(&source[start..start + 2], "$t");
         assert!(source.is_char_boundary(start));
+    }
+
+    #[test]
+    fn script_language_only_treats_explicit_lang_ts_as_typescript() {
+        let source = r#"<script data-lang="ts" lang="ts">let answer = 42;</script>"#;
+        let tree = parse_svelte(source).expect("parse succeeds");
+        let root = tree.root_node();
+        let script_element = root
+            .children(&mut root.walk())
+            .find(|child| child.kind() == "script_element")
+            .expect("script element exists");
+        let start_tag = script_element
+            .children(&mut script_element.walk())
+            .find(|child| child.kind() == "start_tag")
+            .expect("start tag exists");
+
+        assert_eq!(script_language(source, start_tag), ScriptLang::Ts);
+    }
+
+    #[test]
+    fn script_language_ignores_non_lang_attributes_that_happen_to_contain_ts() {
+        let source = r#"<script data-lang="ts" context="module">let answer = 42;</script>"#;
+        let tree = parse_svelte(source).expect("parse succeeds");
+        let root = tree.root_node();
+        let script_element = root
+            .children(&mut root.walk())
+            .find(|child| child.kind() == "script_element")
+            .expect("script element exists");
+        let start_tag = script_element
+            .children(&mut script_element.walk())
+            .find(|child| child.kind() == "start_tag")
+            .expect("start tag exists");
+
+        assert_eq!(script_language(source, start_tag), ScriptLang::Js);
     }
 }
