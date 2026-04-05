@@ -243,7 +243,7 @@ fn collect_macro_import_statement_spans_from_root(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !conventions.accepts_macro_package(&module_specifier) {
+        if !is_macro_module_specifier(&module_specifier, conventions) {
             continue;
         }
 
@@ -555,11 +555,14 @@ fn remap_bundled_offset(
     offset: usize,
 ) -> Option<usize> {
     interpolation.segments.iter().find_map(|segment| {
-        if segment.generated.start <= offset && offset <= segment.generated.end {
-            Some(segment.original.start + (offset - segment.generated.start))
-        } else {
-            None
+        if segment.generated.start <= offset && offset < segment.generated.end {
+            return Some(segment.original.start + (offset - segment.generated.start));
         }
+        // Normalization inserts target whitespace gaps, so boundary offsets should map to the preceding segment end.
+        if offset == segment.generated.end {
+            return Some(segment.original.end);
+        }
+        None
     })
 }
 
@@ -926,10 +929,13 @@ mod tests {
     use std::collections::BTreeMap;
 
     use super::analyze_astro;
+    use super::remap_bundled_offset;
+    use crate::common::Span;
     use crate::conventions::{
         FrameworkConventions, FrameworkKind, MacroConventions, MacroPackage, MacroPackageKind,
         RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions,
     };
+    use crate::framework::astro_ir::{AstroIrSegment, BundledAstroHtmlInterpolation};
     use crate::framework::{AnalyzeOptions, WhitespaceMode};
 
     fn test_conventions() -> FrameworkConventions {
@@ -1006,5 +1012,26 @@ const ready = true;
             &source[candidate.outer_span.start..candidate.outer_span.end]
                 == "translate`Inner ${name}`"
         }));
+    }
+
+    #[test]
+    fn remap_bundled_offset_handles_segment_boundaries_deterministically() {
+        let interpolation = BundledAstroHtmlInterpolation {
+            outer_span: Span::new(0, 0),
+            inner_span: Span::new(0, 0),
+            synthetic_span: Span::new(0, 0),
+            segments: vec![
+                AstroIrSegment {
+                    generated: Span::new(0, 3),
+                    original: Span::new(10, 13),
+                },
+                AstroIrSegment {
+                    generated: Span::new(3, 6),
+                    original: Span::new(20, 23),
+                },
+            ],
+        };
+
+        assert_eq!(remap_bundled_offset(&interpolation, 3), Some(13));
     }
 }
