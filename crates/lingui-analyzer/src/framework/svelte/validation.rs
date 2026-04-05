@@ -3,33 +3,10 @@ use std::borrow::Cow;
 use tree_sitter::Node;
 
 use crate::common::{Span, format_invalid_macro_usage, format_unsupported_trans_child_syntax};
-use crate::framework::{AnalyzeOptions, MacroCandidate, MacroCandidateStrategy, MacroFlavor};
 
-#[derive(thiserror::Error, Debug)]
-pub enum SvelteFrameworkError {
-    #[error(transparent)]
-    Parse(#[from] crate::framework::ParseError),
-    #[error(transparent)]
-    Js(#[from] crate::framework::JsAnalysisError),
-    #[error(transparent)]
-    Conventions(#[from] crate::conventions::MacroConventionsError),
-    #[error("{0}")]
-    InvalidMacroUsage(String),
-    #[error("script element should have start tag")]
-    MissingScriptStartTag,
-    #[error(
-        "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations."
-    )]
-    BareDirectTNotAllowed,
-    #[error(
-        "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
-    )]
-    BareDirectMacroRequiresReactiveOrEager { imported_name: Cow<'static, str> },
-    #[error(
-        "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`."
-    )]
-    ModuleScriptMustUseCoreMacroPackage,
-}
+use super::super::shared::helpers::text::text;
+use super::super::{AnalyzeOptions, MacroCandidate, MacroCandidateStrategy, MacroFlavor};
+use super::SvelteFrameworkError;
 
 fn bare_direct_macro_error(imported_name: &str) -> SvelteFrameworkError {
     match imported_name {
@@ -153,7 +130,7 @@ fn validate_svelte_element_like(
         .children(&mut tag.walk())
         .find(|child| child.kind() == "tag_name")
     {
-        let tag_name = crate::framework::helpers::text::text(source, tag_name_node);
+        let tag_name = text(source, tag_name_node);
         if tag_name == "slot" || tag_name.starts_with("svelte:") {
             return Err(SvelteFrameworkError::InvalidMacroUsage(
                 format_unsupported_trans_child_syntax(

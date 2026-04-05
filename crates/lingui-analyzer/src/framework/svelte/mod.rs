@@ -2,14 +2,45 @@ mod analysis;
 mod components;
 mod validation;
 
+use std::borrow::Cow;
+
 use crate::common::{EmbeddedScriptRegion, Span};
-use crate::framework::{
-    AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroImport,
+use crate::conventions::MacroConventionsError;
+
+use super::{
+    AnalyzeOptions, FrameworkAdapter, FrameworkError, JsAnalysisError, MacroCandidate, MacroImport,
+    ParseError,
 };
 
 pub use analysis::analyze_svelte;
 pub(crate) use validation::bare_direct_macro_message;
-pub use validation::{SvelteFrameworkError, validate_svelte_extract_candidates};
+pub use validation::validate_svelte_extract_candidates;
+
+#[derive(thiserror::Error, Debug)]
+pub enum SvelteFrameworkError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error(transparent)]
+    Js(#[from] JsAnalysisError),
+    #[error(transparent)]
+    Conventions(#[from] MacroConventionsError),
+    #[error("{0}")]
+    InvalidMacroUsage(String),
+    #[error("script element should have start tag")]
+    MissingScriptStartTag,
+    #[error(
+        "Bare `t` in `.svelte` files is not allowed. Use `$t` in instance/template code or `t.eager` for non-reactive script translations."
+    )]
+    BareDirectTNotAllowed,
+    #[error(
+        "Bare `{imported_name}` in `.svelte` files is only allowed in reactive `$derived(...)`, `$derived.by(...)`, and template expressions. Use `${imported_name}` there or `{imported_name}.eager(...)` for non-reactive script translations."
+    )]
+    BareDirectMacroRequiresReactiveOrEager { imported_name: Cow<'static, str> },
+    #[error(
+        "Module scripts in `.svelte` files must import Lingui macros from `@lingui/core/macro`, not `lingui-for-svelte/macro`."
+    )]
+    ModuleScriptMustUseCoreMacroPackage,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SvelteScriptAnalysis {
@@ -61,7 +92,7 @@ impl FrameworkAdapter for SvelteAdapter {
 
 #[cfg(test)]
 mod tests {
-    use crate::framework::helpers::text::find_pattern_near_start;
+    use crate::framework::shared::helpers::text::find_pattern_near_start;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {

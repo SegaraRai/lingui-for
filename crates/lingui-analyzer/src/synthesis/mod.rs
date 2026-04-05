@@ -5,7 +5,7 @@ use tsify::Tsify;
 use crate::common::{
     IndexedText, MappedText, MappedTextError, RenderedMappedText, Span, build_copy_map,
 };
-use crate::framework::helpers::normalization::sort_and_dedup_normalization_edits;
+use crate::framework::shared::helpers::normalization::sort_and_dedup_normalization_edits;
 use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport, NormalizationEdit};
 
 #[derive(Debug, Clone, PartialEq)]

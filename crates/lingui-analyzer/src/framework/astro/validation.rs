@@ -1,19 +1,10 @@
 use tree_sitter::Node;
 
 use crate::common::{Span, format_unsupported_trans_child_syntax};
-use crate::framework::AnalyzeOptions;
 
-#[derive(thiserror::Error, Debug)]
-pub enum AstroFrameworkError {
-    #[error(transparent)]
-    Parse(#[from] crate::framework::ParseError),
-    #[error(transparent)]
-    Js(#[from] crate::framework::JsAnalysisError),
-    #[error(transparent)]
-    Ir(#[from] super::ir::AstroIrError),
-    #[error("{0}")]
-    InvalidMacroUsage(String),
-}
+use super::super::AnalyzeOptions;
+use super::super::shared::helpers::text::text;
+use super::AstroFrameworkError;
 
 pub(super) fn validate_runtime_lowerable_astro_component(
     source: &str,
@@ -115,7 +106,7 @@ fn validate_astro_element_like(
         else {
             continue;
         };
-        let attribute_name = crate::framework::helpers::text::text(source, name_node);
+        let attribute_name = text(source, name_node);
         if is_unsupported_astro_directive(attribute_name) {
             return Err(AstroFrameworkError::InvalidMacroUsage(
                 format_unsupported_trans_child_syntax(
@@ -136,10 +127,7 @@ fn astro_tag_name<'a>(source: &'a str, tag: Node<'_>) -> Option<(&'a str, Span)>
         .children(&mut tag.walk())
         .find(|child| child.kind() == "tag_name")
     {
-        return Some((
-            crate::framework::helpers::text::text(source, tag_name_node),
-            Span::from_node(tag_name_node),
-        ));
+        return Some((text(source, tag_name_node), Span::from_node(tag_name_node)));
     }
 
     let tag_span = Span::from_node(tag);

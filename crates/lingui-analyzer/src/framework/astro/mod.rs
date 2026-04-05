@@ -4,12 +4,27 @@ pub mod ir;
 mod validation;
 
 use crate::common::{EmbeddedScriptRegion, Span};
-use crate::framework::{
-    AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroImport,
+
+use super::{
+    AnalyzeOptions, FrameworkAdapter, FrameworkError, JsAnalysisError, MacroCandidate, MacroImport,
+    ParseError,
 };
 
 pub use analysis::analyze_astro;
-pub use validation::AstroFrameworkError;
+
+use ir::AstroIrError;
+
+#[derive(thiserror::Error, Debug)]
+pub enum AstroFrameworkError {
+    #[error(transparent)]
+    Parse(#[from] ParseError),
+    #[error(transparent)]
+    Js(#[from] JsAnalysisError),
+    #[error(transparent)]
+    Ir(#[from] AstroIrError),
+    #[error("{0}")]
+    InvalidMacroUsage(String),
+}
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct AstroAdapter;

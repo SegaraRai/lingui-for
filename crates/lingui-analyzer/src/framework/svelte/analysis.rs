@@ -1,25 +1,26 @@
-use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span};
+use tree_sitter::Node;
+
+use crate::common::{
+    EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span, format_invalid_macro_usage,
+};
 use crate::conventions::{FrameworkConventions, MacroPackageKind};
-use crate::framework::helpers::anchors::{
+
+use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
 };
-use crate::framework::helpers::imports::collect_import_specifiers_from_node;
-use crate::framework::helpers::text::{find_pattern_near_start, text, unquote};
-use crate::framework::js::{
+use super::super::shared::helpers::imports::collect_import_specifiers_from_node;
+use super::super::shared::helpers::text::{find_pattern_near_start, text, unquote};
+use super::super::shared::js::{
     BindingParseMode, ExpressionParseCache, JsMacroSyntax,
     collect_declared_names_from_binding_source, collect_macro_candidates,
     collect_top_level_declared_names_from_root,
 };
-use crate::framework::parse::parse_svelte;
-use crate::framework::{
-    AnalyzeOptions, MacroCandidate, MacroFlavor, MacroImport, NormalizationEdit,
-};
-use tree_sitter::Node;
-
+use super::super::shared::parse::parse_svelte;
+use super::super::{AnalyzeOptions, MacroCandidate, MacroFlavor, MacroImport, NormalizationEdit};
 use super::components::{component_candidate_from_element, let_bindings_from_element};
-use super::validation::SvelteFrameworkError;
 use super::{
-    SvelteScriptAnalysis, SvelteScriptBlock, SvelteTemplateComponent, SvelteTemplateExpression,
+    SvelteFrameworkError, SvelteScriptAnalysis, SvelteScriptBlock, SvelteTemplateComponent,
+    SvelteTemplateExpression,
 };
 
 pub fn analyze_svelte(
@@ -677,7 +678,7 @@ fn validate_module_script_macro_imports(
     };
 
     Err(SvelteFrameworkError::InvalidMacroUsage(
-        crate::common::format_invalid_macro_usage(
+        format_invalid_macro_usage(
             source,
             source_name,
             offending_import.span,

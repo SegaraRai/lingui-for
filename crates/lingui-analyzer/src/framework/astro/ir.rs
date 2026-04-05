@@ -1,8 +1,9 @@
 use tree_sitter::Node;
 
 use crate::common::Span;
-use crate::framework::helpers::text::{is_component_tag_name, text};
-use crate::framework::parse::{ParseError, parse_astro};
+
+use super::super::shared::helpers::text::{is_component_tag_name, text};
+use super::super::shared::parse::{ParseError, parse_astro};
 
 #[derive(thiserror::Error, Debug)]
 pub enum AstroIrError {

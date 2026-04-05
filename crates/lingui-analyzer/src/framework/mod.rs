@@ -1,12 +1,6 @@
 pub mod astro;
-mod shared;
+pub(crate) mod shared;
 pub mod svelte;
-
-pub use astro::ir as astro_ir;
-pub(crate) use shared::helpers;
-pub use shared::js;
-pub use shared::parse;
-pub use shared::scope;
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -17,8 +11,8 @@ use crate::common::Span;
 use crate::conventions::FrameworkConventions;
 
 pub use astro::AstroFrameworkError;
-pub use js::JsAnalysisError;
-pub use parse::ParseError;
+pub use shared::js::JsAnalysisError;
+pub use shared::parse::ParseError;
 pub use svelte::SvelteFrameworkError;
 
 #[derive(thiserror::Error, Debug)]

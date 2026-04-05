@@ -9,7 +9,7 @@ use crate::compile::{
     CompileTranslationMode, RuntimeRequirements,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::helpers::text::find_pattern_near_start;
+use crate::framework::shared::helpers::text::find_pattern_near_start;
 use crate::framework::svelte::SvelteAdapter;
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, MacroCandidateKind, MacroFlavor, WhitespaceMode,

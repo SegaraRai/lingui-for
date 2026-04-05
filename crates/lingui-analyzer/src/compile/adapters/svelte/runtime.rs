@@ -11,7 +11,7 @@ use crate::compile::runtime_component::{
     validate_runtime_placeholder_key,
 };
 use crate::compile::{CompileTarget, RuntimeWarningMode};
-use crate::framework::parse::{parse_svelte, parse_tsx};
+use crate::framework::shared::parse::{parse_svelte, parse_tsx};
 
 use super::SvelteAdapterError;
 

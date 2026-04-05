@@ -611,8 +611,8 @@ mod tests {
     use super::{JsMacroSyntax, collect_macro_candidates, repair_svelte_eager_spans};
     use crate::common::Span;
     use crate::framework::MacroImport;
-    use crate::framework::helpers::text::find_pattern_near_start;
-    use crate::framework::parse::parse_typescript;
+    use crate::framework::shared::helpers::text::find_pattern_near_start;
+    use crate::framework::shared::parse::parse_typescript;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {

@@ -1,25 +1,25 @@
 use tree_sitter::Node;
 
 use crate::common::{ScriptLang, Span};
-use crate::framework::helpers::components::first_non_whitespace_child_anchor;
-use crate::framework::helpers::expressions::is_explicit_whitespace_string_expression;
-use crate::framework::helpers::normalization::{
+
+use super::super::shared::helpers::components::first_non_whitespace_child_anchor;
+use super::super::shared::helpers::expressions::is_explicit_whitespace_string_expression;
+use super::super::shared::helpers::normalization::{
     sort_and_dedup_normalization_edits, whitespace_replacement_edits,
 };
-use crate::framework::helpers::text::{is_component_tag_name, text};
-use crate::framework::js::{BindingParseMode, JsMacroSyntax, collect_macro_candidates};
-use crate::framework::{
+use super::super::shared::helpers::text::{is_component_tag_name, text};
+use super::super::shared::js::{BindingParseMode, JsMacroSyntax, collect_macro_candidates};
+use super::super::{
     AnalyzeOptions, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
     MacroImport, NormalizationEdit, WhitespaceMode,
 };
-
-use super::SvelteTemplateComponent;
 use super::analysis::{
     CollectContext, declared_names_from_const_tag, declared_names_from_each_start,
     declared_names_from_optional_raw_text, find_first_descendant,
     repair_svelte_expression_inner_span, repair_svelte_raw_expression_span,
 };
-use super::validation::{SvelteFrameworkError, validate_runtime_lowerable_svelte_component};
+use super::validation::validate_runtime_lowerable_svelte_component;
+use super::{SvelteFrameworkError, SvelteTemplateComponent};
 
 pub(super) fn component_candidate_from_element(
     source: &str,

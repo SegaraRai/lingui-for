@@ -4,24 +4,25 @@ use tree_sitter::Node;
 
 use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span};
 use crate::conventions::FrameworkConventions;
-use crate::framework::helpers::anchors::{
+
+use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
 };
-use crate::framework::helpers::imports::collect_import_specifiers_from_node;
-use crate::framework::helpers::text::{text, unquote};
-use crate::framework::js::{
+use super::super::shared::helpers::imports::collect_import_specifiers_from_node;
+use super::super::shared::helpers::text::{text, unquote};
+use super::super::shared::js::{
     ExpressionParseCache, JsMacroSyntax, collect_macro_candidates,
     collect_top_level_declared_names_from_root,
 };
-use crate::framework::parse::{ParseError, parse_astro, parse_typescript};
-use crate::framework::{AnalyzeOptions, MacroCandidate, MacroImport, NormalizationEdit};
-
+use super::super::shared::parse::{ParseError, parse_astro, parse_typescript};
+use super::super::{AnalyzeOptions, MacroCandidate, MacroImport, NormalizationEdit};
 use super::components::component_candidate_from_element;
 use super::ir::{
     BundledAstroHtmlInterpolation, bundle_html_interpolations, lower_astro_html_interpolations,
 };
-use super::validation::AstroFrameworkError;
-use super::{AstroFrontmatterAnalysis, AstroTemplateComponent, AstroTemplateExpression};
+use super::{
+    AstroFrameworkError, AstroFrontmatterAnalysis, AstroTemplateComponent, AstroTemplateExpression,
+};
 
 #[derive(Debug, Default)]
 pub(super) struct AstroCollectContext {
