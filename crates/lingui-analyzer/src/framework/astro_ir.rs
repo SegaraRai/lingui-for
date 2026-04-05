@@ -266,6 +266,19 @@ fn trim_segments(raw_code: &str, segments: Vec<AstroIrSegment>) -> Vec<AstroIrSe
         .collect()
 }
 
+fn lowered_trimmed_original(source: &str, span: Span) -> LoweredNode {
+    let raw = &source[span.start..span.end];
+    let code = raw.trim().to_string();
+    let segments = trim_segments(
+        raw,
+        vec![AstroIrSegment {
+            generated: Span::new(0, raw.len()),
+            original: span,
+        }],
+    );
+    LoweredNode { code, segments }
+}
+
 fn lower_expressionish_child(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
     match node.kind() {
         "element" => lower_element_like(source, node),
@@ -378,13 +391,7 @@ fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNo
             }
             "spread_attribute" => {
                 let spread = inner_range_from_delimiters(child, 1, 1);
-                spreads.push(LoweredNode {
-                    code: source[spread.start..spread.end].trim().to_string(),
-                    segments: vec![AstroIrSegment {
-                        generated: Span::new(0, spread.end - spread.start),
-                        original: spread,
-                    }],
-                });
+                spreads.push(lowered_trimmed_original(source, spread));
             }
             _ => {}
         }
@@ -541,13 +548,7 @@ fn render_attribute_interpolation(source: &str, node: Node<'_>) -> LoweredNode {
         .find(|child| child.kind() == "attribute_js_expr")
         .map(Span::from_node)
         .unwrap_or_else(|| inner_range_from_delimiters(node, 1, 1));
-    LoweredNode {
-        code: source[inner.start..inner.end].trim().to_string(),
-        segments: vec![AstroIrSegment {
-            generated: Span::new(0, inner.end - inner.start),
-            original: inner,
-        }],
-    }
+    lowered_trimmed_original(source, inner)
 }
 
 fn render_markup_child(source: &str, node: Node<'_>) -> Result<Option<LoweredNode>, AstroIrError> {
