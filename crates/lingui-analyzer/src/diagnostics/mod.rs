@@ -43,19 +43,19 @@ impl LinguiAnalyzerDiagnostic {
 }
 
 fn offset_to_line_column(source: &str, offset: usize) -> (usize, usize) {
-    let mut line = 1;
-    let mut column = 1;
-    for (i, c) in source.char_indices() {
-        if i >= offset {
-            break;
-        }
-        if c == '\n' {
+    let bounded = offset.min(source.len());
+    let mut line = 1usize;
+    let mut column = 1usize;
+
+    for character in source[..bounded].chars() {
+        if character == '\n' {
             line += 1;
             column = 1;
         } else {
-            column += 1;
+            column += character.len_utf16();
         }
     }
+
     (line, column)
 }
 
