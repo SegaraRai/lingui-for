@@ -1,22 +1,23 @@
 use tree_sitter::Node;
 
 use crate::common::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span, format_invalid_macro_usage,
+    EmbeddedScriptKind, EmbeddedScriptRegion, NormalizationEdit, ScriptLang, Span,
+    find_pattern_near_start, format_invalid_macro_usage,
 };
 use crate::conventions::{FrameworkConventions, MacroPackageKind};
+use crate::syntax::parse::parse_svelte;
 
 use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
 };
 use super::super::shared::helpers::imports::collect_import_specifiers_from_node;
-use super::super::shared::helpers::text::{find_pattern_near_start, text, unquote};
+use super::super::shared::helpers::text::{text, unquote};
 use super::super::shared::js::{
     BindingParseMode, ExpressionParseCache, JsMacroSyntax,
     collect_declared_names_from_binding_source, collect_macro_candidates,
     collect_top_level_declared_names_from_root,
 };
-use super::super::shared::parse::parse_svelte;
-use super::super::{AnalyzeOptions, MacroCandidate, MacroFlavor, MacroImport, NormalizationEdit};
+use super::super::{AnalyzeOptions, MacroCandidate, MacroFlavor, MacroImport};
 use super::components::{component_candidate_from_element, let_bindings_from_element};
 use super::{
     SvelteFrameworkError, SvelteScriptAnalysis, SvelteScriptBlock, SvelteTemplateComponent,
@@ -837,7 +838,7 @@ fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
 mod tests {
     use super::script_language;
     use crate::common::ScriptLang;
-    use crate::framework::shared::parse::parse_svelte;
+    use crate::syntax::parse::parse_svelte;
 
     #[test]
     fn script_language_only_treats_explicit_lang_ts_as_typescript() {

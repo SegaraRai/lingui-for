@@ -20,9 +20,10 @@ use crate::compile::{
 use crate::conventions::FrameworkConventions;
 use crate::framework::svelte::bare_direct_macro_message;
 use crate::framework::{
-    FrameworkError, MacroCandidate, MacroCandidateStrategy, MacroFlavor, ParseError,
-    SvelteFrameworkError, WhitespaceMode,
+    FrameworkError, MacroCandidate, MacroCandidateStrategy, MacroFlavor, SvelteFrameworkError,
+    WhitespaceMode,
 };
+use crate::syntax::parse::ParseError;
 
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 

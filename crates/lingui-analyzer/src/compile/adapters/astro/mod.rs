@@ -12,9 +12,8 @@ use crate::compile::{
     RuntimeWarningOptions, build_compile_plan_for_framework,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::{
-    AstroFrameworkError, FrameworkError, JsAnalysisError, ParseError, WhitespaceMode,
-};
+use crate::framework::{AstroFrameworkError, FrameworkError, JsAnalysisError, WhitespaceMode};
+use crate::syntax::parse::ParseError;
 
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 

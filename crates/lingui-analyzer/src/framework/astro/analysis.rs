@@ -2,8 +2,11 @@ use std::collections::HashMap;
 
 use tree_sitter::Node;
 
-use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span};
+use crate::common::{
+    EmbeddedScriptKind, EmbeddedScriptRegion, NormalizationEdit, ScriptLang, Span,
+};
 use crate::conventions::FrameworkConventions;
+use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
 
 use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
@@ -14,8 +17,7 @@ use super::super::shared::js::{
     ExpressionParseCache, JsMacroSyntax, collect_macro_candidates,
     collect_top_level_declared_names_from_root,
 };
-use super::super::shared::parse::{ParseError, parse_astro, parse_typescript};
-use super::super::{AnalyzeOptions, MacroCandidate, MacroImport, NormalizationEdit};
+use super::super::{AnalyzeOptions, MacroCandidate, MacroImport};
 use super::components::component_candidate_from_element;
 use super::ir::{
     BundledAstroHtmlInterpolation, bundle_html_interpolations, lower_astro_html_interpolations,

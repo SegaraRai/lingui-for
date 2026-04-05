@@ -4,7 +4,7 @@ use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, MappedTextError, RenderedMappedText, Span,
     build_span_anchor_map,
 };
-use crate::framework::ParseError;
+use crate::syntax::parse::ParseError;
 
 #[derive(thiserror::Error, Debug)]
 pub enum RuntimeComponentError {

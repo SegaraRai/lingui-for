@@ -2,14 +2,13 @@ use std::collections::BTreeSet;
 
 use crate::common::{
     EmbeddedScriptRegion, IndexedSourceMap, IndexedText, MappedText, RenderedMappedText,
-    ScriptLang, Span, build_copy_map, build_span_anchor_map,
+    ScriptLang, Span, build_copy_map, build_span_anchor_map, find_pattern_near_start,
 };
 use crate::compile::{
     CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
     CompileTranslationMode, RuntimeRequirements,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::shared::helpers::text::find_pattern_near_start;
 use crate::framework::svelte::SvelteAdapter;
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, MacroCandidateKind, MacroFlavor, WhitespaceMode,

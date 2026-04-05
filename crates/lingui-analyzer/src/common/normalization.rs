@@ -1,7 +1,16 @@
+use serde::{Deserialize, Serialize};
 use tree_sitter::Node;
+use tsify::Tsify;
 
-use crate::common::Span;
-use crate::framework::NormalizationEdit;
+use super::Span;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum NormalizationEdit {
+    Delete { span: Span },
+    Insert { at: usize, text: String },
+}
 
 pub(crate) fn whitespace_replacement_edits(
     source: &str,

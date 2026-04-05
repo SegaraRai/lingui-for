@@ -3,6 +3,7 @@ pub mod compile;
 pub mod conventions;
 pub mod extract;
 pub mod framework;
+pub mod syntax;
 pub mod synthesis;
 
 use serde::{Deserialize, Serialize};
@@ -18,7 +19,6 @@ use crate::framework::svelte::{SvelteAdapter, validate_svelte_extract_candidates
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError};
 use crate::synthesis::merge_owned_candidate_normalization_edits;
 
-pub use common::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub use compile::{
     AstroCompilePlan, CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
     CompileTargetOutputKind, CompileTranslationMode, FinishedCompile, RuntimeRequirements,
@@ -32,8 +32,9 @@ pub use extract::{
 };
 pub use framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
-    NormalizationEdit, WhitespaceMode,
+    WhitespaceMode,
 };
+pub use syntax::parse::ParseError;
 pub use synthesis::NormalizedSegment;
 
 #[derive(thiserror::Error, Debug)]

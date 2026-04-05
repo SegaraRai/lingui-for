@@ -12,7 +12,7 @@ use crate::compile::runtime_component::{
     spread_argument_node, spread_element_node, translated_span, validate_runtime_placeholder_key,
 };
 use crate::compile::{CompileTarget, RuntimeWarningMode};
-use crate::framework::shared::parse::{parse_astro, parse_tsx};
+use crate::syntax::parse::{parse_astro, parse_tsx};
 
 use super::AstroAdapterError;
 

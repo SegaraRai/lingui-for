@@ -92,7 +92,7 @@ impl FrameworkAdapter for SvelteAdapter {
 
 #[cfg(test)]
 mod tests {
-    use crate::framework::shared::helpers::text::find_pattern_near_start;
+    use crate::common::find_pattern_near_start;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
