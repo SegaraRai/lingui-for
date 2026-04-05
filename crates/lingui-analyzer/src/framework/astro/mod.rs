@@ -23,6 +23,10 @@ pub enum AstroFrameworkError {
     Js(#[from] JsAnalysisError),
     #[error(transparent)]
     Ir(#[from] AstroIrError),
+    #[error(
+        "bundled Astro html interpolation root count mismatch: expected {expected}, found {found}"
+    )]
+    BundledRootCountMismatch { expected: usize, found: usize },
     #[error("{0}")]
     InvalidMacroUsage(LinguiAnalyzerDiagnostic),
 }

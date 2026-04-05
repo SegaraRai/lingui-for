@@ -17,10 +17,8 @@ use crate::compile::{
 use crate::conventions::FrameworkConventions;
 use crate::diagnostics::LinguiAnalyzerDiagnostic;
 use crate::diagnostics::svelte::bare_direct_macro_usage;
-use crate::framework::{
-    FrameworkError, MacroCandidate, MacroCandidateStrategy, MacroFlavor, SvelteFrameworkError,
-    WhitespaceMode,
-};
+use crate::framework::svelte::is_bare_direct_svelte_macro_forbidden;
+use crate::framework::{FrameworkError, SvelteFrameworkError, WhitespaceMode};
 use crate::syntax::parse::ParseError;
 
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
@@ -211,7 +209,7 @@ pub(crate) fn validate_compile_targets(
     let offending_candidate = prototypes.iter().find_map(|prototype| {
         (matches!(prototype.context, CompileTargetContext::InstanceScript)
             && prototype.output_kind == CompileTargetOutputKind::Expression
-            && is_forbidden_bare_direct_svelte_macro(&prototype.candidate))
+            && is_bare_direct_svelte_macro_forbidden(&prototype.candidate))
         .then_some(&prototype.candidate)
     });
 
@@ -227,13 +225,4 @@ pub(crate) fn validate_compile_targets(
     }
 
     Ok(())
-}
-
-fn is_forbidden_bare_direct_svelte_macro(candidate: &MacroCandidate) -> bool {
-    candidate.strategy == MacroCandidateStrategy::Standalone
-        && candidate.flavor == MacroFlavor::Direct
-        && matches!(
-            candidate.imported_name.as_str(),
-            "t" | "plural" | "select" | "selectOrdinal"
-        )
 }

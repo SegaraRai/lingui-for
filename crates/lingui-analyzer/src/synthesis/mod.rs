@@ -119,11 +119,11 @@ fn collect_owned_normalization_edits(
         return;
     };
 
-    let mut sorted_children: Vec<OwnedNormalizationEdit> = children.clone();
+    let mut sorted_children: Vec<&OwnedNormalizationEdit> = children.iter().collect();
     sorted_children.sort_by_key(|(_, span, _)| (span.start, span.end));
 
     for (child_id, _, child_edits) in sorted_children {
-        edits.extend(child_edits);
+        edits.extend(child_edits.iter().cloned());
         collect_owned_normalization_edits(child_id.as_str(), owned_by_parent, edits);
     }
 }

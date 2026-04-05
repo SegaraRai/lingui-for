@@ -53,7 +53,6 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         .map(|target| target.declaration_id.clone())
         .collect::<Vec<_>>();
     let targets = prototypes
-        .clone()
         .into_iter()
         .zip(synthetic_plan.targets)
         .map(|(prototype, target)| CompileTarget {

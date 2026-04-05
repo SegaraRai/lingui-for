@@ -360,7 +360,10 @@ fn analyze_lowered_html_interpolations(
     let tree = parse_typescript(&bundled.code)?;
     let roots = collect_bundled_expression_roots(tree.root_node());
     if roots.len() != bundled.expressions.len() {
-        return Err(ParseError::ParseFailed.into());
+        return Err(AstroFrameworkError::BundledRootCountMismatch {
+            expected: bundled.expressions.len(),
+            found: roots.len(),
+        });
     }
 
     let mut analyses = HashMap::with_capacity(bundled.expressions.len());

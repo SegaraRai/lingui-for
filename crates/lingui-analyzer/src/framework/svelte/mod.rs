@@ -9,8 +9,8 @@ use crate::conventions::MacroConventionsError;
 use crate::diagnostics::LinguiAnalyzerDiagnostic;
 
 use super::{
-    AnalyzeOptions, FrameworkAdapter, FrameworkError, JsAnalysisError, MacroCandidate, MacroImport,
-    ParseError,
+    AnalyzeOptions, FrameworkAdapter, FrameworkError, JsAnalysisError, MacroCandidate,
+    MacroCandidateStrategy, MacroFlavor, MacroImport, ParseError,
 };
 
 pub use analysis::analyze_svelte;
@@ -98,6 +98,15 @@ impl FrameworkAdapter for SvelteAdapter {
     ) -> Result<Self::Analysis, FrameworkError> {
         Ok(analyze_svelte(source, options)?)
     }
+}
+
+pub(crate) fn is_bare_direct_svelte_macro_forbidden(candidate: &MacroCandidate) -> bool {
+    candidate.strategy == MacroCandidateStrategy::Standalone
+        && candidate.flavor == MacroFlavor::Direct
+        && matches!(
+            candidate.imported_name.as_str(),
+            "t" | "plural" | "select" | "selectOrdinal"
+        )
 }
 
 #[cfg(test)]

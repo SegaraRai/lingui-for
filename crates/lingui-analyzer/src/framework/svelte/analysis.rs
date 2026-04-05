@@ -621,6 +621,9 @@ fn expand_import_removal_span_in_source(source: &str, span: Span) -> Span {
         end += 1;
     }
 
+    // Intentionally consume one more trailing line break after the import so
+    // `expand_import_removal_span_in_source` removes the extra blank line as
+    // well. Advance by 2 for CRLF and by 1 for LF to avoid off-by-one errors.
     if bytes.get(end) == Some(&b'\r') && bytes.get(end + 1) == Some(&b'\n') {
         end += 2;
     } else if bytes.get(end) == Some(&b'\n') {

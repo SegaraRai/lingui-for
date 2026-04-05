@@ -119,37 +119,11 @@ fn collect_nested_component_normalization_edits(
                     .find(|grandchild| grandchild.kind() == "attribute_js_expr")
                     .map(Span::from_node)
                     .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
-                let tree = context
-                    .expression_parse_cache
-                    .parse(source, inner, ScriptLang::Ts)?;
-                let candidates = collect_macro_candidates(
-                    &source[inner.start..inner.end],
-                    tree.root_node(),
-                    imports,
-                    inner.start,
-                    JsMacroSyntax::Standard,
-                    &[],
-                );
-                for candidate in candidates {
-                    edits.extend(candidate.normalization_edits);
-                }
+                parse_and_collect_macros(source, inner, imports, context, &mut edits)?;
             }
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                let tree = context
-                    .expression_parse_cache
-                    .parse(source, inner, ScriptLang::Ts)?;
-                let candidates = collect_macro_candidates(
-                    &source[inner.start..inner.end],
-                    tree.root_node(),
-                    imports,
-                    inner.start,
-                    JsMacroSyntax::Standard,
-                    &[],
-                );
-                for candidate in candidates {
-                    edits.extend(candidate.normalization_edits);
-                }
+                parse_and_collect_macros(source, inner, imports, context, &mut edits)?;
             }
             "element" => {
                 if let Some(component) =
@@ -171,6 +145,30 @@ fn collect_nested_component_normalization_edits(
     }
 
     Ok(edits)
+}
+
+fn parse_and_collect_macros(
+    source: &str,
+    inner: Span,
+    imports: &[MacroImport],
+    context: &mut AstroCollectContext,
+    edits: &mut Vec<NormalizationEdit>,
+) -> Result<(), AstroFrameworkError> {
+    let tree = context
+        .expression_parse_cache
+        .parse(source, inner, ScriptLang::Ts)?;
+    let candidates = collect_macro_candidates(
+        &source[inner.start..inner.end],
+        tree.root_node(),
+        imports,
+        inner.start,
+        JsMacroSyntax::Standard,
+        &[],
+    );
+    for candidate in candidates {
+        edits.extend(candidate.normalization_edits);
+    }
+    Ok(())
 }
 
 fn component_whitespace_edits(

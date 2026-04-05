@@ -40,14 +40,20 @@ impl LinguiAnalyzerDiagnostic {
             message: message.into(),
         }
     }
+
+    pub fn span(&self) -> Span {
+        self.span
+    }
 }
 
 fn offset_to_line_column(source: &str, offset: usize) -> (usize, usize) {
-    let bounded = offset.min(source.len());
     let mut line = 1usize;
     let mut column = 1usize;
 
-    for character in source[..bounded].chars() {
+    for (byte_index, character) in source.char_indices() {
+        if byte_index >= offset {
+            break;
+        }
         if character == '\n' {
             line += 1;
             column = 1;
@@ -72,5 +78,11 @@ mod tests {
         assert_eq!(offset_to_line_column(source, 5), (1, 4));
         assert_eq!(offset_to_line_column(source, 6), (1, 5));
         assert_eq!(offset_to_line_column(source, 7), (2, 1));
+    }
+
+    #[test]
+    fn handles_edge_cases() {
+        assert_eq!(offset_to_line_column("", 0), (1, 1));
+        assert_eq!(offset_to_line_column("abc", 100), (1, 4));
     }
 }

@@ -7,22 +7,17 @@ use crate::diagnostics::svelte::{
 };
 
 use super::super::shared::helpers::text::text;
-use super::super::{AnalyzeOptions, MacroCandidate, MacroCandidateStrategy, MacroFlavor};
-use super::SvelteFrameworkError;
+use super::super::{AnalyzeOptions, MacroCandidate};
+use super::{SvelteFrameworkError, is_bare_direct_svelte_macro_forbidden};
 
 pub fn validate_svelte_extract_candidates(
     source_name: &str,
     source: &str,
     candidates: &[MacroCandidate],
 ) -> Result<(), SvelteFrameworkError> {
-    let offending_candidate = candidates.iter().find(|candidate| {
-        candidate.strategy == MacroCandidateStrategy::Standalone
-            && candidate.flavor == MacroFlavor::Direct
-            && matches!(
-                candidate.imported_name.as_str(),
-                "t" | "plural" | "select" | "selectOrdinal"
-            )
-    });
+    let offending_candidate = candidates
+        .iter()
+        .find(|candidate| is_bare_direct_svelte_macro_forbidden(candidate));
 
     if let Some(candidate) = offending_candidate {
         return Err(SvelteFrameworkError::InvalidMacroUsage(
