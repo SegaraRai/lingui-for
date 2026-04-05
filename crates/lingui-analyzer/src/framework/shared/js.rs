@@ -23,16 +23,24 @@ pub enum JsMacroSyntax {
     Svelte,
 }
 
-pub fn collect_macro_candidates(
+pub fn collect_macro_candidates<I, S>(
     source: &str,
     root: Node<'_>,
     imports: &[MacroImport],
     base_offset: usize,
     syntax: JsMacroSyntax,
-    shadowed_names: &[String],
-) -> Vec<MacroCandidate> {
+    shadowed_names: I,
+) -> Vec<MacroCandidate>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
     let mut scope = LexicalScope::new(imports.iter().cloned());
-    scope.declare_many(shadowed_names.iter().cloned());
+    scope.declare_many(
+        shadowed_names
+            .into_iter()
+            .map(|name| name.as_ref().to_string()),
+    );
     let mut candidates = Vec::new();
     visit_node(
         source,
@@ -699,7 +707,7 @@ mod tests {
             &imports,
             0,
             JsMacroSyntax::Standard,
-            &[],
+            std::iter::empty::<&str>(),
         );
 
         assert_eq!(candidates.len(), 1);

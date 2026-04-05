@@ -176,7 +176,7 @@ fn analyze_script_block(
         } else {
             JsMacroSyntax::Svelte
         },
-        &[],
+        std::iter::empty::<&str>(),
     );
 
     Ok(Some(SvelteScriptBlock {
@@ -199,11 +199,10 @@ pub(super) struct CollectContext {
 }
 
 impl CollectContext {
-    pub(super) fn shadowed_names(&self) -> Vec<String> {
+    pub(super) fn shadowed_names(&self) -> impl Iterator<Item = &String> {
         self.scope_stack
             .iter()
-            .flat_map(|frame| frame.iter().cloned())
-            .collect()
+            .flat_map(|frame| frame.iter())
     }
 }
 
@@ -289,17 +288,17 @@ fn push_expression(
     let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
     let outer_span = Span::from_node(node);
     let expression_source = &source[inner_span.start..inner_span.end];
-    let shadowed_names = context.shadowed_names();
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
+    let shadowed_names = context.shadowed_names().cloned().collect::<Vec<_>>();
     let candidates = collect_macro_candidates(
         expression_source,
         tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        &shadowed_names,
+        shadowed_names.iter(),
     );
     context.expressions.push(SvelteTemplateExpression {
         outer_span,
@@ -321,18 +320,18 @@ fn push_raw_text_expression(
     };
 
     let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
-    let shadowed_names = context.shadowed_names();
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
+    let shadowed_names = context.shadowed_names().cloned().collect::<Vec<_>>();
     let candidates = collect_macro_candidates(
         expression_source,
         tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        &shadowed_names,
+        shadowed_names.iter(),
     );
     context.expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(node),
@@ -384,10 +383,10 @@ fn push_each_start_expression(
     };
 
     let inner_span = Span::from_node(identifier);
-    let shadowed_names = context.shadowed_names();
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
+    let shadowed_names = context.shadowed_names().cloned().collect::<Vec<_>>();
 
     let candidates = collect_macro_candidates(
         text(source, identifier),
@@ -395,7 +394,7 @@ fn push_each_start_expression(
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        &shadowed_names,
+        shadowed_names.iter(),
     );
     context.expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(each_start),

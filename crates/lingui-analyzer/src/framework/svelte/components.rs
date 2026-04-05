@@ -49,7 +49,7 @@ pub(super) fn component_candidate_from_element(
         return Ok(None);
     }
 
-    let shadowed_names = context.shadowed_names();
+    let shadowed_names = context.shadowed_names().cloned().collect::<Vec<_>>();
     if shadowed_names.iter().any(|name| name == tag_name) {
         return Ok(None);
     }
@@ -298,11 +298,11 @@ fn append_expression_normalization_edits(
     };
     let inner_span = repair_svelte_expression_inner_span(source, node, Span::from_node(raw_text));
 
-    let shadowed_names = context.shadowed_names();
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
+    let shadowed_names = context.shadowed_names();
 
     let candidates = collect_macro_candidates(
         expression_source,
@@ -310,7 +310,7 @@ fn append_expression_normalization_edits(
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        &shadowed_names,
+        shadowed_names,
     );
     normalization_edits.extend(
         candidates
@@ -331,19 +331,19 @@ fn append_raw_text_expression_normalization_edits(
         return Ok(());
     };
 
-    let shadowed_names = context.shadowed_names();
     let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
     let expression_source = &source[inner_span.start..inner_span.end];
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
+    let shadowed_names = context.shadowed_names();
     let candidates = collect_macro_candidates(
         expression_source,
         tree.root_node(),
         imports,
         inner_span.start,
         JsMacroSyntax::Svelte,
-        &shadowed_names,
+        shadowed_names,
     );
     normalization_edits.extend(
         candidates

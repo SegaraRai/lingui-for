@@ -163,7 +163,7 @@ fn parse_and_collect_macros(
         imports,
         inner.start,
         JsMacroSyntax::Standard,
-        &[],
+        std::iter::empty::<&str>(),
     );
     for candidate in candidates {
         edits.extend(candidate.normalization_edits);

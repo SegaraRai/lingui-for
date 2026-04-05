@@ -85,7 +85,7 @@ pub fn analyze_astro(
             &macro_imports,
             frontmatter_region.inner_span.start,
             JsMacroSyntax::Standard,
-            &[],
+            std::iter::empty::<&str>(),
         );
         (
             macro_imports,
@@ -374,7 +374,7 @@ fn analyze_lowered_html_interpolations(
             imports,
             0,
             JsMacroSyntax::Standard,
-            &[],
+            std::iter::empty::<&str>(),
         )
         .into_iter()
         .filter_map(|candidate| remap_bundled_candidate(candidate, interpolation))
@@ -423,7 +423,7 @@ fn push_template_expression(
         imports,
         inner_span.start,
         JsMacroSyntax::Standard,
-        &[],
+        std::iter::empty::<&str>(),
     );
     if !excluded_nested_spans.is_empty() {
         candidates.retain(|candidate| {
