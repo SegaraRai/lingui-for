@@ -320,6 +320,95 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
 }
 
 #[test]
+fn treats_aliased_svelte_template_string_macros_as_shadowed_inside_binders() {
+    let source = indoc! {r#"
+        <script>
+          import { t as translate } from "lingui-for-svelte/macro";
+        </script>
+
+        <p>{$translate`root`}</p>
+        {#each items as translate}
+          <p>{$translate`each-shadowed`}</p>
+        {/each}
+        <Widget let:translate>
+          <p>{$translate`slot-shadowed`}</p>
+        </Widget>
+        <p>{$translate`after`}</p>
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let summary = analysis
+        .semantic
+        .template_expressions
+        .iter()
+        .map(|expression| {
+            (
+                source[expression.outer_span.start..expression.outer_span.end].trim(),
+                expression.candidates.len(),
+                expression.shadowed_names.clone(),
+            )
+        })
+        .collect::<Vec<_>>();
+
+    assert!(summary.contains(&("{$translate`root`}", 1, vec![])));
+    assert!(summary.contains(&(
+        "{$translate`each-shadowed`}",
+        0,
+        vec!["translate".to_string()],
+    )));
+    assert!(summary.contains(&(
+        "{$translate`slot-shadowed`}",
+        0,
+        vec!["translate".to_string()],
+    )));
+    assert!(summary.contains(&("{$translate`after`}", 1, vec![])));
+}
+
+#[test]
+fn treats_aliased_svelte_component_macros_as_shadowed_inside_binders() {
+    let source = indoc! {r#"
+        <script>
+          import { Trans as LocalTrans } from "lingui-for-svelte/macro";
+        </script>
+
+        <LocalTrans id="root" />
+        {#each items as LocalTrans}
+          <LocalTrans id="each-shadowed" />
+        {/each}
+        <Widget let:LocalTrans>
+          <LocalTrans id="slot-shadowed" />
+        </Widget>
+        <LocalTrans id="after" />
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let summary = analysis
+        .semantic
+        .template_components
+        .iter()
+        .map(|component| {
+            (
+                &source[component.candidate.outer_span.start..component.candidate.outer_span.end],
+                component.candidate.imported_name.as_str(),
+                component.candidate.local_name.as_str(),
+            )
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        summary,
+        vec![
+            ("<LocalTrans id=\"root\" />", "Trans", "LocalTrans"),
+            ("<LocalTrans id=\"after\" />", "Trans", "LocalTrans"),
+        ]
+    );
+}
+
+#[test]
 fn keeps_reactive_alias_prefix_in_markup_candidate_spans_without_repair() {
     let source = indoc! {r#"
         <script>

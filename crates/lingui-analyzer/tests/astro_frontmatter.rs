@@ -127,6 +127,52 @@ fn ignores_shadowed_bindings_in_nested_scopes() {
 }
 
 #[test]
+fn ignores_aliased_frontmatter_macros_when_nested_scopes_shadow_the_aliases() {
+    let source = indoc! {r#"
+        ---
+        import { t as translate, plural as choosePlural } from "@lingui/core/macro";
+
+        function demo(translate) {
+          const choosePlural = () => "local";
+          return [translate`ignored`, choosePlural(1, { one: "x", other: "y" })];
+        }
+
+        const keptMessage = translate`kept`;
+        const keptCount = choosePlural(count, { one: "item", other: "items" });
+        ---
+    "#};
+
+    let analysis = AstroAdapter
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
+        .expect("analysis succeeds");
+
+    let candidates = analysis
+        .semantic
+        .frontmatter_candidates
+        .iter()
+        .map(|candidate| {
+            (
+                candidate.imported_name.as_str(),
+                candidate.local_name.as_str(),
+                &source[candidate.outer_span.start..candidate.outer_span.end],
+            )
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(
+        candidates,
+        vec![
+            ("t", "translate", "translate`kept`"),
+            (
+                "plural",
+                "choosePlural",
+                "choosePlural(count, { one: \"item\", other: \"items\" })",
+            ),
+        ]
+    );
+}
+
+#[test]
 fn marks_frontmatter_content_region() {
     let source = indoc! {r#"
         ---
@@ -178,6 +224,38 @@ fn collects_template_expression_candidates_from_frontmatter_imports() {
         analysis.semantic.template_expressions[1].candidates[0].kind,
         MacroCandidateKind::CallExpression
     );
+}
+
+#[test]
+fn ignores_aliased_template_macros_when_html_interpolation_callbacks_shadow_them() {
+    let source = indoc! {r#"
+        ---
+        import { t as translate } from "@lingui/core/macro";
+        ---
+
+        <div>{translate`root`}</div>
+        {items.map((translate) => translate`ignored`)}
+        <div>{translate`after`}</div>
+    "#};
+
+    let analysis = AstroAdapter
+        .analyze(source, &analyze_options_for_astro(WhitespaceMode::Astro))
+        .expect("analysis succeeds");
+    let summary = analysis
+        .semantic
+        .template_expressions
+        .iter()
+        .map(|expression| {
+            (
+                source[expression.outer_span.start..expression.outer_span.end].trim(),
+                expression.candidates.len(),
+            )
+        })
+        .collect::<Vec<_>>();
+
+    assert!(summary.contains(&("{translate`root`}", 1)));
+    assert!(summary.contains(&("{items.map((translate) => translate`ignored`)}", 0)));
+    assert!(summary.contains(&("{translate`after`}", 1)));
 }
 
 #[test]

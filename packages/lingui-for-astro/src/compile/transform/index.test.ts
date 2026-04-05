@@ -573,6 +573,33 @@ describe("transformAstro", () => {
     expect(code).not.toContain("translate(msg`");
   });
 
+  test("keeps shadowed Astro macro aliases untouched while rewriting the still-bound usages", async () => {
+    const source = dedent`
+      ---
+      import { t as translate } from "lingui-for-astro/macro";
+
+      const outer = translate\`Outer\`;
+
+      function render() {
+        const translate = notMacro;
+        return translate\`Inner\`;
+      }
+      ---
+
+      <p>{outer}</p>
+      <p>{render()}</p>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain('message: "Outer"');
+    expect(result.code).toContain("return translate`Inner`;");
+    expect(code).not.toContain('message: "Inner"');
+  });
+
   test("leaves same-name non-macro components untouched", async () => {
     const source = dedent`
       ---
