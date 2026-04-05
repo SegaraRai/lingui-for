@@ -1,4 +1,5 @@
 pub mod astro;
+pub mod astro_ir;
 pub(crate) mod helpers;
 pub mod js;
 pub mod parse;

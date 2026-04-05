@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use tree_sitter::Node;
 
 use crate::common::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_invalid_macro_usage,
+    EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span, format_invalid_macro_usage,
     format_unsupported_trans_child_syntax,
 };
 use crate::conventions::{FrameworkConventions, MacroConventionsError, MacroPackageKind};
@@ -17,11 +17,11 @@ use super::helpers::normalization::{
 };
 use super::helpers::text::{find_pattern_near_start, is_component_tag_name, text, unquote};
 use super::js::{
-    BindingParseMode, ExpressionParseCache, JsAnalysisError, JsLikeLanguage, JsMacroSyntax,
+    BindingParseMode, ExpressionParseCache, JsAnalysisError, JsMacroSyntax,
     collect_declared_names_from_binding_source, collect_macro_candidates,
     collect_top_level_declared_names_from_root,
 };
-use super::parse::{ParseError, parse_javascript, parse_svelte, parse_typescript};
+use super::parse::{ParseError, parse_svelte};
 use super::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
     MacroCandidateStrategy, MacroFlavor, MacroImport, NormalizationEdit, WhitespaceMode,
@@ -209,14 +209,7 @@ fn analyze_script_block(
 
     let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
     let language = script_language(source, start_tag);
-    debug_assert!(
-        !matches!(language, JsLikeLanguage::Tsx),
-        "Svelte scripts should not be parsed as TSX"
-    );
-    let script_tree = match language {
-        JsLikeLanguage::JavaScript => parse_javascript(script_source)?,
-        JsLikeLanguage::TypeScript | JsLikeLanguage::Tsx => parse_typescript(script_source)?,
-    };
+    let script_tree = language.parse(script_source)?;
     extend_shifted_node_start_anchors(
         script_source,
         script_tree.root_node(),
@@ -264,7 +257,7 @@ fn analyze_script_block(
     Ok(Some(SvelteScriptBlock {
         region: content_region,
         is_module,
-        is_typescript: matches!(language, JsLikeLanguage::TypeScript | JsLikeLanguage::Tsx),
+        is_typescript: matches!(language, ScriptLang::Ts),
         declared_names,
         macro_imports,
         macro_import_statement_spans,
@@ -366,10 +359,9 @@ fn push_expression(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let tree =
-        context
-            .expression_parse_cache
-            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let tree = context
+        .expression_parse_cache
+        .parse(source, inner_span, ScriptLang::Ts)?;
     let candidates = collect_macro_candidates(
         expression_source,
         tree.root_node(),
@@ -404,10 +396,9 @@ fn push_raw_text_expression(
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
     let expression_source = &source[inner_span.start..inner_span.end];
-    let tree =
-        context
-            .expression_parse_cache
-            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let tree = context
+        .expression_parse_cache
+        .parse(source, inner_span, ScriptLang::Ts)?;
     let candidates = collect_macro_candidates(
         expression_source,
         tree.root_node(),
@@ -471,10 +462,9 @@ fn push_each_start_expression(
         .iter()
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
-    let tree =
-        context
-            .expression_parse_cache
-            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let tree = context
+        .expression_parse_cache
+        .parse(source, inner_span, ScriptLang::Ts)?;
 
     let candidates = collect_macro_candidates(
         text(source, identifier),
@@ -846,10 +836,9 @@ fn append_expression_normalization_edits(
         .flat_map(|frame| frame.iter().cloned())
         .collect::<Vec<_>>();
     let expression_source = &source[inner_span.start..inner_span.end];
-    let tree =
-        context
-            .expression_parse_cache
-            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let tree = context
+        .expression_parse_cache
+        .parse(source, inner_span, ScriptLang::Ts)?;
 
     let candidates = collect_macro_candidates(
         expression_source,
@@ -885,10 +874,9 @@ fn append_raw_text_expression_normalization_edits(
         .collect::<Vec<_>>();
     let inner_span = repair_svelte_raw_expression_span(source, Span::from_node(raw_text));
     let expression_source = &source[inner_span.start..inner_span.end];
-    let tree =
-        context
-            .expression_parse_cache
-            .parse(source, inner_span, JsLikeLanguage::TypeScript)?;
+    let tree = context
+        .expression_parse_cache
+        .parse(source, inner_span, ScriptLang::Ts)?;
     let candidates = collect_macro_candidates(
         expression_source,
         tree.root_node(),
@@ -1171,7 +1159,7 @@ fn declared_names_from_each_start(
     Ok(collect_declared_names_from_binding_source(
         text(source, parameter),
         BindingParseMode::FunctionParams,
-        JsLikeLanguage::TypeScript,
+        ScriptLang::Ts,
     )?)
 }
 
@@ -1184,11 +1172,8 @@ fn declared_names_from_optional_raw_text(
     let Some(raw_text) = raw_text else {
         return Ok(None);
     };
-    let names = collect_declared_names_from_binding_source(
-        text(source, raw_text),
-        mode,
-        JsLikeLanguage::TypeScript,
-    )?;
+    let names =
+        collect_declared_names_from_binding_source(text(source, raw_text), mode, ScriptLang::Ts)?;
     Ok(Some(names))
 }
 
@@ -1375,20 +1360,42 @@ fn validate_module_script_macro_imports(
     ))
 }
 
-fn script_language(source: &str, start_tag: Node<'_>) -> JsLikeLanguage {
+fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
     let mut cursor = start_tag.walk();
     for child in start_tag.children(&mut cursor) {
         if child.kind() != "attribute" {
             continue;
         }
 
-        let attribute_text = text(source, child);
-        if attribute_text.contains("lang") && attribute_text.contains("ts") {
-            return JsLikeLanguage::TypeScript;
+        let mut attribute_cursor = child.walk();
+        let Some(name_node) = child
+            .children(&mut attribute_cursor)
+            .find(|grandchild| grandchild.kind() == "attribute_name")
+        else {
+            continue;
+        };
+
+        if text(source, name_node) != "lang" {
+            continue;
+        }
+
+        let mut value_cursor = child.walk();
+        let value = child
+            .named_children(&mut value_cursor)
+            .find(|grandchild| grandchild.kind() != "attribute_name")
+            .map(|value_node| {
+                let raw_value = text(source, value_node);
+                unquote(raw_value)
+                    .unwrap_or_else(|| raw_value.to_string())
+                    .trim()
+                    .to_ascii_lowercase()
+            });
+        if matches!(value.as_deref(), Some("ts" | "typescript")) {
+            return ScriptLang::Ts;
         }
     }
 
-    JsLikeLanguage::JavaScript
+    ScriptLang::Js
 }
 
 fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
@@ -1635,7 +1642,10 @@ fn validate_svelte_element_like(
 
 #[cfg(test)]
 mod tests {
+    use super::script_language;
+    use crate::common::ScriptLang;
     use crate::framework::helpers::text::find_pattern_near_start;
+    use crate::framework::parse::parse_svelte;
 
     #[test]
     fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
@@ -1651,5 +1661,39 @@ mod tests {
 
         assert_eq!(&source[start..start + 2], "$t");
         assert!(source.is_char_boundary(start));
+    }
+
+    #[test]
+    fn script_language_only_treats_explicit_lang_ts_as_typescript() {
+        let source = r#"<script data-lang="ts" lang="ts">let answer = 42;</script>"#;
+        let tree = parse_svelte(source).expect("parse succeeds");
+        let root = tree.root_node();
+        let script_element = root
+            .children(&mut root.walk())
+            .find(|child| child.kind() == "script_element")
+            .expect("script element exists");
+        let start_tag = script_element
+            .children(&mut script_element.walk())
+            .find(|child| child.kind() == "start_tag")
+            .expect("start tag exists");
+
+        assert_eq!(script_language(source, start_tag), ScriptLang::Ts);
+    }
+
+    #[test]
+    fn script_language_ignores_non_lang_attributes_that_happen_to_contain_ts() {
+        let source = r#"<script data-lang="ts" context="module">let answer = 42;</script>"#;
+        let tree = parse_svelte(source).expect("parse succeeds");
+        let root = tree.root_node();
+        let script_element = root
+            .children(&mut root.walk())
+            .find(|child| child.kind() == "script_element")
+            .expect("script element exists");
+        let start_tag = script_element
+            .children(&mut script_element.walk())
+            .find(|child| child.kind() == "start_tag")
+            .expect("start tag exists");
+
+        assert_eq!(script_language(source, start_tag), ScriptLang::Js);
     }
 }

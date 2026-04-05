@@ -7,8 +7,6 @@ use crate::compile::{
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::astro::AstroAdapter;
-use crate::framework::js::{JsLikeLanguage, collect_top_level_declared_names_in_javascript};
-use crate::framework::parse::parse_typescript;
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, WhitespaceMode};
 
 use super::super::CommonFrameworkCompileAnalysis;
@@ -31,12 +29,7 @@ pub(crate) fn analyze_astro_compile(
             conventions: conventions.clone(),
         },
     )?;
-    let import_removals = analysis
-        .frontmatter
-        .as_ref()
-        .map(|region| collect_macro_import_statement_spans(source, region, conventions))
-        .transpose()?
-        .unwrap_or_default();
+    let import_removals = analysis.frontmatter_import_statement_spans.clone();
     let frontmatter = analysis
         .frontmatter
         .as_ref()
@@ -87,11 +80,7 @@ pub(crate) fn analyze_astro_compile(
             source_anchors: analysis.source_anchors.clone(),
         },
         runtime_bindings: create_runtime_bindings(
-            analysis
-                .frontmatter
-                .as_ref()
-                .map(|region| &source[region.inner_span.start..region.inner_span.end])
-                .unwrap_or(""),
+            &analysis.frontmatter_declared_names,
             conventions,
         )?,
         frontmatter,
@@ -112,14 +101,10 @@ pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> Runtime
 }
 
 fn create_runtime_bindings(
-    frontmatter_source: &str,
+    declared_names: &[String],
     conventions: &FrameworkConventions,
 ) -> Result<AstroCompileRuntimeBindings, AstroAdapterError> {
-    let declared_names = collect_top_level_declared_names_in_javascript(
-        frontmatter_source,
-        JsLikeLanguage::TypeScript,
-    )?;
-    let mut used = declared_names.into_iter().collect::<BTreeSet<_>>();
+    let mut used = declared_names.iter().cloned().collect::<BTreeSet<_>>();
 
     Ok(AstroCompileRuntimeBindings {
         create_i18n: allocate_unique_binding_name(
@@ -229,41 +214,4 @@ fn has_remaining_content_after_import_removal(
         cursor = range.end;
     }
     !content[cursor..].trim().is_empty()
-}
-
-fn collect_macro_import_statement_spans(
-    source: &str,
-    region: &EmbeddedScriptRegion,
-    conventions: &FrameworkConventions,
-) -> Result<Vec<Span>, AstroAdapterError> {
-    let frontmatter_source = &source[region.inner_span.start..region.inner_span.end];
-    let tree = parse_typescript(frontmatter_source)?;
-    let root = tree.root_node();
-    let mut spans = Vec::new();
-    let mut cursor = root.walk();
-
-    for child in root.children(&mut cursor) {
-        if child.kind() != "import_statement" {
-            continue;
-        }
-        let Some(source_node) = child.child_by_field_name("source") else {
-            continue;
-        };
-        let module_specifier =
-            &frontmatter_source[source_node.start_byte() + 1..source_node.end_byte() - 1];
-        if !conventions.accepts_macro_package(module_specifier) {
-            continue;
-        }
-
-        let mut end = child.end_byte();
-        while matches!(frontmatter_source.as_bytes().get(end), Some(b'\r' | b'\n')) {
-            end += 1;
-        }
-        spans.push(Span::new(
-            region.inner_span.start + child.start_byte(),
-            region.inner_span.start + end,
-        ));
-    }
-
-    Ok(spans)
 }

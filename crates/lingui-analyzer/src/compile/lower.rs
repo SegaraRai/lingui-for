@@ -1,10 +1,9 @@
 use std::collections::BTreeMap;
 
 use crate::common::{
-    CollectDeclarationsError, IndexedSourceMap, RenderedMappedText, TransformedDeclaration,
-    collect_variable_initializer_declarations, initializer_start_for_declarator, parse_source_map,
+    CollectDeclarationsError, IndexedSourceMap, RenderedMappedText,
+    collect_variable_initializer_declarations, parse_source_map,
 };
-use crate::framework::parse::{ParseError, parse_tsx};
 
 use super::emit::{
     EmitError, collect_compile_replacements_internal, finish_compile_from_internal_replacements,
@@ -17,29 +16,11 @@ use super::{
 #[derive(thiserror::Error, Debug)]
 pub enum LowerError {
     #[error(transparent)]
-    Parse(#[from] ParseError),
-    #[error(transparent)]
     Emit(#[from] EmitError),
     #[error(transparent)]
     Adapter(#[from] AdapterError),
     #[error(transparent)]
     CollectDeclarations(#[from] CollectDeclarationsError),
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) struct LoweredDeclaration {
-    pub(crate) code: String,
-    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
-    pub(crate) synthetic_start: Option<usize>,
-}
-
-impl From<LoweredDeclaration> for RenderedMappedText {
-    fn from(value: LoweredDeclaration) -> Self {
-        Self {
-            code: value.code,
-            indexed_source_map: value.indexed_source_map,
-        }
-    }
 }
 
 pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
@@ -61,9 +42,8 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
     plan: &P,
     source: &str,
     transformed_programs: &TransformedPrograms,
-) -> Result<BTreeMap<String, LoweredDeclaration>, LowerError> {
+) -> Result<BTreeMap<String, RenderedMappedText>, LowerError> {
     let declaration_sets = collect_transformed_declarations(transformed_programs)?;
-    let synthetic_starts = collect_declaration_value_starts(&plan.common().synthetic_source)?;
     let mut lowered = BTreeMap::new();
 
     for target in &plan.common().targets {
@@ -75,31 +55,17 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
             continue;
         };
 
-        let (code, indexed_source_map) = if target.output_kind == CompileTargetOutputKind::Component
-        {
-            let lowered = plan.lower_runtime_component_markup(
+        let declaration = if target.output_kind == CompileTargetOutputKind::Component {
+            plan.lower_runtime_component_markup(
                 &plan.common().source_name,
                 source,
                 target,
-                &RenderedMappedText {
-                    code: declaration.code,
-                    indexed_source_map: declaration.indexed_source_map,
-                },
-            )?;
-            (lowered.code, lowered.indexed_source_map)
+                &declaration,
+            )?
         } else {
-            (declaration.code, declaration.indexed_source_map)
+            declaration
         };
-        lowered.insert(
-            target.declaration_id.clone(),
-            LoweredDeclaration {
-                code,
-                indexed_source_map,
-                synthetic_start: declaration
-                    .synthetic_start
-                    .or_else(|| synthetic_starts.get(&target.declaration_id).copied()),
-            },
-        );
+        lowered.insert(target.declaration_id.clone(), declaration);
     }
 
     Ok(lowered)
@@ -107,7 +73,7 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
 
 fn collect_transformed_declarations(
     programs: &TransformedPrograms,
-) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, LoweredDeclaration>>, LowerError> {
+) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, RenderedMappedText>>, LowerError> {
     let mut declarations = BTreeMap::new();
     let lowered_source_map = programs
         .lowered_source_map_json
@@ -139,59 +105,8 @@ fn collect_transformed_declarations(
 fn collect_declarations_from_program(
     source: &str,
     indexed_source_map: Option<&IndexedSourceMap>,
-) -> Result<BTreeMap<String, LoweredDeclaration>, LowerError> {
-    Ok(
-        collect_variable_initializer_declarations(source, indexed_source_map)?
-            .into_iter()
-            .map(|(name, declaration): (String, TransformedDeclaration)| {
-                (
-                    name,
-                    LoweredDeclaration {
-                        code: declaration.code,
-                        indexed_source_map: declaration.indexed_source_map.clone(),
-                        synthetic_start: None,
-                    },
-                )
-            })
-            .collect(),
-    )
-}
-
-fn collect_declaration_value_starts(source: &str) -> Result<BTreeMap<String, usize>, LowerError> {
-    let tree = parse_tsx(source)?;
-    let root = tree.root_node();
-    let mut starts = BTreeMap::new();
-    let mut cursor = root.walk();
-
-    for child in root.children(&mut cursor) {
-        if child.kind() != "variable_declaration" && child.kind() != "lexical_declaration" {
-            continue;
-        }
-
-        let mut decl_cursor = child.walk();
-        for declarator in child.children(&mut decl_cursor) {
-            if declarator.kind() != "variable_declarator" {
-                continue;
-            }
-
-            let Some(name) = declarator.child_by_field_name("name") else {
-                continue;
-            };
-            if name.kind() != "identifier" {
-                continue;
-            }
-            let Some(value) = declarator.child_by_field_name("value") else {
-                continue;
-            };
-
-            starts.insert(
-                source[name.start_byte()..name.end_byte()].to_string(),
-                initializer_start_for_declarator(declarator, name, value),
-            );
-        }
-    }
-
-    Ok(starts)
+) -> Result<BTreeMap<String, RenderedMappedText>, LowerError> {
+    collect_variable_initializer_declarations(source, indexed_source_map).map_err(Into::into)
 }
 
 #[cfg(test)]

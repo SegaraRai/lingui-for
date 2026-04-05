@@ -6,7 +6,6 @@ use crate::common::{
 };
 
 use super::adapters::AdapterError;
-use super::lower::LoweredDeclaration;
 use super::{
     CompileReplacementInternal, CompileReplacementOutputInternal, FinishedCompileInternal,
     FrameworkCompilePlan,
@@ -25,7 +24,7 @@ pub enum EmitError {
 pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
     plan: &P,
     source: &str,
-    transformed_declarations: &BTreeMap<String, LoweredDeclaration>,
+    transformed_declarations: &BTreeMap<String, RenderedMappedText>,
 ) -> Result<Vec<CompileReplacementInternal>, EmitError> {
     let mut replacements = Vec::new();
     let common = plan.common();
@@ -49,7 +48,7 @@ pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
         };
 
         let indented = indent_rendered_text(
-            declaration.into(),
+            declaration,
             get_source_line_indent(source, target.original_span.start),
         )?;
 
