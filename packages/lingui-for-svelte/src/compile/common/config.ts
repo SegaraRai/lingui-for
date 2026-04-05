@@ -92,7 +92,7 @@ export function getParserPlugins(
   lang: ScriptLang,
 ): NonNullable<ParserOptions["plugins"]> {
   return getSharedParserPlugins({
-    typescript: lang === "ts" || lang === "tsx",
+    typescript: lang === "ts",
   });
 }
 
