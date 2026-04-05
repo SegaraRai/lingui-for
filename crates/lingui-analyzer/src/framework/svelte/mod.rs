@@ -118,24 +118,3 @@ pub(crate) fn is_bare_direct_svelte_macro_forbidden(candidate: &MacroCandidate) 
             "t" | "plural" | "select" | "selectOrdinal"
         )
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::common::find_pattern_near_start;
-
-    #[test]
-    fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
-        let source = "<p>前置き🎌 {$t`家族👨‍👩‍👧‍👦😀😃😄 ${name}`} 後置き🍣</p>";
-        let current_start = source.find("t`").expect("template starts at t");
-        let current_end = source
-            .find("}`")
-            .map(|index| index + 2)
-            .unwrap_or(source.len());
-
-        let start = find_pattern_near_start(source, current_start, current_end, "$t")
-            .expect("finds reactive prefix");
-
-        assert_eq!(&source[start..start + 2], "$t");
-        assert!(source.is_char_boundary(start));
-    }
-}

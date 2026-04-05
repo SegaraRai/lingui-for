@@ -320,7 +320,7 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
 }
 
 #[test]
-fn preserves_reactive_alias_prefix_in_markup_expression_spans_without_repair() {
+fn keeps_reactive_alias_prefix_in_markup_candidate_spans_without_repair() {
     let source = indoc! {r#"
         <script>
           import { t as translate } from "lingui-for-svelte/macro";
@@ -349,19 +349,24 @@ fn preserves_reactive_alias_prefix_in_markup_expression_spans_without_repair() {
         })
         .expect("reactive translate candidate exists");
 
-    let (expression, candidate) = expression;
-    assert!(
-        source[expression.inner_span.start..expression.inner_span.end].starts_with("translate`"),
-        "inner raw_text span should already include the alias identifier"
-    );
+    let (_expression, candidate) = expression;
     assert!(
         source[candidate.outer_span.start..candidate.outer_span.end].starts_with("$translate`"),
         "candidate span should include the reactive prefix without extra repair"
     );
+    assert!(
+        source[candidate.normalized_span.start..candidate.normalized_span.end]
+            .starts_with("$translate`"),
+        "normalized span should preserve the same reactive prefix"
+    );
+    let anchor = candidate
+        .source_map_anchor
+        .expect("reactive candidate has anchor");
+    assert_eq!(&source[anchor.start..anchor.end], "translate");
 }
 
 #[test]
-fn preserves_reactive_alias_prefix_in_html_tag_spans_without_repair() {
+fn keeps_reactive_alias_prefix_in_html_tag_candidate_spans_without_repair() {
     let source = indoc! {r#"
         <script>
           import { msg, t as translate } from "lingui-for-svelte/macro";
@@ -390,15 +395,20 @@ fn preserves_reactive_alias_prefix_in_html_tag_spans_without_repair() {
         })
         .expect("reactive translate candidate exists in html tag");
 
-    let (expression, candidate) = expression;
-    assert!(
-        source[expression.inner_span.start..expression.inner_span.end].starts_with("translate("),
-        "html tag raw_text span should already include the alias identifier"
-    );
+    let (_expression, candidate) = expression;
     assert!(
         source[candidate.outer_span.start..candidate.outer_span.end].starts_with("$translate("),
         "candidate span should include the reactive prefix without extra repair"
     );
+    assert!(
+        source[candidate.normalized_span.start..candidate.normalized_span.end]
+            .starts_with("$translate("),
+        "normalized span should preserve the same reactive prefix"
+    );
+    let anchor = candidate
+        .source_map_anchor
+        .expect("reactive candidate has anchor");
+    assert_eq!(&source[anchor.start..anchor.end], "translate");
 }
 
 #[test]

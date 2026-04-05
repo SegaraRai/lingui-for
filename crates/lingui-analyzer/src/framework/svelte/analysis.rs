@@ -1,9 +1,6 @@
 use tree_sitter::Node;
 
-use crate::common::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, NormalizationEdit, ScriptLang, Span,
-    find_pattern_near_start,
-};
+use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span};
 use crate::conventions::{FrameworkConventions, MacroPackageKind};
 use crate::diagnostics::svelte::module_script_must_use_core_macro_package;
 use crate::syntax::parse::parse_svelte;
@@ -16,7 +13,7 @@ use super::super::shared::helpers::text::{text, unquote};
 use super::super::shared::js::{
     JsMacroSyntax, collect_macro_candidates, collect_top_level_declared_names_from_root,
 };
-use super::super::{AnalyzeOptions, MacroCandidate, MacroFlavor, MacroImport};
+use super::super::{AnalyzeOptions, MacroImport};
 use super::components::component_candidate_from_element;
 use super::walk::{
     SvelteTemplateVisitor, TemplateWalkContext, find_first_descendant, walk_svelte_template,
@@ -33,7 +30,7 @@ pub fn analyze_svelte(
     let tree = parse_svelte(source)?;
     let root = tree.root_node();
     let mut source_anchors = collect_node_start_anchors(source, root);
-    let mut scripts = collect_script_blocks(source, root, options, &mut source_anchors)?;
+    let scripts = collect_script_blocks(source, root, options, &mut source_anchors)?;
     let template_imports = scripts
         .iter()
         .filter(|script| !script.is_module)
@@ -57,13 +54,7 @@ pub fn analyze_svelte(
     };
     let mut visitor = AnalysisVisitor::new(&template_imports, options);
     walk_svelte_template(source, root, options, &mut context, &mut visitor)?;
-    let (mut expressions, components) = visitor.finish();
-    for script in &mut scripts {
-        repair_svelte_candidates(source, &mut script.candidates);
-    }
-    for expression in &mut expressions {
-        repair_svelte_candidates(source, &mut expression.candidates);
-    }
+    let (expressions, components) = visitor.finish();
     Ok(SvelteScriptAnalysis {
         semantic: SvelteSemanticAnalysis {
             scripts,
@@ -555,62 +546,6 @@ fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
 
 fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
     conventions.accepts_macro_package(specifier)
-}
-
-fn repair_svelte_candidates(source: &str, candidates: &mut [MacroCandidate]) {
-    for candidate in candidates {
-        repair_svelte_candidate(source, candidate);
-    }
-}
-
-fn repair_svelte_candidate(source: &str, candidate: &mut MacroCandidate) {
-    match candidate.flavor {
-        MacroFlavor::Reactive => {
-            let pattern = format!("${}", candidate.local_name);
-            let Some(start) = find_pattern_near_start(
-                source,
-                candidate.outer_span.start,
-                candidate.outer_span.end,
-                &pattern,
-            ) else {
-                return;
-            };
-            if start >= candidate.outer_span.start {
-                return;
-            }
-
-            candidate.outer_span = Span::new(start, candidate.outer_span.end);
-            candidate.normalized_span = candidate.outer_span;
-            candidate.normalization_edits = vec![NormalizationEdit::Delete {
-                span: Span::new(start, start + 1),
-            }];
-            candidate.source_map_anchor = Some(Span::new(start + 1, start + pattern.len()));
-        }
-        MacroFlavor::Eager => {
-            let pattern = format!("{}.eager", candidate.local_name);
-            let Some(start) = find_pattern_near_start(
-                source,
-                candidate.outer_span.start,
-                candidate.outer_span.end,
-                &pattern,
-            ) else {
-                return;
-            };
-            if start >= candidate.outer_span.start {
-                return;
-            }
-
-            let object_end = start + candidate.local_name.len();
-            let property_end = start + pattern.len();
-            candidate.outer_span = Span::new(start, candidate.outer_span.end);
-            candidate.normalized_span = Span::new(start, candidate.normalized_span.end);
-            candidate.normalization_edits = vec![NormalizationEdit::Delete {
-                span: Span::new(object_end, property_end),
-            }];
-            candidate.source_map_anchor = Some(Span::new(start, object_end));
-        }
-        MacroFlavor::Direct => {}
-    }
 }
 
 #[cfg(test)]
