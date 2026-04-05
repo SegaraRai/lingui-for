@@ -4,7 +4,7 @@ use std::{
     process::ExitCode,
 };
 
-use lingui_analyzer::framework::astro_ir::lower_astro_html_interpolations;
+use lingui_analyzer::framework::astro::ir::lower_astro_html_interpolations;
 
 fn main() -> ExitCode {
     let args = env::args().skip(1).collect::<Vec<_>>();

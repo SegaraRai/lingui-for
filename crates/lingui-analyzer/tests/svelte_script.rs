@@ -29,11 +29,11 @@ fn collects_svelte_script_macros_with_reactive_and_eager_flavors() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    assert_eq!(analysis.scripts.len(), 1);
-    assert!(analysis.template_expressions.is_empty());
-    assert!(analysis.template_components.is_empty());
+    assert_eq!(analysis.semantic.scripts.len(), 1);
+    assert!(analysis.semantic.template_expressions.is_empty());
+    assert!(analysis.semantic.template_components.is_empty());
 
-    let script = &analysis.scripts[0];
+    let script = &analysis.semantic.scripts[0];
     assert!(!script.is_module);
     assert_eq!(script.macro_imports.len(), 2);
 
@@ -89,7 +89,7 @@ fn supports_typescript_syntax_in_svelte_script() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    let script = &analysis.scripts[0];
+    let script = &analysis.semantic.scripts[0];
 
     assert_eq!(script.candidates.len(), 1);
     assert_eq!(script.candidates[0].imported_name, "t");
@@ -151,7 +151,7 @@ fn ignores_shadowed_names_in_svelte_script() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    let script = &analysis.scripts[0];
+    let script = &analysis.semantic.scripts[0];
 
     assert!(script.is_module);
     assert_eq!(script.candidates.len(), 1);
@@ -174,7 +174,7 @@ fn treats_module_script_macros_as_plain_js_ts_macros() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    let script = &analysis.scripts[0];
+    let script = &analysis.semantic.scripts[0];
 
     assert!(script.is_module);
     assert_eq!(script.macro_imports.len(), 2);
@@ -240,9 +240,9 @@ fn allows_core_macro_alias_packages_in_module_script() {
         .analyze(source, &options)
         .expect("analysis should allow core macro aliases in module scripts");
 
-    assert!(analysis.scripts[0].is_module);
+    assert!(analysis.semantic.scripts[0].is_module);
     assert_eq!(
-        analysis.scripts[0].macro_imports[0].source,
+        analysis.semantic.scripts[0].macro_imports[0].source,
         "@acme/lingui-core"
     );
 }
@@ -283,6 +283,7 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let summary = analysis
+        .semantic
         .template_expressions
         .iter()
         .map(|expression| {
@@ -304,6 +305,7 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
     assert!(summary.contains(&("t`after-widget`", 1, vec![])));
     assert_eq!(
         analysis
+            .semantic
             .template_expressions
             .iter()
             .find(
@@ -315,6 +317,98 @@ fn tracks_template_scope_shadowing_across_svelte_binders() {
             .imported_name,
         "t"
     );
+}
+
+#[test]
+fn keeps_reactive_alias_prefix_in_markup_candidate_spans_without_repair() {
+    let source = indoc! {r#"
+        <script>
+          import { t as translate } from "lingui-for-svelte/macro";
+        </script>
+
+        <p>{$translate`Hello from markup-only component`}</p>
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let expression = analysis
+        .semantic
+        .template_expressions
+        .iter()
+        .find_map(|expression| {
+            expression
+                .candidates
+                .iter()
+                .find(|candidate| {
+                    candidate.imported_name == "t"
+                        && candidate.local_name == "translate"
+                        && candidate.flavor == MacroFlavor::Reactive
+                })
+                .map(|candidate| (expression, candidate))
+        })
+        .expect("reactive translate candidate exists");
+
+    let (_expression, candidate) = expression;
+    assert!(
+        source[candidate.outer_span.start..candidate.outer_span.end].starts_with("$translate`"),
+        "candidate span should include the reactive prefix without extra repair"
+    );
+    assert!(
+        source[candidate.normalized_span.start..candidate.normalized_span.end]
+            .starts_with("$translate`"),
+        "normalized span should preserve the same reactive prefix"
+    );
+    let anchor = candidate
+        .source_map_anchor
+        .expect("reactive candidate has anchor");
+    assert_eq!(&source[anchor.start..anchor.end], "translate");
+}
+
+#[test]
+fn keeps_reactive_alias_prefix_in_html_tag_candidate_spans_without_repair() {
+    let source = indoc! {r#"
+        <script>
+          import { msg, t as translate } from "lingui-for-svelte/macro";
+        </script>
+
+        {@html $translate(msg`Hello from html tag`)}
+    "#};
+
+    let analysis = SvelteAdapter
+        .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
+        .expect("analysis succeeds");
+    let expression = analysis
+        .semantic
+        .template_expressions
+        .iter()
+        .find_map(|expression| {
+            expression
+                .candidates
+                .iter()
+                .find(|candidate| {
+                    candidate.imported_name == "t"
+                        && candidate.local_name == "translate"
+                        && candidate.flavor == MacroFlavor::Reactive
+                })
+                .map(|candidate| (expression, candidate))
+        })
+        .expect("reactive translate candidate exists in html tag");
+
+    let (_expression, candidate) = expression;
+    assert!(
+        source[candidate.outer_span.start..candidate.outer_span.end].starts_with("$translate("),
+        "candidate span should include the reactive prefix without extra repair"
+    );
+    assert!(
+        source[candidate.normalized_span.start..candidate.normalized_span.end]
+            .starts_with("$translate("),
+        "normalized span should preserve the same reactive prefix"
+    );
+    let anchor = candidate
+        .source_map_anchor
+        .expect("reactive candidate has anchor");
+    assert_eq!(&source[anchor.start..anchor.end], "translate");
 }
 
 #[test]
@@ -332,9 +426,9 @@ fn treats_instance_script_non_macro_bindings_as_template_shadowing() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
 
-    assert_eq!(analysis.scripts[0].macro_imports.len(), 0);
+    assert_eq!(analysis.semantic.scripts[0].macro_imports.len(), 0);
     assert_eq!(
-        analysis.template_expressions[0]
+        analysis.semantic.template_expressions[0]
             .shadowed_names
             .iter()
             .filter(|name| name.as_str() == "t")
@@ -342,7 +436,9 @@ fn treats_instance_script_non_macro_bindings_as_template_shadowing() {
         1
     );
     assert!(
-        analysis.template_expressions[0].candidates.is_empty(),
+        analysis.semantic.template_expressions[0]
+            .candidates
+            .is_empty(),
         "template $t should stay inactive when t comes from a non-macro import"
     );
 }
@@ -375,6 +471,7 @@ fn collects_macro_candidates_from_const_tag_initializers() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("svelte analysis should succeed");
     let messages = analysis
+        .semantic
         .template_expressions
         .iter()
         .flat_map(|expression| expression.candidates.iter())
@@ -405,6 +502,7 @@ fn collects_template_components_with_scope_aware_shadowing() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let summary = analysis
+        .semantic
         .template_components
         .iter()
         .map(|component| {
@@ -460,6 +558,7 @@ fn collects_extended_svelte_template_expression_sites() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let kinds = analysis
+        .semantic
         .template_expressions
         .iter()
         .map(|expression| expression.candidates.len())
@@ -468,6 +567,7 @@ fn collects_extended_svelte_template_expression_sites() {
     assert_eq!(kinds, vec![1, 1, 1, 1, 1, 1, 1]);
     assert!(
         analysis
+            .semantic
             .template_expressions
             .iter()
             .all(|expression| expression.candidates[0].imported_name == "t")
@@ -487,7 +587,7 @@ fn keeps_outer_macro_when_javascript_macros_are_nested() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    let script = &analysis.scripts[0];
+    let script = &analysis.semantic.scripts[0];
 
     assert_eq!(script.candidates.len(), 2);
     assert_eq!(script.candidates[0].imported_name, "t");
@@ -550,7 +650,7 @@ fn marks_deeply_nested_script_core_macros_as_owned_by_the_outer_reactive_macro()
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    let script = &analysis.scripts[0];
+    let script = &analysis.semantic.scripts[0];
     let standalone = script
         .candidates
         .iter()
@@ -603,6 +703,7 @@ fn keeps_full_outer_span_for_later_reactive_plural_template_expressions() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("svelte analysis should succeed");
     let plural_expression = analysis
+        .semantic
         .template_expressions
         .iter()
         .flat_map(|expression| expression.candidates.iter())

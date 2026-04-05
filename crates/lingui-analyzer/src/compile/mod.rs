@@ -148,8 +148,6 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         normalized_source: &RenderedMappedText,
     ) -> Result<RenderedMappedText, CompileError>;
 
-    fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]);
-
     fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements;
 
     fn assemble_plan(

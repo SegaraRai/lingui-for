@@ -4,7 +4,7 @@ use sourcemap::SourceMapBuilder;
 use tree_sitter::Node;
 
 use crate::common::{IndexedSourceMap, IndexedText, Span};
-use crate::framework::parse::parse_tsx;
+use crate::syntax::parse::parse_tsx;
 
 use super::mapped_text::{MappedText, MappedTextError, RenderedMappedText};
 use super::primitives::{OriginalAnchorProjection, project_original_anchors_to_generated};

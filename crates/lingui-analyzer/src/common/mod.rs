@@ -1,19 +1,18 @@
 mod declarations;
-mod diagnostics;
 mod indexed_text;
 mod lang;
+mod normalization;
 mod source_map;
 mod span;
 
 pub(crate) use declarations::{
     CollectDeclarationsError, collect_variable_initializer_declarations,
 };
-pub(crate) use diagnostics::{
-    format_invalid_macro_usage, format_single_diagnostic, format_unsupported_trans_child_syntax,
-    make_diagnostic,
-};
 pub use indexed_text::{IndexedText, IndexedTextSlice};
 pub use lang::ScriptLang;
+pub(crate) use normalization::{
+    NormalizationEdit, sort_and_dedup_normalization_edits, whitespace_replacement_edits,
+};
 pub use source_map::MappedTextError;
 pub(crate) use source_map::{
     FinalizedReplacement, IndexedSourceMap, MappedText, RenderedMappedText, build_copy_map,

@@ -29,8 +29,9 @@ pub(crate) fn analyze_astro_compile(
             conventions: conventions.clone(),
         },
     )?;
-    let import_removals = analysis.frontmatter_import_statement_spans.clone();
+    let import_removals = analysis.metadata.frontmatter_import_statement_spans.clone();
     let frontmatter = analysis
+        .metadata
         .frontmatter
         .as_ref()
         .map(|region| build_frontmatter_region(source, region, &import_removals));
@@ -38,6 +39,7 @@ pub(crate) fn analyze_astro_compile(
 
     prototypes.extend(
         analysis
+            .semantic
             .frontmatter_candidates
             .iter()
             .cloned()
@@ -48,7 +50,7 @@ pub(crate) fn analyze_astro_compile(
                 translation_mode: CompileTranslationMode::Contextual,
             }),
     );
-    for expression in &analysis.template_expressions {
+    for expression in &analysis.semantic.template_expressions {
         prototypes.extend(expression.candidates.iter().cloned().map(|candidate| {
             CompileTargetPrototype {
                 output_kind: CompileTargetOutputKind::Expression,
@@ -60,6 +62,7 @@ pub(crate) fn analyze_astro_compile(
     }
     prototypes.extend(
         analysis
+            .semantic
             .template_components
             .iter()
             .cloned()
@@ -73,14 +76,14 @@ pub(crate) fn analyze_astro_compile(
 
     Ok(AstroFrameworkCompileAnalysis {
         common: CommonFrameworkCompileAnalysis {
-            imports: analysis.macro_imports,
+            imports: analysis.semantic.macro_imports,
             prototypes,
             import_removals,
             synthetic_lang: ScriptLang::Ts,
-            source_anchors: analysis.source_anchors.clone(),
+            source_anchors: analysis.metadata.source_anchors.clone(),
         },
         runtime_bindings: create_runtime_bindings(
-            &analysis.frontmatter_declared_names,
+            &analysis.semantic.frontmatter_declared_names,
             conventions,
         )?,
         frontmatter,

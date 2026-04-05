@@ -2,10 +2,8 @@ use std::collections::BTreeMap;
 
 use tree_sitter::Node;
 
-use crate::{
-    common::{IndexedSourceMap, RenderedMappedText},
-    framework::parse::{ParseError, parse_tsx},
-};
+use crate::common::{IndexedSourceMap, RenderedMappedText};
+use crate::syntax::parse::{ParseError, parse_tsx};
 
 use super::{
     IndexedText, MappedText, MappedTextError, Span, build_span_anchor_map, extract_local_submap,
@@ -227,7 +225,7 @@ mod tests {
         collect_i18n_comment_whitespace_spans, collect_variable_initializer_declarations,
         initializer_start_for_declarator, normalize_i18n_comment_layout_rendered,
     };
-    use crate::framework::parse::parse_tsx;
+    use crate::syntax::parse::parse_tsx;
 
     #[test]
     fn normalize_i18n_comment_layout_collapses_comment_to_object_spacing() {

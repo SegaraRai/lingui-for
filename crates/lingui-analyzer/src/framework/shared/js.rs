@@ -2,15 +2,14 @@ use std::collections::HashMap;
 
 use tree_sitter::{Node, Tree};
 
-use crate::common::{ScriptLang, Span};
-
-use super::helpers::text::{find_pattern_near_start, text};
-use super::parse::ParseError;
-use super::scope::LexicalScope;
-use super::{
+use crate::common::{NormalizationEdit, ScriptLang, Span};
+use crate::framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
-    NormalizationEdit,
 };
+use crate::syntax::parse::ParseError;
+
+use super::helpers::text::text;
+use super::scope::LexicalScope;
 
 #[derive(thiserror::Error, Debug)]
 pub enum JsAnalysisError {
@@ -24,16 +23,24 @@ pub enum JsMacroSyntax {
     Svelte,
 }
 
-pub fn collect_macro_candidates(
+pub fn collect_macro_candidates<I, S>(
     source: &str,
     root: Node<'_>,
     imports: &[MacroImport],
     base_offset: usize,
     syntax: JsMacroSyntax,
-    shadowed_names: &[String],
-) -> Vec<MacroCandidate> {
+    shadowed_names: I,
+) -> Vec<MacroCandidate>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<str>,
+{
     let mut scope = LexicalScope::new(imports.iter().cloned());
-    scope.declare_many(shadowed_names.iter().cloned());
+    scope.declare_many(
+        shadowed_names
+            .into_iter()
+            .map(|name| name.as_ref().to_string()),
+    );
     let mut candidates = Vec::new();
     visit_node(
         source,
@@ -91,7 +98,7 @@ pub fn collect_top_level_declared_names_from_root(source: &str, root: Node<'_>) 
         }
     }
 
-    names.sort();
+    names.sort_unstable();
     names.dedup();
     names
 }
@@ -355,12 +362,8 @@ fn to_svelte_call_candidate(
 
         if let Some(reactive_name) = local_name.strip_prefix('$') {
             let import_decl = scope.resolve_macro(reactive_name)?;
-            let (outer_span, identifier_span) = repair_svelte_reactive_spans(
-                source,
-                base_offset,
-                Span::from_node(node),
-                &import_decl.local_name,
-            );
+            let outer_span = Span::from_node(node).shifted(base_offset);
+            let identifier_span = Span::from_node(identifier).shifted(base_offset);
             let anchor = Span::new(identifier_span.start + 1, identifier_span.end);
 
             return Some(MacroCandidate {
@@ -405,13 +408,11 @@ fn to_svelte_call_candidate(
     let identifier = call_target_identifier(member_object)?;
     let local_name = text(source, identifier);
     let import_decl = scope.resolve_macro(local_name)?;
-    let (outer_span, object_span, property_span) = repair_svelte_eager_spans(
-        source,
-        base_offset,
-        Span::from_node(node),
-        Span::from_node(member_object),
-        Span::from_node(member_property),
-        local_name,
+    let object_span = Span::from_node(member_object).shifted(base_offset);
+    let property_span = Span::from_node(member_property).shifted(base_offset);
+    let outer_span = Span::new(
+        object_span.start,
+        Span::from_node(node).shifted(base_offset).end,
     );
 
     Some(MacroCandidate {
@@ -443,54 +444,6 @@ fn candidate_kind_from_arguments(arguments: Node<'_>) -> MacroCandidateKind {
 
 fn call_target_identifier(node: Node<'_>) -> Option<Node<'_>> {
     (node.kind() == "identifier").then_some(node)
-}
-
-fn repair_svelte_reactive_spans(
-    source: &str,
-    base_offset: usize,
-    outer: Span,
-    local_name: &str,
-) -> (Span, Span) {
-    let pattern = format!("${local_name}");
-    let repaired_start =
-        find_pattern_near_start(source, outer.start, outer.end, &pattern).unwrap_or(outer.start);
-    let repaired_identifier = Span::new(repaired_start, repaired_start + pattern.len());
-    (
-        Span::new(repaired_start, outer.end).shifted(base_offset),
-        repaired_identifier.shifted(base_offset),
-    )
-}
-
-fn repair_svelte_eager_spans(
-    source: &str,
-    base_offset: usize,
-    outer: Span,
-    object: Span,
-    property: Span,
-    local_name: &str,
-) -> (Span, Span, Span) {
-    if object.start >= outer.start && property.end <= outer.end && object.end <= property.start {
-        // Prefer AST spans when they are consistent.
-        return (
-            Span::new(object.start, outer.end).shifted(base_offset),
-            object.shifted(base_offset),
-            property.shifted(base_offset),
-        );
-    }
-
-    let pattern = format!("{local_name}.eager");
-    let repaired_start =
-        find_pattern_near_start(source, outer.start, outer.end, &pattern).unwrap_or(outer.start);
-    let repaired_object = Span::new(repaired_start, repaired_start + local_name.len());
-    let repaired_property = Span::new(
-        repaired_start + local_name.len() + 1,
-        repaired_start + pattern.len(),
-    );
-    (
-        Span::new(repaired_start, outer.end).shifted(base_offset),
-        repaired_object.shifted(base_offset),
-        repaired_property.shifted(base_offset),
-    )
 }
 
 fn assign_candidate_ownership(mut candidates: Vec<MacroCandidate>) -> Vec<MacroCandidate> {
@@ -608,80 +561,9 @@ fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) 
 
 #[cfg(test)]
 mod tests {
-    use super::{JsMacroSyntax, collect_macro_candidates, repair_svelte_eager_spans};
-    use crate::common::Span;
+    use super::{JsMacroSyntax, collect_macro_candidates};
     use crate::framework::MacroImport;
-    use crate::framework::helpers::text::find_pattern_near_start;
-    use crate::framework::parse::parse_typescript;
-
-    #[test]
-    fn finds_svelte_prefix_near_unicode_without_splitting_multibyte_text() {
-        let source = "<p>前置き🎌 {$t`家族👨‍👩‍👧‍👦😀😃😄 ${name}`} 後置き🍣</p>";
-        let current_start = source.find("t`").expect("template starts at t");
-        let current_end = source
-            .find("}`")
-            .map(|index| index + 2)
-            .unwrap_or(source.len());
-
-        let start = find_pattern_near_start(source, current_start, current_end, "$t")
-            .expect("finds reactive prefix");
-
-        assert_eq!(&source[start..start + 2], "$t");
-        assert!(source.is_char_boundary(start));
-    }
-
-    #[test]
-    fn prefers_ast_spans_for_spaced_and_commented_svelte_eager_access() {
-        let source = "const message = t /*one*/ . /*two*/ eager({ id: \"msg\" });";
-        let outer_start = source.find("t /*one*/").expect("member expression starts");
-        let outer_end = source.find(");").expect("call ends") + 1;
-        let object_start = outer_start;
-        let property_start = source.find("eager").expect("property starts");
-        let property_end = property_start + "eager".len();
-
-        let (outer_span, object_span, property_span) = repair_svelte_eager_spans(
-            source,
-            0,
-            Span::new(outer_start, outer_end),
-            Span::new(object_start, object_start + 1),
-            Span::new(property_start, property_end),
-            "t",
-        );
-
-        assert_eq!(
-            &source[outer_span.start..outer_span.end],
-            "t /*one*/ . /*two*/ eager({ id: \"msg\" })"
-        );
-        assert_eq!(&source[object_span.start..object_span.end], "t");
-        assert_eq!(&source[property_span.start..property_span.end], "eager");
-        assert_eq!(
-            &source[object_span.end..property_span.end],
-            " /*one*/ . /*two*/ eager"
-        );
-    }
-
-    #[test]
-    fn falls_back_to_pattern_search_when_ast_spans_are_invalid() {
-        let source = "const eagerValue = t.eager({ id: \"msg\" });";
-        let outer_start = source.find("t.eager").expect("outer start");
-        let outer_end = source.find(");").expect("call ends") + 1;
-
-        let (outer_span, object_span, property_span) = repair_svelte_eager_spans(
-            source,
-            0,
-            Span::new(outer_start, outer_end),
-            Span::new(0, 0),
-            Span::new(0, 0),
-            "t",
-        );
-
-        assert_eq!(
-            &source[outer_span.start..outer_span.end],
-            "t.eager({ id: \"msg\" })"
-        );
-        assert_eq!(&source[object_span.start..object_span.end], "t");
-        assert_eq!(&source[property_span.start..property_span.end], "eager");
-    }
+    use crate::syntax::parse::parse_typescript;
 
     #[test]
     fn does_not_duplicate_standard_call_candidates_inside_conditionals() {
@@ -690,7 +572,7 @@ mod tests {
             source: "lingui-for-astro/macro".to_string(),
             imported_name: "t".to_string(),
             local_name: "t".to_string(),
-            span: Span::new(0, 0),
+            span: crate::common::Span::new(0, 0),
         }];
 
         let tree = parse_typescript(source).expect("parse succeeds");
@@ -700,7 +582,7 @@ mod tests {
             &imports,
             0,
             JsMacroSyntax::Standard,
-            &[],
+            std::iter::empty::<&str>(),
         );
 
         assert_eq!(candidates.len(), 1);

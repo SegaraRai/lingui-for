@@ -2,5 +2,4 @@ pub(crate) mod anchors;
 pub(crate) mod components;
 pub(crate) mod expressions;
 pub(crate) mod imports;
-pub(crate) mod normalization;
 pub(crate) mod text;

@@ -52,8 +52,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         .iter()
         .map(|target| target.declaration_id.clone())
         .collect::<Vec<_>>();
-    let mut targets = prototypes
-        .clone()
+    let targets = prototypes
         .into_iter()
         .zip(synthetic_plan.targets)
         .map(|(prototype, target)| CompileTarget {
@@ -71,7 +70,6 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         })
         .collect::<Vec<_>>();
 
-    P::repair_compile_targets(source, &mut targets);
     let runtime_requirements = P::compute_runtime_requirements(&targets);
     let common = CommonCompilePlan {
         source_name: source_name.to_string(),

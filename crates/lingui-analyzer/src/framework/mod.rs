@@ -1,9 +1,5 @@
 pub mod astro;
-pub mod astro_ir;
-pub(crate) mod helpers;
-pub mod js;
-pub mod parse;
-pub mod scope;
+pub(crate) mod shared;
 pub mod svelte;
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -11,12 +7,12 @@ use std::collections::{BTreeMap, BTreeSet};
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::Span;
+use crate::common::{NormalizationEdit, Span};
 use crate::conventions::FrameworkConventions;
+use crate::syntax::parse::ParseError;
 
 pub use astro::AstroFrameworkError;
-pub use js::JsAnalysisError;
-pub use parse::ParseError;
+pub use shared::js::JsAnalysisError;
 pub use svelte::SvelteFrameworkError;
 
 #[derive(thiserror::Error, Debug)]
@@ -65,14 +61,6 @@ pub enum MacroFlavor {
 pub enum MacroCandidateStrategy {
     Standalone,
     OwnedByParent,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
-#[tsify()]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub enum NormalizationEdit {
-    Delete { span: Span },
-    Insert { at: usize, text: String },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]

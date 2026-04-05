@@ -3,10 +3,10 @@ use std::collections::{BTreeMap, BTreeSet};
 use tsify::Tsify;
 
 use crate::common::{
-    IndexedText, MappedText, MappedTextError, RenderedMappedText, Span, build_copy_map,
+    IndexedText, MappedText, MappedTextError, NormalizationEdit, RenderedMappedText, Span,
+    build_copy_map, sort_and_dedup_normalization_edits,
 };
-use crate::framework::helpers::normalization::sort_and_dedup_normalization_edits;
-use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport, NormalizationEdit};
+use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SynthesisPlan {
@@ -119,11 +119,11 @@ fn collect_owned_normalization_edits(
         return;
     };
 
-    let mut sorted_children = children.clone();
+    let mut sorted_children: Vec<&OwnedNormalizationEdit> = children.iter().collect();
     sorted_children.sort_by_key(|(_, span, _)| (span.start, span.end));
 
     for (child_id, _, child_edits) in sorted_children {
-        edits.extend(child_edits);
+        edits.extend(child_edits.iter().cloned());
         collect_owned_normalization_edits(child_id.as_str(), owned_by_parent, edits);
     }
 }

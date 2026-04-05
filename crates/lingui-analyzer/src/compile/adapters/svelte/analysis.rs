@@ -9,7 +9,6 @@ use crate::compile::{
     CompileTranslationMode, RuntimeRequirements,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::helpers::text::find_pattern_near_start;
 use crate::framework::svelte::SvelteAdapter;
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, MacroCandidateKind, MacroFlavor, WhitespaceMode,
@@ -36,28 +35,32 @@ pub(crate) fn analyze_svelte_compile(
         },
     )?;
     let imports = analysis
+        .semantic
         .scripts
         .iter()
         .flat_map(|script| script.macro_imports.iter().cloned())
         .collect::<Vec<_>>();
     let import_removals = analysis
+        .semantic
         .scripts
         .iter()
         .flat_map(|script| script.macro_import_statement_spans.iter().copied())
         .collect::<Vec<_>>();
     let instance_script = analysis
+        .semantic
         .scripts
         .iter()
         .find(|script| !script.is_module)
         .map(|script| compile_script_region(&script.region, script.is_typescript));
     let module_script = analysis
+        .semantic
         .scripts
         .iter()
         .find(|script| script.is_module)
         .map(|script| compile_script_region(&script.region, script.is_typescript));
     let mut prototypes = Vec::new();
 
-    for script in &analysis.scripts {
+    for script in &analysis.semantic.scripts {
         let context = if script.is_module {
             CompileTargetContext::ModuleScript
         } else {
@@ -79,7 +82,7 @@ pub(crate) fn analyze_svelte_compile(
         }));
     }
 
-    for expression in &analysis.template_expressions {
+    for expression in &analysis.semantic.template_expressions {
         prototypes.extend(expression.candidates.iter().cloned().map(|candidate| {
             CompileTargetPrototype {
                 output_kind: CompileTargetOutputKind::Expression,
@@ -92,6 +95,7 @@ pub(crate) fn analyze_svelte_compile(
 
     prototypes.extend(
         analysis
+            .semantic
             .template_components
             .iter()
             .cloned()
@@ -115,11 +119,12 @@ pub(crate) fn analyze_svelte_compile(
                 .map(|script| script.lang)
                 .or_else(|| module_script.as_ref().map(|script| script.lang))
                 .unwrap_or(ScriptLang::Ts),
-            source_anchors: analysis.source_anchors.clone(),
+            source_anchors: analysis.metadata.source_anchors.clone(),
         },
         conventions: conventions.clone(),
         runtime_bindings: create_runtime_bindings(
             analysis
+                .semantic
                 .scripts
                 .iter()
                 .find(|script| !script.is_module)
@@ -349,55 +354,5 @@ fn allocate_unique_binding_name(used: &mut BTreeSet<String>, preferred: &str) ->
             return candidate;
         }
         index += 1;
-    }
-}
-
-pub(crate) fn repair_compile_targets(source: &str, targets: &mut [CompileTarget]) {
-    for target in targets {
-        match target.flavor {
-            MacroFlavor::Reactive => {
-                let pattern = format!("${}", target.local_name);
-                let Some(start) = find_pattern_near_start(
-                    source,
-                    target.original_span.start,
-                    target.original_span.end,
-                    &pattern,
-                ) else {
-                    continue;
-                };
-                if start >= target.original_span.start {
-                    continue;
-                }
-
-                target.original_span = Span::new(start, target.original_span.end);
-                target.normalized_span = target.original_span;
-                target.source_map_anchor = Some(Span::new(start + 1, start + pattern.len()));
-                if let Some(first) = target.normalized_segments.first_mut() {
-                    first.original_start = start + 1;
-                }
-            }
-            MacroFlavor::Eager => {
-                let pattern = format!("{}.eager", target.local_name);
-                let Some(start) = find_pattern_near_start(
-                    source,
-                    target.original_span.start,
-                    target.original_span.end,
-                    &pattern,
-                ) else {
-                    continue;
-                };
-                if start >= target.original_span.start {
-                    continue;
-                }
-
-                target.original_span = Span::new(start, target.original_span.end);
-                target.normalized_span = Span::new(start, target.normalized_span.end);
-                target.source_map_anchor = Some(Span::new(start, start + target.local_name.len()));
-                if let Some(first) = target.normalized_segments.first_mut() {
-                    first.original_start = start;
-                }
-            }
-            MacroFlavor::Direct => {}
-        }
     }
 }

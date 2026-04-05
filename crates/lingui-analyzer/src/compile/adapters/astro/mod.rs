@@ -12,9 +12,8 @@ use crate::compile::{
     RuntimeWarningOptions, build_compile_plan_for_framework,
 };
 use crate::conventions::FrameworkConventions;
-use crate::framework::{
-    AstroFrameworkError, FrameworkError, JsAnalysisError, ParseError, WhitespaceMode,
-};
+use crate::framework::{AstroFrameworkError, FrameworkError, JsAnalysisError, WhitespaceMode};
+use crate::syntax::parse::ParseError;
 
 use super::{AdapterError, CommonFrameworkCompileAnalysis};
 
@@ -108,8 +107,6 @@ impl FrameworkCompilePlan for AstroCompilePlan {
             indexed_source_map: None,
         })
     }
-
-    fn repair_compile_targets(_source: &str, _targets: &mut [CompileTarget]) {}
 
     fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
         compute_runtime_requirements(targets)

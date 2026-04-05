@@ -27,14 +27,14 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    let script = &analysis.scripts[0];
+    let script = &analysis.semantic.scripts[0];
     let synthetic = build_synthetic_module(
         source,
         "source",
         "synthetic.js",
         &script.macro_imports,
         &script.candidates,
-        &analysis.source_anchors,
+        &analysis.metadata.source_anchors,
     )
     .expect("synthetic module builds");
 
@@ -90,6 +90,7 @@ fn builds_synthetic_module_for_svelte_template_components() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let candidates = analysis
+        .semantic
         .template_components
         .iter()
         .map(|component| component.candidate.clone())
@@ -98,9 +99,9 @@ fn builds_synthetic_module_for_svelte_template_components() {
         source,
         "source",
         "synthetic.js",
-        &analysis.scripts[0].macro_imports,
+        &analysis.semantic.scripts[0].macro_imports,
         &candidates,
-        &analysis.source_anchors,
+        &analysis.metadata.source_anchors,
     )
     .expect("synthetic module builds");
 
@@ -137,9 +138,10 @@ fn groups_synthetic_imports_by_source() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    let mut candidates = analysis.scripts[0].candidates.clone();
+    let mut candidates = analysis.semantic.scripts[0].candidates.clone();
     candidates.extend(
         analysis
+            .semantic
             .template_components
             .iter()
             .map(|component| component.candidate.clone()),
@@ -148,9 +150,9 @@ fn groups_synthetic_imports_by_source() {
         source,
         "source",
         "synthetic.js",
-        &analysis.scripts[0].macro_imports,
+        &analysis.semantic.scripts[0].macro_imports,
         &candidates,
-        &analysis.source_anchors,
+        &analysis.metadata.source_anchors,
     )
     .expect("synthetic module builds");
 
@@ -188,9 +190,9 @@ fn emits_lookupable_sourcemap_for_normalized_segments() {
         source,
         "source",
         "synthetic.js",
-        &analysis.scripts[0].macro_imports,
-        &analysis.scripts[0].candidates,
-        &analysis.source_anchors,
+        &analysis.semantic.scripts[0].macro_imports,
+        &analysis.semantic.scripts[0].candidates,
+        &analysis.metadata.source_anchors,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
@@ -227,9 +229,9 @@ fn emits_utf16_columns_for_unicode_prefixes() {
         source,
         "source",
         "synthetic.js",
-        &analysis.scripts[0].macro_imports,
-        &analysis.scripts[0].candidates,
-        &analysis.source_anchors,
+        &analysis.semantic.scripts[0].macro_imports,
+        &analysis.semantic.scripts[0].candidates,
+        &analysis.metadata.source_anchors,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
@@ -265,6 +267,7 @@ fn maps_component_declaration_start_to_component_message_anchor() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let candidates = analysis
+        .semantic
         .template_components
         .iter()
         .map(|component| component.candidate.clone())
@@ -273,9 +276,9 @@ fn maps_component_declaration_start_to_component_message_anchor() {
         source,
         "source",
         "synthetic.js",
-        &analysis.scripts[0].macro_imports,
+        &analysis.semantic.scripts[0].macro_imports,
         &candidates,
-        &analysis.source_anchors,
+        &analysis.metadata.source_anchors,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
@@ -313,14 +316,14 @@ fn merges_owned_svelte_nested_macro_normalization_into_parent_synthetic_source()
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
-    let script = &analysis.scripts[0];
+    let script = &analysis.semantic.scripts[0];
     let synthetic = build_synthetic_module(
         source,
         "source",
         "synthetic.js",
         &script.macro_imports,
         &script.candidates,
-        &analysis.source_anchors,
+        &analysis.metadata.source_anchors,
     )
     .expect("synthetic module builds");
 
