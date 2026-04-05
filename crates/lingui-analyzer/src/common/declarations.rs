@@ -3,20 +3,13 @@ use std::collections::BTreeMap;
 use tree_sitter::Node;
 
 use crate::{
-    common::IndexedSourceMap,
+    common::{IndexedSourceMap, RenderedMappedText},
     framework::parse::{ParseError, parse_tsx},
 };
 
 use super::{
     IndexedText, MappedText, MappedTextError, Span, build_span_anchor_map, extract_local_submap,
 };
-
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) struct TransformedDeclaration {
-    pub(crate) code: String,
-    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
-    pub(crate) synthetic_start: usize,
-}
 
 #[derive(thiserror::Error, Debug)]
 pub enum CollectDeclarationsError {
@@ -29,7 +22,7 @@ pub enum CollectDeclarationsError {
 pub(crate) fn collect_variable_initializer_declarations(
     source: &str,
     indexed_source_map: Option<&IndexedSourceMap>,
-) -> Result<BTreeMap<String, TransformedDeclaration>, CollectDeclarationsError> {
+) -> Result<BTreeMap<String, RenderedMappedText>, CollectDeclarationsError> {
     let tree = parse_tsx(source)?;
     let root = tree.root_node();
     let mut declarations = BTreeMap::new();
@@ -66,18 +59,14 @@ pub(crate) fn collect_variable_initializer_declarations(
                 value_start,
                 value.end_byte(),
             );
-            let (code, indexed_source_map) = normalize_i18n_comment_layout_rendered(
+            let rendered = normalize_i18n_comment_layout_rendered(
                 raw_code,
                 raw_indexed_submap.as_ref(),
                 &collapse_spans,
             )?;
             declarations.insert(
                 source[name.start_byte()..name.end_byte()].to_string(),
-                TransformedDeclaration {
-                    code,
-                    indexed_source_map,
-                    synthetic_start: value_start,
-                },
+                rendered,
             );
         }
     }
@@ -124,9 +113,12 @@ fn normalize_i18n_comment_layout_rendered(
     input: &str,
     source_map: Option<&IndexedSourceMap>,
     collapse_spans: &[Span],
-) -> Result<(String, Option<IndexedSourceMap>), CollectDeclarationsError> {
+) -> Result<RenderedMappedText, CollectDeclarationsError> {
     if collapse_spans.is_empty() {
-        return Ok((input.to_string(), source_map.cloned()));
+        return Ok(RenderedMappedText {
+            code: input.to_string(),
+            indexed_source_map: source_map.cloned(),
+        });
     }
 
     let source_name = source_map
@@ -159,8 +151,7 @@ fn normalize_i18n_comment_layout_rendered(
         mapped.append_slice_from(&original, Span::new(cursor, input.len()))?;
     }
 
-    let rendered = mapped.into_rendered()?;
-    Ok((rendered.code, rendered.indexed_source_map))
+    mapped.into_rendered().map_err(Into::into)
 }
 
 fn collect_i18n_comment_whitespace_spans(
@@ -229,6 +220,7 @@ fn whitespace_span_before_object(source: &str, start: usize, limit: usize) -> Op
         None
     }
 }
+
 #[cfg(test)]
 mod tests {
     use super::{
@@ -246,7 +238,7 @@ mod tests {
         assert_eq!(
             normalize_i18n_comment_layout_rendered(input, None, &spans)
                 .expect("rendered normalization succeeds")
-                .0,
+                .code,
             "/*i18n*/ { id: \"x\" }",
         );
     }
@@ -260,7 +252,7 @@ mod tests {
         assert_eq!(
             normalize_i18n_comment_layout_rendered(input, None, &spans)
                 .expect("rendered normalization succeeds")
-                .0,
+                .code,
             input,
         );
     }
@@ -275,7 +267,7 @@ mod tests {
         assert_eq!(
             normalize_i18n_comment_layout_rendered(input, None, &spans)
                 .expect("rendered normalization succeeds")
-                .0,
+                .code,
             input,
         );
     }
@@ -289,7 +281,7 @@ mod tests {
         assert_eq!(
             normalize_i18n_comment_layout_rendered(input, None, &spans)
                 .expect("rendered normalization succeeds")
-                .0,
+                .code,
             input,
         );
     }
@@ -303,7 +295,7 @@ mod tests {
         assert_eq!(
             normalize_i18n_comment_layout_rendered(input, None, &spans)
                 .expect("rendered normalization succeeds")
-                .0,
+                .code,
             "render(/*i18n*/ { id: \"x\" })",
         );
     }

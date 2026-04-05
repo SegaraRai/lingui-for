@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 
 use crate::common::{
-    CollectDeclarationsError, IndexedSourceMap, RenderedMappedText, TransformedDeclaration,
+    CollectDeclarationsError, IndexedSourceMap, RenderedMappedText,
     collect_variable_initializer_declarations, parse_source_map,
 };
 
@@ -23,22 +23,6 @@ pub enum LowerError {
     CollectDeclarations(#[from] CollectDeclarationsError),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) struct LoweredDeclaration {
-    pub(crate) code: String,
-    pub(crate) indexed_source_map: Option<IndexedSourceMap>,
-    pub(crate) synthetic_start: Option<usize>,
-}
-
-impl From<LoweredDeclaration> for RenderedMappedText {
-    fn from(value: LoweredDeclaration) -> Self {
-        Self {
-            code: value.code,
-            indexed_source_map: value.indexed_source_map,
-        }
-    }
-}
-
 pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
     plan: &P,
     source: &str,
@@ -58,7 +42,7 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
     plan: &P,
     source: &str,
     transformed_programs: &TransformedPrograms,
-) -> Result<BTreeMap<String, LoweredDeclaration>, LowerError> {
+) -> Result<BTreeMap<String, RenderedMappedText>, LowerError> {
     let declaration_sets = collect_transformed_declarations(transformed_programs)?;
     let mut lowered = BTreeMap::new();
 
@@ -71,29 +55,17 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
             continue;
         };
 
-        let (code, indexed_source_map) = if target.output_kind == CompileTargetOutputKind::Component
-        {
-            let lowered = plan.lower_runtime_component_markup(
+        let declaration = if target.output_kind == CompileTargetOutputKind::Component {
+            plan.lower_runtime_component_markup(
                 &plan.common().source_name,
                 source,
                 target,
-                &RenderedMappedText {
-                    code: declaration.code,
-                    indexed_source_map: declaration.indexed_source_map,
-                },
-            )?;
-            (lowered.code, lowered.indexed_source_map)
+                &declaration,
+            )?
         } else {
-            (declaration.code, declaration.indexed_source_map)
+            declaration
         };
-        lowered.insert(
-            target.declaration_id.clone(),
-            LoweredDeclaration {
-                code,
-                indexed_source_map,
-                synthetic_start: declaration.synthetic_start,
-            },
-        );
+        lowered.insert(target.declaration_id.clone(), declaration);
     }
 
     Ok(lowered)
@@ -101,7 +73,7 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
 
 fn collect_transformed_declarations(
     programs: &TransformedPrograms,
-) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, LoweredDeclaration>>, LowerError> {
+) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, RenderedMappedText>>, LowerError> {
     let mut declarations = BTreeMap::new();
     let lowered_source_map = programs
         .lowered_source_map_json
@@ -133,22 +105,8 @@ fn collect_transformed_declarations(
 fn collect_declarations_from_program(
     source: &str,
     indexed_source_map: Option<&IndexedSourceMap>,
-) -> Result<BTreeMap<String, LoweredDeclaration>, LowerError> {
-    Ok(
-        collect_variable_initializer_declarations(source, indexed_source_map)?
-            .into_iter()
-            .map(|(name, declaration): (String, TransformedDeclaration)| {
-                (
-                    name,
-                    LoweredDeclaration {
-                        code: declaration.code,
-                        indexed_source_map: declaration.indexed_source_map.clone(),
-                        synthetic_start: Some(declaration.synthetic_start),
-                    },
-                )
-            })
-            .collect(),
-    )
+) -> Result<BTreeMap<String, RenderedMappedText>, LowerError> {
+    collect_variable_initializer_declarations(source, indexed_source_map).map_err(Into::into)
 }
 
 #[cfg(test)]

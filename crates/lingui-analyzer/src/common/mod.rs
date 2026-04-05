@@ -1,10 +1,13 @@
+mod declarations;
 mod diagnostics;
 mod indexed_text;
 mod lang;
 mod source_map;
 mod span;
-mod transformed_declaration;
 
+pub(crate) use declarations::{
+    CollectDeclarationsError, collect_variable_initializer_declarations,
+};
 pub(crate) use diagnostics::{
     format_invalid_macro_usage, format_single_diagnostic, format_unsupported_trans_child_syntax,
     make_diagnostic,
@@ -19,6 +22,3 @@ pub(crate) use source_map::{
     source_map_to_json,
 };
 pub use span::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
-pub(crate) use transformed_declaration::{
-    CollectDeclarationsError, TransformedDeclaration, collect_variable_initializer_declarations,
-};
