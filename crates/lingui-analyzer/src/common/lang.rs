@@ -7,6 +7,4 @@ use tsify::Tsify;
 pub enum ScriptLang {
     Js,
     Ts,
-    Jsx,
-    Tsx,
 }

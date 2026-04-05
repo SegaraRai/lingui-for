@@ -2,6 +2,8 @@ use std::cell::RefCell;
 
 use tree_sitter::{Language, Parser, Tree};
 
+use crate::common::ScriptLang;
+
 #[derive(thiserror::Error, Debug, Clone)]
 pub enum ParseError {
     #[error("tree-sitter language load failed")]
@@ -79,4 +81,13 @@ pub fn parse_tsx(source: &str) -> Result<Tree, ParseError> {
                 .ok_or(ParseError::ParseFailed)
         })
     })
+}
+
+impl ScriptLang {
+    pub fn parse(self, source: &str) -> Result<Tree, ParseError> {
+        match self {
+            ScriptLang::Js => parse_javascript(source),
+            ScriptLang::Ts => parse_typescript(source),
+        }
+    }
 }

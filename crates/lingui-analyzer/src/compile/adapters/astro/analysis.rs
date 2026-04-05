@@ -7,7 +7,7 @@ use crate::compile::{
 };
 use crate::conventions::FrameworkConventions;
 use crate::framework::astro::AstroAdapter;
-use crate::framework::js::{JsLikeLanguage, collect_top_level_declared_names_in_javascript};
+use crate::framework::js::collect_top_level_declared_names_in_javascript;
 use crate::framework::parse::parse_typescript;
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, WhitespaceMode};
 
@@ -115,10 +115,8 @@ fn create_runtime_bindings(
     frontmatter_source: &str,
     conventions: &FrameworkConventions,
 ) -> Result<AstroCompileRuntimeBindings, AstroAdapterError> {
-    let declared_names = collect_top_level_declared_names_in_javascript(
-        frontmatter_source,
-        JsLikeLanguage::TypeScript,
-    )?;
+    let declared_names =
+        collect_top_level_declared_names_in_javascript(frontmatter_source, ScriptLang::Ts)?;
     let mut used = declared_names.into_iter().collect::<BTreeSet<_>>();
 
     Ok(AstroCompileRuntimeBindings {

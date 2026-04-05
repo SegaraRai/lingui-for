@@ -1,7 +1,8 @@
 use tree_sitter::Node;
 
 use crate::common::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, Span, format_unsupported_trans_child_syntax,
+    EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span,
+    format_unsupported_trans_child_syntax,
 };
 use crate::conventions::FrameworkConventions;
 
@@ -16,9 +17,7 @@ use super::helpers::normalization::{
     sort_and_dedup_normalization_edits, whitespace_replacement_edits,
 };
 use super::helpers::text::{is_component_tag_name, text, unquote};
-use super::js::{
-    ExpressionParseCache, JsAnalysisError, JsLikeLanguage, JsMacroSyntax, collect_macro_candidates,
-};
+use super::js::{ExpressionParseCache, JsAnalysisError, JsMacroSyntax, collect_macro_candidates};
 use super::parse::{ParseError, parse_astro, parse_typescript};
 use super::{
     AnalyzeOptions, FrameworkAdapter, FrameworkError, MacroCandidate, MacroCandidateKind,
@@ -271,7 +270,7 @@ fn collect_template_expressions(
                     TemplateExpressionRequest {
                         outer_span: Span::from_node(node),
                         inner_span: inner,
-                        language: JsLikeLanguage::TypeScript,
+                        language: ScriptLang::Ts,
                         excluded_nested_spans: &[],
                     },
                 )?;
@@ -289,7 +288,7 @@ fn collect_template_expressions(
                     TemplateExpressionRequest {
                         outer_span: Span::from_node(node),
                         inner_span: inner_range_from_delimiters(node, 1, 1),
-                        language: JsLikeLanguage::TypeScript,
+                        language: ScriptLang::Ts,
                         excluded_nested_spans: &[],
                     },
                 )?;
@@ -340,7 +339,7 @@ fn collect_template_expressions(
 struct TemplateExpressionRequest<'a> {
     outer_span: Span,
     inner_span: Span,
-    language: JsLikeLanguage,
+    language: ScriptLang,
     excluded_nested_spans: &'a [Span],
 }
 
@@ -587,11 +586,9 @@ fn collect_nested_component_normalization_edits(
                     .find(|grandchild| grandchild.kind() == "attribute_js_expr")
                     .map(Span::from_node)
                     .unwrap_or_else(|| inner_range_from_delimiters(child, 1, 1));
-                let tree = context.expression_parse_cache.parse(
-                    source,
-                    inner,
-                    JsLikeLanguage::TypeScript,
-                )?;
+                let tree = context
+                    .expression_parse_cache
+                    .parse(source, inner, ScriptLang::Ts)?;
                 let candidates = collect_macro_candidates(
                     &source[inner.start..inner.end],
                     tree.root_node(),
@@ -606,11 +603,9 @@ fn collect_nested_component_normalization_edits(
             }
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
-                let tree = context.expression_parse_cache.parse(
-                    source,
-                    inner,
-                    JsLikeLanguage::TypeScript,
-                )?;
+                let tree = context
+                    .expression_parse_cache
+                    .parse(source, inner, ScriptLang::Ts)?;
                 let candidates = collect_macro_candidates(
                     &source[inner.start..inner.end],
                     tree.root_node(),

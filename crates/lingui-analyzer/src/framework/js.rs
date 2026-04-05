@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use tree_sitter::{Node, Tree};
 
-use crate::common::Span;
+use crate::common::{ScriptLang, Span};
 
 use super::helpers::text::{find_pattern_near_start, text};
-use super::parse::{ParseError, parse_javascript, parse_tsx, parse_typescript};
+use super::parse::ParseError;
 use super::scope::LexicalScope;
 use super::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
@@ -22,13 +22,6 @@ pub enum JsAnalysisError {
 pub enum JsMacroSyntax {
     Standard,
     Svelte,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum JsLikeLanguage {
-    JavaScript,
-    TypeScript,
-    Tsx,
 }
 
 pub fn collect_macro_candidates(
@@ -56,7 +49,7 @@ pub fn collect_macro_candidates(
 pub fn collect_declared_names_from_binding_source(
     source: &str,
     mode: BindingParseMode,
-    language: JsLikeLanguage,
+    language: ScriptLang,
 ) -> Result<Vec<String>, JsAnalysisError> {
     let wrapped = match mode {
         BindingParseMode::VariableDeclarator => format!("const {source};"),
@@ -64,11 +57,7 @@ pub fn collect_declared_names_from_binding_source(
         BindingParseMode::SingleParam => format!("(({source}) => 0)"),
     };
 
-    let tree = match language {
-        JsLikeLanguage::JavaScript => parse_javascript(&wrapped)?,
-        JsLikeLanguage::TypeScript => parse_typescript(&wrapped)?,
-        JsLikeLanguage::Tsx => parse_tsx(&wrapped)?,
-    };
+    let tree = language.parse(&wrapped)?;
     let root = tree.root_node();
     let mut names = Vec::new();
     collect_declared_names(root, &wrapped, &mut names);
@@ -77,13 +66,9 @@ pub fn collect_declared_names_from_binding_source(
 
 pub fn collect_top_level_declared_names_in_javascript(
     source: &str,
-    language: JsLikeLanguage,
+    language: ScriptLang,
 ) -> Result<Vec<String>, JsAnalysisError> {
-    let tree = match language {
-        JsLikeLanguage::JavaScript => parse_javascript(source)?,
-        JsLikeLanguage::TypeScript => parse_typescript(source)?,
-        JsLikeLanguage::Tsx => parse_tsx(source)?,
-    };
+    let tree = language.parse(source)?;
     let root = tree.root_node();
     Ok(collect_top_level_declared_names_from_root(source, root))
 }
@@ -124,7 +109,7 @@ pub fn collect_top_level_declared_names_from_root(source: &str, root: Node<'_>) 
 struct ExpressionParseKey {
     start: usize,
     end: usize,
-    language: JsLikeLanguage,
+    language: ScriptLang,
 }
 
 #[derive(Debug, Default)]
@@ -137,7 +122,7 @@ impl ExpressionParseCache {
         &mut self,
         source: &str,
         span: Span,
-        language: JsLikeLanguage,
+        language: ScriptLang,
     ) -> Result<Tree, ParseError> {
         let key = ExpressionParseKey {
             start: span.start,
@@ -149,11 +134,7 @@ impl ExpressionParseCache {
         }
 
         let slice = &source[span.start..span.end];
-        let tree = match language {
-            JsLikeLanguage::JavaScript => parse_javascript(slice)?,
-            JsLikeLanguage::TypeScript => parse_typescript(slice)?,
-            JsLikeLanguage::Tsx => parse_tsx(slice)?,
-        };
+        let tree = language.parse(slice)?;
         self.trees.insert(key, tree.clone());
         Ok(tree)
     }
