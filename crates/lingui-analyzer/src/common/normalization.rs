@@ -28,15 +28,14 @@ pub(crate) fn whitespace_replacement_edits(
     for pair in meaningful_children.windows(2) {
         let previous = pair[0];
         let next = pair[1];
-        if is_explicit_space_expression(source, previous)
+        if previous.end_byte() >= next.start_byte()
+            || is_explicit_space_expression(source, previous)
             || is_explicit_space_expression(source, next)
         {
             continue;
         }
+
         let gap = Span::new(previous.end_byte(), next.start_byte());
-        if gap.start >= gap.end {
-            continue;
-        }
         if !span_text(source, gap).trim().is_empty() {
             continue;
         }
