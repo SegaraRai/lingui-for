@@ -9,8 +9,8 @@ use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_node, copy_span,
     find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
     jsx_attribute_value_node, key_name, lowerable_object_expression_node, push_anchor_mapped,
-    push_copied_span, source_slice, spread_argument_node, spread_element_node, translated_span,
-    validate_runtime_placeholder_key,
+    push_copied_span, source_slice, spread_argument_node, spread_element_node, spread_prefix_start,
+    translated_span, validate_runtime_placeholder_key,
 };
 use crate::compile::{CompileTarget, RuntimeWarningMode};
 use crate::syntax::parse::{parse_svelte, parse_tsx};
@@ -135,7 +135,8 @@ fn convert_runtime_trans_root(
                         runtime_warning_mode,
                     )?;
                     mapped.push_unmapped(" {...");
-                    let prefix_start = (spread_span.start + 3).min(object_span.start);
+                    let prefix_start =
+                        spread_prefix_start(context.source.text(), spread_span, object_span)?;
                     let prefix_trimmed_start = context.source.text()
                         [prefix_start..object_span.start]
                         .find(|char: char| !char.is_ascii_whitespace())
@@ -685,9 +686,9 @@ fn push_original_anchor(
 
 #[cfg(test)]
 mod tests {
+    use indoc::indoc;
     use lean_string::LeanString;
 
-    use super::lower_runtime_component_markup;
     use crate::common::{RenderedMappedText, Span};
     use crate::compile::{
         CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
@@ -695,7 +696,8 @@ mod tests {
     };
     use crate::framework::MacroFlavor;
     use crate::synthesis::NormalizedSegment;
-    use indoc::indoc;
+
+    use super::lower_runtime_component_markup;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)
