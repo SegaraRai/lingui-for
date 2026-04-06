@@ -634,7 +634,7 @@ fn lower_original_wrapper_to_snippet(
                 input,
                 Span::new(node_span.start, node_span.start + self_closing_offset),
             )?;
-            rendered.push_unmapped("{@render children?.()}</");
+            rendered.push_unmapped(">{@render children?.()}</");
             push_copied_span(&mut rendered, input, tag_name_span)?;
             rendered.push_unmapped(">");
         }
@@ -785,6 +785,41 @@ mod tests {
                 }}>
                 {#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}
                 {#snippet component_1(children)}<DocLink href="/docs">{@render children?.()}</DocLink>{/snippet}
+                </L4sRuntimeTrans>
+            "#}
+            .trim_end()
+        );
+    }
+
+    #[test]
+    fn lowers_self_closing_source_wrappers_to_open_and_close_tags() {
+        let source = ls("<Trans><DocLink href=\"/docs\" /></Trans>");
+        let declaration = RenderedMappedText {
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"<0>docs</0>\", components: { 0: <DocLink href=\"/docs\" /> } }} />",
+            ),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            &ls("Component.svelte"),
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+            RuntimeWarningMode::On,
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4sRuntimeTrans {.../*i18n*/ {
+                  id: "demo.docs",
+                  message: "<0>docs</0>"
+                }}>
+                {#snippet component_0(children)}<DocLink href="/docs" >{@render children?.()}</DocLink>{/snippet}
                 </L4sRuntimeTrans>
             "#}
             .trim_end()
