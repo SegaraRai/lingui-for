@@ -1,5 +1,7 @@
 use std::collections::BTreeSet;
 
+use lean_string::LeanString;
+
 use crate::common::{
     EmbeddedScriptRegion, IndexedSourceMap, IndexedText, MappedText, RenderedMappedText,
     ScriptLang, Span, build_copy_map, build_span_anchor_map,
@@ -21,15 +23,15 @@ use super::{
 };
 
 pub(crate) fn analyze_svelte_compile(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     whitespace: WhitespaceMode,
     conventions: &FrameworkConventions,
 ) -> Result<SvelteFrameworkCompileAnalysis, SvelteAdapterError> {
     let analysis = SvelteAdapter.analyze(
         source,
         &AnalyzeOptions {
-            source_name: source_name.to_string(),
+            source_name: source_name.clone(),
             whitespace,
             conventions: conventions.clone(),
         },
@@ -171,7 +173,8 @@ pub(crate) fn wrap_compile_source(
         &indexed_source,
         normalized_source.indexed_source_map.as_ref(),
     );
-    let mut mapped = MappedText::new("__normalized", &normalized_source.code);
+    let source_name = LeanString::from_static_str("__normalized");
+    let mut mapped = MappedText::new(&source_name, &normalized_source.code);
     if prototype.output_kind == CompileTargetOutputKind::Expression {
         match prototype.candidate.flavor {
             MacroFlavor::Reactive => {
@@ -260,7 +263,7 @@ fn push_wrapped_copy(
     copy_anchors: &[usize],
 ) {
     mapped.push(
-        &normalized_source.as_str()[span.start..span.end],
+        &normalized_source.text()[span.start..span.end],
         build_copy_map("__normalized", normalized_source, span, copy_anchors),
     );
 }
@@ -301,7 +304,7 @@ pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> Runtime
 }
 
 pub(crate) fn create_runtime_bindings(
-    declared_names: &[String],
+    declared_names: &[LeanString],
     conventions: &FrameworkConventions,
 ) -> Result<SvelteCompileRuntimeBindings, SvelteAdapterError> {
     let mut used = declared_names.iter().cloned().collect::<BTreeSet<_>>();
@@ -310,46 +313,52 @@ pub(crate) fn create_runtime_bindings(
     Ok(SvelteCompileRuntimeBindings {
         create_lingui_accessors: allocate_unique_binding_name(
             &mut used,
-            bindings.i18n_accessor_factory.as_deref().ok_or(
-                SvelteAdapterError::MissingConvention("bindings.i18n_accessor_factory"),
-            )?,
+            bindings
+                .i18n_accessor_factory
+                .clone()
+                .ok_or(SvelteAdapterError::MissingConvention(
+                    "bindings.i18n_accessor_factory",
+                ))?,
         ),
         context: allocate_unique_binding_name(
             &mut used,
             bindings
                 .context
-                .as_deref()
+                .clone()
                 .ok_or(SvelteAdapterError::MissingConvention("bindings.context"))?,
         ),
         get_i18n: allocate_unique_binding_name(
             &mut used,
             bindings
                 .get_i18n
-                .as_deref()
+                .clone()
                 .ok_or(SvelteAdapterError::MissingConvention("bindings.get_i18n"))?,
         ),
         translate: allocate_unique_binding_name(
             &mut used,
             bindings
                 .translate
-                .as_deref()
+                .clone()
                 .ok_or(SvelteAdapterError::MissingConvention("bindings.translate"))?,
         ),
         trans_component: allocate_unique_binding_name(
             &mut used,
-            bindings.runtime_trans_component.as_str(),
+            bindings.runtime_trans_component.clone(),
         ),
     })
 }
 
-fn allocate_unique_binding_name(used: &mut BTreeSet<String>, preferred: &str) -> String {
-    if used.insert(preferred.to_string()) {
-        return preferred.to_string();
+fn allocate_unique_binding_name(
+    used: &mut BTreeSet<LeanString>,
+    preferred: LeanString,
+) -> LeanString {
+    if used.insert(preferred.clone()) {
+        return preferred;
     }
 
     let mut index = 1usize;
     loop {
-        let candidate = format!("{preferred}_{index}");
+        let candidate = LeanString::from(format!("{preferred}_{index}"));
         if used.insert(candidate.clone()) {
             return candidate;
         }

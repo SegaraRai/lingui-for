@@ -2,6 +2,7 @@
 mod astro_support;
 
 use indoc::indoc;
+use lean_string::LeanString;
 
 use lingui_analyzer::{
     AstroCompilePlan, MacroCandidateKind, RuntimeWarningOptions, WhitespaceMode,
@@ -9,6 +10,10 @@ use lingui_analyzer::{
 };
 
 use astro_support::{analyze_options_for_astro, astro_default_conventions};
+
+fn ls(text: &str) -> LeanString {
+    LeanString::from(text)
+}
 
 #[test]
 fn collects_aliased_frontmatter_macro_imports_and_candidates() {
@@ -78,9 +83,9 @@ fn allocates_unique_runtime_bindings_for_astro_compile() {
     "#};
 
     let plan = AstroCompilePlan::build(
-        source,
-        "Page.astro",
-        "Page.astro?compile",
+        &ls(source),
+        &ls("Page.astro"),
+        &ls("Page.astro?compile"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
@@ -366,9 +371,9 @@ fn rejects_is_raw_on_astro_trans_children_with_location() {
     "#};
 
     let error = AstroCompilePlan::build(
-        source,
-        "Unsupported.astro",
-        "Unsupported.astro?compile",
+        &ls(source),
+        &ls("Unsupported.astro"),
+        &ls("Unsupported.astro?compile"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
@@ -394,9 +399,9 @@ fn allows_transition_directives_inside_astro_trans_children() {
     "#};
 
     AstroCompilePlan::build(
-        source,
-        "Allowed.astro",
-        "Allowed.astro?compile",
+        &ls(source),
+        &ls("Allowed.astro"),
+        &ls("Allowed.astro?compile"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
@@ -417,9 +422,9 @@ fn rejects_style_elements_inside_astro_trans_children_with_location() {
     "#};
 
     let error = AstroCompilePlan::build(
-        source,
-        "Unsupported.astro",
-        "Unsupported.astro?compile",
+        &ls(source),
+        &ls("Unsupported.astro"),
+        &ls("Unsupported.astro?compile"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
@@ -443,9 +448,9 @@ fn rejects_unsupported_directives_on_the_astro_trans_tag_itself() {
     "#};
 
     let error = AstroCompilePlan::build(
-        source,
-        "Unsupported.astro",
-        "Unsupported.astro?compile",
+        &ls(source),
+        &ls("Unsupported.astro"),
+        &ls("Unsupported.astro?compile"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),

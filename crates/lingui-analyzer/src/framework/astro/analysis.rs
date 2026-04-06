@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
@@ -157,7 +158,7 @@ fn collect_macro_imports(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(&module_specifier, conventions) {
+        if !is_macro_module_specifier(module_specifier, conventions) {
             continue;
         }
 
@@ -165,7 +166,7 @@ fn collect_macro_imports(
             source,
             child,
             base_offset,
-            &module_specifier,
+            &LeanString::from(module_specifier),
             &mut imports,
         );
     }
@@ -192,7 +193,7 @@ fn collect_macro_import_statement_spans_from_root(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !conventions.accepts_macro_package(&module_specifier) {
+        if !conventions.accepts_macro_package(module_specifier) {
             continue;
         }
 

@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use sourcemap::{SourceMap, SourceMapBuilder};
 
 use crate::common::{IndexedText, Span};
@@ -9,17 +10,17 @@ use super::primitives::{
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum MappedSegment {
-    Unmapped(String),
+    Unmapped(LeanString),
     PreMapped {
-        code: String,
+        code: LeanString,
         indexed_source_map: Box<IndexedSourceMap>,
     },
 }
 
 #[derive(Debug, Clone)]
 pub(crate) struct MappedText<'a> {
-    source_name: &'a str,
-    source_text: &'a str,
+    source_name: &'a LeanString,
+    source_text: &'a LeanString,
     segments: Vec<MappedSegment>,
 }
 
@@ -45,7 +46,7 @@ pub enum MappedTextError {
 }
 
 impl<'a> MappedText<'a> {
-    pub(crate) fn new(source_name: &'a str, source_text: &'a str) -> Self {
+    pub(crate) fn new(source_name: &'a LeanString, source_text: &'a LeanString) -> Self {
         Self {
             source_name,
             source_text,
@@ -55,7 +56,7 @@ impl<'a> MappedText<'a> {
 
     pub(crate) fn push(
         &mut self,
-        text: impl Into<String>,
+        text: impl Into<LeanString>,
         indexed_source_map: Option<IndexedSourceMap>,
     ) {
         let text = text.into();
@@ -73,26 +74,29 @@ impl<'a> MappedText<'a> {
         }
     }
 
-    pub(crate) fn push_unmapped(&mut self, text: impl Into<String>) {
+    pub(crate) fn push_unmapped_dynamic(&mut self, text: impl Into<LeanString>) {
         let text = text.into();
         if !text.is_empty() {
             self.segments.push(MappedSegment::Unmapped(text));
         }
     }
 
+    pub(crate) fn push_unmapped(&mut self, text: &'static str) {
+        self.push_unmapped_dynamic(LeanString::from_static_str(text));
+    }
+
     pub(crate) fn from_rendered(
-        source_name: &'a str,
-        source_text: &'a str,
-        code: impl Into<String>,
+        source_name: &'a LeanString,
+        source_text: &'a LeanString,
+        code: &LeanString,
         source_map: Option<&IndexedSourceMap>,
     ) -> Self {
         let mut mapped = Self::new(source_name, source_text);
-        let code = code.into();
         match source_map {
             Some(map) if !code.is_empty() => {
-                append_rendered_segments(&mut mapped, &code, map);
+                append_rendered_segments(&mut mapped, code, map);
             }
-            _ => mapped.push_unmapped(code),
+            _ => mapped.push_unmapped_dynamic(code),
         }
         mapped
     }
@@ -101,7 +105,7 @@ impl<'a> MappedText<'a> {
         self.segments.iter().map(MappedSegment::len).sum()
     }
 
-    pub(crate) fn source_name(&self) -> &'a str {
+    pub(crate) fn source_name(&self) -> &LeanString {
         self.source_name
     }
 
@@ -167,21 +171,21 @@ impl<'a> MappedText<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct RenderedMappedText {
-    pub(crate) code: String,
+    pub(crate) code: LeanString,
     pub(crate) indexed_source_map: Option<IndexedSourceMap>,
 }
 
 pub(crate) fn render_mapped_text(
-    source_name: &str,
-    source_text: &str,
+    source_name: &LeanString,
+    source_text: &LeanString,
     segments: &[MappedSegment],
 ) -> Result<RenderedMappedText, MappedTextError> {
-    let mut builder = SourceMapBuilder::new(Some(source_name));
-    builder.set_file(Some(source_name));
+    let mut builder = SourceMapBuilder::new(Some(source_name.as_str()));
+    builder.set_file(Some(source_name.as_str()));
     let src_id = builder.add_source(source_name);
     builder.set_source_contents(src_id, Some(source_text));
 
-    let mut code = String::new();
+    let mut code = LeanString::new();
     let mut offset = GeneratedOffset::default();
     let mut saw_mapping = false;
 
@@ -262,7 +266,7 @@ fn slice_segment(
             let sliced = text
                 .get(start..end)
                 .ok_or(MappedTextError::InvalidSegmentSlice)?;
-            Ok(Some(MappedSegment::Unmapped(sliced.to_string())))
+            Ok(Some(MappedSegment::Unmapped(LeanString::from(sliced))))
         }
         MappedSegment::PreMapped {
             code,
@@ -276,7 +280,7 @@ fn slice_segment(
                 extract_generated_submap(indexed_source_map, &indexed_code, start, end)
                     .ok_or(MappedTextError::InvalidSegmentSlice)?;
             Ok(Some(MappedSegment::PreMapped {
-                code: sliced_code.to_string(),
+                code: LeanString::from(sliced_code),
                 indexed_source_map: Box::new(sliced_map),
             }))
         }
@@ -284,19 +288,19 @@ fn slice_segment(
 }
 
 fn append_rendered_segments(
-    mapped: &mut MappedText<'_>,
-    code: &str,
+    mapped: &mut MappedText,
+    code: &LeanString,
     indexed_map: &IndexedSourceMap,
 ) {
     let generated = IndexedText::new(code);
     if indexed_map.tokens().is_empty() {
-        mapped.push_unmapped(code);
+        mapped.push_unmapped_dynamic(code);
         return;
     }
 
     let tokens = indexed_map.tokens();
     let Some(first) = tokens.first() else {
-        mapped.push_unmapped(code);
+        mapped.push_unmapped_dynamic(code);
         return;
     };
     let (first_line, first_col) = first.generated_position();
@@ -304,12 +308,12 @@ fn append_rendered_segments(
         .line_utf16_col_to_byte(first_line as usize, first_col as usize)
         .ok_or(MappedTextError::InvalidSegmentSlice)
     else {
-        mapped.push_unmapped(code);
+        mapped.push_unmapped_dynamic(code);
         return;
     };
 
     if segment_start > 0 {
-        mapped.push_unmapped(&code[..segment_start]);
+        mapped.push_unmapped_dynamic(&code[..segment_start]);
     }
 
     let mut start_index = 0usize;
@@ -328,7 +332,7 @@ fn append_rendered_segments(
                 .line_utf16_col_to_byte(next_line as usize, next_col as usize)
                 .ok_or(MappedTextError::InvalidSegmentSlice)
             else {
-                mapped.push_unmapped(&code[segment_start..]);
+                mapped.push_unmapped_dynamic(&code[segment_start..]);
                 return;
             };
             boundary
@@ -346,11 +350,11 @@ fn append_rendered_segments(
                 segment_end,
             ) {
                 mapped.segments.push(MappedSegment::PreMapped {
-                    code: code[segment_start..segment_end].to_string(),
+                    code: LeanString::from(&code[segment_start..segment_end]),
                     indexed_source_map: Box::new(submap),
                 });
             } else {
-                mapped.push_unmapped(&code[segment_start..segment_end]);
+                mapped.push_unmapped_dynamic(&code[segment_start..segment_end]);
             }
         }
 
@@ -436,6 +440,7 @@ fn advance_generated_offset(mut offset: GeneratedOffset, text: &str) -> Generate
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
     use sourcemap::SourceMapBuilder;
 
     use crate::common::{IndexedSourceMap, Span};
@@ -477,7 +482,9 @@ mod tests {
     #[test]
     fn slices_pre_mapped_segments() {
         let source = "abcdef";
-        let mut mapped = MappedText::new("test.ts", source);
+        let source_name = LeanString::from("test.ts");
+        let source_text = LeanString::from(source);
+        let mut mapped = MappedText::new(&source_name, &source_text);
         mapped.push("cde", Some(identity_submap("test.ts", source, 2, 5)));
 
         let sliced = mapped.slice(Span::new(1, 3)).expect("slice succeeds");
@@ -495,19 +502,29 @@ mod tests {
     #[test]
     fn replaces_segments() {
         let source = "abcdef";
-        let mut mapped = MappedText::new("test.ts", source);
-        mapped.push_unmapped("ab");
-        mapped.push("cd", Some(identity_submap("test.ts", source, 2, 4)));
-        mapped.push_unmapped("ef");
+        let source_name = LeanString::from_static_str("test.ts");
+        let source_text = LeanString::from_static_str(source);
+        let mut mapped = MappedText::new(&source_name, &source_text);
+        mapped.push_unmapped_dynamic(LeanString::from_static_str("ab"));
+        mapped.push(
+            LeanString::from_static_str("cd"),
+            Some(identity_submap("test.ts", source, 2, 4)),
+        );
+        mapped.push_unmapped_dynamic(LeanString::from_static_str("ef"));
 
-        let replacement = MappedText::from_rendered("test.ts", source, "YZ", None);
+        let replacement = MappedText::from_rendered(
+            &source_name,
+            &source_text,
+            &LeanString::from_static_str("YZ"),
+            None,
+        );
         let prefix = mapped
             .slice(Span::new(0, 2))
             .expect("prefix slice succeeds");
         let suffix = mapped
             .slice(Span::new(4, mapped.len()))
             .expect("suffix slice succeeds");
-        let mut combined = MappedText::new("test.ts", source);
+        let mut combined = MappedText::new(&source_name, &source_text);
         combined.append(prefix).expect("append prefix succeeds");
         combined
             .append(replacement)

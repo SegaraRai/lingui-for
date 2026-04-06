@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
@@ -56,7 +57,7 @@ pub(super) fn component_candidate_from_element(
 
     Ok(Some(AstroTemplateComponent {
         candidate: MacroCandidate {
-            id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
+            id: LeanString::from(format!("__mc_{}_{}", node.start_byte(), node.end_byte())),
             kind: MacroCandidateKind::Component,
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),

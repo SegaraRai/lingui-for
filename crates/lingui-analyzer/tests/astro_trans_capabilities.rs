@@ -2,16 +2,24 @@
 mod astro_conventions;
 
 use indoc::indoc;
+use lean_string::LeanString;
 
 use lingui_analyzer::{AstroCompilePlan, RuntimeWarningOptions, WhitespaceMode};
 
 use astro_conventions::astro_default_conventions;
 
+fn ls(text: &str) -> LeanString {
+    LeanString::from(text)
+}
+
 fn assert_astro_trans_allowed(source: &str) {
+    let source = ls(source);
+    let source_name = ls("Page.astro");
+    let synthetic_name = ls("Page.astro?compile");
     AstroCompilePlan::build(
-        source,
-        "Page.astro",
-        "Page.astro?compile",
+        &source,
+        &source_name,
+        &synthetic_name,
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
@@ -20,10 +28,13 @@ fn assert_astro_trans_allowed(source: &str) {
 }
 
 fn assert_astro_trans_rejected(source: &str, needle: &str) {
+    let source = ls(source);
+    let source_name = ls("Page.astro");
+    let synthetic_name = ls("Page.astro?compile");
     let error = AstroCompilePlan::build(
-        source,
-        "Page.astro",
-        "Page.astro?compile",
+        &source,
+        &source_name,
+        &synthetic_name,
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),

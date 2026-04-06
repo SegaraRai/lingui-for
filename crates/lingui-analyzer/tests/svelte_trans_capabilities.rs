@@ -2,16 +2,24 @@
 mod svelte_conventions;
 
 use indoc::indoc;
+use lean_string::LeanString;
 
 use lingui_analyzer::{RuntimeWarningOptions, SvelteCompilePlan, WhitespaceMode};
 
 use svelte_conventions::svelte_default_conventions;
 
+fn ls(text: &str) -> LeanString {
+    LeanString::from(text)
+}
+
 fn assert_svelte_trans_allowed(source: &str) {
+    let source = ls(source);
+    let source_name = ls("Component.svelte");
+    let synthetic_name = ls("Component.svelte?compile");
     SvelteCompilePlan::build(
-        source,
-        "Component.svelte",
-        "Component.svelte?compile",
+        &source,
+        &source_name,
+        &synthetic_name,
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
         RuntimeWarningOptions::default(),
@@ -20,10 +28,13 @@ fn assert_svelte_trans_allowed(source: &str) {
 }
 
 fn assert_svelte_trans_rejected(source: &str, needle: &str) {
+    let source = ls(source);
+    let source_name = ls("Component.svelte");
+    let synthetic_name = ls("Component.svelte?compile");
     let error = SvelteCompilePlan::build(
-        source,
-        "Component.svelte",
-        "Component.svelte?compile",
+        &source,
+        &source_name,
+        &synthetic_name,
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
         RuntimeWarningOptions::default(),

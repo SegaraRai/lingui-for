@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
@@ -31,8 +32,8 @@ struct SvelteRuntimeLoweringContext<'a> {
 }
 
 pub(crate) fn lower_runtime_component_markup(
-    source_name: &str,
-    original_source: &str,
+    source_name: &LeanString,
+    original_source: &LeanString,
     target: &CompileTarget,
     declaration: &RenderedMappedText,
     runtime_component_name: &str,
@@ -42,7 +43,7 @@ pub(crate) fn lower_runtime_component_markup(
     let original_source = IndexedText::new(original_source);
     let mapped_input = MappedText::from_rendered(
         source_name,
-        original_source.as_str(),
+        original_source.text(),
         &declaration.code,
         declaration.indexed_source_map.as_ref(),
     );
@@ -57,8 +58,8 @@ pub(crate) fn lower_runtime_component_markup(
         .ok_or(RuntimeComponentError::MissingInitializerForTransformedComponent)?;
     let original_input = MappedText::from_rendered(
         source_name,
-        original_source.as_str(),
-        original_source.as_str(),
+        original_source.text(),
+        original_source.text(),
         None,
     );
     let context = SvelteRuntimeLoweringContext {
@@ -134,7 +135,7 @@ fn convert_runtime_trans_root(
                     )?;
                     mapped.push_unmapped(" {...");
                     let prefix_start = (spread_span.start + 3).min(object_span.start);
-                    let prefix_trimmed_start = context.source.as_str()
+                    let prefix_trimmed_start = context.source.text()
                         [prefix_start..object_span.start]
                         .find(|char: char| !char.is_ascii_whitespace())
                         .map(|offset| prefix_start + offset);
@@ -146,7 +147,7 @@ fn convert_runtime_trans_root(
                         )?;
                     }
                     append_rendered(&mut mapped, lowered.props);
-                    let suffix_trimmed_end = context.source.as_str()
+                    let suffix_trimmed_end = context.source.text()
                         [object_span.end..spread_span.end]
                         .rfind(|char: char| !char.is_ascii_whitespace())
                         .map(|offset| object_span.end + offset + 1);
@@ -172,7 +173,7 @@ fn convert_runtime_trans_root(
             "jsx_attribute" => {
                 let name_node = jsx_attribute_name_node(child)
                     .ok_or(RuntimeComponentError::MissingJsxAttributeName)?;
-                let name = source_slice(context.source.as_str(), name_node, base_offset)?;
+                let name = source_slice(context.source.text(), name_node, base_offset)?;
                 let value_node = jsx_attribute_value_node(child);
 
                 if name == "components"
@@ -180,9 +181,9 @@ fn convert_runtime_trans_root(
                     && let Some(expression) = first_named_child(value)
                     && let Some(component_snippets) = collect_component_snippets(
                         &context.original_input,
-                        context.original_source.as_str(),
+                        context.original_source.text(),
                         context.target,
-                        context.source.as_str(),
+                        context.source.text(),
                         expression,
                         base_offset,
                         runtime_warning_mode,
@@ -195,7 +196,7 @@ fn convert_runtime_trans_root(
                 append_rendered(
                     &mut mapped,
                     convert_jsx_named_attribute(
-                        context.source.as_str(),
+                        context.source.text(),
                         context.input,
                         child,
                         base_offset,
@@ -312,13 +313,13 @@ fn convert_object_expression(
                 let value = child
                     .child_by_field_name("value")
                     .ok_or(RuntimeComponentError::MissingObjectPairValue)?;
-                let key_name = key_name(context.source.as_str(), key, base_offset);
-                if key_name.as_deref() == Some("components")
+                let key_name = key_name(context.source.text(), key, base_offset);
+                if key_name == Some("components")
                     && let Some(component_snippets) = collect_component_snippets(
                         &context.original_input,
-                        context.original_source.as_str(),
+                        context.original_source.text(),
                         context.target,
-                        context.source.as_str(),
+                        context.source.text(),
                         value,
                         base_offset,
                         runtime_warning_mode,
@@ -334,7 +335,7 @@ fn convert_object_expression(
                     rendered.push_unmapped("\n");
                     wrote_entry = true;
                 }
-                rendered.push_unmapped(&child_indent);
+                rendered.push_unmapped_dynamic(&child_indent);
                 push_copied_span(
                     &mut rendered,
                     context.input,
@@ -361,7 +362,7 @@ fn convert_object_expression(
                     rendered.push_unmapped("\n");
                     wrote_entry = true;
                 }
-                rendered.push_unmapped(&child_indent);
+                rendered.push_unmapped_dynamic(&child_indent);
                 rendered.push_unmapped("...");
                 append_rendered(
                     &mut rendered,
@@ -381,7 +382,7 @@ fn convert_object_expression(
                     rendered.push_unmapped("\n");
                     wrote_entry = true;
                 }
-                rendered.push_unmapped(&child_indent);
+                rendered.push_unmapped_dynamic(&child_indent);
                 push_copied_span(
                     &mut rendered,
                     context.input,
@@ -400,7 +401,7 @@ fn convert_object_expression(
         rendered.push_unmapped("}");
     } else {
         rendered.push_unmapped("\n");
-        rendered.push_unmapped(&indent);
+        rendered.push_unmapped_dynamic(&indent);
         rendered.push_unmapped("}");
     }
 
@@ -427,7 +428,7 @@ fn convert_expression_for_runtime_trans(
         )
         .map(|lowered| lowered.props),
         _ => Ok(copy_node(
-            context.source.as_str(),
+            context.source.text(),
             context.input,
             node,
             base_offset,
@@ -437,9 +438,9 @@ fn convert_expression_for_runtime_trans(
 
 fn collect_component_snippets(
     original_input: &MappedText<'_>,
-    original_source: &str,
+    original_source: &LeanString,
     target: &CompileTarget,
-    transformed_source: &str,
+    transformed_source: &LeanString,
     node: Node<'_>,
     base_offset: isize,
     runtime_warning_mode: RuntimeWarningMode,
@@ -463,7 +464,9 @@ fn collect_component_snippets(
             .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
         let key_name = key_name(transformed_source, key, base_offset)
             .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
-        keys.push(validate_runtime_placeholder_key(key_name)?);
+        keys.push(LeanString::from(validate_runtime_placeholder_key(
+            key_name,
+        )?));
     }
 
     Ok(Some(collect_component_snippets_from_source(
@@ -477,9 +480,9 @@ fn collect_component_snippets(
 
 fn collect_component_snippets_from_source(
     original_input: &MappedText<'_>,
-    original_source: &str,
+    original_source: &LeanString,
     target: &CompileTarget,
-    keys: &[String],
+    keys: &[LeanString],
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<Vec<RenderedMappedText>, SvelteAdapterError> {
     let tree = parse_svelte(original_source)?;
@@ -577,7 +580,7 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
 
 fn lower_original_wrapper_to_snippet(
     input: &MappedText<'_>,
-    source: &str,
+    source: &LeanString,
     node: Node<'_>,
     snippet_name: &str,
     runtime_warning_mode: RuntimeWarningMode,
@@ -683,6 +686,8 @@ fn push_original_anchor(
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
+
     use super::lower_runtime_component_markup;
     use crate::common::{RenderedMappedText, Span};
     use crate::compile::{
@@ -693,14 +698,18 @@ mod tests {
     use crate::synthesis::NormalizedSegment;
     use indoc::indoc;
 
-    fn component_target(source: &str) -> CompileTarget {
+    fn ls(text: &str) -> LeanString {
+        LeanString::from(text)
+    }
+
+    fn component_target(source: &LeanString) -> CompileTarget {
         CompileTarget {
-            declaration_id: "__trans".to_string(),
+            declaration_id: ls("__trans"),
             original_span: Span::new(0, source.len()),
             normalized_span: Span::new(0, source.len()),
             source_map_anchor: None,
-            local_name: "Trans".to_string(),
-            imported_name: "Trans".to_string(),
+            local_name: ls("Trans"),
+            imported_name: ls("Trans"),
             flavor: MacroFlavor::Direct,
             context: CompileTargetContext::Template,
             output_kind: CompileTargetOutputKind::Component,
@@ -711,15 +720,17 @@ mod tests {
 
     #[test]
     fn lowers_components_to_implicit_snippets() {
-        let source = "<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>".to_string();
+        let source = ls("<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { 0: <a href=\"/docs\" /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { 0: <a href=\"/docs\" /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.svelte",
+            &ls("Component.svelte"),
             &source,
             &target,
             &declaration,
@@ -746,15 +757,17 @@ mod tests {
     fn lowers_components_from_original_source_wrappers() {
         let source =
             "<Trans>Read <strong><DocLink href=\"/docs\">carefully</DocLink></strong>.</Trans>"
-                .to_string();
+                .into();
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read <0><1>carefully</1></0>.\", components: { 0: <strong />, 1: <DocLink href=\"/docs\" /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read <0><1>carefully</1></0>.\", components: { 0: <strong />, 1: <DocLink href=\"/docs\" /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.svelte",
+            &ls("Component.svelte"),
             &source,
             &target,
             &declaration,
@@ -779,8 +792,43 @@ mod tests {
     }
 
     #[test]
+    fn lowers_self_closing_source_wrappers_to_open_and_close_tags() {
+        let source = ls("<Trans><DocLink href=\"/docs\" /></Trans>");
+        let declaration = RenderedMappedText {
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"<0>docs</0>\", components: { 0: <DocLink href=\"/docs\" /> } }} />",
+            ),
+            indexed_source_map: None,
+        };
+        let target = component_target(&source);
+
+        let lowered = lower_runtime_component_markup(
+            &ls("Component.svelte"),
+            &source,
+            &target,
+            &declaration,
+            "L4sRuntimeTrans",
+            RuntimeWarningMode::On,
+        )
+        .expect("svelte runtime component lowering succeeds");
+
+        assert_eq!(
+            lowered.code,
+            indoc! {r#"
+                <L4sRuntimeTrans {.../*i18n*/ {
+                  id: "demo.docs",
+                  message: "<0>docs</0>"
+                }}>
+                {#snippet component_0(children)}<DocLink href="/docs" >{@render children?.()}</DocLink>{/snippet}
+                </L4sRuntimeTrans>
+            "#}
+            .trim_end()
+        );
+    }
+
+    #[test]
     fn skips_component_macros_inside_runtime_trans_wrappers() {
-        let source = indoc! {r##"
+        let source = ls(indoc! {r##"
             <Trans>
               You have{" "}
               <strong>
@@ -793,16 +841,17 @@ mod tests {
               </strong>.
             </Trans>
         "##}
-        .trim()
-        .to_string();
+        .trim());
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.plural\", message: \"You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.\", values: { count }, components: { 0: <strong /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.plural\", message: \"You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.\", values: { count }, components: { 0: <strong /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.svelte",
+            &ls("Component.svelte"),
             &source,
             &target,
             &declaration,
@@ -818,7 +867,7 @@ mod tests {
 
     #[test]
     fn skips_nested_component_macro_wrappers_inside_runtime_trans() {
-        let source = indoc! {r##"
+        let source = ls(indoc! {r##"
             <Trans>
               Before{" "}
               <strong>
@@ -840,16 +889,17 @@ mod tests {
               after.
             </Trans>
         "##}
-        .trim()
-        .to_string();
+        .trim());
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.deep\", message: \"Before <0>{count, plural, =0 {{rank, selectordinal, one {{role, select, admin {zero first admin} other {zero first other}}} other {{role, select, admin {zero later admin} other {zero later other}}}} other {fallback}}</0> after.\", values: { count, rank, role }, components: { 0: <strong /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.deep\", message: \"Before <0>{count, plural, =0 {{rank, selectordinal, one {{role, select, admin {zero first admin} other {zero first other}}} other {{role, select, admin {zero later admin} other {zero later other}}}} other {fallback}}</0> after.\", values: { count, rank, role }, components: { 0: <strong /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.svelte",
+            &ls("Component.svelte"),
             &source,
             &target,
             &declaration,
@@ -865,15 +915,17 @@ mod tests {
 
     #[test]
     fn rejects_unsafe_placeholder_keys() {
-        let source = "<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>".to_string();
+        let source = ls("<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { \"bad-key\": <a href=\"/docs\" /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { \"bad-key\": <a href=\"/docs\" /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let error = lower_runtime_component_markup(
-            "Component.svelte",
+            &ls("Component.svelte"),
             &source,
             &target,
             &declaration,
@@ -889,15 +941,17 @@ mod tests {
 
     #[test]
     fn lowers_html_tags_to_source_based_snippets_with_dev_warning() {
-        let source = "<Trans>{@html content}</Trans>".to_string();
+        let source = ls("<Trans>{@html content}</Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <LinguiForSvelteHtml value={content} /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <LinguiForSvelteHtml value={content} /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.svelte",
+            &ls("Component.svelte"),
             &source,
             &target,
             &declaration,
@@ -922,15 +976,17 @@ mod tests {
 
     #[test]
     fn lowers_render_tags_to_source_based_snippets_with_dev_warning() {
-        let source = "<Trans>{@render row(item)}</Trans>".to_string();
+        let source = ls("<Trans>{@render row(item)}</Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.render\", message: \"<0/>\", components: { 0: <LinguiForSvelteRender value={row(item)} /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.render\", message: \"<0/>\", components: { 0: <LinguiForSvelteRender value={row(item)} /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.svelte",
+            &ls("Component.svelte"),
             &source,
             &target,
             &declaration,
@@ -955,15 +1011,17 @@ mod tests {
 
     #[test]
     fn omits_content_override_warning_when_runtime_warning_mode_is_off() {
-        let source = "<Trans>{@html content}</Trans>".to_string();
+        let source = ls("<Trans>{@html content}</Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <LinguiForSvelteHtml value={content} /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <LinguiForSvelteHtml value={content} /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.svelte",
+            &ls("Component.svelte"),
             &source,
             &target,
             &declaration,

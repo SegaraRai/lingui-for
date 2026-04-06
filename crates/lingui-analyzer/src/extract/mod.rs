@@ -3,6 +3,7 @@ mod reinsert;
 
 use std::collections::BTreeMap;
 
+use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
@@ -26,14 +27,14 @@ pub enum ExtractError {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct SyntheticModule {
-    pub source: String,
-    pub source_name: String,
-    pub synthetic_name: String,
-    pub source_map_json: Option<String>,
+    pub source: LeanString,
+    pub source_name: LeanString,
+    pub synthetic_name: LeanString,
+    pub source_map_json: Option<LeanString>,
     pub source_anchors: Vec<usize>,
-    pub declaration_ids: Vec<String>,
-    pub original_spans: BTreeMap<String, Span>,
-    pub generated_spans: BTreeMap<String, Span>,
+    pub declaration_ids: Vec<LeanString>,
+    pub original_spans: BTreeMap<LeanString, Span>,
+    pub generated_spans: BTreeMap<LeanString, Span>,
     pub mappings: Vec<SyntheticMapping>,
 }
 
@@ -41,11 +42,11 @@ pub struct SyntheticModule {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct SyntheticMapping {
-    pub declaration_id: String,
+    pub declaration_id: LeanString,
     pub original_span: Span,
     pub generated_span: Span,
-    pub local_name: String,
-    pub imported_name: String,
+    pub local_name: LeanString,
+    pub imported_name: LeanString,
     pub flavor: MacroFlavor,
     pub source_map_anchor: Option<Span>,
     pub normalized_segments: Vec<NormalizedSegment>,
@@ -55,9 +56,9 @@ pub struct SyntheticMapping {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct SyntheticModuleOptions {
-    pub source: String,
-    pub source_name: Option<String>,
-    pub synthetic_name: Option<String>,
+    pub source: LeanString,
+    pub source_name: Option<LeanString>,
+    pub synthetic_name: Option<LeanString>,
     pub whitespace: Option<WhitespaceMode>,
     pub conventions: FrameworkConventions,
 }
@@ -66,16 +67,16 @@ pub struct SyntheticModuleOptions {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct ExtractTransformedProgram {
-    pub code: String,
-    pub source_map_json: Option<String>,
+    pub code: LeanString,
+    pub source_map_json: Option<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct ReinsertOptions {
-    pub original_source: String,
-    pub source_name: Option<String>,
+    pub original_source: LeanString,
+    pub source_name: Option<LeanString>,
     pub synthetic_module: SyntheticModule,
     pub transformed_program: ExtractTransformedProgram,
 }
@@ -84,7 +85,7 @@ pub struct ReinsertOptions {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct ReinsertedModule {
-    pub code: String,
-    pub source_name: String,
-    pub source_map_json: Option<String>,
+    pub code: LeanString,
+    pub source_name: LeanString,
+    pub source_map_json: Option<LeanString>,
 }

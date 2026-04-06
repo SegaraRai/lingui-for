@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
 
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{IndexedSourceMap, RenderedMappedText};
@@ -18,9 +19,9 @@ pub enum CollectDeclarationsError {
 }
 
 pub(crate) fn collect_variable_initializer_declarations(
-    source: &str,
+    source: &LeanString,
     indexed_source_map: Option<&IndexedSourceMap>,
-) -> Result<BTreeMap<String, RenderedMappedText>, CollectDeclarationsError> {
+) -> Result<BTreeMap<LeanString, RenderedMappedText>, CollectDeclarationsError> {
     let tree = parse_tsx(source)?;
     let root = tree.root_node();
     let mut declarations = BTreeMap::new();
@@ -47,7 +48,7 @@ pub(crate) fn collect_variable_initializer_declarations(
                 continue;
             };
             let value_start = initializer_start_for_declarator(declarator, name, value);
-            let raw_code = &source[value_start..value.end_byte()];
+            let raw_code = LeanString::from(&source[value_start..value.end_byte()]);
             let raw_indexed_submap = indexed_source_map.as_ref().and_then(|map| {
                 extract_local_submap(map, &indexed_source, value_start, value.end_byte())
             });
@@ -58,12 +59,12 @@ pub(crate) fn collect_variable_initializer_declarations(
                 value.end_byte(),
             );
             let rendered = normalize_i18n_comment_layout_rendered(
-                raw_code,
+                &raw_code,
                 raw_indexed_submap.as_ref(),
                 &collapse_spans,
             )?;
             declarations.insert(
-                source[name.start_byte()..name.end_byte()].to_string(),
+                LeanString::from(&source[name.start_byte()..name.end_byte()]),
                 rendered,
             );
         }
@@ -108,13 +109,13 @@ pub(crate) fn initializer_start_for_declarator(
 }
 
 fn normalize_i18n_comment_layout_rendered(
-    input: &str,
+    input: &LeanString,
     source_map: Option<&IndexedSourceMap>,
     collapse_spans: &[Span],
 ) -> Result<RenderedMappedText, CollectDeclarationsError> {
     if collapse_spans.is_empty() {
         return Ok(RenderedMappedText {
-            code: input.to_string(),
+            code: input.clone(),
             indexed_source_map: source_map.cloned(),
         });
     }
@@ -122,12 +123,11 @@ fn normalize_i18n_comment_layout_rendered(
     let source_name = source_map
         .as_ref()
         .and_then(|map| map.source_map().get_source(0))
-        .unwrap_or("__declaration")
-        .to_string();
+        .map(LeanString::from)
+        .unwrap_or(LeanString::from_static_str("__declaration"));
     let indexed_input = IndexedText::new(input);
-    let original =
-        MappedText::from_rendered(source_name.as_str(), input, input.to_string(), source_map);
-    let mut mapped = MappedText::new(source_name.as_str(), input);
+    let original = MappedText::from_rendered(&source_name, input, input, source_map);
+    let mut mapped = MappedText::new(&source_name, input);
     let mut cursor = 0usize;
 
     for span in collapse_spans {
@@ -221,11 +221,17 @@ fn whitespace_span_before_object(source: &str, start: usize, limit: usize) -> Op
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
+
     use super::{
         collect_i18n_comment_whitespace_spans, collect_variable_initializer_declarations,
         initializer_start_for_declarator, normalize_i18n_comment_layout_rendered,
     };
     use crate::syntax::parse::parse_tsx;
+
+    fn ls(text: &str) -> LeanString {
+        LeanString::from(text)
+    }
 
     #[test]
     fn normalize_i18n_comment_layout_collapses_comment_to_object_spacing() {
@@ -234,7 +240,7 @@ mod tests {
         let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
 
         assert_eq!(
-            normalize_i18n_comment_layout_rendered(input, None, &spans)
+            normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
                 .expect("rendered normalization succeeds")
                 .code,
             "/*i18n*/ { id: \"x\" }",
@@ -248,7 +254,7 @@ mod tests {
         let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
 
         assert_eq!(
-            normalize_i18n_comment_layout_rendered(input, None, &spans)
+            normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
                 .expect("rendered normalization succeeds")
                 .code,
             input,
@@ -263,7 +269,7 @@ mod tests {
         let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
 
         assert_eq!(
-            normalize_i18n_comment_layout_rendered(input, None, &spans)
+            normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
                 .expect("rendered normalization succeeds")
                 .code,
             input,
@@ -277,7 +283,7 @@ mod tests {
         let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
 
         assert_eq!(
-            normalize_i18n_comment_layout_rendered(input, None, &spans)
+            normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
                 .expect("rendered normalization succeeds")
                 .code,
             input,
@@ -291,7 +297,7 @@ mod tests {
         let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
 
         assert_eq!(
-            normalize_i18n_comment_layout_rendered(input, None, &spans)
+            normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
                 .expect("rendered normalization succeeds")
                 .code,
             "render(/*i18n*/ { id: \"x\" })",
@@ -302,8 +308,8 @@ mod tests {
     fn collect_variable_initializer_declarations_normalizes_leading_i18n_comment_object_literals() {
         let input = "const message = /*i18n*/\n  { id: \"x\" };";
 
-        let declarations =
-            collect_variable_initializer_declarations(input, None).expect("collection succeeds");
+        let declarations = collect_variable_initializer_declarations(&ls(input), None)
+            .expect("collection succeeds");
 
         assert_eq!(
             declarations

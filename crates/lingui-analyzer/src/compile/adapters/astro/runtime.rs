@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
@@ -19,7 +20,7 @@ use super::AstroAdapterError;
 struct AstroLoweredObjectExpression {
     props: RenderedMappedText,
     slot_callbacks: Vec<RenderedMappedText>,
-    placeholder_keys: Vec<String>,
+    placeholder_keys: Vec<LeanString>,
 }
 
 struct AstroRuntimeLoweringContext<'a> {
@@ -29,22 +30,22 @@ struct AstroRuntimeLoweringContext<'a> {
     input: &'a MappedText<'a>,
     original_input: MappedText<'a>,
     target: &'a CompileTarget,
-    runtime_component_name: &'a str,
+    runtime_component_name: &'a LeanString,
 }
 
 pub(crate) fn lower_runtime_component_markup(
-    source_name: &str,
-    original_source: &str,
+    source_name: &LeanString,
+    original_source: &LeanString,
     target: &CompileTarget,
     declaration: &RenderedMappedText,
-    runtime_component_name: &str,
+    runtime_component_name: LeanString,
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<RenderedMappedText, AstroAdapterError> {
     let declaration_source = IndexedText::new(&declaration.code);
-    let original_source = IndexedText::new(original_source);
+    let original_source_indexed = IndexedText::new(original_source);
     let mapped_input = MappedText::from_rendered(
         source_name,
-        original_source.as_str(),
+        original_source,
         &declaration.code,
         declaration.indexed_source_map.as_ref(),
     );
@@ -57,20 +58,16 @@ pub(crate) fn lower_runtime_component_markup(
     let value = declarator
         .child_by_field_name("value")
         .ok_or(RuntimeComponentError::MissingInitializerForTransformedComponent)?;
-    let original_input = MappedText::from_rendered(
-        source_name,
-        original_source.as_str(),
-        original_source.as_str(),
-        None,
-    );
+    let original_input =
+        MappedText::from_rendered(source_name, original_source, original_source, None);
     let context = AstroRuntimeLoweringContext {
-        original_source: &original_source,
+        original_source: &original_source_indexed,
         declaration_source_map: declaration.indexed_source_map.as_ref(),
         source: &declaration_source,
         input: &mapped_input,
         original_input,
         target,
-        runtime_component_name,
+        runtime_component_name: &runtime_component_name,
     };
 
     convert_runtime_trans_root(
@@ -140,7 +137,7 @@ fn convert_runtime_trans_root(
                     // Skip the opening `{..` of the spread attribute before trimming and
                     // copying any preserved prefix between `spread_span` and `object_span`.
                     let prefix_start = (spread_span.start + 3).min(object_span.start);
-                    let prefix_trimmed_start = context.source.as_str()
+                    let prefix_trimmed_start = context.source.text()
                         [prefix_start..object_span.start]
                         .find(|char: char| !char.is_ascii_whitespace())
                         .map(|offset| prefix_start + offset);
@@ -152,7 +149,7 @@ fn convert_runtime_trans_root(
                         )?;
                     }
                     append_rendered(&mut attributes, lowered.props);
-                    let suffix_trimmed_end = context.source.as_str()
+                    let suffix_trimmed_end = context.source.text()
                         [object_span.end..spread_span.end]
                         .rfind(|char: char| !char.is_ascii_whitespace())
                         .map(|offset| object_span.end + offset + 1);
@@ -179,7 +176,7 @@ fn convert_runtime_trans_root(
             "jsx_attribute" => {
                 let name_node = jsx_attribute_name_node(child)
                     .ok_or(RuntimeComponentError::MissingJsxAttributeName)?;
-                let name = source_slice(context.source.as_str(), name_node, base_offset)?;
+                let name = source_slice(context.source.text(), name_node, base_offset)?;
                 let value_node = jsx_attribute_value_node(child);
 
                 if name == "components"
@@ -187,9 +184,9 @@ fn convert_runtime_trans_root(
                     && let Some(expression) = first_named_child(value)
                     && let Some(component_slots) = collect_component_slot_callbacks(
                         &context.original_input,
-                        context.original_source.as_str(),
+                        context.original_source.text(),
                         context.target,
-                        context.source.as_str(),
+                        context.source.text(),
                         expression,
                         base_offset,
                         runtime_warning_mode,
@@ -203,7 +200,7 @@ fn convert_runtime_trans_root(
                 append_rendered(
                     &mut attributes,
                     convert_jsx_named_attribute(
-                        context.source.as_str(),
+                        context.source.text(),
                         context.input,
                         child,
                         base_offset,
@@ -220,7 +217,7 @@ fn convert_runtime_trans_root(
 
     if !placeholder_keys.is_empty() {
         mapped.push_unmapped(" placeholders={");
-        mapped.push_unmapped(render_placeholder_keys_inline(&placeholder_keys));
+        mapped.push_unmapped_dynamic(render_placeholder_keys_inline(&placeholder_keys));
         mapped.push_unmapped("}");
     }
     append_rendered(
@@ -334,13 +331,13 @@ fn convert_object_expression(
                 let value = child
                     .child_by_field_name("value")
                     .ok_or(RuntimeComponentError::MissingObjectPairValue)?;
-                let key_name = key_name(context.source.as_str(), key, base_offset);
-                if key_name.as_deref() == Some("components")
+                let key_name = key_name(context.source.text(), key, base_offset);
+                if key_name == Some("components")
                     && let Some(component_slots) = collect_component_slot_callbacks(
                         &context.original_input,
-                        context.original_source.as_str(),
+                        context.original_source.text(),
                         context.target,
-                        context.source.as_str(),
+                        context.source.text(),
                         value,
                         base_offset,
                         runtime_warning_mode,
@@ -357,7 +354,7 @@ fn convert_object_expression(
                     rendered.push_unmapped("\n");
                     wrote_entry = true;
                 }
-                rendered.push_unmapped(&child_indent);
+                rendered.push_unmapped_dynamic(&child_indent);
                 push_copied_span(
                     &mut rendered,
                     context.input,
@@ -384,7 +381,7 @@ fn convert_object_expression(
                     rendered.push_unmapped("\n");
                     wrote_entry = true;
                 }
-                rendered.push_unmapped(&child_indent);
+                rendered.push_unmapped_dynamic(&child_indent);
                 rendered.push_unmapped("...");
                 append_rendered(
                     &mut rendered,
@@ -404,7 +401,7 @@ fn convert_object_expression(
                     rendered.push_unmapped("\n");
                     wrote_entry = true;
                 }
-                rendered.push_unmapped(&child_indent);
+                rendered.push_unmapped_dynamic(&child_indent);
                 push_copied_span(
                     &mut rendered,
                     context.input,
@@ -423,7 +420,7 @@ fn convert_object_expression(
         rendered.push_unmapped("}");
     } else {
         rendered.push_unmapped("\n");
-        rendered.push_unmapped(&indent);
+        rendered.push_unmapped_dynamic(&indent);
         rendered.push_unmapped("}");
     }
 
@@ -451,7 +448,7 @@ fn convert_expression_for_runtime_trans(
         )
         .map(|lowered| lowered.props),
         _ => Ok(convert_expression_for_runtime_trans_shared(
-            context.source.as_str(),
+            context.source.text(),
             context.input,
             node,
             base_offset,
@@ -462,7 +459,7 @@ fn convert_expression_for_runtime_trans(
 
 fn collect_component_slot_callbacks(
     original_input: &MappedText<'_>,
-    original_source: &str,
+    original_source: &LeanString,
     target: &CompileTarget,
     transformed_source: &str,
     node: Node<'_>,
@@ -491,7 +488,9 @@ fn collect_component_slot_callbacks(
             .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
         let key_name = key_name(transformed_source, key, base_offset)
             .ok_or(RuntimeComponentError::MissingObjectPairKey)?;
-        keys.push(validate_runtime_placeholder_key(key_name)?);
+        keys.push(LeanString::from(validate_runtime_placeholder_key(
+            key_name,
+        )?));
     }
 
     Ok(Some(collect_component_slot_callbacks_from_source(
@@ -505,9 +504,9 @@ fn collect_component_slot_callbacks(
 
 fn collect_component_slot_callbacks_from_source(
     original_input: &MappedText<'_>,
-    original_source: &str,
+    original_source: &LeanString,
     target: &CompileTarget,
-    keys: &[String],
+    keys: &[LeanString],
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<AstroLoweredComponentSlots, AstroAdapterError> {
     let tree = parse_astro(original_source)?;
@@ -548,10 +547,10 @@ fn collect_component_slot_callbacks_from_source(
 
 struct AstroLoweredComponentSlots {
     slot_callbacks: Vec<RenderedMappedText>,
-    placeholder_keys: Vec<String>,
+    placeholder_keys: Vec<LeanString>,
 }
 
-fn render_placeholder_keys_inline(keys: &[String]) -> String {
+fn render_placeholder_keys_inline(keys: &[LeanString]) -> String {
     let joined = keys
         .iter()
         .map(|key| format!("\"{key}\""))
@@ -631,7 +630,7 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
 
 fn lower_original_wrapper_to_slot_callback(
     input: &MappedText<'_>,
-    source: &str,
+    source: &LeanString,
     node: Node<'_>,
     slot_name: &str,
     runtime_warning_mode: RuntimeWarningMode,
@@ -647,7 +646,7 @@ fn lower_original_wrapper_to_slot_callback(
     );
 
     if has_content_hole && runtime_warning_mode == RuntimeWarningMode::On {
-        rendered.push_unmapped(
+        rendered.push_unmapped_dynamic(
             "(children !== \"\" && console.warn(\"[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead.\"), ",
         );
     }
@@ -736,7 +735,7 @@ fn append_copied_wrapper_with_content_hole_anchors<'a>(
     start_tag: Node<'_>,
     wrapper_node: Node<'_>,
 ) -> Result<(), AstroAdapterError> {
-    let attributes = find_content_hole_attributes(source.as_str(), start_tag);
+    let attributes = find_content_hole_attributes(source.text(), start_tag);
     if attributes.is_empty() {
         push_copied_span(rendered, input, Span::from_node(wrapper_node))?;
         return Ok(());
@@ -852,6 +851,8 @@ fn push_original_span(
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
+
     use super::lower_runtime_component_markup;
     use crate::common::{RenderedMappedText, Span};
     use crate::compile::{
@@ -862,14 +863,18 @@ mod tests {
     use crate::synthesis::NormalizedSegment;
     use indoc::indoc;
 
-    fn component_target(source: &str) -> CompileTarget {
+    fn ls(text: &str) -> LeanString {
+        LeanString::from(text)
+    }
+
+    fn component_target(source: &LeanString) -> CompileTarget {
         CompileTarget {
-            declaration_id: "__trans".to_string(),
+            declaration_id: ls("__trans"),
             original_span: Span::new(0, source.len()),
             normalized_span: Span::new(0, source.len()),
             source_map_anchor: None,
-            local_name: "Trans".to_string(),
-            imported_name: "Trans".to_string(),
+            local_name: ls("Trans"),
+            imported_name: ls("Trans"),
             flavor: MacroFlavor::Direct,
             context: CompileTargetContext::Template,
             output_kind: CompileTargetOutputKind::Component,
@@ -880,19 +885,21 @@ mod tests {
 
     #[test]
     fn lowers_components_to_named_slot_callbacks() {
-        let source = "<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>".to_string();
+        let source = ls("<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { 0: <a href=\"/docs\" /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { 0: <a href=\"/docs\" /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &source,
             &target,
             &declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect("astro runtime component lowering succeeds");
@@ -915,19 +922,21 @@ mod tests {
     fn lowers_components_from_original_source_wrappers() {
         let source =
             "<Trans>Read <strong><DocLink href=\"/docs\">carefully</DocLink></strong>.</Trans>"
-                .to_string();
+                .into();
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read <0><1>carefully</1></0>.\", components: { 0: <strong />, 1: <DocLink href=\"/docs\" /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read <0><1>carefully</1></0>.\", components: { 0: <strong />, 1: <DocLink href=\"/docs\" /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &source,
             &target,
             &declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect("astro runtime component lowering succeeds");
@@ -949,19 +958,21 @@ mod tests {
 
     #[test]
     fn rejects_unsafe_placeholder_keys() {
-        let source = "<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>".to_string();
+        let source = ls("<Trans>Read the <a href=\"/docs\">docs</a>.</Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { \"bad-key\": <a href=\"/docs\" /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"Read the <0>docs</0>.\", components: { \"bad-key\": <a href=\"/docs\" /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let error = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &source,
             &target,
             &declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect_err("unsafe placeholder key should be rejected");
@@ -973,19 +984,21 @@ mod tests {
 
     #[test]
     fn lowers_set_html_wrappers_to_children_html_holes() {
-        let source = "<Trans><article set:html={content} /></Trans>".to_string();
+        let source = ls("<Trans><article set:html={content} /></Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content} /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content} /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &source,
             &target,
             &declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect("astro html-hole lowering succeeds");
@@ -998,19 +1011,21 @@ mod tests {
 
     #[test]
     fn lowers_set_text_wrappers_to_children_text_holes() {
-        let source = "<Trans><article set:text={content} /></Trans>".to_string();
+        let source = ls("<Trans><article set:text={content} /></Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:text={content} /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:text={content} /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &source,
             &target,
             &declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect("astro text-hole lowering succeeds");
@@ -1023,18 +1038,20 @@ mod tests {
 
     #[test]
     fn rewrites_quoted_set_html_and_set_text_values_to_expressions() {
-        let html_source = "<Trans><article set:html=\"fallback\" /></Trans>".to_string();
+        let html_source = ls("<Trans><article set:html=\"fallback\" /></Trans>");
         let html_declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html=\"fallback\" /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html=\"fallback\" /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let html_target = component_target(&html_source);
         let html_lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &html_source,
             &html_target,
             &html_declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect("astro html-hole lowering succeeds");
@@ -1045,18 +1062,20 @@ mod tests {
                 .contains("<article set:html=\"fallback\" />")
         );
 
-        let text_source = "<Trans><article set:text=\"fallback\" /></Trans>".to_string();
+        let text_source = ls("<Trans><article set:text=\"fallback\" /></Trans>");
         let text_declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:text=\"fallback\" /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:text=\"fallback\" /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let text_target = component_target(&text_source);
         let text_lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &text_source,
             &text_target,
             &text_declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect("astro text-hole lowering succeeds");
@@ -1070,20 +1089,21 @@ mod tests {
 
     #[test]
     fn warns_in_dev_when_set_html_wrapper_also_has_explicit_children() {
-        let source =
-            "<Trans><article set:html={content}>Ignored child</article></Trans>".to_string();
+        let source = ls("<Trans><article set:html={content}>Ignored child</article></Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content}>Ignored child</article> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content}>Ignored child</article> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &source,
             &target,
             &declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect("astro html-hole lowering succeeds");
@@ -1098,19 +1118,21 @@ mod tests {
 
     #[test]
     fn prefers_set_html_over_set_text_when_both_are_present() {
-        let source = "<Trans><article set:html={html} set:text={text} /></Trans>".to_string();
+        let source = ls("<Trans><article set:html={html} set:text={text} /></Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:html={html} set:text={text} /> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.text\", message: \"<0/>\", components: { 0: <article set:html={html} set:text={text} /> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &source,
             &target,
             &declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::On,
         )
         .expect("astro html-hole lowering succeeds");
@@ -1125,20 +1147,21 @@ mod tests {
 
     #[test]
     fn omits_content_override_warning_when_runtime_warning_mode_is_off() {
-        let source =
-            "<Trans><article set:html={content}>Ignored child</article></Trans>".to_string();
+        let source = ls("<Trans><article set:html={content}>Ignored child</article></Trans>");
         let declaration = RenderedMappedText {
-            code: "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content}>Ignored child</article> } }} />".to_string(),
+            code: ls(
+                "<Trans {.../*i18n*/ { id: \"demo.html\", message: \"<0/>\", components: { 0: <article set:html={content}>Ignored child</article> } }} />",
+            ),
             indexed_source_map: None,
         };
         let target = component_target(&source);
 
         let lowered = lower_runtime_component_markup(
-            "Component.astro",
+            &ls("Component.astro"),
             &source,
             &target,
             &declaration,
-            "L4aRuntimeTrans",
+            ls("L4aRuntimeTrans"),
             RuntimeWarningMode::Off,
         )
         .expect("astro html-hole lowering succeeds");

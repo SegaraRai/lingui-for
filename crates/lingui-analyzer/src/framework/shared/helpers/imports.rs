@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::Span;
@@ -9,7 +10,7 @@ pub(crate) fn collect_import_specifiers_from_node(
     source: &str,
     node: Node<'_>,
     base_offset: usize,
-    module_specifier: &str,
+    module_specifier: &LeanString,
     imports: &mut Vec<MacroImport>,
 ) {
     if node.kind() == "import_specifier" {
@@ -20,9 +21,9 @@ pub(crate) fn collect_import_specifiers_from_node(
         };
 
         imports.push(MacroImport {
-            source: module_specifier.to_string(),
-            imported_name: text(source, imported).to_string(),
-            local_name: text(source, local).to_string(),
+            source: module_specifier.clone(),
+            imported_name: LeanString::from(text(source, imported)),
+            local_name: LeanString::from(text(source, local)),
             span: Span::from_node(node).shifted(base_offset),
         });
         return;

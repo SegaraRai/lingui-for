@@ -6,6 +6,7 @@ mod svelte_conventions;
 use std::hint::black_box;
 
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
+use lean_string::LeanString;
 
 use lingui_analyzer::conventions::{FrameworkConventions, FrameworkKind};
 use lingui_analyzer::extract::build_synthetic_module;
@@ -22,32 +23,30 @@ use lingui_analyzer::{
 use astro_conventions::astro_default_conventions;
 use svelte_conventions::svelte_default_conventions;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct FixtureCase {
     framework: FrameworkKind,
     name: &'static str,
-    source_name: &'static str,
-    source: &'static str,
+    source_name: LeanString,
+    source: LeanString,
     transformed_programs: StaticTransformedPrograms,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 struct StaticTransformedPrograms {
-    lowered_code: Option<&'static str>,
-    lowered_source_map_json: Option<&'static str>,
-    contextual_code: Option<&'static str>,
-    contextual_source_map_json: Option<&'static str>,
+    lowered_code: Option<LeanString>,
+    lowered_source_map_json: Option<LeanString>,
+    contextual_code: Option<LeanString>,
+    contextual_source_map_json: Option<LeanString>,
 }
 
 impl From<StaticTransformedPrograms> for TransformedPrograms {
     fn from(value: StaticTransformedPrograms) -> Self {
         TransformedPrograms {
-            contextual_code: value.contextual_code.map(|code| code.to_string()),
-            contextual_source_map_json: value
-                .contextual_source_map_json
-                .map(|json| json.to_string()),
-            lowered_code: value.lowered_code.map(|code| code.to_string()),
-            lowered_source_map_json: value.lowered_source_map_json.map(|json| json.to_string()),
+            contextual_code: value.contextual_code,
+            contextual_source_map_json: value.contextual_source_map_json,
+            lowered_code: value.lowered_code,
+            lowered_source_map_json: value.lowered_source_map_json,
         }
     }
 }
@@ -69,73 +68,73 @@ const FIXTURE_CASES: [FixtureCase; 4] = [
     FixtureCase {
         framework: FrameworkKind::Astro,
         name: "full",
-        source_name: "astro-full.astro",
-        source: include_str!("fixtures/astro-full.astro"),
+        source_name: LeanString::from_static_str("astro-full.astro"),
+        source: LeanString::from_static_str(include_str!("fixtures/astro-full.astro")),
         transformed_programs: StaticTransformedPrograms {
             lowered_code: None,
             lowered_source_map_json: None,
-            contextual_code: Some(include_str!(
+            contextual_code: Some(LeanString::from_static_str(include_str!(
                 "fixtures/astro-full.astro.transform.contextual.tsx"
-            )),
-            contextual_source_map_json: Some(include_str!(
+            ))),
+            contextual_source_map_json: Some(LeanString::from_static_str(include_str!(
                 "fixtures/astro-full.astro.transform.contextual.tsx.map"
-            )),
+            ))),
         },
     },
     FixtureCase {
         framework: FrameworkKind::Astro,
         name: "unicode",
-        source_name: "astro-unicode.astro",
-        source: include_str!("fixtures/astro-unicode.astro"),
+        source_name: LeanString::from_static_str("astro-unicode.astro"),
+        source: LeanString::from_static_str(include_str!("fixtures/astro-unicode.astro")),
         transformed_programs: StaticTransformedPrograms {
             lowered_code: None,
             lowered_source_map_json: None,
-            contextual_code: Some(include_str!(
+            contextual_code: Some(LeanString::from_static_str(include_str!(
                 "fixtures/astro-unicode.astro.transform.contextual.tsx"
-            )),
-            contextual_source_map_json: Some(include_str!(
+            ))),
+            contextual_source_map_json: Some(LeanString::from_static_str(include_str!(
                 "fixtures/astro-unicode.astro.transform.contextual.tsx.map"
-            )),
+            ))),
         },
     },
     FixtureCase {
         framework: FrameworkKind::Svelte,
         name: "full",
-        source_name: "svelte-full.svelte",
-        source: include_str!("fixtures/svelte-full.svelte"),
+        source_name: LeanString::from_static_str("svelte-full.svelte"),
+        source: LeanString::from_static_str(include_str!("fixtures/svelte-full.svelte")),
         transformed_programs: StaticTransformedPrograms {
-            lowered_code: Some(include_str!(
+            lowered_code: Some(LeanString::from_static_str(include_str!(
                 "fixtures/svelte-full.svelte.transform.lowered.tsx"
-            )),
-            lowered_source_map_json: Some(include_str!(
+            ))),
+            lowered_source_map_json: Some(LeanString::from_static_str(include_str!(
                 "fixtures/svelte-full.svelte.transform.lowered.tsx.map"
-            )),
-            contextual_code: Some(include_str!(
+            ))),
+            contextual_code: Some(LeanString::from_static_str(include_str!(
                 "fixtures/svelte-full.svelte.transform.contextual.tsx"
-            )),
-            contextual_source_map_json: Some(include_str!(
+            ))),
+            contextual_source_map_json: Some(LeanString::from_static_str(include_str!(
                 "fixtures/svelte-full.svelte.transform.contextual.tsx.map"
-            )),
+            ))),
         },
     },
     FixtureCase {
         framework: FrameworkKind::Svelte,
         name: "unicode",
-        source_name: "svelte-unicode.svelte",
-        source: include_str!("fixtures/svelte-unicode.svelte"),
+        source_name: LeanString::from_static_str("svelte-unicode.svelte"),
+        source: LeanString::from_static_str(include_str!("fixtures/svelte-unicode.svelte")),
         transformed_programs: StaticTransformedPrograms {
-            lowered_code: Some(include_str!(
+            lowered_code: Some(LeanString::from_static_str(include_str!(
                 "fixtures/svelte-unicode.svelte.transform.lowered.tsx"
-            )),
-            lowered_source_map_json: Some(include_str!(
+            ))),
+            lowered_source_map_json: Some(LeanString::from_static_str(include_str!(
                 "fixtures/svelte-unicode.svelte.transform.lowered.tsx.map"
-            )),
-            contextual_code: Some(include_str!(
+            ))),
+            contextual_code: Some(LeanString::from_static_str(include_str!(
                 "fixtures/svelte-unicode.svelte.transform.contextual.tsx"
-            )),
-            contextual_source_map_json: Some(include_str!(
+            ))),
+            contextual_source_map_json: Some(LeanString::from_static_str(include_str!(
                 "fixtures/svelte-unicode.svelte.transform.contextual.tsx.map"
-            )),
+            ))),
         },
     },
 ];
@@ -163,7 +162,7 @@ fn whitespace(framework: FrameworkKind) -> WhitespaceMode {
 
 fn analyze_options(case: &FixtureCase) -> AnalyzeOptions {
     AnalyzeOptions {
-        source_name: case.source_name.to_string(),
+        source_name: case.source_name.clone(),
         whitespace: whitespace(case.framework),
         conventions: conventions(case.framework),
     }
@@ -171,9 +170,9 @@ fn analyze_options(case: &FixtureCase) -> AnalyzeOptions {
 
 fn compile_plan_options(case: &FixtureCase) -> CompilePlanOptions {
     CompilePlanOptions {
-        source: case.source.to_string(),
-        source_name: Some(case.source_name.to_string()),
-        synthetic_name: Some(format!("{}?compile.tsx", case.source_name)),
+        source: case.source.clone(),
+        source_name: Some(case.source_name.clone()),
+        synthetic_name: Some(LeanString::from_static_str("synthetic-extract.tsx")),
         whitespace: Some(whitespace(case.framework)),
         conventions: conventions(case.framework),
         runtime_warnings: None,
@@ -190,7 +189,7 @@ fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
     match case.framework {
         FrameworkKind::Astro => {
             let analysis = AstroAdapter
-                .analyze(case.source, &analyze_options(case))
+                .analyze(&case.source, &analyze_options(case))
                 .expect("astro analysis succeeds");
             let mut candidates = analysis.semantic.frontmatter_candidates.clone();
             candidates.extend(
@@ -215,7 +214,7 @@ fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
         }
         FrameworkKind::Svelte => {
             let analysis = SvelteAdapter
-                .analyze(case.source, &analyze_options(case))
+                .analyze(&case.source, &analyze_options(case))
                 .expect("svelte analysis succeeds");
             let imports = analysis
                 .semantic
@@ -276,13 +275,13 @@ fn bench_analyze(c: &mut Criterion) {
                 b.iter(|| match case.framework {
                     FrameworkKind::Astro => {
                         let analysis = AstroAdapter
-                            .analyze(black_box(case.source), black_box(&options))
+                            .analyze(black_box(&case.source), black_box(&options))
                             .expect("astro analysis succeeds");
                         black_box(analysis);
                     }
                     FrameworkKind::Svelte => {
                         let analysis = SvelteAdapter
-                            .analyze(black_box(case.source), black_box(&options))
+                            .analyze(black_box(&case.source), black_box(&options))
                             .expect("svelte analysis succeeds");
                         black_box(analysis);
                     }
@@ -301,11 +300,13 @@ fn bench_extract(c: &mut Criterion) {
             &case,
             |b, case| {
                 let case_conventions = conventions(case.framework);
+                let case_synthetic_name = LeanString::from_static_str("synthetic-extract.tsx");
+
                 b.iter(|| {
                     let module = build_synthetic_module_for_framework(
-                        black_box(case.source),
-                        black_box(case.source_name),
-                        black_box("synthetic-extract.tsx"),
+                        black_box(&case.source),
+                        black_box(&case.source_name),
+                        black_box(&case_synthetic_name),
                         Some(whitespace(case.framework)),
                         black_box(&case_conventions),
                     )
@@ -322,15 +323,18 @@ fn bench_extract_build_only(c: &mut Criterion) {
     let mut group = c.benchmark_group("extract_build_only");
     for case in FIXTURE_CASES {
         let inputs = collect_extract_inputs(&case);
+
         group.bench_with_input(
             BenchmarkId::new(framework_name(case.framework), case.name),
             &case,
             |b, case| {
+                let case_synthetic_name = LeanString::from_static_str("synthetic-extract.tsx");
+
                 b.iter(|| {
                     let module = build_synthetic_module(
-                        black_box(case.source),
-                        black_box(case.source_name),
-                        black_box("synthetic-extract.tsx"),
+                        black_box(&case.source),
+                        black_box(&case.source_name),
+                        black_box(&case_synthetic_name),
                         black_box(&inputs.imports),
                         black_box(&inputs.candidates),
                         black_box(&inputs.source_anchors),
@@ -374,7 +378,8 @@ fn bench_finish_compile(c: &mut Criterion) {
     let mut group = c.benchmark_group("finish_compile");
     for case in FIXTURE_CASES {
         let plan = build_compile_plan(&case);
-        let transformed_programs: TransformedPrograms = case.transformed_programs.into();
+        let transformed_programs: TransformedPrograms = case.transformed_programs.clone().into();
+
         group.bench_with_input(
             BenchmarkId::new(framework_name(case.framework), case.name),
             &case,
@@ -384,7 +389,7 @@ fn bench_finish_compile(c: &mut Criterion) {
                         let finished =
                             finish_astro_compile(black_box(&AstroFinishCompileOptions {
                                 plan: plan.clone(),
-                                source: case.source.to_string(),
+                                source: case.source.clone(),
                                 transformed_programs: transformed_programs.clone(),
                             }))
                             .expect("astro finish compile succeeds");
@@ -394,7 +399,7 @@ fn bench_finish_compile(c: &mut Criterion) {
                         let finished =
                             finish_svelte_compile(black_box(&SvelteFinishCompileOptions {
                                 plan: plan.clone(),
-                                source: case.source.to_string(),
+                                source: case.source.clone(),
                                 transformed_programs: transformed_programs.clone(),
                             }))
                             .expect("svelte finish compile succeeds");

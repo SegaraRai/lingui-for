@@ -1,5 +1,6 @@
 use std::collections::BTreeSet;
 
+use lean_string::LeanString;
 use sourcemap::SourceMapBuilder;
 use tree_sitter::Node;
 
@@ -32,7 +33,7 @@ pub(crate) fn build_span_anchor_map(
     let mut builder = SourceMapBuilder::new(Some(source_name));
     builder.set_file(Some(source_name));
     let src_id = builder.add_source(source_name);
-    builder.set_source_contents(src_id, Some(source.as_str()));
+    builder.set_source_contents(src_id, Some(source.text()));
 
     let start_byte = original_span_start.min(source.len());
     let end_byte = original_span_end.min(source.len());
@@ -83,7 +84,7 @@ pub(crate) fn build_copy_map(
     let mut builder = SourceMapBuilder::new(Some(source_name));
     builder.set_file(Some(source_name));
     let src_id = builder.add_source(source_name);
-    builder.set_source_contents(src_id, Some(source.as_str()));
+    builder.set_source_contents(src_id, Some(source.text()));
 
     for anchor in anchor_points {
         let generated_byte = anchor - original_span.start;
@@ -117,7 +118,7 @@ pub(crate) fn indent_rendered_text(
     } = rendered;
 
     let mut indented =
-        String::with_capacity(code.len() + indent.len() * code.matches('\n').count());
+        LeanString::with_capacity(code.len() + indent.len() * code.matches('\n').count());
     let mut should_indent_line = Vec::new();
     for (index, line) in code.split_inclusive('\n').enumerate() {
         let is_blank_line = line.trim_matches(['\r', '\n']).is_empty();
@@ -190,8 +191,8 @@ pub(crate) fn indent_rendered_text(
 }
 
 pub(crate) fn build_final_output(
-    source_name: &str,
-    source_text: &str,
+    source_name: &LeanString,
+    source_text: &LeanString,
     source_anchors: &[usize],
     replacements: &[FinalizedReplacement<'_>],
 ) -> Result<RenderedMappedText, MappedTextError> {
@@ -258,14 +259,14 @@ fn generated_end_position(text: &str) -> (u32, u32) {
 }
 
 fn push_source_slice(
-    output: &mut MappedText<'_>,
-    source_name: &str,
+    output: &mut MappedText,
+    source_name: &LeanString,
     source: &IndexedText<'_>,
     span: Span,
     source_anchors: &[usize],
 ) -> Result<(), MappedTextError> {
     let text = source
-        .as_str()
+        .text()
         .get(span.start..span.end)
         .ok_or(MappedTextError::InvalidSegmentSlice)?;
     output.push(
@@ -276,11 +277,11 @@ fn push_source_slice(
 }
 
 fn finalize_replacement_mapped<'a>(
-    source_name: &'a str,
+    source_name: &'a LeanString,
     source: &'a IndexedText<'a>,
     replacement: &FinalizedReplacement<'_>,
 ) -> Result<MappedText<'a>, MappedTextError> {
-    let mut mapped = MappedText::new(source_name, source.as_str());
+    let mut mapped = MappedText::new(source_name, source.text());
     let source_map = replacement
         .indexed_source_map
         .as_ref()
@@ -302,7 +303,7 @@ fn finalize_replacement_mapped<'a>(
 
 fn augment_replacement_map(
     indexed_map: &IndexedSourceMap,
-    source_name: &str,
+    source_name: &LeanString,
     source: &IndexedText<'_>,
     generated_text: &str,
     original_start: usize,
@@ -333,14 +334,14 @@ fn augment_replacement_map(
         dst_col: 0,
         src_line: anchor_positions[0].0,
         src_col: anchor_positions[0].1,
-        source: Some(source_name.to_string()),
+        source: Some(source_name.clone()),
     });
     extras.push(OriginalAnchorProjection {
         dst_line: end_generated_line,
         dst_col: end_generated_col,
         src_line: anchor_positions[1].0,
         src_col: anchor_positions[1].1,
-        source: Some(source_name.to_string()),
+        source: Some(source_name.clone()),
     });
     Ok(indexed_map.clone_with_inserted_projections(extras, source_name))
 }
@@ -433,10 +434,12 @@ fn first_named_child(node: Node<'_>) -> Option<Node<'_>> {
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
     use sourcemap::SourceMapBuilder;
 
-    use super::{FinalizedReplacement, build_final_output, indent_rendered_text};
     use crate::common::{IndexedSourceMap, MappedTextError, RenderedMappedText};
+
+    use super::{FinalizedReplacement, build_final_output, indent_rendered_text};
 
     fn identity_map(source_name: &str, source_text: &str) -> IndexedSourceMap {
         let mut builder = SourceMapBuilder::new(Some(source_name));
@@ -455,7 +458,7 @@ mod tests {
         let source_name = "test.ts";
         let source_text = "alpha\nbeta";
         let rendered = RenderedMappedText {
-            code: source_text.to_string(),
+            code: LeanString::from_static_str(source_text),
             indexed_source_map: Some(identity_map(source_name, source_text)),
         };
 
@@ -472,6 +475,8 @@ mod tests {
     #[test]
     fn rejects_overlapping_replacements_in_final_output() {
         let source_text = "abcdef";
+        let source_name = LeanString::from_static_str("test.ts");
+        let source_text = LeanString::from(source_text);
         let replacements = vec![
             FinalizedReplacement {
                 start: 1,
@@ -489,7 +494,7 @@ mod tests {
             },
         ];
 
-        let error = build_final_output("test.ts", source_text, &[], &replacements)
+        let error = build_final_output(&source_name, &source_text, &[], &replacements)
             .expect_err("overlapping replacements should fail");
 
         assert!(matches!(
@@ -506,6 +511,8 @@ mod tests {
     #[test]
     fn rejects_out_of_bounds_replacements_in_final_output() {
         let source_text = "abcdef";
+        let source_name = LeanString::from_static_str("test.ts");
+        let source_text = LeanString::from(source_text);
         let replacements = vec![FinalizedReplacement {
             start: 4,
             end: 7,
@@ -514,7 +521,7 @@ mod tests {
             original_anchors: Vec::new(),
         }];
 
-        let error = build_final_output("test.ts", source_text, &[], &replacements)
+        let error = build_final_output(&source_name, &source_text, &[], &replacements)
             .expect_err("out-of-bounds replacements should fail");
 
         assert!(matches!(

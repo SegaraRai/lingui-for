@@ -3,6 +3,8 @@ mod components;
 pub mod ir;
 mod validation;
 
+use lean_string::LeanString;
+
 use crate::common::{EmbeddedScriptRegion, Span};
 use crate::diagnostics::LinguiAnalyzerDiagnostic;
 
@@ -56,13 +58,13 @@ pub struct AstroTemplateExpression {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AstroTemplateComponent {
     pub candidate: MacroCandidate,
-    pub shadowed_names: Vec<String>,
+    pub shadowed_names: Vec<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AstroSemanticAnalysis {
     pub macro_imports: Vec<MacroImport>,
-    pub frontmatter_declared_names: Vec<String>,
+    pub frontmatter_declared_names: Vec<LeanString>,
     pub frontmatter_candidates: Vec<MacroCandidate>,
     pub template_expressions: Vec<AstroTemplateExpression>,
     pub template_components: Vec<AstroTemplateComponent>,
@@ -85,12 +87,18 @@ pub struct AstroFrontmatterAnalysis {
 mod tests {
     use std::collections::BTreeMap;
 
+    use lean_string::LeanString;
+
     use super::analyze_astro;
     use crate::conventions::{
         FrameworkConventions, FrameworkKind, MacroConventions, MacroPackage, MacroPackageKind,
         RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions,
     };
     use crate::framework::{AnalyzeOptions, WhitespaceMode};
+
+    fn ls(text: &str) -> LeanString {
+        LeanString::from(text)
+    }
 
     fn test_conventions() -> FrameworkConventions {
         FrameworkConventions {
@@ -100,21 +108,21 @@ mod tests {
                     (
                         MacroPackageKind::Core,
                         MacroPackage {
-                            packages: vec!["@lingui/core/macro".to_string()],
+                            packages: vec![ls("@lingui/core/macro")],
                         },
                     ),
                     (
                         MacroPackageKind::Astro,
                         MacroPackage {
-                            packages: vec!["lingui-for-astro/macro".to_string()],
+                            packages: vec![ls("lingui-for-astro/macro")],
                         },
                     ),
                 ]),
             },
             runtime: RuntimeConventions {
-                package: "lingui-for-astro/runtime".to_string(),
+                package: ls("lingui-for-astro/runtime"),
                 exports: RuntimeExportConventions {
-                    trans: "RuntimeTrans".to_string(),
+                    trans: ls("RuntimeTrans"),
                     i18n_accessor: None,
                 },
             },
@@ -124,7 +132,7 @@ mod tests {
                 get_i18n: None,
                 translate: None,
                 i18n_instance: None,
-                runtime_trans_component: "RuntimeTrans".to_string(),
+                runtime_trans_component: ls("RuntimeTrans"),
             },
             synthetic: None,
             wrappers: None,
@@ -144,7 +152,7 @@ const ready = true;
         let analysis = analyze_astro(
             source,
             &AnalyzeOptions {
-                source_name: "Component.astro".to_string(),
+                source_name: ls("Component.astro"),
                 whitespace: WhitespaceMode::Astro,
                 conventions: test_conventions(),
             },

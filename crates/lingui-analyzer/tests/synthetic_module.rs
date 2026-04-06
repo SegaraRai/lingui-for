@@ -2,6 +2,7 @@
 mod svelte_support;
 
 use indoc::indoc;
+use lean_string::LeanString;
 use sourcemap::DecodedMap;
 
 use lingui_analyzer::{
@@ -11,6 +12,10 @@ use lingui_analyzer::{
 };
 
 use svelte_support::analyze_options_for_svelte;
+
+fn ls(text: &str) -> LeanString {
+    LeanString::from(text)
+}
 
 #[test]
 fn builds_synthetic_module_with_normalized_svelte_macros() {
@@ -28,9 +33,10 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let script = &analysis.semantic.scripts[0];
+    let source_name = ls("source");
     let synthetic = build_synthetic_module(
-        source,
-        "source",
+        &ls(source),
+        &source_name,
         "synthetic.js",
         &script.macro_imports,
         &script.candidates,
@@ -95,9 +101,10 @@ fn builds_synthetic_module_for_svelte_template_components() {
         .iter()
         .map(|component| component.candidate.clone())
         .collect::<Vec<_>>();
+    let source_name = ls("source");
     let synthetic = build_synthetic_module(
-        source,
-        "source",
+        &ls(source),
+        &source_name,
         "synthetic.js",
         &analysis.semantic.scripts[0].macro_imports,
         &candidates,
@@ -146,9 +153,10 @@ fn groups_synthetic_imports_by_source() {
             .iter()
             .map(|component| component.candidate.clone()),
     );
+    let source_name = ls("source");
     let synthetic = build_synthetic_module(
-        source,
-        "source",
+        &ls(source),
+        &source_name,
         "synthetic.js",
         &analysis.semantic.scripts[0].macro_imports,
         &candidates,
@@ -186,9 +194,10 @@ fn emits_lookupable_sourcemap_for_normalized_segments() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
+    let source_name = ls("source");
     let synthetic = build_synthetic_module(
-        source,
-        "source",
+        &ls(source),
+        &source_name,
         "synthetic.js",
         &analysis.semantic.scripts[0].macro_imports,
         &analysis.semantic.scripts[0].candidates,
@@ -225,9 +234,10 @@ fn emits_utf16_columns_for_unicode_prefixes() {
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
+    let source_name = ls("source");
     let synthetic = build_synthetic_module(
-        source,
-        "source",
+        &ls(source),
+        &source_name,
         "synthetic.js",
         &analysis.semantic.scripts[0].macro_imports,
         &analysis.semantic.scripts[0].candidates,
@@ -272,9 +282,10 @@ fn maps_component_declaration_start_to_component_message_anchor() {
         .iter()
         .map(|component| component.candidate.clone())
         .collect::<Vec<_>>();
+    let source_name = ls("source");
     let synthetic = build_synthetic_module(
-        source,
-        "source",
+        &ls(source),
+        &source_name,
         "synthetic.js",
         &analysis.semantic.scripts[0].macro_imports,
         &candidates,
@@ -317,9 +328,10 @@ fn merges_owned_svelte_nested_macro_normalization_into_parent_synthetic_source()
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))
         .expect("analysis succeeds");
     let script = &analysis.semantic.scripts[0];
+    let source_name = ls("source");
     let synthetic = build_synthetic_module(
-        source,
-        "source",
+        &ls(source),
+        &source_name,
         "synthetic.js",
         &script.macro_imports,
         &script.candidates,
@@ -350,9 +362,9 @@ fn normalizes_owned_svelte_nested_macros_for_framework_extract_synthetic_source(
     "#};
 
     let synthetic = build_synthetic_module_for_framework(
-        source,
-        "source.svelte",
-        "source.svelte?extract.tsx",
+        &ls(source),
+        &ls("source.svelte"),
+        &ls("source.svelte?extract.tsx"),
         Some(WhitespaceMode::Svelte),
         &svelte_support::svelte_default_conventions(),
     )

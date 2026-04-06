@@ -1,5 +1,7 @@
 use std::collections::BTreeMap;
 
+use lean_string::LeanString;
+
 use crate::common::{
     CollectDeclarationsError, IndexedSourceMap, RenderedMappedText,
     collect_variable_initializer_declarations, parse_source_map,
@@ -25,7 +27,7 @@ pub enum LowerError {
 
 pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
     plan: &P,
-    source: &str,
+    source: &LeanString,
     transformed_programs: &TransformedPrograms,
 ) -> Result<FinishedCompileInternal, LowerError> {
     let lowered_declarations = lower_transformed_declarations(plan, source, transformed_programs)?;
@@ -40,9 +42,9 @@ pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
 
 fn lower_transformed_declarations<P: FrameworkCompilePlan>(
     plan: &P,
-    source: &str,
+    source: &LeanString,
     transformed_programs: &TransformedPrograms,
-) -> Result<BTreeMap<String, RenderedMappedText>, LowerError> {
+) -> Result<BTreeMap<LeanString, RenderedMappedText>, LowerError> {
     let declaration_sets = collect_transformed_declarations(transformed_programs)?;
     let mut lowered = BTreeMap::new();
 
@@ -73,7 +75,8 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
 
 fn collect_transformed_declarations(
     programs: &TransformedPrograms,
-) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<String, RenderedMappedText>>, LowerError> {
+) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<LeanString, RenderedMappedText>>, LowerError>
+{
     let mut declarations = BTreeMap::new();
     let lowered_source_map = programs
         .lowered_source_map_json
@@ -103,15 +106,17 @@ fn collect_transformed_declarations(
 }
 
 fn collect_declarations_from_program(
-    source: &str,
+    source: &LeanString,
     indexed_source_map: Option<&IndexedSourceMap>,
-) -> Result<BTreeMap<String, RenderedMappedText>, LowerError> {
+) -> Result<BTreeMap<LeanString, RenderedMappedText>, LowerError> {
     collect_variable_initializer_declarations(source, indexed_source_map).map_err(Into::into)
 }
 
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeMap;
+
+    use lean_string::LeanString;
 
     use crate::{
         CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
@@ -129,6 +134,10 @@ mod tests {
 
     use super::finish_compile;
 
+    fn ls(text: &str) -> LeanString {
+        LeanString::from(text)
+    }
+
     fn test_svelte_conventions() -> FrameworkConventions {
         FrameworkConventions {
             framework: FrameworkKind::Svelte,
@@ -137,41 +146,39 @@ mod tests {
                     (
                         MacroPackageKind::Core,
                         MacroPackage {
-                            packages: vec!["@lingui/core/macro".to_string()],
+                            packages: vec![ls("@lingui/core/macro")],
                         },
                     ),
                     (
                         MacroPackageKind::Svelte,
                         MacroPackage {
-                            packages: vec!["lingui-for-svelte/macro".to_string()],
+                            packages: vec![ls("lingui-for-svelte/macro")],
                         },
                     ),
                 ]),
             },
             runtime: RuntimeConventions {
-                package: "lingui-for-svelte/runtime".to_string(),
+                package: ls("lingui-for-svelte/runtime"),
                 exports: RuntimeExportConventions {
-                    trans: "RuntimeTrans".to_string(),
-                    i18n_accessor: Some("createLinguiAccessors".to_string()),
+                    trans: ls("RuntimeTrans"),
+                    i18n_accessor: Some(ls("createLinguiAccessors")),
                 },
             },
             bindings: RuntimeBindingSeeds {
-                i18n_accessor_factory: Some("createLinguiAccessors".to_string()),
-                context: Some("__l4s_ctx".to_string()),
-                get_i18n: Some("__l4s_getI18n".to_string()),
-                translate: Some("__l4s_translate".to_string()),
+                i18n_accessor_factory: Some(ls("createLinguiAccessors")),
+                context: Some(ls("__l4s_ctx")),
+                get_i18n: Some(ls("__l4s_getI18n")),
+                translate: Some(ls("__l4s_translate")),
                 i18n_instance: None,
-                runtime_trans_component: "L4sRuntimeTrans".to_string(),
+                runtime_trans_component: ls("L4sRuntimeTrans"),
             },
             synthetic: Some(SyntheticConventions {
-                expression_prefix: Some("__lingui_for_svelte_expr_".to_string()),
-                component_prefix: Some("__lingui_for_svelte_component_".to_string()),
+                expression_prefix: Some(ls("__lingui_for_svelte_expr_")),
+                component_prefix: Some(ls("__lingui_for_svelte_component_")),
             }),
             wrappers: Some(WrapperConventions {
-                reactive_translation: Some(
-                    "__lingui_for_svelte_reactive_translation__".to_string(),
-                ),
-                eager_translation: Some("__lingui_for_svelte_eager_translation__".to_string()),
+                reactive_translation: Some(ls("__lingui_for_svelte_reactive_translation__")),
+                eager_translation: Some(ls("__lingui_for_svelte_eager_translation__")),
             }),
         }
     }
@@ -180,21 +187,21 @@ mod tests {
     fn finishes_expression_replacements_with_indented_maps() {
         let plan = SvelteCompilePlan {
             common: CommonCompilePlan {
-                source_name: "Component.svelte".to_string(),
-                synthetic_name: "Component.svelte?compile".to_string(),
-                synthetic_source: String::new(),
+                source_name: ls("Component.svelte"),
+                synthetic_name: ls("Component.svelte?compile"),
+                synthetic_source: LeanString::new(),
                 synthetic_source_map_json: None,
                 source_anchors: Vec::new(),
                 synthetic_lang: ScriptLang::Ts,
                 conventions: test_svelte_conventions(),
-                declaration_ids: vec!["__lf_0".to_string()],
+                declaration_ids: vec![ls("__lf_0")],
                 targets: vec![CompileTarget {
-                    declaration_id: "__lf_0".to_string(),
+                    declaration_id: ls("__lf_0"),
                     original_span: Span::new(39, 48),
                     normalized_span: Span::new(40, 48),
                     source_map_anchor: None,
-                    local_name: "t".to_string(),
-                    imported_name: "t".to_string(),
+                    local_name: ls("t"),
+                    imported_name: ls("t"),
                     flavor: MacroFlavor::Reactive,
                     context: CompileTargetContext::Template,
                     output_kind: CompileTargetOutputKind::Expression,
@@ -213,11 +220,11 @@ mod tests {
             },
             runtime_warnings: RuntimeWarningOptions::default(),
             runtime_bindings: SvelteCompileRuntimeBindings {
-                create_lingui_accessors: "createLinguiAccessors".to_string(),
-                context: "__l4s_ctx".to_string(),
-                get_i18n: "__l4s_getI18n".to_string(),
-                translate: "__l4s_translate".to_string(),
-                trans_component: "L4sRuntimeTrans".to_string(),
+                create_lingui_accessors: ls("createLinguiAccessors"),
+                context: ls("__l4s_ctx"),
+                get_i18n: ls("__l4s_getI18n"),
+                translate: ls("__l4s_translate"),
+                trans_component: ls("L4sRuntimeTrans"),
             },
             instance_script: Some(SvelteCompileScriptRegion {
                 outer_span: Span::new(0, 30),
@@ -226,15 +233,15 @@ mod tests {
             }),
             module_script: None,
         };
-        let source = "<script>\n  let x = 1;\n</script>\n<p>\n  {$t`hello`}\n</p>";
+        let source = ls("<script>\n  let x = 1;\n</script>\n<p>\n  {$t`hello`}\n</p>");
         let transformed = TransformedPrograms {
-            contextual_code: Some(
-                "const __lf_0 = __l4s_translate({id:\"a\",message:\"hello\"});".to_string(),
-            ),
+            contextual_code: Some(ls(
+                "const __lf_0 = __l4s_translate({id:\"a\",message:\"hello\"});",
+            )),
             ..TransformedPrograms::default()
         };
 
-        let finished = finish_compile(&plan, source, &transformed).expect("finish succeeds");
+        let finished = finish_compile(&plan, &source, &transformed).expect("finish succeeds");
 
         assert!(finished.replacements.len() >= 2);
         assert!(

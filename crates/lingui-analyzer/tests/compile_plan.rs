@@ -3,6 +3,7 @@ mod astro_support;
 #[path = "support/svelte_conventions.rs"]
 mod svelte_support;
 
+use lean_string::LeanString;
 use sourcemap::DecodedMap;
 
 use lingui_analyzer::{
@@ -13,6 +14,48 @@ use lingui_analyzer::{
 
 use astro_support::astro_default_conventions;
 use svelte_support::svelte_default_conventions;
+
+fn ls(text: &str) -> LeanString {
+    LeanString::from(text)
+}
+
+fn build_svelte_plan(
+    source: &str,
+    source_name: &str,
+    synthetic_name: &str,
+) -> lingui_analyzer::SvelteCompilePlan {
+    let source = ls(source);
+    let source_name = ls(source_name);
+    let synthetic_name = ls(synthetic_name);
+    SvelteCompilePlan::build(
+        &source,
+        &source_name,
+        &synthetic_name,
+        WhitespaceMode::Svelte,
+        svelte_default_conventions(),
+        RuntimeWarningOptions::default(),
+    )
+    .expect("svelte compile plan should build")
+}
+
+fn build_astro_plan(
+    source: &str,
+    source_name: &str,
+    synthetic_name: &str,
+) -> lingui_analyzer::AstroCompilePlan {
+    let source = ls(source);
+    let source_name = ls(source_name);
+    let synthetic_name = ls(synthetic_name);
+    AstroCompilePlan::build(
+        &source,
+        &source_name,
+        &synthetic_name,
+        WhitespaceMode::Astro,
+        astro_default_conventions(),
+        RuntimeWarningOptions::default(),
+    )
+    .expect("astro compile plan should build")
+}
 
 #[test]
 fn builds_common_svelte_compile_plan_with_runtime_metadata() {
@@ -34,15 +77,11 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
 <Trans>Hello <strong>{name}</strong></Trans>
 "#;
 
-    let plan = SvelteCompilePlan::build(
+    let plan = build_svelte_plan(
         source,
         "/virtual/App.svelte",
         "/virtual/App.svelte?compile.tsx",
-        WhitespaceMode::Svelte,
-        svelte_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("svelte compile plan should build");
+    );
 
     assert_eq!(plan.common.source_name, "/virtual/App.svelte");
     assert_eq!(
@@ -153,19 +192,15 @@ fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
         <p>{$instanceT`Hello ${name}`}</p>
     "#};
 
-    let plan = SvelteCompilePlan::build(
+    let plan = build_svelte_plan(
         source,
         "/virtual/App.svelte",
         "/virtual/App.svelte?compile.tsx",
-        WhitespaceMode::Svelte,
-        svelte_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("svelte compile plan should build");
+    );
 
     let finished = finish_svelte_compile(&SvelteFinishCompileOptions {
         plan,
-        source: source.to_string(),
+        source: ls(source),
         transformed_programs: TransformedPrograms::default(),
     })
     .expect("svelte compile should finish");
@@ -206,15 +241,11 @@ const status = translate(msg`Status summary: active`);
 <Trans>Before <strong>{name}</strong> After</Trans>
 "#;
 
-    let plan = AstroCompilePlan::build(
+    let plan = build_astro_plan(
         source,
         "/virtual/Page.astro",
         "/virtual/Page.astro?compile.tsx",
-        WhitespaceMode::Astro,
-        astro_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("astro compile plan should build");
+    );
 
     assert_eq!(plan.common.targets.len(), 3);
     assert!(plan.runtime_requirements.needs_runtime_i18n_binding);
@@ -269,15 +300,11 @@ const descriptor = msg`Status summary: active`;
 <p>{descriptor.message}</p>
 "#;
 
-    let plan = AstroCompilePlan::build(
+    let plan = build_astro_plan(
         source,
         "/virtual/Page.astro",
         "/virtual/Page.astro?compile.tsx",
-        WhitespaceMode::Astro,
-        astro_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("astro compile plan should build");
+    );
 
     assert!(!plan.runtime_requirements.needs_runtime_i18n_binding);
     assert!(!plan.runtime_requirements.needs_runtime_trans_component);
@@ -292,15 +319,11 @@ import { Trans } from "lingui-for-astro/macro";
 <Trans>Hello <strong>world</strong></Trans>
 "#;
 
-    let plan = AstroCompilePlan::build(
+    let plan = build_astro_plan(
         source,
         "/virtual/Page.astro",
         "/virtual/Page.astro?compile.tsx",
-        WhitespaceMode::Astro,
-        astro_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("astro compile plan should build");
+    );
 
     assert!(!plan.runtime_requirements.needs_runtime_i18n_binding);
     assert!(plan.runtime_requirements.needs_runtime_trans_component);
@@ -325,15 +348,11 @@ const control = {
 />
 "#;
 
-    let plan = AstroCompilePlan::build(
+    let plan = build_astro_plan(
         source,
         "/virtual/ControlField.astro",
         "/virtual/ControlField.astro?compile.tsx",
-        WhitespaceMode::Astro,
-        astro_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("astro compile plan should build");
+    );
 
     let placeholder_targets = plan
         .common
@@ -360,15 +379,11 @@ const showDemo = true;
 <div>{showDemo ? <Trans>See full demo</Trans> : null}</div>
 "#;
 
-    let plan = AstroCompilePlan::build(
+    let plan = build_astro_plan(
         source,
         "/virtual/Nested.astro",
         "/virtual/Nested.astro?compile.tsx",
-        WhitespaceMode::Astro,
-        astro_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("astro compile plan should build");
+    );
 
     let component_targets = plan
         .common
@@ -400,15 +415,11 @@ import { plural } from "lingui-for-astro/macro";
 </p>
 "##;
 
-    let plan = AstroCompilePlan::build(
+    let plan = build_astro_plan(
         source,
         "/virtual/Formats.astro",
         "/virtual/Formats.astro?compile.tsx",
-        WhitespaceMode::Astro,
-        astro_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("astro compile plan should build");
+    );
 
     let plural_targets = plan
         .common
@@ -454,15 +465,11 @@ const filteredQueue = queueItems;
 }
 "#;
 
-    let plan = AstroCompilePlan::build(
+    let plan = build_astro_plan(
         source,
         "/virtual/NestedCallback.astro",
         "/virtual/NestedCallback.astro?compile.tsx",
-        WhitespaceMode::Astro,
-        astro_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("astro compile plan should build");
+    );
 
     let nested_label_targets = plan
         .common
@@ -488,14 +495,19 @@ fn rejects_bare_direct_t_in_svelte_scripts() {
 </script>
 "#;
 
-    let error = SvelteCompilePlan::build(
-        source,
-        "/virtual/App.svelte",
-        "/virtual/App.svelte?compile.tsx",
-        WhitespaceMode::Svelte,
-        svelte_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
+    let error = {
+        let source = ls(source);
+        let source_name = ls("/virtual/App.svelte");
+        let synthetic_name = ls("/virtual/App.svelte?compile.tsx");
+        SvelteCompilePlan::build(
+            &source,
+            &source_name,
+            &synthetic_name,
+            WhitespaceMode::Svelte,
+            svelte_default_conventions(),
+            RuntimeWarningOptions::default(),
+        )
+    }
     .expect_err("bare direct t should be rejected in svelte scripts");
 
     assert!(
@@ -519,13 +531,18 @@ fn rejects_bare_direct_plural_in_svelte_extract_synthetic_builds() {
 </script>
 "##;
 
-    let error = build_synthetic_module_for_framework(
-        source,
-        "/virtual/App.svelte",
-        "/virtual/App.svelte?extract.tsx",
-        None,
-        &svelte_default_conventions(),
-    )
+    let error = {
+        let source = ls(source);
+        let source_name = ls("/virtual/App.svelte");
+        let synthetic_name = ls("/virtual/App.svelte?extract.tsx");
+        build_synthetic_module_for_framework(
+            &source,
+            &source_name,
+            &synthetic_name,
+            None,
+            &svelte_default_conventions(),
+        )
+    }
     .expect_err("bare direct plural should be rejected in svelte extraction");
 
     assert!(
@@ -561,15 +578,11 @@ fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
         </section>
     "##};
 
-    let plan = SvelteCompilePlan::build(
+    let plan = build_svelte_plan(
         source,
         "/virtual/+page.svelte",
         "/virtual/+page.svelte?compile.tsx",
-        WhitespaceMode::Svelte,
-        svelte_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("svelte compile plan should build");
+    );
 
     let template_targets = plan
         .common
@@ -612,15 +625,11 @@ fn normalizes_owned_nested_svelte_macros_in_compile_synthetic_source() {
         </script>
     "#};
 
-    let plan = SvelteCompilePlan::build(
+    let plan = build_svelte_plan(
         source,
         "/virtual/Nested.svelte",
         "/virtual/Nested.svelte?compile.tsx",
-        WhitespaceMode::Svelte,
-        svelte_default_conventions(),
-        RuntimeWarningOptions::default(),
-    )
-    .expect("svelte compile plan should build");
+    );
 
     assert!(plan.common.synthetic_source.contains("translate`未設定`"));
     assert!(

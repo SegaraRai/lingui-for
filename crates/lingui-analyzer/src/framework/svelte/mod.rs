@@ -5,6 +5,8 @@ mod walk;
 
 use std::borrow::Cow;
 
+use lean_string::LeanString;
+
 use crate::common::{EmbeddedScriptRegion, Span};
 use crate::conventions::MacroConventionsError;
 use crate::diagnostics::LinguiAnalyzerDiagnostic;
@@ -75,7 +77,7 @@ pub struct SvelteScriptBlock {
     pub region: EmbeddedScriptRegion,
     pub is_module: bool,
     pub is_typescript: bool,
-    pub declared_names: Vec<String>,
+    pub declared_names: Vec<LeanString>,
     pub macro_imports: Vec<MacroImport>,
     pub macro_import_statement_spans: Vec<Span>,
     pub candidates: Vec<MacroCandidate>,
@@ -86,13 +88,13 @@ pub struct SvelteTemplateExpression {
     pub outer_span: Span,
     pub inner_span: Span,
     pub candidates: Vec<MacroCandidate>,
-    pub shadowed_names: Vec<String>,
+    pub shadowed_names: Vec<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SvelteTemplateComponent {
     pub candidate: MacroCandidate,
-    pub shadowed_names: Vec<String>,
+    pub shadowed_names: Vec<LeanString>,
 }
 
 #[derive(Debug, Default, Clone, Copy)]

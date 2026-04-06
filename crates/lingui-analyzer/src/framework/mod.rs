@@ -4,6 +4,7 @@ pub mod svelte;
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
@@ -31,9 +32,9 @@ pub enum FrameworkError {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct MacroImport {
-    pub source: String,
-    pub imported_name: String,
-    pub local_name: String,
+    pub source: LeanString,
+    pub imported_name: LeanString,
+    pub local_name: LeanString,
     pub span: Span,
 }
 
@@ -76,16 +77,16 @@ pub enum WhitespaceMode {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct MacroCandidate {
-    pub id: String,
+    pub id: LeanString,
     pub kind: MacroCandidateKind,
-    pub imported_name: String,
-    pub local_name: String,
+    pub imported_name: LeanString,
+    pub local_name: LeanString,
     pub flavor: MacroFlavor,
     pub outer_span: Span,
     pub normalized_span: Span,
     pub normalization_edits: Vec<NormalizationEdit>,
     pub source_map_anchor: Option<Span>,
-    pub owner_id: Option<String>,
+    pub owner_id: Option<LeanString>,
     pub strategy: MacroCandidateStrategy,
 }
 
@@ -93,7 +94,7 @@ pub struct MacroCandidate {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct AnalyzeOptions {
-    pub source_name: String,
+    pub source_name: LeanString,
     pub whitespace: WhitespaceMode,
     pub conventions: FrameworkConventions,
 }
@@ -108,7 +109,7 @@ pub trait FrameworkAdapter {
     ) -> Result<Self::Analysis, FrameworkError>;
 }
 
-pub(crate) fn render_macro_import_line(imports: &[MacroImport]) -> Option<String> {
+pub(crate) fn render_macro_import_line(imports: &[MacroImport]) -> Option<LeanString> {
     let mut grouped = BTreeMap::<&str, BTreeSet<(&str, &str)>>::new();
     for import_decl in imports {
         grouped
@@ -124,24 +125,24 @@ pub(crate) fn render_macro_import_line(imports: &[MacroImport]) -> Option<String
         return None;
     }
 
-    Some(
-        grouped
-            .into_iter()
-            .map(|(source, specifiers)| {
-                let rendered = specifiers
-                    .into_iter()
-                    .map(|(imported_name, local_name)| {
-                        if imported_name == local_name {
-                            local_name.to_string()
-                        } else {
-                            format!("{imported_name} as {local_name}")
-                        }
-                    })
-                    .collect::<Vec<_>>()
-                    .join(", ");
-                format!("import {{ {rendered} }} from \"{source}\";")
-            })
-            .collect::<Vec<_>>()
-            .join("\n"),
-    )
+    let rendered = grouped
+        .into_iter()
+        .map(|(source, specifiers)| {
+            let rendered = specifiers
+                .into_iter()
+                .map(|(imported_name, local_name)| {
+                    if imported_name == local_name {
+                        local_name.to_string()
+                    } else {
+                        format!("{imported_name} as {local_name}")
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("import {{ {rendered} }} from \"{source}\";")
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    Some(LeanString::from(rendered))
 }

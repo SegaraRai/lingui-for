@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tree_sitter::Node;
 use tsify::Tsify;
@@ -9,7 +10,7 @@ use super::Span;
 #[serde(tag = "type", rename_all = "camelCase")]
 pub enum NormalizationEdit {
     Delete { span: Span },
-    Insert { at: usize, text: String },
+    Insert { at: usize, text: LeanString },
 }
 
 pub(crate) fn whitespace_replacement_edits(
@@ -46,7 +47,7 @@ pub(crate) fn whitespace_replacement_edits(
         edits.push(NormalizationEdit::Delete { span: gap });
         edits.push(NormalizationEdit::Insert {
             at: gap.start,
-            text: "{\" \"}".to_string(),
+            text: LeanString::from_static_str("{\" \"}"),
         });
     }
 
@@ -54,9 +55,9 @@ pub(crate) fn whitespace_replacement_edits(
 }
 
 pub(crate) fn sort_and_dedup_normalization_edits(edits: &mut Vec<NormalizationEdit>) {
-    fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, String) {
+    fn normalization_edit_sort_key(edit: &NormalizationEdit) -> (usize, usize, u8, LeanString) {
         match edit {
-            NormalizationEdit::Delete { span } => (span.start, span.end, 0, String::new()),
+            NormalizationEdit::Delete { span } => (span.start, span.end, 0, LeanString::new()),
             NormalizationEdit::Insert { at, text } => (*at, *at, 1, text.clone()),
         }
     }

@@ -1,3 +1,4 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
@@ -71,7 +72,7 @@ pub(super) fn component_candidate_from_element(
     sort_and_dedup_normalization_edits(&mut normalization_edits);
     Ok(Some(SvelteTemplateComponent {
         candidate: MacroCandidate {
-            id: format!("__mc_{}_{}", node.start_byte(), node.end_byte()),
+            id: LeanString::from(format!("__mc_{}_{}", node.start_byte(), node.end_byte())),
             kind: MacroCandidateKind::Component,
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),
@@ -300,7 +301,7 @@ fn append_virtual_trans_child_wrapper_edits(
     }
     normalization_edits.push(NormalizationEdit::Insert {
         at: outer_span.start,
-        text: format!("<{tag_name} value={{"),
+        text: LeanString::from(format!("<{tag_name} value={{")),
     });
 
     if inner_span.end < outer_span.end {
@@ -310,7 +311,7 @@ fn append_virtual_trans_child_wrapper_edits(
     }
     normalization_edits.push(NormalizationEdit::Insert {
         at: inner_span.end,
-        text: "} />".to_string(),
+        text: LeanString::from_static_str("} />"),
     });
     Ok(())
 }

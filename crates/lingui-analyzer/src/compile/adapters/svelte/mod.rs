@@ -4,6 +4,7 @@ mod runtime;
 
 use std::borrow::Cow;
 
+use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
@@ -63,11 +64,11 @@ pub enum SvelteAdapterError {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct SvelteCompileRuntimeBindings {
-    pub create_lingui_accessors: String,
-    pub context: String,
-    pub get_i18n: String,
-    pub translate: String,
-    pub trans_component: String,
+    pub create_lingui_accessors: LeanString,
+    pub context: LeanString,
+    pub get_i18n: LeanString,
+    pub translate: LeanString,
+    pub trans_component: LeanString,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -95,8 +96,8 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     type Analysis = SvelteFrameworkCompileAnalysis;
 
     fn analyze(
-        source: &str,
-        source_name: &str,
+        source: &LeanString,
+        source_name: &LeanString,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
     ) -> Result<Self::Analysis, CompileError> {
@@ -146,8 +147,8 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
 
     fn lower_runtime_component_markup(
         &self,
-        source_name: &str,
-        source: &str,
+        source_name: &LeanString,
+        source: &LeanString,
         target: &CompileTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, AdapterError> {
@@ -164,7 +165,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
 
     fn append_runtime_injection_replacements(
         &self,
-        source: &str,
+        source: &LeanString,
         replacements: &mut Vec<CompileReplacementInternal>,
     ) -> Result<(), AdapterError> {
         append_runtime_injection_replacements(self, source, replacements)
@@ -174,9 +175,9 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
 
 impl SvelteCompilePlan {
     pub fn build(
-        source: &str,
-        source_name: &str,
-        synthetic_name: &str,
+        source: &LeanString,
+        source_name: &LeanString,
+        synthetic_name: &LeanString,
         whitespace_mode: WhitespaceMode,
         conventions: FrameworkConventions,
         runtime_warnings: RuntimeWarningOptions,

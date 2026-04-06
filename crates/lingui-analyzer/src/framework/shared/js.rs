@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use lean_string::LeanString;
 use tree_sitter::{Node, Tree};
 
 use crate::common::{NormalizationEdit, ScriptLang, Span};
@@ -57,7 +58,7 @@ pub fn collect_declared_names_from_binding_source(
     source: &str,
     mode: BindingParseMode,
     language: ScriptLang,
-) -> Result<Vec<String>, JsAnalysisError> {
+) -> Result<Vec<LeanString>, JsAnalysisError> {
     let wrapped = match mode {
         BindingParseMode::VariableDeclarator => format!("const {source};"),
         BindingParseMode::FunctionParams => format!("function __lf({source}) {{}}"),
@@ -71,7 +72,7 @@ pub fn collect_declared_names_from_binding_source(
     Ok(names)
 }
 
-pub fn collect_top_level_declared_names_from_root(source: &str, root: Node<'_>) -> Vec<String> {
+pub fn collect_top_level_declared_names_from_root(source: &str, root: Node<'_>) -> Vec<LeanString> {
     let mut names = Vec::new();
     let mut cursor = root.walk();
 
@@ -330,7 +331,7 @@ fn to_call_candidate(
             let import_decl = scope.resolve_macro(local_name)?;
             let identifier_span = Span::from_node(identifier).shifted(base_offset);
             Some(MacroCandidate {
-                id: String::new(),
+                id: LeanString::new(),
                 kind: candidate_kind_from_arguments(arguments),
                 imported_name: import_decl.imported_name.clone(),
                 local_name: import_decl.local_name.clone(),
@@ -367,7 +368,7 @@ fn to_svelte_call_candidate(
             let anchor = Span::new(identifier_span.start + 1, identifier_span.end);
 
             return Some(MacroCandidate {
-                id: String::new(),
+                id: LeanString::new(),
                 kind: candidate_kind_from_arguments(arguments),
                 imported_name: import_decl.imported_name.clone(),
                 local_name: import_decl.local_name.clone(),
@@ -385,7 +386,7 @@ fn to_svelte_call_candidate(
 
         let import_decl = scope.resolve_macro(local_name)?;
         return Some(MacroCandidate {
-            id: String::new(),
+            id: LeanString::new(),
             kind: candidate_kind_from_arguments(arguments),
             imported_name: import_decl.imported_name.clone(),
             local_name: import_decl.local_name.clone(),
@@ -416,7 +417,7 @@ fn to_svelte_call_candidate(
     );
 
     Some(MacroCandidate {
-        id: String::new(),
+        id: LeanString::new(),
         kind: candidate_kind_from_arguments(arguments),
         imported_name: import_decl.imported_name.clone(),
         local_name: import_decl.local_name.clone(),
@@ -456,10 +457,10 @@ fn assign_candidate_ownership(mut candidates: Vec<MacroCandidate>) -> Vec<MacroC
 
     let mut planned = Vec::with_capacity(candidates.len());
     for mut candidate in candidates {
-        candidate.id = format!(
+        candidate.id = LeanString::from(format!(
             "__mc_{}_{}",
             candidate.outer_span.start, candidate.outer_span.end
-        );
+        ));
 
         if let Some(owner) = planned.iter().find(|kept: &&MacroCandidate| {
             kept.outer_span.start <= candidate.outer_span.start
@@ -475,7 +476,7 @@ fn assign_candidate_ownership(mut candidates: Vec<MacroCandidate>) -> Vec<MacroC
     planned
 }
 
-fn collect_declared_names(node: Node<'_>, source: &str, names: &mut Vec<String>) {
+fn collect_declared_names(node: Node<'_>, source: &str, names: &mut Vec<LeanString>) {
     match node.kind() {
         "variable_declarator" => {
             if let Some(name) = node.child_by_field_name("name") {
@@ -502,7 +503,7 @@ fn collect_declared_names(node: Node<'_>, source: &str, names: &mut Vec<String>)
     }
 }
 
-fn collect_import_declared_names(node: Node<'_>, source: &str, names: &mut Vec<String>) {
+fn collect_import_declared_names(node: Node<'_>, source: &str, names: &mut Vec<LeanString>) {
     match node.kind() {
         "import_specifier" => {
             if let Some(alias) = node.child_by_field_name("alias") {
@@ -531,10 +532,10 @@ fn collect_import_declared_names(node: Node<'_>, source: &str, names: &mut Vec<S
     }
 }
 
-fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) {
+fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<LeanString>) {
     match node.kind() {
         "identifier" | "shorthand_property_identifier_pattern" => {
-            names.push(text(source, node).to_string());
+            names.push(LeanString::from(text(source, node)));
         }
         "required_parameter" | "optional_parameter" => {
             if let Some(pattern) = node.child_by_field_name("pattern") {
@@ -561,18 +562,22 @@ fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<String>) 
 
 #[cfg(test)]
 mod tests {
-    use super::{JsMacroSyntax, collect_macro_candidates};
+    use lean_string::LeanString;
+
+    use crate::common::Span;
     use crate::framework::MacroImport;
     use crate::syntax::parse::parse_typescript;
+
+    use super::{JsMacroSyntax, collect_macro_candidates};
 
     #[test]
     fn does_not_duplicate_standard_call_candidates_inside_conditionals() {
         let source = "control.placeholder ? t(control.placeholder) : undefined";
         let imports = vec![MacroImport {
-            source: "lingui-for-astro/macro".to_string(),
-            imported_name: "t".to_string(),
-            local_name: "t".to_string(),
-            span: crate::common::Span::new(0, 0),
+            source: LeanString::from("lingui-for-astro/macro"),
+            imported_name: LeanString::from("t"),
+            local_name: LeanString::from("t"),
+            span: Span::new(0, 0),
         }];
 
         let tree = parse_typescript(source).expect("parse succeeds");

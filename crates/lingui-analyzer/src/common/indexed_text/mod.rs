@@ -1,12 +1,14 @@
-mod utf16;
-
 use std::ops::Range;
+
+use lean_string::LeanString;
+
+mod utf16;
 
 use utf16::Utf16Table;
 
 #[derive(Debug, Clone)]
 pub struct IndexedText<'a> {
-    text: &'a str,
+    text: &'a LeanString,
     utf16: Utf16Table<'a>,
 }
 
@@ -17,13 +19,13 @@ pub struct IndexedTextSlice<'a> {
 }
 
 impl<'a> IndexedText<'a> {
-    pub fn new(text: &'a str) -> Self {
+    pub fn new(text: &'a LeanString) -> Self {
         let line_starts = compute_line_starts(text);
         let utf16 = Utf16Table::new(text, &line_starts);
         Self { text, utf16 }
     }
 
-    pub fn as_str(&self) -> &'a str {
+    pub fn text(&self) -> &'a LeanString {
         self.text
     }
 
@@ -52,13 +54,13 @@ impl<'a> IndexedTextSlice<'a> {
     pub fn new(indexed: &'a IndexedText<'a>, range: Range<usize>) -> Option<Self> {
         (range.start <= range.end
             && range.end <= indexed.len()
-            && indexed.as_str().is_char_boundary(range.start)
-            && indexed.as_str().is_char_boundary(range.end))
+            && indexed.text().is_char_boundary(range.start)
+            && indexed.text().is_char_boundary(range.end))
         .then_some(Self { indexed, range })
     }
 
     pub fn as_str(&self) -> &'a str {
-        &self.indexed.as_str()[self.range.clone()]
+        &self.indexed.text()[self.range.clone()]
     }
 
     pub fn range(&self) -> Range<usize> {
@@ -107,11 +109,14 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
+
     use super::IndexedText;
 
     #[test]
     fn slice_reports_relative_line_and_utf16_columns() {
-        let source = IndexedText::new("ab😀\nxyz\n");
+        let source_text = LeanString::from("ab😀\nxyz\n");
+        let source = IndexedText::new(&source_text);
         let slice = source.slice(1.."ab😀\nxy".len()).expect("valid slice");
 
         assert_eq!(slice.byte_to_line_utf16_col(0), Some((0, 0)));
@@ -123,14 +128,16 @@ mod tests {
 
     #[test]
     fn rejects_out_of_range_slices() {
-        let source = IndexedText::new("abc");
+        let source_text = LeanString::from("abc");
+        let source = IndexedText::new(&source_text);
 
         assert!(source.slice(1..4).is_none());
     }
 
     #[test]
     fn rejects_non_char_boundary_slices() {
-        let source = IndexedText::new("a😀b");
+        let source_text = LeanString::from("a😀b");
+        let source = IndexedText::new(&source_text);
 
         assert!(source.slice(1..2).is_none());
         assert!(source.slice(0..2).is_none());

@@ -1,15 +1,17 @@
 use std::collections::{HashMap, HashSet};
 
+use lean_string::LeanString;
+
 use crate::framework::MacroImport;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 struct ScopeFrame {
-    names: HashSet<String>,
+    names: HashSet<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct LexicalScope {
-    imports: HashMap<String, MacroImport>,
+    imports: HashMap<LeanString, MacroImport>,
     frames: Vec<ScopeFrame>,
 }
 
@@ -36,7 +38,7 @@ impl LexicalScope {
         }
     }
 
-    pub fn declare(&mut self, name: impl Into<String>) {
+    pub fn declare(&mut self, name: impl Into<LeanString>) {
         if let Some(frame) = self.frames.last_mut() {
             frame.names.insert(name.into());
         }
@@ -45,7 +47,7 @@ impl LexicalScope {
     pub fn declare_many<I, S>(&mut self, names: I)
     where
         I: IntoIterator<Item = S>,
-        S: Into<String>,
+        S: Into<LeanString>,
     {
         for name in names {
             self.declare(name);

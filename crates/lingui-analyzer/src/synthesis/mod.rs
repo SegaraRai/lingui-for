@@ -1,5 +1,7 @@
-use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
+
+use lean_string::LeanString;
+use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{
@@ -16,9 +18,9 @@ pub struct SynthesisPlan {
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct SynthesisTarget {
-    pub declaration_id: String,
+    pub declaration_id: LeanString,
     pub candidate: MacroCandidate,
-    pub normalized_code: String,
+    pub normalized_code: LeanString,
     pub(crate) normalized_rendered: RenderedMappedText,
     pub normalized_segments: Vec<NormalizedSegment>,
 }
@@ -32,13 +34,13 @@ pub struct NormalizedSegment {
     pub len: usize,
 }
 
-type OwnedNormalizationEdit = (String, Span, Vec<NormalizationEdit>);
+type OwnedNormalizationEdit = (LeanString, Span, Vec<NormalizationEdit>);
 
 struct MappedNormalizationContext<'a> {
     source: &'a IndexedText<'a>,
     source_name: &'a str,
     source_anchors: &'a [usize],
-    insertions: &'a [(usize, String)],
+    insertions: &'a [(usize, LeanString)],
 }
 
 struct NormalizedCandidateOutput {
@@ -47,8 +49,8 @@ struct NormalizedCandidateOutput {
 }
 
 pub fn build_synthesis_plan(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
     source_anchors: &[usize],
@@ -60,7 +62,7 @@ pub fn build_synthesis_plan(
         .filter(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone)
         .enumerate()
         .map(|(index, candidate)| {
-            let declaration_id = format!("__lf_{index}");
+            let declaration_id = LeanString::from(format!("__lf_{index}"));
             let NormalizedCandidateOutput {
                 rendered: normalized_rendered,
                 segments: normalized_segments,
@@ -83,19 +85,16 @@ pub fn build_synthesis_plan(
 }
 
 pub fn merge_owned_candidate_normalization_edits(candidates: &mut [MacroCandidate]) {
-    let mut owned_by_parent = BTreeMap::<String, Vec<OwnedNormalizationEdit>>::new();
+    let mut owned_by_parent = BTreeMap::<LeanString, Vec<OwnedNormalizationEdit>>::new();
     for candidate in candidates.iter() {
         if candidate.strategy == MacroCandidateStrategy::OwnedByParent
-            && let Some(owner_id) = candidate.owner_id.as_deref()
+            && let Some(owner_id) = &candidate.owner_id
         {
-            owned_by_parent
-                .entry(owner_id.to_string())
-                .or_default()
-                .push((
-                    candidate.id.clone(),
-                    candidate.outer_span,
-                    candidate.normalization_edits.clone(),
-                ));
+            owned_by_parent.entry(owner_id.clone()).or_default().push((
+                candidate.id.clone(),
+                candidate.outer_span,
+                candidate.normalization_edits.clone(),
+            ));
         }
     }
 
@@ -104,15 +103,15 @@ pub fn merge_owned_candidate_normalization_edits(candidates: &mut [MacroCandidat
             continue;
         }
         let mut edits = candidate.normalization_edits.clone();
-        collect_owned_normalization_edits(candidate.id.as_str(), &owned_by_parent, &mut edits);
+        collect_owned_normalization_edits(&candidate.id, &owned_by_parent, &mut edits);
         sort_and_dedup_normalization_edits(&mut edits);
         candidate.normalization_edits = edits;
     }
 }
 
 fn collect_owned_normalization_edits(
-    owner_id: &str,
-    owned_by_parent: &BTreeMap<String, Vec<OwnedNormalizationEdit>>,
+    owner_id: &LeanString,
+    owned_by_parent: &BTreeMap<LeanString, Vec<OwnedNormalizationEdit>>,
     edits: &mut Vec<NormalizationEdit>,
 ) {
     let Some(children) = owned_by_parent.get(owner_id) else {
@@ -124,13 +123,13 @@ fn collect_owned_normalization_edits(
 
     for (child_id, _, child_edits) in sorted_children {
         edits.extend(child_edits.iter().cloned());
-        collect_owned_normalization_edits(child_id.as_str(), owned_by_parent, edits);
+        collect_owned_normalization_edits(child_id, owned_by_parent, edits);
     }
 }
 
 fn normalize_candidate_output(
-    source: &str,
-    source_name: &str,
+    source: &LeanString,
+    source_name: &LeanString,
     candidate: &MacroCandidate,
     source_anchors: &[usize],
 ) -> Result<NormalizedCandidateOutput, MappedTextError> {
@@ -162,7 +161,7 @@ fn normalize_candidate_output(
         }
 
         while insertion_index < insertions.len() && insertions[insertion_index].0 == strip.start {
-            rendered.push_unmapped(&insertions[insertion_index].1);
+            rendered.push_unmapped_dynamic(&insertions[insertion_index].1);
             generated_len += insertions[insertion_index].1.len();
             insertion_index += 1;
         }
@@ -186,7 +185,7 @@ fn normalize_candidate_output(
         && insertions[insertion_index].0 <= candidate.outer_span.end
     {
         if insertions[insertion_index].0 == candidate.outer_span.end {
-            rendered.push_unmapped(&insertions[insertion_index].1);
+            rendered.push_unmapped_dynamic(&insertions[insertion_index].1);
         }
         insertion_index += 1;
     }
@@ -200,7 +199,7 @@ fn normalize_candidate_output(
 fn collect_normalization_operations(
     candidate: &MacroCandidate,
     source_len: usize,
-) -> (Vec<Span>, Vec<(usize, String)>) {
+) -> (Vec<Span>, Vec<(usize, LeanString)>) {
     let mut strips = Vec::new();
     let mut insertions = Vec::new();
     let outer_start = candidate.outer_span.start.min(source_len);
@@ -263,7 +262,7 @@ fn append_normalized_chunk(
         while *insertion_index < context.insertions.len()
             && context.insertions[*insertion_index].0 == cursor
         {
-            rendered.push_unmapped(&context.insertions[*insertion_index].1);
+            rendered.push_unmapped_dynamic(&context.insertions[*insertion_index].1);
             *generated_len += context.insertions[*insertion_index].1.len();
             *insertion_index += 1;
         }
@@ -275,7 +274,7 @@ fn append_normalized_chunk(
             .map(|(at, _)| *at)
             .unwrap_or(end);
         let span = Span::new(cursor, next_insertion);
-        if let Some(chunk) = context.source.as_str().get(span.start..span.end)
+        if let Some(chunk) = context.source.text().get(span.start..span.end)
             && !chunk.is_empty()
         {
             segments.push(NormalizedSegment {
@@ -284,7 +283,7 @@ fn append_normalized_chunk(
                 len: chunk.len(),
             });
             let chunk_anchors =
-                collect_chunk_copy_anchors(context.source.as_str(), span, context.source_anchors);
+                collect_chunk_copy_anchors(context.source.text(), span, context.source_anchors);
             rendered.push(
                 chunk,
                 build_copy_map(context.source_name, context.source, span, &chunk_anchors),
@@ -320,13 +319,18 @@ fn collect_chunk_copy_anchors(source: &str, span: Span, source_anchors: &[usize]
 mod tests {
     use super::*;
     use crate::framework::{MacroCandidateKind, MacroCandidateStrategy, MacroFlavor};
+    use lean_string::LeanString;
+
+    fn ls(text: &str) -> LeanString {
+        LeanString::from(text)
+    }
 
     fn candidate(outer_span: Span, normalization_edits: Vec<NormalizationEdit>) -> MacroCandidate {
         MacroCandidate {
-            id: "candidate".to_string(),
+            id: LeanString::from_static_str("candidate"),
             kind: MacroCandidateKind::CallExpression,
-            imported_name: "t".to_string(),
-            local_name: "t".to_string(),
+            imported_name: LeanString::from_static_str("t"),
+            local_name: LeanString::from_static_str("t"),
             flavor: MacroFlavor::Direct,
             outer_span,
             normalized_span: outer_span,
@@ -338,17 +342,22 @@ mod tests {
     }
 
     fn normalize_for_test(
-        source: &str,
+        source: &LeanString,
         candidate: &MacroCandidate,
-    ) -> (String, Vec<NormalizedSegment>) {
-        let output = normalize_candidate_output(source, "test.tsx", candidate, &[])
-            .expect("normalized candidate output should succeed");
+    ) -> (LeanString, Vec<NormalizedSegment>) {
+        let output = normalize_candidate_output(
+            source,
+            &LeanString::from_static_str("test.tsx"),
+            candidate,
+            &[],
+        )
+        .expect("normalized candidate output should succeed");
         (output.rendered.code, output.segments)
     }
 
     #[test]
     fn applies_insertions_at_outer_span_boundaries() {
-        let source = "prefix<VALUE>suffix";
+        let source = ls("prefix<VALUE>suffix");
         let outer_start = "prefix<".len();
         let outer_end = outer_start + "VALUE".len();
         let candidate = candidate(
@@ -356,16 +365,16 @@ mod tests {
             vec![
                 NormalizationEdit::Insert {
                     at: outer_start,
-                    text: "[".to_string(),
+                    text: LeanString::from_static_str("["),
                 },
                 NormalizationEdit::Insert {
                     at: outer_end,
-                    text: "]".to_string(),
+                    text: LeanString::from_static_str("]"),
                 },
             ],
         );
 
-        let (normalized, segments) = normalize_for_test(source, &candidate);
+        let (normalized, segments) = normalize_for_test(&source, &candidate);
 
         assert_eq!(normalized, "[VALUE]");
         assert_eq!(
@@ -380,7 +389,7 @@ mod tests {
 
     #[test]
     fn applies_insertions_adjacent_to_deleted_ranges() {
-        let source = "abcde";
+        let source = ls("abcde");
         let candidate = candidate(
             Span::new(0, source.len()),
             vec![
@@ -389,16 +398,16 @@ mod tests {
                 },
                 NormalizationEdit::Insert {
                     at: 1,
-                    text: "[".to_string(),
+                    text: LeanString::from_static_str("["),
                 },
                 NormalizationEdit::Insert {
                     at: 3,
-                    text: "]".to_string(),
+                    text: LeanString::from_static_str("]"),
                 },
             ],
         );
 
-        let (normalized, segments) = normalize_for_test(source, &candidate);
+        let (normalized, segments) = normalize_for_test(&source, &candidate);
 
         assert_eq!(normalized, "a[]de");
         assert_eq!(
@@ -420,7 +429,7 @@ mod tests {
 
     #[test]
     fn clamps_delete_spans_to_outer_span() {
-        let source = "XXabcdeYY";
+        let source = ls("XXabcdeYY");
         let outer_start = "XX".len();
         let outer_end = outer_start + "abcde".len();
         let candidate = candidate(
@@ -430,7 +439,7 @@ mod tests {
             }],
         );
 
-        let (normalized, segments) = normalize_for_test(source, &candidate);
+        let (normalized, segments) = normalize_for_test(&source, &candidate);
 
         assert_eq!(normalized, "");
         assert!(segments.is_empty());
@@ -438,7 +447,7 @@ mod tests {
 
     #[test]
     fn preserves_byte_offsets_for_unicode_and_crlf_sources() {
-        let source = "A😀\r\nBéZ";
+        let source = ls("A😀\r\nBéZ");
         let outer_start = "A".len();
         let outer_text = "😀\r\nBé";
         let outer_end = outer_start + outer_text.len();
@@ -447,19 +456,19 @@ mod tests {
             vec![
                 NormalizationEdit::Insert {
                     at: outer_start,
-                    text: "<".to_string(),
+                    text: LeanString::from_static_str("<"),
                 },
                 NormalizationEdit::Delete {
                     span: Span::new(outer_start + "😀".len(), outer_start + "😀\r\n".len()),
                 },
                 NormalizationEdit::Insert {
                     at: outer_end,
-                    text: ">".to_string(),
+                    text: LeanString::from_static_str(">"),
                 },
             ],
         );
 
-        let (normalized, segments) = normalize_for_test(source, &candidate);
+        let (normalized, segments) = normalize_for_test(&source, &candidate);
 
         assert_eq!(normalized, "<😀Bé>");
         assert_eq!(
@@ -481,13 +490,13 @@ mod tests {
 
     #[test]
     fn preserves_boundary_insertions_between_touching_delete_ranges_after_owned_merge() {
-        let source = "abcdef";
+        let source = ls("abcdef");
         let mut candidates = vec![
             MacroCandidate {
-                id: "parent".to_string(),
+                id: LeanString::from_static_str("parent"),
                 kind: MacroCandidateKind::CallExpression,
-                imported_name: "t".to_string(),
-                local_name: "t".to_string(),
+                imported_name: LeanString::from_static_str("t"),
+                local_name: LeanString::from_static_str("t"),
                 flavor: MacroFlavor::Direct,
                 outer_span: Span::new(0, source.len()),
                 normalized_span: Span::new(0, source.len()),
@@ -499,24 +508,24 @@ mod tests {
                 strategy: MacroCandidateStrategy::Standalone,
             },
             MacroCandidate {
-                id: "child".to_string(),
+                id: LeanString::from_static_str("child"),
                 kind: MacroCandidateKind::CallExpression,
-                imported_name: "t".to_string(),
-                local_name: "t".to_string(),
+                imported_name: LeanString::from_static_str("t"),
+                local_name: LeanString::from_static_str("t"),
                 flavor: MacroFlavor::Direct,
                 outer_span: Span::new(0, source.len()),
                 normalized_span: Span::new(0, source.len()),
                 normalization_edits: vec![
                     NormalizationEdit::Insert {
                         at: 3,
-                        text: "[]".to_string(),
+                        text: LeanString::from_static_str("[]"),
                     },
                     NormalizationEdit::Delete {
                         span: Span::new(3, 5),
                     },
                 ],
                 source_map_anchor: None,
-                owner_id: Some("parent".to_string()),
+                owner_id: Some(LeanString::from_static_str("parent")),
                 strategy: MacroCandidateStrategy::OwnedByParent,
             },
         ];
@@ -524,10 +533,10 @@ mod tests {
         merge_owned_candidate_normalization_edits(&mut candidates);
         let parent = candidates
             .iter()
-            .find(|candidate| candidate.id == "parent")
+            .find(|candidate| candidate.id == LeanString::from_static_str("parent"))
             .expect("parent candidate should exist");
 
-        let (normalized, segments) = normalize_for_test(source, parent);
+        let (normalized, segments) = normalize_for_test(&source, parent);
 
         assert_eq!(normalized, "a[]f");
         assert_eq!(
@@ -549,7 +558,7 @@ mod tests {
 
     #[test]
     fn normalization_string_and_mapped_render_paths_emit_identical_code() {
-        let source = "prefix<A😀\r\nBéZ>suffix";
+        let source = ls("prefix<A😀\r\nBéZ>suffix");
         let outer_start = "prefix<".len();
         let outer_end = outer_start + "A😀\r\nBéZ".len();
         let candidate = candidate(
@@ -557,23 +566,24 @@ mod tests {
             vec![
                 NormalizationEdit::Insert {
                     at: outer_start,
-                    text: "(".to_string(),
+                    text: LeanString::from_static_str("("),
                 },
                 NormalizationEdit::Delete {
                     span: Span::new(outer_start + "A".len(), outer_start + "A😀\r\n".len()),
                 },
                 NormalizationEdit::Insert {
                     at: outer_start + "A😀\r\n".len(),
-                    text: "::".to_string(),
+                    text: LeanString::from_static_str("::"),
                 },
                 NormalizationEdit::Insert {
                     at: outer_end,
-                    text: ")".to_string(),
+                    text: LeanString::from_static_str(")"),
                 },
             ],
         );
 
-        let output = normalize_candidate_output(source, "test.tsx", &candidate, &[])
+        let source_name = ls("test.tsx");
+        let output = normalize_candidate_output(&source, &source_name, &candidate, &[])
             .expect("unified normalization should succeed");
 
         assert_eq!(output.rendered.code, "(A::BéZ)");
