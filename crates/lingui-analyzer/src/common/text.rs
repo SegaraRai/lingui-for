@@ -1,7 +1,13 @@
 use tree_sitter::Node;
 
-pub(crate) fn text<'a>(source: &'a str, node: Node<'_>) -> &'a str {
+use super::Span;
+
+pub(crate) fn node_text<'a>(source: &'a str, node: Node<'_>) -> &'a str {
     &source[node.start_byte()..node.end_byte()]
+}
+
+pub(crate) fn span_text(source: &str, span: Span) -> &str {
+    &source[span.start..span.end]
 }
 
 pub(crate) fn unquote(text: &str) -> Option<&str> {

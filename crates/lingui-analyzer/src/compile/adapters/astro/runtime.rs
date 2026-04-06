@@ -3,7 +3,7 @@ use tree_sitter::Node;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
-    text,
+    node_text, span_text,
 };
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered,
@@ -620,11 +620,11 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
                     .children(&mut start_tag.walk())
                     .find(|child| child.kind() == "tag_name")
             })
-            .map(|tag_name| text(source, tag_name)),
+            .map(|tag_name| node_text(source, tag_name)),
         "self_closing_tag" => node
             .children(&mut node.walk())
             .find(|child| child.kind() == "tag_name")
-            .map(|tag_name| text(source, tag_name)),
+            .map(|tag_name| node_text(source, tag_name)),
         _ => None,
     }
 }
@@ -783,7 +783,7 @@ fn append_copied_content_hole_attribute<'a>(
         rendered,
         source,
         Span::new(name.start_byte(), attribute.end_byte()),
-    )?;
+    );
     Ok(())
 }
 
@@ -795,7 +795,7 @@ fn find_content_hole_attributes<'a>(source: &'a str, tag: Node<'a>) -> Vec<Node<
             attribute
                 .children(&mut attribute.walk())
                 .find(|grandchild| grandchild.kind() == "attribute_name")
-                .is_some_and(|name| matches!(text(source, name), "set:html" | "set:text"))
+                .is_some_and(|name| matches!(node_text(source, name), "set:html" | "set:text"))
                 && attribute.children(&mut attribute.walk()).any(|child| {
                     matches!(
                         child.kind(),
@@ -824,25 +824,12 @@ fn push_original_anchor(
     );
 }
 
-fn push_original_span(
-    rendered: &mut MappedText<'_>,
-    source: &IndexedText<'_>,
-    span: Span,
-) -> Result<(), AstroAdapterError> {
-    let text = source
-        .slice(span.start..span.end)
-        .map(|slice| slice.as_str())
-        .ok_or(
-            AstroAdapterError::InvalidOriginalSpanWhileLoweringAstroSourceMap {
-                start: span.start,
-                end: span.end,
-            },
-        )?;
+fn push_original_span(rendered: &mut MappedText<'_>, source: &IndexedText<'_>, span: Span) {
+    let text = span_text(source.text(), span);
     rendered.push(
         text,
         build_span_anchor_map(rendered.source_name(), source, text, span.start, span.end),
     );
-    Ok(())
 }
 
 #[cfg(test)]

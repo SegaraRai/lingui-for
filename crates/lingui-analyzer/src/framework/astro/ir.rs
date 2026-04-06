@@ -1,6 +1,7 @@
+use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::{Span, is_component_tag_name, text};
+use crate::common::{Span, is_component_tag_name, node_text, span_text};
 use crate::syntax::parse::{ParseError, parse_astro};
 
 #[derive(thiserror::Error, Debug)]
@@ -23,8 +24,8 @@ pub struct AstroIrSegment {
 pub struct LoweredAstroHtmlInterpolation {
     pub outer_span: Span,
     pub inner_span: Span,
-    pub original: String,
-    pub code: String,
+    pub original: LeanString,
+    pub code: LeanString,
     pub segments: Vec<AstroIrSegment>,
 }
 
@@ -38,7 +39,7 @@ pub struct BundledAstroHtmlInterpolation {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BundledAstroHtmlInterpolationModule {
-    pub code: String,
+    pub code: LeanString,
     pub expressions: Vec<BundledAstroHtmlInterpolation>,
 }
 
@@ -64,7 +65,7 @@ impl BundledAstroHtmlInterpolation {
 
 #[derive(Debug, Default)]
 struct AstroIrBuilder {
-    code: String,
+    code: LeanString,
     segments: Vec<AstroIrSegment>,
 }
 
@@ -78,10 +79,9 @@ impl AstroIrBuilder {
             return;
         }
         let start = self.code.len();
-        self.code.push_str(&source[span.start..span.end]);
-        let end = self.code.len();
+        self.code.push_str(span_text(source, span));
         self.segments.push(AstroIrSegment {
-            generated: Span::new(start, end),
+            generated: span.zeroed().shifted(start),
             original: span,
         });
     }
@@ -95,7 +95,7 @@ impl AstroIrBuilder {
         self.code.push_str(&lowered.code);
         for segment in lowered.segments {
             self.segments.push(AstroIrSegment {
-                generated: Span::new(base + segment.generated.start, base + segment.generated.end),
+                generated: segment.generated.shifted(base),
                 original: segment.original,
             });
         }
@@ -111,7 +111,7 @@ impl AstroIrBuilder {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct LoweredNode {
-    code: String,
+    code: LeanString,
     segments: Vec<AstroIrSegment>,
 }
 
@@ -128,7 +128,7 @@ pub fn lower_astro_html_interpolations(
 pub fn bundle_html_interpolations(
     lowered: &[LoweredAstroHtmlInterpolation],
 ) -> BundledAstroHtmlInterpolationModule {
-    let mut code = String::new();
+    let mut code = LeanString::new();
     let mut expressions = Vec::with_capacity(lowered.len());
 
     for (index, interpolation) in lowered.iter().enumerate() {
@@ -147,10 +147,7 @@ pub fn bundle_html_interpolations(
                 .segments
                 .iter()
                 .map(|segment| AstroIrSegment {
-                    generated: Span::new(
-                        synthetic_start + segment.generated.start,
-                        synthetic_start + segment.generated.end,
-                    ),
+                    generated: segment.generated.shifted(synthetic_start),
                     original: segment.original,
                 })
                 .collect(),
@@ -174,7 +171,7 @@ pub fn lower_html_interpolation_node(
     Ok(LoweredAstroHtmlInterpolation {
         outer_span,
         inner_span,
-        original: source[inner_span.start..inner_span.end].to_string(),
+        original: LeanString::from(span_text(source, inner_span)),
         code: lowered.code,
         segments: lowered.segments,
     })
@@ -223,10 +220,10 @@ fn lower_interpolation_expression(
     }
 
     let lowered = builder.finish();
-    let trimmed_code = lowered.code.trim().to_string();
+    let trimmed_code = LeanString::from(lowered.code.trim());
     if trimmed_code.starts_with("...") {
         return Ok(LoweredNode {
-            code: "__astro_spread_child__".to_string(),
+            code: LeanString::from_static_str("__astro_spread_child__"),
             segments: Vec::new(),
         });
     }
@@ -265,8 +262,8 @@ fn trim_segments(raw_code: &str, segments: Vec<AstroIrSegment>) -> Vec<AstroIrSe
 }
 
 fn lowered_trimmed_original(source: &str, span: Span) -> LoweredNode {
-    let raw = &source[span.start..span.end];
-    let code = raw.trim().to_string();
+    let raw = span_text(source, span);
+    let code = LeanString::from(raw.trim());
     let segments = trim_segments(
         raw,
         vec![AstroIrSegment {
@@ -286,13 +283,13 @@ fn lower_expressionish_child(source: &str, node: Node<'_>) -> Result<LoweredNode
         // TypeScript expressions. Lower them to an opaque placeholder so validation can still
         // run on the original Astro tree without making the analysis IR unparsable.
         "spread_element" => Ok(LoweredNode {
-            code: "__astro_spread_child__".to_string(),
+            code: LeanString::from_static_str("__astro_spread_child__"),
             segments: Vec::new(),
         }),
         _ => Ok(LoweredNode {
-            code: text(source, node).to_string(),
+            code: LeanString::from(node_text(source, node)),
             segments: vec![AstroIrSegment {
-                generated: Span::new(0, node.end_byte() - node.start_byte()),
+                generated: Span::from_node(node).zeroed(),
                 original: Span::from_node(node),
             }],
         }),
@@ -358,11 +355,11 @@ fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode
         .children(&mut cursor)
         .find(|child| child.kind() == "tag_name")
         .ok_or(AstroIrError::MissingTagName)?;
-    let tag_name = text(source, tag_name_node);
+    let tag_name = node_text(source, tag_name_node);
 
     Ok(if is_component_tag_name(tag_name) {
         LoweredNode {
-            code: tag_name.to_string(),
+            code: LeanString::from(tag_name),
             segments: vec![AstroIrSegment {
                 generated: Span::new(0, tag_name.len()),
                 original: Span::from_node(tag_name_node),
@@ -370,7 +367,7 @@ fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode
         }
     } else {
         LoweredNode {
-            code: format!("{tag_name:?}"),
+            code: LeanString::from(format!("{tag_name:?}")),
             segments: Vec::new(),
         }
     })
@@ -411,7 +408,7 @@ fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNo
 
     if ordered.is_empty() {
         return Ok(LoweredNode {
-            code: "null".to_string(),
+            code: LeanString::from_static_str("null"),
             segments: Vec::new(),
         });
     }
@@ -463,7 +460,7 @@ fn render_spread_attribute(source: &str, node: Node<'_>) -> Option<LoweredNode> 
 }
 
 fn trim_leading_dots(lowered: LoweredNode) -> LoweredNode {
-    let trimmed_code = lowered.code.trim_start_matches('.').to_string();
+    let trimmed_code = LeanString::from(lowered.code.trim_start_matches('.'));
     let leading_trim = lowered.code.len().saturating_sub(trimmed_code.len());
     let segments = lowered
         .segments
@@ -501,7 +498,7 @@ fn render_attribute(
         return Ok(None);
     };
 
-    let key = text(source, name_node);
+    let key = node_text(source, name_node);
     let mut value = None;
     let mut child_cursor = attribute.walk();
     for child in attribute.children(&mut child_cursor) {
@@ -511,9 +508,9 @@ fn render_attribute(
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
                 Some(LoweredNode {
-                    code: source[inner.start..inner.end].to_string(),
+                    code: LeanString::from(span_text(source, inner)),
                     segments: vec![AstroIrSegment {
-                        generated: Span::new(0, inner.end - inner.start),
+                        generated: inner.zeroed(),
                         original: inner,
                     }],
                 })
@@ -525,7 +522,7 @@ fn render_attribute(
     let mut builder = AstroIrBuilder::default();
     builder.push_inserted(&format!("{key:?}: "));
     builder.push_lowered(value.unwrap_or(LoweredNode {
-        code: "true".to_string(),
+        code: LeanString::from_static_str("true"),
         segments: Vec::new(),
     }));
     Ok(Some(builder.finish()))
@@ -553,7 +550,7 @@ fn render_quoted_attribute_value(
             "attribute_interpolation" => parts.push(render_attribute_interpolation(source, child)),
             _ => {
                 let mut builder = AstroIrBuilder::default();
-                builder.push_quoted_literal(text(source, child));
+                builder.push_quoted_literal(node_text(source, child));
                 parts.push(builder.finish());
             }
         }
@@ -568,7 +565,7 @@ fn render_quoted_attribute_value(
 
     if parts.is_empty() {
         return Ok(LoweredNode {
-            code: "\"\"".to_string(),
+            code: LeanString::from_static_str("\"\""),
             segments: Vec::new(),
         });
     }
@@ -601,7 +598,7 @@ fn render_markup_child(source: &str, node: Node<'_>) -> Result<Option<LoweredNod
         "element" | "self_closing_tag" => lower_element_like(source, node).map(Some),
         "html_interpolation" => Ok(Some(lower_interpolation_expression(source, node)?)),
         "permissible_text" => {
-            let value = text(source, node);
+            let value = node_text(source, node);
             if value.is_empty() {
                 Ok(None)
             } else {
@@ -612,7 +609,7 @@ fn render_markup_child(source: &str, node: Node<'_>) -> Result<Option<LoweredNod
         }
         "comment" => Ok(None),
         _ => {
-            let value = text(source, node);
+            let value = node_text(source, node);
             if value.trim().is_empty() {
                 Ok(None)
             } else {

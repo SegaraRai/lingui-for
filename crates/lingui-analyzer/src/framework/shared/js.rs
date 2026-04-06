@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use lean_string::LeanString;
 use tree_sitter::{Node, Tree};
 
-use crate::common::{NormalizationEdit, ScriptLang, Span, text};
+use crate::common::{NormalizationEdit, ScriptLang, Span, node_text, span_text};
 use crate::framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
 };
@@ -131,8 +131,7 @@ impl ExpressionParseCache {
             return Ok(tree.clone());
         }
 
-        let slice = &source[span.start..span.end];
-        let tree = language.parse(slice)?;
+        let tree = language.parse(span_text(source, span))?;
         self.trees.insert(key, tree.clone());
         Ok(tree)
     }
@@ -288,7 +287,7 @@ fn declare_variable_declaration(source: &str, node: Node<'_>, scope: &mut Lexica
 fn declare_pattern(source: &str, node: Node<'_>, scope: &mut LexicalScope) {
     match node.kind() {
         "identifier" | "shorthand_property_identifier_pattern" => {
-            scope.declare(text(source, node));
+            scope.declare(node_text(source, node));
         }
         "required_parameter" | "optional_parameter" => {
             if let Some(pattern) = node.child_by_field_name("pattern") {
@@ -326,7 +325,7 @@ fn to_call_candidate(
     match syntax {
         JsMacroSyntax::Standard => {
             let identifier = call_target_identifier(function)?;
-            let local_name = text(source, identifier);
+            let local_name = node_text(source, identifier);
             let import_decl = scope.resolve_macro(local_name)?;
             let identifier_span = Span::from_node(identifier).shifted(base_offset);
             Some(MacroCandidate {
@@ -358,7 +357,7 @@ fn to_svelte_call_candidate(
     scope: &LexicalScope,
 ) -> Option<MacroCandidate> {
     if let Some(identifier) = call_target_identifier(function) {
-        let local_name = text(source, identifier);
+        let local_name = node_text(source, identifier);
 
         if let Some(reactive_name) = local_name.strip_prefix('$') {
             let import_decl = scope.resolve_macro(reactive_name)?;
@@ -401,12 +400,14 @@ fn to_svelte_call_candidate(
 
     let member_object = function.child_by_field_name("object")?;
     let member_property = function.child_by_field_name("property")?;
-    if member_property.kind() != "property_identifier" || text(source, member_property) != "eager" {
+    if member_property.kind() != "property_identifier"
+        || node_text(source, member_property) != "eager"
+    {
         return None;
     }
 
     let identifier = call_target_identifier(member_object)?;
-    let local_name = text(source, identifier);
+    let local_name = node_text(source, identifier);
     let import_decl = scope.resolve_macro(local_name)?;
     let object_span = Span::from_node(member_object).shifted(base_offset);
     let property_span = Span::from_node(member_property).shifted(base_offset);
@@ -534,7 +535,7 @@ fn collect_import_declared_names(node: Node<'_>, source: &str, names: &mut Vec<L
 fn collect_pattern_names(node: Node<'_>, source: &str, names: &mut Vec<LeanString>) {
     match node.kind() {
         "identifier" | "shorthand_property_identifier_pattern" => {
-            names.push(LeanString::from(text(source, node)));
+            names.push(LeanString::from(node_text(source, node)));
         }
         "required_parameter" | "optional_parameter" => {
             if let Some(pattern) = node.child_by_field_name("pattern") {

@@ -3,7 +3,7 @@ use tree_sitter::Node;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
-    text,
+    node_text,
 };
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_node, copy_span,
@@ -570,11 +570,11 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
                     .children(&mut start_tag.walk())
                     .find(|child| child.kind() == "tag_name")
             })
-            .map(|tag_name| text(source, tag_name)),
+            .map(|tag_name| node_text(source, tag_name)),
         "self_closing_tag" => node
             .children(&mut node.walk())
             .find(|child| child.kind() == "tag_name")
-            .map(|tag_name| text(source, tag_name)),
+            .map(|tag_name| node_text(source, tag_name)),
         _ => None,
     }
 }
@@ -625,15 +625,13 @@ fn lower_original_wrapper_to_snippet(
                 .find(|child| child.kind() == "tag_name")
                 .ok_or(SvelteAdapterError::MissingTagNameWhileLoweringSvelteSnippet)?;
             let tag_name_span = Span::from_node(tag_name);
-            let node_span = Span::from_node(node);
-            let source_slice = &source[node_span.start..node_span.end];
-            let self_closing_offset = source_slice
+            let self_closing_offset = node_text(source, node)
                 .rfind("/>")
                 .ok_or(RuntimeComponentError::ExpectedJsxElementDescriptor)?;
             push_copied_span(
                 &mut rendered,
                 input,
-                Span::new(node_span.start, node_span.start + self_closing_offset),
+                Span::new(node.start_byte(), node.start_byte() + self_closing_offset),
             )?;
             rendered.push_unmapped(">{@render children?.()}</");
             push_copied_span(&mut rendered, input, tag_name_span)?;

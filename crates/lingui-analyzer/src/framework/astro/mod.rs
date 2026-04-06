@@ -89,12 +89,14 @@ mod tests {
 
     use lean_string::LeanString;
 
-    use super::analyze_astro;
+    use crate::common::span_text;
     use crate::conventions::{
         FrameworkConventions, FrameworkKind, MacroConventions, MacroPackage, MacroPackageKind,
         RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions,
     };
     use crate::framework::{AnalyzeOptions, WhitespaceMode};
+
+    use super::analyze_astro;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)
@@ -163,9 +165,7 @@ const ready = true;
             .semantic
             .template_expressions
             .iter()
-            .find(|expression| {
-                source[expression.outer_span.start..expression.outer_span.end].starts_with('{')
-            })
+            .find(|expression| span_text(source, expression.outer_span).starts_with('{'))
             .expect("html interpolation expression exists");
 
         assert_eq!(expression.candidates.len(), 1);

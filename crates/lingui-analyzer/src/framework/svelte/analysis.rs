@@ -1,7 +1,9 @@
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span, text, unquote};
+use crate::common::{
+    EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span, node_text, span_text, unquote,
+};
 use crate::conventions::{FrameworkConventions, MacroPackageKind};
 use crate::diagnostics::svelte::module_script_must_use_core_macro_package;
 use crate::syntax::parse::parse_svelte;
@@ -124,7 +126,7 @@ fn analyze_script_block(
         inner_span: Span::from_node(raw_text),
     };
 
-    let script_source = &source[content_region.inner_span.start..content_region.inner_span.end];
+    let script_source = span_text(source, content_region.inner_span);
     let language = script_language(source, start_tag);
     let script_tree = language.parse(script_source)?;
     extend_shifted_node_start_anchors(
@@ -267,7 +269,7 @@ fn push_expression(
     };
     let inner_span = Span::from_node(raw_text);
     let outer_span = Span::from_node(node);
-    let expression_source = &source[inner_span.start..inner_span.end];
+    let expression_source = span_text(source, inner_span);
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
@@ -301,7 +303,7 @@ fn push_raw_text_expression(
     };
 
     let inner_span = Span::from_node(raw_text);
-    let expression_source = &source[inner_span.start..inner_span.end];
+    let expression_source = span_text(source, inner_span);
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, ScriptLang::Ts)?;
@@ -341,7 +343,7 @@ fn push_each_start_expression(
     let shadowed_names = context.shadowed_names().cloned().collect::<Vec<_>>();
 
     let candidates = collect_macro_candidates(
-        text(source, identifier),
+        node_text(source, identifier),
         tree.root_node(),
         imports,
         inner_span.start,
@@ -374,7 +376,7 @@ fn collect_script_macro_imports(
         let Some(source_node) = child.child_by_field_name("source") else {
             continue;
         };
-        let Some(module_specifier) = unquote(text(source, source_node)) else {
+        let Some(module_specifier) = unquote(node_text(source, source_node)) else {
             continue;
         };
         if !conventions.accepts_macro_package(module_specifier) {
@@ -410,7 +412,7 @@ fn collect_script_macro_import_statement_spans(
         let Some(source_node) = child.child_by_field_name("source") else {
             continue;
         };
-        let Some(module_specifier) = unquote(text(source, source_node)) else {
+        let Some(module_specifier) = unquote(node_text(source, source_node)) else {
             continue;
         };
         if !conventions.accepts_macro_package(module_specifier) {
@@ -457,7 +459,7 @@ fn start_tag_is_module(source: &str, start_tag: Node<'_>) -> bool {
             continue;
         }
 
-        let attribute_text = text(source, child).trim();
+        let attribute_text = node_text(source, child).trim();
         if attribute_text == "module" {
             return true;
         }
@@ -521,7 +523,7 @@ fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
             continue;
         };
 
-        if text(source, name_node) != "lang" {
+        if node_text(source, name_node) != "lang" {
             continue;
         }
 
@@ -530,7 +532,7 @@ fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
             .named_children(&mut value_cursor)
             .find(|grandchild| grandchild.kind() != "attribute_name")
             .map(|value_node| {
-                let raw_value = text(source, value_node);
+                let raw_value = node_text(source, value_node);
                 unquote(raw_value)
                     .unwrap_or(raw_value)
                     .trim()

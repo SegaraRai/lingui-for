@@ -1,6 +1,6 @@
 use lean_string::LeanString;
 
-use crate::common::{IndexedText, Span, build_span_anchor_map};
+use crate::common::{IndexedText, Span, build_span_anchor_map, span_text};
 use crate::compile::CompileReplacementInternal;
 use crate::conventions::FrameworkConventions;
 
@@ -21,8 +21,7 @@ pub(super) fn append_runtime_injection_replacements(
     }
 
     if let Some(instance_script) = &plan.instance_script {
-        let original_script_content =
-            &source[instance_script.content_span.start..instance_script.content_span.end];
+        let original_script_content = span_text(source, instance_script.content_span);
         let injections = create_runtime_binding_insertions(
             original_script_content,
             runtime_bindings,
