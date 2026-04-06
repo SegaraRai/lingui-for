@@ -118,18 +118,18 @@ mod tests {
 
     use lean_string::LeanString;
 
+    use crate::common::{ScriptLang, Span};
+    use crate::compile::adapters::{
+        SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
+    };
+    use crate::conventions::{
+        MacroConventions, MacroPackage, MacroPackageKind, RuntimeBindingSeeds, RuntimeConventions,
+        RuntimeExportConventions, SyntheticConventions, WrapperConventions,
+    };
     use crate::{
         CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
         CompileTranslationMode, FrameworkConventions, FrameworkKind, MacroFlavor,
         NormalizedSegment, RuntimeRequirements, RuntimeWarningOptions, TransformedPrograms,
-        common::{ScriptLang, Span},
-        compile::adapters::{
-            SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
-        },
-        conventions::{
-            MacroConventions, MacroPackage, MacroPackageKind, RuntimeBindingSeeds,
-            RuntimeConventions, RuntimeExportConventions, SyntheticConventions, WrapperConventions,
-        },
     };
 
     use super::finish_compile;

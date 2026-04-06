@@ -220,11 +220,12 @@ fn whitespace_span_before_object(source: &str, start: usize, limit: usize) -> Op
 mod tests {
     use lean_string::LeanString;
 
+    use crate::syntax::parse::parse_tsx;
+
     use super::{
         collect_i18n_comment_whitespace_spans, collect_variable_initializer_declarations,
         initializer_start_for_declarator, normalize_i18n_comment_layout_rendered,
     };
-    use crate::syntax::parse::parse_tsx;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)

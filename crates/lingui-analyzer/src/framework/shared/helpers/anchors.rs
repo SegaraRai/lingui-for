@@ -47,8 +47,9 @@ fn extend_line_start_anchors(source: &str, base_offset: usize, anchors: &mut BTr
 
 #[cfg(test)]
 mod tests {
-    use super::collect_node_start_anchors;
     use crate::syntax::parse::parse_svelte;
+
+    use super::collect_node_start_anchors;
 
     #[test]
     fn includes_line_starts_without_duplicates() {

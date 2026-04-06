@@ -629,8 +629,9 @@ fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: us
 
 #[cfg(test)]
 mod tests {
-    use super::{bundle_html_interpolations, lower_astro_html_interpolations};
     use crate::common::Span;
+
+    use super::{bundle_html_interpolations, lower_astro_html_interpolations};
 
     #[test]
     fn lowers_nested_markup_inside_html_interpolation_to_astro_el_calls() {

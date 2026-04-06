@@ -1,8 +1,6 @@
-use std::{
-    env, fs,
-    io::{self, Read},
-    process::ExitCode,
-};
+use std::io::{self, Read};
+use std::process::ExitCode;
+use std::{env, fs};
 
 use lingui_analyzer::framework::astro::ir::lower_astro_html_interpolations;
 

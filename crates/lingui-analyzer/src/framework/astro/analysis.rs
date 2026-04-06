@@ -543,9 +543,10 @@ fn is_pure_html_interpolation_expression(node: Node<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::remap_bundled_offset;
     use crate::common::Span;
     use crate::framework::astro::ir::{AstroIrSegment, BundledAstroHtmlInterpolation};
+
+    use super::remap_bundled_offset;
 
     #[test]
     fn remap_bundled_offset_handles_segment_boundaries_deterministically() {

@@ -548,9 +548,10 @@ fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
 
 #[cfg(test)]
 mod tests {
-    use super::script_language;
     use crate::common::ScriptLang;
     use crate::syntax::parse::parse_svelte;
+
+    use super::script_language;
 
     #[test]
     fn script_language_only_treats_explicit_lang_ts_as_typescript() {

@@ -1,9 +1,10 @@
 use lean_string::LeanString;
+
 use lingui_analyzer::WhitespaceMode;
+use lingui_analyzer::framework::AnalyzeOptions;
+
 #[path = "svelte_conventions.rs"]
 mod svelte_conventions;
-
-use lingui_analyzer::framework::AnalyzeOptions;
 
 pub use svelte_conventions::svelte_default_conventions;
 
