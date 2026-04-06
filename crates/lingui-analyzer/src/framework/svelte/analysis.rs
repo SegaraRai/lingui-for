@@ -1,7 +1,7 @@
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span};
+use crate::common::{EmbeddedScriptKind, EmbeddedScriptRegion, ScriptLang, Span, text, unquote};
 use crate::conventions::{FrameworkConventions, MacroPackageKind};
 use crate::diagnostics::svelte::module_script_must_use_core_macro_package;
 use crate::syntax::parse::parse_svelte;
@@ -10,7 +10,6 @@ use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
 };
 use super::super::shared::helpers::imports::collect_import_specifiers_from_node;
-use super::super::shared::helpers::text::{text, unquote};
 use super::super::shared::js::{
     JsMacroSyntax, collect_macro_candidates, collect_top_level_declared_names_from_root,
 };
@@ -378,7 +377,7 @@ fn collect_script_macro_imports(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(module_specifier, conventions) {
+        if !conventions.accepts_macro_package(module_specifier) {
             continue;
         }
 
@@ -414,7 +413,7 @@ fn collect_script_macro_import_statement_spans(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(module_specifier, conventions) {
+        if !conventions.accepts_macro_package(module_specifier) {
             continue;
         }
 
@@ -543,10 +542,6 @@ fn script_language(source: &str, start_tag: Node<'_>) -> ScriptLang {
     }
 
     ScriptLang::Js
-}
-
-fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
-    conventions.accepts_macro_package(specifier)
 }
 
 #[cfg(test)]

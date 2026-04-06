@@ -1,10 +1,8 @@
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::Span;
+use crate::common::{Span, text};
 use crate::framework::MacroImport;
-
-use super::text::text;
 
 pub(crate) fn collect_import_specifiers_from_node(
     source: &str,

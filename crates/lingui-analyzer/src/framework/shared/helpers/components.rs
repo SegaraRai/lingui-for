@@ -1,8 +1,6 @@
 use tree_sitter::Node;
 
-use crate::common::Span;
-
-use super::text::text;
+use crate::common::{Span, text};
 
 pub(crate) fn first_non_whitespace_child_anchor(
     source: &str,

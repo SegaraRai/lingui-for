@@ -3,13 +3,12 @@ use std::collections::HashMap;
 use lean_string::LeanString;
 use tree_sitter::{Node, Tree};
 
-use crate::common::{NormalizationEdit, ScriptLang, Span};
+use crate::common::{NormalizationEdit, ScriptLang, Span, text};
 use crate::framework::{
     MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
 };
 use crate::syntax::parse::ParseError;
 
-use super::helpers::text::text;
 use super::scope::LexicalScope;
 
 #[derive(thiserror::Error, Debug)]

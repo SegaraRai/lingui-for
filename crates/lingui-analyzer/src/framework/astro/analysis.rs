@@ -4,7 +4,7 @@ use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, NormalizationEdit, ScriptLang, Span,
+    EmbeddedScriptKind, EmbeddedScriptRegion, NormalizationEdit, ScriptLang, Span, text, unquote,
 };
 use crate::conventions::FrameworkConventions;
 use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
@@ -13,7 +13,6 @@ use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
 };
 use super::super::shared::helpers::imports::collect_import_specifiers_from_node;
-use super::super::shared::helpers::text::{text, unquote};
 use super::super::shared::js::{
     ExpressionParseCache, JsMacroSyntax, collect_macro_candidates,
     collect_top_level_declared_names_from_root,
@@ -158,7 +157,7 @@ fn collect_macro_imports(
         let Some(module_specifier) = unquote(text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(module_specifier, conventions) {
+        if !conventions.accepts_macro_package(module_specifier) {
             continue;
         }
 
@@ -540,10 +539,6 @@ fn is_pure_html_interpolation_expression(node: Node<'_>) -> bool {
     }
 
     saw_named_child
-}
-
-fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
-    conventions.accepts_macro_package(specifier)
 }
 
 #[cfg(test)]

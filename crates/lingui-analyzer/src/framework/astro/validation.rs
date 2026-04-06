@@ -1,12 +1,11 @@
 use tree_sitter::Node;
 
-use crate::common::Span;
+use crate::common::{Span, text};
 use crate::diagnostics::astro::{
     unsupported_directive_in_trans, unsupported_special_element_in_trans,
 };
 
 use super::super::AnalyzeOptions;
-use super::super::shared::helpers::text::text;
 use super::AstroFrameworkError;
 
 pub(super) fn validate_runtime_lowerable_astro_component(

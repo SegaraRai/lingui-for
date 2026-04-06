@@ -2,13 +2,12 @@ use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
-    NormalizationEdit, ScriptLang, Span, sort_and_dedup_normalization_edits,
-    whitespace_replacement_edits,
+    NormalizationEdit, ScriptLang, Span, is_component_tag_name, sort_and_dedup_normalization_edits,
+    text, whitespace_replacement_edits,
 };
 
 use super::super::shared::helpers::components::first_non_whitespace_child_anchor;
 use super::super::shared::helpers::expressions::is_explicit_whitespace_string_expression;
-use super::super::shared::helpers::text::{is_component_tag_name, text};
 use super::super::shared::js::{JsMacroSyntax, collect_macro_candidates};
 use super::super::{
     AnalyzeOptions, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,

@@ -3,7 +3,7 @@ use tree_sitter::Node;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, MappedTextError, RenderedMappedText, Span,
-    build_span_anchor_map,
+    build_span_anchor_map, unquote,
 };
 use crate::syntax::parse::ParseError;
 
@@ -623,7 +623,7 @@ pub(super) fn key_name<'a>(source: &'a str, key: Node<'_>, base_offset: isize) -
         "number" => source_slice(source, key, base_offset).ok(),
         "string" => {
             let span = translated_span(key, base_offset).ok()?;
-            Some(&source[span.start + 1..span.end.saturating_sub(1)])
+            unquote(&source[span.start..span.end])
         }
         _ => None,
     }

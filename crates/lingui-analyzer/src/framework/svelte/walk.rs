@@ -1,10 +1,9 @@
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::ScriptLang;
+use crate::common::{ScriptLang, text};
 
 use super::super::AnalyzeOptions;
-use super::super::shared::helpers::text::text;
 use super::super::shared::js::{
     BindingParseMode, ExpressionParseCache, collect_declared_names_from_binding_source,
 };
@@ -258,7 +257,7 @@ pub(super) fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<Lea
         else {
             continue;
         };
-        let attribute_name = super::super::shared::helpers::text::text(source, name_node);
+        let attribute_name = text(source, name_node);
         if let Some(local_name) = attribute_name.strip_prefix("let:") {
             names.push(LeanString::from(local_name));
         }

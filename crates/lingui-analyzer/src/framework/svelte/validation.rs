@@ -1,12 +1,11 @@
 use tree_sitter::Node;
 
-use crate::common::Span;
+use crate::common::{Span, text};
 use crate::diagnostics::svelte::{
     bare_direct_macro_usage, unsupported_block_syntax_in_trans,
     unsupported_special_element_in_trans,
 };
 
-use super::super::shared::helpers::text::text;
 use super::super::{AnalyzeOptions, MacroCandidate};
 use super::{SvelteFrameworkError, is_bare_direct_svelte_macro_forbidden};
 
