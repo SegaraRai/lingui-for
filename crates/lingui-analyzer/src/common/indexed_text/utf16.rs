@@ -8,7 +8,7 @@ pub struct Utf16Table<'a> {
 
 impl<'a> Utf16Table<'a> {
     pub(super) fn new(source: &'a str, line_starts: &[usize]) -> Self {
-        // SAFETY: indicies in `line_starts` are guaranteed to be on char boundaries by the caller. This is why we restrict `new` to be `pub(super)`.
+        // SAFETY: indices in `line_starts` are guaranteed to be on char boundaries by the caller. This is why we restrict `new` to be `pub(super)`.
         let mut lines = Vec::with_capacity(line_starts.len());
         for (index, &start) in line_starts.iter().enumerate() {
             let raw_end = match line_starts.get(index + 1).copied() {
