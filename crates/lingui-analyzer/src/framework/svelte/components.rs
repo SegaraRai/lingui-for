@@ -346,7 +346,5 @@ fn component_whitespace_edits(
 }
 
 fn is_explicit_space_expression(source: &str, node: Node<'_>) -> bool {
-    let span = Span::from_node(node);
-    let text = source[span.start..span.end].trim();
-    is_explicit_whitespace_string_expression(text)
+    is_explicit_whitespace_string_expression(text(source, node).trim())
 }

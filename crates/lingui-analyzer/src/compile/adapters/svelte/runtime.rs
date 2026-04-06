@@ -3,6 +3,7 @@ use tree_sitter::Node;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
+    text,
 };
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_node, copy_span,
@@ -569,11 +570,11 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
                     .children(&mut start_tag.walk())
                     .find(|child| child.kind() == "tag_name")
             })
-            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+            .map(|tag_name| text(source, tag_name)),
         "self_closing_tag" => node
             .children(&mut node.walk())
             .find(|child| child.kind() == "tag_name")
-            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+            .map(|tag_name| text(source, tag_name)),
         _ => None,
     }
 }

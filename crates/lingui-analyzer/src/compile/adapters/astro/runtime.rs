@@ -3,6 +3,7 @@ use tree_sitter::Node;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
+    text,
 };
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered,
@@ -619,11 +620,11 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
                     .children(&mut start_tag.walk())
                     .find(|child| child.kind() == "tag_name")
             })
-            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+            .map(|tag_name| text(source, tag_name)),
         "self_closing_tag" => node
             .children(&mut node.walk())
             .find(|child| child.kind() == "tag_name")
-            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+            .map(|tag_name| text(source, tag_name)),
         _ => None,
     }
 }
@@ -794,12 +795,7 @@ fn find_content_hole_attributes<'a>(source: &'a str, tag: Node<'a>) -> Vec<Node<
             attribute
                 .children(&mut attribute.walk())
                 .find(|grandchild| grandchild.kind() == "attribute_name")
-                .is_some_and(|name| {
-                    matches!(
-                        &source[name.start_byte()..name.end_byte()],
-                        "set:html" | "set:text"
-                    )
-                })
+                .is_some_and(|name| matches!(text(source, name), "set:html" | "set:text"))
                 && attribute.children(&mut attribute.walk()).any(|child| {
                     matches!(
                         child.kind(),
