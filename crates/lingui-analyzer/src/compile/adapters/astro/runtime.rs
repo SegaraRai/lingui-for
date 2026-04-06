@@ -3,6 +3,7 @@ use tree_sitter::Node;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
+    node_text, span_text,
 };
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered,
@@ -10,7 +11,8 @@ use crate::compile::runtime_component::{
     convert_jsx_named_attribute, copy_span, find_first_named_descendant, find_node_by_span,
     first_named_child, jsx_attribute_name_node, jsx_attribute_value_node, key_name,
     lowerable_object_expression_node, push_anchor_mapped, push_copied_span, source_slice,
-    spread_argument_node, spread_element_node, translated_span, validate_runtime_placeholder_key,
+    spread_argument_node, spread_element_node, spread_prefix_start, translated_span,
+    validate_runtime_placeholder_key,
 };
 use crate::compile::{CompileTarget, RuntimeWarningMode};
 use crate::syntax::parse::{parse_astro, parse_tsx};
@@ -134,9 +136,8 @@ fn convert_runtime_trans_root(
                         runtime_warning_mode,
                     )?;
                     attributes.push_unmapped(" {...");
-                    // Skip the opening `{..` of the spread attribute before trimming and
-                    // copying any preserved prefix between `spread_span` and `object_span`.
-                    let prefix_start = (spread_span.start + 3).min(object_span.start);
+                    let prefix_start =
+                        spread_prefix_start(context.source.text(), spread_span, object_span)?;
                     let prefix_trimmed_start = context.source.text()
                         [prefix_start..object_span.start]
                         .find(|char: char| !char.is_ascii_whitespace())
@@ -619,11 +620,11 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
                     .children(&mut start_tag.walk())
                     .find(|child| child.kind() == "tag_name")
             })
-            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+            .map(|tag_name| node_text(source, tag_name)),
         "self_closing_tag" => node
             .children(&mut node.walk())
             .find(|child| child.kind() == "tag_name")
-            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+            .map(|tag_name| node_text(source, tag_name)),
         _ => None,
     }
 }
@@ -782,7 +783,7 @@ fn append_copied_content_hole_attribute<'a>(
         rendered,
         source,
         Span::new(name.start_byte(), attribute.end_byte()),
-    )?;
+    );
     Ok(())
 }
 
@@ -794,12 +795,7 @@ fn find_content_hole_attributes<'a>(source: &'a str, tag: Node<'a>) -> Vec<Node<
             attribute
                 .children(&mut attribute.walk())
                 .find(|grandchild| grandchild.kind() == "attribute_name")
-                .is_some_and(|name| {
-                    matches!(
-                        &source[name.start_byte()..name.end_byte()],
-                        "set:html" | "set:text"
-                    )
-                })
+                .is_some_and(|name| matches!(node_text(source, name), "set:html" | "set:text"))
                 && attribute.children(&mut attribute.walk()).any(|child| {
                     matches!(
                         child.kind(),
@@ -828,32 +824,19 @@ fn push_original_anchor(
     );
 }
 
-fn push_original_span(
-    rendered: &mut MappedText<'_>,
-    source: &IndexedText<'_>,
-    span: Span,
-) -> Result<(), AstroAdapterError> {
-    let text = source
-        .slice(span.start..span.end)
-        .map(|slice| slice.as_str())
-        .ok_or(
-            AstroAdapterError::InvalidOriginalSpanWhileLoweringAstroSourceMap {
-                start: span.start,
-                end: span.end,
-            },
-        )?;
+fn push_original_span(rendered: &mut MappedText<'_>, source: &IndexedText<'_>, span: Span) {
+    let text = span_text(source.text(), span);
     rendered.push(
         text,
         build_span_anchor_map(rendered.source_name(), source, text, span.start, span.end),
     );
-    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
+    use indoc::indoc;
     use lean_string::LeanString;
 
-    use super::lower_runtime_component_markup;
     use crate::common::{RenderedMappedText, Span};
     use crate::compile::{
         CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
@@ -861,7 +844,8 @@ mod tests {
     };
     use crate::framework::MacroFlavor;
     use crate::synthesis::NormalizedSegment;
-    use indoc::indoc;
+
+    use super::lower_runtime_component_markup;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)

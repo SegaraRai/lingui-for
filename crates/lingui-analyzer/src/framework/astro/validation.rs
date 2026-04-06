@@ -1,12 +1,11 @@
 use tree_sitter::Node;
 
-use crate::common::Span;
+use crate::common::{Span, node_text};
 use crate::diagnostics::astro::{
     unsupported_directive_in_trans, unsupported_special_element_in_trans,
 };
 
 use super::super::AnalyzeOptions;
-use super::super::shared::helpers::text::text;
 use super::AstroFrameworkError;
 
 pub(super) fn validate_runtime_lowerable_astro_component(
@@ -46,15 +45,16 @@ fn validate_astro_component_node(
 }
 
 fn special_astro_tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<(&'a str, Span)> {
-    let span = Span::from_node(node);
-    let source_slice = &source[span.start..span.end];
+    let start = node.start_byte();
+    let source_slice = node_text(source, node);
+
     if source_slice.starts_with("<style")
         && source_slice
             .as_bytes()
             .get("<style".len())
             .is_none_or(|byte| byte.is_ascii_whitespace() || *byte == b'>')
     {
-        return Some(("style", Span::new(span.start + 1, span.start + 6)));
+        return Some(("style", Span::new(start + 1, start + 6)));
     }
 
     if source_slice.starts_with("<script")
@@ -63,7 +63,7 @@ fn special_astro_tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<(&'a st
             .get("<script".len())
             .is_none_or(|byte| byte.is_ascii_whitespace() || *byte == b'>')
     {
-        return Some(("script", Span::new(span.start + 1, span.start + 7)));
+        return Some(("script", Span::new(start + 1, start + 7)));
     }
 
     None
@@ -109,7 +109,7 @@ fn validate_astro_element_like(
         else {
             continue;
         };
-        let attribute_name = text(source, name_node);
+        let attribute_name = node_text(source, name_node);
         if is_unsupported_astro_directive(attribute_name) {
             return Err(AstroFrameworkError::InvalidMacroUsage(
                 unsupported_directive_in_trans(
@@ -130,11 +130,14 @@ fn astro_tag_name<'a>(source: &'a str, tag: Node<'_>) -> Option<(&'a str, Span)>
         .children(&mut tag.walk())
         .find(|child| child.kind() == "tag_name")
     {
-        return Some((text(source, tag_name_node), Span::from_node(tag_name_node)));
+        return Some((
+            node_text(source, tag_name_node),
+            Span::from_node(tag_name_node),
+        ));
     }
 
-    let tag_span = Span::from_node(tag);
-    let tag_text = &source[tag_span.start..tag_span.end];
+    let tag_start = tag.start_byte();
+    let tag_text = node_text(source, tag);
     let relative_start = tag_text.find('<')? + 1;
     let relative_end = tag_text[relative_start..]
         .find(|char: char| char.is_ascii_whitespace() || char == '>' || char == '/')
@@ -144,8 +147,8 @@ fn astro_tag_name<'a>(source: &'a str, tag: Node<'_>) -> Option<(&'a str, Span)>
         return None;
     }
 
-    let start = tag_span.start + relative_start;
-    let end = tag_span.start + relative_end;
+    let start = tag_start + relative_start;
+    let end = tag_start + relative_end;
     Some((&source[start..end], Span::new(start, end)))
 }
 

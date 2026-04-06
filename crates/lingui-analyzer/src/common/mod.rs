@@ -4,6 +4,7 @@ mod lang;
 mod normalization;
 mod source_map;
 mod span;
+mod text;
 
 pub(crate) use declarations::{
     CollectDeclarationsError, collect_variable_initializer_declarations,
@@ -21,3 +22,4 @@ pub(crate) use source_map::{
     source_map_to_json,
 };
 pub use span::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
+pub(crate) use text::{is_component_tag_name, node_text, span_text, unquote};

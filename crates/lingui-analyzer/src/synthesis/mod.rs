@@ -317,9 +317,11 @@ fn collect_chunk_copy_anchors(source: &str, span: Span, source_anchors: &[usize]
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::framework::{MacroCandidateKind, MacroCandidateStrategy, MacroFlavor};
     use lean_string::LeanString;
+
+    use crate::framework::{MacroCandidateKind, MacroCandidateStrategy, MacroFlavor};
+
+    use super::*;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)

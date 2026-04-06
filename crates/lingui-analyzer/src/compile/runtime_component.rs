@@ -3,7 +3,7 @@ use tree_sitter::Node;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, MappedTextError, RenderedMappedText, Span,
-    build_span_anchor_map,
+    build_span_anchor_map, unquote,
 };
 use crate::syntax::parse::ParseError;
 
@@ -59,6 +59,14 @@ pub enum RuntimeComponentError {
     UnsupportedJsxPropKind { kind: &'static str },
     #[error("translated node offset became negative")]
     TranslatedNodeOffsetNegative,
+    #[error(
+        "expected spread span to start with `...` before object expression while lowering runtime component props"
+    )]
+    ExpectedSpreadOperatorPrefix,
+    #[error(
+        "expected spread object expression to start at or after spread operator prefix while lowering runtime component props"
+    )]
+    InvalidSpreadObjectOrdering,
 }
 
 pub(super) fn push_anchor_mapped(
@@ -525,6 +533,25 @@ pub(super) fn source_slice<'a>(
     Ok(&source[span.start..span.end])
 }
 
+pub(super) fn spread_prefix_start(
+    source: &str,
+    spread_span: Span,
+    object_span: Span,
+) -> Result<usize, RuntimeComponentError> {
+    let prefix_start = spread_span.start + 3;
+    if object_span.start < prefix_start {
+        return Err(RuntimeComponentError::InvalidSpreadObjectOrdering);
+    }
+    if source
+        .get(spread_span.start..prefix_start)
+        .filter(|prefix| *prefix == "...")
+        .is_none()
+    {
+        return Err(RuntimeComponentError::ExpectedSpreadOperatorPrefix);
+    }
+    Ok(prefix_start)
+}
+
 pub(super) fn jsx_attribute_name_node(node: Node<'_>) -> Option<Node<'_>> {
     node.child_by_field_name("name").or_else(|| {
         node.named_children(&mut node.walk())
@@ -623,7 +650,7 @@ pub(super) fn key_name<'a>(source: &'a str, key: Node<'_>, base_offset: isize) -
         "number" => source_slice(source, key, base_offset).ok(),
         "string" => {
             let span = translated_span(key, base_offset).ok()?;
-            Some(&source[span.start + 1..span.end.saturating_sub(1)])
+            unquote(&source[span.start..span.end])
         }
         _ => None,
     }
@@ -668,7 +695,9 @@ fn is_safe_unquoted_js_object_key(key: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::render_js_object_key;
+    use crate::common::Span;
+
+    use super::{render_js_object_key, spread_prefix_start};
 
     #[test]
     fn quotes_unsafe_js_object_keys() {
@@ -684,5 +713,21 @@ mod tests {
         assert_eq!(render_js_object_key("_private"), "_private");
         assert_eq!(render_js_object_key("$value"), "$value");
         assert_eq!(render_js_object_key("camelCase123"), "camelCase123");
+    }
+
+    #[test]
+    fn validates_spread_prefix_start() {
+        let source = "... /*keep*/ ({ foo: bar })";
+
+        assert_eq!(
+            spread_prefix_start(source, Span::new(0, source.len()), Span::new(12, 26)).unwrap(),
+            3
+        );
+    }
+
+    #[test]
+    fn rejects_invalid_spread_prefix_start() {
+        assert!(spread_prefix_start("{..x}", Span::new(0, 5), Span::new(4, 5)).is_err());
+        assert!(spread_prefix_start("{...x}", Span::new(0, 6), Span::new(2, 5)).is_err());
     }
 }

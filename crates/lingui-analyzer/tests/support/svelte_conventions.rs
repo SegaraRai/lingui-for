@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 
 use lean_string::LeanString;
+
 use lingui_analyzer::conventions::{
     FrameworkConventions, FrameworkKind, MacroConventions, MacroPackage, MacroPackageKind,
     RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions, SyntheticConventions,

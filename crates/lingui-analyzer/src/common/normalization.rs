@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tree_sitter::Node;
 use tsify::Tsify;
 
-use super::Span;
+use super::{Span, node_text, span_text};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
@@ -22,25 +22,21 @@ pub(crate) fn whitespace_replacement_edits(
     let meaningful_children = children
         .iter()
         .copied()
-        .filter(|child| {
-            let span = Span::from_node(*child);
-            !source[span.start..span.end].trim().is_empty()
-        })
+        .filter(|child| !node_text(source, *child).trim().is_empty())
         .collect::<Vec<_>>();
 
     for pair in meaningful_children.windows(2) {
         let previous = pair[0];
         let next = pair[1];
-        if is_explicit_space_expression(source, previous)
+        if previous.end_byte() >= next.start_byte()
+            || is_explicit_space_expression(source, previous)
             || is_explicit_space_expression(source, next)
         {
             continue;
         }
+
         let gap = Span::new(previous.end_byte(), next.start_byte());
-        if gap.start >= gap.end {
-            continue;
-        }
-        if !source[gap.start..gap.end].trim().is_empty() {
+        if !span_text(source, gap).trim().is_empty() {
             continue;
         }
 

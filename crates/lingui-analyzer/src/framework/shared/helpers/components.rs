@@ -1,8 +1,6 @@
 use tree_sitter::Node;
 
-use crate::common::Span;
-
-use super::text::text;
+use crate::common::{Span, node_text};
 
 pub(crate) fn first_non_whitespace_child_anchor(
     source: &str,
@@ -15,7 +13,7 @@ pub(crate) fn first_non_whitespace_child_anchor(
             continue;
         }
 
-        let child_text = text(source, child);
+        let child_text = node_text(source, child);
         if let Some(trimmed_start) = child_text.find(|char: char| !char.is_whitespace()) {
             return Some(Span::new(
                 child.start_byte() + trimmed_start,

@@ -1,8 +1,3 @@
-#[path = "../tests/support/astro_conventions.rs"]
-mod astro_conventions;
-#[path = "../tests/support/svelte_conventions.rs"]
-mod svelte_conventions;
-
 use std::hint::black_box;
 
 use criterion::{BenchmarkId, Criterion, criterion_group, criterion_main};
@@ -19,6 +14,11 @@ use lingui_analyzer::{
     WhitespaceMode, build_astro_compile_plan, build_svelte_compile_plan,
     build_synthetic_module_for_framework, finish_astro_compile, finish_svelte_compile,
 };
+
+#[path = "../tests/support/astro_conventions.rs"]
+mod astro_conventions;
+#[path = "../tests/support/svelte_conventions.rs"]
+mod svelte_conventions;
 
 use astro_conventions::astro_default_conventions;
 use svelte_conventions::svelte_default_conventions;

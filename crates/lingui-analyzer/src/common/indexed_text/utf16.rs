@@ -7,9 +7,14 @@ pub struct Utf16Table<'a> {
 }
 
 impl<'a> Utf16Table<'a> {
-    pub fn new(source: &'a str, line_starts: &[usize]) -> Self {
+    pub(super) fn new(source: &'a str, line_starts: &[usize]) -> Self {
+        // SAFETY: indices in `line_starts` are guaranteed to be on char boundaries by the caller. This is why we restrict `new` to be `pub(super)`.
         let mut lines = Vec::with_capacity(line_starts.len());
         for (index, &start) in line_starts.iter().enumerate() {
+            let raw_end = match line_starts.get(index + 1).copied() {
+                Some(next) => next,
+                None => source.len(),
+            };
             let mut end = match line_starts.get(index + 1).copied() {
                 Some(next) => next.saturating_sub(1),
                 None => source.len(),
@@ -17,20 +22,20 @@ impl<'a> Utf16Table<'a> {
             if end > start && source.as_bytes().get(end - 1) == Some(&b'\r') {
                 end = end.saturating_sub(1);
             }
-            lines.push(Utf16LineTable::new(source, start, end));
+            lines.push(Utf16LineTable::new(source, start, end, raw_end));
         }
         Self { source, lines }
     }
 
     pub fn byte_to_line_utf16_col(&self, byte: usize) -> Option<(usize, usize)> {
         let line = self.line_for_byte(byte)?;
-        let col = self.lines[line].byte_to_utf16_col(byte);
+        let col = self.lines[line].byte_to_utf16_col(byte)?;
         Some((line, col))
     }
 
     pub fn line_utf16_col_to_byte(&self, line: usize, utf16_col: usize) -> Option<usize> {
         let line_index = self.lines.get(line)?;
-        Some(line_index.utf16_col_to_byte(utf16_col))
+        line_index.utf16_col_to_byte(utf16_col)
     }
 
     pub fn line_for_byte(&self, byte: usize) -> Option<usize> {
@@ -72,6 +77,7 @@ impl<'a> Utf16Table<'a> {
 struct Utf16LineTable<'a> {
     start: usize,
     end: usize,
+    raw_end: usize,
     line: &'a str,
     checkpoints: Vec<Utf16Checkpoint>,
 }
@@ -79,7 +85,7 @@ struct Utf16LineTable<'a> {
 impl<'a> Utf16LineTable<'a> {
     const CHECKPOINT_STRIDE_CHARS: usize = 64;
 
-    fn new(source: &'a str, start: usize, end: usize) -> Self {
+    fn new(source: &'a str, start: usize, end: usize, raw_end: usize) -> Self {
         let mut checkpoints = vec![Utf16Checkpoint {
             byte: start,
             utf16_col: 0,
@@ -88,6 +94,7 @@ impl<'a> Utf16LineTable<'a> {
         let mut utf16_col = 0usize;
         let mut char_count = 0usize;
 
+        // SAFETY: `start` and `end` are guaranteed to be on char boundaries by the caller.
         for (rel, ch) in source[start..end].char_indices() {
             utf16_col += ch.len_utf16();
             char_count += 1;
@@ -114,20 +121,31 @@ impl<'a> Utf16LineTable<'a> {
         Self {
             start,
             end,
+            raw_end,
             line: &source[start..end],
             checkpoints,
         }
     }
 
-    fn byte_to_utf16_col(&self, abs_byte: usize) -> usize {
+    fn byte_to_utf16_col(&self, abs_byte: usize) -> Option<usize> {
         if abs_byte <= self.start {
-            return 0;
+            return Some(0);
         }
-        let clamped = abs_byte.min(self.end);
+        if abs_byte > self.raw_end {
+            return None;
+        }
+        if abs_byte > self.end {
+            return Some(
+                self.checkpoints
+                    .last()
+                    .map(|checkpoint| checkpoint.utf16_col)
+                    .unwrap_or(0),
+            );
+        }
 
         let checkpoint_index = match self
             .checkpoints
-            .binary_search_by(|checkpoint| checkpoint.byte.cmp(&clamped))
+            .binary_search_by(|checkpoint| checkpoint.byte.cmp(&abs_byte))
         {
             Ok(index) => index,
             Err(0) => 0,
@@ -138,26 +156,24 @@ impl<'a> Utf16LineTable<'a> {
         let mut cur_byte = checkpoint.byte;
         let mut cur_utf16 = checkpoint.utf16_col;
 
-        while cur_byte < clamped {
+        while cur_byte < abs_byte {
             let rel = cur_byte - self.start;
-            let Some(ch) = self.line[rel..].chars().next() else {
-                break;
-            };
+            let ch = self.line[rel..].chars().next()?;
             let next_byte = cur_byte + ch.len_utf8();
-            if next_byte <= clamped {
+            if next_byte <= abs_byte {
                 cur_utf16 += ch.len_utf16();
                 cur_byte = next_byte;
             } else {
-                break;
+                return None;
             }
         }
 
-        cur_utf16
+        Some(cur_utf16)
     }
 
-    fn utf16_col_to_byte(&self, target_utf16_col: usize) -> usize {
+    fn utf16_col_to_byte(&self, target_utf16_col: usize) -> Option<usize> {
         if target_utf16_col == 0 {
-            return self.start;
+            return Some(self.start);
         }
 
         let mut cur_byte = self.start;
@@ -165,16 +181,23 @@ impl<'a> Utf16LineTable<'a> {
 
         for (rel, ch) in self.line.char_indices() {
             if cur_utf16 >= target_utf16_col {
-                return self.start + rel;
+                return Some(self.start + rel);
             }
             cur_utf16 += ch.len_utf16();
             cur_byte = self.start + rel + ch.len_utf8();
-            if cur_utf16 >= target_utf16_col {
-                return cur_byte;
+            if cur_utf16 == target_utf16_col {
+                return Some(cur_byte);
+            }
+            if cur_utf16 > target_utf16_col {
+                return None;
             }
         }
 
-        cur_byte.min(self.end)
+        if cur_utf16 == target_utf16_col {
+            Some(cur_byte)
+        } else {
+            None
+        }
     }
 }
 
@@ -264,11 +287,24 @@ mod tests {
         let table = Utf16Table::new(source, &line_starts(source));
 
         assert_eq!(table.line_utf16_col_to_byte(0, 0), Some(0));
+        assert_eq!(table.line_utf16_col_to_byte(0, 1), None);
         assert_eq!(table.line_utf16_col_to_byte(0, 2), Some(4));
         assert_eq!(table.line_utf16_col_to_byte(0, 3), Some(5));
         assert_eq!(table.line_utf16_col_to_byte(1, 0), Some(6));
         assert_eq!(table.line_utf16_col_to_byte(1, 2), Some(8));
+        assert_eq!(table.line_utf16_col_to_byte(1, 3), None);
         assert_eq!(table.line_utf16_col_to_byte(2, 0), None);
+    }
+
+    #[test]
+    fn rejects_mid_character_positions() {
+        let source = "🙂x\nあb";
+        let table = Utf16Table::new(source, &line_starts(source));
+
+        assert_eq!(table.byte_to_line_utf16_col(1), None);
+        assert_eq!(table.byte_to_line_utf16_col(2), None);
+        assert_eq!(table.byte_to_line_utf16_col(3), None);
+        assert_eq!(table.byte_to_line_utf16_col(7), None);
     }
 
     #[test]

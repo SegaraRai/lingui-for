@@ -6,11 +6,11 @@ use std::collections::BTreeMap;
 use indoc::indoc;
 use lean_string::LeanString;
 
+use lingui_analyzer::conventions::{MacroConventions, MacroPackage, MacroPackageKind};
+use lingui_analyzer::framework::{FrameworkAdapter, svelte::SvelteAdapter};
 use lingui_analyzer::{
     MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, RuntimeWarningOptions,
     SvelteCompilePlan, WhitespaceMode,
-    conventions::{MacroConventions, MacroPackage, MacroPackageKind},
-    framework::{FrameworkAdapter, svelte::SvelteAdapter},
 };
 
 use svelte_support::{analyze_options_for_svelte, svelte_default_conventions};

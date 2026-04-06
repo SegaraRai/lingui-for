@@ -74,7 +74,7 @@ pub(crate) fn build_copy_map(
         return None;
     }
 
-    let copied = source.slice(original_span.start..original_span.end)?;
+    let copied = source.slice(original_span)?;
     let copied_text = copied.as_str();
     let anchor_points = collect_copy_anchor_points(copied_text, original_span, source_anchors);
     if anchor_points.is_empty() {

@@ -4,9 +4,10 @@ mod astro_support;
 use indoc::indoc;
 use lean_string::LeanString;
 
+use lingui_analyzer::framework::FrameworkAdapter;
+use lingui_analyzer::framework::astro::AstroAdapter;
 use lingui_analyzer::{
     AstroCompilePlan, MacroCandidateKind, RuntimeWarningOptions, WhitespaceMode,
-    framework::{FrameworkAdapter, astro::AstroAdapter},
 };
 
 use astro_support::{analyze_options_for_astro, astro_default_conventions};

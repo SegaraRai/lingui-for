@@ -3,13 +3,14 @@ use tree_sitter::Node;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
+    node_text,
 };
 use crate::compile::runtime_component::{
     RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_node, copy_span,
     find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
     jsx_attribute_value_node, key_name, lowerable_object_expression_node, push_anchor_mapped,
-    push_copied_span, source_slice, spread_argument_node, spread_element_node, translated_span,
-    validate_runtime_placeholder_key,
+    push_copied_span, source_slice, spread_argument_node, spread_element_node, spread_prefix_start,
+    translated_span, validate_runtime_placeholder_key,
 };
 use crate::compile::{CompileTarget, RuntimeWarningMode};
 use crate::syntax::parse::{parse_svelte, parse_tsx};
@@ -134,7 +135,8 @@ fn convert_runtime_trans_root(
                         runtime_warning_mode,
                     )?;
                     mapped.push_unmapped(" {...");
-                    let prefix_start = (spread_span.start + 3).min(object_span.start);
+                    let prefix_start =
+                        spread_prefix_start(context.source.text(), spread_span, object_span)?;
                     let prefix_trimmed_start = context.source.text()
                         [prefix_start..object_span.start]
                         .find(|char: char| !char.is_ascii_whitespace())
@@ -569,11 +571,11 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
                     .children(&mut start_tag.walk())
                     .find(|child| child.kind() == "tag_name")
             })
-            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+            .map(|tag_name| node_text(source, tag_name)),
         "self_closing_tag" => node
             .children(&mut node.walk())
             .find(|child| child.kind() == "tag_name")
-            .map(|tag_name| &source[tag_name.start_byte()..tag_name.end_byte()]),
+            .map(|tag_name| node_text(source, tag_name)),
         _ => None,
     }
 }
@@ -624,15 +626,13 @@ fn lower_original_wrapper_to_snippet(
                 .find(|child| child.kind() == "tag_name")
                 .ok_or(SvelteAdapterError::MissingTagNameWhileLoweringSvelteSnippet)?;
             let tag_name_span = Span::from_node(tag_name);
-            let node_span = Span::from_node(node);
-            let source_slice = &source[node_span.start..node_span.end];
-            let self_closing_offset = source_slice
+            let self_closing_offset = node_text(source, node)
                 .rfind("/>")
                 .ok_or(RuntimeComponentError::ExpectedJsxElementDescriptor)?;
             push_copied_span(
                 &mut rendered,
                 input,
-                Span::new(node_span.start, node_span.start + self_closing_offset),
+                Span::new(node.start_byte(), node.start_byte() + self_closing_offset),
             )?;
             rendered.push_unmapped(">{@render children?.()}</");
             push_copied_span(&mut rendered, input, tag_name_span)?;
@@ -686,9 +686,9 @@ fn push_original_anchor(
 
 #[cfg(test)]
 mod tests {
+    use indoc::indoc;
     use lean_string::LeanString;
 
-    use super::lower_runtime_component_markup;
     use crate::common::{RenderedMappedText, Span};
     use crate::compile::{
         CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
@@ -696,7 +696,8 @@ mod tests {
     };
     use crate::framework::MacroFlavor;
     use crate::synthesis::NormalizedSegment;
-    use indoc::indoc;
+
+    use super::lower_runtime_component_markup;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)

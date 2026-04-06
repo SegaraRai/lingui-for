@@ -1,10 +1,9 @@
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::ScriptLang;
+use crate::common::{ScriptLang, node_text};
 
 use super::super::AnalyzeOptions;
-use super::super::shared::helpers::text::text;
 use super::super::shared::js::{
     BindingParseMode, ExpressionParseCache, collect_declared_names_from_binding_source,
 };
@@ -258,7 +257,7 @@ pub(super) fn let_bindings_from_element(source: &str, node: Node<'_>) -> Vec<Lea
         else {
             continue;
         };
-        let attribute_name = super::super::shared::helpers::text::text(source, name_node);
+        let attribute_name = node_text(source, name_node);
         if let Some(local_name) = attribute_name.strip_prefix("let:") {
             names.push(LeanString::from(local_name));
         }
@@ -282,7 +281,7 @@ pub(super) fn declared_names_from_each_start(
         return Ok(Vec::new());
     };
     Ok(collect_declared_names_from_binding_source(
-        text(source, parameter),
+        node_text(source, parameter),
         BindingParseMode::FunctionParams,
         ScriptLang::Ts,
     )?)
@@ -297,8 +296,11 @@ pub(super) fn declared_names_from_optional_raw_text(
     let Some(raw_text) = raw_text else {
         return Ok(None);
     };
-    let names =
-        collect_declared_names_from_binding_source(text(source, raw_text), mode, ScriptLang::Ts)?;
+    let names = collect_declared_names_from_binding_source(
+        node_text(source, raw_text),
+        mode,
+        ScriptLang::Ts,
+    )?;
     Ok(Some(names))
 }
 

@@ -1,12 +1,11 @@
 use tree_sitter::Node;
 
-use crate::common::Span;
+use crate::common::{Span, node_text};
 use crate::diagnostics::svelte::{
     bare_direct_macro_usage, unsupported_block_syntax_in_trans,
     unsupported_special_element_in_trans,
 };
 
-use super::super::shared::helpers::text::text;
 use super::super::{AnalyzeOptions, MacroCandidate};
 use super::{SvelteFrameworkError, is_bare_direct_svelte_macro_forbidden};
 
@@ -96,7 +95,7 @@ fn validate_svelte_element_like(
         .children(&mut tag.walk())
         .find(|child| child.kind() == "tag_name")
     {
-        let tag_name = text(source, tag_name_node);
+        let tag_name = node_text(source, tag_name_node);
         if tag_name == "slot" || tag_name.starts_with("svelte:") {
             return Err(SvelteFrameworkError::InvalidMacroUsage(
                 unsupported_special_element_in_trans(

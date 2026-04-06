@@ -1,10 +1,8 @@
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::Span;
+use crate::common::{Span, node_text};
 use crate::framework::MacroImport;
-
-use super::text::text;
 
 pub(crate) fn collect_import_specifiers_from_node(
     source: &str,
@@ -22,8 +20,8 @@ pub(crate) fn collect_import_specifiers_from_node(
 
         imports.push(MacroImport {
             source: module_specifier.clone(),
-            imported_name: LeanString::from(text(source, imported)),
-            local_name: LeanString::from(text(source, local)),
+            imported_name: LeanString::from(node_text(source, imported)),
+            local_name: LeanString::from(node_text(source, local)),
             span: Span::from_node(node).shifted(base_offset),
         });
         return;

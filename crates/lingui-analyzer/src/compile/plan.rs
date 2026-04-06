@@ -179,7 +179,6 @@ fn build_compile_synthetic_source(
 mod tests {
     use lean_string::LeanString;
 
-    use super::build_compile_synthetic_source;
     use crate::common::{IndexedText, RenderedMappedText, Span, build_span_anchor_map};
     use crate::compile::{
         CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
@@ -190,6 +189,8 @@ mod tests {
         render_macro_import_line,
     };
     use crate::synthesis::{NormalizedSegment, SynthesisPlan, SynthesisTarget};
+
+    use super::build_compile_synthetic_source;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)

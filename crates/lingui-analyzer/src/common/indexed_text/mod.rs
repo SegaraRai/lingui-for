@@ -2,6 +2,8 @@ use std::ops::Range;
 
 use lean_string::LeanString;
 
+use super::Span;
+
 mod utf16;
 
 use utf16::Utf16Table;
@@ -45,18 +47,21 @@ impl<'a> IndexedText<'a> {
         self.utf16.line_utf16_col_to_byte(line, utf16_col)
     }
 
-    pub fn slice(&'a self, range: Range<usize>) -> Option<IndexedTextSlice<'a>> {
-        IndexedTextSlice::new(self, range)
+    pub fn slice(&'a self, span: Span) -> Option<IndexedTextSlice<'a>> {
+        IndexedTextSlice::new(self, span)
     }
 }
 
 impl<'a> IndexedTextSlice<'a> {
-    pub fn new(indexed: &'a IndexedText<'a>, range: Range<usize>) -> Option<Self> {
-        (range.start <= range.end
-            && range.end <= indexed.len()
-            && indexed.text().is_char_boundary(range.start)
-            && indexed.text().is_char_boundary(range.end))
-        .then_some(Self { indexed, range })
+    pub fn new(indexed: &'a IndexedText<'a>, span: Span) -> Option<Self> {
+        (span.start <= span.end
+            && span.end <= indexed.len()
+            && indexed.text().is_char_boundary(span.start)
+            && indexed.text().is_char_boundary(span.end))
+        .then_some(Self {
+            indexed,
+            range: span.start..span.end,
+        })
     }
 
     pub fn as_str(&self) -> &'a str {
@@ -111,13 +116,17 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
 mod tests {
     use lean_string::LeanString;
 
+    use crate::common::Span;
+
     use super::IndexedText;
 
     #[test]
     fn slice_reports_relative_line_and_utf16_columns() {
         let source_text = LeanString::from("ab😀\nxyz\n");
         let source = IndexedText::new(&source_text);
-        let slice = source.slice(1.."ab😀\nxy".len()).expect("valid slice");
+        let slice = source
+            .slice(Span::new(1, "ab😀\nxy".len()))
+            .expect("valid slice");
 
         assert_eq!(slice.byte_to_line_utf16_col(0), Some((0, 0)));
         assert_eq!(slice.byte_to_line_utf16_col("b😀".len()), Some((0, 3)));
@@ -131,7 +140,7 @@ mod tests {
         let source_text = LeanString::from("abc");
         let source = IndexedText::new(&source_text);
 
-        assert!(source.slice(1..4).is_none());
+        assert!(source.slice(Span::new(1, 4)).is_none());
     }
 
     #[test]
@@ -139,7 +148,7 @@ mod tests {
         let source_text = LeanString::from("a😀b");
         let source = IndexedText::new(&source_text);
 
-        assert!(source.slice(1..2).is_none());
-        assert!(source.slice(0..2).is_none());
+        assert!(source.slice(Span::new(1, 2)).is_none());
+        assert!(source.slice(Span::new(0, 2)).is_none());
     }
 }

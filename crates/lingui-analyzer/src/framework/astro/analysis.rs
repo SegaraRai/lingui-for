@@ -4,7 +4,8 @@ use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
-    EmbeddedScriptKind, EmbeddedScriptRegion, NormalizationEdit, ScriptLang, Span,
+    EmbeddedScriptKind, EmbeddedScriptRegion, NormalizationEdit, ScriptLang, Span, node_text,
+    span_text, unquote,
 };
 use crate::conventions::FrameworkConventions;
 use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
@@ -13,7 +14,6 @@ use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
 };
 use super::super::shared::helpers::imports::collect_import_specifiers_from_node;
-use super::super::shared::helpers::text::{text, unquote};
 use super::super::shared::js::{
     ExpressionParseCache, JsMacroSyntax, collect_macro_candidates,
     collect_top_level_declared_names_from_root,
@@ -56,8 +56,7 @@ pub fn analyze_astro(
         frontmatter_import_statement_spans,
         frontmatter_candidates,
     ) = if let Some(frontmatter_region) = &frontmatter {
-        let frontmatter_source =
-            &source[frontmatter_region.inner_span.start..frontmatter_region.inner_span.end];
+        let frontmatter_source = span_text(source, frontmatter_region.inner_span);
         let frontmatter_tree = parse_typescript(frontmatter_source)?;
         extend_shifted_node_start_anchors(
             frontmatter_source,
@@ -155,10 +154,10 @@ fn collect_macro_imports(
         let Some(source_node) = child.child_by_field_name("source") else {
             continue;
         };
-        let Some(module_specifier) = unquote(text(source, source_node)) else {
+        let Some(module_specifier) = unquote(node_text(source, source_node)) else {
             continue;
         };
-        if !is_macro_module_specifier(module_specifier, conventions) {
+        if !conventions.accepts_macro_package(module_specifier) {
             continue;
         }
 
@@ -190,7 +189,7 @@ fn collect_macro_import_statement_spans_from_root(
         let Some(source_node) = child.child_by_field_name("source") else {
             continue;
         };
-        let Some(module_specifier) = unquote(text(source, source_node)) else {
+        let Some(module_specifier) = unquote(node_text(source, source_node)) else {
             continue;
         };
         if !conventions.accepts_macro_package(module_specifier) {
@@ -413,7 +412,7 @@ fn push_template_expression(
         language,
         excluded_nested_spans,
     } = request;
-    let expression_source = &source[inner_span.start..inner_span.end];
+    let expression_source = span_text(source, inner_span);
     let tree = context
         .expression_parse_cache
         .parse(source, inner_span, language)?;
@@ -542,15 +541,12 @@ fn is_pure_html_interpolation_expression(node: Node<'_>) -> bool {
     saw_named_child
 }
 
-fn is_macro_module_specifier(specifier: &str, conventions: &FrameworkConventions) -> bool {
-    conventions.accepts_macro_package(specifier)
-}
-
 #[cfg(test)]
 mod tests {
-    use super::remap_bundled_offset;
     use crate::common::Span;
     use crate::framework::astro::ir::{AstroIrSegment, BundledAstroHtmlInterpolation};
+
+    use super::remap_bundled_offset;
 
     #[test]
     fn remap_bundled_offset_handles_segment_boundaries_deterministically() {

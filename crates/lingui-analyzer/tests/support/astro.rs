@@ -1,9 +1,10 @@
 use lean_string::LeanString;
+
 use lingui_analyzer::WhitespaceMode;
+use lingui_analyzer::framework::AnalyzeOptions;
+
 #[path = "astro_conventions.rs"]
 mod astro_conventions;
-
-use lingui_analyzer::framework::AnalyzeOptions;
 
 pub use astro_conventions::astro_default_conventions;
 

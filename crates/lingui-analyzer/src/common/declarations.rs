@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::{IndexedSourceMap, RenderedMappedText};
+use crate::common::{IndexedSourceMap, RenderedMappedText, node_text};
 use crate::syntax::parse::{ParseError, parse_tsx};
 
 use super::{
@@ -63,10 +63,7 @@ pub(crate) fn collect_variable_initializer_declarations(
                 raw_indexed_submap.as_ref(),
                 &collapse_spans,
             )?;
-            declarations.insert(
-                LeanString::from(&source[name.start_byte()..name.end_byte()]),
-                rendered,
-            );
+            declarations.insert(LeanString::from(node_text(source, name)), rendered);
         }
     }
 
@@ -182,7 +179,7 @@ fn collect_i18n_comment_whitespace_spans_recursive(
     if node.kind() == "comment"
         && node.start_byte() >= declaration_start
         && node.end_byte() <= declaration_end
-        && &source[node.start_byte()..node.end_byte()] == "/*i18n*/"
+        && node_text(source, node) == "/*i18n*/"
         && let Some(span) = whitespace_span_before_object(source, node.end_byte(), declaration_end)
     {
         spans.push(Span::new(
@@ -223,11 +220,12 @@ fn whitespace_span_before_object(source: &str, start: usize, limit: usize) -> Op
 mod tests {
     use lean_string::LeanString;
 
+    use crate::syntax::parse::parse_tsx;
+
     use super::{
         collect_i18n_comment_whitespace_spans, collect_variable_initializer_declarations,
         initializer_start_for_declarator, normalize_i18n_comment_layout_rendered,
     };
-    use crate::syntax::parse::parse_tsx;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)
