@@ -5,6 +5,7 @@ import { describe, expect, test } from "vite-plus/test";
 import RuntimeTransEmphasisHarness from "./RuntimeTransEmphasisHarness.test.svelte";
 import RuntimeTransHarness from "./RuntimeTransHarness.test.svelte";
 import RuntimeTransRichTextHarness from "./RuntimeTransRichTextHarness.test.svelte";
+import RuntimeTransWhitespaceHarness from "./RuntimeTransWhitespaceHarness.test.svelte";
 
 function normalizeSsrBody(body: string): string {
   return body.replaceAll(/<!--[\w[\]-]*-->/g, "");
@@ -63,6 +64,29 @@ describe("RuntimeTrans SSR", () => {
       '<a class="fixture-link" data-kind="fixture-link" href="/docs">Runtime Ada</a>',
     );
     expect(body).toContain("carefully before shipping.");
+  });
+
+  test("renders rich-text placeholders without adding extra SSR whitespace", () => {
+    const i18n = setupI18n({
+      locale: "en",
+      messages: {
+        en: {
+          "demo.tight": "Lead<0>docs</0>mid<1><2>deep</2>tail</1>end.",
+        },
+      },
+    });
+
+    const result = render(RuntimeTransWhitespaceHarness, {
+      props: {
+        getI18n: () => i18n,
+        id: "demo.tight",
+        message: "Lead<0>docs</0>mid<1><2>deep</2>tail</1>end.",
+      },
+    });
+
+    expect(normalizeSsrBody(result.body)).toBe(
+      '<div class="runtime-trans-wrapper">Lead<a class="fixture-link" data-kind="fixture-link" href="/docs">docs</a>mid<div class="fixture-box"><strong class="fixture-strong">deep</strong>tail</div>end.</div>',
+    );
   });
 
   test("renders message fallbacks through Lingui", () => {

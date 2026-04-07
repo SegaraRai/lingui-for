@@ -1,4 +1,6 @@
 declare module "*.astro" {
-  const AstroComponent: unknown;
+  import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+
+  const AstroComponent: AstroComponentFactory;
   export default AstroComponent;
 }

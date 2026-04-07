@@ -29,6 +29,7 @@ export default defineConfig({
     plugins: [
       markupImport({
         frameworks: ["astro"],
+        exclude: ["**/*.test.astro"],
       }),
       wasm(),
     ],

@@ -27,6 +27,7 @@ export default defineConfig({
     },
     plugins: [
       markupImport({
+        frameworks: ["svelte"],
         exclude: ["**/*.test.svelte"],
       }),
       wasm(),
