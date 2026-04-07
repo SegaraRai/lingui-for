@@ -25,7 +25,7 @@ export interface MarkupImportPluginOptions {
   /**
    * Markup frameworks whose files should be preserved.
    *
-   * Defaults to `["svelte"]` to keep the previous behavior.
+   * Defaults to `["astro", "svelte"]`.
    */
   frameworks?: readonly MarkupFramework[] | undefined;
 
