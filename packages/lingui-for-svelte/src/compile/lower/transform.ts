@@ -46,6 +46,7 @@ export function lowerSvelteTransformPrograms(
       linguiLowered,
       {
         translationMode: "lowered",
+        wrapperBindings: runtimeBindings,
       },
       loweredFilename,
     ),

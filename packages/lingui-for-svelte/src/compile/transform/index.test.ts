@@ -1345,6 +1345,34 @@ describe("transformSvelte", () => {
     `);
   });
 
+  test("avoids collisions for internal wrapper markers during synthetic lowering", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t } from "lingui-for-svelte/macro";
+
+        const __lingui_for_svelte_reactive_translation__ = "occupied";
+        const __lingui_for_svelte_eager_translation__ = "occupied";
+      </script>
+
+      <p>{$t\`Hello\`}</p>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/App.svelte",
+    });
+
+    expect(result.artifacts.synthetic.code).toContain(
+      "__lingui_for_svelte_reactive_translation___1(",
+    );
+    expect(result.artifacts.lowered.code).toContain(
+      "__lingui_for_svelte_reactive_translation___1(",
+    );
+    expect(result.artifacts.contextual.code).not.toContain(
+      "__lingui_for_svelte_reactive_translation__(",
+    );
+    expect(result.code).toContain("{$__l4s_translate(");
+  });
+
   test("primes lazy Lingui accessors after same-component initialization helpers", async () => {
     const result = await expectTransformed(
       dedent`

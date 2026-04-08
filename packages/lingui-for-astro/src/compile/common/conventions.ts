@@ -50,6 +50,8 @@ export function createAstroFrameworkConventions(
     bindings: {
       i18nAccessorFactory: RUNTIME_BINDING_CREATE_I18N,
       i18nInstance: RUNTIME_BINDING_I18N,
+      reactiveTranslationWrapper: undefined,
+      eagerTranslationWrapper: undefined,
       runtimeTransComponent: RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
     },
   };

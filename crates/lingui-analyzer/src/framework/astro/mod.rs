@@ -134,10 +134,10 @@ mod tests {
                 get_i18n: None,
                 translate: None,
                 i18n_instance: None,
+                reactive_translation_wrapper: None,
+                eager_translation_wrapper: None,
                 runtime_trans_component: ls("RuntimeTrans"),
             },
-            synthetic: None,
-            wrappers: None,
         }
     }
 

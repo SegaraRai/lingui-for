@@ -68,6 +68,8 @@ pub struct SvelteCompileRuntimeBindings {
     pub context: LeanString,
     pub get_i18n: LeanString,
     pub translate: LeanString,
+    pub reactive_translation_wrapper: LeanString,
+    pub eager_translation_wrapper: LeanString,
     pub trans_component: LeanString,
 }
 
@@ -196,7 +198,6 @@ impl SvelteCompilePlan {
 #[derive(Debug, Clone)]
 pub(crate) struct SvelteFrameworkCompileAnalysis {
     pub(crate) common: CommonFrameworkCompileAnalysis,
-    pub(crate) conventions: FrameworkConventions,
     pub(crate) runtime_bindings: SvelteCompileRuntimeBindings,
     pub(crate) instance_script: Option<SvelteCompileScriptRegion>,
     pub(crate) module_script: Option<SvelteCompileScriptRegion>,

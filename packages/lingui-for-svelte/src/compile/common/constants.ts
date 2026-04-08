@@ -23,29 +23,6 @@ export const PACKAGE_MACRO = "lingui-for-svelte/macro";
 export const PACKAGE_RUNTIME = "lingui-for-svelte/runtime";
 
 /**
- * Prefix used for synthetic variables that stand in for extracted markup expressions.
- *
- * This is used when a `.svelte` file is lifted into a temporary JS/TS program so Babel
- * and Lingui can transform markup expressions as ordinary declarations.
- *
- * This is not used as a final identifier directly. Real names are formed by appending an
- * index, and later matched by this prefix when lowering the transformed output back into
- * Svelte source.
- */
-export const SYNTHETIC_PREFIX_EXPRESSION = "__lingui_for_svelte_expr_";
-
-/**
- * Prefix used for synthetic variables that stand in for component macros such as `Trans`.
- *
- * This is used while building Rust-managed synthetic declarations for component macros
- * before the transformed output is lowered back into runtime Svelte components.
- *
- * This is a prefix rather than a final fixed name. Real identifiers are formed by
- * appending an index and are later recognized by this prefix.
- */
-export const SYNTHETIC_PREFIX_COMPONENT = "__lingui_for_svelte_component_";
-
-/**
  * Temporary wrapper function name inserted around reactive string macros like `$t(...)`.
  *
  * This is only an internal Babel-phase marker used in macro preprocessing/postprocessing

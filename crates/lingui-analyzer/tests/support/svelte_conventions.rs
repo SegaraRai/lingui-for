@@ -4,8 +4,7 @@ use lean_string::LeanString;
 
 use lingui_analyzer::conventions::{
     FrameworkConventions, FrameworkKind, MacroConventions, MacroPackage, MacroPackageKind,
-    RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions, SyntheticConventions,
-    WrapperConventions,
+    RuntimeBindingSeeds, RuntimeConventions, RuntimeExportConventions,
 };
 
 fn ls(text: &str) -> LeanString {
@@ -44,15 +43,9 @@ pub fn svelte_default_conventions() -> FrameworkConventions {
             get_i18n: Some(ls("__l4s_getI18n")),
             translate: Some(ls("__l4s_translate")),
             i18n_instance: None,
+            reactive_translation_wrapper: Some(ls("__lingui_for_svelte_reactive_translation__")),
+            eager_translation_wrapper: Some(ls("__lingui_for_svelte_eager_translation__")),
             runtime_trans_component: ls("L4sRuntimeTrans"),
         },
-        synthetic: Some(SyntheticConventions {
-            expression_prefix: Some(ls("__lingui_for_svelte_expr_")),
-            component_prefix: Some(ls("__lingui_for_svelte_component_")),
-        }),
-        wrappers: Some(WrapperConventions {
-            reactive_translation: Some(ls("__lingui_for_svelte_reactive_translation__")),
-            eager_translation: Some(ls("__lingui_for_svelte_eager_translation__")),
-        }),
     }
 }

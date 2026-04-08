@@ -124,7 +124,7 @@ mod tests {
     };
     use crate::conventions::{
         MacroConventions, MacroPackage, MacroPackageKind, RuntimeBindingSeeds, RuntimeConventions,
-        RuntimeExportConventions, SyntheticConventions, WrapperConventions,
+        RuntimeExportConventions,
     };
     use crate::{
         CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
@@ -170,16 +170,12 @@ mod tests {
                 get_i18n: Some(ls("__l4s_getI18n")),
                 translate: Some(ls("__l4s_translate")),
                 i18n_instance: None,
+                reactive_translation_wrapper: Some(ls(
+                    "__lingui_for_svelte_reactive_translation__",
+                )),
+                eager_translation_wrapper: Some(ls("__lingui_for_svelte_eager_translation__")),
                 runtime_trans_component: ls("L4sRuntimeTrans"),
             },
-            synthetic: Some(SyntheticConventions {
-                expression_prefix: Some(ls("__lingui_for_svelte_expr_")),
-                component_prefix: Some(ls("__lingui_for_svelte_component_")),
-            }),
-            wrappers: Some(WrapperConventions {
-                reactive_translation: Some(ls("__lingui_for_svelte_reactive_translation__")),
-                eager_translation: Some(ls("__lingui_for_svelte_eager_translation__")),
-            }),
         }
     }
 
@@ -224,6 +220,8 @@ mod tests {
                 context: ls("__l4s_ctx"),
                 get_i18n: ls("__l4s_getI18n"),
                 translate: ls("__l4s_translate"),
+                reactive_translation_wrapper: ls("__lingui_for_svelte_reactive_translation__"),
+                eager_translation_wrapper: ls("__lingui_for_svelte_eager_translation__"),
                 trans_component: ls("L4sRuntimeTrans"),
             },
             instance_script: Some(SvelteCompileScriptRegion {
