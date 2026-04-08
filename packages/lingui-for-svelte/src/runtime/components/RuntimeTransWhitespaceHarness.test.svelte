@@ -23,7 +23,7 @@
   setLinguiContext(untrack(() => getI18n()));
 </script>
 
-<div class="runtime-trans-wrapper">
+<runtime-trans-wrapper>
   <RuntimeTrans {id} {message} {values}>
     {#snippet component_0(children: Snippet | undefined)}
       <RuntimeTransFixtureLink {href}>
@@ -41,4 +41,4 @@
       </strong>
     {/snippet}
   </RuntimeTrans>
-</div>
+</runtime-trans-wrapper>

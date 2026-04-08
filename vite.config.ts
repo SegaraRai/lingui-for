@@ -12,6 +12,7 @@ export default defineConfig({
       "**/.sveltekit-build",
       "**/.unplugin-markup-import",
       "**/dist",
+      "**/generated",
       "crates/lingui-analyzer/benches/fixtures/*",
     ],
   },

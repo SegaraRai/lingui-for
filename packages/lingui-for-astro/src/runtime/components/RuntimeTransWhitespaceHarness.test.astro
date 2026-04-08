@@ -17,37 +17,21 @@ const { i18n, id, message, values = undefined, href = "/docs" } = Astro.props;
 setLinguiContext(Astro.locals, i18n);
 ---
 
-<div class="runtime-trans-wrapper">
-  <RuntimeTrans {id} {message} {values} placeholders={["0", "1", "2"]}>
-    <fragment slot="component_0">
-      {
-        (children: string) => (
-          <a
-            class="fixture-link"
-            data-kind="fixture-link"
-            href={href}
-            set:html={children}
-          />
-        )
-      }
-    </fragment>
-    <fragment slot="component_1">
-      {
-        (children: string) => (
-          <div class="fixture-box">
-            <Fragment set:html={children} />
-          </div>
-        )
-      }
-    </fragment>
-    <fragment slot="component_2">
-      {
-        (children: string) => (
-          <strong class="fixture-strong">
-            <Fragment set:html={children} />
-          </strong>
-        )
-      }
-    </fragment>
-  </RuntimeTrans>
-</div>
+<!-- prettier-ignore -->
+<runtime-trans-wrapper><RuntimeTrans {id} {message} {values} placeholders={["0", "1", "2"]}>
+  <fragment slot="component_0">
+    {(children: string) => (
+      <a class="fixture-link" data-kind="fixture-link" href={href} set:html={children} />
+    )}
+  </fragment>
+  <fragment slot="component_1">
+    {(children: string) => (
+      <div class="fixture-box"><Fragment set:html={children} /></div>
+    )}
+  </fragment>
+  <fragment slot="component_2">
+    {(children: string) => (
+      <strong class="fixture-strong"><Fragment set:html={children} /></strong>
+    )}
+  </fragment>
+</RuntimeTrans></runtime-trans-wrapper>

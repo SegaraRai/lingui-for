@@ -11,6 +11,23 @@ function normalizeSsrBody(body: string): string {
   return body.replaceAll(/<!--[\w[\]-]*-->/g, "");
 }
 
+function extractWrapper(html: string): string {
+  const openTag = "<runtime-trans-wrapper>";
+  const start = html.indexOf(openTag);
+
+  if (start === -1) {
+    throw new Error("Could not find runtime-trans-wrapper");
+  }
+
+  const end = html.indexOf("</runtime-trans-wrapper>", start);
+
+  if (end === -1) {
+    throw new Error("Could not find closing runtime-trans-wrapper");
+  }
+
+  return html.slice(start, end + "</runtime-trans-wrapper>".length);
+}
+
 describe("RuntimeTrans SSR", () => {
   test("renders translated plain text descriptors", () => {
     const i18n = setupI18n({
@@ -84,8 +101,8 @@ describe("RuntimeTrans SSR", () => {
       },
     });
 
-    expect(normalizeSsrBody(result.body)).toBe(
-      '<div class="runtime-trans-wrapper">Lead<a class="fixture-link" data-kind="fixture-link" href="/docs">docs</a>mid<div class="fixture-box"><strong class="fixture-strong">deep</strong>tail</div>end.</div>',
+    expect(extractWrapper(normalizeSsrBody(result.body))).toBe(
+      '<runtime-trans-wrapper>Lead<a class="fixture-link" data-kind="fixture-link" href="/docs">docs</a>mid<div class="fixture-box"><strong class="fixture-strong">deep</strong>tail</div>end.</runtime-trans-wrapper>',
     );
   });
 

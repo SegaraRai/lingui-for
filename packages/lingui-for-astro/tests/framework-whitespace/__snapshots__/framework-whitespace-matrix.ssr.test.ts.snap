@@ -1,0 +1,364 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-nl-fragment 1`] = `"<whitespace-case data-case="pair-fragment-nl-fragment"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-nl-inline 1`] = `"<whitespace-case data-case="pair-fragment-nl-inline"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-nl-interpolation 1`] = `"<whitespace-case data-case="pair-fragment-nl-interpolation"> <span class="fixture-inline">L</span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-nl-nested 1`] = `"<whitespace-case data-case="pair-fragment-nl-nested"> <span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-nl-set-html 1`] = `"<whitespace-case data-case="pair-fragment-nl-set-html"> <span class="fixture-inline">L</span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-nl-set-text 1`] = `"<whitespace-case data-case="pair-fragment-nl-set-text"> <span class="fixture-inline">L</span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-nl-ternary 1`] = `"<whitespace-case data-case="pair-fragment-nl-ternary"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-nl-text 1`] = `
+"<whitespace-case data-case="pair-fragment-nl-text"> <span class="fixture-inline">L</span>
+R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-sp-fragment 1`] = `"<whitespace-case data-case="pair-fragment-sp-fragment"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-sp-inline 1`] = `"<whitespace-case data-case="pair-fragment-sp-inline"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-sp-interpolation 1`] = `"<whitespace-case data-case="pair-fragment-sp-interpolation"> <span class="fixture-inline">L</span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-sp-nested 1`] = `"<whitespace-case data-case="pair-fragment-sp-nested"> <span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-sp-set-html 1`] = `"<whitespace-case data-case="pair-fragment-sp-set-html"> <span class="fixture-inline">L</span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-sp-set-text 1`] = `"<whitespace-case data-case="pair-fragment-sp-set-text"> <span class="fixture-inline">L</span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-sp-ternary 1`] = `"<whitespace-case data-case="pair-fragment-sp-ternary"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-fragment-sp-text 1`] = `
+"<whitespace-case data-case="pair-fragment-sp-text"> <span class="fixture-inline">L</span> R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-nl-fragment 1`] = `"<whitespace-case data-case="pair-inline-nl-fragment"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-nl-inline 1`] = `"<whitespace-case data-case="pair-inline-nl-inline"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-nl-interpolation 1`] = `"<whitespace-case data-case="pair-inline-nl-interpolation"> <span class="fixture-inline">L</span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-nl-nested 1`] = `"<whitespace-case data-case="pair-inline-nl-nested"> <span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-nl-set-html 1`] = `"<whitespace-case data-case="pair-inline-nl-set-html"> <span class="fixture-inline">L</span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-nl-set-text 1`] = `"<whitespace-case data-case="pair-inline-nl-set-text"> <span class="fixture-inline">L</span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-nl-ternary 1`] = `"<whitespace-case data-case="pair-inline-nl-ternary"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-nl-text 1`] = `
+"<whitespace-case data-case="pair-inline-nl-text"> <span class="fixture-inline">L</span>
+R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-sp-fragment 1`] = `"<whitespace-case data-case="pair-inline-sp-fragment"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-sp-inline 1`] = `"<whitespace-case data-case="pair-inline-sp-inline"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-sp-interpolation 1`] = `"<whitespace-case data-case="pair-inline-sp-interpolation"> <span class="fixture-inline">L</span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-sp-nested 1`] = `"<whitespace-case data-case="pair-inline-sp-nested"> <span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-sp-set-html 1`] = `"<whitespace-case data-case="pair-inline-sp-set-html"> <span class="fixture-inline">L</span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-sp-set-text 1`] = `"<whitespace-case data-case="pair-inline-sp-set-text"> <span class="fixture-inline">L</span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-sp-ternary 1`] = `"<whitespace-case data-case="pair-inline-sp-ternary"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-inline-sp-text 1`] = `
+"<whitespace-case data-case="pair-inline-sp-text"> <span class="fixture-inline">L</span> R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-nl-fragment 1`] = `"<whitespace-case data-case="pair-interpolation-nl-fragment"> L <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-nl-inline 1`] = `"<whitespace-case data-case="pair-interpolation-nl-inline"> L <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-nl-interpolation 1`] = `"<whitespace-case data-case="pair-interpolation-nl-interpolation"> L R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-nl-nested 1`] = `"<whitespace-case data-case="pair-interpolation-nl-nested"> L <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-nl-set-html 1`] = `"<whitespace-case data-case="pair-interpolation-nl-set-html"> L <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-nl-set-text 1`] = `"<whitespace-case data-case="pair-interpolation-nl-set-text"> L <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-nl-ternary 1`] = `"<whitespace-case data-case="pair-interpolation-nl-ternary"> L <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-nl-text 1`] = `
+"<whitespace-case data-case="pair-interpolation-nl-text"> L
+R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-sp-fragment 1`] = `"<whitespace-case data-case="pair-interpolation-sp-fragment"> L <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-sp-inline 1`] = `"<whitespace-case data-case="pair-interpolation-sp-inline"> L <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-sp-interpolation 1`] = `"<whitespace-case data-case="pair-interpolation-sp-interpolation"> L R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-sp-nested 1`] = `"<whitespace-case data-case="pair-interpolation-sp-nested"> L <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-sp-set-html 1`] = `"<whitespace-case data-case="pair-interpolation-sp-set-html"> L <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-sp-set-text 1`] = `"<whitespace-case data-case="pair-interpolation-sp-set-text"> L <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-sp-ternary 1`] = `"<whitespace-case data-case="pair-interpolation-sp-ternary"> L <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-interpolation-sp-text 1`] = `
+"<whitespace-case data-case="pair-interpolation-sp-text"> L R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-nl-fragment 1`] = `"<whitespace-case data-case="pair-nested-nl-fragment"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-nl-inline 1`] = `"<whitespace-case data-case="pair-nested-nl-inline"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-nl-interpolation 1`] = `"<whitespace-case data-case="pair-nested-nl-interpolation"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-nl-nested 1`] = `"<whitespace-case data-case="pair-nested-nl-nested"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-nl-set-html 1`] = `"<whitespace-case data-case="pair-nested-nl-set-html"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-nl-set-text 1`] = `"<whitespace-case data-case="pair-nested-nl-set-text"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-nl-ternary 1`] = `"<whitespace-case data-case="pair-nested-nl-ternary"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-nl-text 1`] = `
+"<whitespace-case data-case="pair-nested-nl-text"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div>
+R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-sp-fragment 1`] = `"<whitespace-case data-case="pair-nested-sp-fragment"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-sp-inline 1`] = `"<whitespace-case data-case="pair-nested-sp-inline"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-sp-interpolation 1`] = `"<whitespace-case data-case="pair-nested-sp-interpolation"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-sp-nested 1`] = `"<whitespace-case data-case="pair-nested-sp-nested"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-sp-set-html 1`] = `"<whitespace-case data-case="pair-nested-sp-set-html"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-sp-set-text 1`] = `"<whitespace-case data-case="pair-nested-sp-set-text"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-sp-ternary 1`] = `"<whitespace-case data-case="pair-nested-sp-ternary"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-nested-sp-text 1`] = `
+"<whitespace-case data-case="pair-nested-sp-text"> <div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-nl-fragment 1`] = `"<whitespace-case data-case="pair-set-html-nl-fragment"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-nl-inline 1`] = `"<whitespace-case data-case="pair-set-html-nl-inline"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-nl-interpolation 1`] = `"<whitespace-case data-case="pair-set-html-nl-interpolation"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-nl-nested 1`] = `"<whitespace-case data-case="pair-set-html-nl-nested"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-nl-set-html 1`] = `"<whitespace-case data-case="pair-set-html-nl-set-html"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-nl-set-text 1`] = `"<whitespace-case data-case="pair-set-html-nl-set-text"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-nl-ternary 1`] = `"<whitespace-case data-case="pair-set-html-nl-ternary"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-nl-text 1`] = `
+"<whitespace-case data-case="pair-set-html-nl-text"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span>
+R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-sp-fragment 1`] = `"<whitespace-case data-case="pair-set-html-sp-fragment"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-sp-inline 1`] = `"<whitespace-case data-case="pair-set-html-sp-inline"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-sp-interpolation 1`] = `"<whitespace-case data-case="pair-set-html-sp-interpolation"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-sp-nested 1`] = `"<whitespace-case data-case="pair-set-html-sp-nested"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-sp-set-html 1`] = `"<whitespace-case data-case="pair-set-html-sp-set-html"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-sp-set-text 1`] = `"<whitespace-case data-case="pair-set-html-sp-set-text"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-sp-ternary 1`] = `"<whitespace-case data-case="pair-set-html-sp-ternary"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-html-sp-text 1`] = `
+"<whitespace-case data-case="pair-set-html-sp-text"> <span class="fixture-inline-host"><span class="fixture-inline-html">L</span></span> R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-nl-fragment 1`] = `"<whitespace-case data-case="pair-set-text-nl-fragment"> <span class="fixture-inline-text">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-nl-inline 1`] = `"<whitespace-case data-case="pair-set-text-nl-inline"> <span class="fixture-inline-text">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-nl-interpolation 1`] = `"<whitespace-case data-case="pair-set-text-nl-interpolation"> <span class="fixture-inline-text">L</span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-nl-nested 1`] = `"<whitespace-case data-case="pair-set-text-nl-nested"> <span class="fixture-inline-text">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-nl-set-html 1`] = `"<whitespace-case data-case="pair-set-text-nl-set-html"> <span class="fixture-inline-text">L</span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-nl-set-text 1`] = `"<whitespace-case data-case="pair-set-text-nl-set-text"> <span class="fixture-inline-text">L</span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-nl-ternary 1`] = `"<whitespace-case data-case="pair-set-text-nl-ternary"> <span class="fixture-inline-text">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-nl-text 1`] = `
+"<whitespace-case data-case="pair-set-text-nl-text"> <span class="fixture-inline-text">L</span>
+R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-sp-fragment 1`] = `"<whitespace-case data-case="pair-set-text-sp-fragment"> <span class="fixture-inline-text">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-sp-inline 1`] = `"<whitespace-case data-case="pair-set-text-sp-inline"> <span class="fixture-inline-text">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-sp-interpolation 1`] = `"<whitespace-case data-case="pair-set-text-sp-interpolation"> <span class="fixture-inline-text">L</span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-sp-nested 1`] = `"<whitespace-case data-case="pair-set-text-sp-nested"> <span class="fixture-inline-text">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-sp-set-html 1`] = `"<whitespace-case data-case="pair-set-text-sp-set-html"> <span class="fixture-inline-text">L</span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-sp-set-text 1`] = `"<whitespace-case data-case="pair-set-text-sp-set-text"> <span class="fixture-inline-text">L</span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-sp-ternary 1`] = `"<whitespace-case data-case="pair-set-text-sp-ternary"> <span class="fixture-inline-text">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-set-text-sp-text 1`] = `
+"<whitespace-case data-case="pair-set-text-sp-text"> <span class="fixture-inline-text">L</span> R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-nl-fragment 1`] = `"<whitespace-case data-case="pair-ternary-nl-fragment"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-nl-inline 1`] = `"<whitespace-case data-case="pair-ternary-nl-inline"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-nl-interpolation 1`] = `"<whitespace-case data-case="pair-ternary-nl-interpolation"> <span class="fixture-inline">L</span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-nl-nested 1`] = `"<whitespace-case data-case="pair-ternary-nl-nested"> <span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-nl-set-html 1`] = `"<whitespace-case data-case="pair-ternary-nl-set-html"> <span class="fixture-inline">L</span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-nl-set-text 1`] = `"<whitespace-case data-case="pair-ternary-nl-set-text"> <span class="fixture-inline">L</span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-nl-ternary 1`] = `"<whitespace-case data-case="pair-ternary-nl-ternary"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-nl-text 1`] = `
+"<whitespace-case data-case="pair-ternary-nl-text"> <span class="fixture-inline">L</span>
+R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-sp-fragment 1`] = `"<whitespace-case data-case="pair-ternary-sp-fragment"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-sp-inline 1`] = `"<whitespace-case data-case="pair-ternary-sp-inline"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-sp-interpolation 1`] = `"<whitespace-case data-case="pair-ternary-sp-interpolation"> <span class="fixture-inline">L</span> R </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-sp-nested 1`] = `"<whitespace-case data-case="pair-ternary-sp-nested"> <span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-sp-set-html 1`] = `"<whitespace-case data-case="pair-ternary-sp-set-html"> <span class="fixture-inline">L</span> <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-sp-set-text 1`] = `"<whitespace-case data-case="pair-ternary-sp-set-text"> <span class="fixture-inline">L</span> <span class="fixture-inline-text">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-sp-ternary 1`] = `"<whitespace-case data-case="pair-ternary-sp-ternary"> <span class="fixture-inline">L</span> <span class="fixture-inline">R</span> </whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-ternary-sp-text 1`] = `
+"<whitespace-case data-case="pair-ternary-sp-text"> <span class="fixture-inline">L</span> R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-nl-fragment 1`] = `
+"<whitespace-case data-case="pair-text-nl-fragment">
+L
+<span class="fixture-inline">R</span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-nl-inline 1`] = `
+"<whitespace-case data-case="pair-text-nl-inline">
+L
+<span class="fixture-inline">R</span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-nl-interpolation 1`] = `
+"<whitespace-case data-case="pair-text-nl-interpolation">
+L
+R </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-nl-nested 1`] = `
+"<whitespace-case data-case="pair-text-nl-nested">
+L
+<div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-nl-set-html 1`] = `
+"<whitespace-case data-case="pair-text-nl-set-html">
+L
+<span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-nl-set-text 1`] = `
+"<whitespace-case data-case="pair-text-nl-set-text">
+L
+<span class="fixture-inline-text">R</span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-nl-ternary 1`] = `
+"<whitespace-case data-case="pair-text-nl-ternary">
+L
+<span class="fixture-inline">R</span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-nl-text 1`] = `
+"<whitespace-case data-case="pair-text-nl-text">
+L
+R
+</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-sp-fragment 1`] = `
+"<whitespace-case data-case="pair-text-sp-fragment">
+L <span class="fixture-inline">R</span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-sp-inline 1`] = `
+"<whitespace-case data-case="pair-text-sp-inline">
+L <span class="fixture-inline">R</span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-sp-interpolation 1`] = `
+"<whitespace-case data-case="pair-text-sp-interpolation">
+L R </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-sp-nested 1`] = `
+"<whitespace-case data-case="pair-text-sp-nested">
+L <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-sp-set-html 1`] = `
+"<whitespace-case data-case="pair-text-sp-set-html">
+L <span class="fixture-inline-host"><span class="fixture-inline-html">R</span></span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-sp-set-text 1`] = `
+"<whitespace-case data-case="pair-text-sp-set-text">
+L <span class="fixture-inline-text">R</span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-sp-ternary 1`] = `
+"<whitespace-case data-case="pair-text-sp-ternary">
+L <span class="fixture-inline">R</span> </whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Astro inter-node whitespace behavior for pair-text-sp-text 1`] = `
+"<whitespace-case data-case="pair-text-sp-text">
+L R
+</whitespace-case>"
+`;

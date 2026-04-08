@@ -7,10 +7,8 @@ function cleanupHtml(html: string): string {
   return (
     html
       // Astro dev
-      .replaceAll(
-        /\s*data-astro-source-file="[^"]+"\s+data-astro-source-loc="[^"]+"\s*>/g,
-        ">",
-      )
+      .replaceAll(/\s*data-astro-source-file="[^"]+"/g, "")
+      .replaceAll(/\s*data-astro-source-loc="[^"]+"/g, "")
       // Svelte SSR
       .replaceAll(/<!--[\w[\]-]*-->/g, "")
   );

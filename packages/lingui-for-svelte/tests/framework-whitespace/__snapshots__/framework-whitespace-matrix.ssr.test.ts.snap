@@ -1,0 +1,253 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-html-nl 1`] = `"<whitespace-case data-case="each-close-html-nl"><span class="fixture-inline-html">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-html-sp 1`] = `"<whitespace-case data-case="each-close-html-sp"><span class="fixture-inline-html">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-inline-nl 1`] = `"<whitespace-case data-case="each-close-inline-nl"><span class="fixture-inline">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-inline-sp 1`] = `"<whitespace-case data-case="each-close-inline-sp"><span class="fixture-inline">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-interpolation-nl 1`] = `"<whitespace-case data-case="each-close-interpolation-nl">L</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-interpolation-sp 1`] = `"<whitespace-case data-case="each-close-interpolation-sp">L</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-nested-nl 1`] = `"<whitespace-case data-case="each-close-nested-nl"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-nested-sp 1`] = `"<whitespace-case data-case="each-close-nested-sp"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-render-nl 1`] = `"<whitespace-case data-case="each-close-render-nl"><span class="fixture-inline">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-render-sp 1`] = `"<whitespace-case data-case="each-close-render-sp"><span class="fixture-inline">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-text-nl 1`] = `"<whitespace-case data-case="each-close-text-nl">L</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-close-text-sp 1`] = `"<whitespace-case data-case="each-close-text-sp">L</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-nl-html 1`] = `"<whitespace-case data-case="each-open-nl-html"><span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-nl-inline 1`] = `"<whitespace-case data-case="each-open-nl-inline"><span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-nl-interpolation 1`] = `"<whitespace-case data-case="each-open-nl-interpolation">R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-nl-nested 1`] = `"<whitespace-case data-case="each-open-nl-nested"><div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-nl-render 1`] = `"<whitespace-case data-case="each-open-nl-render"><span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-nl-text 1`] = `"<whitespace-case data-case="each-open-nl-text">R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-sp-html 1`] = `"<whitespace-case data-case="each-open-sp-html"><span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-sp-inline 1`] = `"<whitespace-case data-case="each-open-sp-inline"><span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-sp-interpolation 1`] = `"<whitespace-case data-case="each-open-sp-interpolation">R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-sp-nested 1`] = `"<whitespace-case data-case="each-open-sp-nested"><div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-sp-render 1`] = `"<whitespace-case data-case="each-open-sp-render"><span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for each-open-sp-text 1`] = `"<whitespace-case data-case="each-open-sp-text">R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-html-nl 1`] = `"<whitespace-case data-case="if-close-html-nl"><span class="fixture-inline-html">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-html-sp 1`] = `"<whitespace-case data-case="if-close-html-sp"><span class="fixture-inline-html">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-inline-nl 1`] = `"<whitespace-case data-case="if-close-inline-nl"><span class="fixture-inline">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-inline-sp 1`] = `"<whitespace-case data-case="if-close-inline-sp"><span class="fixture-inline">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-interpolation-nl 1`] = `"<whitespace-case data-case="if-close-interpolation-nl">L</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-interpolation-sp 1`] = `"<whitespace-case data-case="if-close-interpolation-sp">L</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-nested-nl 1`] = `"<whitespace-case data-case="if-close-nested-nl"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-nested-sp 1`] = `"<whitespace-case data-case="if-close-nested-sp"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-render-nl 1`] = `"<whitespace-case data-case="if-close-render-nl"><span class="fixture-inline">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-render-sp 1`] = `"<whitespace-case data-case="if-close-render-sp"><span class="fixture-inline">L</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-text-nl 1`] = `"<whitespace-case data-case="if-close-text-nl">L</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-close-text-sp 1`] = `"<whitespace-case data-case="if-close-text-sp">L</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-nl-html 1`] = `"<whitespace-case data-case="if-open-nl-html"><span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-nl-inline 1`] = `"<whitespace-case data-case="if-open-nl-inline"><span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-nl-interpolation 1`] = `"<whitespace-case data-case="if-open-nl-interpolation">R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-nl-nested 1`] = `"<whitespace-case data-case="if-open-nl-nested"><div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-nl-render 1`] = `"<whitespace-case data-case="if-open-nl-render"><span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-nl-text 1`] = `"<whitespace-case data-case="if-open-nl-text">R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-sp-html 1`] = `"<whitespace-case data-case="if-open-sp-html"><span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-sp-inline 1`] = `"<whitespace-case data-case="if-open-sp-inline"><span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-sp-interpolation 1`] = `"<whitespace-case data-case="if-open-sp-interpolation">R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-sp-nested 1`] = `"<whitespace-case data-case="if-open-sp-nested"><div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-sp-render 1`] = `"<whitespace-case data-case="if-open-sp-render"><span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for if-open-sp-text 1`] = `"<whitespace-case data-case="if-open-sp-text">R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-nl-html 1`] = `"<whitespace-case data-case="pair-html-nl-html"><span class="fixture-inline-html">L</span> <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-nl-inline 1`] = `"<whitespace-case data-case="pair-html-nl-inline"><span class="fixture-inline-html">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-nl-interpolation 1`] = `"<whitespace-case data-case="pair-html-nl-interpolation"><span class="fixture-inline-html">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-nl-nested 1`] = `"<whitespace-case data-case="pair-html-nl-nested"><span class="fixture-inline-html">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-nl-render 1`] = `"<whitespace-case data-case="pair-html-nl-render"><span class="fixture-inline-html">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-nl-text 1`] = `"<whitespace-case data-case="pair-html-nl-text"><span class="fixture-inline-html">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-sp-html 1`] = `"<whitespace-case data-case="pair-html-sp-html"><span class="fixture-inline-html">L</span> <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-sp-inline 1`] = `"<whitespace-case data-case="pair-html-sp-inline"><span class="fixture-inline-html">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-sp-interpolation 1`] = `"<whitespace-case data-case="pair-html-sp-interpolation"><span class="fixture-inline-html">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-sp-nested 1`] = `"<whitespace-case data-case="pair-html-sp-nested"><span class="fixture-inline-html">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-sp-render 1`] = `"<whitespace-case data-case="pair-html-sp-render"><span class="fixture-inline-html">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-html-sp-text 1`] = `"<whitespace-case data-case="pair-html-sp-text"><span class="fixture-inline-html">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-nl-html 1`] = `"<whitespace-case data-case="pair-inline-nl-html"><span class="fixture-inline">L</span> <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-nl-inline 1`] = `"<whitespace-case data-case="pair-inline-nl-inline"><span class="fixture-inline">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-nl-interpolation 1`] = `"<whitespace-case data-case="pair-inline-nl-interpolation"><span class="fixture-inline">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-nl-nested 1`] = `"<whitespace-case data-case="pair-inline-nl-nested"><span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-nl-render 1`] = `"<whitespace-case data-case="pair-inline-nl-render"><span class="fixture-inline">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-nl-text 1`] = `"<whitespace-case data-case="pair-inline-nl-text"><span class="fixture-inline">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-sp-html 1`] = `"<whitespace-case data-case="pair-inline-sp-html"><span class="fixture-inline">L</span> <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-sp-inline 1`] = `"<whitespace-case data-case="pair-inline-sp-inline"><span class="fixture-inline">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-sp-interpolation 1`] = `"<whitespace-case data-case="pair-inline-sp-interpolation"><span class="fixture-inline">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-sp-nested 1`] = `"<whitespace-case data-case="pair-inline-sp-nested"><span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-sp-render 1`] = `"<whitespace-case data-case="pair-inline-sp-render"><span class="fixture-inline">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-inline-sp-text 1`] = `"<whitespace-case data-case="pair-inline-sp-text"><span class="fixture-inline">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-nl-html 1`] = `"<whitespace-case data-case="pair-interpolation-nl-html">L <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-nl-inline 1`] = `"<whitespace-case data-case="pair-interpolation-nl-inline">L <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-nl-interpolation 1`] = `
+"<whitespace-case data-case="pair-interpolation-nl-interpolation">L
+R</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-nl-nested 1`] = `"<whitespace-case data-case="pair-interpolation-nl-nested">L <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-nl-render 1`] = `"<whitespace-case data-case="pair-interpolation-nl-render">L <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-nl-text 1`] = `
+"<whitespace-case data-case="pair-interpolation-nl-text">L
+R</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-sp-html 1`] = `"<whitespace-case data-case="pair-interpolation-sp-html">L <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-sp-inline 1`] = `"<whitespace-case data-case="pair-interpolation-sp-inline">L <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-sp-interpolation 1`] = `"<whitespace-case data-case="pair-interpolation-sp-interpolation">L R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-sp-nested 1`] = `"<whitespace-case data-case="pair-interpolation-sp-nested">L <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-sp-render 1`] = `"<whitespace-case data-case="pair-interpolation-sp-render">L <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-interpolation-sp-text 1`] = `"<whitespace-case data-case="pair-interpolation-sp-text">L R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-nl-html 1`] = `"<whitespace-case data-case="pair-nested-nl-html"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-nl-inline 1`] = `"<whitespace-case data-case="pair-nested-nl-inline"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-nl-interpolation 1`] = `"<whitespace-case data-case="pair-nested-nl-interpolation"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-nl-nested 1`] = `"<whitespace-case data-case="pair-nested-nl-nested"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-nl-render 1`] = `"<whitespace-case data-case="pair-nested-nl-render"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-nl-text 1`] = `"<whitespace-case data-case="pair-nested-nl-text"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-sp-html 1`] = `"<whitespace-case data-case="pair-nested-sp-html"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-sp-inline 1`] = `"<whitespace-case data-case="pair-nested-sp-inline"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-sp-interpolation 1`] = `"<whitespace-case data-case="pair-nested-sp-interpolation"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-sp-nested 1`] = `"<whitespace-case data-case="pair-nested-sp-nested"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-sp-render 1`] = `"<whitespace-case data-case="pair-nested-sp-render"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-nested-sp-text 1`] = `"<whitespace-case data-case="pair-nested-sp-text"><div class="fixture-box"><strong class="fixture-strong">L</strong> tail</div> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-nl-html 1`] = `"<whitespace-case data-case="pair-render-nl-html"><span class="fixture-inline">L</span> <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-nl-inline 1`] = `"<whitespace-case data-case="pair-render-nl-inline"><span class="fixture-inline">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-nl-interpolation 1`] = `"<whitespace-case data-case="pair-render-nl-interpolation"><span class="fixture-inline">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-nl-nested 1`] = `"<whitespace-case data-case="pair-render-nl-nested"><span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-nl-render 1`] = `"<whitespace-case data-case="pair-render-nl-render"><span class="fixture-inline">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-nl-text 1`] = `"<whitespace-case data-case="pair-render-nl-text"><span class="fixture-inline">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-sp-html 1`] = `"<whitespace-case data-case="pair-render-sp-html"><span class="fixture-inline">L</span> <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-sp-inline 1`] = `"<whitespace-case data-case="pair-render-sp-inline"><span class="fixture-inline">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-sp-interpolation 1`] = `"<whitespace-case data-case="pair-render-sp-interpolation"><span class="fixture-inline">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-sp-nested 1`] = `"<whitespace-case data-case="pair-render-sp-nested"><span class="fixture-inline">L</span> <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-sp-render 1`] = `"<whitespace-case data-case="pair-render-sp-render"><span class="fixture-inline">L</span> <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-render-sp-text 1`] = `"<whitespace-case data-case="pair-render-sp-text"><span class="fixture-inline">L</span> R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-nl-html 1`] = `"<whitespace-case data-case="pair-text-nl-html">L <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-nl-inline 1`] = `"<whitespace-case data-case="pair-text-nl-inline">L <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-nl-interpolation 1`] = `
+"<whitespace-case data-case="pair-text-nl-interpolation">L
+R</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-nl-nested 1`] = `"<whitespace-case data-case="pair-text-nl-nested">L <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-nl-render 1`] = `"<whitespace-case data-case="pair-text-nl-render">L <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-nl-text 1`] = `
+"<whitespace-case data-case="pair-text-nl-text">L
+R</whitespace-case>"
+`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-sp-html 1`] = `"<whitespace-case data-case="pair-text-sp-html">L <span class="fixture-inline-html">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-sp-inline 1`] = `"<whitespace-case data-case="pair-text-sp-inline">L <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-sp-interpolation 1`] = `"<whitespace-case data-case="pair-text-sp-interpolation">L R</whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-sp-nested 1`] = `"<whitespace-case data-case="pair-text-sp-nested">L <div class="fixture-box"><strong class="fixture-strong">R</strong> tail</div></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-sp-render 1`] = `"<whitespace-case data-case="pair-text-sp-render">L <span class="fixture-inline">R</span></whitespace-case>"`;
+
+exports[`framework whitespace SSR > captures Svelte inter-node whitespace behavior for pair-text-sp-text 1`] = `"<whitespace-case data-case="pair-text-sp-text">L R</whitespace-case>"`;
