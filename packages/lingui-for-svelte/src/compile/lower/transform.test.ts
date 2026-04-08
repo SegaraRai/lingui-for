@@ -22,6 +22,9 @@ describe("lowerSvelteTransformPrograms", () => {
           context: "__l4s_ctx",
           getI18n: "__l4s_getI18n",
           translate: "__l4s_translate",
+          reactiveTranslationWrapper:
+            "__lingui_for_svelte_reactive_translation__",
+          eagerTranslationWrapper: "__lingui_for_svelte_eager_translation__",
         },
       },
     );
@@ -69,6 +72,9 @@ describe("lowerSvelteTransformPrograms", () => {
           context: "__l4s_ctx",
           getI18n: "__l4s_getI18n",
           translate: "__l4s_translate",
+          reactiveTranslationWrapper:
+            "__lingui_for_svelte_reactive_translation__",
+          eagerTranslationWrapper: "__lingui_for_svelte_eager_translation__",
         },
       },
     );

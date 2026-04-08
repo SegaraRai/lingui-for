@@ -8,17 +8,15 @@ import type {
 import { LINGUI_STANDARD_CORE_MACRO_PACKAGES } from "@lingui-for/internal-shared-compile";
 
 import {
-  EAGER_TRANSLATION_WRAPPER,
   EXPORT_CREATE_LINGUI_ACCESSORS,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
-  REACTIVE_TRANSLATION_WRAPPER,
   RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
   RUNTIME_BINDING_CONTEXT,
   RUNTIME_BINDING_GET_I18N,
   RUNTIME_BINDING_TRANSLATE,
-  SYNTHETIC_PREFIX_COMPONENT,
-  SYNTHETIC_PREFIX_EXPRESSION,
+  EAGER_TRANSLATION_WRAPPER,
+  REACTIVE_TRANSLATION_WRAPPER,
 } from "./constants.ts";
 
 export function createSvelteFrameworkConventions(
@@ -57,15 +55,9 @@ export function createSvelteFrameworkConventions(
       context: RUNTIME_BINDING_CONTEXT,
       getI18n: RUNTIME_BINDING_GET_I18N,
       translate: RUNTIME_BINDING_TRANSLATE,
+      reactiveTranslationWrapper: REACTIVE_TRANSLATION_WRAPPER,
+      eagerTranslationWrapper: EAGER_TRANSLATION_WRAPPER,
       runtimeTransComponent: RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
-    },
-    synthetic: {
-      expressionPrefix: SYNTHETIC_PREFIX_EXPRESSION,
-      componentPrefix: SYNTHETIC_PREFIX_COMPONENT,
-    },
-    wrappers: {
-      reactiveTranslation: REACTIVE_TRANSLATION_WRAPPER,
-      eagerTranslation: EAGER_TRANSLATION_WRAPPER,
     },
   };
 }

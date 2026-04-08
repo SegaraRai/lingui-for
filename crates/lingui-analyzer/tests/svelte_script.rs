@@ -111,6 +111,8 @@ fn allocates_unique_runtime_bindings_for_svelte_compile() {
           const __l4s_ctx = "taken";
           const __l4s_getI18n = "taken";
           const __l4s_translate = "taken";
+          const __lingui_for_svelte_reactive_translation__ = "taken";
+          const __lingui_for_svelte_eager_translation__ = "taken";
           const L4sRuntimeTrans = "taken";
 
           const greeting = t.eager({ id: "hello", message: "Hello" });
@@ -136,6 +138,14 @@ fn allocates_unique_runtime_bindings_for_svelte_compile() {
     assert_eq!(plan.runtime_bindings.context, "__l4s_ctx_1");
     assert_eq!(plan.runtime_bindings.get_i18n, "__l4s_getI18n_1");
     assert_eq!(plan.runtime_bindings.translate, "__l4s_translate_1");
+    assert_eq!(
+        plan.runtime_bindings.reactive_translation_wrapper,
+        "__lingui_for_svelte_reactive_translation___1"
+    );
+    assert_eq!(
+        plan.runtime_bindings.eager_translation_wrapper,
+        "__lingui_for_svelte_eager_translation___1"
+    );
     assert_eq!(plan.runtime_bindings.trans_component, "L4sRuntimeTrans_1");
 }
 

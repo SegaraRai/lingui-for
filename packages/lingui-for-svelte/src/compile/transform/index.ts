@@ -156,6 +156,10 @@ export async function transformSvelte(
     context: compilePlan.runtimeBindings.context,
     getI18n: compilePlan.runtimeBindings.getI18n,
     translate: compilePlan.runtimeBindings.translate,
+    reactiveTranslationWrapper:
+      compilePlan.runtimeBindings.reactiveTranslationWrapper,
+    eagerTranslationWrapper:
+      compilePlan.runtimeBindings.eagerTranslationWrapper,
   };
   const loweredFilename = `${compilePlan.common.syntheticName}?lowered`;
   const contextualFilename = `${compilePlan.common.syntheticName}?contextual`;

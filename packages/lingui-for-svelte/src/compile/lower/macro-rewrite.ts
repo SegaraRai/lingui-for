@@ -7,13 +7,14 @@ import {
   LINGUI_TRANSLATE_METHOD,
 } from "@lingui-for/internal-shared-compile";
 
-import {
-  EAGER_TRANSLATION_WRAPPER,
-  PACKAGE_RUNTIME,
-  REACTIVE_TRANSLATION_WRAPPER,
-} from "../common/constants.ts";
+import { PACKAGE_RUNTIME } from "../common/constants.ts";
 
-export interface RuntimeBindingsForTransform {
+export interface WrapperBindingsForTransform {
+  reactiveTranslationWrapper: string;
+  eagerTranslationWrapper: string;
+}
+
+export interface RuntimeBindingsForTransform extends WrapperBindingsForTransform {
   createLinguiAccessors: string;
   context: string;
   getI18n: string;
@@ -23,6 +24,7 @@ export interface RuntimeBindingsForTransform {
 export type SvelteMacroPostprocessRequest =
   | {
       translationMode: "extract" | "lowered";
+      wrapperBindings: WrapperBindingsForTransform;
     }
   | {
       translationMode: "contextual";
@@ -197,7 +199,10 @@ export function createSvelteMacroPostprocessPlugin(
 
         if (
           t.isIdentifier(path.node.callee, {
-            name: EAGER_TRANSLATION_WRAPPER,
+            name:
+              request.translationMode === "contextual"
+                ? request.runtimeBindings.eagerTranslationWrapper
+                : request.wrapperBindings.eagerTranslationWrapper,
           })
         ) {
           const [translated] = path.node.arguments;
@@ -209,7 +214,10 @@ export function createSvelteMacroPostprocessPlugin(
 
         if (
           !t.isIdentifier(path.node.callee, {
-            name: REACTIVE_TRANSLATION_WRAPPER,
+            name:
+              request.translationMode === "contextual"
+                ? request.runtimeBindings.reactiveTranslationWrapper
+                : request.wrapperBindings.reactiveTranslationWrapper,
           })
         ) {
           return;

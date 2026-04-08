@@ -43,9 +43,9 @@ pub fn astro_default_conventions() -> FrameworkConventions {
             get_i18n: None,
             translate: None,
             i18n_instance: Some(ls("__l4a_i18n")),
+            reactive_translation_wrapper: None,
+            eager_translation_wrapper: None,
             runtime_trans_component: ls("L4aRuntimeTrans"),
         },
-        synthetic: None,
-        wrappers: None,
     }
 }

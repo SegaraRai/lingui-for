@@ -118,27 +118,11 @@ pub struct RuntimeBindingSeeds {
     pub translate: Option<LeanString>,
     #[tsify(optional)]
     pub i18n_instance: Option<LeanString>,
+    #[tsify(optional)]
+    pub reactive_translation_wrapper: Option<LeanString>,
+    #[tsify(optional)]
+    pub eager_translation_wrapper: Option<LeanString>,
     pub runtime_trans_component: LeanString,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
-#[tsify()]
-#[serde(rename_all = "camelCase")]
-pub struct SyntheticConventions {
-    #[tsify(optional)]
-    pub expression_prefix: Option<LeanString>,
-    #[tsify(optional)]
-    pub component_prefix: Option<LeanString>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
-#[tsify()]
-#[serde(rename_all = "camelCase")]
-pub struct WrapperConventions {
-    #[tsify(optional)]
-    pub reactive_translation: Option<LeanString>,
-    #[tsify(optional)]
-    pub eager_translation: Option<LeanString>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
@@ -150,10 +134,6 @@ pub struct FrameworkConventions {
     pub macro_: MacroConventions,
     pub runtime: RuntimeConventions,
     pub bindings: RuntimeBindingSeeds,
-    #[tsify(optional)]
-    pub synthetic: Option<SyntheticConventions>,
-    #[tsify(optional)]
-    pub wrappers: Option<WrapperConventions>,
 }
 
 impl FrameworkConventions {

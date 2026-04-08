@@ -234,14 +234,8 @@ function createTestFrameworkConventions(framework: "astro" | "svelte") {
       getI18n: "__l4s_getI18n",
       translate: "__l4s_translate",
       runtimeTransComponent: "L4sRuntimeTrans",
-    },
-    synthetic: {
-      expressionPrefix: "__lingui_for_svelte_expr_",
-      componentPrefix: "__lingui_for_svelte_component_",
-    },
-    wrappers: {
-      reactiveTranslation: "__lingui_for_svelte_reactive_translation__",
-      eagerTranslation: "__lingui_for_svelte_eager_translation__",
+      reactiveTranslationWrapper: "__lingui_for_svelte_reactive_translation__",
+      eagerTranslationWrapper: "__lingui_for_svelte_eager_translation__",
     },
   } satisfies FrameworkConventions;
 }

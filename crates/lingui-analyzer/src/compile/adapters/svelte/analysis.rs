@@ -123,7 +123,6 @@ pub(crate) fn analyze_svelte_compile(
                 .unwrap_or(ScriptLang::Ts),
             source_anchors: analysis.metadata.source_anchors.clone(),
         },
-        conventions: conventions.clone(),
         runtime_bindings: create_runtime_bindings(
             analysis
                 .semantic
@@ -179,13 +178,9 @@ pub(crate) fn wrap_compile_source(
         match prototype.candidate.flavor {
             MacroFlavor::Reactive => {
                 let wrapper = analysis
-                    .conventions
-                    .wrappers
-                    .as_ref()
-                    .and_then(|wrappers| wrappers.reactive_translation.as_deref())
-                    .ok_or(SvelteAdapterError::MissingConvention(
-                        "wrappers.reactive_translation",
-                    ))?;
+                    .runtime_bindings
+                    .reactive_translation_wrapper
+                    .as_str();
                 push_wrapper_anchor(&mut mapped, &indexed_source, &format!("{wrapper}("), 0);
                 push_wrapped_copy(
                     &mut mapped,
@@ -202,14 +197,7 @@ pub(crate) fn wrap_compile_source(
                 return mapped.into_rendered().map_err(SvelteAdapterError::from);
             }
             MacroFlavor::Eager => {
-                let wrapper = analysis
-                    .conventions
-                    .wrappers
-                    .as_ref()
-                    .and_then(|wrappers| wrappers.eager_translation.as_deref())
-                    .ok_or(SvelteAdapterError::MissingConvention(
-                        "wrappers.eager_translation",
-                    ))?;
+                let wrapper = analysis.runtime_bindings.eager_translation_wrapper.as_str();
                 push_wrapper_anchor(&mut mapped, &indexed_source, &format!("{wrapper}("), 0);
                 push_wrapped_copy(
                     &mut mapped,
@@ -340,6 +328,18 @@ pub(crate) fn create_runtime_bindings(
                 .translate
                 .clone()
                 .ok_or(SvelteAdapterError::MissingConvention("bindings.translate"))?,
+        ),
+        reactive_translation_wrapper: allocate_unique_binding_name(
+            &mut used,
+            bindings.reactive_translation_wrapper.clone().ok_or(
+                SvelteAdapterError::MissingConvention("bindings.reactive_translation_wrapper"),
+            )?,
+        ),
+        eager_translation_wrapper: allocate_unique_binding_name(
+            &mut used,
+            bindings.eager_translation_wrapper.clone().ok_or(
+                SvelteAdapterError::MissingConvention("bindings.eager_translation_wrapper"),
+            )?,
         ),
         trans_component: allocate_unique_binding_name(
             &mut used,

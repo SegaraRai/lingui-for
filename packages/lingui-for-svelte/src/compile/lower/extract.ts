@@ -4,6 +4,10 @@ import type { ScriptLang } from "@lingui-for/internal-lingui-analyzer-wasm";
 import type { BabelSourceMap } from "@lingui-for/internal-shared-compile";
 
 import {
+  EAGER_TRANSLATION_WRAPPER,
+  REACTIVE_TRANSLATION_WRAPPER,
+} from "../common/constants.ts";
+import {
   finalizeSvelteProgram,
   lowerProgramWithLingui,
   type ProgramTransform,
@@ -27,5 +31,9 @@ export function lowerSvelteExtractProgram(
 
   return finalizeSvelteProgram(lowered, {
     translationMode: "extract",
+    wrapperBindings: {
+      reactiveTranslationWrapper: REACTIVE_TRANSLATION_WRAPPER,
+      eagerTranslationWrapper: EAGER_TRANSLATION_WRAPPER,
+    },
   });
 }
