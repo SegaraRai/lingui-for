@@ -1,5 +1,5 @@
 import { render } from "svelte/server";
-import { describe, expect, test } from "vite-plus/test";
+import { beforeAll, describe, expect, test } from "vite-plus/test";
 
 import { frameworkWhitespaceCases } from "./generated/cases";
 import MatrixHarness from "./generated/MatrixHarness.svelte";
@@ -11,13 +11,11 @@ function normalizeSsrBody(body: string): string {
 function extractCaseMarkup(html: string, caseId: string): string {
   const openTag = `<whitespace-case data-case="${caseId}">`;
   const start = html.indexOf(openTag);
-
   if (start === -1) {
     throw new Error(`Could not find case ${caseId}`);
   }
 
   const end = html.indexOf("</whitespace-case>", start);
-
   if (end === -1) {
     throw new Error(`Could not find closing tag for case ${caseId}`);
   }
@@ -26,12 +24,16 @@ function extractCaseMarkup(html: string, caseId: string): string {
 }
 
 describe("framework whitespace SSR", () => {
-  const normalizedBody = normalizeSsrBody(render(MatrixHarness).body);
+  let renderedHtml = "";
+
+  beforeAll(() => {
+    renderedHtml = normalizeSsrBody(render(MatrixHarness).body);
+  });
 
   test.each(frameworkWhitespaceCases)(
     "captures Svelte inter-node whitespace behavior for %s",
     (caseId) => {
-      expect(extractCaseMarkup(normalizedBody, caseId)).toMatchSnapshot();
+      expect(extractCaseMarkup(renderedHtml, caseId)).toMatchSnapshot();
     },
   );
 });
