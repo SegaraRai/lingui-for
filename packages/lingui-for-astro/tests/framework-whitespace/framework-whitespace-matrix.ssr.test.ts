@@ -1,7 +1,7 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { beforeAll, describe, expect, test } from "vite-plus/test";
 
-import { frameworkWhitespaceCases } from "./generated/cases";
+import { frameworkWhitespaceCases } from "./generated/cases.ts";
 import MatrixHarness from "./generated/MatrixHarness.astro";
 
 function normalizeSsrBody(html: string): string {

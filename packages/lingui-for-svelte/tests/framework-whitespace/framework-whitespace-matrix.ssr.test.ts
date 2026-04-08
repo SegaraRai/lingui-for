@@ -1,7 +1,7 @@
 import { render } from "svelte/server";
 import { beforeAll, describe, expect, test } from "vite-plus/test";
 
-import { frameworkWhitespaceCases } from "./generated/cases";
+import { frameworkWhitespaceCases } from "./generated/cases.ts";
 import MatrixHarness from "./generated/MatrixHarness.svelte";
 
 function normalizeSsrBody(body: string): string {
