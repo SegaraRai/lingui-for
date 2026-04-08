@@ -27,6 +27,7 @@ export default defineConfig({
     },
     plugins: [
       markupImport({
+        frameworks: ["svelte"],
         exclude: ["**/*.test.svelte"],
       }),
       wasm(),
@@ -53,9 +54,14 @@ export default defineConfig({
         dependsOn: ["build"],
         cache: false,
       },
+      pretest: {
+        command: "node scripts/generate-framework-whitespace-fixtures.ts",
+        cache: true,
+        input: [{ auto: true }],
+      },
       test: {
         command: "vp test",
-        dependsOn: ["build"],
+        dependsOn: ["pretest", "build"],
         cache: false,
       },
     },
