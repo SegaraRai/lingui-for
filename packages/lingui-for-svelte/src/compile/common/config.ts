@@ -2,15 +2,18 @@ import type { ParserOptions } from "@babel/core";
 import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 
 import type {
+  RuntimeWarningOptions,
   ScriptLang,
   WhitespaceMode,
 } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
-  getParserPlugins as getSharedParserPlugins,
+  getParserPlugins as getParserPluginsShared,
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
   LINGUI_RUNTIME_TRANS_EXPORT,
   LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+  loadLinguiConfig as loadLinguiConfigShared,
+  type LinguiConfigSource,
 } from "@lingui-for/internal-shared-compile";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
@@ -26,6 +29,26 @@ import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
 
 /**
+ * Svelte-specific framework config extracted from the shared `framework` section.
+ *
+ * This is the normalized internal view used by Svelte transforms, extractors, and bundler plugins.
+ */
+export interface LinguiSvelteFrameworkConfig {
+  /**
+   * Additional macro package names that should be recognized as Svelte macro entrypoints.
+   */
+  packages?: readonly string[] | undefined;
+  /**
+   * Whitespace normalization mode for rich-text component macros in `.svelte` files.
+   */
+  whitespace?: RichTextWhitespaceMode | undefined;
+  /**
+   * Runtime warning switches emitted by generated Svelte runtime helpers.
+   */
+  runtimeWarnings?: RuntimeWarningOptions | undefined;
+}
+
+/**
  * Normalizes a partial Lingui configuration for use by the compile pipeline.
  *
  * @param config Optional user-provided Lingui configuration overrides.
@@ -38,7 +61,7 @@ export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
 export function normalizeLinguiConfig(
   config?: Partial<LinguiConfig>,
   options?: {
-    sveltePackages?: readonly string[] | undefined;
+    packages?: readonly string[] | undefined;
   },
 ): LinguiConfigNormalized {
   const runtimeConfigModule =
@@ -59,7 +82,7 @@ export function normalizeLinguiConfig(
 
   const sveltePackages = uniqueStrings([
     PACKAGE_MACRO,
-    ...(options?.sveltePackages ?? []),
+    ...(options?.packages ?? []),
   ]);
   const corePackages = uniqueStrings([
     PACKAGE_MACRO,
@@ -91,7 +114,7 @@ export function normalizeLinguiConfig(
 export function getParserPlugins(
   lang: ScriptLang,
 ): NonNullable<ParserOptions["plugins"]> {
-  return getSharedParserPlugins({
+  return getParserPluginsShared({
     typescript: lang === "ts",
   });
 }
@@ -100,6 +123,36 @@ export function resolveSvelteWhitespace(
   whitespace: RichTextWhitespaceMode,
 ): WhitespaceMode {
   return whitespace === "auto" ? "svelte" : whitespace;
+}
+
+export async function loadLinguiConfig(
+  source?: LinguiConfigSource,
+  options?: {
+    cwd?: string | undefined;
+    skipValidation?: boolean | undefined;
+  },
+): Promise<{
+  linguiConfig: LinguiConfigNormalized;
+  frameworkConfig: LinguiSvelteFrameworkConfig;
+}> {
+  const loaded = await loadLinguiConfigShared(source, options);
+  if (loaded == null) {
+    throw new Error(
+      "lingui-for-svelte requires a Lingui config file or explicit config object.",
+    );
+  }
+  const frameworkConfig = (
+    loaded.frameworkConfig as {
+      svelte?: LinguiSvelteFrameworkConfig | undefined;
+    }
+  ).svelte;
+
+  return {
+    linguiConfig: normalizeLinguiConfig(loaded.linguiConfig, {
+      packages: frameworkConfig?.packages,
+    }),
+    frameworkConfig: frameworkConfig ?? {},
+  };
 }
 
 function uniqueStrings(values: readonly string[]): string[] {

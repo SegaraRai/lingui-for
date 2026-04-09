@@ -16,5 +16,11 @@ describe("mayContainLinguiMacroImport", () => {
         "lingui-for-test/macro",
       ),
     ).toBe(false);
+    expect(
+      mayContainLinguiMacroImport('import { t } from "custom/macro";', [
+        "lingui-for-test/macro",
+        "custom/macro",
+      ]),
+    ).toBe(true);
   });
 });

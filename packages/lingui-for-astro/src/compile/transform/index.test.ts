@@ -8,10 +8,31 @@ import {
   type Detection,
 } from "@lingui-for/internal-shared-test-helpers";
 
+import { defineConfig } from "../../config.ts";
+import { loadLinguiConfig } from "../common/config.ts";
 import { transformAstro } from "./index.ts";
 
 function compact(value: string): string {
   return value.replaceAll(/\s+/g, " ").trim();
+}
+
+async function resolveTestConfig(
+  options: {
+    runtimeWarnings?: RuntimeWarningOptions;
+    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+  } = {},
+) {
+  return loadLinguiConfig(
+    defineConfig({
+      locales: ["en"],
+      framework: {
+        astro: {
+          runtimeWarnings: options.runtimeWarnings,
+          whitespace: options.whitespace,
+        },
+      },
+    }),
+  );
 }
 
 async function expectTransformed(
@@ -22,10 +43,11 @@ async function expectTransformed(
     whitespace?: "jsx" | "auto" | "astro" | "svelte";
   } = {},
 ) {
+  const resolvedConfig = await resolveTestConfig(options);
   const result = await transformAstro(source, {
     filename: options.filename ?? "/virtual/App.astro",
-    runtimeWarnings: options.runtimeWarnings,
-    whitespace: options.whitespace,
+    linguiConfig: resolvedConfig.linguiConfig,
+    frameworkConfig: resolvedConfig.frameworkConfig,
   });
   expect.assert(result != null);
   return result;
@@ -601,6 +623,7 @@ describe("transformAstro", () => {
   });
 
   test("leaves same-name non-macro components untouched", async () => {
+    const resolvedConfig = await resolveTestConfig();
     const source = dedent`
       ---
       import Trans from "./Trans.astro";
@@ -611,6 +634,7 @@ describe("transformAstro", () => {
 
     const result = await transformAstro(source, {
       filename: "/virtual/Page.astro",
+      ...resolvedConfig,
     });
 
     expect(result).toBeNull();

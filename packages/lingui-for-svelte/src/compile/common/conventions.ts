@@ -22,7 +22,7 @@ import {
 export function createSvelteFrameworkConventions(
   linguiConfig: LinguiConfigNormalized,
   options?: {
-    sveltePackages?: readonly string[] | undefined;
+    packages?: readonly string[] | undefined;
   },
 ): FrameworkConventions {
   return {
@@ -37,10 +37,7 @@ export function createSvelteFrameworkConventions(
             ],
           ),
         ],
-        [
-          "svelte",
-          createMacroPackage(options?.sveltePackages ?? [PACKAGE_MACRO]),
-        ],
+        ["svelte", createMacroPackage(options?.packages ?? [PACKAGE_MACRO])],
       ]),
     },
     runtime: {

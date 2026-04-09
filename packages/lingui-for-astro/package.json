@@ -48,6 +48,10 @@
       "types": "./dist/extractor.d.mts",
       "default": "./dist/extractor.mjs"
     },
+    "./config": {
+      "types": "./dist/config.d.mts",
+      "default": "./dist/config.mjs"
+    },
     "./macro": {
       "types": "./dist/macro.d.mts",
       "default": "./dist/macro.mjs"
@@ -103,10 +107,12 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@babel/core": "^7.20.0",
-    "@babel/traverse": "^7.20.0",
-    "@babel/types": "^7.20.0",
-    "@lingui/babel-plugin-lingui-macro": "^5.0.0",
+    "@babel/core": "^7.29.0",
+    "@babel/traverse": "^7.29.0",
+    "@babel/types": "^7.29.0",
+    "@lingui/babel-plugin-lingui-macro": "^5.9.5",
+    "cosmiconfig": "^9.0.1",
+    "jiti": "^2.6.1",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {
@@ -117,13 +123,13 @@
     "@lingui-for/internal-shared-compile": "workspace:*",
     "@lingui-for/internal-shared-runtime": "workspace:*",
     "@lingui-for/internal-shared-test-helpers": "workspace:*",
-    "@lingui/cli": "^5.0.0",
-    "@lingui/conf": "^5.0.0",
-    "@lingui/core": "^5.0.0",
-    "@types/babel__core": "^7.20.0",
-    "@types/babel__traverse": "^7.20.0",
+    "@lingui/cli": "^5.9.5",
+    "@lingui/conf": "^5.9.5",
+    "@lingui/core": "^5.9.5",
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
-    "astro": "^6.1.1",
+    "astro": "^6.1.5",
     "dedent": "^1.7.2",
     "rolldown-plugin-wasm": "^0.2.1",
     "typescript": "catalog:",

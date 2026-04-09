@@ -4,7 +4,9 @@
  */
 export function mayContainLinguiMacroImport(
   source: string,
-  packageMacro: string,
+  packageMacro: string | readonly string[],
 ): boolean {
-  return source.includes(packageMacro);
+  return (
+    typeof packageMacro === "string" ? [packageMacro] : packageMacro
+  ).some((specifier) => source.includes(specifier));
 }

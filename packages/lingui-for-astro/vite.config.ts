@@ -12,6 +12,7 @@ export default defineConfig({
     entry: {
       index: "src/index.ts",
       extractor: "src/extractor.ts",
+      config: "src/config.ts",
       macro: "src/macro.ts",
       "runtime/index": "src/runtime/index.ts",
       "integration/index": "src/integration/index.ts",

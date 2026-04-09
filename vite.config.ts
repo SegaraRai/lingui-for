@@ -35,24 +35,22 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command: "vp run build:apps && vp run build:examples",
-        dependsOn: ["build:lib"],
+        command:
+          "vp run build:lib && vp run --filter ./apps/* --filter ./examples/* build",
       },
       "build:apps": {
-        command: "vp run build --filter ./apps/*",
-        dependsOn: ["build:lib"],
+        command: "vp run --filter ./apps/* build",
       },
       "build:examples": {
-        command: "vp run build --filter ./examples/*",
-        dependsOn: ["build:lib"],
+        command: "vp run --filter ./examples/* build",
       },
       "build:lib": {
         command:
-          "vp run build --filter lingui-for-svelte... --filter lingui-for-astro... --filter unplugin-lingui-macro...",
-        dependsOn: ["build:plugin", "build:wasm"],
+          "vp run --filter lingui-for-svelte --filter lingui-for-astro --filter unplugin-lingui-macro build",
+        dependsOn: ["build:wasm"],
       },
       "build:plugin": {
-        command: "vp run build --filter unplugin-lingui-macro...",
+        command: "vp run --filter unplugin-lingui-macro build",
       },
       "build:wasm": {
         command: "node ./build-wasm.ts",

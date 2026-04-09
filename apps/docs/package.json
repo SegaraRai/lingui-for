@@ -2,26 +2,26 @@
   "name": "docs",
   "type": "module",
   "dependencies": {
-    "@astrojs/starlight": "^0.38.2",
+    "@astrojs/starlight": "^0.38.3",
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@astrojs/svelte": "^8.0.4",
-    "@lingui/core": "^5.9.4",
+    "@lingui/core": "^5.9.5",
     "@tailwindcss/vite": "4.2.2",
-    "astro": "^6.1.1",
+    "astro": "^6.1.5",
     "sharp": "^0.34.5",
-    "svelte": "^5.55.0",
+    "svelte": "^5.55.2",
     "tailwindcss": "4.2.2"
   },
   "devDependencies": {
-    "@lingui/cli": "^5.9.4",
-    "@lingui/conf": "^5.9.4",
-    "@lingui/format-po": "^5.9.4",
-    "astro-strip-whitespace": "^0.2.1",
+    "@lingui/cli": "^5.9.5",
+    "@lingui/conf": "^5.9.5",
+    "@lingui/format-po": "^5.9.5",
+    "astro-strip-whitespace": "^0.2.2",
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
     "shiki": "^4.0.2",
     "unplugin-lingui-macro": "workspace:*",
-    "vite": "catalog:",
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.16",
     "vite-plus": "catalog:"
   }
 }

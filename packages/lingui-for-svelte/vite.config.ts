@@ -12,6 +12,7 @@ export default defineConfig({
     entry: {
       index: "src/index.ts",
       extractor: "src/extractor.ts",
+      config: "src/config.ts",
       macro: "src/macro.ts",
       "runtime/index": "src/runtime/index.ts",
       "unplugin/index": "src/unplugin/index.ts",
@@ -40,7 +41,10 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
-        dependsOn: ["unplugin-markup-import#build"],
+        dependsOn: [
+          "lingui-for-workspace#build:wasm",
+          "unplugin-markup-import#build",
+        ],
         cache: true,
         input: [
           { auto: true },

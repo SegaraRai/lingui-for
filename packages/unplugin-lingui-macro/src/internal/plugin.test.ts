@@ -35,6 +35,11 @@ describe("unplugin-lingui-macro", () => {
         export const descriptor = msg\`Hello from plain TypeScript.\`;
       `,
       "/virtual/shared-descriptor.ts",
+      {
+        config: {
+          locales: ["en"],
+        },
+      },
     );
 
     expect(result).not.toBeNull();
@@ -52,6 +57,11 @@ describe("unplugin-lingui-macro", () => {
         }
       `,
       "/virtual/Demo.tsx",
+      {
+        config: {
+          locales: ["en"],
+        },
+      },
     );
 
     expect(result).not.toBeNull();
@@ -68,7 +78,8 @@ describe("unplugin-lingui-macro", () => {
       `,
       "/virtual/custom-macro.ts",
       {
-        linguiConfig: {
+        config: {
+          locales: ["en"],
           macro: {
             corePackage: ["@acme/lingui-core"],
           },
@@ -79,5 +90,20 @@ describe("unplugin-lingui-macro", () => {
     expect(result).not.toBeNull();
     expect(getCode(result)).toContain('id: "');
     expect(getCode(result)).not.toContain("@acme/lingui-core");
+  });
+
+  test("throws when no Lingui config file is found", async () => {
+    await expect(
+      runTransform(
+        dedent`
+          import { msg } from "@lingui/core/macro";
+
+          export const descriptor = msg\`Hello\`;
+        `,
+        "/virtual/missing-config.ts",
+      ),
+    ).rejects.toThrow(
+      "unplugin-lingui-macro could not resolve a Lingui config.",
+    );
   });
 });

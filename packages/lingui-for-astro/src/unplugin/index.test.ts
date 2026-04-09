@@ -3,8 +3,14 @@ import { describe, expect, test } from "vite-plus/test";
 import { unpluginFactory } from "./index.ts";
 
 describe("lingui-for-astro unplugin", () => {
+  const config = {
+    config: {
+      locales: ["en"],
+    },
+  };
+
   test("moves the plugin ahead of Astro compilation in Vite", async () => {
-    const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
+    const plugin = unpluginFactory(config, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -18,7 +24,7 @@ describe("lingui-for-astro unplugin", () => {
 
     expect(runConfigResolved).toBeTypeOf("function");
 
-    const config = {
+    const viteConfig = {
       plugins: [
         { name: "vite:pre-alias" },
         { name: "astro:build" },
@@ -27,9 +33,9 @@ describe("lingui-for-astro unplugin", () => {
       ],
     };
 
-    await runConfigResolved?.call({} as never, config as never);
+    await runConfigResolved?.call({} as never, viteConfig as never);
 
-    expect(config.plugins.map((entry) => entry.name)).toEqual([
+    expect(viteConfig.plugins.map((entry) => entry.name)).toEqual([
       "vite:pre-alias",
       "lingui-for-astro",
       "astro:build",
@@ -38,7 +44,7 @@ describe("lingui-for-astro unplugin", () => {
   });
 
   test("skips .astro files that do not reference lingui-for-astro macros", async () => {
-    const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
+    const plugin = unpluginFactory(config, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -52,5 +58,57 @@ describe("lingui-for-astro unplugin", () => {
     await expect(
       runTransform?.call({} as never, "<p>Hello</p>", "/virtual/Page.astro"),
     ).resolves.toBeNull();
+  });
+
+  test("respects custom macro package names from framework config", async () => {
+    const plugin = unpluginFactory(
+      {
+        config: {
+          locales: ["en"],
+          framework: {
+            astro: {
+              packages: ["@acme/astro-macro"],
+            },
+          },
+        },
+      },
+      { framework: "vite" } as never,
+    );
+    const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
+    if (!pluginInstance) {
+      throw new Error("Plugin instance is undefined");
+    }
+    const transform = pluginInstance.transform;
+    const runTransform =
+      typeof transform === "function" ? transform : transform?.handler;
+
+    expect(runTransform).toBeTypeOf("function");
+
+    await expect(
+      runTransform?.call(
+        {} as never,
+        '---\nimport { t } from "@acme/astro-macro";\n---\n<p>{t`Hello`}</p>',
+        "/virtual/Page.astro",
+      ),
+    ).resolves.not.toBeNull();
+  });
+
+  test("throws when no Lingui config file is found", async () => {
+    const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
+    const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
+    if (!pluginInstance) {
+      throw new Error("Plugin instance is undefined");
+    }
+    const transform = pluginInstance.transform;
+    const runTransform =
+      typeof transform === "function" ? transform : transform?.handler;
+
+    await expect(
+      runTransform?.call(
+        {} as never,
+        '---\nimport { t } from "lingui-for-astro/macro";\n---',
+        "/virtual/Page.astro",
+      ),
+    ).rejects.toThrow("lingui-for-astro could not resolve a Lingui config.");
   });
 });

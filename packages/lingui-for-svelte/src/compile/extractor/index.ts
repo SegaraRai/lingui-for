@@ -7,39 +7,23 @@ import type {
 import { buildSyntheticModule } from "@lingui-for/internal-lingui-analyzer-wasm";
 import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
+  createLinguiConfigResolver,
   parseCanonicalSourceMap,
   runBabelExtractionUnits,
   toBabelSourceMap,
+  type LinguiConfigSource,
 } from "@lingui-for/internal-shared-compile";
 
-import {
-  normalizeLinguiConfig,
-  resolveSvelteWhitespace,
-  type RichTextWhitespaceMode,
-} from "../common/config.ts";
+import { loadLinguiConfig, resolveSvelteWhitespace } from "../common/config.ts";
+import type { LinguiSvelteFrameworkConfig } from "../common/config.ts";
 import { createSvelteFrameworkConventions } from "../common/conventions.ts";
 import { lowerSvelteExtractProgram } from "../lower/extract.ts";
-
-export type { RichTextWhitespaceMode } from "../common/config.ts";
 
 /**
  * Options for {@link svelteExtractor}.
  */
 export interface SvelteExtractorOptions {
-  /**
-   * Additional package specifiers that should be treated like `lingui-for-svelte/macro` when
-   * normalizing the Lingui configuration for synthetic modules.
-   */
-  sveltePackages?: readonly string[] | undefined;
-  /**
-   * Whitespace handling mode for rich-text Component Macros during extraction.
-   *
-   * Keep this aligned with the transform-time `whitespace` setting so extracted messages match the
-   * compiled output.
-   *
-   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#svelte
-   */
-  whitespace?: RichTextWhitespaceMode | undefined;
+  config?: LinguiConfigSource;
 }
 
 /**
@@ -52,8 +36,12 @@ export interface SvelteExtractorOptions {
 export function svelteExtractor(
   options?: SvelteExtractorOptions,
 ): ExtractorType {
-  const { sveltePackages, whitespace = "auto" } = options ?? {};
-  const resolvedWhitespace = resolveSvelteWhitespace(whitespace);
+  const configResolver = createLinguiConfigResolver({
+    loadConfig: loadLinguiConfig,
+    config: options?.config,
+    missingConfigMessage:
+      "lingui-for-svelte extractor requires a Lingui config file or explicit config option.",
+  });
 
   return {
     match(filename) {
@@ -62,17 +50,26 @@ export function svelteExtractor(
     async extract(filename, source, onMessageExtracted, ctx) {
       await initWasmOnce();
 
-      const syntheticName = filename.replace(/\.svelte$/, ".synthetic.tsx");
+      const resolvedConfigPath = ctx?.linguiConfig.resolvedConfigPath;
+      if (resolvedConfigPath != null) {
+        configResolver.finalizeResolvedConfigPath(resolvedConfigPath);
+      }
 
-      const extractorCtx = createExtractorContext(ctx, { sveltePackages });
+      const syntheticName = filename.replace(/\.svelte$/, ".synthetic.tsx");
+      const extractorCtx = createExtractorContext(
+        ctx,
+        await configResolver.getConfig(),
+      );
       const synthetic = buildSyntheticModule({
         source,
         sourceName: filename,
         syntheticName,
-        whitespace: resolvedWhitespace,
+        whitespace: resolveSvelteWhitespace(
+          extractorCtx.frameworkConfig.whitespace ?? "auto",
+        ),
         conventions: createSvelteFrameworkConventions(
           extractorCtx.linguiConfig,
-          { sveltePackages },
+          { packages: extractorCtx.frameworkConfig.packages },
         ),
       });
       if (synthetic.source.trim().length === 0) {
@@ -105,10 +102,13 @@ export function svelteExtractor(
 
 function createExtractorContext(
   ctx: ExtractorCtx | undefined,
-  options?: {
-    sveltePackages?: readonly string[] | undefined;
+  loaded: {
+    linguiConfig: LinguiConfigNormalized;
+    frameworkConfig: LinguiSvelteFrameworkConfig;
   },
-): ExtractorCtx & { linguiConfig: LinguiConfigNormalized } {
-  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig, options);
-  return { ...ctx, linguiConfig };
+): ExtractorCtx & {
+  linguiConfig: LinguiConfigNormalized;
+  frameworkConfig: LinguiSvelteFrameworkConfig;
+} {
+  return { ...ctx, ...loaded };
 }

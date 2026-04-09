@@ -1,5 +1,8 @@
+import { fileURLToPath } from "node:url";
+
 import { transformAsync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
+import { getConfig, type LinguiConfig } from "@lingui/conf";
 import {
   createUnplugin,
   type UnpluginFactory,
@@ -11,13 +14,26 @@ import { stripQuery } from "@lingui-for/internal-shared-common";
 import type { LinguiMacroPluginOptions } from "../types.ts";
 import { hasImport } from "./imports.ts";
 
-type RuntimeConfigModule = NonNullable<
-  LinguiMacroPluginOptions["linguiConfig"]
->["runtimeConfigModule"];
+type RuntimeConfigModule = LinguiConfig["runtimeConfigModule"];
 
 type RuntimeConfigRecord = Partial<
   Record<"useLingui" | "Trans" | "i18n", readonly [string, string?]>
 >;
+
+type LoadedLinguiMacroConfig = {
+  extractorParserOptions?: LinguiConfig["extractorParserOptions"] | undefined;
+  macro?:
+    | {
+        corePackage?: readonly string[] | undefined;
+        jsxPackage?: readonly string[] | undefined;
+      }
+    | undefined;
+  runtimeConfigModule: {
+    i18n: readonly [string, string];
+    useLingui: readonly [string, string];
+    Trans: readonly [string, string];
+  };
+};
 
 type BabelParserPlugin =
   | "importAttributes"
@@ -62,32 +78,28 @@ function normalizeRuntimeConfigModule(
   };
 }
 
-function normalizeLinguiConfig(
-  config: LinguiMacroPluginOptions["linguiConfig"],
-): NonNullable<LinguiMacroPluginOptions["linguiConfig"]> {
+function createFallbackLinguiConfig(): {
+  extractorParserOptions?: LinguiConfig["extractorParserOptions"];
+  macro: {
+    corePackage: string[];
+    jsxPackage: string[];
+  };
+  runtimeConfigModule: {
+    i18n: [string, string];
+    useLingui: [string, string];
+    Trans: [string, string];
+  };
+} {
   return {
-    ...config,
-    runtimeConfigModule: normalizeRuntimeConfigModule(
-      config?.runtimeConfigModule,
-    ),
+    runtimeConfigModule: normalizeRuntimeConfigModule(undefined),
     macro: {
-      corePackage: uniqueStrings([
-        "@lingui/macro",
-        "@lingui/core/macro",
-        ...(config?.macro?.corePackage ?? []),
-      ]),
-      jsxPackage: uniqueStrings([
-        "@lingui/macro",
-        "@lingui/react/macro",
-        ...(config?.macro?.jsxPackage ?? []),
-      ]),
+      corePackage: uniqueStrings(["@lingui/macro", "@lingui/core/macro"]),
+      jsxPackage: uniqueStrings(["@lingui/macro", "@lingui/react/macro"]),
     },
   };
 }
 
-function getMacroPackages(
-  config: NonNullable<LinguiMacroPluginOptions["linguiConfig"]>,
-): string[] {
+function getMacroPackages(config: LoadedLinguiMacroConfig): string[] {
   return uniqueStrings([
     ...(config.macro?.corePackage ?? []),
     ...(config.macro?.jsxPackage ?? []),
@@ -96,7 +108,7 @@ function getMacroPackages(
 
 function getParserPlugins(
   filename: string,
-  config: NonNullable<LinguiMacroPluginOptions["linguiConfig"]>,
+  config: LoadedLinguiMacroConfig,
 ): BabelParserPlugin[] {
   const plugins: BabelParserPlugin[] = ["importAttributes"];
 
@@ -125,58 +137,148 @@ function getParserPlugins(
 
 export const unpluginFactory: UnpluginFactory<
   LinguiMacroPluginOptions | undefined
-> = (options) => ({
-  name: "unplugin-lingui-macro",
-  enforce: "pre",
-  async transform(code, id) {
-    if (id.startsWith("\0")) {
-      return null;
+> = (options) => {
+  const loadedConfig =
+    options?.config != null
+      ? loadLinguiConfig(options.config, process.cwd())
+      : undefined;
+  let discoveredConfig: ReturnType<typeof loadLinguiConfig> | undefined;
+
+  function finalizeConfig(root: string): void {
+    if (loadedConfig != null || discoveredConfig != null) {
+      return;
     }
 
-    const filename = stripQuery(id);
-    const linguiConfig = normalizeLinguiConfig(options?.linguiConfig);
-    if (
-      filename.includes("/node_modules/") ||
-      filename.includes("\\node_modules\\") ||
-      !/\.[cm]?[jt]sx?$/.test(filename) ||
-      !hasImport(code, filename, getMacroPackages(linguiConfig))
-    ) {
-      return null;
-    }
+    discoveredConfig = loadLinguiConfig(undefined, root);
+  }
 
-    const transformed = await transformAsync(code, {
-      filename,
-      babelrc: false,
-      configFile: false,
-      sourceMaps: true,
-      parserOpts: {
-        sourceType: "module",
-        plugins: getParserPlugins(filename, linguiConfig),
-      },
-      plugins: [
-        [
-          linguiMacroPlugin,
-          {
-            extract: false,
-            linguiConfig,
-          },
-        ],
-      ],
-    });
-
-    if (!transformed?.code) {
-      return null;
-    }
-
-    return {
-      code: transformed.code,
-      map: transformed.map ?? null,
-    };
-  },
-  vite: {
+  return {
+    name: "unplugin-lingui-macro",
     enforce: "pre",
-  },
-});
+    async transform(code, id) {
+      if (id.startsWith("\0")) {
+        return null;
+      }
+
+      const filename = stripQuery(id);
+      if (
+        filename.includes("/node_modules/") ||
+        filename.includes("\\node_modules\\") ||
+        !/\.[cm]?[jt]sx?$/.test(filename)
+      ) {
+        return null;
+      }
+
+      const activeConfig = loadedConfig ?? discoveredConfig;
+      if (activeConfig == null) {
+        throw new Error(
+          "unplugin-lingui-macro could not resolve a Lingui config. Pass `config` explicitly, or run the plugin from a project root that contains `lingui.config.*`.",
+        );
+      }
+      const linguiConfig = activeConfig.linguiConfig;
+
+      if (!hasImport(code, filename, getMacroPackages(linguiConfig))) {
+        return null;
+      }
+
+      const transformed = await transformAsync(code, {
+        filename,
+        babelrc: false,
+        configFile: false,
+        sourceMaps: true,
+        parserOpts: {
+          sourceType: "module",
+          plugins: getParserPlugins(filename, linguiConfig),
+        },
+        plugins: [
+          [
+            linguiMacroPlugin,
+            {
+              extract: false,
+              linguiConfig,
+            },
+          ],
+        ],
+      });
+
+      if (!transformed?.code) {
+        return null;
+      }
+
+      return {
+        code: transformed.code,
+        map: transformed.map ?? null,
+      };
+    },
+    vite: {
+      enforce: "pre",
+      configResolved(config) {
+        finalizeConfig(config.root);
+      },
+    },
+    webpack(compiler) {
+      finalizeConfig(compiler.context);
+    },
+    buildStart() {
+      finalizeConfig(process.cwd());
+    },
+  };
+};
+
+function loadLinguiConfig(
+  source: LinguiMacroPluginOptions["config"],
+  root: string,
+): {
+  linguiConfig: LoadedLinguiMacroConfig;
+} {
+  if (
+    source != null &&
+    typeof source === "object" &&
+    !(source instanceof URL)
+  ) {
+    return {
+      linguiConfig: {
+        ...createFallbackLinguiConfig(),
+        ...source,
+        runtimeConfigModule: normalizeRuntimeConfigModule(
+          source.runtimeConfigModule,
+        ),
+        macro: {
+          corePackage: uniqueStrings([
+            "@lingui/macro",
+            "@lingui/core/macro",
+            ...(source.macro?.corePackage ?? []),
+          ]),
+          jsxPackage: uniqueStrings([
+            "@lingui/macro",
+            "@lingui/react/macro",
+            ...(source.macro?.jsxPackage ?? []),
+          ]),
+        },
+      },
+    };
+  }
+
+  const configPath =
+    source instanceof URL ? fileURLToPath(source) : (source ?? undefined);
+
+  try {
+    return {
+      linguiConfig: getConfig({
+        cwd: root,
+        ...(configPath != null ? { configPath } : {}),
+        skipValidation: false,
+      }),
+    };
+  } catch (error) {
+    if (error instanceof Error && error.message === "No Lingui config found") {
+      throw new Error(
+        "unplugin-lingui-macro requires a Lingui config file or explicit config object.",
+      );
+    }
+    throw error;
+  }
+}
 
 export const unplugin: UnpluginInstance<LinguiMacroPluginOptions | undefined> =
   /* #__PURE__ */ createUnplugin(unpluginFactory);

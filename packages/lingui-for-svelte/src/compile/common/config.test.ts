@@ -1,6 +1,22 @@
-import { describe, expect, test } from "vite-plus/test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
-import { getParserPlugins, normalizeLinguiConfig } from "./config.ts";
+import { afterEach, describe, expect, test } from "vite-plus/test";
+
+import {
+  getParserPlugins,
+  loadLinguiConfig,
+  normalizeLinguiConfig,
+} from "./config.ts";
+
+const tempDirs: string[] = [];
+
+afterEach(() => {
+  while (tempDirs.length > 0) {
+    rmSync(tempDirs.pop()!, { force: true, recursive: true });
+  }
+});
 
 describe("normalizeLinguiConfig", () => {
   test("adds lingui-for-svelte macro packages and runtime bindings", () => {
@@ -31,7 +47,7 @@ describe("normalizeLinguiConfig", () => {
         },
       },
       {
-        sveltePackages: ["custom-svelte-macro"],
+        packages: ["custom-svelte-macro"],
       },
     );
     const macro = config.macro!;
@@ -52,5 +68,16 @@ describe("getParserPlugins", () => {
     expect(getParserPlugins("ts")).toContain("typescript");
     expect(getParserPlugins("js")).not.toContain("typescript");
     expect(getParserPlugins("js")).toContain("jsx");
+  });
+
+  test("throws when no Lingui config file is found", async () => {
+    const fixtureDir = mkdtempSync(path.join(tmpdir(), "lingui-for-svelte-"));
+    tempDirs.push(fixtureDir);
+
+    await expect(
+      loadLinguiConfig(undefined, { cwd: fixtureDir }),
+    ).rejects.toThrow(
+      "lingui-for-svelte requires a Lingui config file or explicit config object.",
+    );
   });
 });

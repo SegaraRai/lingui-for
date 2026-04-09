@@ -1,13 +1,18 @@
 import type { ParserOptions } from "@babel/core";
 import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 
-import type { WhitespaceMode } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type {
+  RuntimeWarningOptions,
+  WhitespaceMode,
+} from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
-  getParserPlugins as getSharedParserPlugins,
+  getParserPlugins as getParserPluginsShared,
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
   LINGUI_RUNTIME_TRANS_EXPORT,
   LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+  loadLinguiConfig as loadLinguiConfigShared,
+  type LinguiConfigSource,
 } from "@lingui-for/internal-shared-compile";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
@@ -23,6 +28,26 @@ import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
 
 /**
+ * Astro-specific framework config extracted from the shared `framework` section.
+ *
+ * This is the normalized internal view used by Astro transforms, extractors, and bundler plugins.
+ */
+export interface LinguiAstroFrameworkConfig {
+  /**
+   * Additional macro package names that should be recognized as Astro macro entrypoints.
+   */
+  packages?: readonly string[] | undefined;
+  /**
+   * Whitespace normalization mode for rich-text component macros in `.astro` files.
+   */
+  whitespace?: RichTextWhitespaceMode | undefined;
+  /**
+   * Runtime warning switches emitted by generated Astro runtime helpers.
+   */
+  runtimeWarnings?: RuntimeWarningOptions | undefined;
+}
+
+/**
  * Normalizes Lingui config for Astro-specific macro and runtime integration.
  *
  * @param config Partial Lingui config provided by the caller.
@@ -35,7 +60,7 @@ export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
 export function normalizeLinguiConfig(
   config?: Partial<LinguiConfig>,
   options?: {
-    astroPackages?: readonly string[] | undefined;
+    packages?: readonly string[] | undefined;
   },
 ): LinguiConfigNormalized {
   const runtimeConfigModule =
@@ -56,7 +81,7 @@ export function normalizeLinguiConfig(
 
   const astroPackages = uniqueStrings([
     PACKAGE_MACRO,
-    ...(options?.astroPackages ?? []),
+    ...(options?.packages ?? []),
   ]);
   const corePackages = uniqueStrings([
     PACKAGE_MACRO,
@@ -82,13 +107,43 @@ export function normalizeLinguiConfig(
  * @returns The parser plugin list used for Lingui-related Babel parsing in this package.
  */
 export function getParserPlugins(): NonNullable<ParserOptions["plugins"]> {
-  return getSharedParserPlugins({ typescript: true });
+  return getParserPluginsShared({ typescript: true });
 }
 
 export function resolveAstroWhitespace(
   whitespace: RichTextWhitespaceMode,
 ): WhitespaceMode {
   return whitespace === "auto" ? "astro" : whitespace;
+}
+
+export async function loadLinguiConfig(
+  source?: LinguiConfigSource,
+  options?: {
+    cwd?: string | undefined;
+    skipValidation?: boolean | undefined;
+  },
+): Promise<{
+  linguiConfig: LinguiConfigNormalized;
+  frameworkConfig: LinguiAstroFrameworkConfig;
+}> {
+  const loaded = await loadLinguiConfigShared(source, options);
+  if (loaded == null) {
+    throw new Error(
+      "lingui-for-astro requires a Lingui config file or explicit config object.",
+    );
+  }
+  const frameworkConfig = (
+    loaded.frameworkConfig as {
+      astro?: LinguiAstroFrameworkConfig | undefined;
+    }
+  ).astro;
+
+  return {
+    linguiConfig: normalizeLinguiConfig(loaded.linguiConfig, {
+      packages: frameworkConfig?.packages,
+    }),
+    frameworkConfig: frameworkConfig ?? {},
+  };
 }
 
 function uniqueStrings(values: readonly string[]): string[] {

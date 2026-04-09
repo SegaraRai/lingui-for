@@ -19,7 +19,7 @@ import {
 export function createAstroFrameworkConventions(
   linguiConfig: LinguiConfigNormalized,
   options?: {
-    astroPackages?: readonly string[] | undefined;
+    packages?: readonly string[] | undefined;
   },
 ): FrameworkConventions {
   return {
@@ -34,10 +34,7 @@ export function createAstroFrameworkConventions(
             ],
           ),
         ],
-        [
-          "astro",
-          createMacroPackage(options?.astroPackages ?? [PACKAGE_MACRO]),
-        ],
+        ["astro", createMacroPackage(options?.packages ?? [PACKAGE_MACRO])],
       ]),
     },
     runtime: {
