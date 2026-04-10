@@ -1,6 +1,5 @@
-import { test } from "vite-plus/test";
-
-import { defineConfig } from "./config.ts";
+import { defineConfig } from "@lingui-for/framework-core/config";
+import "lingui-for-svelte/config";
 
 defineConfig({
   locales: ["en"],
@@ -15,12 +14,10 @@ defineConfig({
 defineConfig({
   locales: ["en"],
   framework: {
-    // @ts-expect-error svelte config should not accept astro settings
+    // @ts-expect-error svelte-only config should not accept astro settings
     astro: {
       packages: ["custom-astro-macro"],
       whitespace: "auto",
     },
   },
 });
-
-test("config type assertions compile", () => {});

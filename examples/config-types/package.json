@@ -1,0 +1,13 @@
+{
+  "name": "config-types",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@lingui-for/framework-core": "workspace:*",
+    "@types/node": "catalog:",
+    "lingui-for-astro": "workspace:*",
+    "lingui-for-svelte": "workspace:*",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

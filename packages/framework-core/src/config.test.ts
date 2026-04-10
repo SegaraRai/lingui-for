@@ -12,6 +12,19 @@ import {
   loadLinguiConfig,
 } from "./config.ts";
 
+declare module "./config.ts" {
+  interface LinguiForFrameworkRegistry {
+    astro: {
+      packages?: readonly string[] | undefined;
+      whitespace?: string | undefined;
+    };
+    svelte: {
+      packages?: readonly string[] | undefined;
+      whitespace?: string | undefined;
+    };
+  }
+}
+
 const tempDirs: string[] = [];
 
 afterEach(() => {

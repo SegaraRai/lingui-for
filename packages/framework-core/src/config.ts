@@ -71,6 +71,12 @@ export type LinguiForFrameworkConfig = {
     | undefined;
 };
 
+type LinguiForFrameworkConfigInput<TFramework extends object = {}> = {
+  [K in keyof TFramework]: K extends keyof LinguiForFrameworkRegistry
+    ? TFramework[K] & LinguiForFrameworkRegistry[K]
+    : never;
+};
+
 /**
  * Extended Lingui config object accepted by lingui-for helpers.
  *
@@ -143,6 +149,17 @@ export function getParserPlugins(options?: {
   ];
 }
 
+export function defineConfig<
+  TConfig extends LinguiConfig,
+  TFramework extends object = {},
+>(
+  config: Omit<TConfig, "framework"> & {
+    framework?: LinguiForFrameworkConfig &
+      LinguiForFrameworkConfigInput<TFramework>;
+  },
+): TConfig & {
+  framework?: TFramework & LinguiForFrameworkConfig;
+};
 export function defineConfig<TConfig extends LinguiForConfigObject>(
   config: TConfig,
 ): TConfig {

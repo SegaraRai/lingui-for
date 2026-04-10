@@ -125,6 +125,27 @@ importers:
         specifier: 'catalog:'
         version: 0.1.16(@arethetypeswrong/core@0.18.2)(@types/node@25.5.2)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(yaml@2.8.3)
 
+  examples/config-types:
+    devDependencies:
+      '@lingui-for/framework-core':
+        specifier: workspace:*
+        version: link:../../packages/framework-core
+      '@types/node':
+        specifier: 'catalog:'
+        version: 25.5.2
+      lingui-for-astro:
+        specifier: workspace:*
+        version: link:../../packages/lingui-for-astro
+      lingui-for-svelte:
+        specifier: workspace:*
+        version: link:../../packages/lingui-for-svelte
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vite-plus:
+        specifier: 'catalog:'
+        version: 0.1.16(@arethetypeswrong/core@0.18.2)(@types/node@25.5.2)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(typescript@5.9.3)(vite@8.0.8(@types/node@25.5.2)(esbuild@0.28.0)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))(yaml@2.8.3)
+
   examples/conformance:
     devDependencies:
       '@babel/core':
