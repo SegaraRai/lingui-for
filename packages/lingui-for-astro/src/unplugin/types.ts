@@ -1,4 +1,4 @@
-import type { LinguiConfigSource } from "@lingui-for/internal-shared-compile";
+import type { LinguiConfigSource } from "@lingui-for/framework-core/config";
 
 /**
  * Options for the core `.astro` Lingui transform plugin.

@@ -1,4 +1,4 @@
-import type { LinguiConfigSource } from "@lingui-for/internal-shared-compile";
+import type { LinguiConfigSource } from "@lingui-for/framework-core/config";
 
 /**
  * Public configuration accepted by the lingui-for-svelte bundler plugin.

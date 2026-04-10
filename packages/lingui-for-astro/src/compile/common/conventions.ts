@@ -1,11 +1,11 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import type {
-  FrameworkConventions,
-  MacroPackage,
-  MacroPackageKind,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-import { LINGUI_STANDARD_CORE_MACRO_PACKAGES } from "@lingui-for/internal-shared-compile";
+import {
+  LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+  type FrameworkConventions,
+  type MacroPackage,
+  type MacroPackageKind,
+} from "@lingui-for/framework-core/compile";
 
 import {
   EXPORT_CREATE_LINGUI_ACCESSORS,

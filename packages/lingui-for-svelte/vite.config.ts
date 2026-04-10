@@ -1,4 +1,3 @@
-import { wasm } from "rolldown-plugin-wasm";
 import { defineConfig } from "vite-plus";
 
 import markupImport from "unplugin-markup-import/rolldown";
@@ -31,7 +30,6 @@ export default defineConfig({
         frameworks: ["svelte"],
         exclude: ["**/*.test.svelte"],
       }),
-      wasm(),
     ],
     attw: {
       profile: "esm-only",
@@ -42,7 +40,7 @@ export default defineConfig({
       build: {
         command: "vp pack",
         dependsOn: [
-          "lingui-for-workspace#build:wasm",
+          "@lingui-for/framework-core#build",
           "unplugin-markup-import#build",
         ],
         cache: true,

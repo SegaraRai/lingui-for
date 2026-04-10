@@ -1,6 +1,6 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import type { BabelSourceMap } from "@lingui-for/internal-shared-compile";
+import type { BabelSourceMap } from "@lingui-for/framework-core/compile";
 
 import { transformAstroProgram, type ProgramTransform } from "./shared.ts";
 

@@ -1,4 +1,4 @@
-import type { RuntimeWarningOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type { RuntimeWarningOptions } from "@lingui-for/framework-core/compile";
 
 import type { RichTextWhitespaceMode } from "./compile/common/config.ts";
 
@@ -7,7 +7,7 @@ export {
   type LinguiConfigSource,
   type LinguiForConfigObject,
   type LinguiForFrameworkConfig,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/config";
 
 /**
  * Framework-specific config accepted under `framework.astro`.
@@ -36,7 +36,7 @@ export interface LinguiAstroFrameworkConfig {
   runtimeWarnings?: RuntimeWarningOptions | undefined;
 }
 
-declare module "@lingui-for/internal-shared-compile" {
+declare module "@lingui-for/framework-core/config" {
   interface LinguiForFrameworkRegistry {
     /**
      * Framework-specific configuration for Astro.

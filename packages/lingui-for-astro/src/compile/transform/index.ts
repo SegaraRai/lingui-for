@@ -3,13 +3,13 @@ import type { LinguiConfigNormalized } from "@lingui/conf";
 import {
   buildAstroCompilePlan,
   finishAstroCompile,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
+} from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
 import {
   parseCanonicalSourceMap,
   toBabelSourceMap,
   type CanonicalSourceMap,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
 
 import {
   resolveAstroWhitespace,

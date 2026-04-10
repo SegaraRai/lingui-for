@@ -66,7 +66,9 @@ export type LinguiForFrameworkConfig = {
   /**
    * Framework-specific config keyed by the framework name contributed through declaration merging.
    */
-  [K in keyof LinguiForFrameworkRegistry]?: LinguiForFrameworkRegistry[K];
+  [K in keyof LinguiForFrameworkRegistry]?:
+    | LinguiForFrameworkRegistry[K]
+    | undefined;
 };
 
 /**

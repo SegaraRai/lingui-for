@@ -19,9 +19,4 @@ export default defineConfig({
     },
   ],
   extractors: [astroExtractor(), svelteExtractor(), babelExtractor],
-  framework: {
-    astro: {},
-    svelte: {},
-    aaa: {},
-  },
 });

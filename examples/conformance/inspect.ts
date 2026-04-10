@@ -7,6 +7,7 @@ import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 
+import type { CanonicalSourceMap } from "@lingui-for/framework-core/compile";
 import { astroExtractor } from "lingui-for-astro/extractor";
 import {
   unstable_transformAstro,
@@ -17,8 +18,6 @@ import {
   unstable_transformSvelte,
   type LinguiSvelteFrameworkConfig,
 } from "lingui-for-svelte/internal/compile";
-
-import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
 
 export type Framework = "astro" | "svelte" | "core" | "react";
 export type WhitespaceMode = "auto" | "astro" | "svelte" | "jsx";

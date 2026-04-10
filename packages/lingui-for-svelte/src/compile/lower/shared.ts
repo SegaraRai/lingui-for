@@ -1,14 +1,20 @@
-import { transformFromAstSync, transformSync } from "@babel/core";
-import { cloneNode, type File } from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import type { ScriptLang } from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
   fromBabelSourceMap,
   type BabelSourceMap,
   type CanonicalSourceMap,
-} from "@lingui-for/internal-shared-compile";
+  type ScriptLang,
+} from "@lingui-for/framework-core/compile";
+import {
+  transformFromAstSync,
+  transformSync,
+} from "@lingui-for/framework-core/vendor/babel-core";
+import {
+  cloneNode,
+  type File,
+} from "@lingui-for/framework-core/vendor/babel-types";
 
 import { getParserPlugins } from "../common/config.ts";
 import {

@@ -4,12 +4,12 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import { stripQuery } from "@lingui-for/internal-shared-common";
 import {
-  createLinguiConfigResolver,
   mayContainLinguiMacroImport,
+  stripQuery,
   toUnpluginSourceMap,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
+import { createLinguiConfigResolver } from "@lingui-for/framework-core/config";
 
 import { loadLinguiConfig } from "../compile/common/config.ts";
 import { PACKAGE_MACRO } from "../compile/common/constants.ts";

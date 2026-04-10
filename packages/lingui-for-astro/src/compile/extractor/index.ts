@@ -4,17 +4,19 @@ import type {
   LinguiConfigNormalized,
 } from "@lingui/conf";
 
-import { buildSyntheticModule } from "@lingui-for/internal-lingui-analyzer-wasm";
-import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
-import { stripQuery } from "@lingui-for/internal-shared-common";
 import {
-  createLinguiConfigResolver,
+  buildSyntheticModule,
   parseCanonicalSourceMap,
   runBabelExtractionUnits,
+  stripQuery,
   toBabelSourceMap,
   type CanonicalSourceMap,
+} from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
+import {
+  createLinguiConfigResolver,
   type LinguiConfigSource,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/config";
 
 import {
   loadLinguiConfig,

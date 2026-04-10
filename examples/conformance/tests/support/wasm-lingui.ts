@@ -10,22 +10,20 @@ import type {
 } from "@lingui/conf";
 
 import {
+  babelTraverse,
   buildSyntheticModule,
+  LINGUI_CORE_PACKAGE,
+  LINGUI_I18N_EXPORT,
+  LINGUI_STANDARD_CORE_MACRO_PACKAGES,
   reinsertTransformedDeclarations,
+  runBabelExtractionUnits,
   type FrameworkConventions,
   type ReinsertedModule,
   type SyntheticModule,
   type WhitespaceMode,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
-import {
-  babelTraverse,
-  getParserPlugins,
-  LINGUI_CORE_PACKAGE,
-  LINGUI_I18N_EXPORT,
-  LINGUI_STANDARD_CORE_MACRO_PACKAGES,
-  runBabelExtractionUnits,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
+import { getParserPlugins } from "@lingui-for/framework-core/config";
 
 export type SyntheticTransformResult = {
   synthetic: SyntheticModule;

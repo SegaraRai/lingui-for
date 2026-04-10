@@ -2,7 +2,8 @@ import { TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import type { RuntimeWarningOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type { RuntimeWarningOptions } from "@lingui-for/framework-core/compile";
+
 import {
   assertRangeMapping,
   type Detection,

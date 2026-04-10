@@ -1,7 +1,9 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import type { ScriptLang } from "@lingui-for/internal-lingui-analyzer-wasm";
-import type { BabelSourceMap } from "@lingui-for/internal-shared-compile";
+import type {
+  BabelSourceMap,
+  ScriptLang,
+} from "@lingui-for/framework-core/compile";
 
 import type { RuntimeBindingsForTransform } from "./macro-rewrite.ts";
 import {

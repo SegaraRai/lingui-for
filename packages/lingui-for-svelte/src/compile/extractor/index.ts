@@ -4,18 +4,20 @@ import type {
   LinguiConfigNormalized,
 } from "@lingui/conf";
 
-import { buildSyntheticModule } from "@lingui-for/internal-lingui-analyzer-wasm";
-import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
 import {
-  createLinguiConfigResolver,
+  buildSyntheticModule,
   parseCanonicalSourceMap,
   runBabelExtractionUnits,
   toBabelSourceMap,
+} from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
+import {
+  createLinguiConfigResolver,
   type LinguiConfigSource,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/config";
 
-import { loadLinguiConfig, resolveSvelteWhitespace } from "../common/config.ts";
 import type { LinguiSvelteFrameworkConfig } from "../common/config.ts";
+import { loadLinguiConfig, resolveSvelteWhitespace } from "../common/config.ts";
 import { createSvelteFrameworkConventions } from "../common/conventions.ts";
 import { lowerSvelteExtractProgram } from "../lower/extract.ts";
 

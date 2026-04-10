@@ -1,20 +1,20 @@
-import type { ParserOptions } from "@babel/core";
 import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 
-import type {
-  RuntimeWarningOptions,
-  ScriptLang,
-  WhitespaceMode,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
 import {
-  getParserPlugins as getParserPluginsShared,
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
   LINGUI_RUNTIME_TRANS_EXPORT,
   LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+  type RuntimeWarningOptions,
+  type ScriptLang,
+  type WhitespaceMode,
+} from "@lingui-for/framework-core/compile";
+import {
+  getParserPlugins as getParserPluginsShared,
   loadLinguiConfig as loadLinguiConfigShared,
   type LinguiConfigSource,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/config";
+import type { ParserOptions } from "@lingui-for/framework-core/vendor/babel-core";
 
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 

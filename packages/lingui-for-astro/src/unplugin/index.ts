@@ -5,14 +5,12 @@ import {
 } from "unplugin";
 
 import {
+  mayContainLinguiMacroImport,
   reorderPluginBeforeMatcher,
   stripQuery,
-} from "@lingui-for/internal-shared-common";
-import {
-  createLinguiConfigResolver,
-  mayContainLinguiMacroImport,
   toUnpluginSourceMap,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
+import { createLinguiConfigResolver } from "@lingui-for/framework-core/config";
 
 import { loadLinguiConfig } from "../compile/common/config.ts";
 import { PACKAGE_MACRO } from "../compile/common/constants.ts";
