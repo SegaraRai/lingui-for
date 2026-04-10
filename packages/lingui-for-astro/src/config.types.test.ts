@@ -5,8 +5,8 @@ import { defineConfig } from "./config.ts";
 defineConfig({
   locales: ["en"],
   framework: {
-    svelte: {
-      packages: ["custom-svelte-macro"],
+    astro: {
+      packages: ["custom-astro-macro"],
       whitespace: "auto",
     },
   },
@@ -15,8 +15,8 @@ defineConfig({
 defineConfig({
   locales: ["en"],
   framework: {
-    // @ts-expect-error astro config should not exist unless astro's augmentation is imported too.
-    astro: {},
+    // @ts-expect-error svelte config should not exist unless svelte's augmentation is imported too.
+    svelte: {},
   },
 });
 

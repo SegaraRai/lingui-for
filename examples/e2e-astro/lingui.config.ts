@@ -1,6 +1,6 @@
 import babelExtractor from "@lingui/cli/api/extractors/babel";
-import { defineConfig } from "@lingui/conf";
 
+import { defineConfig } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
@@ -19,4 +19,9 @@ export default defineConfig({
     },
   ],
   extractors: [astroExtractor(), svelteExtractor(), babelExtractor],
+  framework: {
+    astro: {},
+    svelte: {},
+    aaa: {},
+  },
 });

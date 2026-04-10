@@ -44,10 +44,6 @@ export default defineConfig({
         dependsOn: ["build"],
         cache: false,
       },
-      "i18n:build": {
-        command: "vp run i18n:extract && vp run i18n:compile",
-        cache: true,
-      },
       "i18n:extract": {
         command: "lingui extract --clean --overwrite",
         dependsOn: [
@@ -57,13 +53,9 @@ export default defineConfig({
         ],
         cache: true,
       },
-      "i18n:compile": {
+      "i18n:build": {
         command: "lingui compile && vp fmt src/i18n/locales",
-        dependsOn: [
-          "lingui-for-astro#build",
-          "lingui-for-svelte#build",
-          "unplugin-lingui-macro#build",
-        ],
+        dependsOn: ["i18n:extract"],
         cache: true,
         input: ["src/i18n/locales/**/*.po"],
       },

@@ -1,8 +1,8 @@
 import {
-  makeConfig,
   type CatalogFormatter,
   type CatalogType,
   type ExtractedMessage,
+  type LinguiConfigNormalized,
   type MessageOrigin,
 } from "@lingui/conf";
 import { formatter as createPoFormatter } from "@lingui/format-po";
@@ -11,7 +11,10 @@ import { readFile } from "node:fs/promises";
 import { relative, resolve } from "node:path";
 
 import { svelteExtractor } from "lingui-for-svelte/extractor";
-import { unstable_transformSvelte } from "lingui-for-svelte/internal/compile";
+import {
+  unstable_loadLinguiConfig,
+  unstable_transformSvelte,
+} from "lingui-for-svelte/internal/compile";
 
 import linguiConfig from "../lingui.config.ts";
 import {
@@ -20,7 +23,7 @@ import {
 } from "../src/lib/macro-workbench/common.ts";
 
 const VIRTUAL_PREFIX = "virtual:macro-workbench?";
-const workbenchSvelteExtractor = svelteExtractor();
+const workbenchSvelteExtractor = svelteExtractor({ config: linguiConfig });
 
 type MacroWorkbenchPluginOptions = {
   projectRoot: string;
@@ -30,13 +33,10 @@ export function macroWorkbenchPlugin({
   projectRoot,
 }: MacroWorkbenchPluginOptions) {
   const poFormatter = createPoFormatter({ lineNumbers: false });
-  const normalizedLinguiConfig = makeConfig(
-    {
-      ...linguiConfig,
-      rootDir: projectRoot,
-    },
-    { skipValidation: true },
-  );
+  const loadedLinguiConfigPromise = unstable_loadLinguiConfig(linguiConfig, {
+    cwd: projectRoot,
+    skipValidation: true,
+  });
 
   return {
     name: "docs-macro-workbench",
@@ -69,16 +69,18 @@ export function macroWorkbenchPlugin({
       const workbenchFile = resolve(demoDir, "workbench.ts");
       const source = await readFile(demoFile, "utf8");
       const demoOriginPath = normalizePath(relative(projectRoot, demoFile));
+      const loadedLinguiConfig = await loadedLinguiConfigPromise;
       const messages = await collectMessages(
         demoFile,
         source,
-        normalizedLinguiConfig,
+        loadedLinguiConfig.linguiConfig,
       );
       const ids = messages.map((message) => message.id);
       const sourceSnippet = extractSnippet(source);
       const transformed = await unstable_transformSvelte(source, {
         filename: demoFile,
-        linguiConfig: normalizedLinguiConfig,
+        linguiConfig: loadedLinguiConfig.linguiConfig,
+        frameworkConfig: loadedLinguiConfig.frameworkConfig,
       });
       if (!transformed) {
         throw new Error(
@@ -146,7 +148,7 @@ export function macroWorkbenchPlugin({
 async function collectMessages(
   filename: string,
   source: string,
-  linguiConfigNormalized: ReturnType<typeof makeConfig>,
+  linguiConfigNormalized: LinguiConfigNormalized,
 ): Promise<ExtractedMessage[]> {
   const extracted: ExtractedMessage[] = [];
 

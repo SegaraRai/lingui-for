@@ -18,7 +18,12 @@ const DEFINE_CONFIG_WARNING =
 
 const LINGUI_MODULE_NAME = "lingui";
 
-const configExplorer = cosmiconfig(LINGUI_MODULE_NAME, {
+// Jiti suggests passing `import.meta.url` directly, but on Windows that can cause a `file:` URL
+// to be concatenated with another absolute path downstream. Normalize it to a filesystem path first.
+const jitiBasePath = /*#__PURE__*/ fileURLToPath(import.meta.url);
+
+// See https://github.com/lingui/js-lingui/blob/v5.9.5/packages/conf/src/getConfig.ts#L22-L43
+const configExplorer = /*#__PURE__*/ cosmiconfig(LINGUI_MODULE_NAME, {
   searchPlaces: [
     `${LINGUI_MODULE_NAME}.config.js`,
     `${LINGUI_MODULE_NAME}.config.cjs`,
@@ -33,9 +38,9 @@ const configExplorer = cosmiconfig(LINGUI_MODULE_NAME, {
     `.${LINGUI_MODULE_NAME}rc.js`,
   ],
   loaders: {
-    ".js": createJitiLoader(),
-    ".ts": createJitiLoader(),
-    ".mjs": createJitiLoader(),
+    ".js": /*#__PURE__*/ createJitiLoader(),
+    ".ts": /*#__PURE__*/ createJitiLoader(),
+    ".mjs": /*#__PURE__*/ createJitiLoader(),
   },
 });
 
@@ -254,7 +259,7 @@ export function createLinguiConfigResolver<TLoadedConfig>(options: {
 
 function createJitiLoader(): (filepath: string) => Promise<unknown> {
   return async (filepath) => {
-    const jiti = createJiti(import.meta.url);
+    const jiti = createJiti(jitiBasePath);
     const module = await jiti.import(filepath);
     return (module as { default?: unknown } | undefined)?.default ?? module;
   };

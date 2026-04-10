@@ -35,22 +35,28 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command:
-          "vp run build:lib && vp run --filter ./apps/* --filter ./examples/* build",
+        command: "",
+        dependsOn: ["e2e-astro#build", "e2e-svelte#build", "docs#build"],
       },
       "build:apps": {
-        command: "vp run --filter ./apps/* build",
+        command: "",
+        dependsOn: ["docs#build"],
       },
       "build:examples": {
-        command: "vp run --filter ./examples/* build",
+        command: "",
+        dependsOn: ["e2e-astro#build", "e2e-svelte#build"],
       },
       "build:lib": {
-        command:
-          "vp run --filter lingui-for-svelte --filter lingui-for-astro --filter unplugin-lingui-macro build",
-        dependsOn: ["build:wasm"],
+        command: "",
+        dependsOn: [
+          "lingui-for-svelte#build",
+          "lingui-for-astro#build",
+          "unplugin-lingui-macro#build",
+        ],
       },
       "build:plugin": {
-        command: "vp run --filter unplugin-lingui-macro build",
+        command: "",
+        dependsOn: ["unplugin-markup-import#build"],
       },
       "build:wasm": {
         command: "node ./build-wasm.ts",

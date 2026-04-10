@@ -8,9 +8,15 @@ import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 
 import { astroExtractor } from "lingui-for-astro/extractor";
-import { unstable_transformAstro } from "lingui-for-astro/internal/compile";
+import {
+  unstable_transformAstro,
+  type LinguiAstroFrameworkConfig,
+} from "lingui-for-astro/internal/compile";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
-import { unstable_transformSvelte } from "lingui-for-svelte/internal/compile";
+import {
+  unstable_transformSvelte,
+  type LinguiSvelteFrameworkConfig,
+} from "lingui-for-svelte/internal/compile";
 
 import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
 
@@ -291,7 +297,7 @@ export async function runTransform(
 
 async function inspectSvelteExtract(source: string, options: CliOptions) {
   const extractor = svelteExtractor({
-    whitespace: options.whitespace === "auto" ? "auto" : options.whitespace,
+    config: createSvelteInspectConfig(options.whitespace),
   });
   const messages: ExtractedMessage[] = [];
 
@@ -309,7 +315,7 @@ async function inspectSvelteExtract(source: string, options: CliOptions) {
 
 async function inspectAstroExtract(source: string, options: CliOptions) {
   const extractor = astroExtractor({
-    whitespace: options.whitespace === "auto" ? "auto" : options.whitespace,
+    config: createAstroInspectConfig(options.whitespace),
   });
   const messages: ExtractedMessage[] = [];
 
@@ -329,7 +335,7 @@ async function inspectSvelteTransform(source: string, options: CliOptions) {
   const result = await unstable_transformSvelte(source, {
     filename: options.file,
     linguiConfig,
-    whitespace: options.whitespace,
+    frameworkConfig: createSvelteFrameworkConfig(options.whitespace),
   });
   if (result == null) {
     throw new Error(`No Lingui macros found in ${options.file}`);
@@ -348,7 +354,7 @@ async function inspectAstroTransform(source: string, options: CliOptions) {
   const result = await unstable_transformAstro(source, {
     filename: options.file,
     linguiConfig,
-    whitespace: options.whitespace,
+    frameworkConfig: createAstroFrameworkConfig(options.whitespace),
   });
   if (result == null) {
     throw new Error(`No Lingui macros found in ${options.file}`);
@@ -512,6 +518,40 @@ async function writeArtifacts(
 
 function normalizeSourceExtension(file: string): string {
   return extname(file).slice(1) || "js";
+}
+
+function createSvelteInspectConfig(whitespace: WhitespaceMode) {
+  return {
+    ...linguiConfig,
+    framework: {
+      svelte: createSvelteFrameworkConfig(whitespace),
+    },
+  };
+}
+
+function createAstroInspectConfig(whitespace: WhitespaceMode) {
+  return {
+    ...linguiConfig,
+    framework: {
+      astro: createAstroFrameworkConfig(whitespace),
+    },
+  };
+}
+
+function createSvelteFrameworkConfig(
+  whitespace: WhitespaceMode,
+): LinguiSvelteFrameworkConfig {
+  return {
+    whitespace,
+  };
+}
+
+function createAstroFrameworkConfig(
+  whitespace: WhitespaceMode,
+): LinguiAstroFrameworkConfig {
+  return {
+    whitespace,
+  };
 }
 
 if (import.meta.main) {
