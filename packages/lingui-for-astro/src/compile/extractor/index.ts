@@ -34,13 +34,19 @@ export interface AstroExtractorOptions {
 }
 
 /**
- * Lingui extractor factory for `.astro` source files.
+ * Lingui extractor for `.astro` source files.
  *
  * It matches Astro files, lowers macro-bearing syntax into a Rust-generated
  * synthetic module, and forwards the extracted messages to Lingui's Babel
  * extractor pipeline.
  */
-export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
+export const astroExtractor: ExtractorType & typeof astroExtractorFactory =
+  /*#__PURE__*/ Object.assign(astroExtractorFactory, astroExtractorFactory());
+
+/**
+ * Lingui extractor factory for `.astro` source files.
+ */
+function astroExtractorFactory(options?: AstroExtractorOptions): ExtractorType {
   const configResolver = createLinguiConfigResolver({
     loadConfig: loadLinguiConfig,
     config: options?.config,

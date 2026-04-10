@@ -80,7 +80,7 @@ export default defineConfig({
       exclude: ["src/lib/i18n/locales/**"],
     },
   ],
-  extractors: [astroExtractor(), babelExtractor],
+  extractors: [astroExtractor, babelExtractor],
 });
 ```
 

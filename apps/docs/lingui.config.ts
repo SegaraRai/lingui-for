@@ -22,5 +22,5 @@ export default defineConfig({
       include: ["src/demos/**/*.svelte"],
     },
   ],
-  extractors: [astroExtractor(), svelteExtractor(), babelExtractor],
+  extractors: [astroExtractor, svelteExtractor, babelExtractor],
 });

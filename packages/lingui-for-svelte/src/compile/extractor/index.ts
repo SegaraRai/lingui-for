@@ -29,13 +29,19 @@ export interface SvelteExtractorOptions {
 }
 
 /**
- * Lingui extractor implementation factory for `.svelte` files.
+ * Lingui extractor for `.svelte` files.
  *
  * The extractor accepts Svelte source, lowers it into a single Rust-generated synthetic module,
  * and forwards that module to Lingui's Babel-based extractor together with the corresponding
  * source map. Messages are emitted through Lingui's `onMessageExtracted` callback.
  */
-export function svelteExtractor(
+export const svelteExtractor: ExtractorType & typeof svelteExtractorFactory =
+  /*#__PURE__*/ Object.assign(svelteExtractorFactory, svelteExtractorFactory());
+
+/**
+ * Lingui extractor factory for `.svelte` files.
+ */
+function svelteExtractorFactory(
   options?: SvelteExtractorOptions,
 ): ExtractorType {
   const configResolver = createLinguiConfigResolver({
