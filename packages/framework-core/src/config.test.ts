@@ -31,6 +31,7 @@ declare module "./config.ts" {
 const tempDirs: string[] = [];
 
 afterEach(() => {
+  vi.unstubAllEnvs();
   while (tempDirs.length > 0) {
     rmSync(tempDirs.pop()!, { force: true, recursive: true });
   }
@@ -56,20 +57,26 @@ describe("config helpers", () => {
   });
 
   test("strips framework metadata from direct config objects while preserving it for our loader", async () => {
-    const loaded = await loadLinguiConfig(
-      defineConfig({
-        locales: ["en"],
-        sourceLocale: "en",
-        framework: {
-          svelte: {
-            packages: ["custom-svelte-macro"],
-          },
+    const config = defineConfig({
+      locales: ["en"],
+      sourceLocale: "en",
+      framework: {
+        svelte: {
+          packages: ["custom-svelte-macro"],
         },
-      }),
-      {
-        cwd: "/virtual/project",
       },
-    );
+    });
+
+    expect(config.framework).toEqual({
+      svelte: {
+        packages: ["custom-svelte-macro"],
+      },
+    });
+    expect(Object.keys(config)).not.toContain("framework");
+
+    const loaded = await loadLinguiConfig(config, {
+      cwd: "/virtual/project",
+    });
 
     expect.assert(loaded != null);
     expect(loaded.frameworkConfig).toEqual({
@@ -79,6 +86,31 @@ describe("config helpers", () => {
     });
     expect(loaded.linguiConfig.rootDir).toBe("/virtual/project");
     expect(Object.hasOwn(loaded.linguiConfig, "framework")).toBe(false);
+  });
+
+  test("throws when an explicit config path does not exist", async () => {
+    const fixtureDir = mkdtempSync(path.join(tmpdir(), "lingui-for-config-"));
+    tempDirs.push(fixtureDir);
+    const configPath = path.join(fixtureDir, "missing.config.ts");
+
+    await expect(
+      loadLinguiConfig(configPath, {
+        cwd: fixtureDir,
+      }),
+    ).rejects.toThrow(configPath);
+  });
+
+  test("throws when LINGUI_CONFIG points to a missing config file", async () => {
+    const fixtureDir = mkdtempSync(path.join(tmpdir(), "lingui-for-config-"));
+    tempDirs.push(fixtureDir);
+    const configPath = path.join(fixtureDir, "missing.config.ts");
+
+    vi.stubEnv("LINGUI_CONFIG", configPath);
+    await expect(
+      loadLinguiConfig(undefined, {
+        cwd: fixtureDir,
+      }),
+    ).rejects.toThrow(configPath);
   });
 
   test("loads a discovered lingui.config.ts file with jiti and framework metadata", async () => {

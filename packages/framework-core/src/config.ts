@@ -166,6 +166,13 @@ export function defineConfig<TConfig extends LinguiForConfigObject>(
   const frameworkConfig = cloneFrameworkConfig(config.framework);
   const { framework: _framework, ...linguiConfig } = config;
 
+  Object.defineProperty(linguiConfig, "framework", {
+    configurable: false,
+    enumerable: false,
+    value: frameworkConfig,
+    writable: false,
+  });
+
   return Object.defineProperty(linguiConfig, LINGUI_FOR_FRAMEWORK_CONFIG, {
     configurable: false,
     enumerable: false,
@@ -206,9 +213,12 @@ export async function loadLinguiConfig(
 
   const requestedPath =
     source != null ? normalizeConfigPath(source) : process.env.LINGUI_CONFIG;
-  const result = configExists(requestedPath)
-    ? await configExplorer.load(requestedPath)
-    : await configExplorer.search(defaultRootDir);
+  const result =
+    requestedPath != null
+      ? existsSync(requestedPath)
+        ? await configExplorer.load(requestedPath)
+        : failMissingExplicitConfig(requestedPath)
+      : await configExplorer.search(defaultRootDir);
   if (!result) {
     return null;
   }
@@ -288,8 +298,10 @@ function normalizeConfigPath(configPath: string | URL): string {
   return configPath instanceof URL ? fileURLToPath(configPath) : configPath;
 }
 
-function configExists(configPath: string | undefined): configPath is string {
-  return configPath != null && existsSync(configPath);
+function failMissingExplicitConfig(configPath: string): never {
+  throw new Error(
+    `Lingui config file was explicitly requested but does not exist: ${configPath}`,
+  );
 }
 
 function readFrameworkConfig(

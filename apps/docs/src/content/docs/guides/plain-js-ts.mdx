@@ -68,9 +68,10 @@ For Astro, add it under `vite.plugins` in `astro.config.ts`.
 ## Configure extraction
 
 Add the Babel extractor to `lingui.config.ts`. In a framework project, keep using that framework's
-`defineConfig` helper and list both extractors.
+`defineConfig` helper and list both extractors. This Svelte example uses `defineConfig` from
+`lingui-for-svelte/config` and combines `svelteExtractor` with `babelExtractor`.
 
-```ts title="lingui.config.ts"
+```ts title="lingui.config.ts (Svelte example)"
 import babelExtractor from "@lingui/cli/api/extractors/babel";
 import { defineConfig } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
@@ -82,6 +83,9 @@ export default defineConfig({
   extractors: [svelteExtractor, babelExtractor],
 });
 ```
+
+For Astro, use `defineConfig` from `lingui-for-astro/config` and replace `svelteExtractor` with
+`astroExtractor` from `lingui-for-astro/extractor`; keep `babelExtractor` in the `extractors` array.
 
 <Aside type="caution">
 
