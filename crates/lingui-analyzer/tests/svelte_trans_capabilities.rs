@@ -1,10 +1,10 @@
-#[path = "support/svelte_conventions.rs"]
-mod svelte_conventions;
-
 use indoc::indoc;
 use lean_string::LeanString;
 
 use lingui_analyzer::{RuntimeWarningOptions, SvelteCompilePlan, WhitespaceMode};
+
+#[path = "support/svelte_conventions.rs"]
+mod svelte_conventions;
 
 use svelte_conventions::svelte_default_conventions;
 

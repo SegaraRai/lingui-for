@@ -1,6 +1,3 @@
-#[path = "support/astro.rs"]
-mod astro_support;
-
 use indoc::indoc;
 use lean_string::LeanString;
 
@@ -9,6 +6,9 @@ use lingui_analyzer::framework::astro::AstroAdapter;
 use lingui_analyzer::{
     AstroCompilePlan, MacroCandidateKind, RuntimeWarningOptions, WhitespaceMode,
 };
+
+#[path = "support/astro.rs"]
+mod astro_support;
 
 use astro_support::{analyze_options_for_astro, astro_default_conventions};
 

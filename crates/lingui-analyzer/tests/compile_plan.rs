@@ -1,8 +1,4 @@
-#[path = "support/astro_conventions.rs"]
-mod astro_support;
-#[path = "support/svelte_conventions.rs"]
-mod svelte_support;
-
+use indoc::indoc;
 use lean_string::LeanString;
 use sourcemap::DecodedMap;
 
@@ -12,6 +8,11 @@ use lingui_analyzer::{
     WhitespaceMode, build_synthetic_module_for_framework, finish_svelte_compile,
 };
 
+#[path = "support/astro_conventions.rs"]
+mod astro_support;
+#[path = "support/svelte_conventions.rs"]
+mod svelte_support;
+
 use astro_support::astro_default_conventions;
 use svelte_support::svelte_default_conventions;
 
@@ -19,11 +20,7 @@ fn ls(text: &str) -> LeanString {
     LeanString::from(text)
 }
 
-fn build_svelte_plan(
-    source: &str,
-    source_name: &str,
-    synthetic_name: &str,
-) -> lingui_analyzer::SvelteCompilePlan {
+fn build_svelte_plan(source: &str, source_name: &str, synthetic_name: &str) -> SvelteCompilePlan {
     let source = ls(source);
     let source_name = ls(source_name);
     let synthetic_name = ls(synthetic_name);
@@ -38,11 +35,7 @@ fn build_svelte_plan(
     .expect("svelte compile plan should build")
 }
 
-fn build_astro_plan(
-    source: &str,
-    source_name: &str,
-    synthetic_name: &str,
-) -> lingui_analyzer::AstroCompilePlan {
+fn build_astro_plan(source: &str, source_name: &str, synthetic_name: &str) -> AstroCompilePlan {
     let source = ls(source);
     let source_name = ls(source_name);
     let synthetic_name = ls(synthetic_name);
@@ -59,23 +52,23 @@ fn build_astro_plan(
 
 #[test]
 fn builds_common_svelte_compile_plan_with_runtime_metadata() {
-    let source = r#"
-<script module lang="ts">
-  import { t } from "@lingui/core/macro";
+    let source = indoc! {r#"
+        <script module lang="ts">
+          import { t } from "@lingui/core/macro";
 
-  const moduleLabel = t`Module label`;
-</script>
+          const moduleLabel = t`Module label`;
+        </script>
 
-<script lang="ts">
-  import { t, Trans } from "lingui-for-svelte/macro";
+        <script lang="ts">
+          import { t, Trans } from "lingui-for-svelte/macro";
 
-  let name = $state("Ada");
-  const reactiveLabel = $t`Hello ${name}`;
-</script>
+          let name = $state("Ada");
+          const reactiveLabel = $t`Hello ${name}`;
+        </script>
 
-<p>{$t`Markup ${name}`}</p>
-<Trans>Hello <strong>{name}</strong></Trans>
-"#;
+        <p>{$t`Markup ${name}`}</p>
+        <Trans>Hello <strong>{name}</strong></Trans>
+    "#};
 
     let plan = build_svelte_plan(
         source,
@@ -177,7 +170,7 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
 
 #[test]
 fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
-    let source = indoc::indoc! {r#"
+    let source = indoc! {r#"
         <script module>
           import { t as moduleT } from "@lingui/core/macro";
 
@@ -231,15 +224,16 @@ fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
 
 #[test]
 fn builds_common_astro_compile_plan_with_shared_target_shape() {
-    let source = r#"---
-import { msg, t as translate, Trans } from "lingui-for-astro/macro";
+    let source = indoc! {r#"
+        ---
+        import { msg, t as translate, Trans } from "lingui-for-astro/macro";
 
-const status = translate(msg`Status summary: active`);
----
+        const status = translate(msg`Status summary: active`);
+        ---
 
-<p>{translate`Markup ${name}`}</p>
-<Trans>Before <strong>{name}</strong> After</Trans>
-"#;
+        <p>{translate`Markup ${name}`}</p>
+        <Trans>Before <strong>{name}</strong> After</Trans>
+    "#};
 
     let plan = build_astro_plan(
         source,
@@ -291,14 +285,15 @@ const status = translate(msg`Status summary: active`);
 
 #[test]
 fn avoids_runtime_i18n_binding_for_descriptor_only_astro_targets() {
-    let source = r#"---
-import { msg } from "lingui-for-astro/macro";
+    let source = indoc! {r#"
+        ---
+        import { msg } from "lingui-for-astro/macro";
 
-const descriptor = msg`Status summary: active`;
----
+        const descriptor = msg`Status summary: active`;
+        ---
 
-<p>{descriptor.message}</p>
-"#;
+        <p>{descriptor.message}</p>
+    "#};
 
     let plan = build_astro_plan(
         source,
@@ -312,12 +307,13 @@ const descriptor = msg`Status summary: active`;
 
 #[test]
 fn avoids_runtime_i18n_binding_for_component_only_astro_targets() {
-    let source = r#"---
-import { Trans } from "lingui-for-astro/macro";
----
+    let source = indoc! {r#"
+        ---
+        import { Trans } from "lingui-for-astro/macro";
+        ---
 
-<Trans>Hello <strong>world</strong></Trans>
-"#;
+        <Trans>Hello <strong>world</strong></Trans>
+    "#};
 
     let plan = build_astro_plan(
         source,
@@ -331,22 +327,23 @@ import { Trans } from "lingui-for-astro/macro";
 
 #[test]
 fn avoids_duplicate_astro_template_targets_for_attribute_conditional_expression() {
-    let source = r#"---
-import { t } from "lingui-for-astro/macro";
+    let source = indoc! {r#"
+        ---
+        import { t } from "lingui-for-astro/macro";
 
-const control = {
-  id: "query",
-  label: "Query",
-  placeholder: "Search docs",
-};
----
+        const control = {
+          id: "query",
+          label: "Query",
+          placeholder: "Search docs",
+        };
+        ---
 
-<label for={control.id}>{t(control.label)}</label>
-<input
-  id={control.id}
-  placeholder={control.placeholder ? t(control.placeholder) : undefined}
-/>
-"#;
+        <label for={control.id}>{t(control.label)}</label>
+        <input
+          id={control.id}
+          placeholder={control.placeholder ? t(control.placeholder) : undefined}
+        />
+    "#};
 
     let plan = build_astro_plan(
         source,
@@ -370,14 +367,15 @@ const control = {
 
 #[test]
 fn keeps_nested_astro_component_targets_inside_html_interpolations() {
-    let source = r#"---
-import { Trans } from "lingui-for-astro/macro";
+    let source = indoc! {r#"
+        ---
+        import { Trans } from "lingui-for-astro/macro";
 
-const showDemo = true;
----
+        const showDemo = true;
+        ---
 
-<div>{showDemo ? <Trans>See full demo</Trans> : null}</div>
-"#;
+        <div>{showDemo ? <Trans>See full demo</Trans> : null}</div>
+    "#};
 
     let plan = build_astro_plan(
         source,
@@ -401,19 +399,20 @@ const showDemo = true;
 
 #[test]
 fn keeps_multiline_plural_targets_inside_astro_html_interpolations() {
-    let source = r##"---
-import { plural } from "lingui-for-astro/macro";
----
+    let source = indoc! {r##"
+        ---
+        import { plural } from "lingui-for-astro/macro";
+        ---
 
-<p class="text-base-content/70">
-  {
-    plural(3, {
-      one: "# Astro format sample",
-      other: "# Astro format samples",
-    })
-  }
-</p>
-"##;
+        <p class="text-base-content/70">
+          {
+            plural(3, {
+              one: "# Astro format sample",
+              other: "# Astro format samples",
+            })
+          }
+        </p>
+    "##};
 
     let plan = build_astro_plan(
         source,
@@ -443,27 +442,28 @@ import { plural } from "lingui-for-astro/macro";
 
 #[test]
 fn keeps_astro_callback_body_targets_inside_mixed_html_interpolations() {
-    let source = r#"---
-import { msg, t as translate } from "@lingui/core/macro";
+    let source = indoc! {r#"
+        ---
+        import { msg, t as translate } from "@lingui/core/macro";
 
-const filteredQueue = queueItems;
----
+        const filteredQueue = queueItems;
+        ---
 
-{
-  filteredQueue.map((item) => {
-    const nestedLabel =
-      item.unread > 0
-        ? translate(
-            msg`${item.owner} left ${String(item.comments)} comments while ${item.assignee} still has ${String(item.unread)} unread updates.`,
-          )
-        : translate(
-            msg`${item.owner} left ${String(item.comments)} comments and the queue is fully read.`,
-          );
+        {
+          filteredQueue.map((item) => {
+            const nestedLabel =
+              item.unread > 0
+                ? translate(
+                    msg`${item.owner} left ${String(item.comments)} comments while ${item.assignee} still has ${String(item.unread)} unread updates.`,
+                  )
+                : translate(
+                    msg`${item.owner} left ${String(item.comments)} comments and the queue is fully read.`,
+                  );
 
-    return <p>{nestedLabel}</p>;
-  })
-}
-"#;
+            return <p>{nestedLabel}</p>;
+          })
+        }
+    "#};
 
     let plan = build_astro_plan(
         source,
@@ -487,13 +487,13 @@ const filteredQueue = queueItems;
 
 #[test]
 fn rejects_bare_direct_t_in_svelte_scripts() {
-    let source = r#"
-<script lang="ts">
-  import { t } from "lingui-for-svelte/macro";
+    let source = indoc! {r#"
+        <script lang="ts">
+          import { t } from "lingui-for-svelte/macro";
 
-  const label = t`Hello`;
-</script>
-"#;
+          const label = t`Hello`;
+        </script>
+    "#};
 
     let error = {
         let source = ls(source);
@@ -519,17 +519,17 @@ fn rejects_bare_direct_t_in_svelte_scripts() {
 
 #[test]
 fn rejects_bare_direct_plural_in_svelte_extract_synthetic_builds() {
-    let source = r##"
-<script lang="ts">
-  import { plural } from "lingui-for-svelte/macro";
+    let source = indoc! {r##"
+        <script lang="ts">
+          import { plural } from "lingui-for-svelte/macro";
 
-  let count = $state(1);
-  const label = plural(count, {
-    one: "# Book",
-    other: "# Books",
-  });
-</script>
-"##;
+          let count = $state(1);
+          const label = plural(count, {
+            one: "# Book",
+            other: "# Books",
+          });
+        </script>
+    "##};
 
     let error = {
         let source = ls(source);
@@ -554,7 +554,7 @@ fn rejects_bare_direct_plural_in_svelte_extract_synthetic_builds() {
 
 #[test]
 fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
-    let source = indoc::indoc! {r##"
+    let source = indoc! {r##"
         <script lang="ts">
           import { plural, t } from "lingui-for-svelte/macro";
 
@@ -611,7 +611,7 @@ fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
 
 #[test]
 fn normalizes_owned_nested_svelte_macros_in_compile_synthetic_source() {
-    let source = indoc::indoc! {r#"
+    let source = indoc! {r#"
         <script lang="ts">
           import { msg, t as translate } from "lingui-for-svelte/macro";
 
