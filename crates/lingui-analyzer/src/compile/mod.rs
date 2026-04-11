@@ -64,19 +64,24 @@ pub enum CompileTranslationMode {
     Contextual,
 }
 
+/// Controls whether a class of generated runtime warnings is emitted.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify, Default)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub enum RuntimeWarningMode {
+    /// Suppresses the warning in generated runtime helpers.
     Off,
+    /// Emits the warning in generated runtime helpers.
     #[default]
     On,
 }
 
+/// Runtime warning switches used while generating framework runtime helpers.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeWarningOptions {
+    /// Controls warnings for rich-text `<Trans>` content holes that ignore translated children.
     pub trans_content_override: RuntimeWarningMode,
 }
 

@@ -73,11 +73,14 @@ pub enum WhitespaceMode {
     Svelte,
 }
 
+/// Whitespace normalization modes for rich-text component macros in Astro files.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub enum AstroWhitespaceMode {
+    /// Uses JSX-compatible rich-text whitespace normalization.
     Jsx,
+    /// Uses Astro-aware rich-text whitespace normalization.
     Astro,
 }
 
@@ -90,11 +93,14 @@ impl From<AstroWhitespaceMode> for WhitespaceMode {
     }
 }
 
+/// Whitespace normalization modes for rich-text component macros in Svelte files.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub enum SvelteWhitespaceMode {
+    /// Uses JSX-compatible rich-text whitespace normalization.
     Jsx,
+    /// Uses Svelte-aware rich-text whitespace normalization.
     Svelte,
 }
 
