@@ -367,13 +367,13 @@ importers:
   packages/framework-core:
     dependencies:
       '@babel/core':
-        specifier: ^7.29.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@babel/traverse':
-        specifier: ^7.29.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@babel/types':
-        specifier: ^7.29.0
+        specifier: ^7.24.0
         version: 7.29.0
       cosmiconfig:
         specifier: ^9.0.1
@@ -422,7 +422,7 @@ importers:
         specifier: workspace:*
         version: link:../framework-core
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.5
+        specifier: ^5.0.0
         version: 5.9.5(typescript@5.9.3)
       esbuild:
         specifier: ^0.28.0
@@ -486,7 +486,7 @@ importers:
         specifier: workspace:*
         version: link:../framework-core
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.5
+        specifier: ^5.0.0
         version: 5.9.5(typescript@5.9.3)
       esbuild:
         specifier: ^0.28.0
@@ -550,16 +550,16 @@ importers:
   packages/unplugin-lingui-macro:
     dependencies:
       '@babel/core':
-        specifier: ^7.29.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^5.9.5
+        specifier: ^5.0.0
         version: 5.9.5(typescript@5.9.3)
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
       oxc-parser:
-        specifier: ^0.124.0
+        specifier: '>=0.100.0 <1.0.0'
         version: 0.124.0(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)
       rolldown:
         specifier: ^1.0.0-0

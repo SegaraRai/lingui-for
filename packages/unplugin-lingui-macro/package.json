@@ -73,9 +73,9 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@babel/core": "^7.29.0",
-    "@lingui/babel-plugin-lingui-macro": "^5.9.5",
-    "oxc-parser": "^0.124.0",
+    "@babel/core": "^7.24.0",
+    "@lingui/babel-plugin-lingui-macro": "^5.0.0",
+    "oxc-parser": ">=0.100.0 <1.0.0",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {
