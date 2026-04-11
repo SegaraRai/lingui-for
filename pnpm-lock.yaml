@@ -403,6 +403,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.5.2
+      dedent:
+        specifier: ^1.7.2
+        version: 1.7.2
       rolldown-plugin-wasm:
         specifier: ^0.2.1
         version: 0.2.1(rolldown@1.0.0-rc.15)

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+import dedent from "dedent";
 import { afterEach, describe, expect, test, vi } from "vite-plus/test";
 
 import {
@@ -86,20 +87,19 @@ describe("config helpers", () => {
 
     writeFileSync(
       path.join(fixtureDir, "lingui.config.ts"),
-      [
-        `import { defineConfig } from ${JSON.stringify(configModuleUrl)};`,
-        "",
-        "export default defineConfig({",
-        "  locales: ['en'],",
-        "  sourceLocale: 'en',",
-        "  framework: {",
-        "    astro: {",
-        "      packages: ['custom-astro-macro'],",
-        "    },",
-        "  },",
-        "});",
-        "",
-      ].join("\n"),
+      dedent`
+        import { defineConfig } from ${JSON.stringify(configModuleUrl)};
+
+        export default defineConfig({
+          locales: ["en"],
+          sourceLocale: "en",
+          framework: {
+            astro: {
+              packages: ["custom-astro-macro"],
+            },
+          },
+        });
+      `,
     );
 
     const loaded = await loadLinguiConfig(undefined, { cwd: fixtureDir });
@@ -123,20 +123,19 @@ describe("config helpers", () => {
 
     writeFileSync(
       configPath,
-      [
-        `import { defineConfig } from ${JSON.stringify(configModuleUrl)};`,
-        "",
-        "export default defineConfig({",
-        "  locales: ['en'],",
-        "  sourceLocale: 'en',",
-        "  framework: {",
-        "    svelte: {",
-        "      whitespace: 'jsx',",
-        "    },",
-        "  },",
-        "});",
-        "",
-      ].join("\n"),
+      dedent`
+        import { defineConfig } from ${JSON.stringify(configModuleUrl)};
+
+        export default defineConfig({
+          locales: ["en"],
+          sourceLocale: "en",
+          framework: {
+            svelte: {
+              whitespace: "jsx",
+            },
+          },
+        });
+      `,
     );
 
     const loaded = await loadLinguiConfig(pathToFileURL(configPath), {

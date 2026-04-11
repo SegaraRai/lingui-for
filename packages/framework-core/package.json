@@ -69,6 +69,7 @@
     "@types/babel__core": "^7.20.5",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
+    "dedent": "^1.7.2",
     "rolldown-plugin-wasm": "^0.2.1",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
