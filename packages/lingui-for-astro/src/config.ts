@@ -25,7 +25,7 @@ export interface LinguiAstroFrameworkConfig {
   /**
    * Whitespace normalization mode for rich-text component macros in `.astro` files.
    *
-   * `"auto"` selects Astro-aware behavior. Other values forward directly to the Rust analyzer.
+   * `"astro"` selects Astro-aware behavior. Use `"jsx"` for JSX-compatible normalization.
    */
   whitespace?: RichTextWhitespaceMode | undefined;
   /**

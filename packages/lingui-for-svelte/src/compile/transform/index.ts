@@ -114,7 +114,7 @@ export async function transformSvelte(
     source,
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
-    whitespace: resolveSvelteWhitespace(frameworkConfig.whitespace ?? "auto"),
+    whitespace: resolveSvelteWhitespace(frameworkConfig.whitespace ?? "svelte"),
     runtimeWarnings: frameworkConfig.runtimeWarnings,
     conventions: createSvelteFrameworkConventions(linguiConfig, {
       packages: frameworkConfig.packages,

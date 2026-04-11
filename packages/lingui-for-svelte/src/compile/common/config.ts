@@ -7,7 +7,7 @@ import {
   LINGUI_STANDARD_CORE_MACRO_PACKAGES,
   type RuntimeWarningOptions,
   type ScriptLang,
-  type WhitespaceMode,
+  type SvelteWhitespaceMode,
 } from "@lingui-for/framework-core/compile";
 import {
   getParserPlugins as getParserPluginsShared,
@@ -21,12 +21,12 @@ import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 /**
  * Whitespace normalization mode for rich-text Component Macros in `.svelte` files.
  *
- * Use `"auto"` to follow Svelte-aware whitespace semantics, or pass an explicit analyzer mode such
- * as `"jsx"` when you need non-default normalization.
+ * Use `"svelte"` for Svelte-aware whitespace semantics, or `"jsx"` when you need JSX-compatible
+ * normalization.
  *
  * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#svelte
  */
-export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
+export type RichTextWhitespaceMode = SvelteWhitespaceMode;
 
 /**
  * Svelte-specific framework config extracted from the shared `framework` section.
@@ -121,8 +121,8 @@ export function getParserPlugins(
 
 export function resolveSvelteWhitespace(
   whitespace: RichTextWhitespaceMode,
-): WhitespaceMode {
-  return whitespace === "auto" ? "svelte" : whitespace;
+): SvelteWhitespaceMode {
+  return whitespace;
 }
 
 export async function loadLinguiConfig(

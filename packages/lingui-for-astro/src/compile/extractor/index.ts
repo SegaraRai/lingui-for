@@ -5,7 +5,7 @@ import type {
 } from "@lingui/conf";
 
 import {
-  buildSyntheticModule,
+  buildAstroSyntheticModule,
   parseCanonicalSourceMap,
   runBabelExtractionUnits,
   stripQuery,
@@ -71,12 +71,12 @@ function astroExtractorFactory(options?: AstroExtractorOptions): ExtractorType {
         await configResolver.getConfig(),
       );
       const syntheticName = filename.replace(/\.astro$/, ".synthetic.tsx");
-      const synthetic = buildSyntheticModule({
+      const synthetic = buildAstroSyntheticModule({
         source,
         sourceName: filename,
         syntheticName,
         whitespace: resolveAstroWhitespace(
-          extractorCtx.frameworkConfig.whitespace ?? "auto",
+          extractorCtx.frameworkConfig.whitespace ?? "astro",
         ),
         conventions: createAstroFrameworkConventions(
           extractorCtx.linguiConfig,

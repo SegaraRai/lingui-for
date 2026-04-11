@@ -25,7 +25,7 @@ export interface LinguiSvelteFrameworkConfig {
   /**
    * Whitespace normalization mode for rich-text component macros in `.svelte` files.
    *
-   * `"auto"` selects Svelte-aware behavior. Other values forward directly to the Rust analyzer.
+   * `"svelte"` selects Svelte-aware behavior. Use `"jsx"` for JSX-compatible normalization.
    */
   whitespace?: RichTextWhitespaceMode | undefined;
   /**

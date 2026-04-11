@@ -41,7 +41,7 @@ function createSvelteCompileConfig(whitespace: FixtureWhitespace) {
     sourceLocale: "en",
     framework: {
       svelte: {
-        whitespace,
+        whitespace: resolveSvelteFixtureWhitespace(whitespace),
       } satisfies LinguiSvelteFrameworkConfig,
     },
   });
@@ -53,10 +53,22 @@ function createAstroCompileConfig(whitespace: FixtureWhitespace) {
     sourceLocale: "en",
     framework: {
       astro: {
-        whitespace,
+        whitespace: resolveAstroFixtureWhitespace(whitespace),
       } satisfies LinguiAstroFrameworkConfig,
     },
   });
+}
+
+function resolveSvelteFixtureWhitespace(
+  whitespace: FixtureWhitespace,
+): LinguiSvelteFrameworkConfig["whitespace"] {
+  return whitespace === "auto" ? "svelte" : whitespace;
+}
+
+function resolveAstroFixtureWhitespace(
+  whitespace: FixtureWhitespace,
+): LinguiAstroFrameworkConfig["whitespace"] {
+  return whitespace === "auto" ? "astro" : whitespace;
 }
 
 async function getSvelteCompileConfig(

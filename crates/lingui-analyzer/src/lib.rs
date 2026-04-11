@@ -33,11 +33,18 @@ pub use extract::{
     SyntheticModule, SyntheticModuleOptions,
 };
 pub use framework::{
-    MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
-    WhitespaceMode,
+    AstroWhitespaceMode, MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor,
+    MacroImport, SvelteWhitespaceMode, WhitespaceMode,
 };
 pub use syntax::parse::ParseError;
 pub use synthesis::NormalizedSegment;
+
+#[wasm_bindgen(typescript_custom_section)]
+const TS_APPEND_CONTENT: &'static str = r#"
+
+type LeanString = string;
+
+"#;
 
 #[derive(thiserror::Error, Debug)]
 pub enum AnalyzerError {
@@ -145,6 +152,38 @@ pub fn build_synthetic_module_for_framework(
     }
 }
 
+pub fn build_synthetic_module_for_astro(
+    source: &LeanString,
+    source_name: &LeanString,
+    synthetic_name: &LeanString,
+    whitespace: Option<AstroWhitespaceMode>,
+    conventions: &FrameworkConventions,
+) -> Result<SyntheticModule, AnalyzerError> {
+    build_synthetic_module_for_framework(
+        source,
+        source_name,
+        synthetic_name,
+        whitespace.map(WhitespaceMode::from),
+        conventions,
+    )
+}
+
+pub fn build_synthetic_module_for_svelte(
+    source: &LeanString,
+    source_name: &LeanString,
+    synthetic_name: &LeanString,
+    whitespace: Option<SvelteWhitespaceMode>,
+    conventions: &FrameworkConventions,
+) -> Result<SyntheticModule, AnalyzerError> {
+    build_synthetic_module_for_framework(
+        source,
+        source_name,
+        synthetic_name,
+        whitespace.map(WhitespaceMode::from),
+        conventions,
+    )
+}
+
 fn sort_candidates(candidates: &mut [MacroCandidate]) {
     candidates.sort_by_key(|candidate| (candidate.outer_span.start, candidate.outer_span.end));
 }
@@ -173,6 +212,28 @@ pub fn build_svelte_compile_plan(
     )
 }
 
+pub fn build_svelte_compile_plan_for_wasm(
+    options: &SvelteCompilePlanOptions,
+) -> Result<SvelteCompilePlan, CompileError> {
+    SvelteCompilePlan::build(
+        &options.source,
+        options
+            .source_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("source")),
+        options
+            .synthetic_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
+        options
+            .whitespace
+            .map(WhitespaceMode::from)
+            .unwrap_or(WhitespaceMode::Svelte),
+        options.conventions.clone(),
+        options.runtime_warnings.clone().unwrap_or_default(),
+    )
+}
+
 pub fn build_astro_compile_plan(
     options: &CompilePlanOptions,
 ) -> Result<AstroCompilePlan, CompileError> {
@@ -187,6 +248,28 @@ pub fn build_astro_compile_plan(
             .as_ref()
             .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
         options.whitespace.unwrap_or(WhitespaceMode::Astro),
+        options.conventions.clone(),
+        options.runtime_warnings.clone().unwrap_or_default(),
+    )
+}
+
+pub fn build_astro_compile_plan_for_wasm(
+    options: &AstroCompilePlanOptions,
+) -> Result<AstroCompilePlan, CompileError> {
+    AstroCompilePlan::build(
+        &options.source,
+        options
+            .source_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("source")),
+        options
+            .synthetic_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
+        options
+            .whitespace
+            .map(WhitespaceMode::from)
+            .unwrap_or(WhitespaceMode::Astro),
         options.conventions.clone(),
         options.runtime_warnings.clone().unwrap_or_default(),
     )
@@ -239,6 +322,52 @@ pub fn wasm_build_synthetic_module(
     Ok(result.into_ts()?)
 }
 
+#[wasm_bindgen(js_name = "buildAstroSyntheticModule")]
+pub fn wasm_build_astro_synthetic_module(
+    options: Ts<AstroSyntheticModuleOptions>,
+) -> Result<Ts<SyntheticModule>, JsError> {
+    console_error_panic_hook::set_once();
+
+    let options = options.to_rust()?;
+    let result = build_synthetic_module_for_astro(
+        &options.source,
+        options
+            .source_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("source")),
+        options
+            .synthetic_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("synthetic.js")),
+        options.whitespace,
+        &options.conventions,
+    )?;
+    Ok(result.into_ts()?)
+}
+
+#[wasm_bindgen(js_name = "buildSvelteSyntheticModule")]
+pub fn wasm_build_svelte_synthetic_module(
+    options: Ts<SvelteSyntheticModuleOptions>,
+) -> Result<Ts<SyntheticModule>, JsError> {
+    console_error_panic_hook::set_once();
+
+    let options = options.to_rust()?;
+    let result = build_synthetic_module_for_svelte(
+        &options.source,
+        options
+            .source_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("source")),
+        options
+            .synthetic_name
+            .as_ref()
+            .unwrap_or(&LeanString::from_static_str("synthetic.js")),
+        options.whitespace,
+        &options.conventions,
+    )?;
+    Ok(result.into_ts()?)
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
@@ -248,6 +377,52 @@ pub struct CompilePlanOptions {
     pub synthetic_name: Option<LeanString>,
     pub whitespace: Option<WhitespaceMode>,
     pub runtime_warnings: Option<RuntimeWarningOptions>,
+    pub conventions: FrameworkConventions,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct AstroCompilePlanOptions {
+    pub source: LeanString,
+    pub source_name: Option<LeanString>,
+    pub synthetic_name: Option<LeanString>,
+    pub whitespace: Option<AstroWhitespaceMode>,
+    pub runtime_warnings: Option<RuntimeWarningOptions>,
+    pub conventions: FrameworkConventions,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct SvelteCompilePlanOptions {
+    pub source: LeanString,
+    pub source_name: Option<LeanString>,
+    pub synthetic_name: Option<LeanString>,
+    pub whitespace: Option<SvelteWhitespaceMode>,
+    pub runtime_warnings: Option<RuntimeWarningOptions>,
+    pub conventions: FrameworkConventions,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct AstroSyntheticModuleOptions {
+    pub source: LeanString,
+    pub source_name: Option<LeanString>,
+    pub synthetic_name: Option<LeanString>,
+    pub whitespace: Option<AstroWhitespaceMode>,
+    pub conventions: FrameworkConventions,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct SvelteSyntheticModuleOptions {
+    pub source: LeanString,
+    pub source_name: Option<LeanString>,
+    pub synthetic_name: Option<LeanString>,
+    pub whitespace: Option<SvelteWhitespaceMode>,
     pub conventions: FrameworkConventions,
 }
 
@@ -271,12 +446,12 @@ pub struct AstroFinishCompileOptions {
 
 #[wasm_bindgen(js_name = "buildSvelteCompilePlan")]
 pub fn wasm_build_svelte_compile_plan(
-    options: Ts<CompilePlanOptions>,
+    options: Ts<SvelteCompilePlanOptions>,
 ) -> Result<Ts<SvelteCompilePlan>, JsError> {
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = build_svelte_compile_plan(&options)?;
+    let result = build_svelte_compile_plan_for_wasm(&options)?;
     Ok(result.into_ts()?)
 }
 
@@ -301,12 +476,12 @@ pub fn wasm_reinsert_transformed_declarations(
 
 #[wasm_bindgen(js_name = "buildAstroCompilePlan")]
 pub fn wasm_build_astro_compile_plan(
-    options: Ts<CompilePlanOptions>,
+    options: Ts<AstroCompilePlanOptions>,
 ) -> Result<Ts<AstroCompilePlan>, JsError> {
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = build_astro_compile_plan(&options)?;
+    let result = build_astro_compile_plan_for_wasm(&options)?;
     Ok(result.into_ts()?)
 }
 

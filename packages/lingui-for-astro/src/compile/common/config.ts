@@ -5,8 +5,8 @@ import {
   LINGUI_I18N_EXPORT,
   LINGUI_RUNTIME_TRANS_EXPORT,
   LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+  type AstroWhitespaceMode,
   type RuntimeWarningOptions,
-  type WhitespaceMode,
 } from "@lingui-for/framework-core/compile";
 import {
   getParserPlugins as getParserPluginsShared,
@@ -20,12 +20,12 @@ import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 /**
  * Whitespace normalization mode for rich-text Component Macros in `.astro` files.
  *
- * Use `"auto"` to follow Astro-aware whitespace semantics, or pass an explicit analyzer mode such
- * as `"jsx"` when you need non-default normalization.
+ * Use `"astro"` for Astro-aware whitespace semantics, or `"jsx"` when you need JSX-compatible
+ * normalization.
  *
  * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#astro
  */
-export type RichTextWhitespaceMode = "auto" | WhitespaceMode;
+export type RichTextWhitespaceMode = AstroWhitespaceMode;
 
 /**
  * Astro-specific framework config extracted from the shared `framework` section.
@@ -112,8 +112,8 @@ export function getParserPlugins(): NonNullable<ParserOptions["plugins"]> {
 
 export function resolveAstroWhitespace(
   whitespace: RichTextWhitespaceMode,
-): WhitespaceMode {
-  return whitespace === "auto" ? "astro" : whitespace;
+): AstroWhitespaceMode {
+  return whitespace;
 }
 
 export async function loadLinguiConfig(

@@ -7,7 +7,7 @@ defineConfig({
   framework: {
     astro: {
       packages: ["custom-astro-macro"],
-      whitespace: "auto",
+      whitespace: "astro",
     },
   },
 });
@@ -17,7 +17,7 @@ defineConfig({
   framework: {
     svelte: {
       packages: ["custom-svelte-macro"],
-      whitespace: "auto",
+      whitespace: "svelte",
     },
   },
 });

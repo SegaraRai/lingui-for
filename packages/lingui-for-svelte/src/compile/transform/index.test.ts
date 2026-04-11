@@ -2,7 +2,10 @@ import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import type { RuntimeWarningOptions } from "@lingui-for/framework-core/compile";
+import type {
+  RuntimeWarningOptions,
+  SvelteWhitespaceMode,
+} from "@lingui-for/framework-core/compile";
 import {
   assertRangeMapping,
   findUniqueRange,
@@ -27,7 +30,7 @@ function expectNoExcessBlankLines(value: string): void {
 async function resolveTestConfig(
   options: {
     runtimeWarnings?: RuntimeWarningOptions;
-    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+    whitespace?: SvelteWhitespaceMode;
   } = {},
 ) {
   return loadLinguiConfig(
@@ -48,7 +51,7 @@ async function expectTransformed(
   options: {
     filename?: string;
     runtimeWarnings?: RuntimeWarningOptions;
-    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+    whitespace?: SvelteWhitespaceMode;
   } = {},
 ) {
   const resolvedConfig = await resolveTestConfig(options);

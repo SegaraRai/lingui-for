@@ -59,8 +59,8 @@ describe("compile/common/config", () => {
     expect(plugins).toContain("jsx");
   });
 
-  test("defaults auto whitespace to astro semantics", () => {
-    expect(resolveAstroWhitespace("auto")).toBe("astro");
+  test("returns explicit astro whitespace modes", () => {
+    expect(resolveAstroWhitespace("astro")).toBe("astro");
     expect(resolveAstroWhitespace("jsx")).toBe("jsx");
   });
 

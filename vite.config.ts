@@ -14,6 +14,7 @@ export default defineConfig({
       "**/dist",
       "**/generated",
       "crates/lingui-analyzer/benches/fixtures/*",
+      "examples/config-types/cases/*",
     ],
   },
   fmt: {

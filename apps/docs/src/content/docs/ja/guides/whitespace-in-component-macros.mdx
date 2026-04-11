@@ -11,16 +11,16 @@ import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
 これは `Trans` のようなリッチテキストメッセージで特に重要で、空白が足りなかったり余分だったりすると、抽出されるメッセージテキストが変わってしまいます。
 
 `whitespace` オプションを使うと、こうした境界をどう扱うか選べます。
-通常はデフォルトの `auto` のままで問題ありません。
-これにより、コンポーネントマクロは生の JSX の意味論ではなく、フレームワークを考慮した空白の挙動に従います。
+通常は未指定のままで問題ありません。
+未指定の場合、コンポーネントマクロは生の JSX の意味論ではなく、フレームワークを考慮した空白の挙動に従います。
 
 ## デフォルトの挙動
 
-`lingui-for-svelte` と `lingui-for-astro` では、`whitespace` の既定値は `auto` です。
+`lingui-for-svelte` と `lingui-for-astro` では、`whitespace` の既定値はそれぞれのフレームワークのモードです。
 そのため、リッチテキストの子要素の境界では、明示的に `jsx` を選ばない限り、フレームワークに応じた空白処理が行われます。
 
-- Svelte では、`auto` は `svelte` に解決されます。
-- Astro では、`auto` は `astro` に解決されます。
+- Svelte では、既定値は `svelte` です。
+- Astro では、既定値は `astro` です。
 - JSX 形式の空白の意味論を明示的に使いたい場合だけ `jsx` を選んでください。
 
 ## 何が変わるのか
@@ -35,7 +35,7 @@ import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
 </Trans>
 ```
 
-`whitespace: "auto"` では、抽出されるリッチテキストメッセージに単語境界の空白が保たれます。
+フレームワーク対応の既定値では、抽出されるリッチテキストメッセージに単語境界の空白が保たれます。
 
 ```text
 Read <0>docs</0> now
@@ -81,7 +81,7 @@ import { svelteExtractor } from "lingui-for-svelte/extractor";
 export default defineConfig({
   framework: {
     svelte: {
-      whitespace: "auto",
+      whitespace: "svelte",
     },
   },
   extractors: [svelteExtractor],
@@ -98,7 +98,7 @@ import { astroExtractor } from "lingui-for-astro/extractor";
 export default defineConfig({
   framework: {
     astro: {
-      whitespace: "auto",
+      whitespace: "astro",
     },
   },
   extractors: [astroExtractor],
@@ -140,8 +140,13 @@ export default defineConfig({
 
 ## `jsx` を使うべき場面
 
-リッチテキストの子要素境界で JSX の意味論を維持しなければならない、はっきりした互換性要件がない限り、デフォルト設定のままにしてください。
+`jsx` は互換性維持のためのモードとしてだけ使ってください。
 
-既存プロジェクトで `jsx` から `auto` に切り替えると、一部のコンポーネントマクロ呼び出しでは、抽出されるメッセージや生成される ID が変わる場合があります。
+既定のフレームワーク対応モードは、Svelte や Astro がテンプレートノード間の空白を扱う方法に合わせます。
+そのため、新しいコードでは通常こちらが適切です。
+以前に JSX 形式の空白正規化で抽出したメッセージを維持したい場合や、リッチテキストの子要素境界を意図的に JSX と同じように扱いたい場合だけ `jsx` を選んでください。
+
+`jsx` とフレームワーク対応モードを切り替えると、一部のコンポーネントマクロ呼び出しでは、抽出されるメッセージや生成される ID が変わる場合があります。
+変換と抽出器では同じ `whitespace` 設定を使ってください。
 
 ビルド変換と抽出器が同じフレームワーク設定を共有する仕組みについては [抽出、コンパイル、検証](/ja/guides/extract-compile-verify) を参照してください。

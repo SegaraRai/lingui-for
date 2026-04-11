@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "skipLibCheck": false,
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "types": ["node"]
   },

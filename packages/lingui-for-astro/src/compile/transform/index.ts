@@ -110,7 +110,7 @@ export async function transformAstro(
     source,
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
-    whitespace: resolveAstroWhitespace(frameworkConfig.whitespace ?? "auto"),
+    whitespace: resolveAstroWhitespace(frameworkConfig.whitespace ?? "astro"),
     runtimeWarnings: frameworkConfig.runtimeWarnings,
     conventions: createAstroFrameworkConventions(linguiConfig, {
       packages: frameworkConfig.packages,

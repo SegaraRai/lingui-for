@@ -92,7 +92,6 @@ impl MacroConventions {
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeExportConventions {
     pub trans: LeanString,
-    #[tsify(optional)]
     pub i18n_accessor: Option<LeanString>,
 }
 
@@ -108,19 +107,12 @@ pub struct RuntimeConventions {
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeBindingSeeds {
-    #[tsify(optional)]
     pub i18n_accessor_factory: Option<LeanString>,
-    #[tsify(optional)]
     pub context: Option<LeanString>,
-    #[tsify(optional)]
     pub get_i18n: Option<LeanString>,
-    #[tsify(optional)]
     pub translate: Option<LeanString>,
-    #[tsify(optional)]
     pub i18n_instance: Option<LeanString>,
-    #[tsify(optional)]
     pub reactive_translation_wrapper: Option<LeanString>,
-    #[tsify(optional)]
     pub eager_translation_wrapper: Option<LeanString>,
     pub runtime_trans_component: LeanString,
 }

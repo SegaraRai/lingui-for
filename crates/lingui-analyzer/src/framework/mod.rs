@@ -73,6 +73,40 @@ pub enum WhitespaceMode {
     Svelte,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub enum AstroWhitespaceMode {
+    Jsx,
+    Astro,
+}
+
+impl From<AstroWhitespaceMode> for WhitespaceMode {
+    fn from(value: AstroWhitespaceMode) -> Self {
+        match value {
+            AstroWhitespaceMode::Jsx => WhitespaceMode::Jsx,
+            AstroWhitespaceMode::Astro => WhitespaceMode::Astro,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub enum SvelteWhitespaceMode {
+    Jsx,
+    Svelte,
+}
+
+impl From<SvelteWhitespaceMode> for WhitespaceMode {
+    fn from(value: SvelteWhitespaceMode) -> Self {
+        match value {
+            SvelteWhitespaceMode::Jsx => WhitespaceMode::Jsx,
+            SvelteWhitespaceMode::Svelte => WhitespaceMode::Svelte,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]

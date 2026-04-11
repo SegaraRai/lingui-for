@@ -13,16 +13,16 @@ plain JSX rules. This especially matters for rich-text messages such as `Trans`,
 extra spaces can change the extracted message text.
 
 The `whitespace` option lets you choose how those boundaries are handled. In normal use you should
-leave it at the default, `auto`, which makes Component Macros follow framework-aware whitespace
-behavior instead of raw JSX semantics.
+leave it unset, which makes Component Macros follow framework-aware whitespace behavior instead of
+raw JSX semantics.
 
 ## Default behavior
 
-`lingui-for-svelte` and `lingui-for-astro` default `whitespace` to `auto`, so rich-text child
-boundaries follow framework-aware whitespace handling unless you opt into `jsx`.
+`lingui-for-svelte` and `lingui-for-astro` default `whitespace` to the owning framework's mode, so
+rich-text child boundaries follow framework-aware whitespace handling unless you opt into `jsx`.
 
-- In Svelte, `auto` resolves to `svelte`.
-- In Astro, `auto` resolves to `astro`.
+- In Svelte, the default is `svelte`.
+- In Astro, the default is `astro`.
 - Use `jsx` only when you explicitly want JSX-style whitespace semantics instead.
 
 ## What changes
@@ -37,7 +37,7 @@ Consider this authoring:
 </Trans>
 ```
 
-With `whitespace: "auto"`, the extracted rich-text message keeps the word boundaries:
+With the framework-aware default, the extracted rich-text message keeps the word boundaries:
 
 ```text
 Read <0>docs</0> now
@@ -86,7 +86,7 @@ import { svelteExtractor } from "lingui-for-svelte/extractor";
 export default defineConfig({
   framework: {
     svelte: {
-      whitespace: "auto",
+      whitespace: "svelte",
     },
   },
   extractors: [svelteExtractor],
@@ -103,7 +103,7 @@ import { astroExtractor } from "lingui-for-astro/extractor";
 export default defineConfig({
   framework: {
     astro: {
-      whitespace: "auto",
+      whitespace: "astro",
     },
   },
   extractors: [astroExtractor],
@@ -146,11 +146,16 @@ export default defineConfig({
 
 ## When to use `jsx`
 
-Stay with the default unless you have a specific compatibility reason to keep JSX semantics for
-rich-text child boundaries.
+Use `jsx` only as a compatibility mode.
 
-If you switch an existing project from `jsx` to `auto`, extracted messages and generated IDs may
-change for some Component Macro calls.
+The default framework-aware mode matches how Svelte and Astro treat whitespace between template
+nodes, so it is usually the right choice for new code. Choose `jsx` only when you need to preserve
+messages that were previously extracted with JSX-style whitespace normalization, or when you
+intentionally want rich-text child boundaries to behave like JSX rather than the source framework.
+
+Switching between `jsx` and the framework-aware mode can change extracted message text and generated
+IDs for some Component Macro calls. Keep the same `whitespace` setting for transforms and
+extractors.
 
 See [Extract, Compile, and Verify](/guides/extract-compile-verify) for how build transforms and
 extractors share the same framework config.

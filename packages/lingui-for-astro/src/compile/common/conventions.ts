@@ -45,6 +45,9 @@ export function createAstroFrameworkConventions(
       },
     },
     bindings: {
+      context: undefined,
+      getI18n: undefined,
+      translate: undefined,
       i18nAccessorFactory: RUNTIME_BINDING_CREATE_I18N,
       i18nInstance: RUNTIME_BINDING_I18N,
       reactiveTranslationWrapper: undefined,

@@ -74,7 +74,7 @@ export default defineConfig({
   framework: {
     svelte: {
       packages: ["@acme/i18n/macro"],
-      whitespace: "auto",
+      whitespace: "svelte",
       runtimeWarnings: {
         transContentOverride: "on",
       },
@@ -98,7 +98,7 @@ export default defineConfig({
   framework: {
     astro: {
       packages: ["@acme/i18n/macro"],
-      whitespace: "auto",
+      whitespace: "astro",
       runtimeWarnings: {
         transContentOverride: "on",
       },
@@ -132,10 +132,10 @@ export default defineConfig({
   catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
   framework: {
     astro: {
-      whitespace: "auto",
+      whitespace: "astro",
     },
     svelte: {
-      whitespace: "auto",
+      whitespace: "svelte",
     },
   },
   extractors: [astroExtractor, svelteExtractor],

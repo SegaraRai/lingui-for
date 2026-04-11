@@ -2,7 +2,10 @@ import { TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import type { RuntimeWarningOptions } from "@lingui-for/framework-core/compile";
+import type {
+  AstroWhitespaceMode,
+  RuntimeWarningOptions,
+} from "@lingui-for/framework-core/compile";
 
 import {
   assertRangeMapping,
@@ -20,7 +23,7 @@ function compact(value: string): string {
 async function resolveTestConfig(
   options: {
     runtimeWarnings?: RuntimeWarningOptions;
-    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+    whitespace?: AstroWhitespaceMode;
   } = {},
 ) {
   return loadLinguiConfig(
@@ -41,7 +44,7 @@ async function expectTransformed(
   options: {
     filename?: string;
     runtimeWarnings?: RuntimeWarningOptions;
-    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+    whitespace?: AstroWhitespaceMode;
   } = {},
 ) {
   const resolvedConfig = await resolveTestConfig(options);

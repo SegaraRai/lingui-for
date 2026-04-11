@@ -25,7 +25,7 @@ function createSveltePluginConfig(whitespace: FixtureWhitespace) {
     sourceLocale: "en",
     framework: {
       svelte: {
-        whitespace,
+        whitespace: whitespace === "auto" ? "svelte" : whitespace,
       },
     },
   });
@@ -37,7 +37,7 @@ function createAstroPluginConfig(whitespace: FixtureWhitespace) {
     sourceLocale: "en",
     framework: {
       astro: {
-        whitespace,
+        whitespace: whitespace === "auto" ? "astro" : whitespace,
       },
     },
   });

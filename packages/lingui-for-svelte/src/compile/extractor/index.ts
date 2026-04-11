@@ -5,7 +5,7 @@ import type {
 } from "@lingui/conf";
 
 import {
-  buildSyntheticModule,
+  buildSvelteSyntheticModule,
   parseCanonicalSourceMap,
   runBabelExtractionUnits,
   toBabelSourceMap,
@@ -68,12 +68,12 @@ function svelteExtractorFactory(
         ctx,
         await configResolver.getConfig(),
       );
-      const synthetic = buildSyntheticModule({
+      const synthetic = buildSvelteSyntheticModule({
         source,
         sourceName: filename,
         syntheticName,
         whitespace: resolveSvelteWhitespace(
-          extractorCtx.frameworkConfig.whitespace ?? "auto",
+          extractorCtx.frameworkConfig.whitespace ?? "svelte",
         ),
         conventions: createSvelteFrameworkConventions(
           extractorCtx.linguiConfig,

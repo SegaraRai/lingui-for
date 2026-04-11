@@ -204,6 +204,11 @@ function createTestFrameworkConventions(framework: "astro" | "svelte") {
         },
       },
       bindings: {
+        context: undefined,
+        getI18n: undefined,
+        translate: undefined,
+        eagerTranslationWrapper: undefined,
+        reactiveTranslationWrapper: undefined,
         i18nAccessorFactory: "__l4a_createI18n",
         i18nInstance: "__l4a_i18n",
         runtimeTransComponent: "L4aRuntimeTrans",
@@ -227,6 +232,7 @@ function createTestFrameworkConventions(framework: "astro" | "svelte") {
       },
     },
     bindings: {
+      i18nInstance: undefined,
       i18nAccessorFactory: "createLinguiAccessors",
       context: "__l4s_ctx",
       getI18n: "__l4s_getI18n",

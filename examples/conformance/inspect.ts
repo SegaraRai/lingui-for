@@ -541,7 +541,7 @@ function createSvelteFrameworkConfig(
   whitespace: WhitespaceMode,
 ): LinguiSvelteFrameworkConfig {
   return {
-    whitespace,
+    whitespace: resolveSvelteWhitespace(whitespace),
   };
 }
 
@@ -549,8 +549,32 @@ function createAstroFrameworkConfig(
   whitespace: WhitespaceMode,
 ): LinguiAstroFrameworkConfig {
   return {
-    whitespace,
+    whitespace: resolveAstroWhitespace(whitespace),
   };
+}
+
+function resolveSvelteWhitespace(
+  whitespace: WhitespaceMode,
+): LinguiSvelteFrameworkConfig["whitespace"] {
+  if (whitespace === "auto") {
+    return "svelte";
+  }
+  if (whitespace === "svelte" || whitespace === "jsx") {
+    return whitespace;
+  }
+  throw new Error(`Svelte whitespace mode cannot be "${whitespace}".`);
+}
+
+function resolveAstroWhitespace(
+  whitespace: WhitespaceMode,
+): LinguiAstroFrameworkConfig["whitespace"] {
+  if (whitespace === "auto") {
+    return "astro";
+  }
+  if (whitespace === "astro" || whitespace === "jsx") {
+    return whitespace;
+  }
+  throw new Error(`Astro whitespace mode cannot be "${whitespace}".`);
 }
 
 if (import.meta.main) {

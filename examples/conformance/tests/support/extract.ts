@@ -71,7 +71,7 @@ function createSvelteExtractorConfig(whitespace: FixtureWhitespace) {
     sourceLocale: "en",
     framework: {
       svelte: {
-        whitespace,
+        whitespace: whitespace === "auto" ? "svelte" : whitespace,
       },
     },
   });
@@ -83,7 +83,7 @@ function createAstroExtractorConfig(whitespace: FixtureWhitespace) {
     sourceLocale: "en",
     framework: {
       astro: {
-        whitespace,
+        whitespace: whitespace === "auto" ? "astro" : whitespace,
       },
     },
   });

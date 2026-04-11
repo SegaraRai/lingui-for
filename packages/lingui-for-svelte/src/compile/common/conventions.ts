@@ -8,15 +8,15 @@ import {
 } from "@lingui-for/framework-core/compile";
 
 import {
+  EAGER_TRANSLATION_WRAPPER,
   EXPORT_CREATE_LINGUI_ACCESSORS,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
+  REACTIVE_TRANSLATION_WRAPPER,
   RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
   RUNTIME_BINDING_CONTEXT,
   RUNTIME_BINDING_GET_I18N,
   RUNTIME_BINDING_TRANSLATE,
-  EAGER_TRANSLATION_WRAPPER,
-  REACTIVE_TRANSLATION_WRAPPER,
 } from "./constants.ts";
 
 export function createSvelteFrameworkConventions(
@@ -48,6 +48,7 @@ export function createSvelteFrameworkConventions(
       },
     },
     bindings: {
+      i18nInstance: undefined,
       i18nAccessorFactory: EXPORT_CREATE_LINGUI_ACCESSORS,
       context: RUNTIME_BINDING_CONTEXT,
       getI18n: RUNTIME_BINDING_GET_I18N,
