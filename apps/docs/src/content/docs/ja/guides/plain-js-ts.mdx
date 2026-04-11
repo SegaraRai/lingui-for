@@ -65,10 +65,10 @@ export default defineConfig({
 
 Astro では、`astro.config.ts` の `vite.plugins` に追加します。
 
-## 抽出を設定する
+## 抽出処理を設定する
 
-`lingui.config.ts` に Babel 抽出器を追加します。
-フレームワークプロジェクトでは、そのフレームワークの `defineConfig` ヘルパーを使い続け、両方の抽出器を並べて指定します。
+`lingui.config.ts` に Babel エクストラクタを追加します。
+フレームワークプロジェクトでは、そのフレームワークの `defineConfig` ヘルパーを使い続け、両方のエクストラクタを並べて指定します。
 
 ```ts title="lingui.config.ts"
 import babelExtractor from "@lingui/cli/api/extractors/babel";
