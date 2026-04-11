@@ -1,11 +1,13 @@
-import type { NodePath, PluginObj } from "@babel/core";
-import * as t from "@babel/types";
-
 import {
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
   LINGUI_TRANSLATE_METHOD,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
+import type {
+  NodePath,
+  PluginObj,
+} from "@lingui-for/framework-core/vendor/babel-core";
+import * as t from "@lingui-for/framework-core/vendor/babel-types";
 
 import { PACKAGE_RUNTIME } from "../common/constants.ts";
 

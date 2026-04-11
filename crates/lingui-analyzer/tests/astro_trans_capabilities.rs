@@ -1,10 +1,10 @@
-#[path = "support/astro_conventions.rs"]
-mod astro_conventions;
-
 use indoc::indoc;
 use lean_string::LeanString;
 
 use lingui_analyzer::{AstroCompilePlan, RuntimeWarningOptions, WhitespaceMode};
+
+#[path = "support/astro_conventions.rs"]
+mod astro_conventions;
 
 use astro_conventions::astro_default_conventions;
 

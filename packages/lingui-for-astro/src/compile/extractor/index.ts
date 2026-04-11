@@ -4,56 +4,55 @@ import type {
   LinguiConfigNormalized,
 } from "@lingui/conf";
 
-import { buildSyntheticModule } from "@lingui-for/internal-lingui-analyzer-wasm";
-import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
-import { stripQuery } from "@lingui-for/internal-shared-common";
 import {
+  buildAstroSyntheticModule,
   parseCanonicalSourceMap,
   runBabelExtractionUnits,
+  stripQuery,
   toBabelSourceMap,
   type CanonicalSourceMap,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
+import {
+  createLinguiConfigResolver,
+  type LinguiConfigSource,
+} from "@lingui-for/framework-core/config";
 
 import {
-  normalizeLinguiConfig,
+  loadLinguiConfig,
   resolveAstroWhitespace,
-  type RichTextWhitespaceMode,
+  type LinguiAstroFrameworkConfig,
 } from "../common/config.ts";
 import { createAstroFrameworkConventions } from "../common/conventions.ts";
 import { lowerAstroExtractProgram } from "../lower/extract.ts";
-
-export type { RichTextWhitespaceMode } from "../common/config.ts";
 
 /**
  * Options for {@link astroExtractor}.
  */
 export interface AstroExtractorOptions {
-  /**
-   * Additional package specifiers that should be treated like `lingui-for-astro/macro` when
-   * normalizing the Lingui configuration for synthetic modules.
-   */
-  astroPackages?: readonly string[] | undefined;
-  /**
-   * Whitespace handling mode for rich-text Component Macros during extraction.
-   *
-   * Keep this aligned with the transform-time `whitespace` setting so extracted messages match the
-   * compiled output.
-   *
-   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#astro
-   */
-  whitespace?: RichTextWhitespaceMode | undefined;
+  config?: LinguiConfigSource;
 }
 
 /**
- * Lingui extractor factory for `.astro` source files.
+ * Lingui extractor for `.astro` source files.
  *
  * It matches Astro files, lowers macro-bearing syntax into a Rust-generated
  * synthetic module, and forwards the extracted messages to Lingui's Babel
  * extractor pipeline.
  */
-export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
-  const { astroPackages, whitespace = "auto" } = options ?? {};
-  const resolvedWhitespace = resolveAstroWhitespace(whitespace);
+export const astroExtractor: ExtractorType & typeof astroExtractorFactory =
+  /*#__PURE__*/ Object.assign(astroExtractorFactory, astroExtractorFactory());
+
+/**
+ * Lingui extractor factory for `.astro` source files.
+ */
+function astroExtractorFactory(options?: AstroExtractorOptions): ExtractorType {
+  const configResolver = createLinguiConfigResolver({
+    loadConfig: loadLinguiConfig,
+    config: options?.config,
+    missingConfigMessage:
+      "lingui-for-astro extractor requires a Lingui config file or explicit config option.",
+  });
 
   return {
     match(filename) {
@@ -62,17 +61,27 @@ export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
     async extract(filename, source, onMessageExtracted, ctx) {
       await initWasmOnce();
 
-      const extractorCtx = createExtractorContext(ctx, { astroPackages });
+      const resolvedConfigPath = ctx?.linguiConfig.resolvedConfigPath;
+      if (resolvedConfigPath != null) {
+        configResolver.finalizeResolvedConfigPath(resolvedConfigPath);
+      }
+
+      const extractorCtx = createExtractorContext(
+        ctx,
+        await configResolver.getConfig(),
+      );
       const syntheticName = filename.replace(/\.astro$/, ".synthetic.tsx");
-      const synthetic = buildSyntheticModule({
+      const synthetic = buildAstroSyntheticModule({
         source,
         sourceName: filename,
         syntheticName,
-        whitespace: resolvedWhitespace,
+        whitespace: resolveAstroWhitespace(
+          extractorCtx.frameworkConfig.whitespace ?? "astro",
+        ),
         conventions: createAstroFrameworkConventions(
           extractorCtx.linguiConfig,
           {
-            astroPackages,
+            packages: extractorCtx.frameworkConfig.packages,
           },
         ),
       });
@@ -104,12 +113,15 @@ export function astroExtractor(options?: AstroExtractorOptions): ExtractorType {
 
 function createExtractorContext(
   ctx: ExtractorCtx | undefined,
-  options?: {
-    astroPackages?: readonly string[] | undefined;
+  loaded: {
+    linguiConfig: LinguiConfigNormalized;
+    frameworkConfig: LinguiAstroFrameworkConfig;
   },
-): ExtractorCtx & { linguiConfig: LinguiConfigNormalized } {
-  const linguiConfig = normalizeLinguiConfig(ctx?.linguiConfig, options);
-  return { ...ctx, linguiConfig };
+): ExtractorCtx & {
+  linguiConfig: LinguiConfigNormalized;
+  frameworkConfig: LinguiAstroFrameworkConfig;
+} {
+  return { ...ctx, ...loaded };
 }
 
 function normalizeExtractionSourceMap(

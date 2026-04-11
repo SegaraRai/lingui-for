@@ -67,26 +67,43 @@ For Astro, add it under `vite.plugins` in `astro.config.ts`.
 
 ## Configure extraction
 
-Add the Babel extractor to `lingui.config.ts`. In a project that already has a framework extractor,
-list both.
+Add the Babel extractor to `lingui.config.ts`. In a framework project, keep using that framework's
+`defineConfig` helper and list both extractors.
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
 
 ```ts title="lingui.config.ts"
-import { defineConfig } from "@lingui/conf";
 import babelExtractor from "@lingui/cli/api/extractors/babel";
-// import { svelteExtractor } from "lingui-for-svelte/extractor";
-// import { astroExtractor } from "lingui-for-astro/extractor";
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
-  extractors: [
-    babelExtractor,
-    // svelteExtractor,
-    // astroExtractor,
-  ],
+  extractors: [svelteExtractor, babelExtractor],
 });
 ```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [astroExtractor, babelExtractor],
+});
+```
+
+  </TabItem>
+</Tabs>
 
 <Aside type="caution">
 

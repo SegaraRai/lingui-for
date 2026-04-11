@@ -629,18 +629,21 @@ fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: us
 
 #[cfg(test)]
 mod tests {
+    use indoc::indoc;
+
     use crate::common::Span;
 
     use super::{bundle_html_interpolations, lower_astro_html_interpolations};
 
     #[test]
     fn lowers_nested_markup_inside_html_interpolation_to_astro_el_calls() {
-        let source = r#"---
-const bar = 1;
-const baz = 2;
----
-{foo ? <A x={bar}><B />{baz}</A> : qux}
-"#;
+        let source = indoc! {r#"
+            ---
+            const bar = 1;
+            const baz = 2;
+            ---
+            {foo ? <A x={bar}><B />{baz}</A> : qux}
+        "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
         assert_eq!(lowered.len(), 1);
@@ -652,12 +655,13 @@ const baz = 2;
 
     #[test]
     fn lowers_quoted_attribute_interpolations_inside_markup() {
-        let source = r#"---
-const href = "/docs";
-const label = "Read";
----
-{<a title={`prefix ${label}`} href={href}>Docs</a>}
-"#;
+        let source = indoc! {r#"
+            ---
+            const href = "/docs";
+            const label = "Read";
+            ---
+            {<a title={`prefix ${label}`} href={href}>Docs</a>}
+        "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
         assert_eq!(lowered.len(), 1);
@@ -669,13 +673,14 @@ const label = "Read";
 
     #[test]
     fn preserves_attribute_and_spread_order_in_props_expression() {
-        let source = r#"---
-const a = { first: 1 };
-const b = { second: 2 };
-const c = "tail";
----
-{<Component foo="head" {...a} bar={b} {...b} baz={c} />}
-"#;
+        let source = indoc! {r#"
+            ---
+            const a = { first: 1 };
+            const b = { second: 2 };
+            const c = "tail";
+            ---
+            {<Component foo="head" {...a} bar={b} {...b} baz={c} />}
+        "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
         assert_eq!(lowered.len(), 1);
@@ -687,11 +692,12 @@ const c = "tail";
 
     #[test]
     fn lowers_bare_spread_children_to_opaque_placeholders() {
-        let source = r#"---
-const props = { name: "Ada" };
----
-{<Trans>Hello {...props}</Trans>}
-"#;
+        let source = indoc! {r#"
+            ---
+            const props = { name: "Ada" };
+            ---
+            {<Trans>Hello {...props}</Trans>}
+        "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
         assert_eq!(lowered.len(), 1);
@@ -703,12 +709,13 @@ const props = { name: "Ada" };
 
     #[test]
     fn remaps_generated_offsets_back_to_original_spans() {
-        let source = r#"---
-const bar = 1;
-const baz = 2;
----
-{foo ? <A x={bar}><B />{baz}</A> : qux}
-"#;
+        let source = indoc! {r#"
+            ---
+            const bar = 1;
+            const baz = 2;
+            ---
+            {foo ? <A x={bar}><B />{baz}</A> : qux}
+        "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
         let bundled = bundle_html_interpolations(&lowered);

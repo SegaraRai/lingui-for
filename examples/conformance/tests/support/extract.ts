@@ -2,7 +2,9 @@ import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 
+import { defineConfig as defineAstroConfig } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
+import { defineConfig as defineSvelteConfig } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 import { transformOfficialCore, transformOfficialReact } from "./transforms.ts";
@@ -61,6 +63,30 @@ const IGNORED_EXTRACT_KEYS = new Set([
 
 function getExtractorContext(): { linguiConfig: LinguiConfigNormalized } {
   return { linguiConfig };
+}
+
+function createSvelteExtractorConfig(whitespace: FixtureWhitespace) {
+  return defineSvelteConfig({
+    locales: ["en"],
+    sourceLocale: "en",
+    framework: {
+      svelte: {
+        whitespace: whitespace === "auto" ? "svelte" : whitespace,
+      },
+    },
+  });
+}
+
+function createAstroExtractorConfig(whitespace: FixtureWhitespace) {
+  return defineAstroConfig({
+    locales: ["en"],
+    sourceLocale: "en",
+    framework: {
+      astro: {
+        whitespace: whitespace === "auto" ? "astro" : whitespace,
+      },
+    },
+  });
 }
 
 function normalizeExtractedValue(value: unknown): unknown {
@@ -185,7 +211,9 @@ export async function extractSvelteFixture(
   const filename = fixtureName.endsWith(".svelte")
     ? fixtureName
     : `/virtual/${fixtureName}.svelte`;
-  const extractor = svelteExtractor({ whitespace });
+  const extractor = svelteExtractor({
+    config: createSvelteExtractorConfig(whitespace),
+  });
 
   await extractor.extract(
     filename,
@@ -208,7 +236,9 @@ export async function extractAstroFixture(
   const filename = fixtureName.endsWith(".astro")
     ? fixtureName
     : `/virtual/${fixtureName}.astro`;
-  const extractor = astroExtractor({ whitespace });
+  const extractor = astroExtractor({
+    config: createAstroExtractorConfig(whitespace),
+  });
 
   await extractor.extract(
     filename,

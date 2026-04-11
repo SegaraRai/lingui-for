@@ -1,4 +1,3 @@
-import { wasm } from "rolldown-plugin-wasm";
 import { defineConfig } from "vite-plus";
 
 import markupImport from "unplugin-markup-import/rolldown";
@@ -12,6 +11,7 @@ export default defineConfig({
     entry: {
       index: "src/index.ts",
       extractor: "src/extractor.ts",
+      config: "src/config.ts",
       macro: "src/macro.ts",
       "runtime/index": "src/runtime/index.ts",
       "integration/index": "src/integration/index.ts",
@@ -31,7 +31,6 @@ export default defineConfig({
         frameworks: ["astro"],
         exclude: ["**/*.test.astro"],
       }),
-      wasm(),
     ],
     attw: {
       profile: "esm-only",
@@ -42,7 +41,7 @@ export default defineConfig({
       build: {
         command: "vp pack",
         dependsOn: [
-          "lingui-for-workspace#build:wasm",
+          "@lingui-for/framework-core#build",
           "unplugin-markup-import#build",
         ],
         cache: true,
@@ -55,8 +54,8 @@ export default defineConfig({
         ],
       },
       check: {
-        command: "vp check && vp run check:extra",
-        dependsOn: ["build"],
+        command: "vp check",
+        dependsOn: ["build", "check:extra"],
         cache: false,
       },
       "check:extra": {

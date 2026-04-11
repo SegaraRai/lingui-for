@@ -1,4 +1,3 @@
-import { wasm } from "rolldown-plugin-wasm";
 import { defineConfig } from "vite-plus";
 
 import markupImport from "unplugin-markup-import/rolldown";
@@ -12,6 +11,7 @@ export default defineConfig({
     entry: {
       index: "src/index.ts",
       extractor: "src/extractor.ts",
+      config: "src/config.ts",
       macro: "src/macro.ts",
       "runtime/index": "src/runtime/index.ts",
       "unplugin/index": "src/unplugin/index.ts",
@@ -30,7 +30,6 @@ export default defineConfig({
         frameworks: ["svelte"],
         exclude: ["**/*.test.svelte"],
       }),
-      wasm(),
     ],
     attw: {
       profile: "esm-only",
@@ -40,7 +39,10 @@ export default defineConfig({
     tasks: {
       build: {
         command: "vp pack",
-        dependsOn: ["unplugin-markup-import#build"],
+        dependsOn: [
+          "@lingui-for/framework-core#build",
+          "unplugin-markup-import#build",
+        ],
         cache: true,
         input: [
           { auto: true },

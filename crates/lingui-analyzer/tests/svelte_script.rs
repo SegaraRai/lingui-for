@@ -1,6 +1,3 @@
-#[path = "support/svelte.rs"]
-mod svelte_support;
-
 use std::collections::BTreeMap;
 
 use indoc::indoc;
@@ -12,6 +9,9 @@ use lingui_analyzer::{
     MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, RuntimeWarningOptions,
     SvelteCompilePlan, WhitespaceMode,
 };
+
+#[path = "support/svelte.rs"]
+mod svelte_support;
 
 use svelte_support::{analyze_options_for_svelte, svelte_default_conventions};
 
@@ -538,27 +538,27 @@ fn treats_instance_script_non_macro_bindings_as_template_shadowing() {
 
 #[test]
 fn collects_macro_candidates_from_const_tag_initializers() {
-    let source = r#"
-<script lang="ts">
-  import { t } from "lingui-for-svelte/macro";
-  let mode = "idle";
-  let items = ["placeholder"];
-</script>
+    let source = indoc! {r#"
+        <script lang="ts">
+          import { t } from "lingui-for-svelte/macro";
+          let mode = "idle";
+          let items = ["placeholder"];
+        </script>
 
-{#if true}
-  {@const statusSummary =
-    mode === "idle"
-      ? $t`Status summary: idle`
-      : $t`Status summary: active`}
+        {#if true}
+          {@const statusSummary =
+            mode === "idle"
+              ? $t`Status summary: idle`
+              : $t`Status summary: active`}
 
-  <p>{statusSummary}</p>
-{/if}
+          <p>{statusSummary}</p>
+        {/if}
 
-{#each items as item, index (item)}
-  {@const rowSummary = $t`Row ${index + 1}: ${item}`}
-  <span>{rowSummary}</span>
-{/each}
-"#;
+        {#each items as item, index (item)}
+          {@const rowSummary = $t`Row ${index + 1}: ${item}`}
+          <span>{rowSummary}</span>
+        {/each}
+    "#};
 
     let analysis = SvelteAdapter
         .analyze(source, &analyze_options_for_svelte(WhitespaceMode::Svelte))

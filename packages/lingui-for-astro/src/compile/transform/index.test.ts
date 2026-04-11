@@ -2,16 +2,41 @@ import { TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import type { RuntimeWarningOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type {
+  AstroWhitespaceMode,
+  RuntimeWarningOptions,
+} from "@lingui-for/framework-core/compile";
+
 import {
   assertRangeMapping,
   type Detection,
 } from "@lingui-for/internal-shared-test-helpers";
 
+import { defineConfig } from "../../config.ts";
+import { loadLinguiConfig } from "../common/config.ts";
 import { transformAstro } from "./index.ts";
 
 function compact(value: string): string {
   return value.replaceAll(/\s+/g, " ").trim();
+}
+
+async function resolveTestConfig(
+  options: {
+    runtimeWarnings?: RuntimeWarningOptions;
+    whitespace?: AstroWhitespaceMode;
+  } = {},
+) {
+  return loadLinguiConfig(
+    defineConfig({
+      locales: ["en"],
+      framework: {
+        astro: {
+          runtimeWarnings: options.runtimeWarnings,
+          whitespace: options.whitespace,
+        },
+      },
+    }),
+  );
 }
 
 async function expectTransformed(
@@ -19,13 +44,14 @@ async function expectTransformed(
   options: {
     filename?: string;
     runtimeWarnings?: RuntimeWarningOptions;
-    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+    whitespace?: AstroWhitespaceMode;
   } = {},
 ) {
+  const resolvedConfig = await resolveTestConfig(options);
   const result = await transformAstro(source, {
     filename: options.filename ?? "/virtual/App.astro",
-    runtimeWarnings: options.runtimeWarnings,
-    whitespace: options.whitespace,
+    linguiConfig: resolvedConfig.linguiConfig,
+    frameworkConfig: resolvedConfig.frameworkConfig,
   });
   expect.assert(result != null);
   return result;
@@ -601,6 +627,7 @@ describe("transformAstro", () => {
   });
 
   test("leaves same-name non-macro components untouched", async () => {
+    const resolvedConfig = await resolveTestConfig();
     const source = dedent`
       ---
       import Trans from "./Trans.astro";
@@ -611,6 +638,7 @@ describe("transformAstro", () => {
 
     const result = await transformAstro(source, {
       filename: "/virtual/Page.astro",
+      ...resolvedConfig,
     });
 
     expect(result).toBeNull();

@@ -2,7 +2,7 @@ import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
 
-import type { CanonicalSourceMap } from "./sourcemap-types";
+import type { CanonicalSourceMap } from "./sourcemap-types.ts";
 
 export interface ExtractionUnit {
   code: string;
@@ -48,13 +48,8 @@ export async function runBabelExtractionUnits(
       filename,
       unit.code,
       onMessageExtracted,
-      {
-        ...ctx,
-        sourceMaps,
-      },
-      {
-        plugins: parserPlugins,
-      },
+      sourceMaps != null ? { ...ctx, sourceMaps } : ctx,
+      { plugins: parserPlugins },
       !sourceMaps,
     );
   }

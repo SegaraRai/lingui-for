@@ -1,5 +1,3 @@
-import { transformSync } from "@babel/core";
-import type { File } from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
@@ -7,7 +5,9 @@ import {
   fromBabelSourceMap,
   type BabelSourceMap,
   type CanonicalSourceMap,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
+import { transformSync } from "@lingui-for/framework-core/vendor/babel-core";
+import type { File } from "@lingui-for/framework-core/vendor/babel-types";
 
 import { getParserPlugins } from "../common/config.ts";
 import {

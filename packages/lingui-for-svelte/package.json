@@ -50,6 +50,10 @@
       "types": "./dist/extractor.d.mts",
       "default": "./dist/extractor.mjs"
     },
+    "./config": {
+      "types": "./dist/config.d.mts",
+      "default": "./dist/config.mjs"
+    },
     "./macro": {
       "types": "./dist/macro.d.mts",
       "svelte": "./dist/macro.mjs",
@@ -103,30 +107,21 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@babel/core": "^7.20.0",
-    "@babel/traverse": "^7.20.0",
-    "@babel/types": "^7.20.0",
-    "@lingui/babel-plugin-lingui-macro": "^5.0.0",
+    "@lingui-for/framework-core": "workspace:*",
+    "@lingui/babel-plugin-lingui-macro": "^5.9.5",
     "unplugin": "^3.0.0"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
     "@jridgewell/trace-mapping": "^0.3.31",
-    "@lingui-for/internal-lingui-analyzer-wasm": "workspace:*",
-    "@lingui-for/internal-shared-common": "workspace:*",
-    "@lingui-for/internal-shared-compile": "workspace:*",
-    "@lingui-for/internal-shared-runtime": "workspace:*",
     "@lingui-for/internal-shared-test-helpers": "workspace:*",
-    "@lingui/cli": "^5.0.0",
-    "@lingui/conf": "^5.0.0",
-    "@lingui/core": "^5.0.0",
+    "@lingui/cli": "^5.9.5",
+    "@lingui/conf": "^5.9.5",
+    "@lingui/core": "^5.9.5",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "@types/babel__core": "^7.20.0",
-    "@types/babel__traverse": "^7.20.0",
     "@types/node": "catalog:",
     "dedent": "^1.7.2",
-    "rolldown-plugin-wasm": "^0.2.1",
-    "svelte": "^5.55.0",
+    "svelte": "^5.55.2",
     "typescript": "catalog:",
     "unplugin-markup-import": "workspace:*",
     "vite-plus": "catalog:"

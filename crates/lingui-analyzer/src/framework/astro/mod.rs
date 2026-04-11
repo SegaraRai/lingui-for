@@ -87,6 +87,7 @@ pub struct AstroFrontmatterAnalysis {
 mod tests {
     use std::collections::BTreeMap;
 
+    use indoc::indoc;
     use lean_string::LeanString;
 
     use crate::common::span_text;
@@ -143,13 +144,14 @@ mod tests {
 
     #[test]
     fn analyzes_macros_inside_html_interpolation_via_astro_ir() {
-        let source = r#"---
-import { t as translate } from "@lingui/core/macro";
-const name = "Ada";
-const ready = true;
----
-{ready ? <strong>{translate`Hello ${name}`}</strong> : null}
-"#;
+        let source = indoc! {r#"
+            ---
+            import { t as translate } from "@lingui/core/macro";
+            const name = "Ada";
+            const ready = true;
+            ---
+            {ready ? <strong>{translate`Hello ${name}`}</strong> : null}
+        "#};
 
         let analysis = analyze_astro(
             source,

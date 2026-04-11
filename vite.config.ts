@@ -14,6 +14,7 @@ export default defineConfig({
       "**/dist",
       "**/generated",
       "crates/lingui-analyzer/benches/fixtures/*",
+      "examples/config-types/cases/*",
     ],
   },
   fmt: {
@@ -35,24 +36,28 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command: "vp run build:apps && vp run build:examples",
-        dependsOn: ["build:lib"],
+        command: "",
+        dependsOn: ["e2e-astro#build", "e2e-svelte#build", "docs#build"],
       },
       "build:apps": {
-        command: "vp run build --filter ./apps/*",
-        dependsOn: ["build:lib"],
+        command: "",
+        dependsOn: ["docs#build"],
       },
       "build:examples": {
-        command: "vp run build --filter ./examples/*",
-        dependsOn: ["build:lib"],
+        command: "",
+        dependsOn: ["e2e-astro#build", "e2e-svelte#build"],
       },
       "build:lib": {
-        command:
-          "vp run build --filter lingui-for-svelte... --filter lingui-for-astro... --filter unplugin-lingui-macro...",
-        dependsOn: ["build:plugin", "build:wasm"],
+        command: "",
+        dependsOn: [
+          "lingui-for-svelte#build",
+          "lingui-for-astro#build",
+          "unplugin-lingui-macro#build",
+        ],
       },
       "build:plugin": {
-        command: "vp run build --filter unplugin-lingui-macro...",
+        command: "",
+        dependsOn: ["unplugin-markup-import#build"],
       },
       "build:wasm": {
         command: "node ./build-wasm.ts",

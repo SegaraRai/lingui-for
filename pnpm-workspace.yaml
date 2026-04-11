@@ -3,18 +3,22 @@ packages:
   - examples/*
   - packages/*
   - shared/*
+
 catalog:
-  "@types/node": ^25.5.0
+  "@types/node": ^25.5.2
   typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vite-plus: ^0.1.14
+  vite-plus: ^0.1.16
 
 onlyBuiltDependencies:
   - esbuild
   - sharp
   - wasm-pack
+
 overrides:
+  esbuild: "^0.28.0"
   vite: "catalog:"
+
 peerDependencyRules:
   allowAny:
     - vite

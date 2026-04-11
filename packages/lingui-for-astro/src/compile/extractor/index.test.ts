@@ -2,11 +2,14 @@ import type { ExtractedMessage } from "@lingui/conf";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import { normalizeLinguiConfig } from "../common/config.ts";
+import { defineConfig } from "../../config.ts";
 import { astroExtractor } from "./index.ts";
 
-const linguiConfig = normalizeLinguiConfig();
-const extractor = astroExtractor();
+const extractor = astroExtractor({
+  config: defineConfig({
+    locales: ["en"],
+  }),
+});
 
 describe("astroExtractor", () => {
   test("preserves original origins without query suffixes for indexed source maps", async () => {
@@ -26,7 +29,7 @@ const label = t\`Frontmatter origin message\`;
       (message) => {
         messages.push(message);
       },
-      { linguiConfig },
+      undefined,
     );
 
     expect(messages).toHaveLength(1);
@@ -80,7 +83,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      { linguiConfig },
+      undefined,
     );
 
     const nested = messages.find(
@@ -157,7 +160,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      { linguiConfig },
+      undefined,
     );
 
     expect(
@@ -204,7 +207,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      { linguiConfig },
+      undefined,
     );
 
     expect(
@@ -288,7 +291,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      { linguiConfig },
+      undefined,
     );
 
     expect(
@@ -353,7 +356,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      { linguiConfig },
+      undefined,
     );
 
     expect(
@@ -404,7 +407,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      { linguiConfig },
+      undefined,
     );
 
     expect(
@@ -474,7 +477,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      { linguiConfig },
+      undefined,
     );
 
     expect(messages.some((message) => message.message === "Home")).toBe(true);

@@ -1,8 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "skipLibCheck": false,
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "types": ["node"]
   },
-  "include": [".astro/types.d.ts", "src", "src/**/*.astro"]
+  "include": [
+    ".astro/types.d.ts",
+    "src",
+    "src/**/*.astro",
+    "../framework-core/src/vendor"
+  ]
 }

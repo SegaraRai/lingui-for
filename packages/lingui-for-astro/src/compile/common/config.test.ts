@@ -1,10 +1,23 @@
-import { describe, expect, test } from "vite-plus/test";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+import { afterEach, describe, expect, test } from "vite-plus/test";
 
 import {
   getParserPlugins,
+  loadLinguiConfig,
   normalizeLinguiConfig,
   resolveAstroWhitespace,
 } from "./config.ts";
+
+const tempDirs: string[] = [];
+
+afterEach(() => {
+  while (tempDirs.length > 0) {
+    rmSync(tempDirs.pop()!, { force: true, recursive: true });
+  }
+});
 
 describe("compile/common/config", () => {
   test("normalizes Lingui config for astro runtime and macro packages", () => {
@@ -29,7 +42,7 @@ describe("compile/common/config", () => {
         },
       },
       {
-        astroPackages: ["custom-astro-macro"],
+        packages: ["custom-astro-macro"],
       },
     );
 
@@ -46,8 +59,19 @@ describe("compile/common/config", () => {
     expect(plugins).toContain("jsx");
   });
 
-  test("defaults auto whitespace to astro semantics", () => {
-    expect(resolveAstroWhitespace("auto")).toBe("astro");
+  test("returns explicit astro whitespace modes", () => {
+    expect(resolveAstroWhitespace("astro")).toBe("astro");
     expect(resolveAstroWhitespace("jsx")).toBe("jsx");
+  });
+
+  test("throws when no Lingui config file is found", async () => {
+    const fixtureDir = mkdtempSync(path.join(tmpdir(), "lingui-for-astro-"));
+    tempDirs.push(fixtureDir);
+
+    await expect(
+      loadLinguiConfig(undefined, { cwd: fixtureDir }),
+    ).rejects.toThrow(
+      "lingui-for-astro requires a Lingui config file or explicit config object.",
+    );
   });
 });

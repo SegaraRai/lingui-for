@@ -1,11 +1,11 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import type {
-  FrameworkConventions,
-  MacroPackage,
-  MacroPackageKind,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-import { LINGUI_STANDARD_CORE_MACRO_PACKAGES } from "@lingui-for/internal-shared-compile";
+import {
+  LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+  type FrameworkConventions,
+  type MacroPackage,
+  type MacroPackageKind,
+} from "@lingui-for/framework-core/compile";
 
 import {
   EXPORT_CREATE_LINGUI_ACCESSORS,
@@ -19,7 +19,7 @@ import {
 export function createAstroFrameworkConventions(
   linguiConfig: LinguiConfigNormalized,
   options?: {
-    astroPackages?: readonly string[] | undefined;
+    packages?: readonly string[] | undefined;
   },
 ): FrameworkConventions {
   return {
@@ -34,10 +34,7 @@ export function createAstroFrameworkConventions(
             ],
           ),
         ],
-        [
-          "astro",
-          createMacroPackage(options?.astroPackages ?? [PACKAGE_MACRO]),
-        ],
+        ["astro", createMacroPackage(options?.packages ?? [PACKAGE_MACRO])],
       ]),
     },
     runtime: {
@@ -48,6 +45,9 @@ export function createAstroFrameworkConventions(
       },
     },
     bindings: {
+      context: undefined,
+      getI18n: undefined,
+      translate: undefined,
       i18nAccessorFactory: RUNTIME_BINDING_CREATE_I18N,
       i18nInstance: RUNTIME_BINDING_I18N,
       reactiveTranslationWrapper: undefined,

@@ -1,21 +1,19 @@
-import type { LinguiConfig } from "@lingui/conf";
+import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
   buildSvelteCompilePlan,
   finishSvelteCompile,
-  type RuntimeWarningOptions,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
+} from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
 import {
   parseCanonicalSourceMap,
   toBabelSourceMap,
   type CanonicalSourceMap,
-} from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
 
 import {
-  normalizeLinguiConfig,
   resolveSvelteWhitespace,
-  type RichTextWhitespaceMode,
+  type LinguiSvelteFrameworkConfig,
 } from "../common/config.ts";
 import { createSvelteFrameworkConventions } from "../common/conventions.ts";
 import { lowerSvelteTransformPrograms } from "../lower/transform.ts";
@@ -29,26 +27,13 @@ export interface LinguiSvelteTransformOptions {
    */
   filename: string;
   /**
-   * Partial Lingui configuration to merge with the defaults required by `lingui-for-svelte`.
+   * Fully resolved Lingui config to use for this transform.
    */
-  linguiConfig?: Partial<LinguiConfig> | undefined;
+  linguiConfig: LinguiConfigNormalized;
   /**
-   * Additional package specifiers that should be recognized as Svelte macro packages.
+   * Fully resolved Svelte framework config to use for this transform.
    */
-  sveltePackages?: readonly string[] | undefined;
-  /**
-   * Whitespace handling mode for rich-text Component Macros during compilation.
-   *
-   * Use the same mode in extraction and build transforms so catalog entries stay consistent with
-   * the emitted runtime code.
-   *
-   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#svelte
-   */
-  whitespace?: RichTextWhitespaceMode | undefined;
-  /**
-   * Runtime warning configuration forwarded to the analyzer while compiling `.svelte` files.
-   */
-  runtimeWarnings?: RuntimeWarningOptions | undefined;
+  frameworkConfig: LinguiSvelteFrameworkConfig;
 }
 
 /**
@@ -109,7 +94,7 @@ export interface LinguiSvelteTransformArtifact {
  * Transforms one `.svelte` source string for runtime use.
  *
  * @param source Original `.svelte` source.
- * @param options Transform options including filename and optional Lingui config.
+ * @param options Transform options including filename and fully resolved config.
  * @returns Rewritten source, source map, and intermediate artifacts, or `null` when the file
  * contains no Lingui macros that require rewriting.
  *
@@ -121,16 +106,7 @@ export async function transformSvelte(
   source: string,
   options: LinguiSvelteTransformOptions,
 ): Promise<LinguiSvelteTransformResult | null> {
-  const {
-    filename,
-    linguiConfig: linguiConfigPartial,
-    sveltePackages,
-    whitespace = "auto",
-    runtimeWarnings,
-  } = options;
-  const linguiConfig = normalizeLinguiConfig(linguiConfigPartial, {
-    sveltePackages,
-  });
+  const { filename, linguiConfig, frameworkConfig } = options;
 
   await initWasmOnce();
 
@@ -138,10 +114,10 @@ export async function transformSvelte(
     source,
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
-    whitespace: resolveSvelteWhitespace(whitespace),
-    runtimeWarnings,
+    whitespace: resolveSvelteWhitespace(frameworkConfig.whitespace ?? "svelte"),
+    runtimeWarnings: frameworkConfig.runtimeWarnings,
     conventions: createSvelteFrameworkConventions(linguiConfig, {
-      sveltePackages,
+      packages: frameworkConfig.packages,
     }),
   });
   if (compilePlan.common.declarationIds.length === 0) {

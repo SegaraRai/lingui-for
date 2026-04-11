@@ -1,28 +1,28 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
-import type {
-  FrameworkConventions,
-  MacroPackage,
-  MacroPackageKind,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-import { LINGUI_STANDARD_CORE_MACRO_PACKAGES } from "@lingui-for/internal-shared-compile";
+import {
+  LINGUI_STANDARD_CORE_MACRO_PACKAGES,
+  type FrameworkConventions,
+  type MacroPackage,
+  type MacroPackageKind,
+} from "@lingui-for/framework-core/compile";
 
 import {
+  EAGER_TRANSLATION_WRAPPER,
   EXPORT_CREATE_LINGUI_ACCESSORS,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
+  REACTIVE_TRANSLATION_WRAPPER,
   RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
   RUNTIME_BINDING_CONTEXT,
   RUNTIME_BINDING_GET_I18N,
   RUNTIME_BINDING_TRANSLATE,
-  EAGER_TRANSLATION_WRAPPER,
-  REACTIVE_TRANSLATION_WRAPPER,
 } from "./constants.ts";
 
 export function createSvelteFrameworkConventions(
   linguiConfig: LinguiConfigNormalized,
   options?: {
-    sveltePackages?: readonly string[] | undefined;
+    packages?: readonly string[] | undefined;
   },
 ): FrameworkConventions {
   return {
@@ -37,10 +37,7 @@ export function createSvelteFrameworkConventions(
             ],
           ),
         ],
-        [
-          "svelte",
-          createMacroPackage(options?.sveltePackages ?? [PACKAGE_MACRO]),
-        ],
+        ["svelte", createMacroPackage(options?.packages ?? [PACKAGE_MACRO])],
       ]),
     },
     runtime: {
@@ -51,6 +48,7 @@ export function createSvelteFrameworkConventions(
       },
     },
     bindings: {
+      i18nInstance: undefined,
       i18nAccessorFactory: EXPORT_CREATE_LINGUI_ACCESSORS,
       context: RUNTIME_BINDING_CONTEXT,
       getI18n: RUNTIME_BINDING_GET_I18N,

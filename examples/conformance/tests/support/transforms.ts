@@ -1,7 +1,9 @@
 import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
+import { defineConfig as defineAstroConfig } from "lingui-for-astro/config";
 import { unpluginFactory as astroUnpluginFactory } from "lingui-for-astro/unplugin";
+import { defineConfig as defineSvelteConfig } from "lingui-for-svelte/config";
 import { unpluginFactory as svelteUnpluginFactory } from "lingui-for-svelte/unplugin";
 
 const linguiConfig = {
@@ -16,6 +18,30 @@ const linguiConfig = {
 };
 
 type FixtureWhitespace = "auto" | "jsx";
+
+function createSveltePluginConfig(whitespace: FixtureWhitespace) {
+  return defineSvelteConfig({
+    locales: ["en"],
+    sourceLocale: "en",
+    framework: {
+      svelte: {
+        whitespace: whitespace === "auto" ? "svelte" : whitespace,
+      },
+    },
+  });
+}
+
+function createAstroPluginConfig(whitespace: FixtureWhitespace) {
+  return defineAstroConfig({
+    locales: ["en"],
+    sourceLocale: "en",
+    framework: {
+      astro: {
+        whitespace: whitespace === "auto" ? "astro" : whitespace,
+      },
+    },
+  });
+}
 
 function transformOfficial(code: string, filename: string): string {
   const result = transformSync(code, {
@@ -101,7 +127,7 @@ export async function transformSvelteFixture(
 ): Promise<string> {
   return await runFixtureTransform(
     svelteUnpluginFactory as unknown as TestTransformFactory,
-    { whitespace },
+    { config: createSveltePluginConfig(whitespace) },
     source,
     "/virtual/Conformance.svelte",
   );
@@ -113,7 +139,7 @@ export async function transformAstroFixture(
 ): Promise<string> {
   return await runFixtureTransform(
     astroUnpluginFactory as unknown as TestTransformFactory,
-    { whitespace },
+    { config: createAstroPluginConfig(whitespace) },
     source,
     "/virtual/Conformance.astro",
   );

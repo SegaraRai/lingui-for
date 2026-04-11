@@ -68,14 +68,14 @@ export default defineConfig({
 
 ```ts title="lingui.config.ts"
 import babelExtractor from "@lingui/cli/api/extractors/babel";
-import { defineConfig } from "@lingui/conf";
+import { defineConfig } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default defineConfig({
   locales: ["en", "ja"],
   sourceLocale: "en",
   catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
-  extractors: [svelteExtractor(), babelExtractor],
+  extractors: [svelteExtractor, babelExtractor],
 });
 ```
 
@@ -85,6 +85,10 @@ If you do not use Lingui macros in plain JavaScript or TypeScript files, you can
 `babelExtractor` from the `extractors` array and skip the import.
 
 </Aside>
+
+Use the optional `framework.svelte` field in this config when you need Svelte-specific options
+such as custom macro package names, whitespace handling, or runtime warning switches. See
+[Framework Config](/guides/framework-config) for details.
 
 ## Initialize Lingui
 

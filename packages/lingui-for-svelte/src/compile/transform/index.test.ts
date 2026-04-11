@@ -2,7 +2,10 @@ import { originalPositionFor, TraceMap } from "@jridgewell/trace-mapping";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
-import type { RuntimeWarningOptions } from "@lingui-for/internal-lingui-analyzer-wasm";
+import type {
+  RuntimeWarningOptions,
+  SvelteWhitespaceMode,
+} from "@lingui-for/framework-core/compile";
 import {
   assertRangeMapping,
   findUniqueRange,
@@ -10,6 +13,8 @@ import {
   type Detection,
 } from "@lingui-for/internal-shared-test-helpers";
 
+import { defineConfig } from "../../config.ts";
+import { loadLinguiConfig } from "../common/config.ts";
 import { transformSvelte } from "./index.ts";
 
 function compact(value: string): string {
@@ -22,18 +27,38 @@ function expectNoExcessBlankLines(value: string): void {
   expect(value).not.toMatch(/\r?\n\r?\n\r?\n+/);
 }
 
+async function resolveTestConfig(
+  options: {
+    runtimeWarnings?: RuntimeWarningOptions;
+    whitespace?: SvelteWhitespaceMode;
+  } = {},
+) {
+  return loadLinguiConfig(
+    defineConfig({
+      locales: ["en"],
+      framework: {
+        svelte: {
+          runtimeWarnings: options.runtimeWarnings,
+          whitespace: options.whitespace,
+        },
+      },
+    }),
+  );
+}
+
 async function expectTransformed(
   source: string,
   options: {
     filename?: string;
     runtimeWarnings?: RuntimeWarningOptions;
-    whitespace?: "jsx" | "auto" | "astro" | "svelte";
+    whitespace?: SvelteWhitespaceMode;
   } = {},
 ) {
+  const resolvedConfig = await resolveTestConfig(options);
   const result = await transformSvelte(source, {
     filename: options.filename ?? "/virtual/App.svelte",
-    runtimeWarnings: options.runtimeWarnings,
-    whitespace: options.whitespace,
+    linguiConfig: resolvedConfig.linguiConfig,
+    frameworkConfig: resolvedConfig.frameworkConfig,
   });
   expect.assert(result != null);
   return result;
@@ -635,7 +660,9 @@ describe("transformSvelte", () => {
   });
 
   test("rejects bare direct t in Svelte scripts", async () => {
-    await expect(() =>
+    const resolvedConfig = await resolveTestConfig();
+
+    await expect(async () =>
       transformSvelte(
         dedent`
           <script lang="ts">
@@ -648,6 +675,7 @@ describe("transformSvelte", () => {
         `,
         {
           filename: "/virtual/App.svelte",
+          ...resolvedConfig,
         },
       ),
     ).rejects.toThrow(/Bare `t` in `.svelte` files is not allowed/);
@@ -1135,6 +1163,7 @@ describe("transformSvelte", () => {
   });
 
   test("does not activate markup macros without a macro import", async () => {
+    const resolvedConfig = await resolveTestConfig();
     const source = dedent`
       <p>{$t\`Hello from markup-only component\`}</p>
       <Trans id="demo.docs">Read the docs.</Trans>
@@ -1142,12 +1171,14 @@ describe("transformSvelte", () => {
 
     const result = await transformSvelte(source, {
       filename: "/virtual/App.svelte",
+      ...resolvedConfig,
     });
 
     expect(result).toBeNull();
   });
 
   test("does not activate same-name components imported from other modules", async () => {
+    const resolvedConfig = await resolveTestConfig();
     const source = dedent`
       <script lang="ts">
         import Trans from "./Trans.svelte";
@@ -1158,12 +1189,14 @@ describe("transformSvelte", () => {
 
     const result = await transformSvelte(source, {
       filename: "/virtual/App.svelte",
+      ...resolvedConfig,
     });
 
     expect(result).toBeNull();
   });
 
   test("does not activate same-name non-component macros imported from other modules", async () => {
+    const resolvedConfig = await resolveTestConfig();
     const source = dedent`
       <script lang="ts">
         import { t } from "./macro";
@@ -1177,6 +1210,7 @@ describe("transformSvelte", () => {
 
     const result = await transformSvelte(source, {
       filename: "/virtual/App.svelte",
+      ...resolvedConfig,
     });
 
     expect(result).toBeNull();

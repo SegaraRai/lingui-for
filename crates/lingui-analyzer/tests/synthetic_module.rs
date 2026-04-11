@@ -1,6 +1,3 @@
-#[path = "support/svelte.rs"]
-mod svelte_support;
-
 use indoc::indoc;
 use lean_string::LeanString;
 use sourcemap::DecodedMap;
@@ -8,6 +5,9 @@ use sourcemap::DecodedMap;
 use lingui_analyzer::extract::build_synthetic_module;
 use lingui_analyzer::framework::{FrameworkAdapter, svelte::SvelteAdapter};
 use lingui_analyzer::{MacroFlavor, WhitespaceMode, build_synthetic_module_for_framework};
+
+#[path = "support/svelte.rs"]
+mod svelte_support;
 
 use svelte_support::analyze_options_for_svelte;
 

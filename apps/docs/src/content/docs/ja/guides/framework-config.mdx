@@ -1,0 +1,173 @@
+---
+title: フレームワーク設定
+description: lingui.config.ts で lingui-for のフレームワークオプションを設定する方法
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+`lingui-for-svelte` と `lingui-for-astro` は、Lingui がロケール、カタログ、エクストラクタに使うものと同じ `lingui.config.ts` ファイルから、フレームワーク固有のオプションを読み込めます。
+
+## パッケージのヘルパーから始める
+
+設定するフレームワークパッケージの `defineConfig` を使用します。
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [svelteExtractor],
+});
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [astroExtractor],
+});
+```
+
+  </TabItem>
+</Tabs>
+
+<Aside type="caution">
+
+`framework` セクションを追加する場合は、`lingui-for-svelte/config` または `lingui-for-astro/config` の `defineConfig` を使ってください。
+Lingui 公式の `@lingui/conf` ヘルパーや、`defineConfig` を使わない通常のオブジェクトでのエクスポートの場合、標準の Lingui の設定としては読み込めますが、フレームワーク固有の設定が無視される可能性があります。
+
+</Aside>
+
+## `framework` は必要な場合だけ追加する
+
+`framework` フィールドは任意です。
+次のようなフレームワーク固有の振る舞いが必要な場合だけ追加してください。
+
+- カスタムのマクロパッケージ名を指定する `packages`
+- リッチテキストのコンポーネントマクロにおける空白処理を指定する `whitespace`
+- 実行時診断の生成を制御する `runtimeWarnings`
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  framework: {
+    svelte: {
+      packages: ["@acme/i18n/macro"],
+      whitespace: "svelte",
+      runtimeWarnings: {
+        transContentOverride: "on",
+      },
+    },
+  },
+  extractors: [svelteExtractor],
+});
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  framework: {
+    astro: {
+      packages: ["@acme/i18n/macro"],
+      whitespace: "astro",
+      runtimeWarnings: {
+        transContentOverride: "on",
+      },
+    },
+  },
+  extractors: [astroExtractor],
+});
+```
+
+  </TabItem>
+</Tabs>
+
+ビルド変換とエクストラクタはどちらもこの設定を読み込みます。
+たとえば `framework.svelte` の下に `whitespace` を定義すると、Svelte Vite プラグインと `svelteExtractor` が同じ値を参照します。
+
+## 複数フレームワークのプロジェクト
+
+`framework` の下で使えるキーは、TypeScript のモジュール拡張によって登録されます。
+各パッケージの `config` または `extractor` エントリーポイントをインポートすると、そのパッケージのキーが有効になります。
+
+1 つの設定ファイルで Svelte と Astro の両方を扱う場合は、両方のパッケージをインポートします。
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  framework: {
+    astro: {
+      whitespace: "astro",
+    },
+    svelte: {
+      whitespace: "svelte",
+    },
+  },
+  extractors: [astroExtractor, svelteExtractor],
+});
+```
+
+この例では、`lingui-for-astro/config` が `defineConfig` と Astro のフレームワークキーを提供します。
+`lingui-for-svelte/extractor` のインポートによって設定レジストリも拡張されるため、同じファイル内で `framework.svelte` も型付けされます。
+
+## 明示的な設定元
+
+デフォルトの `lingui.config.*` ファイルを使う場合、フレームワークプラグインとエクストラクタは設定を自動的に見つけます。
+
+プロジェクトが標準ではない設定ファイルパスやインライン設定オブジェクトを使う場合は、`config` オプションで渡してください。
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+
+export default defineConfig({
+  plugins: [linguiForSvelte({ config: "./config/lingui.config.ts" })],
+});
+```
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [svelteExtractor({ config: "./config/lingui.config.ts" })],
+});
+```

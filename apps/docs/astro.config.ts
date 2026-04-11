@@ -299,6 +299,13 @@ export default defineConfig({
               slug: "guides/extract-compile-verify",
             },
             {
+              label: "Framework Config",
+              translations: {
+                ja: "フレームワーク設定",
+              },
+              slug: "guides/framework-config",
+            },
+            {
               label: "Share Messages Across Files",
               translations: {
                 ja: "ファイルをまたいでメッセージを共有する",

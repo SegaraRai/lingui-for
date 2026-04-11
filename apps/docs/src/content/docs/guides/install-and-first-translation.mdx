@@ -9,9 +9,12 @@ description: A practical workflow for getting the first translated message onto 
 2. Add `unplugin-lingui-macro` if the app uses Lingui macros in plain `.ts`, `.js`, `.tsx`, or
    `.jsx`.
 3. Add the framework integration or plugin.
-4. Add the framework extractor to `lingui.config.js` or `lingui.config.ts`.
-5. Put a single `t` or `Trans` call on the page.
-6. Run extraction and compile once before expanding the message set.
+4. Create `lingui.config.js` or `lingui.config.ts` with the framework package's `defineConfig`
+   helper.
+5. Add the framework extractor. If you need framework-specific options, put them under
+   `framework.svelte` or `framework.astro`.
+6. Put a single `t` or `Trans` call on the page.
+7. Run extraction and compile once before expanding the message set.
 
 ## Choose the right authoring surface first
 

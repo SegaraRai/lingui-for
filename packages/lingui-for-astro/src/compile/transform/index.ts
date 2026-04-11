@@ -1,21 +1,19 @@
-import type { LinguiConfig } from "@lingui/conf";
+import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
   buildAstroCompilePlan,
   finishAstroCompile,
-  type RuntimeWarningOptions,
-} from "@lingui-for/internal-lingui-analyzer-wasm";
-import { initWasmOnce } from "@lingui-for/internal-lingui-analyzer-wasm/loader";
-import type { CanonicalSourceMap } from "@lingui-for/internal-shared-compile";
+} from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
 import {
   parseCanonicalSourceMap,
   toBabelSourceMap,
-} from "@lingui-for/internal-shared-compile";
+  type CanonicalSourceMap,
+} from "@lingui-for/framework-core/compile";
 
 import {
-  normalizeLinguiConfig,
   resolveAstroWhitespace,
-  type RichTextWhitespaceMode,
+  type LinguiAstroFrameworkConfig,
 } from "../common/config.ts";
 import { createAstroFrameworkConventions } from "../common/conventions.ts";
 import { lowerAstroTransformProgram } from "../lower/transform.ts";
@@ -29,26 +27,13 @@ export interface LinguiAstroTransformOptions {
    */
   filename: string;
   /**
-   * Partial Lingui configuration to merge with the defaults required by `lingui-for-astro`.
+   * Fully resolved Lingui config to use for this transform.
    */
-  linguiConfig?: Partial<LinguiConfig> | undefined;
+  linguiConfig: LinguiConfigNormalized;
   /**
-   * Additional package specifiers that should be recognized as Astro macro packages.
+   * Fully resolved Astro framework config to use for this transform.
    */
-  astroPackages?: readonly string[] | undefined;
-  /**
-   * Whitespace handling mode for rich-text Component Macros during compilation.
-   *
-   * Use the same mode in extraction and build transforms so catalog entries stay consistent with
-   * the emitted runtime code.
-   *
-   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#astro
-   */
-  whitespace?: RichTextWhitespaceMode | undefined;
-  /**
-   * Runtime warning configuration forwarded to the analyzer while compiling `.astro` files.
-   */
-  runtimeWarnings?: RuntimeWarningOptions | undefined;
+  frameworkConfig: LinguiAstroFrameworkConfig;
 }
 
 /**
@@ -105,7 +90,7 @@ export interface LinguiAstroTransformArtifact {
  * Transforms one `.astro` source string for runtime use.
  *
  * @param source Original `.astro` source.
- * @param options Transform options including filename and optional Lingui config.
+ * @param options Transform options including filename and fully resolved config.
  * @returns Rewritten source, source map, and intermediate artifacts, or `null` when the file
  * contains no Lingui macros that require rewriting.
  *
@@ -117,26 +102,18 @@ export async function transformAstro(
   source: string,
   options: LinguiAstroTransformOptions,
 ): Promise<LinguiAstroTransformResult | null> {
-  const {
-    filename,
-    linguiConfig: linguiConfigPartial,
-    astroPackages,
-    whitespace = "auto",
-    runtimeWarnings,
-  } = options;
-  const linguiConfig = normalizeLinguiConfig(linguiConfigPartial, {
-    astroPackages,
-  });
+  const { filename, linguiConfig, frameworkConfig } = options;
+
   await initWasmOnce();
 
   const compilePlan = buildAstroCompilePlan({
     source,
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
-    whitespace: resolveAstroWhitespace(whitespace),
-    runtimeWarnings,
+    whitespace: resolveAstroWhitespace(frameworkConfig.whitespace ?? "astro"),
+    runtimeWarnings: frameworkConfig.runtimeWarnings,
     conventions: createAstroFrameworkConventions(linguiConfig, {
-      astroPackages,
+      packages: frameworkConfig.packages,
     }),
   });
   if (compilePlan.common.declarationIds.length === 0) {

@@ -42,8 +42,8 @@ export default defineConfig({
         cache: false,
       },
       check: {
-        command: "vp check && vp run check:extra",
-        dependsOn: ["build"],
+        command: "vp check",
+        dependsOn: ["build", "check:extra"],
         cache: false,
       },
       "check:extra": {
@@ -62,16 +62,14 @@ export default defineConfig({
           "!dist/**",
         ],
       },
-      "i18n:build": {
-        command: "vp run i18n:extract && vp run i18n:compile",
-        cache: true,
-      },
       "i18n:extract": {
         command: "lingui extract --clean --overwrite",
+        dependsOn: ["lingui-for-svelte#build", "unplugin-lingui-macro#build"],
         cache: true,
       },
-      "i18n:compile": {
+      "i18n:build": {
         command: "lingui compile && vp fmt src/lib/i18n/locales",
+        dependsOn: ["i18n:extract"],
         cache: true,
         input: ["src/lib/i18n/locales/**/*.po"],
       },

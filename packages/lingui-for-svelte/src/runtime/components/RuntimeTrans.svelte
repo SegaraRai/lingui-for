@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
 
-  import { formatRichTextTranslation } from "@lingui-for/internal-shared-runtime";
+  import { formatRichTextTranslation } from "@lingui-for/framework-core/runtime";
 
   import { getLinguiContext } from "../core/context.ts";
   import RenderTransNodes from "./RenderTransNodes.svelte";

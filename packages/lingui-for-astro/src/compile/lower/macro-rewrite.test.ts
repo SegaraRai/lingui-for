@@ -1,6 +1,10 @@
-import { transformSync, type PluginItem } from "@babel/core";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
+
+import {
+  transformSync,
+  type PluginItem,
+} from "@lingui-for/framework-core/vendor/babel-core";
 
 import { createAstroMacroPostprocessPlugin } from "./macro-rewrite.ts";
 
