@@ -84,6 +84,11 @@ jobs:
 
       - run: vp run build
 
+      - name: Ensure build leaves working tree clean
+        run: |
+          git status --short
+          test -z "$(git status --porcelain)"
+
       - run: vp run check
 
       - run: vp run test
