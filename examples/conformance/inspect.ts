@@ -11,12 +11,14 @@ import type { CanonicalSourceMap } from "@lingui-for/framework-core/compile";
 import { defineConfig as defineConfigAstro } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
 import {
+  unstable_loadLinguiConfig as unstable_loadAstroLinguiConfig,
   unstable_transformAstro,
   type LinguiAstroFrameworkConfig,
 } from "lingui-for-astro/internal/compile";
 import { defineConfig as defineConfigSvelte } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 import {
+  unstable_loadLinguiConfig as unstable_loadSvelteLinguiConfig,
   unstable_transformSvelte,
   type LinguiSvelteFrameworkConfig,
 } from "lingui-for-svelte/internal/compile";
@@ -333,10 +335,13 @@ async function inspectAstroExtract(source: string, options: CliOptions) {
 }
 
 async function inspectSvelteTransform(source: string, options: CliOptions) {
+  const config = await unstable_loadSvelteLinguiConfig(
+    defineConfigSvelte(createSvelteInspectConfig(options.whitespace)),
+  );
   const result = await unstable_transformSvelte(source, {
     filename: options.file,
-    linguiConfig,
-    frameworkConfig: createSvelteFrameworkConfig(options.whitespace),
+    linguiConfig: config.linguiConfig,
+    frameworkConfig: config.frameworkConfig,
   });
   if (result == null) {
     throw new Error(`No Lingui macros found in ${options.file}`);
@@ -352,10 +357,13 @@ async function inspectSvelteTransform(source: string, options: CliOptions) {
 }
 
 async function inspectAstroTransform(source: string, options: CliOptions) {
+  const config = await unstable_loadAstroLinguiConfig(
+    defineConfigAstro(createAstroInspectConfig(options.whitespace)),
+  );
   const result = await unstable_transformAstro(source, {
     filename: options.file,
-    linguiConfig,
-    frameworkConfig: createAstroFrameworkConfig(options.whitespace),
+    linguiConfig: config.linguiConfig,
+    frameworkConfig: config.frameworkConfig,
   });
   if (result == null) {
     throw new Error(`No Lingui macros found in ${options.file}`);
