@@ -367,13 +367,13 @@ importers:
   packages/framework-core:
     dependencies:
       '@babel/core':
-        specifier: ^7.20.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@babel/traverse':
-        specifier: ^7.20.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@babel/types':
-        specifier: ^7.20.0
+        specifier: ^7.24.0
         version: 7.29.0
       cosmiconfig:
         specifier: ^9.0.1
@@ -550,7 +550,7 @@ importers:
   packages/unplugin-lingui-macro:
     dependencies:
       '@babel/core':
-        specifier: ^7.20.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@lingui/babel-plugin-lingui-macro':
         specifier: ^5.0.0
