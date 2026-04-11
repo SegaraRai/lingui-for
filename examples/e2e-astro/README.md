@@ -40,9 +40,8 @@ vp run test
 
 Useful scripts:
 
-- `vp run lingui:extract`: extract messages
-- `vp run lingui:compile`: compile catalogs
-- `vp run lingui:build`: run extract and compile
+- `vp run i18n:extract`: extract messages
+- `vp run i18n:build`: extract messages, compile catalogs, and format generated locale output
 - `vp run build`: rebuild catalogs and build the Astro app
 - `vp run preview`: preview the built app
 - `vp run check`: run TypeScript and Astro checks
@@ -57,4 +56,4 @@ Useful scripts:
 ## Notes
 
 - This example intentionally mixes Astro pages with Svelte and React islands to verify integration boundaries.
-- Test expectations live in [`src/app.e2e.test.ts`](./src/app.e2e.test.ts) and [`src/extract.e2e.test.ts`](./src/extract.e2e.test.ts).
+- Test expectations live under [`tests`](./tests).

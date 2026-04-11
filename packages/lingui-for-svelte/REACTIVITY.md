@@ -3,7 +3,7 @@
 This document explains how `lingui-for-svelte` wires Lingui into Svelte's
 reactive model.
 
-The runtime has three main pieces:
+The runtime has four main pieces:
 
 - `setLinguiContext` / `getLinguiContext` in `src/runtime/core/context.ts`
 - `createI18nStore` in `src/runtime/core/context.ts`
@@ -136,12 +136,13 @@ it.
 
 The Svelte transform injects two different runtime bindings:
 
-- `getI18n`: used for imperative reads such as bare `t(...)`
+- `getI18n`: used for explicit eager reads such as `t.eager(...)`
 - `_`: used for reactive reads such as `$t(...)`, `$plural(...)`, and friends
 
 That means the compiler deliberately separates:
 
-- non-reactive translation work, which reads `i18n._(...)` directly
+- non-reactive translation work, which reads `i18n._(...)` directly through
+  the lazy accessor
 - reactive translation work, which subscribes through the translation store
 
 ```mermaid

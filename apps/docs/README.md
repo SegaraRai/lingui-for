@@ -30,7 +30,6 @@ Useful scripts:
 - `vp run dev`: start the local docs site
 - `vp run build`: build the static site
 - `vp run preview`: preview the built site
-- `vp run lingui:extract`: extract Lingui messages from docs source
-- `vp run lingui:compile`: compile catalogs
-- `vp run lingui:build`: run extract and compile
+- `vp run i18n:extract`: extract Lingui messages from docs source
+- `vp run i18n:build`: extract messages, compile catalogs, and format generated locale output
 - `vp run check`: run Astro type/content checks
