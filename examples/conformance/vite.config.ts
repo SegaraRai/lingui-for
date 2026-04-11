@@ -6,6 +6,7 @@ export default defineConfig({
       check: {
         command: "vp check",
         dependsOn: [
+          "@lingui-for/framework-core#build",
           "lingui-for-astro#build",
           "lingui-for-svelte#build",
           "unplugin-lingui-macro#build",
@@ -15,6 +16,7 @@ export default defineConfig({
       test: {
         command: "vp test",
         dependsOn: [
+          "@lingui-for/framework-core#build",
           "lingui-for-astro#build",
           "lingui-for-svelte#build",
           "unplugin-lingui-macro#build",

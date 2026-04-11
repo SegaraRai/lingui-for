@@ -9,6 +9,6 @@ pub(crate) use primitives::{
     overlay_source_map_with_single_anchor, parse_source_map, source_map_to_json,
 };
 pub(crate) use recipes::{
-    FinalizedReplacement, build_copy_map, build_final_output, build_span_anchor_map,
-    indent_rendered_text,
+    FinalizedReplacement, build_copy_map, build_copy_map_from_anchors, build_copy_map_without_end,
+    build_final_output, build_span_anchor_map, indent_rendered_text,
 };

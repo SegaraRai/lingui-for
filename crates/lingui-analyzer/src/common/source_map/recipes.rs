@@ -70,13 +70,75 @@ pub(crate) fn build_copy_map(
     original_span: Span,
     source_anchors: &[usize],
 ) -> Option<IndexedSourceMap> {
+    build_copy_map_with_options(
+        source_name,
+        source,
+        original_span,
+        source_anchors,
+        CopyMapOptions {
+            include_snippet_anchors: true,
+            include_span_end: true,
+        },
+    )
+}
+
+pub(crate) fn build_copy_map_from_anchors(
+    source_name: &str,
+    source: &IndexedText<'_>,
+    original_span: Span,
+    source_anchors: &[usize],
+) -> Option<IndexedSourceMap> {
+    build_copy_map_with_options(
+        source_name,
+        source,
+        original_span,
+        source_anchors,
+        CopyMapOptions {
+            include_snippet_anchors: false,
+            include_span_end: true,
+        },
+    )
+}
+
+pub(crate) fn build_copy_map_without_end(
+    source_name: &str,
+    source: &IndexedText<'_>,
+    original_span: Span,
+    source_anchors: &[usize],
+) -> Option<IndexedSourceMap> {
+    build_copy_map_with_options(
+        source_name,
+        source,
+        original_span,
+        source_anchors,
+        CopyMapOptions {
+            include_snippet_anchors: true,
+            include_span_end: false,
+        },
+    )
+}
+
+#[derive(Debug, Clone, Copy)]
+struct CopyMapOptions {
+    include_snippet_anchors: bool,
+    include_span_end: bool,
+}
+
+fn build_copy_map_with_options(
+    source_name: &str,
+    source: &IndexedText<'_>,
+    original_span: Span,
+    source_anchors: &[usize],
+    options: CopyMapOptions,
+) -> Option<IndexedSourceMap> {
     if original_span.start >= original_span.end || original_span.end > source.len() {
         return None;
     }
 
     let copied = source.slice(original_span)?;
     let copied_text = copied.as_str();
-    let anchor_points = collect_copy_anchor_points(copied_text, original_span, source_anchors);
+    let anchor_points =
+        collect_copy_anchor_points(copied_text, original_span, source_anchors, options);
     if anchor_points.is_empty() {
         return None;
     }
@@ -350,20 +412,26 @@ fn collect_copy_anchor_points(
     copied_text: &str,
     original_span: Span,
     source_anchors: &[usize],
+    options: CopyMapOptions,
 ) -> Vec<usize> {
-    let mut anchors = BTreeSet::from([original_span.start, original_span.end]);
+    let mut anchors = BTreeSet::from([original_span.start]);
+    if options.include_span_end {
+        anchors.insert(original_span.end);
+    }
     anchors.extend(
         source_anchors
             .iter()
             .copied()
             .filter(|anchor| *anchor > original_span.start && *anchor < original_span.end),
     );
-    anchors.extend(
-        collect_snippet_anchors(copied_text)
-            .into_iter()
-            .map(|anchor| original_span.start + anchor)
-            .filter(|anchor| *anchor > original_span.start && *anchor < original_span.end),
-    );
+    if options.include_snippet_anchors {
+        anchors.extend(
+            collect_snippet_anchors(copied_text)
+                .into_iter()
+                .map(|anchor| original_span.start + anchor)
+                .filter(|anchor| *anchor > original_span.start && *anchor < original_span.end),
+        );
+    }
 
     anchors.into_iter().collect()
 }
@@ -437,9 +505,12 @@ mod tests {
     use lean_string::LeanString;
     use sourcemap::SourceMapBuilder;
 
-    use crate::common::{IndexedSourceMap, MappedTextError, RenderedMappedText};
+    use crate::common::{IndexedSourceMap, IndexedText, MappedTextError, RenderedMappedText, Span};
 
-    use super::{FinalizedReplacement, build_final_output, indent_rendered_text};
+    use super::{
+        FinalizedReplacement, build_copy_map_from_anchors, build_copy_map_without_end,
+        build_final_output, indent_rendered_text,
+    };
 
     fn identity_map(source_name: &str, source_text: &str) -> IndexedSourceMap {
         let mut builder = SourceMapBuilder::new(Some(source_name));
@@ -533,5 +604,62 @@ mod tests {
                 source_len: 6,
             }
         ));
+    }
+
+    #[test]
+    fn anchor_only_copy_maps_do_not_map_normalization_insertions() {
+        let source_name = "test.tsx";
+        let source_text = LeanString::from_static_str("ロケール{\" \"}<strong>");
+        let source = IndexedText::new(&source_text);
+        let insertion_start = "ロケール".len();
+        let insertion_end = insertion_start + "{\" \"}".len();
+        let (_, insertion_start_col) = source
+            .byte_to_line_utf16_col(insertion_start)
+            .expect("insertion start is on a character boundary");
+        let (_, insertion_end_col) = source
+            .byte_to_line_utf16_col(insertion_end)
+            .expect("insertion end is on a character boundary");
+        let full_span = Span::new(0, source_text.len());
+
+        let anchor_only = build_copy_map_from_anchors(
+            source_name,
+            &source,
+            full_span,
+            &[0, insertion_start, insertion_end, source_text.len()],
+        )
+        .expect("anchor-only map should be built");
+        let token_positions = anchor_only
+            .tokens()
+            .iter()
+            .map(|token| token.generated_position())
+            .collect::<Vec<_>>();
+
+        assert!(
+            token_positions.iter().all(|(line, col)| *line != 0
+                || *col <= insertion_start_col as u32
+                || *col >= insertion_end_col as u32),
+            "normalization insertion should remain an unmapped gap: {token_positions:?}",
+        );
+    }
+
+    #[test]
+    fn copy_maps_can_omit_end_anchors_before_insertions() {
+        let source_name = "test.tsx";
+        let source_text = LeanString::from_static_str("ロケール");
+        let source = IndexedText::new(&source_text);
+        let full_span = Span::new(0, source_text.len());
+        let (_, end_col) = source
+            .byte_to_line_utf16_col(source_text.len())
+            .expect("end is on a character boundary");
+
+        let map = build_copy_map_without_end(source_name, &source, full_span, &[])
+            .expect("copy map should be built");
+
+        assert!(
+            map.tokens()
+                .iter()
+                .all(|token| token.generated_position() != (0, end_col as u32)),
+            "end anchor at an upcoming insertion boundary should be omitted"
+        );
     }
 }

@@ -4,7 +4,7 @@ use lean_string::LeanString;
 
 use crate::common::{
     EmbeddedScriptRegion, IndexedSourceMap, IndexedText, MappedText, RenderedMappedText,
-    ScriptLang, Span, build_copy_map, build_span_anchor_map, span_text,
+    ScriptLang, Span, build_copy_map_from_anchors, build_span_anchor_map, span_text,
 };
 use crate::compile::{
     CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
@@ -252,7 +252,7 @@ fn push_wrapped_copy(
 ) {
     mapped.push(
         span_text(normalized_source.text(), span),
-        build_copy_map("__normalized", normalized_source, span, copy_anchors),
+        build_copy_map_from_anchors("__normalized", normalized_source, span, copy_anchors),
     );
 }
 

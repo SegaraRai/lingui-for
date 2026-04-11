@@ -17,9 +17,9 @@ pub(crate) use normalization::{
 pub use source_map::MappedTextError;
 pub(crate) use source_map::{
     FinalizedReplacement, IndexedSourceMap, MappedText, RenderedMappedText, build_copy_map,
-    build_final_output, build_span_anchor_map, compose_source_maps, extract_local_submap,
-    indent_rendered_text, overlay_source_map_with_single_anchor, parse_source_map,
-    source_map_to_json,
+    build_copy_map_from_anchors, build_copy_map_without_end, build_final_output,
+    build_span_anchor_map, compose_source_maps, extract_local_submap, indent_rendered_text,
+    overlay_source_map_with_single_anchor, parse_source_map, source_map_to_json,
 };
 pub use span::{EmbeddedScriptKind, EmbeddedScriptRegion, Span};
 pub(crate) use text::{is_component_tag_name, node_text, span_text, unquote};
