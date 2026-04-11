@@ -36,7 +36,7 @@ vp run --filter @lingui-for/framework-core check
 vp run --filter @lingui-for/framework-core test
 ```
 
-The package build depends on `lingui-for-workspace#build:wasm`, which emits the generated Wasm bundle into [`shared/lingui-analyzer-wasm`](../../shared/lingui-analyzer-wasm).
+The package build depends on `lingui-for-workspace#build:wasm`, which emits the generated Wasm bundle into [`shared/lingui-analyzer-wasm/dist`](../../shared/lingui-analyzer-wasm/dist).
 
 ## Notes
 
