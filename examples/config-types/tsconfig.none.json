@@ -3,5 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "files": ["env.d.ts", "cases/none.ts"]
+  "files": ["cases/none.ts"]
 }

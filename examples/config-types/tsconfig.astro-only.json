@@ -3,5 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "files": ["env.d.ts", "cases/astro-only.ts"]
+  "files": ["cases/astro-only.ts"]
 }

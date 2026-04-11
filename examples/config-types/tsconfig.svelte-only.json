@@ -3,5 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "files": ["env.d.ts", "cases/svelte-only.ts"]
+  "files": ["cases/svelte-only.ts"]
 }
