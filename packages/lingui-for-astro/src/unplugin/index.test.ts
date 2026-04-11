@@ -43,6 +43,40 @@ describe("lingui-for-astro unplugin", () => {
     ]);
   });
 
+  test("moves the plugin ahead of strip-whitespace in Vite", async () => {
+    const plugin = unpluginFactory(config, { framework: "vite" } as never);
+    const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
+    if (!pluginInstance) {
+      throw new Error("Plugin instance is undefined");
+    }
+
+    const configResolved = pluginInstance.vite?.configResolved;
+    const runConfigResolved =
+      typeof configResolved === "function"
+        ? configResolved
+        : configResolved?.handler;
+
+    expect(runConfigResolved).toBeTypeOf("function");
+
+    const viteConfig = {
+      plugins: [
+        { name: "vite:pre-alias" },
+        { name: "unplugin-strip-whitespace" },
+        { name: "lingui-for-astro" },
+        { name: "astro:build" },
+      ],
+    };
+
+    await runConfigResolved?.call({} as never, viteConfig as never);
+
+    expect(viteConfig.plugins.map((entry) => entry.name)).toEqual([
+      "vite:pre-alias",
+      "lingui-for-astro",
+      "unplugin-strip-whitespace",
+      "astro:build",
+    ]);
+  });
+
   test("skips .astro files that do not reference lingui-for-astro macros", async () => {
     const plugin = unpluginFactory(config, { framework: "vite" } as never);
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;

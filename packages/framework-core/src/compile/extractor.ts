@@ -48,13 +48,8 @@ export async function runBabelExtractionUnits(
       filename,
       unit.code,
       onMessageExtracted,
-      {
-        ...ctx,
-        sourceMaps,
-      },
-      {
-        plugins: parserPlugins,
-      },
+      sourceMaps != null ? { ...ctx, sourceMaps } : ctx,
+      { plugins: parserPlugins },
       !sourceMaps,
     );
   }

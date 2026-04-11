@@ -85,7 +85,7 @@ export const unpluginFactory: UnpluginFactory<
         reorderPluginBeforeMatcher(
           config.plugins as (typeof config.plugins)[number][],
           "lingui-for-astro",
-          /^astro:build/,
+          /^unplugin-strip-whitespace$|^astro:build/,
         );
       },
     },

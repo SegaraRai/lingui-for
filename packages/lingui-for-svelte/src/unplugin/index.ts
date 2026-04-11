@@ -6,6 +6,7 @@ import {
 
 import {
   mayContainLinguiMacroImport,
+  reorderPluginBeforeMatcher,
   stripQuery,
   toUnpluginSourceMap,
 } from "@lingui-for/framework-core/compile";
@@ -80,6 +81,12 @@ export const unpluginFactory: UnpluginFactory<
         isDev = config.command === "serve";
         configResolver.finalizeRoot(config.root);
         await configResolver.getConfig(); // fail fast
+
+        reorderPluginBeforeMatcher(
+          config.plugins as (typeof config.plugins)[number][],
+          "lingui-for-svelte",
+          /^unplugin-strip-whitespace$|^vite-plugin-svelte$/,
+        );
       },
     },
     webpack(compiler) {
