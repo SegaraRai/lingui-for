@@ -5,7 +5,7 @@ description: How rich-text whitespace is normalized for Trans, Plural, Select, a
 
 import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
 
-Component Macros are processed internally through JSX-compatible machinery, but Svelte and Astro
+Component macros are processed internally through JSX-compatible machinery, but Svelte and Astro
 templates are not JSX.
 
 Because of that, whitespace between child nodes can be interpreted differently if the compiler uses
@@ -13,7 +13,7 @@ plain JSX rules. This especially matters for rich-text messages such as `Trans`,
 extra spaces can change the extracted message text.
 
 The `whitespace` option lets you choose how those boundaries are handled. In normal use you should
-leave it unset, which makes Component Macros follow framework-aware whitespace behavior instead of
+leave it unset, which makes component macros follow framework-aware whitespace behavior instead of
 raw JSX semantics.
 
 ## Default behavior

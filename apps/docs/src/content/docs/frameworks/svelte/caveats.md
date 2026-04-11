@@ -31,7 +31,7 @@ the integration itself.
 
 ## Component macro whitespace is framework-aware by default
 
-Rich-text Component Macros use framework-aware whitespace handling by default instead of raw JSX
+Rich-text component macros use framework-aware whitespace handling by default instead of raw JSX
 semantics. See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) if your
 project needs to force `jsx` behavior or keep extraction and transform settings aligned.
 
