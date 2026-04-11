@@ -1,5 +1,43 @@
 # lingui-for-svelte
 
+## 0.4.0
+
+### Minor Changes
+
+- [#22](https://github.com/SegaraRai/lingui-for/pull/22) [`a76b579`](https://github.com/SegaraRai/lingui-for/commit/a76b579be0fddce9cbc68edb1387608ff738f831) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Restrict rich-text whitespace modes to the owning framework.
+
+  `lingui-for-astro` now accepts only `"astro"` and `"jsx"` for `framework.astro.whitespace`, while `lingui-for-svelte` now accepts only `"svelte"` and `"jsx"` for `framework.svelte.whitespace`. The previous public `"auto"` mode is removed.
+
+- [#22](https://github.com/SegaraRai/lingui-for/pull/22) [`a76b579`](https://github.com/SegaraRai/lingui-for/commit/a76b579be0fddce9cbc68edb1387608ff738f831) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Unify transform-time Lingui config loading around a new `config` option and
+  `defineConfig` helpers.
+
+  `lingui-for-svelte` and `lingui-for-astro` now load Lingui config files during
+  transforms using Lingui-compatible config discovery and `jiti`. The old
+  `linguiConfig` transform option has been replaced by `config`, which accepts a
+  config file path, `URL`, or direct config object. Framework-specific settings
+  should now live under `framework.svelte` or `framework.astro`, and the packages
+  now export `/config` helpers for authoring typed config objects.
+
+  `unplugin-lingui-macro` now uses the same `config` option name instead of
+  `linguiConfig`.
+
+### Patch Changes
+
+- [#13](https://github.com/SegaraRai/lingui-for/pull/13) [`024d9af`](https://github.com/SegaraRai/lingui-for/commit/024d9afc1efdeea188d6bcebd7e3f21f97d98858) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Improve `<Trans>` validation by rejecting unsupported child syntax with file and location-aware diagnostics in Svelte and Astro.
+
+- [#21](https://github.com/SegaraRai/lingui-for/pull/21) [`f0da859`](https://github.com/SegaraRai/lingui-for/commit/f0da8598bd7611770e29aaa47c3ba38fd1cac4be) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Allocate internal Babel wrapper markers uniquely during Svelte compilation to avoid collisions with user-defined identifiers.
+
+- [#11](https://github.com/SegaraRai/lingui-for/pull/11) [`79c895c`](https://github.com/SegaraRai/lingui-for/commit/79c895c28ca94cbf4a4fdeccc451d9dfc16fa5ba) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Improved source map accuracy.
+
+- [#13](https://github.com/SegaraRai/lingui-for/pull/13) [`024d9af`](https://github.com/SegaraRai/lingui-for/commit/024d9afc1efdeea188d6bcebd7e3f21f97d98858) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Fix synthetic source normalization for nested owned macros so Svelte builds correctly rewrite nested `$translate(...)` cases during extraction and compile planning.
+
+- [#22](https://github.com/SegaraRai/lingui-for/pull/22) [`a76b579`](https://github.com/SegaraRai/lingui-for/commit/a76b579be0fddce9cbc68edb1387608ff738f831) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Allow using `svelteExtractor` and `astroExtractor` directly in Lingui `extractors` arrays without calling them, while preserving the existing factory form for custom options.
+
+- [#15](https://github.com/SegaraRai/lingui-for/pull/15) [`909d4de`](https://github.com/SegaraRai/lingui-for/commit/909d4de976dc41da2857e9b6645d7715f914e5ce) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Improve `<Trans>` rich-text lowering to use framework-native output and expand supported wrapper syntax in Svelte and Astro.
+
+- Updated dependencies [[`a76b579`](https://github.com/SegaraRai/lingui-for/commit/a76b579be0fddce9cbc68edb1387608ff738f831)]:
+  - @lingui-for/framework-core@0.4.0
+
 ## 0.2.2
 
 ### Patch Changes

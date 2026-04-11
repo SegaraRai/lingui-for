@@ -1,5 +1,22 @@
 # unplugin-lingui-macro
 
+## 0.3.0
+
+### Minor Changes
+
+- [#22](https://github.com/SegaraRai/lingui-for/pull/22) [`a76b579`](https://github.com/SegaraRai/lingui-for/commit/a76b579be0fddce9cbc68edb1387608ff738f831) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Unify transform-time Lingui config loading around a new `config` option and
+  `defineConfig` helpers.
+
+  `lingui-for-svelte` and `lingui-for-astro` now load Lingui config files during
+  transforms using Lingui-compatible config discovery and `jiti`. The old
+  `linguiConfig` transform option has been replaced by `config`, which accepts a
+  config file path, `URL`, or direct config object. Framework-specific settings
+  should now live under `framework.svelte` or `framework.astro`, and the packages
+  now export `/config` helpers for authoring typed config objects.
+
+  `unplugin-lingui-macro` now uses the same `config` option name instead of
+  `linguiConfig`.
+
 ## 0.2.1
 
 ### Patch Changes
