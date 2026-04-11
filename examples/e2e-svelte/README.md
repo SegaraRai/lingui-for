@@ -39,14 +39,12 @@ vp run test
 
 Useful scripts:
 
-- `vp run lingui:extract`: extract messages
-- `vp run lingui:compile`: compile catalogs
-- `vp run lingui:build`: run extract and compile
+- `vp run i18n:extract`: extract messages
+- `vp run i18n:build`: extract messages, compile catalogs, and format generated locale output
 - `vp run build`: rebuild catalogs and build the SvelteKit app
 - `vp run preview`: run the built app
 - `vp run check`: run TypeScript and Svelte checks
-- `vp run test:e2e run`: run SSR/e2e-style Vitest checks
-- `vp run test:browser run`: run browser hydration tests
+- `vp run test`: build first, then run the Vitest suite
 
 ## Related Packages
 
@@ -56,4 +54,4 @@ Useful scripts:
 ## Notes
 
 - The app intentionally keeps verification-focused routes separate from the main app shell.
-- Test expectations live in [`src/app.e2e.test.ts`](./src/app.e2e.test.ts), [`src/extract.e2e.test.ts`](./src/extract.e2e.test.ts), and [`src/hydration.browser.test.ts`](./src/hydration.browser.test.ts).
+- Test expectations live under [`tests`](./tests).

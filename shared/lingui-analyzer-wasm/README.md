@@ -13,3 +13,5 @@ From the repo root:
 - `vp run build:wasm`
 
 This command runs `wasm-pack` for `crates/lingui-analyzer` and writes the generated JS wrapper, TypeScript declarations, and `.wasm` binary into this package's `dist/` directory.
+
+Set `LINGUI_WASM_PREBUILT=1` to skip rebuilding when `dist/` already contains the expected Wasm output. Set `LINGUI_WASM_DEBUG=1` to build the Wasm target in debug mode.

@@ -77,6 +77,8 @@ Working on this repository? See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup i
 - [`lingui-for-svelte`](./packages/lingui-for-svelte): Lingui integration for Svelte.
 - [`lingui-for-astro`](./packages/lingui-for-astro): Lingui integration for Astro.
 - [`unplugin-lingui-macro`](./packages/unplugin-lingui-macro): Unplugin wrapper for Lingui macro transforms.
+- [`@lingui-for/framework-core`](./packages/framework-core): Shared framework compile, config, and runtime helpers used by the framework integrations.
+- [`unplugin-markup-import`](./packages/unplugin-markup-import): Internal build helper for preserving shipped `.svelte` and `.astro` runtime files in package output.
 
 For package-level setup and API details, start with the README inside each package directory.
 

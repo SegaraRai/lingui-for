@@ -1,5 +1,7 @@
 # unplugin-markup-import
 
+[![npm](https://img.shields.io/npm/v/unplugin-markup-import)](https://www.npmjs.com/package/unplugin-markup-import)
+
 Experimental build helper for preserving markup modules in the [lingui-for](https://github.com/SegaraRai/lingui-for) project build.
 
 > [!WARNING]
@@ -18,8 +20,8 @@ Current framework handling:
 
 ## Where It Is Used Here
 
-- [`packages/lingui-for-svelte/tsdown.config.ts`](../lingui-for-svelte/tsdown.config.ts)
-- [`packages/lingui-for-astro/tsdown.config.ts`](../lingui-for-astro/tsdown.config.ts)
+- [`packages/lingui-for-svelte/vite.config.ts`](../lingui-for-svelte/vite.config.ts)
+- [`packages/lingui-for-astro/vite.config.ts`](../lingui-for-astro/vite.config.ts)
 
 ## Install
 
@@ -80,15 +82,12 @@ Supported options:
 - `unplugin-markup-import`
 - `unplugin-markup-import/vite`
 - `unplugin-markup-import/rollup`
-- `unplugin-markup-import/webpack`
-- `unplugin-markup-import/esbuild`
 - `unplugin-markup-import/rolldown`
-- `unplugin-markup-import/rspack`
-- `unplugin-markup-import/bun`
 - `unplugin-markup-import/types`
 
 ## Notes
 
 - This package exists to solve a packaging detail in lingui-for, not to provide a polished public abstraction.
 - The public surface is intentionally small, but the underlying behavior is specialized.
+- Only Vite, Rollup, and Rolldown adapters are currently exported.
 - Expect rough edges if you try to use it outside this repository.
