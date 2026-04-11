@@ -12,6 +12,8 @@ import {
   loadLinguiConfig,
 } from "./config.ts";
 
+const configModuleUrl = new URL("./config.ts", import.meta.url).href;
+
 declare module "./config.ts" {
   interface LinguiForFrameworkRegistry {
     astro: {
@@ -81,12 +83,13 @@ describe("config helpers", () => {
   test("loads a discovered lingui.config.ts file with jiti and framework metadata", async () => {
     const fixtureDir = mkdtempSync(path.join(tmpdir(), "lingui-for-config-"));
     tempDirs.push(fixtureDir);
-    const nestedDir = path.join(fixtureDir, "src", "routes");
 
     writeFileSync(
       path.join(fixtureDir, "lingui.config.ts"),
       [
-        "export default {",
+        `import { defineConfig } from ${JSON.stringify(configModuleUrl)};`,
+        "",
+        "export default defineConfig({",
         "  locales: ['en'],",
         "  sourceLocale: 'en',",
         "  framework: {",
@@ -94,12 +97,12 @@ describe("config helpers", () => {
         "      packages: ['custom-astro-macro'],",
         "    },",
         "  },",
-        "};",
+        "});",
         "",
       ].join("\n"),
     );
 
-    const loaded = await loadLinguiConfig(undefined, { cwd: nestedDir });
+    const loaded = await loadLinguiConfig(undefined, { cwd: fixtureDir });
 
     expect.assert(loaded != null);
     expect(loaded.frameworkConfig).toEqual({
@@ -116,12 +119,14 @@ describe("config helpers", () => {
   test("loads an explicit config URL", async () => {
     const fixtureDir = mkdtempSync(path.join(tmpdir(), "lingui-for-config-"));
     tempDirs.push(fixtureDir);
-    const configPath = path.join(fixtureDir, "lingui.config.js");
+    const configPath = path.join(fixtureDir, "lingui.config.mjs");
 
     writeFileSync(
       configPath,
       [
-        "module.exports = {",
+        `import { defineConfig } from ${JSON.stringify(configModuleUrl)};`,
+        "",
+        "export default defineConfig({",
         "  locales: ['en'],",
         "  sourceLocale: 'en',",
         "  framework: {",
@@ -129,7 +134,7 @@ describe("config helpers", () => {
         "      whitespace: 'jsx',",
         "    },",
         "  },",
-        "};",
+        "});",
         "",
       ].join("\n"),
     );

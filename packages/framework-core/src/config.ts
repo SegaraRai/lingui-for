@@ -265,13 +265,13 @@ export function createLinguiConfigResolver<TLoadedConfig>(options: {
         skipValidation: true,
       });
     },
-    getConfig(): Promise<TLoadedConfig> {
-      const activeConfigPromise =
-        explicitConfigPromise ?? discoveredConfigPromise;
-      if (activeConfigPromise == null) {
+    async getConfig(): Promise<TLoadedConfig> {
+      const activeConfig = await (explicitConfigPromise ??
+        discoveredConfigPromise);
+      if (activeConfig == null) {
         throw new Error(options.missingConfigMessage);
       }
-      return activeConfigPromise;
+      return activeConfig;
     },
   };
 }
