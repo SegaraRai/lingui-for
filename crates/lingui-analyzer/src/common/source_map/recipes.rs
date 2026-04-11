@@ -100,7 +100,7 @@ pub(crate) fn build_copy_map_from_anchors(
     )
 }
 
-pub(crate) fn build_copy_map_from_anchors_without_end(
+pub(crate) fn build_copy_map_without_end(
     source_name: &str,
     source: &IndexedText<'_>,
     original_span: Span,
@@ -112,7 +112,7 @@ pub(crate) fn build_copy_map_from_anchors_without_end(
         original_span,
         source_anchors,
         CopyMapOptions {
-            include_snippet_anchors: false,
+            include_snippet_anchors: true,
             include_span_end: false,
         },
     )
@@ -508,7 +508,7 @@ mod tests {
     use crate::common::{IndexedSourceMap, IndexedText, MappedTextError, RenderedMappedText, Span};
 
     use super::{
-        FinalizedReplacement, build_copy_map_from_anchors, build_copy_map_from_anchors_without_end,
+        FinalizedReplacement, build_copy_map_from_anchors, build_copy_map_without_end,
         build_final_output, indent_rendered_text,
     };
 
@@ -643,7 +643,7 @@ mod tests {
     }
 
     #[test]
-    fn anchor_only_copy_maps_can_omit_end_anchors_before_insertions() {
+    fn copy_maps_can_omit_end_anchors_before_insertions() {
         let source_name = "test.tsx";
         let source_text = LeanString::from_static_str("ロケール");
         let source = IndexedText::new(&source_text);
@@ -652,7 +652,7 @@ mod tests {
             .byte_to_line_utf16_col(source_text.len())
             .expect("end is on a character boundary");
 
-        let map = build_copy_map_from_anchors_without_end(source_name, &source, full_span, &[])
+        let map = build_copy_map_without_end(source_name, &source, full_span, &[])
             .expect("copy map should be built");
 
         assert!(

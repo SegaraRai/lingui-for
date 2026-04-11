@@ -6,7 +6,7 @@ use tsify::Tsify;
 
 use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, MappedTextError, NormalizationEdit,
-    RenderedMappedText, Span, build_copy_map, build_copy_map_from_anchors_without_end,
+    RenderedMappedText, Span, build_copy_map, build_copy_map_without_end,
     sort_and_dedup_normalization_edits,
 };
 use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport};
@@ -309,16 +309,11 @@ fn build_normalized_chunk_copy_map(
     chunk_ends_before_unmapped_replacement: bool,
 ) -> Option<IndexedSourceMap> {
     if chunk_ends_before_unmapped_replacement {
-        // The following replacement text is intentionally unmapped. Use only
-        // explicit source/newline anchors collected by collect_chunk_copy_anchors
-        // and omit the chunk end anchor so snippet/AST anchors cannot stitch the
-        // unmapped normalized text back to the original gap.
-        build_copy_map_from_anchors_without_end(
-            context.source_name,
-            context.source,
-            span,
-            chunk_anchors,
-        )
+        // The following replacement text is intentionally unmapped. Preserve
+        // snippet/AST anchors inside this chunk, plus explicit source/newline
+        // anchors from collect_chunk_copy_anchors, but omit the chunk end anchor
+        // so the unmapped normalized text is not stitched back to the original gap.
+        build_copy_map_without_end(context.source_name, context.source, span, chunk_anchors)
     } else {
         build_copy_map(context.source_name, context.source, span, chunk_anchors)
     }
