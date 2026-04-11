@@ -1,6 +1,30 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@lingui-for/framework-core/compile": [
+        "../../packages/framework-core/src/compile/index.ts"
+      ],
+      "@lingui-for/framework-core/compile/wasm-loader": [
+        "../../packages/framework-core/src/compile/wasm-loader.ts"
+      ],
+      "@lingui-for/framework-core/config": [
+        "../../packages/framework-core/src/config.ts"
+      ],
+      "lingui-for-astro/config": [
+        "../../packages/lingui-for-astro/src/config.ts"
+      ],
+      "lingui-for-astro/extractor": [
+        "../../packages/lingui-for-astro/src/extractor.ts"
+      ],
+      "lingui-for-svelte/config": [
+        "../../packages/lingui-for-svelte/src/config.ts"
+      ],
+      "lingui-for-svelte/extractor": [
+        "../../packages/lingui-for-svelte/src/extractor.ts"
+      ]
+    },
     "skipLibCheck": true,
     "types": ["node"]
   },

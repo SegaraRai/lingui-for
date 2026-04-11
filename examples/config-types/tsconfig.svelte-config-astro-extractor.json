@@ -3,5 +3,5 @@
   "compilerOptions": {
     "noEmit": true
   },
-  "files": ["cases/svelte-config-astro-extractor.ts"]
+  "files": ["env.d.ts", "cases/svelte-config-astro-extractor.ts"]
 }
