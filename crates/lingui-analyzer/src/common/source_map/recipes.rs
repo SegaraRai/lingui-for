@@ -77,7 +77,6 @@ pub(crate) fn build_copy_map(
         source_anchors,
         CopyMapOptions {
             include_snippet_anchors: true,
-            include_span_start: true,
             include_span_end: true,
         },
     )
@@ -96,7 +95,6 @@ pub(crate) fn build_copy_map_from_anchors(
         source_anchors,
         CopyMapOptions {
             include_snippet_anchors: false,
-            include_span_start: true,
             include_span_end: true,
         },
     )
@@ -115,7 +113,6 @@ pub(crate) fn build_copy_map_from_anchors_without_end(
         source_anchors,
         CopyMapOptions {
             include_snippet_anchors: false,
-            include_span_start: true,
             include_span_end: false,
         },
     )
@@ -124,7 +121,6 @@ pub(crate) fn build_copy_map_from_anchors_without_end(
 #[derive(Debug, Clone, Copy)]
 struct CopyMapOptions {
     include_snippet_anchors: bool,
-    include_span_start: bool,
     include_span_end: bool,
 }
 
@@ -418,10 +414,7 @@ fn collect_copy_anchor_points(
     source_anchors: &[usize],
     options: CopyMapOptions,
 ) -> Vec<usize> {
-    let mut anchors = BTreeSet::new();
-    if options.include_span_start {
-        anchors.insert(original_span.start);
-    }
+    let mut anchors = BTreeSet::from([original_span.start]);
     if options.include_span_end {
         anchors.insert(original_span.end);
     }

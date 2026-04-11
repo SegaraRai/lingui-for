@@ -284,11 +284,11 @@ fn append_normalized_chunk(
             });
             let chunk_anchors =
                 collect_chunk_copy_anchors(context.source.text(), span, context.source_anchors);
-            let chunk_map = if context
+            let chunk_ends_before_unmapped_replacement = context
                 .insertions
                 .get(*insertion_index)
-                .is_some_and(|(at, _)| *at == span.end)
-            {
+                .is_some_and(|(at, _)| *at == span.end);
+            let chunk_map = if chunk_ends_before_unmapped_replacement {
                 build_copy_map_from_anchors_without_end(
                     context.source_name,
                     context.source,
