@@ -35,8 +35,8 @@ export default defineConfig({
         cache: false,
       },
       check: {
-        command: "vp check && vp run check:extra",
-        dependsOn: ["build"],
+        command: "vp check",
+        dependsOn: ["build", "check:extra"],
         cache: false,
       },
       "check:extra": {
