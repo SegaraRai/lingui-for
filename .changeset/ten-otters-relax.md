@@ -1,7 +1,7 @@
 ---
-"lingui-for-svelte": major
-"lingui-for-astro": major
-"unplugin-lingui-macro": major
+"lingui-for-svelte": minor
+"lingui-for-astro": minor
+"unplugin-lingui-macro": minor
 ---
 
 Unify transform-time Lingui config loading around a new `config` option and
