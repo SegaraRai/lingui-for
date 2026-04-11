@@ -942,39 +942,13 @@ __l4a_i18n.prime();
 
           <div class="rounded-2xl border border-dashed border-slate-200 p-4">
             <p class="text-sm text-slate-600">
-              <L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {
-                id: "GM89YS",
-                message: "Imported digest: <0/>"
-              }}>
-              <fragment slot="component_0">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span set:html={htmlDigest} />)}</fragment>
-              </L4aRuntimeTrans>
+              <L4aRuntimeTrans />
             </p>
             <p>
-              <L4aRuntimeTrans placeholders={["0", "1"]} {.../*i18n*/ {
-                id: "8e7f33",
-                message: "Also we can embed <0/> and <1/> directly in translations."
-              }}>
-              <fragment slot="component_0">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span set:text="some text" />)}</fragment>
-              <fragment slot="component_1">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span
-                                set:html="<em>some HTML</em>"
-                              />)}</fragment>
-              </L4aRuntimeTrans>
+              <L4aRuntimeTrans />
             </p>
             <div>
-              <L4aRuntimeTrans placeholders={["0", "1", "2", "3", "4"]} {.../*i18n*/ {
-                id: "cKxDiJ",
-                message: "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
-                values: {
-                  0: highlightedQueue.length,
-                  selectedRegion: selectedRegion
-                }
-              }}>
-              <fragment slot="component_0">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
-              <fragment slot="component_1">{(children) => <ul><Fragment set:html={children} /></ul>}</fragment>
-              <fragment slot="component_2">{(children) => <li><Fragment set:html={children} /></li>}</fragment>
-              <fragment slot="component_3">{(children) => <em><Fragment set:html={children} /></em>}</fragment>
-              <fragment slot="component_4">{(children) => <li><Fragment set:html={children} /></li>}</fragment>
-              </L4aRuntimeTrans>
+              <L4aRuntimeTrans />
             </div>
           </div>
         </div>
@@ -989,26 +963,18 @@ __l4a_i18n.prime();
               message: "Status digest"
             })}
           </h2>
-          <L4aRuntimeTrans {.../*i18n*/ {
-            id: "8p/xVT",
-            message: "{0, plural, one {{1}} other {{2}}}",
+          <L4aRuntimeTrans value={highlightedQueue.length} one={__l4a_i18n._(
+          /*i18n*/ {
+            id: "s0sXxO",
+            message: "There is one highlighted queue item."
+          })} other={__l4a_i18n._(
+          /*i18n*/ {
+            id: "J4w9XN",
+            message: "There are {0} highlighted queue items.",
             values: {
-              0: highlightedQueue.length,
-              1: __l4a_i18n._(
-              /*i18n*/ {
-                id: "s0sXxO",
-                message: "There is one highlighted queue item."
-              }),
-              2: __l4a_i18n._(
-              /*i18n*/ {
-                id: "J4w9XN",
-                message: "There are {0} highlighted queue items.",
-                values: {
-                  0: String(highlightedQueue.length)
-                }
-              })
+              0: String(highlightedQueue.length)
             }
-          }} />
+          })} />
           <p class="text-sm text-slate-600">
             {
               __l4a_i18n._(

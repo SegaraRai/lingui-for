@@ -8,11 +8,13 @@ import { extractFromFileWithBabel } from "@lingui/cli/api";
 import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
 
 import type { CanonicalSourceMap } from "@lingui-for/framework-core/compile";
+import { defineConfig as defineConfigAstro } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
 import {
   unstable_transformAstro,
   type LinguiAstroFrameworkConfig,
 } from "lingui-for-astro/internal/compile";
+import { defineConfig as defineConfigSvelte } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 import {
   unstable_transformSvelte,
@@ -53,7 +55,7 @@ const linguiConfig: LinguiConfigNormalized = {
   compileNamespace: "cjs",
   extractorParserOptions: {},
   fallbackLocales: {},
-  locales: [],
+  locales: ["en", "ja"],
   macro: {
     corePackage: ["@lingui/core/macro", "@lingui/macro"],
     jsxPackage: ["@lingui/react/macro", "@lingui/macro"],
@@ -296,7 +298,7 @@ export async function runTransform(
 
 async function inspectSvelteExtract(source: string, options: CliOptions) {
   const extractor = svelteExtractor({
-    config: createSvelteInspectConfig(options.whitespace),
+    config: defineConfigSvelte(createSvelteInspectConfig(options.whitespace)),
   });
   const messages: ExtractedMessage[] = [];
 
@@ -314,7 +316,7 @@ async function inspectSvelteExtract(source: string, options: CliOptions) {
 
 async function inspectAstroExtract(source: string, options: CliOptions) {
   const extractor = astroExtractor({
-    config: createAstroInspectConfig(options.whitespace),
+    config: defineConfigAstro(createAstroInspectConfig(options.whitespace)),
   });
   const messages: ExtractedMessage[] = [];
 

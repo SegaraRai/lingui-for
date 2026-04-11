@@ -1,4 +1,4 @@
-import { Trans as _Trans } from "@lingui/react";
+import { Trans } from "lingui-for-astro/macro";
 const __lf_0 = __l4a_i18n._(
 /*i18n*/
 {
@@ -30,20 +30,9 @@ const __lf_1 = __l4a_i18n._(
     }))
   }
 });
-const __lf_2 = <_Trans {...
-/*i18n*/
-{
-  id: "fgdhx6",
-  message: "\u30ED\u30B1\u30FC\u30EB <0>{localeLabel}</0> \u3067 <1>{0}</1> \u3092\u78BA\u8A8D\u3057\u3066\u3044\u307E\u3059\u3002",
-  values: {
-    0: String(selectedPath ?? ""),
-    localeLabel: localeLabel
-  },
-  components: {
-    0: <strong />,
-    1: <span />
-  }
-}} />;
+const __lf_2 = <Trans>
+      ロケール{" "}<strong>{localeLabel}</strong>{" "}で{" "}<span>{String(selectedPath ?? "")}</span>{" "}を確認しています。
+    </Trans>;
 const __lf_3 = __l4a_i18n._(
 /*i18n*/
 {

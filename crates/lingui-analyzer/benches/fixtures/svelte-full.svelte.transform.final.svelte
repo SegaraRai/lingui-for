@@ -990,37 +990,13 @@
 
       <div class="rounded-2xl border border-dashed border-slate-200 p-4">
         <p class="text-sm text-slate-600">
-          <L4sRuntimeTrans {.../*i18n*/ {
-            id: "FJeYAi",
-            message: "Imported digest: <0><1/></0>"
-          }}>
-          {#snippet component_0(children)}<span>{@render children?.()}</span>{/snippet}
-          {#snippet component_1(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html htmlDigest}{/snippet}
-          </L4sRuntimeTrans>
+          <L4sRuntimeTrans />
         </p>
         <p>
-          <L4sRuntimeTrans {.../*i18n*/ {
-            id: "JUNx+G",
-            message: "Also we can embed some text and <0/> directly in translations."
-          }}>
-          {#snippet component_0(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html "<em>some HTML</em>"}{/snippet}
-          </L4sRuntimeTrans>
+          <L4sRuntimeTrans />
         </p>
         <div>
-          <L4sRuntimeTrans {.../*i18n*/ {
-            id: "cKxDiJ",
-            message: "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
-            values: {
-              0: highlightedQueue.length,
-              selectedRegion: selectedRegion
-            }
-          }}>
-          {#snippet component_0(children)}<p>{@render children?.()}</p>{/snippet}
-          {#snippet component_1(children)}<ul>{@render children?.()}</ul>{/snippet}
-          {#snippet component_2(children)}<li>{@render children?.()}</li>{/snippet}
-          {#snippet component_3(children)}<em>{@render children?.()}</em>{/snippet}
-          {#snippet component_4(children)}<li>{@render children?.()}</li>{/snippet}
-          </L4sRuntimeTrans>
+          <L4sRuntimeTrans />
         </div>
       </div>
     </div>
@@ -1035,26 +1011,18 @@
           message: "Status digest"
         })}
       </h2>
-      <L4sRuntimeTrans {.../*i18n*/ {
-        id: "8p/xVT",
-        message: "{0, plural, one {{1}} other {{2}}}",
+      <L4sRuntimeTrans value={$highlightedQueue.length} one={__l4s_getI18n()._(
+      /*i18n*/ {
+        id: "s0sXxO",
+        message: "There is one highlighted queue item."
+      })} other={__l4s_getI18n()._(
+      /*i18n*/ {
+        id: "J4w9XN",
+        message: "There are {0} highlighted queue items.",
         values: {
-          0: $highlightedQueue.length,
-          1: __l4s_getI18n()._(
-          /*i18n*/ {
-            id: "s0sXxO",
-            message: "There is one highlighted queue item."
-          }),
-          2: __l4s_getI18n()._(
-          /*i18n*/ {
-            id: "J4w9XN",
-            message: "There are {0} highlighted queue items.",
-            values: {
-              0: String($highlightedQueue.length)
-            }
-          })
+          0: String($highlightedQueue.length)
         }
-      }} />
+      })} />
       <p class="text-sm text-slate-600">
         {$__l4s_translate(
         /*i18n*/ {

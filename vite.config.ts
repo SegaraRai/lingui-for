@@ -37,9 +37,14 @@ export default defineConfig({
     tasks: {
       build: {
         command: "",
-        dependsOn: ["e2e-astro#build", "e2e-svelte#build", "docs#build"],
+        dependsOn: [
+          "e2e-astro#build",
+          "e2e-svelte#build",
+          "docs#build",
+          "artifacts",
+        ],
       },
-      "build:apps": {
+      "build:docs": {
         command: "",
         dependsOn: ["docs#build"],
       },

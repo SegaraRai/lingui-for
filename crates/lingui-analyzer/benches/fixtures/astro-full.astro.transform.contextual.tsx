@@ -1,4 +1,4 @@
-import { Trans as _Trans } from "@lingui/react";
+import { Plural, Trans } from "lingui-for-astro/macro";
 const __lf_0 = __l4a_i18n._(
 /*i18n*/
 {
@@ -248,72 +248,40 @@ const __lf_33 = __l4a_i18n._(
   id: "OcCQjb",
   message: "Activity stream"
 });
-const __lf_34 = <_Trans {...
-/*i18n*/
-{
-  id: "GM89YS",
-  message: "Imported digest: <0/>",
-  components: {
-    0: <span set:html={htmlDigest} />
-  }
-}} />;
-const __lf_35 = <_Trans {...
-/*i18n*/
-{
-  id: "8e7f33",
-  message: "Also we can embed <0/> and <1/> directly in translations.",
-  components: {
-    0: <span set:text="some text" />,
-    1: <span set:html="<em>some HTML</em>" />
-  }
-}} />;
-const __lf_36 = <_Trans {...
-/*i18n*/
-{
-  id: "cKxDiJ",
-  message: "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
-  values: {
-    0: highlightedQueue.length,
-    selectedRegion: selectedRegion
-  },
-  components: {
-    0: <p />,
-    1: <ul />,
-    2: <li />,
-    3: <em />,
-    4: <li />
-  }
-}} />;
+const __lf_34 = <Trans>
+                Imported digest:{" "}<span set:html={htmlDigest} />
+              </Trans>;
+const __lf_35 = <Trans>
+                Also we can embed{" "}<span set:text="some text" />{" "}and{" "}<span set:html="<em>some HTML</em>" />{" "}directly in translations.
+              </Trans>;
+const __lf_36 = <Trans>
+                <p>Maybe we even have some nested content to summarize, like</p>{" "}<ul>
+                  <li>
+                    <em>{highlightedQueue.length} highlighted queue items</em> and
+                  </li>
+                  <li>a selected region of {selectedRegion}.</li>
+                </ul>
+              </Trans>;
 const __lf_37 = __l4a_i18n._(
 /*i18n*/
 {
   id: "UsgvkK",
   message: "Status digest"
 });
-const __lf_38 = <_Trans {...
+const __lf_38 = <Plural value={highlightedQueue.length} one={__l4a_i18n._(
 /*i18n*/
 {
-  id: "8p/xVT",
-  message: "{0, plural, one {{1}} other {{2}}}",
+  id: "s0sXxO",
+  message: "There is one highlighted queue item."
+})} other={__l4a_i18n._(
+/*i18n*/
+{
+  id: "J4w9XN",
+  message: "There are {0} highlighted queue items.",
   values: {
-    0: highlightedQueue.length,
-    1: __l4a_i18n._(
-    /*i18n*/
-    {
-      id: "s0sXxO",
-      message: "There is one highlighted queue item."
-    }),
-    2: __l4a_i18n._(
-    /*i18n*/
-    {
-      id: "J4w9XN",
-      message: "There are {0} highlighted queue items.",
-      values: {
-        0: String(highlightedQueue.length)
-      }
-    })
+    0: String(highlightedQueue.length)
   }
-}} />;
+})} />;
 const __lf_39 = __l4a_i18n._(
 /*i18n*/
 {

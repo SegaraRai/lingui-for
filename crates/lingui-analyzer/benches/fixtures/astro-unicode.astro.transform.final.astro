@@ -42,17 +42,7 @@ __l4a_i18n.prime();
   <h1 class="text-2xl font-semibold">{headline}</h1>
   <p class="text-sm">{summary}</p>
   <p class="text-sm">
-    <L4aRuntimeTrans placeholders={["0", "1"]} {.../*i18n*/ {
-      id: "fgdhx6",
-      message: "\u30ED\u30B1\u30FC\u30EB <0>{localeLabel}</0> \u3067 <1>{0}</1> \u3092\u78BA\u8A8D\u3057\u3066\u3044\u307E\u3059\u3002",
-      values: {
-        0: String(selectedPath ?? ""),
-        localeLabel: localeLabel
-      }
-    }}>
-    <fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
-    <fragment slot="component_1">{(children) => <span><Fragment set:html={children} /></span>}</fragment>
-    </L4aRuntimeTrans>
+    <L4aRuntimeTrans />
   </p>
   <ul class="grid gap-2">
     {

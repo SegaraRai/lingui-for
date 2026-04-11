@@ -13,7 +13,6 @@
     "1",
     "relatedPaths",
     "localeLabel",
-    "components",
     "path"
   ],
   "sources": [
@@ -22,6 +21,6 @@
   "sourcesContent": [
     "<svelte:options runes={true} />\n\n<script lang=\"ts\">\n  import { msg, t as translate } from \"@lingui/core/macro\";\n  import { Trans } from \"lingui-for-svelte/macro\";\n\n  const readerName = $state(\"世界👨‍👩‍👧‍👦😀😃😄\");\n  const localeLabel = $state(\"日本語\");\n  const selectedPath = $state<string | null>(\"/資料/レビュー/案内😀.md\");\n  const relatedPaths = $state([\n    \"/資料/概要.md\",\n    \"/案内/導入👨‍👩‍👧‍👦.md\",\n    \"/履歴/更新🙂.md\",\n  ]);\n\n  const headline = $derived($translate`ようこそ ${readerName}`);\n  const summary = $derived(\n    $translate(\n      // Note that this method is actually not recommended for complex messages with multiple variables.\n      // It's better to use `select` or `plural` for such cases.\n      msg`参照中のパスは ${String(selectedPath ?? $translate`未設定`)} で、候補は ${String(\n        relatedPaths[1] ?? $translate`ありません`,\n      )} です。`,\n    ),\n  );\n</script>\n\n<main class=\"grid gap-4 p-6\">\n  <h1 class=\"text-2xl font-semibold\">{headline}</h1>\n  <p class=\"text-sm\">{summary}</p>\n  <p class=\"text-sm\">\n    <Trans>\n      ロケール <strong>{localeLabel}</strong> で\n      <span>{String(selectedPath ?? \"\")}</span>\n      を確認しています。\n    </Trans>\n  </p>\n  <ul class=\"grid gap-2\">\n    {#each relatedPaths as path}\n      <li class=\"rounded border px-3 py-2\">\n        {$translate(msg`候補パス: ${String(path ?? \"\")}`)}\n      </li>\n    {/each}\n  </ul>\n</main>\n"
   ],
-  "mappings": ";;;AAe6B;EAAAA,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAC,UAAA,EAAiBA;EAAU;AAAC,CAAC;;;AAGpD;AACA;AACA;EAAAH,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAcC,MAAM,CAACC,YAAA,IAAAC,aAAA,GAAAC,CAAA;IAAA;IAAgB;MAAAR,EAAA;MAAAC,OAAA;IAAc,CAAC,EAAC;IAAAQ,CAAA,EAAUJ,MAAM,CACnEK,YAAY,CAAC,CAAC,KAAAH,aAAA,GAAAC,CAAA;IAAA;IAAK;MAAAR,EAAA;MAAAC,OAAA;IAAgB,CAAC,CACtC;EAAC;AAAK,CAAC,CACR;eAQD;AAAA;AAAA;EAAAD,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAESC,MAAM,CAACC,YAAA,IAAgB,EAAE,CAAC;IAAAK,WAAA,EADnBA;EAAW;EAAAC,UAAA;IAAAR,CAAA,EAApB,CAAC,MAAM,GAAuB;IAAAK,CAAA,EACnC,CAAC,IAAI;EAAoC;AAEpC,CAAC;;;AAKQ;EAAAT,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAYC,MAAM,CAACQ,IAAA,IAAQ,EAAE;EAAC;AAAC,CAAC,CAAC",
+  "mappings": ";;;AAe6B;EAAAA,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAC,UAAA,EAAiBA;EAAU;AAAC,CAAC;;;AAGpD;AACA;AACA;EAAAH,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAcC,MAAM,CAACC,YAAA,IAAAC,aAAA,GAAAC,CAAA;IAAA;IAAgB;MAAAR,EAAA;MAAAC,OAAA;IAAc,CAAC,EAAC;IAAAQ,CAAA,EAAUJ,MAAM,CACnEK,YAAY,CAAC,CAAC,KAAAH,aAAA,GAAAC,CAAA;IAAA;IAAK;MAAAR,EAAA;MAAAC,OAAA;IAAgB,CAAC,CACtC;EAAC;AAAK,CAAC,CACR;eAQD,CAAC,KAAK;AACV,UAAU,CAAC,GAAG,CAAH,CAAC,MAAM,CAAC,CAACU,WAAW,CAAC,EAAE,MAAM,CAAC,CAAC,GAAG,CAAH,CAAC,KACrC,CAAC,IAAI,CAAC,CAACN,MAAM,CAACC,YAAA,IAAgB,EAAE,CAAC,CAAC,EAAE,IAAI,CAAC,KACzC;AACN,IAAI,EAAE,KAAK,CAAC;;;AAKQ;EAAAN,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAYC,MAAM,CAACO,IAAA,IAAQ,EAAE;EAAC;AAAC,CAAC,CAAC",
   "ignoreList": []
 }

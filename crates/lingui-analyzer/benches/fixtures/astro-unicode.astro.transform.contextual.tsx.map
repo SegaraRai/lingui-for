@@ -12,7 +12,6 @@
     "_",
     "1",
     "relatedPaths",
-    "components",
     "path"
   ],
   "sources": [
@@ -21,6 +20,6 @@
   "sourcesContent": [
     "---\nimport { msg, t as translate } from \"@lingui/core/macro\";\nimport { Trans } from \"lingui-for-astro/macro\";\n\nconst localeLabel = \"日本語\";\nconst selectedPath: string | null = \"/資料/レビュー/案内😀.md\";\nconst relatedPaths = [\"/資料/概要.md\", \"/案内/導入👨‍👩‍👧‍👦.md\", \"/履歴/更新🙂.md\"];\n\nconst headline = translate`ようこそ ${localeLabel}`;\nconst summary = translate(\n  // Note that this method is actually not recommended for complex messages with multiple variables.\n  // It's better to use `select` or `plural` for such cases.\n  msg`参照中のパスは ${String(selectedPath ?? translate`未設定`)} で、候補は ${String(\n    relatedPaths[1] ?? translate`ありません`,\n  )} です。`,\n);\n---\n\n<main class=\"grid gap-4 p-6\">\n  <h1 class=\"text-2xl font-semibold\">{headline}</h1>\n  <p class=\"text-sm\">{summary}</p>\n  <p class=\"text-sm\">\n    <Trans>\n      ロケール <strong>{localeLabel}</strong> で\n      <span>{String(selectedPath ?? \"\")}</span>\n      を確認しています。\n    </Trans>\n  </p>\n  <ul class=\"grid gap-2\">\n    {\n      relatedPaths.map((path) => (\n        <li class=\"rounded border px-3 py-2\">\n          {translate(msg`候補パス: ${String(path ?? \"\")}`)}\n        </li>\n      ))\n    }\n  </ul>\n</main>\n"
   ],
-  "mappings": ";;;AAQiB;EAAAA,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAC,WAAA,EAAiBA;EAAW;AAAC,CAAC;;;AAE7C;AACA;AACA;EAAAH,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAcC,MAAM,CAACC,YAAA,IAAAC,UAAA,CAAAC,CAAA;IAAA;IAAgB;MAAAR,EAAA;MAAAC,OAAA;IAAa,CAAC,EAAC;IAAAQ,CAAA,EAAUJ,MAAM,CAClEK,YAAY,CAAC,CAAC,KAAAH,UAAA,CAAAC,CAAA;IAAA;IAAK;MAAAR,EAAA;MAAAC,OAAA;IAAe,CAAC,CACrC;EAAC;AAAK,CAAC,CACR;eAOG;AAAA;AAAA;EAAAD,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAESC,MAAM,CAACC,YAAA,IAAgB,EAAE,CAAC;IAAAH,WAAA,EADnBA;EAAW;EAAAQ,UAAA;IAAAP,CAAA,EAApB,CAAC,MAAM,GAAuB;IAAAK,CAAA,EACnC,CAAC,IAAI;EAAoC;AAEpC,CAAC;;;AAMS;EAAAT,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAYC,MAAM,CAACO,IAAA,IAAQ,EAAE;EAAC;AAAC,CAAC,CAAC",
+  "mappings": ";;;AAQiB;EAAAA,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAC,WAAA,EAAiBA;EAAW;AAAC,CAAC;;;AAE7C;AACA;AACA;EAAAH,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAcC,MAAM,CAACC,YAAA,IAAAC,UAAA,CAAAC,CAAA;IAAA;IAAgB;MAAAR,EAAA;MAAAC,OAAA;IAAa,CAAC,EAAC;IAAAQ,CAAA,EAAUJ,MAAM,CAClEK,YAAY,CAAC,CAAC,KAAAH,UAAA,CAAAC,CAAA;IAAA;IAAK;MAAAR,EAAA;MAAAC,OAAA;IAAe,CAAC,CACrC;EAAC;AAAK,CAAC,CACR;eAOG,CAAC,KAAK;AACV,UAAU,KAAC,CAAC,MAAM,CAAC,CAACE,WAAW,CAAC,EAAE,MAAM,CAAC,KAAC,CAAC,KACrC,CAAC,IAAI,CAAC,CAACE,MAAM,CAACC,YAAA,IAAgB,EAAE,CAAC,CAAC,EAAE,IAAI,CAAC,KACzC;AACN,IAAI,EAAE,KAAK,CAAC;;;AAMS;EAAAN,EAAA;EAAAC,OAAA;EAAAC,MAAA;IAAAE,CAAA,EAAYC,MAAM,CAACM,IAAA,IAAQ,EAAE;EAAC;AAAC,CAAC,CAAC",
   "ignoreList": []
 }

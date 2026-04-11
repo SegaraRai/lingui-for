@@ -87,7 +87,7 @@ jobs:
 
       - run: vp run build:lib
 
-      - run: vp run build:apps
+      - run: vp run build:docs
 
       - uses: actions/upload-pages-artifact@v4
         with:
