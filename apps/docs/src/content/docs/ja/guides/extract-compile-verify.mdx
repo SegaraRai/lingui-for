@@ -32,8 +32,8 @@ Lingui マクロを使う各ファイル種別では、**2 つの設定をそれ
 混在したプロジェクトでは、両方の抽出器を並べて指定する必要があります。たとえば、共通ユーティリティを素の TypeScript で持つ SvelteKit プロジェクトでは次のようになります。
 
 ```ts title="lingui.config.ts"
-import { defineConfig } from "@lingui/conf";
 import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { defineConfig } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default defineConfig({
@@ -46,8 +46,24 @@ export default defineConfig({
 
 `babelExtractor` を入れないと、`.ts` ファイル内の `t` 呼び出しはビルド時には正しくコンパイルされても、抽出されたカタログには現れません。
 
-フレームワーク変換に設定可能な振る舞いがある場合は、抽出器もそれに合わせてください。
-たとえば、リッチテキストのコンポーネントマクロにおける空白は、ビルド変換と `svelteExtractor(...)` または `astroExtractor(...)` の両方で同じ `whitespace` モードを使う必要があります。
+フレームワーク変換に設定可能な振る舞いがある場合は、その設定を `lingui.config.ts` の対応する `framework` キーの下に置いてください。
+ビルド変換と抽出器は同じ設定を読み込むため、リッチテキストのコンポーネントマクロにおける空白のような設定も 1 か所に置けます。
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  framework: {
+    svelte: {
+      whitespace: "jsx",
+    },
+  },
+  extractors: [svelteExtractor],
+});
+```
+
 詳しくは [コンポーネントマクロにおける空白](/ja/guides/whitespace-in-component-macros) を参照してください。
 
 ## どのツールが何を担当するか

@@ -3,7 +3,7 @@ title: Whitespace in Component Macros
 description: How rich-text whitespace is normalized for Trans, Plural, Select, and SelectOrdinal.
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components";
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
 
 Component Macros are processed internally through JSX-compatible machinery, but Svelte and Astro
 templates are not JSX.
@@ -61,9 +61,61 @@ This stays equivalent to:
 <0>Read</0> <1>carefully</1>
 ```
 
-## Configure the transform
+## Configure the option
 
-Use the same `whitespace` setting everywhere that transforms framework files.
+Put the `whitespace` setting in `lingui.config.ts` under the matching framework key. The framework
+build transform and extractor both load that config, so you do not need to repeat the same option in
+Vite, Astro, and extractor setup.
+
+<Aside type="caution">
+
+Use `defineConfig` from `lingui-for-svelte/config` or `lingui-for-astro/config` when you add a
+`framework` section. Lingui's official `@lingui/conf` helper, or a plain object export without
+`defineConfig`, can still be loaded as a normal Lingui config, but framework-specific settings may
+be ignored. See [Framework Config](/guides/framework-config).
+
+</Aside>
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  framework: {
+    svelte: {
+      whitespace: "auto",
+    },
+  },
+  extractors: [svelteExtractor],
+});
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  framework: {
+    astro: {
+      whitespace: "auto",
+    },
+  },
+  extractors: [astroExtractor],
+});
+```
+
+  </TabItem>
+</Tabs>
+
+If your project uses a non-standard config path or an inline config object, pass it with the
+`config` option to the framework plugin or integration, and to the extractor factory where needed.
+With the default `lingui.config.*` file, the config is discovered automatically.
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">
@@ -73,7 +125,7 @@ import { defineConfig } from "vite";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 
 export default defineConfig({
-  plugins: [linguiForSvelte({ whitespace: "auto" })],
+  plugins: [linguiForSvelte()],
 });
 ```
 
@@ -85,41 +137,7 @@ import { defineConfig } from "astro/config";
 import linguiForAstro from "lingui-for-astro/integration";
 
 export default defineConfig({
-  integrations: [linguiForAstro({ whitespace: "auto" })],
-});
-```
-
-  </TabItem>
-</Tabs>
-
-## Configure extraction
-
-Extraction must use the same whitespace mode as the build transform. Otherwise the catalog message
-seen by `lingui extract` can diverge from the message produced during compilation.
-
-The framework extractors are factories, so configure them in `lingui.config.ts`:
-
-<Tabs syncKey="framework">
-  <TabItem icon="seti:svelte" label="Svelte">
-
-```ts title="lingui.config.ts"
-import { defineConfig } from "@lingui/conf";
-import { svelteExtractor } from "lingui-for-svelte/extractor";
-
-export default defineConfig({
-  extractors: [svelteExtractor({ whitespace: "auto" })],
-});
-```
-
-  </TabItem>
-  <TabItem icon="astro" label="Astro">
-
-```ts title="lingui.config.ts"
-import { defineConfig } from "@lingui/conf";
-import { astroExtractor } from "lingui-for-astro/extractor";
-
-export default defineConfig({
-  extractors: [astroExtractor({ whitespace: "auto" })],
+  integrations: [linguiForAstro()],
 });
 ```
 
@@ -134,5 +152,5 @@ rich-text child boundaries.
 If you switch an existing project from `jsx` to `auto`, extracted messages and generated IDs may
 change for some Component Macro calls.
 
-See [Extract, Compile, and Verify](/guides/extract-compile-verify) for the broader rule that build
-transform and extraction settings must match.
+See [Extract, Compile, and Verify](/guides/extract-compile-verify) for how build transforms and
+extractors share the same framework config.

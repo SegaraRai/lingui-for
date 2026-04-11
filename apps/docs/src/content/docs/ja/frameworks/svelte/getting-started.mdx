@@ -67,7 +67,7 @@ export default defineConfig({
 
 ```ts title="lingui.config.ts"
 import babelExtractor from "@lingui/cli/api/extractors/babel";
-import { defineConfig } from "@lingui/conf";
+import { defineConfig } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default defineConfig({
@@ -83,6 +83,9 @@ export default defineConfig({
 素の JavaScript または TypeScript ファイルで Lingui マクロを使わないなら、`extractors` 配列から `babelExtractor` を外し、インポートも省略できます。
 
 </Aside>
+
+カスタムのマクロパッケージ名、空白処理、実行時警告の切り替えなど、Svelte 固有のオプションが必要な場合は、`framework.svelte` フィールドを設定してください。
+詳細は [フレームワーク設定](/ja/guides/framework-config) を参照してください。
 
 ## Lingui を初期化する
 

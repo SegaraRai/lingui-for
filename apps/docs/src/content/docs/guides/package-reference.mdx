@@ -9,7 +9,8 @@ description: What each lingui-for-* export is for and which ones are user-facing
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------- | ----------- |
 | `lingui-for-svelte`            | `setLinguiContext`, `getLinguiContext`                                                                         | ✓           |
 | `lingui-for-svelte/macro`      | `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage` | ✓           |
-| `lingui-for-svelte/extractor`  | `svelteExtractor(options?)` factory for `lingui.config.ts`                                                     | ✓           |
+| `lingui-for-svelte/config`     | `defineConfig` helper with `framework.svelte` support                                                          | ✓           |
+| `lingui-for-svelte/extractor`  | `svelteExtractor` for `lingui.config.ts`; use `svelteExtractor({ config })` for an explicit config source      | ✓           |
 | `lingui-for-svelte/unplugin/*` | Vite, Rollup, and Rolldown plugins                                                                             | ✓           |
 | `lingui-for-svelte/runtime`    | Internal runtime called by compiled macro output                                                               | ✗           |
 
@@ -19,7 +20,8 @@ description: What each lingui-for-* export is for and which ones are user-facing
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------- | ----------- |
 | `lingui-for-astro`             | `setLinguiContext`, `getLinguiContext`                                                                         | ✓           |
 | `lingui-for-astro/macro`       | `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage` | ✓           |
-| `lingui-for-astro/extractor`   | `astroExtractor(options?)` factory for `lingui.config.ts`                                                      | ✓           |
+| `lingui-for-astro/config`      | `defineConfig` helper with `framework.astro` support                                                           | ✓           |
+| `lingui-for-astro/extractor`   | `astroExtractor` for `lingui.config.ts`; use `astroExtractor({ config })` for an explicit config source        | ✓           |
 | `lingui-for-astro/integration` | Astro integration for `astro.config.ts`                                                                        | ✓           |
 | `lingui-for-astro/unplugin/*`  | Vite, Rollup, and Rolldown plugins                                                                             | ✓           |
 | `lingui-for-astro/runtime`     | Internal runtime called by compiled macro output                                                               | ✗           |
@@ -31,6 +33,14 @@ description: What each lingui-for-* export is for and which ones are user-facing
 `lingui-for-svelte/runtime` and `lingui-for-astro/runtime` contain the low-level helpers that
 compiled macro output calls at runtime. Their API surface may change without a major version bump.
 Do not import from these paths directly.
+
+### Framework config lives in `lingui.config.ts`
+
+Use `defineConfig` from `lingui-for-svelte/config` or `lingui-for-astro/config` when you need
+framework-specific options such as `whitespace`, `packages`, or `runtimeWarnings`. The framework
+build transform and extractor load the same config and read the relevant `framework.svelte` or
+`framework.astro` section. See [Framework Config](/guides/framework-config) for how this works in
+single-framework and mixed-framework projects.
 
 ### Plain JS/TS uses a different package
 

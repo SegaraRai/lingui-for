@@ -3,7 +3,7 @@ title: コンポーネントマクロにおける空白
 description: Trans、Plural、Select、SelectOrdinal におけるリッチテキストの空白正規化の挙動
 ---
 
-import { TabItem, Tabs } from "@astrojs/starlight/components";
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
 
 コンポーネントマクロは内部的には JSX 互換の仕組みで処理されますが、Svelte と Astro のテンプレートは JSX ではありません。
 
@@ -58,9 +58,58 @@ Read <0>docs</0> now
 <0>Read</0> <1>carefully</1>
 ```
 
-## 変換を設定する
+## オプションを設定する
 
-フレームワークファイルを変換するすべての場所で、同じ `whitespace` 設定を使ってください。
+`whitespace` 設定は、`lingui.config.ts` の対応するフレームワークキーの下に置きます。
+フレームワークのビルド変換と抽出器はどちらもこの設定を読み込むため、Vite、Astro、抽出器の設定で同じオプションを繰り返す必要はありません。
+
+<Aside type="caution">
+
+`framework` セクションを追加する場合は、`lingui-for-svelte/config` または `lingui-for-astro/config` の `defineConfig` を使ってください。
+Lingui 公式の `@lingui/conf` ヘルパーや、`defineConfig` を使わない通常のオブジェクトでのエクスポートの場合、標準の Lingui 設定としては読み込めますが、フレームワーク固有の設定が無視される可能性があります。
+詳しくは [フレームワーク設定](/ja/guides/framework-config) を参照してください。
+
+</Aside>
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  framework: {
+    svelte: {
+      whitespace: "auto",
+    },
+  },
+  extractors: [svelteExtractor],
+});
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  framework: {
+    astro: {
+      whitespace: "auto",
+    },
+  },
+  extractors: [astroExtractor],
+});
+```
+
+  </TabItem>
+</Tabs>
+
+プロジェクトが標準ではない設定ファイルパスやインライン設定オブジェクトを使う場合は、必要に応じてフレームワークプラグインまたは統合と抽出器ファクトリーに `config` オプションで渡してください。
+デフォルトの `lingui.config.*` ファイルを使う場合、設定は自動的に見つかります。
 
 <Tabs syncKey="framework">
   <TabItem icon="seti:svelte" label="Svelte">
@@ -70,7 +119,7 @@ import { defineConfig } from "vite";
 import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 
 export default defineConfig({
-  plugins: [linguiForSvelte({ whitespace: "auto" })],
+  plugins: [linguiForSvelte()],
 });
 ```
 
@@ -82,41 +131,7 @@ import { defineConfig } from "astro/config";
 import linguiForAstro from "lingui-for-astro/integration";
 
 export default defineConfig({
-  integrations: [linguiForAstro({ whitespace: "auto" })],
-});
-```
-
-  </TabItem>
-</Tabs>
-
-## 抽出を設定する
-
-抽出でも、ビルド変換と同じ空白モードを使う必要があります。
-そうしないと、`lingui extract` が見たカタログメッセージと、コンパイル時に生成されるメッセージが食い違う可能性があります。
-
-フレームワーク用抽出器はファクトリーなので、`lingui.config.ts` で設定します。
-
-<Tabs syncKey="framework">
-  <TabItem icon="seti:svelte" label="Svelte">
-
-```ts title="lingui.config.ts"
-import { defineConfig } from "@lingui/conf";
-import { svelteExtractor } from "lingui-for-svelte/extractor";
-
-export default defineConfig({
-  extractors: [svelteExtractor({ whitespace: "auto" })],
-});
-```
-
-  </TabItem>
-  <TabItem icon="astro" label="Astro">
-
-```ts title="lingui.config.ts"
-import { defineConfig } from "@lingui/conf";
-import { astroExtractor } from "lingui-for-astro/extractor";
-
-export default defineConfig({
-  extractors: [astroExtractor({ whitespace: "auto" })],
+  integrations: [linguiForAstro()],
 });
 ```
 
@@ -129,4 +144,4 @@ export default defineConfig({
 
 既存プロジェクトで `jsx` から `auto` に切り替えると、一部のコンポーネントマクロ呼び出しでは、抽出されるメッセージや生成される ID が変わる場合があります。
 
-ビルド変換と抽出設定を揃えるべきだという、より広い原則については [抽出、コンパイル、検証](/ja/guides/extract-compile-verify) を参照してください。
+ビルド変換と抽出器が同じフレームワーク設定を共有する仕組みについては [抽出、コンパイル、検証](/ja/guides/extract-compile-verify) を参照してください。

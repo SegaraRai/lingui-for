@@ -70,7 +70,7 @@ export default defineConfig({
 
 ```ts title="lingui.config.ts"
 import babelExtractor from "@lingui/cli/api/extractors/babel";
-import { defineConfig } from "@lingui/conf";
+import { defineConfig } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
 
 export default defineConfig({
@@ -87,6 +87,10 @@ If you do not use Lingui macros in plain JavaScript or TypeScript files, you can
 `babelExtractor` from the `extractors` array and skip the import.
 
 </Aside>
+
+Use the optional `framework.astro` field in this config when you need Astro-specific options
+such as custom macro package names, whitespace handling, or runtime warning switches. See
+[Framework Config](/guides/framework-config) for details.
 
 ## Initialize Lingui for your output mode
 

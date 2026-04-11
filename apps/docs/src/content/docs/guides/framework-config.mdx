@@ -1,0 +1,178 @@
+---
+title: Framework Config
+description: Configure lingui-for framework options in lingui.config.ts.
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+`lingui-for-svelte` and `lingui-for-astro` can read framework-specific options from the same
+`lingui.config.ts` file that Lingui already uses for locales, catalogs, and extractors.
+
+## Start with the package helper
+
+Use `defineConfig` from the framework package you are configuring:
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [svelteExtractor],
+});
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [astroExtractor],
+});
+```
+
+  </TabItem>
+</Tabs>
+
+<Aside type="caution">
+
+Use `defineConfig` from `lingui-for-svelte/config` or `lingui-for-astro/config` when you add a
+`framework` section. Lingui's official `@lingui/conf` helper, or a plain object export without
+`defineConfig`, can still be loaded as a normal Lingui config, but framework-specific settings may
+be ignored.
+
+</Aside>
+
+## Add `framework` only when needed
+
+The `framework` field is optional. Add it only when you need framework-specific behavior such as:
+
+- `packages` for custom macro package names
+- `whitespace` for rich-text Component Macro whitespace handling
+- `runtimeWarnings` for generated runtime diagnostics
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  framework: {
+    svelte: {
+      packages: ["@acme/i18n/macro"],
+      whitespace: "auto",
+      runtimeWarnings: {
+        transContentOverride: "on",
+      },
+    },
+  },
+  extractors: [svelteExtractor],
+});
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  framework: {
+    astro: {
+      packages: ["@acme/i18n/macro"],
+      whitespace: "auto",
+      runtimeWarnings: {
+        transContentOverride: "on",
+      },
+    },
+  },
+  extractors: [astroExtractor],
+});
+```
+
+  </TabItem>
+</Tabs>
+
+The build transform and extractor both load this config. For example, if `whitespace` is defined
+under `framework.svelte`, the Svelte Vite plugin and `svelteExtractor` read the same value.
+
+## Mixed framework projects
+
+The available keys under `framework` are registered through TypeScript module augmentation.
+Importing a package's `config` or `extractor` entrypoint enables that package's key.
+
+If one config file covers both Svelte and Astro, import both packages:
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  framework: {
+    astro: {
+      whitespace: "auto",
+    },
+    svelte: {
+      whitespace: "auto",
+    },
+  },
+  extractors: [astroExtractor, svelteExtractor],
+});
+```
+
+In this example, `lingui-for-astro/config` provides `defineConfig` and the Astro framework key.
+Importing `lingui-for-svelte/extractor` also augments the config registry, so `framework.svelte` is
+typed in the same file.
+
+## Explicit config sources
+
+With the default `lingui.config.*` file, framework plugins and extractors discover the config
+automatically.
+
+If your project uses a non-standard config path or an inline config object, pass it with the
+`config` option:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
+
+export default defineConfig({
+  plugins: [linguiForSvelte({ config: "./config/lingui.config.ts" })],
+});
+```
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [svelteExtractor({ config: "./config/lingui.config.ts" })],
+});
+```

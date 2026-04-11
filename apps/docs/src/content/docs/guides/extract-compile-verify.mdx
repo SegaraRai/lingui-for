@@ -34,8 +34,8 @@ In a mixed project, both extractors must be listed. For example, a SvelteKit pro
 utility files in plain TypeScript:
 
 ```ts title="lingui.config.ts"
-import { defineConfig } from "@lingui/conf";
 import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { defineConfig } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default defineConfig({
@@ -49,10 +49,26 @@ export default defineConfig({
 Without `babelExtractor`, any `t` call in a `.ts` file will compile correctly at build time but
 will not appear in the extracted catalog.
 
-When a framework transform has configurable behavior, keep the extractor aligned with it. For
-example, rich-text Component Macro whitespace should use the same `whitespace` mode in both the
-build transform and `svelteExtractor(...)` or `astroExtractor(...)`. See
-[Whitespace in Component Macros](/guides/whitespace-in-component-macros).
+When a framework transform has configurable behavior, put those settings under the matching
+`framework` key in `lingui.config.ts`. The build transform and extractor both load the same config,
+so a setting such as rich-text Component Macro whitespace can live in one place:
+
+```ts title="lingui.config.ts"
+import { defineConfig } from "lingui-for-svelte/config";
+import { svelteExtractor } from "lingui-for-svelte/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  framework: {
+    svelte: {
+      whitespace: "jsx",
+    },
+  },
+  extractors: [svelteExtractor],
+});
+```
+
+See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) for details.
 
 ## Which tools are responsible for what
 

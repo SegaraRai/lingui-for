@@ -33,6 +33,7 @@ Some Astro constructs conflict with runtime rich-text rendering and are intentio
 - `set:html` takes precedence if both `set:html` and `set:text` appear on the same wrapper.
 - If a wrapper uses one of these holes and also has explicit child content, the generated runtime
   code warns by default in development so that the override is visible while authoring. You can
-  disable that behavior through the unplugin `runtimeWarnings` option if you want to opt out.
+  disable that behavior through `framework.astro.runtimeWarnings` in `lingui.config.ts` if you want
+  to opt out.
 
 For the framework-agnostic `Trans` model, see [Trans](/macros/trans-component).
