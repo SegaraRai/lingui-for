@@ -77,20 +77,13 @@ pub enum RuntimeWarningMode {
 }
 
 /// Runtime warning switches used while generating framework runtime helpers.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify, Default)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeWarningOptions {
     /// Controls warnings for rich-text `<Trans>` content holes that ignore translated children.
+    #[serde(default)]
     pub trans_content_override: RuntimeWarningMode,
-}
-
-impl Default for RuntimeWarningOptions {
-    fn default() -> Self {
-        Self {
-            trans_content_override: RuntimeWarningMode::On,
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
