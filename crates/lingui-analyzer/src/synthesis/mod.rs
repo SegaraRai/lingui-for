@@ -5,8 +5,9 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{
-    IndexedText, MappedText, MappedTextError, NormalizationEdit, RenderedMappedText, Span,
-    build_copy_map, build_copy_map_from_anchors_without_end, sort_and_dedup_normalization_edits,
+    IndexedSourceMap, IndexedText, MappedText, MappedTextError, NormalizationEdit,
+    RenderedMappedText, Span, build_copy_map, build_copy_map_from_anchors_without_end,
+    sort_and_dedup_normalization_edits,
 };
 use crate::framework::{MacroCandidate, MacroCandidateStrategy, MacroImport};
 
@@ -288,20 +289,38 @@ fn append_normalized_chunk(
                 .insertions
                 .get(*insertion_index)
                 .is_some_and(|(at, _)| *at == span.end);
-            let chunk_map = if chunk_ends_before_unmapped_replacement {
-                build_copy_map_from_anchors_without_end(
-                    context.source_name,
-                    context.source,
-                    span,
-                    &chunk_anchors,
-                )
-            } else {
-                build_copy_map(context.source_name, context.source, span, &chunk_anchors)
-            };
+            let chunk_map = build_normalized_chunk_copy_map(
+                context,
+                span,
+                &chunk_anchors,
+                chunk_ends_before_unmapped_replacement,
+            );
             rendered.push(chunk, chunk_map);
             *generated_len += chunk.len();
         }
         cursor = next_insertion;
+    }
+}
+
+fn build_normalized_chunk_copy_map(
+    context: &MappedNormalizationContext<'_>,
+    span: Span,
+    chunk_anchors: &[usize],
+    chunk_ends_before_unmapped_replacement: bool,
+) -> Option<IndexedSourceMap> {
+    if chunk_ends_before_unmapped_replacement {
+        // The following replacement text is intentionally unmapped. Use only
+        // explicit source/newline anchors collected by collect_chunk_copy_anchors
+        // and omit the chunk end anchor so snippet/AST anchors cannot stitch the
+        // unmapped normalized text back to the original gap.
+        build_copy_map_from_anchors_without_end(
+            context.source_name,
+            context.source,
+            span,
+            chunk_anchors,
+        )
+    } else {
+        build_copy_map(context.source_name, context.source, span, chunk_anchors)
     }
 }
 
