@@ -67,7 +67,7 @@ Configure Lingui extraction:
 
 ```ts
 import babelExtractor from "@lingui/cli/api/extractors/babel";
-import { defineConfig } from "@lingui/conf";
+import { defineConfig } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
 
 export default defineConfig({

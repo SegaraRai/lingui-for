@@ -65,7 +65,7 @@ Configure Lingui extraction:
 
 ```ts
 import babelExtractor from "@lingui/cli/api/extractors/babel";
-import { defineConfig } from "@lingui/conf";
+import { defineConfig } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
 
 export default defineConfig({
