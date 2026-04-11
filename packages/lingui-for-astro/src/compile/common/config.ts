@@ -18,7 +18,7 @@ import type { ParserOptions } from "@lingui-for/framework-core/vendor/babel-core
 import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 
 /**
- * Whitespace normalization mode for rich-text Component Macros in `.astro` files.
+ * Whitespace normalization mode for rich-text component macros in `.astro` files.
  *
  * Use `"astro"` for Astro-aware whitespace semantics, or `"jsx"` when you need JSX-compatible
  * normalization.
