@@ -69,9 +69,11 @@ Astro では、`astro.config.ts` の `vite.plugins` に追加します。
 
 `lingui.config.ts` に Babel エクストラクタを追加します。
 フレームワークプロジェクトでは、そのフレームワークの `defineConfig` ヘルパーを使い続け、両方のエクストラクタを並べて指定します。
-以下は Svelte の例で、`lingui-for-svelte/config` の `defineConfig` と `svelteExtractor` を `babelExtractor` と一緒に使っています。
 
-```ts title="lingui.config.ts (Svelte の例)"
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```ts title="lingui.config.ts"
 import babelExtractor from "@lingui/cli/api/extractors/babel";
 import { defineConfig } from "lingui-for-svelte/config";
 import { svelteExtractor } from "lingui-for-svelte/extractor";
@@ -84,8 +86,24 @@ export default defineConfig({
 });
 ```
 
-Astro では、`defineConfig` を `lingui-for-astro/config` から import し、`svelteExtractor` を
-`lingui-for-astro/extractor` の `astroExtractor` に置き換えます。`babelExtractor` は `extractors` 配列に残してください。
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```ts title="lingui.config.ts"
+import babelExtractor from "@lingui/cli/api/extractors/babel";
+import { defineConfig } from "lingui-for-astro/config";
+import { astroExtractor } from "lingui-for-astro/extractor";
+
+export default defineConfig({
+  locales: ["en", "ja"],
+  sourceLocale: "en",
+  catalogs: [{ path: "src/lib/i18n/locales/{locale}" }],
+  extractors: [astroExtractor, babelExtractor],
+});
+```
+
+  </TabItem>
+</Tabs>
 
 <Aside type="caution">
 
