@@ -52,7 +52,17 @@
   <h1 class="text-2xl font-semibold">{headline}</h1>
   <p class="text-sm">{summary}</p>
   <p class="text-sm">
-    <L4sRuntimeTrans />
+    <L4sRuntimeTrans {.../*i18n*/ {
+      id: "fgdhx6",
+      message: "\u30ED\u30B1\u30FC\u30EB <0>{localeLabel}</0> \u3067 <1>{0}</1> \u3092\u78BA\u8A8D\u3057\u3066\u3044\u307E\u3059\u3002",
+      values: {
+        0: String(selectedPath ?? ""),
+        localeLabel: localeLabel
+      }
+    }}>
+    {#snippet component_0(children)}<strong>{@render children?.()}</strong>{/snippet}
+    {#snippet component_1(children)}<span>{@render children?.()}</span>{/snippet}
+    </L4sRuntimeTrans>
   </p>
   <ul class="grid gap-2">
     {#each relatedPaths as path}

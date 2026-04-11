@@ -1,5 +1,5 @@
 import { i18n as _i18n } from "@lingui/core";
-import { Plural, Trans } from "lingui-for-svelte/macro";
+import { Trans as _Trans } from "@lingui/react";
 const __lf_0 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
@@ -302,41 +302,72 @@ const __lf_41 = __lingui_for_svelte_reactive_translation__(_i18n._(
   id: "OcCQjb",
   message: "Activity stream"
 }), "translate");
-const __lf_42 = <Trans>
-            Imported digest:{" "}<span><LinguiForSvelteHtml value={htmlDigest} /></span>
-          </Trans>;
-const __lf_43 = <Trans>
-            Also we can embed{" "}{"some text"}{" "}and{" "}<LinguiForSvelteHtml value={"<em>some HTML</em>"} />{" "}directly
-            in translations.
-          </Trans>;
-const __lf_44 = <Trans>
-            <p>Maybe we even have some nested content to summarize, like</p>{" "}<ul>
-              <li>
-                <em>{highlightedQueue.length} highlighted queue items</em> and
-              </li>
-              <li>a selected region of {selectedRegion}.</li>
-            </ul>
-          </Trans>;
+const __lf_42 = <_Trans {...
+/*i18n*/
+{
+  id: "FJeYAi",
+  message: "Imported digest: <0><1/></0>",
+  components: {
+    0: <span />,
+    1: <LinguiForSvelteHtml value={htmlDigest} />
+  }
+}} />;
+const __lf_43 = <_Trans {...
+/*i18n*/
+{
+  id: "JUNx+G",
+  message: "Also we can embed some text and <0/> directly in translations.",
+  components: {
+    0: <LinguiForSvelteHtml value={"<em>some HTML</em>"} />
+  }
+}} />;
+const __lf_44 = <_Trans {...
+/*i18n*/
+{
+  id: "cKxDiJ",
+  message: "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
+  values: {
+    0: highlightedQueue.length,
+    selectedRegion: selectedRegion
+  },
+  components: {
+    0: <p />,
+    1: <ul />,
+    2: <li />,
+    3: <em />,
+    4: <li />
+  }
+}} />;
 const __lf_45 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
   id: "UsgvkK",
   message: "Status digest"
 }), "translate");
-const __lf_46 = <Plural value={$highlightedQueue.length} one={_i18n._(
+const __lf_46 = <_Trans {...
 /*i18n*/
 {
-  id: "s0sXxO",
-  message: "There is one highlighted queue item."
-})} other={_i18n._(
-/*i18n*/
-{
-  id: "J4w9XN",
-  message: "There are {0} highlighted queue items.",
+  id: "8p/xVT",
+  message: "{0, plural, one {{1}} other {{2}}}",
   values: {
-    0: String($highlightedQueue.length)
+    0: $highlightedQueue.length,
+    1: _i18n._(
+    /*i18n*/
+    {
+      id: "s0sXxO",
+      message: "There is one highlighted queue item."
+    }),
+    2: _i18n._(
+    /*i18n*/
+    {
+      id: "J4w9XN",
+      message: "There are {0} highlighted queue items.",
+      values: {
+        0: String($highlightedQueue.length)
+      }
+    })
   }
-})} />;
+}} />;
 const __lf_47 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
