@@ -18,7 +18,7 @@ export const settingsLabel = msg`Open settings`;
 
 Then translate it from the renderer-specific file:
 
-```svelte title="Svelte"
+```svelte title="src/components/MyComponent.svelte"
 <script lang="ts">
   import { t } from "lingui-for-svelte/macro";
   import { welcome } from "../lib/messages";
@@ -27,7 +27,7 @@ Then translate it from the renderer-specific file:
 <p>{$t(welcome)}</p>
 ```
 
-```astro title="Astro"
+```astro title="src/components/MyComponent.astro"
 ---
 import { t } from "lingui-for-astro/macro";
 import { welcome } from "../lib/messages";
