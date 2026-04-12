@@ -17,7 +17,7 @@ export const settingsLabel = msg`Open settings`;
 
 そのうえで、描画系ごとのファイル側で翻訳します。
 
-```svelte title="Svelte"
+```svelte title="src/components/MyComponent.svelte"
 <script lang="ts">
   import { t } from "lingui-for-svelte/macro";
   import { welcome } from "../lib/messages";
@@ -26,7 +26,7 @@ export const settingsLabel = msg`Open settings`;
 <p>{$t(welcome)}</p>
 ```
 
-```astro title="Astro"
+```astro title="src/components/MyComponent.astro"
 ---
 import { t } from "lingui-for-astro/macro";
 import { welcome } from "../lib/messages";
