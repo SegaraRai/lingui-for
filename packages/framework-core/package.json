@@ -1,6 +1,6 @@
 {
   "name": "@lingui-for/framework-core",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Shared framework compile and runtime helpers for lingui-for packages.",
   "license": "MIT",
   "author": "SegaraRai",
