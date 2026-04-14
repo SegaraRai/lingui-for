@@ -10,6 +10,7 @@ import {
 import {
   EAGER_TRANSLATION_WRAPPER,
   EXPORT_CREATE_LINGUI_ACCESSORS,
+  EXPORT_RUNTIME_TRANS,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
   REACTIVE_TRANSLATION_WRAPPER,
@@ -43,7 +44,7 @@ export function createSvelteFrameworkConventions(
     runtime: {
       package: PACKAGE_RUNTIME,
       exports: {
-        trans: "RuntimeTrans",
+        trans: EXPORT_RUNTIME_TRANS,
         i18nAccessor: EXPORT_CREATE_LINGUI_ACCESSORS,
       },
     },

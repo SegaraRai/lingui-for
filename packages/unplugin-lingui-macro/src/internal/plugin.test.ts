@@ -1,4 +1,5 @@
 import dedent from "dedent";
+import type { UnpluginBuildContext, UnpluginContext } from "unplugin";
 import { describe, expect, test } from "vite-plus/test";
 
 import type { LinguiMacroPluginOptions } from "../types.ts";
@@ -9,13 +10,13 @@ async function runTransform(
   id: string,
   options?: LinguiMacroPluginOptions,
 ) {
-  const plugin = unpluginFactory(options, { framework: "vite" } as never);
+  const plugin = unpluginFactory(options, { framework: "vite" });
   const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
   const transform = pluginInstance?.transform;
   const runTransform =
     typeof transform === "function" ? transform : transform?.handler;
 
-  return runTransform?.call({} as never, code, id);
+  return runTransform?.call(createUnpluginContext(), code, id);
 }
 
 function getCode(result: Awaited<ReturnType<typeof runTransform>>) {
@@ -107,3 +108,7 @@ describe("unplugin-lingui-macro", () => {
     );
   });
 });
+
+function createUnpluginContext(): UnpluginBuildContext & UnpluginContext {
+  return {} as UnpluginBuildContext & UnpluginContext;
+}

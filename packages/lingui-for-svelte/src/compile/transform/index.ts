@@ -3,18 +3,13 @@ import type { LinguiConfigNormalized } from "@lingui/conf";
 import {
   buildSvelteCompilePlan,
   finishSvelteCompile,
-} from "@lingui-for/framework-core/compile";
-import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
-import {
   parseCanonicalSourceMap,
   toBabelSourceMap,
   type CanonicalSourceMap,
 } from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
 
-import {
-  resolveSvelteWhitespace,
-  type LinguiSvelteFrameworkConfig,
-} from "../common/config.ts";
+import type { LinguiSvelteFrameworkConfig } from "../common/config.ts";
 import { createSvelteFrameworkConventions } from "../common/conventions.ts";
 import { lowerSvelteTransformPrograms } from "../lower/transform.ts";
 
@@ -114,7 +109,7 @@ export async function transformSvelte(
     source,
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
-    whitespace: resolveSvelteWhitespace(frameworkConfig.whitespace ?? "svelte"),
+    whitespace: frameworkConfig.whitespace ?? "svelte",
     runtimeWarnings: frameworkConfig.runtimeWarnings,
     conventions: createSvelteFrameworkConventions(linguiConfig, {
       packages: frameworkConfig.packages,

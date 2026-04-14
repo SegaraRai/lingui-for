@@ -58,7 +58,7 @@ be ignored.
 
 The `framework` field is optional. Add it only when you need framework-specific behavior such as:
 
-- `packages` for custom macro package names
+- `packages` for replacing the framework macro package name
 - `whitespace` for rich-text Component Macro whitespace handling
 - `runtimeWarnings` for generated runtime diagnostics
 
@@ -115,6 +115,8 @@ export default defineConfig({
 
 The build transform and extractor both load this config. For example, if `whitespace` is defined
 under `framework.svelte`, the Svelte Vite plugin and `svelteExtractor` read the same value.
+When `packages` is set, it replaces the default framework macro package name rather than adding to
+it. Include the default package name explicitly if the project still imports it.
 
 ## Mixed framework projects
 

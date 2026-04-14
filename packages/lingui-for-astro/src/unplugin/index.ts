@@ -43,9 +43,8 @@ export const unpluginFactory: UnpluginFactory<
 
       const activeConfig = await configResolver.getConfig();
 
-      const astroPackages = [
+      const astroPackages = activeConfig.frameworkConfig.packages ?? [
         PACKAGE_MACRO,
-        ...(activeConfig.frameworkConfig.packages ?? []),
       ];
       if (!mayContainLinguiMacroImport(code, astroPackages)) {
         return null;

@@ -9,6 +9,7 @@ import {
 
 import {
   EXPORT_CREATE_LINGUI_ACCESSORS,
+  EXPORT_RUNTIME_TRANS,
   PACKAGE_MACRO,
   PACKAGE_RUNTIME,
   RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS,
@@ -29,9 +30,8 @@ export function createAstroFrameworkConventions(
         [
           "core",
           createMacroPackage(
-            linguiConfig.macro?.corePackage ?? [
-              ...LINGUI_STANDARD_CORE_MACRO_PACKAGES,
-            ],
+            linguiConfig.macro?.corePackage ??
+              LINGUI_STANDARD_CORE_MACRO_PACKAGES,
           ),
         ],
         ["astro", createMacroPackage(options?.packages ?? [PACKAGE_MACRO])],
@@ -40,7 +40,7 @@ export function createAstroFrameworkConventions(
     runtime: {
       package: PACKAGE_RUNTIME,
       exports: {
-        trans: "RuntimeTrans",
+        trans: EXPORT_RUNTIME_TRANS,
         i18nAccessor: EXPORT_CREATE_LINGUI_ACCESSORS,
       },
     },

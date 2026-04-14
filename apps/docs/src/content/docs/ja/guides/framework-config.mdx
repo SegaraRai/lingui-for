@@ -56,7 +56,7 @@ Lingui 公式の `@lingui/conf` ヘルパーや、`defineConfig` を使わない
 `framework` フィールドは任意です。
 次のようなフレームワーク固有の振る舞いが必要な場合だけ追加してください。
 
-- カスタムのマクロパッケージ名を指定する `packages`
+- フレームワーク用マクロパッケージ名を置き換える `packages`
 - リッチテキストのコンポーネントマクロにおける空白処理を指定する `whitespace`
 - 実行時診断の生成を制御する `runtimeWarnings`
 
@@ -113,6 +113,8 @@ export default defineConfig({
 
 ビルド変換とエクストラクタはどちらもこの設定を読み込みます。
 たとえば `framework.svelte` の下に `whitespace` を定義すると、Svelte Vite プラグインと `svelteExtractor` が同じ値を参照します。
+`packages` を設定すると、既定のフレームワーク用マクロパッケージ名に追加するのではなく置き換えます。
+既定のパッケージ名も引き続き import する場合は、明示的に含めてください。
 
 ## 複数フレームワークのプロジェクト
 

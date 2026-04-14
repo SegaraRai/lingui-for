@@ -16,8 +16,10 @@ import {
   type LinguiConfigSource,
 } from "@lingui-for/framework-core/config";
 
-import type { LinguiSvelteFrameworkConfig } from "../common/config.ts";
-import { loadLinguiConfig, resolveSvelteWhitespace } from "../common/config.ts";
+import {
+  loadLinguiConfig,
+  type LinguiSvelteFrameworkConfig,
+} from "../common/config.ts";
 import { createSvelteFrameworkConventions } from "../common/conventions.ts";
 import { lowerSvelteExtractProgram } from "../lower/extract.ts";
 
@@ -72,9 +74,7 @@ function svelteExtractorFactory(
         source,
         sourceName: filename,
         syntheticName,
-        whitespace: resolveSvelteWhitespace(
-          extractorCtx.frameworkConfig.whitespace ?? "svelte",
-        ),
+        whitespace: extractorCtx.frameworkConfig.whitespace ?? "svelte",
         conventions: createSvelteFrameworkConventions(
           extractorCtx.linguiConfig,
           { packages: extractorCtx.frameworkConfig.packages },

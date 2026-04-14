@@ -87,6 +87,11 @@ export const RUNTIME_BINDING_TRANSLATE = "__l4s_translate";
 export const RUNTIME_BINDING_COMPONENT_RUNTIME_TRANS = "L4sRuntimeTrans";
 
 /**
+ * Runtime export name for the component used by lowered component macros.
+ */
+export const EXPORT_RUNTIME_TRANS = "RuntimeTrans";
+
+/**
  * Runtime export name used to create Lingui accessors for transformed Svelte components.
  *
  * This is referenced when the transform injects imports from the runtime package and needs

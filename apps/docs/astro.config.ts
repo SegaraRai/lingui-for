@@ -344,8 +344,7 @@ export default defineConfig({
       macroWorkbenchPlugin({ projectRoot }),
       tailwindcss(),
       stripWhitespace(),
-      // TODO: remove type assertion once Astro uses Vite 8
-      linguiForSvelte() as any,
+      linguiForSvelte(),
     ],
   },
 });

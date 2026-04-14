@@ -20,7 +20,6 @@ import {
 
 import {
   loadLinguiConfig,
-  resolveAstroWhitespace,
   type LinguiAstroFrameworkConfig,
 } from "../common/config.ts";
 import { createAstroFrameworkConventions } from "../common/conventions.ts";
@@ -75,9 +74,7 @@ function astroExtractorFactory(options?: AstroExtractorOptions): ExtractorType {
         source,
         sourceName: filename,
         syntheticName,
-        whitespace: resolveAstroWhitespace(
-          extractorCtx.frameworkConfig.whitespace ?? "astro",
-        ),
+        whitespace: extractorCtx.frameworkConfig.whitespace ?? "astro",
         conventions: createAstroFrameworkConventions(
           extractorCtx.linguiConfig,
           {

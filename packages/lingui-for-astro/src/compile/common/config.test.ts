@@ -8,7 +8,6 @@ import {
   getParserPlugins,
   loadLinguiConfig,
   normalizeLinguiConfig,
-  resolveAstroWhitespace,
 } from "./config.ts";
 
 const tempDirs: string[] = [];
@@ -34,7 +33,7 @@ describe("compile/common/config", () => {
     );
   });
 
-  test("accepts astro macro packages via top-level options", () => {
+  test("respects macro package replacement overrides", () => {
     const config = normalizeLinguiConfig(
       {
         macro: {
@@ -46,10 +45,11 @@ describe("compile/common/config", () => {
       },
     );
 
-    expect(config.macro?.corePackage).toContain("custom-core-macro");
-    expect(config.macro?.corePackage).toContain("lingui-for-astro/macro");
-    expect(config.macro?.jsxPackage).toContain("custom-astro-macro");
-    expect(config.macro?.jsxPackage).toContain("lingui-for-astro/macro");
+    expect(config.macro?.corePackage).toEqual([
+      "custom-astro-macro",
+      "custom-core-macro",
+    ]);
+    expect(config.macro?.jsxPackage).toEqual(["custom-astro-macro"]);
   });
 
   test("returns parser plugins including typescript and jsx", () => {
@@ -57,11 +57,6 @@ describe("compile/common/config", () => {
 
     expect(plugins).toContain("typescript");
     expect(plugins).toContain("jsx");
-  });
-
-  test("returns explicit astro whitespace modes", () => {
-    expect(resolveAstroWhitespace("astro")).toBe("astro");
-    expect(resolveAstroWhitespace("jsx")).toBe("jsx");
   });
 
   test("throws when no Lingui config file is found", async () => {

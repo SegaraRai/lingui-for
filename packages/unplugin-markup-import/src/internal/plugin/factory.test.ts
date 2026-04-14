@@ -69,7 +69,7 @@ describe("unplugin-markup-import lifecycle", () => {
           rootDir: fixtureDir,
           sourceDir: join(fixtureDir, "src"),
         },
-        {} as never,
+        { framework: "vite" },
       ) as PluginHooks;
       expect(plugin.rollup?.options).toBeTypeOf("function");
       expect(plugin.rolldown?.options).toBeTypeOf("function");
