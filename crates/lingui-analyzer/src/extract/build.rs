@@ -56,7 +56,7 @@ pub fn build_synthetic_module_from_plan(
         output.push_unmapped_dynamic(&target.declaration_id);
         output.push_unmapped(" = ");
         output.push(
-            &target.normalized_code,
+            &target.normalized_rendered.code,
             target.normalized_rendered.indexed_source_map.clone(),
         );
         output.push_unmapped(";\n");
@@ -137,7 +137,6 @@ mod tests {
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
             },
-            normalized_code: ls("t"),
             normalized_rendered: RenderedMappedText {
                 code: ls("t"),
                 indexed_source_map: None,
