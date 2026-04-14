@@ -1,8 +1,8 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
-  buildSvelteCompilePlan,
-  finishSvelteCompile,
+  buildSvelteTransformPlan,
+  finishSvelteTransform,
   parseCanonicalSourceMap,
   toBabelSourceMap,
   type CanonicalSourceMap,
@@ -93,7 +93,7 @@ export interface LinguiSvelteTransformArtifact {
  * @returns Rewritten source, source map, and intermediate artifacts, or `null` when the file
  * contains no Lingui macros that require rewriting.
  *
- * This is the main Svelte entry point for runtime compilation. Rust handles analysis, planning, and
+ * This is the main Svelte entry point for runtime transformation. Rust handles analysis, planning, and
  * final lowering; JS runs the Lingui/Babel passes needed to produce the intermediate programs that
  * the Rust finisher stitches back into `.svelte` output.
  */
@@ -105,49 +105,49 @@ export async function transformSvelte(
 
   await initWasmOnce();
 
-  const compilePlan = buildSvelteCompilePlan({
+  const transformPlan = buildSvelteTransformPlan({
     source,
     sourceName: filename,
-    syntheticName: `${filename}?rust-compile.tsx`,
+    syntheticName: `${filename}?rust-transform.tsx`,
     whitespace: frameworkConfig.whitespace ?? "svelte",
     runtimeWarnings: frameworkConfig.runtimeWarnings,
     conventions: createSvelteFrameworkConventions(linguiConfig, {
       packages: frameworkConfig.packages,
     }),
   });
-  if (compilePlan.common.declarationIds.length === 0) {
+  if (transformPlan.common.declarationIds.length === 0) {
     return null;
   }
 
   const syntheticMap = parseCanonicalSourceMap(
-    compilePlan.common.syntheticSourceMapJson,
+    transformPlan.common.syntheticSourceMapJson,
   );
   const runtimeBindings = {
-    createLinguiAccessors: compilePlan.runtimeBindings.createLinguiAccessors,
-    context: compilePlan.runtimeBindings.context,
-    getI18n: compilePlan.runtimeBindings.getI18n,
-    translate: compilePlan.runtimeBindings.translate,
+    createLinguiAccessors: transformPlan.runtimeBindings.createLinguiAccessors,
+    context: transformPlan.runtimeBindings.context,
+    getI18n: transformPlan.runtimeBindings.getI18n,
+    translate: transformPlan.runtimeBindings.translate,
     reactiveTranslationWrapper:
-      compilePlan.runtimeBindings.reactiveTranslationWrapper,
+      transformPlan.runtimeBindings.reactiveTranslationWrapper,
     eagerTranslationWrapper:
-      compilePlan.runtimeBindings.eagerTranslationWrapper,
+      transformPlan.runtimeBindings.eagerTranslationWrapper,
   };
-  const loweredFilename = `${compilePlan.common.syntheticName}?lowered`;
-  const contextualFilename = `${compilePlan.common.syntheticName}?contextual`;
+  const loweredFilename = `${transformPlan.common.syntheticName}?lowered`;
+  const contextualFilename = `${transformPlan.common.syntheticName}?contextual`;
   const { lowered, contextual } = lowerSvelteTransformPrograms(
-    compilePlan.common.syntheticSource,
+    transformPlan.common.syntheticSource,
     {
       loweredFilename,
       contextualFilename,
       inputSourceMap: toBabelSourceMap(syntheticMap),
-      lang: compilePlan.common.syntheticLang,
+      lang: transformPlan.common.syntheticLang,
       linguiConfig,
       runtimeBindings,
     },
   );
 
-  const finished = finishSvelteCompile({
-    plan: compilePlan,
+  const finished = finishSvelteTransform({
+    plan: transformPlan,
     source,
     transformedPrograms: {
       loweredCode: lowered.code,
@@ -165,8 +165,8 @@ export async function transformSvelte(
     map: finalMap,
     artifacts: {
       synthetic: {
-        filename: compilePlan.common.syntheticName,
-        code: compilePlan.common.syntheticSource,
+        filename: transformPlan.common.syntheticName,
+        code: transformPlan.common.syntheticSource,
         map: syntheticMap,
       },
       lowered: {

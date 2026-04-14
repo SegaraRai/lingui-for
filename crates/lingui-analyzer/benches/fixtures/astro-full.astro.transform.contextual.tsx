@@ -351,8 +351,8 @@ const __lf_42 = __l4a_i18n._(
 const __lf_43 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "3mPwkK",
-  message: "These notes mirror the kind of mixed script and template content that the compile benchmark should exercise."
+  id: "JpH47+",
+  message: "These notes mirror the kind of mixed script and template content that the transform benchmark should exercise."
 });
 const __lf_44 = __l4a_i18n._(
 /*i18n*/

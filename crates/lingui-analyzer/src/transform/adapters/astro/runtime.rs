@@ -5,7 +5,8 @@ use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
     node_text, span_text,
 };
-use crate::compile::runtime_component::{
+use crate::syntax::parse::{parse_astro, parse_tsx};
+use crate::transform::runtime_component::{
     RuntimeComponentError, append_rendered,
     convert_expression_for_runtime_trans as convert_expression_for_runtime_trans_shared,
     convert_jsx_named_attribute, copy_span, find_first_named_descendant, find_node_by_span,
@@ -14,8 +15,7 @@ use crate::compile::runtime_component::{
     spread_argument_node, spread_element_node, spread_prefix_start, translated_span,
     validate_runtime_placeholder_key,
 };
-use crate::compile::{CompileTarget, RuntimeWarningMode};
-use crate::syntax::parse::{parse_astro, parse_tsx};
+use crate::transform::{RuntimeWarningMode, TransformTarget};
 
 use super::AstroAdapterError;
 
@@ -31,14 +31,14 @@ struct AstroRuntimeLoweringContext<'a> {
     source: &'a IndexedText<'a>,
     input: &'a MappedText<'a>,
     original_input: MappedText<'a>,
-    target: &'a CompileTarget,
+    target: &'a TransformTarget,
     runtime_component_name: &'a LeanString,
 }
 
 pub(crate) fn lower_runtime_component_markup(
     source_name: &LeanString,
     original_source: &LeanString,
-    target: &CompileTarget,
+    target: &TransformTarget,
     declaration: &RenderedMappedText,
     runtime_component_name: LeanString,
     runtime_warning_mode: RuntimeWarningMode,
@@ -461,7 +461,7 @@ fn convert_expression_for_runtime_trans(
 fn collect_component_slot_callbacks(
     original_input: &MappedText<'_>,
     original_source: &LeanString,
-    target: &CompileTarget,
+    target: &TransformTarget,
     transformed_source: &str,
     node: Node<'_>,
     base_offset: isize,
@@ -506,7 +506,7 @@ fn collect_component_slot_callbacks(
 fn collect_component_slot_callbacks_from_source(
     original_input: &MappedText<'_>,
     original_source: &LeanString,
-    target: &CompileTarget,
+    target: &TransformTarget,
     keys: &[LeanString],
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<AstroLoweredComponentSlots, AstroAdapterError> {
@@ -838,12 +838,12 @@ mod tests {
     use lean_string::LeanString;
 
     use crate::common::{RenderedMappedText, Span};
-    use crate::compile::{
-        CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-        RuntimeWarningMode,
-    };
     use crate::framework::MacroFlavor;
     use crate::synthesis::NormalizedSegment;
+    use crate::transform::{
+        RuntimeWarningMode, TransformTarget, TransformTargetContext, TransformTargetOutputKind,
+        TransformTranslationMode,
+    };
 
     use super::lower_runtime_component_markup;
 
@@ -851,8 +851,8 @@ mod tests {
         LeanString::from(text)
     }
 
-    fn component_target(source: &LeanString) -> CompileTarget {
-        CompileTarget {
+    fn component_target(source: &LeanString) -> TransformTarget {
+        TransformTarget {
             declaration_id: ls("__trans"),
             original_span: Span::new(0, source.len()),
             normalized_span: Span::new(0, source.len()),
@@ -860,9 +860,9 @@ mod tests {
             local_name: ls("Trans"),
             imported_name: ls("Trans"),
             flavor: MacroFlavor::Direct,
-            context: CompileTargetContext::Template,
-            output_kind: CompileTargetOutputKind::Component,
-            translation_mode: CompileTranslationMode::Contextual,
+            context: TransformTargetContext::Template,
+            output_kind: TransformTargetOutputKind::Component,
+            translation_mode: TransformTranslationMode::Contextual,
             normalized_segments: Vec::<NormalizedSegment>::new(),
         }
     }

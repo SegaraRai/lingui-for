@@ -499,8 +499,8 @@
     ]
   },
   {
-    "id": "3mPwkK",
-    "message": "These notes mirror the kind of mixed script and template content that the compile benchmark should exercise.",
+    "id": "JpH47+",
+    "message": "These notes mirror the kind of mixed script and template content that the transform benchmark should exercise.",
     "placeholders": {},
     "origin": [
       "astro-full.astro",

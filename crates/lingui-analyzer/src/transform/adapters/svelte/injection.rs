@@ -1,15 +1,15 @@
 use lean_string::LeanString;
 
 use crate::common::{IndexedText, Span, build_span_anchor_map, span_text};
-use crate::compile::CompileReplacementInternal;
 use crate::conventions::FrameworkConventions;
+use crate::transform::TransformReplacementInternal;
 
-use super::{SvelteAdapterError, SvelteCompilePlan, SvelteCompileRuntimeBindings};
+use super::{SvelteAdapterError, SvelteTransformPlan, SvelteTransformRuntimeBindings};
 
 pub(super) fn append_runtime_injection_replacements(
-    plan: &SvelteCompilePlan,
+    plan: &SvelteTransformPlan,
     source: &LeanString,
-    replacements: &mut Vec<CompileReplacementInternal>,
+    replacements: &mut Vec<TransformReplacementInternal>,
 ) -> Result<(), SvelteAdapterError> {
     let indexed_source = IndexedText::new(source);
     let runtime_bindings = &plan.runtime_bindings;
@@ -50,7 +50,7 @@ pub(super) fn append_runtime_injection_replacements(
                 anchor_span.start,
                 anchor_span.end,
             );
-            replacements.push(CompileReplacementInternal::new(
+            replacements.push(TransformReplacementInternal::new(
                 LeanString::from_static_str("__runtime_prelude"),
                 insertion_start,
                 insertion_start,
@@ -61,7 +61,7 @@ pub(super) fn append_runtime_injection_replacements(
         }
 
         if !injections.suffix.is_empty() {
-            replacements.push(CompileReplacementInternal::new(
+            replacements.push(TransformReplacementInternal::new(
                 LeanString::from_static_str("__runtime_suffix"),
                 instance_script.content_span.end,
                 instance_script.content_span.end,
@@ -100,7 +100,7 @@ pub(super) fn append_runtime_injection_replacements(
         insertion_start,
         insertion_start,
     );
-    replacements.push(CompileReplacementInternal::new(
+    replacements.push(TransformReplacementInternal::new(
         LeanString::from_static_str("__runtime_script_block"),
         insertion_start,
         insertion_start,
@@ -118,7 +118,7 @@ struct RuntimeInsertions {
 
 fn create_runtime_binding_insertions(
     original_script_content: &str,
-    runtime_bindings: &SvelteCompileRuntimeBindings,
+    runtime_bindings: &SvelteTransformRuntimeBindings,
     include_lingui_context: bool,
     include_trans_component: bool,
     conventions: &FrameworkConventions,

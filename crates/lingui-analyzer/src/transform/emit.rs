@@ -9,8 +9,8 @@ use crate::common::{
 
 use super::adapters::AdapterError;
 use super::{
-    CompileReplacementInternal, CompileReplacementOutputInternal, FinishedCompileInternal,
-    FrameworkCompilePlan,
+    FinishedTransformInternal, FrameworkTransformPlan, TransformReplacementInternal,
+    TransformReplacementOutputInternal,
 };
 
 #[derive(thiserror::Error, Debug)]
@@ -23,15 +23,15 @@ pub enum EmitError {
     Adapter(#[from] AdapterError),
 }
 
-pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
+pub(crate) fn collect_transform_replacements_internal<P: FrameworkTransformPlan>(
     plan: &P,
     source: &LeanString,
     transformed_declarations: &BTreeMap<LeanString, RenderedMappedText>,
-) -> Result<Vec<CompileReplacementInternal>, EmitError> {
+) -> Result<Vec<TransformReplacementInternal>, EmitError> {
     let mut replacements = Vec::new();
     let common = plan.common();
     replacements.extend(common.import_removals.iter().map(|range| {
-        CompileReplacementInternal::new(
+        TransformReplacementInternal::new(
             LeanString::from(format!("__import_remove_{}_{}", range.start, range.end)),
             range.start,
             range.end,
@@ -54,7 +54,7 @@ pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
             get_source_line_indent(source, target.original_span.start),
         )?;
 
-        replacements.push(CompileReplacementInternal::new(
+        replacements.push(TransformReplacementInternal::new(
             target.declaration_id.clone(),
             target.original_span.start,
             target.original_span.end,
@@ -77,20 +77,20 @@ pub(crate) fn collect_compile_replacements_internal<P: FrameworkCompilePlan>(
     Ok(replacements)
 }
 
-pub(crate) fn finish_compile_from_internal_replacements(
+pub(crate) fn finish_transform_from_internal_replacements(
     source: &LeanString,
     source_name: &LeanString,
     source_anchors: &[usize],
-    replacements: Vec<CompileReplacementInternal>,
-) -> Result<FinishedCompileInternal, EmitError> {
+    replacements: Vec<TransformReplacementInternal>,
+) -> Result<FinishedTransformInternal, EmitError> {
     let mapped =
         assemble_output_with_source_map(source, source_name, source_anchors, &replacements)?;
     let replacements = replacements
         .into_iter()
-        .map(CompileReplacementOutputInternal::from)
+        .map(TransformReplacementOutputInternal::from)
         .collect();
 
-    Ok(FinishedCompileInternal {
+    Ok(FinishedTransformInternal {
         code: mapped.code,
         source_name: source_name.clone(),
         source_map: mapped.indexed_source_map,
@@ -102,7 +102,7 @@ fn assemble_output_with_source_map(
     source: &LeanString,
     source_name: &LeanString,
     source_anchors: &[usize],
-    replacements: &[CompileReplacementInternal],
+    replacements: &[TransformReplacementInternal],
 ) -> Result<RenderedMappedText, EmitError> {
     let indexed_source = IndexedText::new(source);
     let finalized = replacements

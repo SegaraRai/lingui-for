@@ -8,11 +8,11 @@ use crate::common::{
 };
 
 use super::emit::{
-    EmitError, collect_compile_replacements_internal, finish_compile_from_internal_replacements,
+    EmitError, collect_transform_replacements_internal, finish_transform_from_internal_replacements,
 };
 use super::{
-    AdapterError, CompileTargetOutputKind, CompileTranslationMode, FinishedCompileInternal,
-    FrameworkCompilePlan, TransformedPrograms,
+    AdapterError, FinishedTransformInternal, FrameworkTransformPlan, TransformTargetOutputKind,
+    TransformTranslationMode, TransformedPrograms,
 };
 
 #[derive(thiserror::Error, Debug)]
@@ -25,14 +25,15 @@ pub enum LowerError {
     CollectDeclarations(#[from] CollectDeclarationsError),
 }
 
-pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
+pub(crate) fn finish_transform<P: FrameworkTransformPlan>(
     plan: &P,
     source: &LeanString,
     transformed_programs: &TransformedPrograms,
-) -> Result<FinishedCompileInternal, LowerError> {
+) -> Result<FinishedTransformInternal, LowerError> {
     let lowered_declarations = lower_transformed_declarations(plan, source, transformed_programs)?;
-    let replacements = collect_compile_replacements_internal(plan, source, &lowered_declarations)?;
-    Ok(finish_compile_from_internal_replacements(
+    let replacements =
+        collect_transform_replacements_internal(plan, source, &lowered_declarations)?;
+    Ok(finish_transform_from_internal_replacements(
         source,
         &plan.common().source_name,
         &plan.common().source_anchors,
@@ -40,7 +41,7 @@ pub(crate) fn finish_compile<P: FrameworkCompilePlan>(
     )?)
 }
 
-fn lower_transformed_declarations<P: FrameworkCompilePlan>(
+fn lower_transformed_declarations<P: FrameworkTransformPlan>(
     plan: &P,
     source: &LeanString,
     transformed_programs: &TransformedPrograms,
@@ -57,7 +58,7 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
             continue;
         };
 
-        let declaration = if target.output_kind == CompileTargetOutputKind::Component {
+        let declaration = if target.output_kind == TransformTargetOutputKind::Component {
             plan.lower_runtime_component_markup(
                 &plan.common().source_name,
                 source,
@@ -75,7 +76,7 @@ fn lower_transformed_declarations<P: FrameworkCompilePlan>(
 
 fn collect_transformed_declarations(
     programs: &TransformedPrograms,
-) -> Result<BTreeMap<CompileTranslationMode, BTreeMap<LeanString, RenderedMappedText>>, LowerError>
+) -> Result<BTreeMap<TransformTranslationMode, BTreeMap<LeanString, RenderedMappedText>>, LowerError>
 {
     let mut declarations = BTreeMap::new();
     let lowered_source_map = programs
@@ -91,13 +92,13 @@ fn collect_transformed_declarations(
 
     if let Some(code) = &programs.lowered_code {
         declarations.insert(
-            CompileTranslationMode::Lowered,
+            TransformTranslationMode::Lowered,
             collect_declarations_from_program(code, lowered_source_map.as_ref())?,
         );
     }
     if let Some(code) = &programs.contextual_code {
         declarations.insert(
-            CompileTranslationMode::Contextual,
+            TransformTranslationMode::Contextual,
             collect_declarations_from_program(code, contextual_source_map.as_ref())?,
         );
     }
@@ -119,20 +120,20 @@ mod tests {
     use lean_string::LeanString;
 
     use crate::common::{ScriptLang, Span};
-    use crate::compile::adapters::{
-        SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
-    };
     use crate::conventions::{
         MacroConventions, MacroPackage, MacroPackageKind, RuntimeBindingSeeds, RuntimeConventions,
         RuntimeExportConventions,
     };
+    use crate::transform::adapters::{
+        SvelteTransformPlan, SvelteTransformRuntimeBindings, SvelteTransformScriptRegion,
+    };
     use crate::{
-        CommonCompilePlan, CompileTarget, CompileTargetContext, CompileTargetOutputKind,
-        CompileTranslationMode, FrameworkConventions, FrameworkKind, MacroFlavor,
-        NormalizedSegment, RuntimeRequirements, RuntimeWarningOptions, TransformedPrograms,
+        CommonTransformPlan, FrameworkConventions, FrameworkKind, MacroFlavor, NormalizedSegment,
+        RuntimeRequirements, RuntimeWarningOptions, TransformTarget, TransformTargetContext,
+        TransformTargetOutputKind, TransformTranslationMode, TransformedPrograms,
     };
 
-    use super::finish_compile;
+    use super::finish_transform;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)
@@ -181,17 +182,17 @@ mod tests {
 
     #[test]
     fn finishes_expression_replacements_with_indented_maps() {
-        let plan = SvelteCompilePlan {
-            common: CommonCompilePlan {
+        let plan = SvelteTransformPlan {
+            common: CommonTransformPlan {
                 source_name: ls("Component.svelte"),
-                synthetic_name: ls("Component.svelte?compile"),
+                synthetic_name: ls("Component.svelte?transform"),
                 synthetic_source: LeanString::new(),
                 synthetic_source_map_json: None,
                 source_anchors: Vec::new(),
                 synthetic_lang: ScriptLang::Ts,
                 conventions: test_svelte_conventions(),
                 declaration_ids: vec![ls("__lf_0")],
-                targets: vec![CompileTarget {
+                targets: vec![TransformTarget {
                     declaration_id: ls("__lf_0"),
                     original_span: Span::new(39, 48),
                     normalized_span: Span::new(40, 48),
@@ -199,9 +200,9 @@ mod tests {
                     local_name: ls("t"),
                     imported_name: ls("t"),
                     flavor: MacroFlavor::Reactive,
-                    context: CompileTargetContext::Template,
-                    output_kind: CompileTargetOutputKind::Expression,
-                    translation_mode: CompileTranslationMode::Contextual,
+                    context: TransformTargetContext::Template,
+                    output_kind: TransformTargetOutputKind::Expression,
+                    translation_mode: TransformTranslationMode::Contextual,
                     normalized_segments: vec![NormalizedSegment {
                         original_start: 8,
                         generated_start: 0,
@@ -215,7 +216,7 @@ mod tests {
                 needs_runtime_trans_component: false,
             },
             runtime_warnings: RuntimeWarningOptions::default(),
-            runtime_bindings: SvelteCompileRuntimeBindings {
+            runtime_bindings: SvelteTransformRuntimeBindings {
                 create_lingui_accessors: ls("createLinguiAccessors"),
                 context: ls("__l4s_ctx"),
                 get_i18n: ls("__l4s_getI18n"),
@@ -224,7 +225,7 @@ mod tests {
                 eager_translation_wrapper: ls("__lingui_for_svelte_eager_translation__"),
                 trans_component: ls("L4sRuntimeTrans"),
             },
-            instance_script: Some(SvelteCompileScriptRegion {
+            instance_script: Some(SvelteTransformScriptRegion {
                 outer_span: Span::new(0, 30),
                 content_span: Span::new(9, 20),
                 lang: ScriptLang::Ts,
@@ -239,7 +240,7 @@ mod tests {
             ..TransformedPrograms::default()
         };
 
-        let finished = finish_compile(&plan, &source, &transformed).expect("finish succeeds");
+        let finished = finish_transform(&plan, &source, &transformed).expect("finish succeeds");
 
         assert!(finished.replacements.len() >= 2);
         assert!(

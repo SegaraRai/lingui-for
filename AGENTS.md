@@ -11,6 +11,13 @@
 When writing tests, the most important thing is the accuracy of the test code. It’s not about having all tests pass.
 If you believe a test case is correct, don’t modify it; instead, **mark it as `test.fails`** so that you can review it later to determine whether the test or the implementation is incorrect.
 
+## Terminology
+
+- `extract`: Read source code and collect Lingui messages for catalogs. This path should not describe runtime code rewriting.
+- `transform`: Rewrite source code for runtime use. This includes macro lowering, runtime import injection, transform plans, and final transformed source generation.
+- `compile`: Use only as an umbrella term for shared TypeScript package structure that supports both extract and transform, such as `packages/*/src/compile` and `@lingui-for/framework-core/compile`. Do not use `compile` for transform-only Rust crate modules or APIs.
+- `lower`: A transform-stage implementation detail that rewrites framework macro forms into Lingui macro/runtime forms.
+
 ## Common Commands
 
 - `cargo test`: run Rust tests

@@ -1,8 +1,8 @@
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
-  buildAstroCompilePlan,
-  finishAstroCompile,
+  buildAstroTransformPlan,
+  finishAstroTransform,
   parseCanonicalSourceMap,
   toBabelSourceMap,
   type CanonicalSourceMap,
@@ -89,7 +89,7 @@ export interface LinguiAstroTransformArtifact {
  * @returns Rewritten source, source map, and intermediate artifacts, or `null` when the file
  * contains no Lingui macros that require rewriting.
  *
- * This is the main Astro entry point for runtime compilation. Rust handles analysis, planning, and
+ * This is the main Astro entry point for runtime transformation. Rust handles analysis, planning, and
  * final lowering; JS runs the Lingui/Babel passes needed to produce the intermediate programs that
  * the Rust finisher stitches back into `.astro` output.
  */
@@ -101,36 +101,36 @@ export async function transformAstro(
 
   await initWasmOnce();
 
-  const compilePlan = buildAstroCompilePlan({
+  const transformPlan = buildAstroTransformPlan({
     source,
     sourceName: filename,
-    syntheticName: `${filename}?rust-compile.tsx`,
+    syntheticName: `${filename}?rust-transform.tsx`,
     whitespace: frameworkConfig.whitespace ?? "astro",
     runtimeWarnings: frameworkConfig.runtimeWarnings,
     conventions: createAstroFrameworkConventions(linguiConfig, {
       packages: frameworkConfig.packages,
     }),
   });
-  if (compilePlan.common.declarationIds.length === 0) {
+  if (transformPlan.common.declarationIds.length === 0) {
     return null;
   }
 
   const syntheticMap = parseCanonicalSourceMap(
-    compilePlan.common.syntheticSourceMapJson,
+    transformPlan.common.syntheticSourceMapJson,
   );
-  const contextualFilename = `${compilePlan.common.syntheticName}?contextual`;
+  const contextualFilename = `${transformPlan.common.syntheticName}?contextual`;
   const contextual = lowerAstroTransformProgram(
-    compilePlan.common.syntheticSource,
+    transformPlan.common.syntheticSource,
     {
       filename: contextualFilename,
       linguiConfig,
       inputSourceMap: toBabelSourceMap(syntheticMap),
-      runtimeBinding: compilePlan.runtimeBindings.i18n,
+      runtimeBinding: transformPlan.runtimeBindings.i18n,
     },
   );
 
-  const finished = finishAstroCompile({
-    plan: compilePlan,
+  const finished = finishAstroTransform({
+    plan: transformPlan,
     source,
     transformedPrograms: {
       contextualCode: contextual.code,
@@ -147,8 +147,8 @@ export async function transformAstro(
     map: finalMap,
     artifacts: {
       synthetic: {
-        filename: compilePlan.common.syntheticName,
-        code: compilePlan.common.syntheticSource,
+        filename: transformPlan.common.syntheticName,
+        code: transformPlan.common.syntheticSource,
         map: syntheticMap,
       },
       contextual: {

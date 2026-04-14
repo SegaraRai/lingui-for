@@ -1,15 +1,15 @@
 use lean_string::LeanString;
 
 use crate::common::{IndexedText, Span, build_span_anchor_map};
-use crate::compile::CompileReplacementInternal;
 use crate::conventions::FrameworkConventions;
+use crate::transform::TransformReplacementInternal;
 
-use super::{AstroAdapterError, AstroCompilePlan, AstroCompileRuntimeBindings};
+use super::{AstroAdapterError, AstroTransformPlan, AstroTransformRuntimeBindings};
 
 pub(super) fn append_runtime_injection_replacements(
-    plan: &AstroCompilePlan,
+    plan: &AstroTransformPlan,
     source: &LeanString,
-    replacements: &mut Vec<CompileReplacementInternal>,
+    replacements: &mut Vec<TransformReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
     let indexed_source = IndexedText::new(source);
     let injections = build_frontmatter_injections(
@@ -47,7 +47,7 @@ pub(super) fn append_runtime_injection_replacements(
             anchor_span.start,
             anchor_span.end,
         );
-        replacements.push(CompileReplacementInternal::new(
+        replacements.push(TransformReplacementInternal::new(
             LeanString::from_static_str("__runtime_frontmatter_prelude"),
             frontmatter.prelude_insert_point,
             frontmatter.prelude_insert_point,
@@ -59,7 +59,7 @@ pub(super) fn append_runtime_injection_replacements(
         if !frontmatter.has_remaining_content_after_import_removal
             && let Some(range) = frontmatter.trailing_whitespace_range
         {
-            replacements.push(CompileReplacementInternal::new(
+            replacements.push(TransformReplacementInternal::new(
                 LeanString::from_static_str("__runtime_frontmatter_trailing_ws"),
                 range.start,
                 range.end,
@@ -70,7 +70,7 @@ pub(super) fn append_runtime_injection_replacements(
         }
 
         if !suffix.is_empty() {
-            replacements.push(CompileReplacementInternal::new(
+            replacements.push(TransformReplacementInternal::new(
                 LeanString::from_static_str("__runtime_frontmatter_suffix"),
                 frontmatter.content_span.end,
                 frontmatter.content_span.end,
@@ -91,7 +91,7 @@ pub(super) fn append_runtime_injection_replacements(
         0,
         0,
     );
-    replacements.push(CompileReplacementInternal::new(
+    replacements.push(TransformReplacementInternal::new(
         LeanString::from_static_str("__runtime_frontmatter_block"),
         0,
         0,
@@ -110,7 +110,7 @@ struct FrontmatterInjections {
 fn build_frontmatter_injections(
     include_astro_context: bool,
     include_runtime_trans: bool,
-    bindings: &AstroCompileRuntimeBindings,
+    bindings: &AstroTransformRuntimeBindings,
     conventions: &FrameworkConventions,
 ) -> Result<FrontmatterInjections, AstroAdapterError> {
     let mut prelude = LeanString::new();

@@ -9,10 +9,10 @@ use lingui_analyzer::framework::astro::AstroAdapter;
 use lingui_analyzer::framework::svelte::SvelteAdapter;
 use lingui_analyzer::framework::{AnalyzeOptions, FrameworkAdapter};
 use lingui_analyzer::{
-    AstroCompilePlan, AstroFinishCompileOptions, CompilePlanOptions, MacroCandidate,
-    MacroCandidateStrategy, SvelteCompilePlan, SvelteFinishCompileOptions, TransformedPrograms,
-    WhitespaceMode, build_astro_compile_plan, build_svelte_compile_plan,
-    build_synthetic_module_for_framework, finish_astro_compile, finish_svelte_compile,
+    AstroFinishTransformOptions, AstroTransformPlan, MacroCandidate, MacroCandidateStrategy,
+    SvelteFinishTransformOptions, SvelteTransformPlan, TransformPlanOptions, TransformedPrograms,
+    WhitespaceMode, build_astro_transform_plan, build_svelte_transform_plan,
+    build_synthetic_module_for_framework, finish_astro_transform, finish_svelte_transform,
 };
 
 #[path = "../tests/support/astro_conventions.rs"]
@@ -59,9 +59,9 @@ struct ExtractInputs {
 }
 
 #[derive(Clone)]
-enum CompilePlanCase {
-    Astro(AstroCompilePlan),
-    Svelte(SvelteCompilePlan),
+enum TransformPlanCase {
+    Astro(AstroTransformPlan),
+    Svelte(SvelteTransformPlan),
 }
 
 const FIXTURE_CASES: [FixtureCase; 4] = [
@@ -168,8 +168,8 @@ fn analyze_options(case: &FixtureCase) -> AnalyzeOptions {
     }
 }
 
-fn compile_plan_options(case: &FixtureCase) -> CompilePlanOptions {
-    CompilePlanOptions {
+fn transform_plan_options(case: &FixtureCase) -> TransformPlanOptions {
+    TransformPlanOptions {
         source: case.source.clone(),
         source_name: Some(case.source_name.clone()),
         synthetic_name: Some(LeanString::from_static_str("synthetic-extract.tsx")),
@@ -251,15 +251,15 @@ fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
     }
 }
 
-fn build_compile_plan(case: &FixtureCase) -> CompilePlanCase {
+fn build_transform_plan(case: &FixtureCase) -> TransformPlanCase {
     match case.framework {
-        FrameworkKind::Astro => CompilePlanCase::Astro(
-            build_astro_compile_plan(&compile_plan_options(case))
-                .expect("astro compile plan succeeds"),
+        FrameworkKind::Astro => TransformPlanCase::Astro(
+            build_astro_transform_plan(&transform_plan_options(case))
+                .expect("astro transform plan succeeds"),
         ),
-        FrameworkKind::Svelte => CompilePlanCase::Svelte(
-            build_svelte_compile_plan(&compile_plan_options(case))
-                .expect("svelte compile plan succeeds"),
+        FrameworkKind::Svelte => TransformPlanCase::Svelte(
+            build_svelte_transform_plan(&transform_plan_options(case))
+                .expect("svelte transform plan succeeds"),
         ),
     }
 }
@@ -348,23 +348,23 @@ fn bench_extract_build_only(c: &mut Criterion) {
     group.finish();
 }
 
-fn bench_compile_plan(c: &mut Criterion) {
-    let mut group = c.benchmark_group("compile_plan");
+fn bench_transform_plan(c: &mut Criterion) {
+    let mut group = c.benchmark_group("transform_plan");
     for case in FIXTURE_CASES {
         group.bench_with_input(
             BenchmarkId::new(framework_name(case.framework), case.name),
             &case,
             |b, case| {
-                let options = compile_plan_options(case);
+                let options = transform_plan_options(case);
                 b.iter(|| match case.framework {
                     FrameworkKind::Astro => {
-                        let plan = build_astro_compile_plan(black_box(&options))
-                            .expect("astro compile plan succeeds");
+                        let plan = build_astro_transform_plan(black_box(&options))
+                            .expect("astro transform plan succeeds");
                         black_box(plan);
                     }
                     FrameworkKind::Svelte => {
-                        let plan = build_svelte_compile_plan(black_box(&options))
-                            .expect("svelte compile plan succeeds");
+                        let plan = build_svelte_transform_plan(black_box(&options))
+                            .expect("svelte transform plan succeeds");
                         black_box(plan);
                     }
                 });
@@ -374,10 +374,10 @@ fn bench_compile_plan(c: &mut Criterion) {
     group.finish();
 }
 
-fn bench_finish_compile(c: &mut Criterion) {
-    let mut group = c.benchmark_group("finish_compile");
+fn bench_finish_transform(c: &mut Criterion) {
+    let mut group = c.benchmark_group("finish_transform");
     for case in FIXTURE_CASES {
-        let plan = build_compile_plan(&case);
+        let plan = build_transform_plan(&case);
         let transformed_programs: TransformedPrograms = case.transformed_programs.clone().into();
 
         group.bench_with_input(
@@ -385,24 +385,24 @@ fn bench_finish_compile(c: &mut Criterion) {
             &case,
             |b, case| {
                 b.iter(|| match &plan {
-                    CompilePlanCase::Astro(plan) => {
+                    TransformPlanCase::Astro(plan) => {
                         let finished =
-                            finish_astro_compile(black_box(&AstroFinishCompileOptions {
+                            finish_astro_transform(black_box(&AstroFinishTransformOptions {
                                 plan: plan.clone(),
                                 source: case.source.clone(),
                                 transformed_programs: transformed_programs.clone(),
                             }))
-                            .expect("astro finish compile succeeds");
+                            .expect("astro finish transform succeeds");
                         black_box(finished);
                     }
-                    CompilePlanCase::Svelte(plan) => {
+                    TransformPlanCase::Svelte(plan) => {
                         let finished =
-                            finish_svelte_compile(black_box(&SvelteFinishCompileOptions {
+                            finish_svelte_transform(black_box(&SvelteFinishTransformOptions {
                                 plan: plan.clone(),
                                 source: case.source.clone(),
                                 transformed_programs: transformed_programs.clone(),
                             }))
-                            .expect("svelte finish compile succeeds");
+                            .expect("svelte finish transform succeeds");
                         black_box(finished);
                     }
                 });
@@ -417,7 +417,7 @@ criterion_group!(
     bench_analyze,
     bench_extract,
     bench_extract_build_only,
-    bench_compile_plan,
-    bench_finish_compile
+    bench_transform_plan,
+    bench_finish_transform
 );
 criterion_main!(benches);

@@ -6,28 +6,28 @@ use crate::common::{
     EmbeddedScriptRegion, IndexedSourceMap, IndexedText, MappedText, RenderedMappedText,
     ScriptLang, Span, build_copy_map_from_anchors, build_span_anchor_map, span_text,
 };
-use crate::compile::{
-    CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
-    CompileTranslationMode, RuntimeRequirements,
-};
 use crate::conventions::FrameworkConventions;
 use crate::framework::svelte::SvelteAdapter;
 use crate::framework::{
     AnalyzeOptions, FrameworkAdapter, MacroCandidateKind, MacroFlavor, WhitespaceMode,
 };
-
-use super::super::CommonFrameworkCompileAnalysis;
-use super::{
-    SvelteAdapterError, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
-    SvelteFrameworkCompileAnalysis, validate_compile_targets,
+use crate::transform::{
+    RuntimeRequirements, TransformTarget, TransformTargetContext, TransformTargetOutputKind,
+    TransformTargetPrototype, TransformTranslationMode,
 };
 
-pub(crate) fn analyze_svelte_compile(
+use super::super::CommonFrameworkTransformAnalysis;
+use super::{
+    SvelteAdapterError, SvelteFrameworkTransformAnalysis, SvelteTransformRuntimeBindings,
+    SvelteTransformScriptRegion, validate_transform_targets,
+};
+
+pub(crate) fn analyze_svelte_transform(
     source: &LeanString,
     source_name: &LeanString,
     whitespace: WhitespaceMode,
     conventions: &FrameworkConventions,
-) -> Result<SvelteFrameworkCompileAnalysis, SvelteAdapterError> {
+) -> Result<SvelteFrameworkTransformAnalysis, SvelteAdapterError> {
     let analysis = SvelteAdapter.analyze(
         source,
         &AnalyzeOptions {
@@ -53,29 +53,29 @@ pub(crate) fn analyze_svelte_compile(
         .scripts
         .iter()
         .find(|script| !script.is_module)
-        .map(|script| compile_script_region(&script.region, script.is_typescript));
+        .map(|script| transform_script_region(&script.region, script.is_typescript));
     let module_script = analysis
         .semantic
         .scripts
         .iter()
         .find(|script| script.is_module)
-        .map(|script| compile_script_region(&script.region, script.is_typescript));
+        .map(|script| transform_script_region(&script.region, script.is_typescript));
     let mut prototypes = Vec::new();
 
     for script in &analysis.semantic.scripts {
         let context = if script.is_module {
-            CompileTargetContext::ModuleScript
+            TransformTargetContext::ModuleScript
         } else {
-            CompileTargetContext::InstanceScript
+            TransformTargetContext::InstanceScript
         };
         let translation_mode = if script.is_module {
-            CompileTranslationMode::Lowered
+            TransformTranslationMode::Lowered
         } else {
-            CompileTranslationMode::Contextual
+            TransformTranslationMode::Contextual
         };
 
         prototypes.extend(script.candidates.iter().cloned().map(|candidate| {
-            CompileTargetPrototype {
+            TransformTargetPrototype {
                 output_kind: classify_output_kind(candidate.kind),
                 candidate,
                 context,
@@ -86,11 +86,11 @@ pub(crate) fn analyze_svelte_compile(
 
     for expression in &analysis.semantic.template_expressions {
         prototypes.extend(expression.candidates.iter().cloned().map(|candidate| {
-            CompileTargetPrototype {
-                output_kind: CompileTargetOutputKind::Expression,
+            TransformTargetPrototype {
+                output_kind: TransformTargetOutputKind::Expression,
                 candidate,
-                context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Contextual,
+                context: TransformTargetContext::Template,
+                translation_mode: TransformTranslationMode::Contextual,
             }
         }));
     }
@@ -101,18 +101,18 @@ pub(crate) fn analyze_svelte_compile(
             .template_components
             .iter()
             .cloned()
-            .map(|component| CompileTargetPrototype {
-                output_kind: CompileTargetOutputKind::Component,
+            .map(|component| TransformTargetPrototype {
+                output_kind: TransformTargetOutputKind::Component,
                 candidate: component.candidate,
-                context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Contextual,
+                context: TransformTargetContext::Template,
+                translation_mode: TransformTranslationMode::Contextual,
             }),
     );
 
-    validate_compile_targets(source_name, source, &prototypes)?;
+    validate_transform_targets(source_name, source, &prototypes)?;
 
-    Ok(SvelteFrameworkCompileAnalysis {
-        common: CommonFrameworkCompileAnalysis {
+    Ok(SvelteFrameworkTransformAnalysis {
+        common: CommonFrameworkTransformAnalysis {
             imports,
             prototypes,
             import_removals,
@@ -138,20 +138,20 @@ pub(crate) fn analyze_svelte_compile(
     })
 }
 
-pub(crate) fn classify_output_kind(kind: MacroCandidateKind) -> CompileTargetOutputKind {
+pub(crate) fn classify_output_kind(kind: MacroCandidateKind) -> TransformTargetOutputKind {
     match kind {
-        MacroCandidateKind::Component => CompileTargetOutputKind::Component,
+        MacroCandidateKind::Component => TransformTargetOutputKind::Component,
         MacroCandidateKind::CallExpression | MacroCandidateKind::TaggedTemplateExpression => {
-            CompileTargetOutputKind::Expression
+            TransformTargetOutputKind::Expression
         }
     }
 }
 
-pub(crate) fn compile_script_region(
+pub(crate) fn transform_script_region(
     region: &EmbeddedScriptRegion,
     is_typescript: bool,
-) -> SvelteCompileScriptRegion {
-    SvelteCompileScriptRegion {
+) -> SvelteTransformScriptRegion {
+    SvelteTransformScriptRegion {
         outer_span: region.outer_span,
         content_span: region.inner_span,
         lang: if is_typescript {
@@ -162,9 +162,9 @@ pub(crate) fn compile_script_region(
     }
 }
 
-pub(crate) fn wrap_compile_source(
-    analysis: &SvelteFrameworkCompileAnalysis,
-    prototype: &CompileTargetPrototype,
+pub(crate) fn wrap_transform_source(
+    analysis: &SvelteFrameworkTransformAnalysis,
+    prototype: &TransformTargetPrototype,
     normalized_source: &RenderedMappedText,
 ) -> Result<RenderedMappedText, SvelteAdapterError> {
     let indexed_source = IndexedText::new(&normalized_source.code);
@@ -174,7 +174,7 @@ pub(crate) fn wrap_compile_source(
     );
     let source_name = LeanString::from_static_str("__normalized");
     let mut mapped = MappedText::new(&source_name, &normalized_source.code);
-    if prototype.output_kind == CompileTargetOutputKind::Expression {
+    if prototype.output_kind == TransformTargetOutputKind::Expression {
         match prototype.candidate.flavor {
             MacroFlavor::Reactive => {
                 let wrapper = analysis
@@ -278,27 +278,27 @@ fn collect_normalized_copy_anchors(
         .collect()
 }
 
-pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
+pub(crate) fn compute_runtime_requirements(targets: &[TransformTarget]) -> RuntimeRequirements {
     RuntimeRequirements {
         needs_runtime_i18n_binding: targets.iter().any(|target| {
-            target.translation_mode == CompileTranslationMode::Contextual
-                && target.output_kind == CompileTargetOutputKind::Expression
+            target.translation_mode == TransformTranslationMode::Contextual
+                && target.output_kind == TransformTargetOutputKind::Expression
                 && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
         }),
         needs_runtime_trans_component: targets
             .iter()
-            .any(|target| target.output_kind == CompileTargetOutputKind::Component),
+            .any(|target| target.output_kind == TransformTargetOutputKind::Component),
     }
 }
 
 pub(crate) fn create_runtime_bindings(
     declared_names: &[LeanString],
     conventions: &FrameworkConventions,
-) -> Result<SvelteCompileRuntimeBindings, SvelteAdapterError> {
+) -> Result<SvelteTransformRuntimeBindings, SvelteAdapterError> {
     let mut used = declared_names.iter().cloned().collect::<BTreeSet<_>>();
     let bindings = &conventions.bindings;
 
-    Ok(SvelteCompileRuntimeBindings {
+    Ok(SvelteTransformRuntimeBindings {
         create_lingui_accessors: allocate_unique_binding_name(
             &mut used,
             bindings

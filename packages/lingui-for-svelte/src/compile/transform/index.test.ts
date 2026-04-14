@@ -1683,7 +1683,7 @@ describe("transformSvelte source map discipline", () => {
     },
   ];
 
-  test("maps transformed and preserved compile ranges back to the original svelte file", async () => {
+  test("maps transformed and preserved transform ranges back to the original svelte file", async () => {
     const result = await expectTransformed(rangeSource, {
       filename: "/virtual/App.svelte",
     });

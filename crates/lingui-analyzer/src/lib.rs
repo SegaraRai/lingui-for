@@ -1,11 +1,11 @@
 pub mod common;
-pub mod compile;
 pub mod conventions;
 pub(crate) mod diagnostics;
 pub mod extract;
 pub mod framework;
 pub mod syntax;
 pub mod synthesis;
+pub mod transform;
 
 use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
@@ -13,20 +13,14 @@ use tsify::{Ts, Tsify};
 use wasm_bindgen::JsError;
 use wasm_bindgen::prelude::*;
 
-use crate::compile::{CompileError, finish_compile};
 use crate::conventions::FrameworkConventions;
 use crate::extract::{ExtractError, build_synthetic_module, reinsert_transformed_declarations};
 use crate::framework::astro::AstroAdapter;
 use crate::framework::svelte::{SvelteAdapter, validate_svelte_extract_candidates};
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, FrameworkError};
 use crate::synthesis::merge_owned_candidate_normalization_edits;
+use crate::transform::{TransformError, finish_transform};
 
-pub use compile::{
-    AstroCompilePlan, CommonCompilePlan, CompileReplacement, CompileTarget, CompileTargetContext,
-    CompileTargetOutputKind, CompileTranslationMode, FinishedCompile, RuntimeRequirements,
-    RuntimeWarningMode, RuntimeWarningOptions, SvelteCompilePlan, SvelteCompileRuntimeBindings,
-    SvelteCompileScriptRegion, TransformedPrograms,
-};
 pub use conventions::FrameworkKind;
 pub use extract::{
     ExtractTransformedProgram, ReinsertOptions, ReinsertedModule, SyntheticMapping,
@@ -38,6 +32,12 @@ pub use framework::{
 };
 pub use syntax::parse::ParseError;
 pub use synthesis::NormalizedSegment;
+pub use transform::{
+    AstroTransformPlan, CommonTransformPlan, FinishedTransform, RuntimeRequirements,
+    RuntimeWarningMode, RuntimeWarningOptions, SvelteTransformPlan, SvelteTransformRuntimeBindings,
+    SvelteTransformScriptRegion, TransformReplacement, TransformTarget, TransformTargetContext,
+    TransformTargetOutputKind, TransformTranslationMode, TransformedPrograms,
+};
 
 #[wasm_bindgen(typescript_custom_section)]
 const TS_APPEND_CONTENT: &'static str = r#"
@@ -53,7 +53,7 @@ pub enum AnalyzerError {
     #[error(transparent)]
     Extract(#[from] ExtractError),
     #[error(transparent)]
-    Compile(#[from] CompileError),
+    Transform(#[from] TransformError),
 }
 
 pub fn build_synthetic_module_for_framework(
@@ -193,10 +193,10 @@ fn retain_standalone_candidates(candidates: &mut Vec<MacroCandidate>) {
     candidates.retain(|candidate| candidate.strategy == MacroCandidateStrategy::Standalone);
 }
 
-pub fn build_svelte_compile_plan(
-    options: &CompilePlanOptions,
-) -> Result<SvelteCompilePlan, CompileError> {
-    SvelteCompilePlan::build(
+pub fn build_svelte_transform_plan(
+    options: &TransformPlanOptions,
+) -> Result<SvelteTransformPlan, TransformError> {
+    SvelteTransformPlan::build(
         &options.source,
         options
             .source_name
@@ -205,17 +205,17 @@ pub fn build_svelte_compile_plan(
         options
             .synthetic_name
             .as_ref()
-            .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
+            .unwrap_or(&LeanString::from_static_str("synthetic-transform.tsx")),
         options.whitespace.unwrap_or(WhitespaceMode::Svelte),
         options.conventions.clone(),
         options.runtime_warnings.clone().unwrap_or_default(),
     )
 }
 
-pub fn build_svelte_compile_plan_for_wasm(
-    options: &SvelteCompilePlanOptions,
-) -> Result<SvelteCompilePlan, CompileError> {
-    SvelteCompilePlan::build(
+pub fn build_svelte_transform_plan_for_wasm(
+    options: &SvelteTransformPlanOptions,
+) -> Result<SvelteTransformPlan, TransformError> {
+    SvelteTransformPlan::build(
         &options.source,
         options
             .source_name
@@ -224,7 +224,7 @@ pub fn build_svelte_compile_plan_for_wasm(
         options
             .synthetic_name
             .as_ref()
-            .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
+            .unwrap_or(&LeanString::from_static_str("synthetic-transform.tsx")),
         options
             .whitespace
             .map(WhitespaceMode::from)
@@ -234,10 +234,10 @@ pub fn build_svelte_compile_plan_for_wasm(
     )
 }
 
-pub fn build_astro_compile_plan(
-    options: &CompilePlanOptions,
-) -> Result<AstroCompilePlan, CompileError> {
-    AstroCompilePlan::build(
+pub fn build_astro_transform_plan(
+    options: &TransformPlanOptions,
+) -> Result<AstroTransformPlan, TransformError> {
+    AstroTransformPlan::build(
         &options.source,
         options
             .source_name
@@ -246,17 +246,17 @@ pub fn build_astro_compile_plan(
         options
             .synthetic_name
             .as_ref()
-            .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
+            .unwrap_or(&LeanString::from_static_str("synthetic-transform.tsx")),
         options.whitespace.unwrap_or(WhitespaceMode::Astro),
         options.conventions.clone(),
         options.runtime_warnings.clone().unwrap_or_default(),
     )
 }
 
-pub fn build_astro_compile_plan_for_wasm(
-    options: &AstroCompilePlanOptions,
-) -> Result<AstroCompilePlan, CompileError> {
-    AstroCompilePlan::build(
+pub fn build_astro_transform_plan_for_wasm(
+    options: &AstroTransformPlanOptions,
+) -> Result<AstroTransformPlan, TransformError> {
+    AstroTransformPlan::build(
         &options.source,
         options
             .source_name
@@ -265,7 +265,7 @@ pub fn build_astro_compile_plan_for_wasm(
         options
             .synthetic_name
             .as_ref()
-            .unwrap_or(&LeanString::from_static_str("synthetic-compile.tsx")),
+            .unwrap_or(&LeanString::from_static_str("synthetic-transform.tsx")),
         options
             .whitespace
             .map(WhitespaceMode::from)
@@ -275,27 +275,27 @@ pub fn build_astro_compile_plan_for_wasm(
     )
 }
 
-pub fn finish_svelte_compile(
-    options: &SvelteFinishCompileOptions,
-) -> Result<FinishedCompile, CompileError> {
-    Ok(finish_compile(
+pub fn finish_svelte_transform(
+    options: &SvelteFinishTransformOptions,
+) -> Result<FinishedTransform, TransformError> {
+    Ok(finish_transform(
         &options.plan,
         &options.source,
         &options.transformed_programs,
     )
-    .map_err(CompileError::Lower)?
+    .map_err(TransformError::Lower)?
     .into_public())
 }
 
-pub fn finish_astro_compile(
-    options: &AstroFinishCompileOptions,
-) -> Result<FinishedCompile, CompileError> {
-    Ok(finish_compile(
+pub fn finish_astro_transform(
+    options: &AstroFinishTransformOptions,
+) -> Result<FinishedTransform, TransformError> {
+    Ok(finish_transform(
         &options.plan,
         &options.source,
         &options.transformed_programs,
     )
-    .map_err(CompileError::Lower)?
+    .map_err(TransformError::Lower)?
     .into_public())
 }
 
@@ -371,7 +371,7 @@ pub fn wasm_build_svelte_synthetic_module(
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct CompilePlanOptions {
+pub struct TransformPlanOptions {
     pub source: LeanString,
     pub source_name: Option<LeanString>,
     pub synthetic_name: Option<LeanString>,
@@ -383,7 +383,7 @@ pub struct CompilePlanOptions {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct AstroCompilePlanOptions {
+pub struct AstroTransformPlanOptions {
     pub source: LeanString,
     pub source_name: Option<LeanString>,
     pub synthetic_name: Option<LeanString>,
@@ -395,7 +395,7 @@ pub struct AstroCompilePlanOptions {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct SvelteCompilePlanOptions {
+pub struct SvelteTransformPlanOptions {
     pub source: LeanString,
     pub source_name: Option<LeanString>,
     pub synthetic_name: Option<LeanString>,
@@ -429,8 +429,8 @@ pub struct SvelteSyntheticModuleOptions {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct SvelteFinishCompileOptions {
-    pub plan: SvelteCompilePlan,
+pub struct SvelteFinishTransformOptions {
+    pub plan: SvelteTransformPlan,
     pub source: LeanString,
     pub transformed_programs: TransformedPrograms,
 }
@@ -438,20 +438,20 @@ pub struct SvelteFinishCompileOptions {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct AstroFinishCompileOptions {
-    pub plan: AstroCompilePlan,
+pub struct AstroFinishTransformOptions {
+    pub plan: AstroTransformPlan,
     pub source: LeanString,
     pub transformed_programs: TransformedPrograms,
 }
 
-#[wasm_bindgen(js_name = "buildSvelteCompilePlan")]
-pub fn wasm_build_svelte_compile_plan(
-    options: Ts<SvelteCompilePlanOptions>,
-) -> Result<Ts<SvelteCompilePlan>, JsError> {
+#[wasm_bindgen(js_name = "buildSvelteTransformPlan")]
+pub fn wasm_build_svelte_transform_plan(
+    options: Ts<SvelteTransformPlanOptions>,
+) -> Result<Ts<SvelteTransformPlan>, JsError> {
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = build_svelte_compile_plan_for_wasm(&options)?;
+    let result = build_svelte_transform_plan_for_wasm(&options)?;
     Ok(result.into_ts()?)
 }
 
@@ -474,35 +474,35 @@ pub fn wasm_reinsert_transformed_declarations(
     Ok(result.into_ts()?)
 }
 
-#[wasm_bindgen(js_name = "buildAstroCompilePlan")]
-pub fn wasm_build_astro_compile_plan(
-    options: Ts<AstroCompilePlanOptions>,
-) -> Result<Ts<AstroCompilePlan>, JsError> {
+#[wasm_bindgen(js_name = "buildAstroTransformPlan")]
+pub fn wasm_build_astro_transform_plan(
+    options: Ts<AstroTransformPlanOptions>,
+) -> Result<Ts<AstroTransformPlan>, JsError> {
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = build_astro_compile_plan_for_wasm(&options)?;
+    let result = build_astro_transform_plan_for_wasm(&options)?;
     Ok(result.into_ts()?)
 }
 
-#[wasm_bindgen(js_name = "finishSvelteCompile")]
-pub fn wasm_finish_svelte_compile(
-    options: Ts<SvelteFinishCompileOptions>,
-) -> Result<Ts<FinishedCompile>, JsError> {
+#[wasm_bindgen(js_name = "finishSvelteTransform")]
+pub fn wasm_finish_svelte_transform(
+    options: Ts<SvelteFinishTransformOptions>,
+) -> Result<Ts<FinishedTransform>, JsError> {
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = finish_svelte_compile(&options)?;
+    let result = finish_svelte_transform(&options)?;
     Ok(result.into_ts()?)
 }
 
-#[wasm_bindgen(js_name = "finishAstroCompile")]
-pub fn wasm_finish_astro_compile(
-    options: Ts<AstroFinishCompileOptions>,
-) -> Result<Ts<FinishedCompile>, JsError> {
+#[wasm_bindgen(js_name = "finishAstroTransform")]
+pub fn wasm_finish_astro_transform(
+    options: Ts<AstroFinishTransformOptions>,
+) -> Result<Ts<FinishedTransform>, JsError> {
     console_error_panic_hook::set_once();
 
     let options = options.to_rust()?;
-    let result = finish_astro_compile(&options)?;
+    let result = finish_astro_transform(&options)?;
     Ok(result.into_ts()?)
 }

@@ -25,14 +25,14 @@ This document is for repository developers working on `crates/lingui-analyzer`, 
   - `framework/shared/` is only for analysis helpers shared by multiple frameworks; code outside `framework/` should not depend on it directly.
 - `src/synthesis/`
   - Converts analyzed macro candidates into normalized synthetic-source fragments and normalized segment metadata.
-  - This is the bridge between raw framework analysis and generated synthetic modules / compile synthetic source.
+  - This is the bridge between raw framework analysis and generated synthetic modules / transform synthetic source.
 - `src/extract/`
   - Extract pipeline.
   - Builds synthetic modules for external Lingui transforms, then reinserts transformed declarations back into the original framework source.
-- `src/compile/`
+- `src/transform/`
   - Transform pipeline.
-  - Builds compile plans, tracks compile targets, lowers transformed declarations back into framework runtime code, and emits final transformed source plus source maps.
-  - `compile/adapters/astro/` and `compile/adapters/svelte/` hold framework-specific transform behavior.
+  - Builds transform plans, tracks transform targets, lowers transformed declarations back into framework runtime code, and emits final transformed source plus source maps.
+  - `transform/adapters/astro/` and `transform/adapters/svelte/` hold framework-specific transform behavior.
 - `src/conventions.rs`
   - Framework/macro/runtime naming conventions shared by extract and transform.
 
@@ -40,8 +40,8 @@ This document is for repository developers working on `crates/lingui-analyzer`, 
 
 - Astro-specific analysis goes in `src/framework/astro/`.
 - Svelte-specific analysis goes in `src/framework/svelte/`.
-- Astro-specific transform-time behavior goes in `src/compile/adapters/astro/`.
-- Svelte-specific transform-time behavior goes in `src/compile/adapters/svelte/`.
+- Astro-specific transform-time behavior goes in `src/transform/adapters/astro/`.
+- Svelte-specific transform-time behavior goes in `src/transform/adapters/svelte/`.
 - Shared parsing belongs in `src/syntax/`.
 - Shared non-framework data structures/utilities belong in `src/common/`.
 - Place shared diagnostics in `src/diagnostics/`; callers should go through framework-specific modules.
@@ -105,14 +105,14 @@ flowchart TD
 
 Transform is split into two explicit boundaries:
 
-1. Build a framework-specific compile plan and synthetic compile source from one input file.
-2. Finish compilation by combining the original file, the compile plan, and externally transformed programs.
+1. Build a framework-specific transform plan and synthetic transform source from one input file.
+2. Finish transformation by combining the original file, the transform plan, and externally transformed programs.
 
 Important fan-out points:
 
-- One `.astro` or `.svelte` file can produce many compile targets.
-- Those targets are grouped into one synthetic compile source.
-- The plan-building boundary returns a framework-specific compile plan object that already contains the synthetic compile source and its metadata.
+- One `.astro` or `.svelte` file can produce many transform targets.
+- Those targets are grouped into one synthetic transform source.
+- The plan-building boundary returns a framework-specific transform plan object that already contains the synthetic transform source and its metadata.
 - External code transformation may return up to two transformed synthetic programs:
   - `lowered`
   - `contextual`
@@ -122,18 +122,18 @@ Important fan-out points:
 flowchart TD
   subgraph JS["JS / caller side"]
     J1["Original framework file<br/>.astro or .svelte source"]
-    J2["Call <code>buildSvelteCompilePlan(...)</code><br/>or <code>buildAstroCompilePlan(...)</code>"]
-    J3["Compile plan"]
+    J2["Call <code>buildSvelteTransformPlan(...)</code><br/>or <code>buildAstroTransformPlan(...)</code>"]
+    J3["Transform plan"]
     J4["External Lingui transform(s)"]
     J5["TransformedPrograms<br/>- lowered_code/map optional<br/>- contextual_code/map optional"]
-    J6["Call <code>finishSvelteCompile(...)</code><br/>or <code>finishAstroCompile(...)</code>"]
-    J7["FinishedCompile<br/>- code<br/>- source_map_json<br/>- replacements"]
+    J6["Call <code>finishSvelteTransform(...)</code><br/>or <code>finishAstroTransform(...)</code>"]
+    J7["FinishedTransform<br/>- code<br/>- source_map_json<br/>- replacements"]
   end
 
   subgraph Rust["Rust / lingui-analyzer"]
-    R1["Analyze framework source and build compile plan"]
-    R2["Compile plan build<br/>includes synthetic compile source + metadata"]
-    R3["Finish compile<br/><code>finish_compile(...)</code>"]
+    R1["Analyze framework source and build transform plan"]
+    R2["Transform plan build<br/>includes synthetic transform source + metadata"]
+    R3["Finish transform<br/><code>finish_transform(...)</code>"]
   end
 
   J1 -->|"pass <code>source</code>"| J2
@@ -151,18 +151,18 @@ flowchart TD
 
 ### Transform Boundary Notes
 
-- The compile plan is the only artifact that leaves the plan-building half of the transform flow.
-- The compile plan already contains the synthetic compile source (`synthetic_source`) and related metadata, so `finish*Compile(...)` does not accept a separate synthetic module/source argument.
-- `CompileTarget`s are declaration-scoped. One input file may produce many targets, each with:
+- The transform plan is the only artifact that leaves the plan-building half of the transform flow.
+- The transform plan already contains the synthetic transform source (`synthetic_source`) and related metadata, so `finish*Transform(...)` does not accept a separate synthetic module/source argument.
+- `TransformTarget`s are declaration-scoped. One input file may produce many targets, each with:
   - original span,
   - normalized span,
   - output kind,
   - translation mode,
   - normalized segments.
 - `TransformedPrograms` may contain one or both transformed synthetic programs, depending on which translation modes were needed for the file.
-- `finishSvelteCompile(...)` / `finishAstroCompile(...)` consume exactly three inputs:
+- `finishSvelteTransform(...)` / `finishAstroTransform(...)` consume exactly three inputs:
   - the original source file,
-  - the framework-specific compile plan,
+  - the framework-specific transform plan,
   - one `TransformedPrograms` value.
 - Final emission applies many declaration-level replacements and runtime injections to produce one output module.
 
@@ -173,5 +173,5 @@ When tracing a bug or implementing a feature, the most useful top-down order is 
 1. `src/lib.rs`
 2. `src/framework/*`
 3. `src/synthesis/mod.rs`
-4. `src/extract/*` or `src/compile/*`
+4. `src/extract/*` or `src/transform/*`
 5. `src/common/*`, `src/syntax/*`, `src/diagnostics/*` as supporting layers

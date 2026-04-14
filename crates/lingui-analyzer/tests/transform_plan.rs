@@ -3,9 +3,10 @@ use lean_string::LeanString;
 use sourcemap::DecodedMap;
 
 use lingui_analyzer::{
-    AstroCompilePlan, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-    RuntimeWarningOptions, SvelteCompilePlan, SvelteFinishCompileOptions, TransformedPrograms,
-    WhitespaceMode, build_synthetic_module_for_framework, finish_svelte_compile,
+    AstroTransformPlan, RuntimeWarningOptions, SvelteFinishTransformOptions, SvelteTransformPlan,
+    TransformTargetContext, TransformTargetOutputKind, TransformTranslationMode,
+    TransformedPrograms, WhitespaceMode, build_synthetic_module_for_framework,
+    finish_svelte_transform,
 };
 
 #[path = "support/astro_conventions.rs"]
@@ -20,11 +21,11 @@ fn ls(text: &str) -> LeanString {
     LeanString::from(text)
 }
 
-fn build_svelte_plan(source: &str, source_name: &str, synthetic_name: &str) -> SvelteCompilePlan {
+fn build_svelte_plan(source: &str, source_name: &str, synthetic_name: &str) -> SvelteTransformPlan {
     let source = ls(source);
     let source_name = ls(source_name);
     let synthetic_name = ls(synthetic_name);
-    SvelteCompilePlan::build(
+    SvelteTransformPlan::build(
         &source,
         &source_name,
         &synthetic_name,
@@ -32,14 +33,14 @@ fn build_svelte_plan(source: &str, source_name: &str, synthetic_name: &str) -> S
         svelte_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect("svelte compile plan should build")
+    .expect("svelte transform plan should build")
 }
 
-fn build_astro_plan(source: &str, source_name: &str, synthetic_name: &str) -> AstroCompilePlan {
+fn build_astro_plan(source: &str, source_name: &str, synthetic_name: &str) -> AstroTransformPlan {
     let source = ls(source);
     let source_name = ls(source_name);
     let synthetic_name = ls(synthetic_name);
-    AstroCompilePlan::build(
+    AstroTransformPlan::build(
         &source,
         &source_name,
         &synthetic_name,
@@ -47,11 +48,11 @@ fn build_astro_plan(source: &str, source_name: &str, synthetic_name: &str) -> As
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect("astro compile plan should build")
+    .expect("astro transform plan should build")
 }
 
 #[test]
-fn builds_common_svelte_compile_plan_with_runtime_metadata() {
+fn builds_common_svelte_transform_plan_with_runtime_metadata() {
     let source = indoc! {r#"
         <script module lang="ts">
           import { t } from "@lingui/core/macro";
@@ -73,13 +74,13 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
     let plan = build_svelte_plan(
         source,
         "/virtual/App.svelte",
-        "/virtual/App.svelte?compile.tsx",
+        "/virtual/App.svelte?transform.tsx",
     );
 
     assert_eq!(plan.common.source_name, "/virtual/App.svelte");
     assert_eq!(
         plan.common.synthetic_name,
-        "/virtual/App.svelte?compile.tsx"
+        "/virtual/App.svelte?transform.tsx"
     );
     assert_eq!(plan.common.targets.len(), 4);
     assert!(plan.runtime_requirements.needs_runtime_i18n_binding);
@@ -116,15 +117,15 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .common
         .targets
         .iter()
-        .find(|target| target.context == CompileTargetContext::ModuleScript)
+        .find(|target| target.context == TransformTargetContext::ModuleScript)
         .expect("module target");
     assert_eq!(
         module_target.translation_mode,
-        CompileTranslationMode::Lowered
+        TransformTranslationMode::Lowered
     );
     assert_eq!(
         module_target.output_kind,
-        CompileTargetOutputKind::Expression
+        TransformTargetOutputKind::Expression
     );
 
     let instance_target = plan
@@ -132,13 +133,13 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .targets
         .iter()
         .find(|target| {
-            target.context == CompileTargetContext::InstanceScript
-                && target.output_kind == CompileTargetOutputKind::Expression
+            target.context == TransformTargetContext::InstanceScript
+                && target.output_kind == TransformTargetOutputKind::Expression
         })
         .expect("instance expression target");
     assert_eq!(
         instance_target.translation_mode,
-        CompileTranslationMode::Contextual
+        TransformTranslationMode::Contextual
     );
 
     let template_expression_target = plan
@@ -146,25 +147,25 @@ fn builds_common_svelte_compile_plan_with_runtime_metadata() {
         .targets
         .iter()
         .find(|target| {
-            target.context == CompileTargetContext::Template
-                && target.output_kind == CompileTargetOutputKind::Expression
+            target.context == TransformTargetContext::Template
+                && target.output_kind == TransformTargetOutputKind::Expression
         })
         .expect("template expression target");
     assert_eq!(
         template_expression_target.translation_mode,
-        CompileTranslationMode::Contextual
+        TransformTranslationMode::Contextual
     );
 
     let component_target = plan
         .common
         .targets
         .iter()
-        .find(|target| target.output_kind == CompileTargetOutputKind::Component)
+        .find(|target| target.output_kind == TransformTargetOutputKind::Component)
         .expect("component target");
-    assert_eq!(component_target.context, CompileTargetContext::Template);
+    assert_eq!(component_target.context, TransformTargetContext::Template);
     assert_eq!(
         component_target.translation_mode,
-        CompileTranslationMode::Contextual
+        TransformTranslationMode::Contextual
     );
 }
 
@@ -188,15 +189,15 @@ fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
     let plan = build_svelte_plan(
         source,
         "/virtual/App.svelte",
-        "/virtual/App.svelte?compile.tsx",
+        "/virtual/App.svelte?transform.tsx",
     );
 
-    let finished = finish_svelte_compile(&SvelteFinishCompileOptions {
+    let finished = finish_svelte_transform(&SvelteFinishTransformOptions {
         plan,
         source: ls(source),
         transformed_programs: TransformedPrograms::default(),
     })
-    .expect("svelte compile should finish");
+    .expect("svelte transform should finish");
 
     let prelude = finished
         .replacements
@@ -223,7 +224,7 @@ fn anchors_svelte_runtime_prelude_to_instance_script_import_removal() {
 }
 
 #[test]
-fn builds_common_astro_compile_plan_with_shared_target_shape() {
+fn builds_common_astro_transform_plan_with_shared_target_shape() {
     let source = indoc! {r#"
         ---
         import { msg, t as translate, Trans } from "lingui-for-astro/macro";
@@ -238,7 +239,7 @@ fn builds_common_astro_compile_plan_with_shared_target_shape() {
     let plan = build_astro_plan(
         source,
         "/virtual/Page.astro",
-        "/virtual/Page.astro?compile.tsx",
+        "/virtual/Page.astro?transform.tsx",
     );
 
     assert_eq!(plan.common.targets.len(), 3);
@@ -265,21 +266,21 @@ fn builds_common_astro_compile_plan_with_shared_target_shape() {
         plan.common
             .targets
             .iter()
-            .all(|target| { target.translation_mode == CompileTranslationMode::Contextual })
+            .all(|target| { target.translation_mode == TransformTranslationMode::Contextual })
     );
     assert!(
         plan.common
             .targets
             .iter()
-            .any(|target| target.context == CompileTargetContext::Frontmatter)
+            .any(|target| target.context == TransformTargetContext::Frontmatter)
     );
     assert!(plan.common.targets.iter().any(|target| {
-        target.context == CompileTargetContext::Template
-            && target.output_kind == CompileTargetOutputKind::Expression
+        target.context == TransformTargetContext::Template
+            && target.output_kind == TransformTargetOutputKind::Expression
     }));
     assert!(plan.common.targets.iter().any(|target| {
-        target.context == CompileTargetContext::Template
-            && target.output_kind == CompileTargetOutputKind::Component
+        target.context == TransformTargetContext::Template
+            && target.output_kind == TransformTargetOutputKind::Component
     }));
 }
 
@@ -298,7 +299,7 @@ fn avoids_runtime_i18n_binding_for_descriptor_only_astro_targets() {
     let plan = build_astro_plan(
         source,
         "/virtual/Page.astro",
-        "/virtual/Page.astro?compile.tsx",
+        "/virtual/Page.astro?transform.tsx",
     );
 
     assert!(!plan.runtime_requirements.needs_runtime_i18n_binding);
@@ -318,7 +319,7 @@ fn avoids_runtime_i18n_binding_for_component_only_astro_targets() {
     let plan = build_astro_plan(
         source,
         "/virtual/Page.astro",
-        "/virtual/Page.astro?compile.tsx",
+        "/virtual/Page.astro?transform.tsx",
     );
 
     assert!(!plan.runtime_requirements.needs_runtime_i18n_binding);
@@ -348,7 +349,7 @@ fn avoids_duplicate_astro_template_targets_for_attribute_conditional_expression(
     let plan = build_astro_plan(
         source,
         "/virtual/ControlField.astro",
-        "/virtual/ControlField.astro?compile.tsx",
+        "/virtual/ControlField.astro?transform.tsx",
     );
 
     let placeholder_targets = plan
@@ -380,14 +381,14 @@ fn keeps_nested_astro_component_targets_inside_html_interpolations() {
     let plan = build_astro_plan(
         source,
         "/virtual/Nested.astro",
-        "/virtual/Nested.astro?compile.tsx",
+        "/virtual/Nested.astro?transform.tsx",
     );
 
     let component_targets = plan
         .common
         .targets
         .iter()
-        .filter(|target| target.output_kind == CompileTargetOutputKind::Component)
+        .filter(|target| target.output_kind == TransformTargetOutputKind::Component)
         .collect::<Vec<_>>();
 
     assert_eq!(component_targets.len(), 1);
@@ -417,7 +418,7 @@ fn keeps_multiline_plural_targets_inside_astro_html_interpolations() {
     let plan = build_astro_plan(
         source,
         "/virtual/Formats.astro",
-        "/virtual/Formats.astro?compile.tsx",
+        "/virtual/Formats.astro?transform.tsx",
     );
 
     let plural_targets = plan
@@ -468,7 +469,7 @@ fn keeps_astro_callback_body_targets_inside_mixed_html_interpolations() {
     let plan = build_astro_plan(
         source,
         "/virtual/NestedCallback.astro",
-        "/virtual/NestedCallback.astro?compile.tsx",
+        "/virtual/NestedCallback.astro?transform.tsx",
     );
 
     let nested_label_targets = plan
@@ -498,8 +499,8 @@ fn rejects_bare_direct_t_in_svelte_scripts() {
     let error = {
         let source = ls(source);
         let source_name = ls("/virtual/App.svelte");
-        let synthetic_name = ls("/virtual/App.svelte?compile.tsx");
-        SvelteCompilePlan::build(
+        let synthetic_name = ls("/virtual/App.svelte?transform.tsx");
+        SvelteTransformPlan::build(
             &source,
             &source_name,
             &synthetic_name,
@@ -581,7 +582,7 @@ fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
     let plan = build_svelte_plan(
         source,
         "/virtual/+page.svelte",
-        "/virtual/+page.svelte?compile.tsx",
+        "/virtual/+page.svelte?transform.tsx",
     );
 
     let template_targets = plan
@@ -589,8 +590,8 @@ fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
         .targets
         .iter()
         .filter(|target| {
-            target.context == CompileTargetContext::Template
-                && target.output_kind == CompileTargetOutputKind::Expression
+            target.context == TransformTargetContext::Template
+                && target.output_kind == TransformTargetOutputKind::Expression
         })
         .collect::<Vec<_>>();
 
@@ -610,7 +611,7 @@ fn keeps_full_template_target_spans_for_later_svelte_template_expressions() {
 }
 
 #[test]
-fn normalizes_owned_nested_svelte_macros_in_compile_synthetic_source() {
+fn normalizes_owned_nested_svelte_macros_in_transform_synthetic_source() {
     let source = indoc! {r#"
         <script lang="ts">
           import { msg, t as translate } from "lingui-for-svelte/macro";
@@ -628,7 +629,7 @@ fn normalizes_owned_nested_svelte_macros_in_compile_synthetic_source() {
     let plan = build_svelte_plan(
         source,
         "/virtual/Nested.svelte",
-        "/virtual/Nested.svelte?compile.tsx",
+        "/virtual/Nested.svelte?transform.tsx",
     );
 
     assert!(plan.common.synthetic_source.contains("translate`未設定`"));

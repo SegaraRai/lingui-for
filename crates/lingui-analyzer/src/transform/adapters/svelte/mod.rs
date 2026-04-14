@@ -9,22 +9,22 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{MappedTextError, RenderedMappedText, ScriptLang, Span};
-use crate::compile::{
-    CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
-    CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype, FrameworkCompilePlan,
-    RuntimeComponentError, RuntimeRequirements, RuntimeWarningOptions,
-    build_compile_plan_for_framework,
-};
 use crate::conventions::FrameworkConventions;
 use crate::diagnostics::LinguiAnalyzerDiagnostic;
 use crate::diagnostics::svelte::bare_direct_macro_usage;
 use crate::framework::svelte::is_bare_direct_svelte_macro_forbidden;
 use crate::framework::{FrameworkError, SvelteFrameworkError, WhitespaceMode};
 use crate::syntax::parse::ParseError;
+use crate::transform::{
+    CommonTransformPlan, FrameworkTransformPlan, RuntimeComponentError, RuntimeRequirements,
+    RuntimeWarningOptions, TransformError, TransformReplacementInternal, TransformTarget,
+    TransformTargetContext, TransformTargetOutputKind, TransformTargetPrototype,
+    build_transform_plan_for_framework,
+};
 
-use super::{AdapterError, CommonFrameworkCompileAnalysis};
+use super::{AdapterError, CommonFrameworkTransformAnalysis};
 
-use analysis::{analyze_svelte_compile, compute_runtime_requirements, wrap_compile_source};
+use analysis::{analyze_svelte_transform, compute_runtime_requirements, wrap_transform_source};
 use injection::append_runtime_injection_replacements;
 use runtime::lower_runtime_component_markup;
 
@@ -63,7 +63,7 @@ pub enum SvelteAdapterError {
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct SvelteCompileRuntimeBindings {
+pub struct SvelteTransformRuntimeBindings {
     pub create_lingui_accessors: LeanString,
     pub context: LeanString,
     pub get_i18n: LeanString,
@@ -76,7 +76,7 @@ pub struct SvelteCompileRuntimeBindings {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct SvelteCompileScriptRegion {
+pub struct SvelteTransformScriptRegion {
     pub outer_span: Span,
     pub content_span: Span,
     pub lang: ScriptLang,
@@ -85,50 +85,50 @@ pub struct SvelteCompileScriptRegion {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct SvelteCompilePlan {
-    pub common: CommonCompilePlan,
+pub struct SvelteTransformPlan {
+    pub common: CommonTransformPlan,
     pub runtime_requirements: RuntimeRequirements,
     pub runtime_warnings: RuntimeWarningOptions,
-    pub runtime_bindings: SvelteCompileRuntimeBindings,
-    pub instance_script: Option<SvelteCompileScriptRegion>,
-    pub module_script: Option<SvelteCompileScriptRegion>,
+    pub runtime_bindings: SvelteTransformRuntimeBindings,
+    pub instance_script: Option<SvelteTransformScriptRegion>,
+    pub module_script: Option<SvelteTransformScriptRegion>,
 }
 
-impl FrameworkCompilePlan for SvelteCompilePlan {
-    type Analysis = SvelteFrameworkCompileAnalysis;
+impl FrameworkTransformPlan for SvelteTransformPlan {
+    type Analysis = SvelteFrameworkTransformAnalysis;
 
     fn analyze(
         source: &LeanString,
         source_name: &LeanString,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
-    ) -> Result<Self::Analysis, CompileError> {
+    ) -> Result<Self::Analysis, TransformError> {
         Ok(
-            analyze_svelte_compile(source, source_name, whitespace_mode, conventions)
+            analyze_svelte_transform(source, source_name, whitespace_mode, conventions)
                 .map_err(AdapterError::from)?,
         )
     }
 
-    fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
+    fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkTransformAnalysis {
         &mut analysis.common
     }
 
-    fn wrap_compile_source(
+    fn wrap_transform_source(
         analysis: &Self::Analysis,
-        prototype: &CompileTargetPrototype,
+        prototype: &TransformTargetPrototype,
         normalized_source: &RenderedMappedText,
-    ) -> Result<RenderedMappedText, CompileError> {
-        wrap_compile_source(analysis, prototype, normalized_source)
+    ) -> Result<RenderedMappedText, TransformError> {
+        wrap_transform_source(analysis, prototype, normalized_source)
             .map_err(AdapterError::from)
-            .map_err(CompileError::from)
+            .map_err(TransformError::from)
     }
 
-    fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
+    fn compute_runtime_requirements(targets: &[TransformTarget]) -> RuntimeRequirements {
         compute_runtime_requirements(targets)
     }
 
     fn assemble_plan(
-        common: CommonCompilePlan,
+        common: CommonTransformPlan,
         runtime_requirements: RuntimeRequirements,
         runtime_warnings: RuntimeWarningOptions,
         analysis: Self::Analysis,
@@ -143,7 +143,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         }
     }
 
-    fn common(&self) -> &CommonCompilePlan {
+    fn common(&self) -> &CommonTransformPlan {
         &self.common
     }
 
@@ -151,7 +151,7 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
         &self,
         source_name: &LeanString,
         source: &LeanString,
-        target: &CompileTarget,
+        target: &TransformTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, AdapterError> {
         lower_runtime_component_markup(
@@ -168,14 +168,14 @@ impl FrameworkCompilePlan for SvelteCompilePlan {
     fn append_runtime_injection_replacements(
         &self,
         source: &LeanString,
-        replacements: &mut Vec<CompileReplacementInternal>,
+        replacements: &mut Vec<TransformReplacementInternal>,
     ) -> Result<(), AdapterError> {
         append_runtime_injection_replacements(self, source, replacements)
             .map_err(AdapterError::from)
     }
 }
 
-impl SvelteCompilePlan {
+impl SvelteTransformPlan {
     pub fn build(
         source: &LeanString,
         source_name: &LeanString,
@@ -183,8 +183,8 @@ impl SvelteCompilePlan {
         whitespace_mode: WhitespaceMode,
         conventions: FrameworkConventions,
         runtime_warnings: RuntimeWarningOptions,
-    ) -> Result<Self, CompileError> {
-        build_compile_plan_for_framework::<Self>(
+    ) -> Result<Self, TransformError> {
+        build_transform_plan_for_framework::<Self>(
             source,
             source_name,
             synthetic_name,
@@ -196,21 +196,21 @@ impl SvelteCompilePlan {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct SvelteFrameworkCompileAnalysis {
-    pub(crate) common: CommonFrameworkCompileAnalysis,
-    pub(crate) runtime_bindings: SvelteCompileRuntimeBindings,
-    pub(crate) instance_script: Option<SvelteCompileScriptRegion>,
-    pub(crate) module_script: Option<SvelteCompileScriptRegion>,
+pub(crate) struct SvelteFrameworkTransformAnalysis {
+    pub(crate) common: CommonFrameworkTransformAnalysis,
+    pub(crate) runtime_bindings: SvelteTransformRuntimeBindings,
+    pub(crate) instance_script: Option<SvelteTransformScriptRegion>,
+    pub(crate) module_script: Option<SvelteTransformScriptRegion>,
 }
 
-pub(crate) fn validate_compile_targets(
+pub(crate) fn validate_transform_targets(
     source_name: &str,
     source: &str,
-    prototypes: &[CompileTargetPrototype],
+    prototypes: &[TransformTargetPrototype],
 ) -> Result<(), SvelteAdapterError> {
     let offending_candidate = prototypes.iter().find_map(|prototype| {
-        (matches!(prototype.context, CompileTargetContext::InstanceScript)
-            && prototype.output_kind == CompileTargetOutputKind::Expression
+        (matches!(prototype.context, TransformTargetContext::InstanceScript)
+            && prototype.output_kind == TransformTargetOutputKind::Expression
             && is_bare_direct_svelte_macro_forbidden(&prototype.candidate))
         .then_some(&prototype.candidate)
     });

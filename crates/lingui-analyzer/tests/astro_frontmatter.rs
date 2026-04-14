@@ -4,7 +4,7 @@ use lean_string::LeanString;
 use lingui_analyzer::framework::FrameworkAdapter;
 use lingui_analyzer::framework::astro::AstroAdapter;
 use lingui_analyzer::{
-    AstroCompilePlan, MacroCandidateKind, RuntimeWarningOptions, WhitespaceMode,
+    AstroTransformPlan, MacroCandidateKind, RuntimeWarningOptions, WhitespaceMode,
 };
 
 #[path = "support/astro.rs"]
@@ -66,7 +66,7 @@ fn collects_aliased_frontmatter_macro_imports_and_candidates() {
 }
 
 #[test]
-fn allocates_unique_runtime_bindings_for_astro_compile() {
+fn allocates_unique_runtime_bindings_for_astro_transform() {
     let source = indoc! {r#"
         ---
         import { t } from "@lingui/core/macro";
@@ -83,15 +83,15 @@ fn allocates_unique_runtime_bindings_for_astro_compile() {
         <p>{message}</p>
     "#};
 
-    let plan = AstroCompilePlan::build(
+    let plan = AstroTransformPlan::build(
         &ls(source),
         &ls("Page.astro"),
-        &ls("Page.astro?compile"),
+        &ls("Page.astro?transform"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect("compile plan succeeds");
+    .expect("transform plan succeeds");
 
     assert_eq!(plan.runtime_bindings.create_i18n, "__l4a_createI18n_1");
     assert_eq!(plan.runtime_bindings.i18n, "__l4a_i18n_1");
@@ -371,15 +371,15 @@ fn rejects_is_raw_on_astro_trans_children_with_location() {
         </Trans>
     "#};
 
-    let error = AstroCompilePlan::build(
+    let error = AstroTransformPlan::build(
         &ls(source),
         &ls("Unsupported.astro"),
-        &ls("Unsupported.astro?compile"),
+        &ls("Unsupported.astro?transform"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect_err("compile plan should fail");
+    .expect_err("transform plan should fail");
     let rendered = error.to_string();
 
     assert!(rendered.contains("Unsupported.astro:6:10"));
@@ -399,15 +399,15 @@ fn allows_transition_directives_inside_astro_trans_children() {
         </Trans>
     "#};
 
-    AstroCompilePlan::build(
+    AstroTransformPlan::build(
         &ls(source),
         &ls("Allowed.astro"),
-        &ls("Allowed.astro?compile"),
+        &ls("Allowed.astro?transform"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect("compile plan should succeed");
+    .expect("transform plan should succeed");
 }
 
 #[test]
@@ -422,15 +422,15 @@ fn rejects_style_elements_inside_astro_trans_children_with_location() {
         </Trans>
     "#};
 
-    let error = AstroCompilePlan::build(
+    let error = AstroTransformPlan::build(
         &ls(source),
         &ls("Unsupported.astro"),
-        &ls("Unsupported.astro?compile"),
+        &ls("Unsupported.astro?transform"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect_err("compile plan should fail");
+    .expect_err("transform plan should fail");
     let rendered = error.to_string();
 
     assert!(rendered.contains("Unsupported.astro:6:4"));
@@ -448,15 +448,15 @@ fn rejects_unsupported_directives_on_the_astro_trans_tag_itself() {
         <Trans is:raw>Ignored</Trans>
     "#};
 
-    let error = AstroCompilePlan::build(
+    let error = AstroTransformPlan::build(
         &ls(source),
         &ls("Unsupported.astro"),
-        &ls("Unsupported.astro?compile"),
+        &ls("Unsupported.astro?transform"),
         WhitespaceMode::Astro,
         astro_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect_err("compile plan should fail");
+    .expect_err("transform plan should fail");
     let rendered = error.to_string();
 
     assert!(rendered.contains("Unsupported.astro:5:8"));
