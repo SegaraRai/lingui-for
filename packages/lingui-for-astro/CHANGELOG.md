@@ -1,5 +1,16 @@
 # lingui-for-astro
 
+## 0.5.0
+
+### Minor Changes
+
+- [#30](https://github.com/SegaraRai/lingui-for/pull/30) [`405b612`](https://github.com/SegaraRai/lingui-for/commit/405b6122b6821d3d2e9c9ecefc201fdf2fd538b9) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Custom `framework.svelte.packages` and `framework.astro.packages` values now replace the default framework macro package instead of adding to it.
+
+### Patch Changes
+
+- Updated dependencies [[`405b612`](https://github.com/SegaraRai/lingui-for/commit/405b6122b6821d3d2e9c9ecefc201fdf2fd538b9)]:
+  - @lingui-for/framework-core@0.5.0
+
 ## 0.4.1
 
 ### Patch Changes
