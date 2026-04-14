@@ -3,26 +3,26 @@ use std::collections::BTreeSet;
 use lean_string::LeanString;
 
 use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
-use crate::compile::{
-    CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
-    CompileTranslationMode, RuntimeRequirements,
-};
 use crate::conventions::FrameworkConventions;
 use crate::framework::astro::AstroAdapter;
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, WhitespaceMode};
-
-use super::super::CommonFrameworkCompileAnalysis;
-use super::{
-    AstroAdapterError, AstroCompileFrontmatterRegion, AstroCompileRuntimeBindings,
-    AstroFrameworkCompileAnalysis,
+use crate::transform::{
+    RuntimeRequirements, TransformTarget, TransformTargetContext, TransformTargetOutputKind,
+    TransformTargetPrototype, TransformTranslationMode,
 };
 
-pub(crate) fn analyze_astro_compile(
+use super::super::CommonFrameworkTransformAnalysis;
+use super::{
+    AstroAdapterError, AstroFrameworkTransformAnalysis, AstroTransformFrontmatterRegion,
+    AstroTransformRuntimeBindings,
+};
+
+pub(crate) fn analyze_astro_transform(
     source: &LeanString,
     source_name: &LeanString,
     whitespace: WhitespaceMode,
     conventions: &FrameworkConventions,
-) -> Result<AstroFrameworkCompileAnalysis, AstroAdapterError> {
+) -> Result<AstroFrameworkTransformAnalysis, AstroAdapterError> {
     let analysis = AstroAdapter.analyze(
         source,
         &AnalyzeOptions {
@@ -45,20 +45,20 @@ pub(crate) fn analyze_astro_compile(
             .frontmatter_candidates
             .iter()
             .cloned()
-            .map(|candidate| CompileTargetPrototype {
-                output_kind: CompileTargetOutputKind::Expression,
+            .map(|candidate| TransformTargetPrototype {
+                output_kind: TransformTargetOutputKind::Expression,
                 candidate,
-                context: CompileTargetContext::Frontmatter,
-                translation_mode: CompileTranslationMode::Contextual,
+                context: TransformTargetContext::Frontmatter,
+                translation_mode: TransformTranslationMode::Contextual,
             }),
     );
     for expression in &analysis.semantic.template_expressions {
         prototypes.extend(expression.candidates.iter().cloned().map(|candidate| {
-            CompileTargetPrototype {
-                output_kind: CompileTargetOutputKind::Expression,
+            TransformTargetPrototype {
+                output_kind: TransformTargetOutputKind::Expression,
                 candidate,
-                context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Contextual,
+                context: TransformTargetContext::Template,
+                translation_mode: TransformTranslationMode::Contextual,
             }
         }));
     }
@@ -68,16 +68,16 @@ pub(crate) fn analyze_astro_compile(
             .template_components
             .iter()
             .cloned()
-            .map(|component| CompileTargetPrototype {
-                output_kind: CompileTargetOutputKind::Component,
+            .map(|component| TransformTargetPrototype {
+                output_kind: TransformTargetOutputKind::Component,
                 candidate: component.candidate,
-                context: CompileTargetContext::Template,
-                translation_mode: CompileTranslationMode::Contextual,
+                context: TransformTargetContext::Template,
+                translation_mode: TransformTranslationMode::Contextual,
             }),
     );
 
-    Ok(AstroFrameworkCompileAnalysis {
-        common: CommonFrameworkCompileAnalysis {
+    Ok(AstroFrameworkTransformAnalysis {
+        common: CommonFrameworkTransformAnalysis {
             imports: analysis.semantic.macro_imports,
             prototypes,
             import_removals,
@@ -92,26 +92,26 @@ pub(crate) fn analyze_astro_compile(
     })
 }
 
-pub(crate) fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
+pub(crate) fn compute_runtime_requirements(targets: &[TransformTarget]) -> RuntimeRequirements {
     RuntimeRequirements {
         needs_runtime_i18n_binding: targets.iter().any(|target| {
-            target.translation_mode == CompileTranslationMode::Contextual
-                && target.output_kind == CompileTargetOutputKind::Expression
+            target.translation_mode == TransformTranslationMode::Contextual
+                && target.output_kind == TransformTargetOutputKind::Expression
                 && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
         }),
         needs_runtime_trans_component: targets
             .iter()
-            .any(|target| target.output_kind == CompileTargetOutputKind::Component),
+            .any(|target| target.output_kind == TransformTargetOutputKind::Component),
     }
 }
 
 fn create_runtime_bindings(
     declared_names: &[LeanString],
     conventions: &FrameworkConventions,
-) -> Result<AstroCompileRuntimeBindings, AstroAdapterError> {
+) -> Result<AstroTransformRuntimeBindings, AstroAdapterError> {
     let mut used = declared_names.iter().cloned().collect::<BTreeSet<_>>();
 
-    Ok(AstroCompileRuntimeBindings {
+    Ok(AstroTransformRuntimeBindings {
         create_i18n: allocate_unique_binding_name(
             &mut used,
             conventions.bindings.i18n_accessor_factory.clone().ok_or(
@@ -153,8 +153,8 @@ fn build_frontmatter_region(
     source: &str,
     region: &EmbeddedScriptRegion,
     import_removals: &[Span],
-) -> AstroCompileFrontmatterRegion {
-    AstroCompileFrontmatterRegion {
+) -> AstroTransformFrontmatterRegion {
+    AstroTransformFrontmatterRegion {
         outer_span: region.outer_span,
         content_span: region.inner_span,
         prelude_insert_point: compute_prelude_insert_point(source, region.inner_span.start),

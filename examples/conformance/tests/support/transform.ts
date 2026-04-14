@@ -19,7 +19,7 @@ import { extractAstroFixture, extractSvelteFixture } from "./extract.ts";
 
 type FixtureWhitespace = "auto" | "jsx";
 
-export type FixtureCompileResult =
+export type FixtureTransformResult =
   | LinguiSvelteTransformResult
   | LinguiAstroTransformResult;
 
@@ -35,7 +35,7 @@ const astroConfigCache = new Map<
   Promise<LoadedAstroFixtureConfig>
 >();
 
-function createSvelteCompileConfig(whitespace: FixtureWhitespace) {
+function createSvelteTransformConfig(whitespace: FixtureWhitespace) {
   return defineSvelteConfig({
     locales: ["en"],
     sourceLocale: "en",
@@ -47,7 +47,7 @@ function createSvelteCompileConfig(whitespace: FixtureWhitespace) {
   });
 }
 
-function createAstroCompileConfig(whitespace: FixtureWhitespace) {
+function createAstroTransformConfig(whitespace: FixtureWhitespace) {
   return defineAstroConfig({
     locales: ["en"],
     sourceLocale: "en",
@@ -71,38 +71,38 @@ function resolveAstroFixtureWhitespace(
   return whitespace === "auto" ? "astro" : whitespace;
 }
 
-async function getSvelteCompileConfig(
+async function getSvelteTransformConfig(
   whitespace: FixtureWhitespace,
 ): Promise<LoadedSvelteFixtureConfig> {
   let configPromise = svelteConfigCache.get(whitespace);
   if (configPromise == null) {
-    configPromise = loadSvelteConfig(createSvelteCompileConfig(whitespace));
+    configPromise = loadSvelteConfig(createSvelteTransformConfig(whitespace));
     svelteConfigCache.set(whitespace, configPromise);
   }
   return await configPromise;
 }
 
-async function getAstroCompileConfig(
+async function getAstroTransformConfig(
   whitespace: FixtureWhitespace,
 ): Promise<LoadedAstroFixtureConfig> {
   let configPromise = astroConfigCache.get(whitespace);
   if (configPromise == null) {
-    configPromise = loadAstroConfig(createAstroCompileConfig(whitespace));
+    configPromise = loadAstroConfig(createAstroTransformConfig(whitespace));
     astroConfigCache.set(whitespace, configPromise);
   }
   return await configPromise;
 }
 
-export async function compileFixture(
+export async function transformFixture(
   framework: "astro" | "svelte",
   source: string,
   options: {
     filename: string;
     whitespace?: FixtureWhitespace;
   },
-): Promise<FixtureCompileResult> {
+): Promise<FixtureTransformResult> {
   if (framework === "svelte") {
-    const config = await getSvelteCompileConfig(options.whitespace ?? "auto");
+    const config = await getSvelteTransformConfig(options.whitespace ?? "auto");
     const result = await unstable_transformSvelte(source, {
       filename: options.filename,
       linguiConfig: config.linguiConfig,
@@ -116,7 +116,7 @@ export async function compileFixture(
     return result;
   }
 
-  const config = await getAstroCompileConfig(options.whitespace ?? "auto");
+  const config = await getAstroTransformConfig(options.whitespace ?? "auto");
   const result = await unstable_transformAstro(source, {
     filename: options.filename,
     linguiConfig: config.linguiConfig,
@@ -130,7 +130,7 @@ export async function compileFixture(
   return result;
 }
 
-export async function extractCompileFixture(
+export async function extractRoundtripFixture(
   framework: "astro" | "svelte",
   source: string,
   options: {

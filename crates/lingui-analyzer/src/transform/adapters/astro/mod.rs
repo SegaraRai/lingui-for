@@ -7,18 +7,18 @@ use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
 use crate::common::{MappedTextError, RenderedMappedText, Span};
-use crate::compile::{
-    CommonCompilePlan, CompileError, CompileReplacementInternal, CompileTarget,
-    CompileTargetPrototype, FrameworkCompilePlan, RuntimeComponentError, RuntimeRequirements,
-    RuntimeWarningOptions, build_compile_plan_for_framework,
-};
 use crate::conventions::FrameworkConventions;
 use crate::framework::{AstroFrameworkError, FrameworkError, JsAnalysisError, WhitespaceMode};
 use crate::syntax::parse::ParseError;
+use crate::transform::{
+    CommonTransformPlan, FrameworkTransformPlan, RuntimeComponentError, RuntimeRequirements,
+    RuntimeWarningOptions, TransformError, TransformReplacementInternal, TransformTarget,
+    TransformTargetPrototype, build_transform_plan_for_framework,
+};
 
-use super::{AdapterError, CommonFrameworkCompileAnalysis};
+use super::{AdapterError, CommonFrameworkTransformAnalysis};
 
-use analysis::{analyze_astro_compile, compute_runtime_requirements};
+use analysis::{analyze_astro_transform, compute_runtime_requirements};
 use injection::append_runtime_injection_replacements;
 use runtime::lower_runtime_component_markup;
 
@@ -51,18 +51,18 @@ pub enum AstroAdapterError {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct AstroCompilePlan {
-    pub common: CommonCompilePlan,
+pub struct AstroTransformPlan {
+    pub common: CommonTransformPlan,
     pub runtime_requirements: RuntimeRequirements,
     pub runtime_warnings: RuntimeWarningOptions,
-    pub runtime_bindings: AstroCompileRuntimeBindings,
-    pub frontmatter: Option<AstroCompileFrontmatterRegion>,
+    pub runtime_bindings: AstroTransformRuntimeBindings,
+    pub frontmatter: Option<AstroTransformFrontmatterRegion>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct AstroCompileRuntimeBindings {
+pub struct AstroTransformRuntimeBindings {
     pub create_i18n: LeanString,
     pub i18n: LeanString,
     pub runtime_trans: LeanString,
@@ -71,7 +71,7 @@ pub struct AstroCompileRuntimeBindings {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct AstroCompileFrontmatterRegion {
+pub struct AstroTransformFrontmatterRegion {
     pub outer_span: Span,
     pub content_span: Span,
     pub prelude_insert_point: usize,
@@ -79,42 +79,42 @@ pub struct AstroCompileFrontmatterRegion {
     pub has_remaining_content_after_import_removal: bool,
 }
 
-impl FrameworkCompilePlan for AstroCompilePlan {
-    type Analysis = AstroFrameworkCompileAnalysis;
+impl FrameworkTransformPlan for AstroTransformPlan {
+    type Analysis = AstroFrameworkTransformAnalysis;
 
     fn analyze(
         source: &LeanString,
         source_name: &LeanString,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
-    ) -> Result<Self::Analysis, CompileError> {
+    ) -> Result<Self::Analysis, TransformError> {
         Ok(
-            analyze_astro_compile(source, source_name, whitespace_mode, conventions)
+            analyze_astro_transform(source, source_name, whitespace_mode, conventions)
                 .map_err(AdapterError::from)?,
         )
     }
 
-    fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkCompileAnalysis {
+    fn common_analysis(analysis: &mut Self::Analysis) -> &mut CommonFrameworkTransformAnalysis {
         &mut analysis.common
     }
 
-    fn wrap_compile_source(
+    fn wrap_transform_source(
         _analysis: &Self::Analysis,
-        _prototype: &CompileTargetPrototype,
+        _prototype: &TransformTargetPrototype,
         normalized_source: &RenderedMappedText,
-    ) -> Result<RenderedMappedText, CompileError> {
+    ) -> Result<RenderedMappedText, TransformError> {
         Ok(RenderedMappedText {
             code: normalized_source.code.clone(),
             indexed_source_map: None,
         })
     }
 
-    fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements {
+    fn compute_runtime_requirements(targets: &[TransformTarget]) -> RuntimeRequirements {
         compute_runtime_requirements(targets)
     }
 
     fn assemble_plan(
-        common: CommonCompilePlan,
+        common: CommonTransformPlan,
         runtime_requirements: RuntimeRequirements,
         runtime_warnings: RuntimeWarningOptions,
         analysis: Self::Analysis,
@@ -128,7 +128,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         }
     }
 
-    fn common(&self) -> &CommonCompilePlan {
+    fn common(&self) -> &CommonTransformPlan {
         &self.common
     }
 
@@ -136,7 +136,7 @@ impl FrameworkCompilePlan for AstroCompilePlan {
         &self,
         source_name: &LeanString,
         source: &LeanString,
-        target: &CompileTarget,
+        target: &TransformTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, AdapterError> {
         lower_runtime_component_markup(
@@ -153,14 +153,14 @@ impl FrameworkCompilePlan for AstroCompilePlan {
     fn append_runtime_injection_replacements(
         &self,
         source: &LeanString,
-        replacements: &mut Vec<CompileReplacementInternal>,
+        replacements: &mut Vec<TransformReplacementInternal>,
     ) -> Result<(), AdapterError> {
         append_runtime_injection_replacements(self, source, replacements)
             .map_err(AdapterError::from)
     }
 }
 
-impl AstroCompilePlan {
+impl AstroTransformPlan {
     pub fn build(
         source: &LeanString,
         source_name: &LeanString,
@@ -168,8 +168,8 @@ impl AstroCompilePlan {
         whitespace_mode: WhitespaceMode,
         conventions: FrameworkConventions,
         runtime_warnings: RuntimeWarningOptions,
-    ) -> Result<Self, CompileError> {
-        build_compile_plan_for_framework::<Self>(
+    ) -> Result<Self, TransformError> {
+        build_transform_plan_for_framework::<Self>(
             source,
             source_name,
             synthetic_name,
@@ -181,8 +181,8 @@ impl AstroCompilePlan {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct AstroFrameworkCompileAnalysis {
-    pub(crate) common: CommonFrameworkCompileAnalysis,
-    pub(crate) runtime_bindings: AstroCompileRuntimeBindings,
-    pub(crate) frontmatter: Option<AstroCompileFrontmatterRegion>,
+pub(crate) struct AstroFrameworkTransformAnalysis {
+    pub(crate) common: CommonFrameworkTransformAnalysis,
+    pub(crate) runtime_bindings: AstroTransformRuntimeBindings,
+    pub(crate) frontmatter: Option<AstroTransformFrontmatterRegion>,
 }

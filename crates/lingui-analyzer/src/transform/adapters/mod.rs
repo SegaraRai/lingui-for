@@ -2,12 +2,13 @@ mod astro;
 mod svelte;
 
 use crate::common::{MappedTextError, ScriptLang, Span};
-use crate::compile::CompileTargetPrototype;
 use crate::framework::MacroImport;
+use crate::transform::TransformTargetPrototype;
 
-pub use astro::{AstroAdapterError, AstroCompilePlan};
+pub use astro::{AstroAdapterError, AstroTransformPlan};
 pub use svelte::{
-    SvelteAdapterError, SvelteCompilePlan, SvelteCompileRuntimeBindings, SvelteCompileScriptRegion,
+    SvelteAdapterError, SvelteTransformPlan, SvelteTransformRuntimeBindings,
+    SvelteTransformScriptRegion,
 };
 
 #[derive(thiserror::Error, Debug)]
@@ -21,9 +22,9 @@ pub enum AdapterError {
 }
 
 #[derive(Debug, Clone)]
-pub(crate) struct CommonFrameworkCompileAnalysis {
+pub(crate) struct CommonFrameworkTransformAnalysis {
     pub(crate) imports: Vec<MacroImport>,
-    pub(crate) prototypes: Vec<CompileTargetPrototype>,
+    pub(crate) prototypes: Vec<TransformTargetPrototype>,
     pub(crate) import_removals: Vec<Span>,
     pub(crate) synthetic_lang: ScriptLang,
     pub(crate) source_anchors: Vec<usize>,

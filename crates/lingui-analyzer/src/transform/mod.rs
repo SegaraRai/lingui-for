@@ -15,19 +15,19 @@ use crate::conventions::FrameworkConventions;
 use crate::framework::{MacroCandidate, MacroFlavor, WhitespaceMode};
 use crate::synthesis::NormalizedSegment;
 
-pub(crate) use lower::finish_compile;
-pub(crate) use plan::build_compile_plan_for_framework;
+pub(crate) use lower::finish_transform;
+pub(crate) use plan::build_transform_plan_for_framework;
 
 pub use adapters::{
-    AdapterError, AstroCompilePlan, SvelteCompilePlan, SvelteCompileRuntimeBindings,
-    SvelteCompileScriptRegion,
+    AdapterError, AstroTransformPlan, SvelteTransformPlan, SvelteTransformRuntimeBindings,
+    SvelteTransformScriptRegion,
 };
 pub use emit::EmitError;
 pub use lower::LowerError;
 pub use runtime_component::RuntimeComponentError;
 
 #[derive(thiserror::Error, Debug)]
-pub enum CompileError {
+pub enum TransformError {
     #[error(transparent)]
     Adapter(#[from] AdapterError),
     #[error(transparent)]
@@ -41,7 +41,7 @@ pub enum CompileError {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub enum CompileTargetContext {
+pub enum TransformTargetContext {
     ModuleScript,
     InstanceScript,
     Frontmatter,
@@ -51,7 +51,7 @@ pub enum CompileTargetContext {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub enum CompileTargetOutputKind {
+pub enum TransformTargetOutputKind {
     Expression,
     Component,
 }
@@ -59,7 +59,7 @@ pub enum CompileTargetOutputKind {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub enum CompileTranslationMode {
+pub enum TransformTranslationMode {
     Lowered,
     Contextual,
 }
@@ -89,7 +89,7 @@ pub struct RuntimeWarningOptions {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct CommonCompilePlan {
+pub struct CommonTransformPlan {
     pub source_name: LeanString,
     pub synthetic_name: LeanString,
     pub synthetic_source: LeanString,
@@ -98,14 +98,14 @@ pub struct CommonCompilePlan {
     pub synthetic_lang: ScriptLang,
     pub conventions: FrameworkConventions,
     pub declaration_ids: Vec<LeanString>,
-    pub targets: Vec<CompileTarget>,
+    pub targets: Vec<TransformTarget>,
     pub import_removals: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct CompileTarget {
+pub struct TransformTarget {
     pub declaration_id: LeanString,
     pub original_span: Span,
     pub normalized_span: Span,
@@ -113,9 +113,9 @@ pub struct CompileTarget {
     pub local_name: LeanString,
     pub imported_name: LeanString,
     pub flavor: MacroFlavor,
-    pub context: CompileTargetContext,
-    pub output_kind: CompileTargetOutputKind,
-    pub translation_mode: CompileTranslationMode,
+    pub context: TransformTargetContext,
+    pub output_kind: TransformTargetOutputKind,
+    pub translation_mode: TransformTranslationMode,
     pub normalized_segments: Vec<NormalizedSegment>,
 }
 
@@ -127,7 +127,7 @@ pub struct RuntimeRequirements {
     pub needs_runtime_trans_component: bool,
 }
 
-pub(crate) trait FrameworkCompilePlan: Sized {
+pub(crate) trait FrameworkTransformPlan: Sized {
     type Analysis;
 
     fn analyze(
@@ -135,48 +135,48 @@ pub(crate) trait FrameworkCompilePlan: Sized {
         source_name: &LeanString,
         whitespace_mode: WhitespaceMode,
         conventions: &FrameworkConventions,
-    ) -> Result<Self::Analysis, CompileError>;
+    ) -> Result<Self::Analysis, TransformError>;
 
     fn common_analysis(
         analysis: &mut Self::Analysis,
-    ) -> &mut adapters::CommonFrameworkCompileAnalysis;
+    ) -> &mut adapters::CommonFrameworkTransformAnalysis;
 
-    fn wrap_compile_source(
+    fn wrap_transform_source(
         analysis: &Self::Analysis,
-        prototype: &CompileTargetPrototype,
+        prototype: &TransformTargetPrototype,
         normalized_source: &RenderedMappedText,
-    ) -> Result<RenderedMappedText, CompileError>;
+    ) -> Result<RenderedMappedText, TransformError>;
 
-    fn compute_runtime_requirements(targets: &[CompileTarget]) -> RuntimeRequirements;
+    fn compute_runtime_requirements(targets: &[TransformTarget]) -> RuntimeRequirements;
 
     fn assemble_plan(
-        common: CommonCompilePlan,
+        common: CommonTransformPlan,
         runtime_requirements: RuntimeRequirements,
         runtime_warnings: RuntimeWarningOptions,
         analysis: Self::Analysis,
     ) -> Self;
 
-    fn common(&self) -> &CommonCompilePlan;
+    fn common(&self) -> &CommonTransformPlan;
 
     fn lower_runtime_component_markup(
         &self,
         _source_name: &LeanString,
         _source: &LeanString,
-        _target: &CompileTarget,
+        _target: &TransformTarget,
         declaration: &RenderedMappedText,
     ) -> Result<RenderedMappedText, AdapterError>;
 
     fn append_runtime_injection_replacements(
         &self,
         _source: &LeanString,
-        _replacements: &mut Vec<CompileReplacementInternal>,
+        _replacements: &mut Vec<TransformReplacementInternal>,
     ) -> Result<(), AdapterError> {
         Ok(())
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct CompileReplacementInternal {
+pub(crate) struct TransformReplacementInternal {
     pub(crate) declaration_id: LeanString,
     pub(crate) start: usize,
     pub(crate) end: usize,
@@ -185,7 +185,7 @@ pub(crate) struct CompileReplacementInternal {
     pub(crate) original_anchors: Vec<usize>,
 }
 
-impl CompileReplacementInternal {
+impl TransformReplacementInternal {
     pub(crate) fn new(
         declaration_id: LeanString,
         start: usize,
@@ -208,7 +208,7 @@ impl CompileReplacementInternal {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct CompileReplacement {
+pub struct TransformReplacement {
     pub declaration_id: LeanString,
     pub start: usize,
     pub end: usize,
@@ -219,15 +219,15 @@ pub struct CompileReplacement {
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]
-pub struct FinishedCompile {
+pub struct FinishedTransform {
     pub code: LeanString,
     pub source_name: LeanString,
     pub source_map_json: Option<String>,
-    pub replacements: Vec<CompileReplacement>,
+    pub replacements: Vec<TransformReplacement>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct CompileReplacementOutputInternal {
+pub(crate) struct TransformReplacementOutputInternal {
     pub(crate) declaration_id: LeanString,
     pub(crate) start: usize,
     pub(crate) end: usize,
@@ -235,8 +235,8 @@ pub(crate) struct CompileReplacementOutputInternal {
     pub(crate) indexed_source_map: Option<IndexedSourceMap>,
 }
 
-impl From<CompileReplacementInternal> for CompileReplacementOutputInternal {
-    fn from(value: CompileReplacementInternal) -> Self {
+impl From<TransformReplacementInternal> for TransformReplacementOutputInternal {
+    fn from(value: TransformReplacementInternal) -> Self {
         Self {
             declaration_id: value.declaration_id,
             start: value.start,
@@ -248,16 +248,16 @@ impl From<CompileReplacementInternal> for CompileReplacementOutputInternal {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(crate) struct FinishedCompileInternal {
+pub(crate) struct FinishedTransformInternal {
     pub(crate) code: LeanString,
     pub(crate) source_name: LeanString,
     pub(crate) source_map: Option<IndexedSourceMap>,
-    pub(crate) replacements: Vec<CompileReplacementOutputInternal>,
+    pub(crate) replacements: Vec<TransformReplacementOutputInternal>,
 }
 
-impl FinishedCompileInternal {
-    pub(crate) fn into_public(self) -> FinishedCompile {
-        FinishedCompile {
+impl FinishedTransformInternal {
+    pub(crate) fn into_public(self) -> FinishedTransform {
+        FinishedTransform {
             code: self.code,
             source_name: self.source_name,
             source_map_json: self
@@ -267,7 +267,7 @@ impl FinishedCompileInternal {
             replacements: self
                 .replacements
                 .into_iter()
-                .map(|replacement| CompileReplacement {
+                .map(|replacement| TransformReplacement {
                     declaration_id: replacement.declaration_id,
                     start: replacement.start,
                     end: replacement.end,
@@ -293,9 +293,9 @@ pub struct TransformedPrograms {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct CompileTargetPrototype {
+pub(crate) struct TransformTargetPrototype {
     pub(crate) candidate: MacroCandidate,
-    pub(crate) context: CompileTargetContext,
-    pub(crate) output_kind: CompileTargetOutputKind,
-    pub(crate) translation_mode: CompileTranslationMode,
+    pub(crate) context: TransformTargetContext,
+    pub(crate) output_kind: TransformTargetOutputKind,
+    pub(crate) translation_mode: TransformTranslationMode,
 }

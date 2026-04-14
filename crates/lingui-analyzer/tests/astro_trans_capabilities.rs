@@ -1,7 +1,7 @@
 use indoc::indoc;
 use lean_string::LeanString;
 
-use lingui_analyzer::{AstroCompilePlan, RuntimeWarningOptions, WhitespaceMode};
+use lingui_analyzer::{AstroTransformPlan, RuntimeWarningOptions, WhitespaceMode};
 
 #[path = "support/astro_conventions.rs"]
 mod astro_conventions;
@@ -15,8 +15,8 @@ fn ls(text: &str) -> LeanString {
 fn assert_astro_trans_allowed(source: &str) {
     let source = ls(source);
     let source_name = ls("Page.astro");
-    let synthetic_name = ls("Page.astro?compile");
-    AstroCompilePlan::build(
+    let synthetic_name = ls("Page.astro?transform");
+    AstroTransformPlan::build(
         &source,
         &source_name,
         &synthetic_name,
@@ -30,8 +30,8 @@ fn assert_astro_trans_allowed(source: &str) {
 fn assert_astro_trans_rejected(source: &str, needle: &str) {
     let source = ls(source);
     let source_name = ls("Page.astro");
-    let synthetic_name = ls("Page.astro?compile");
-    let error = AstroCompilePlan::build(
+    let synthetic_name = ls("Page.astro?transform");
+    let error = AstroTransformPlan::build(
         &source,
         &source_name,
         &synthetic_name,

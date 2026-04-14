@@ -9,7 +9,10 @@ import {
   offsetToLocation,
 } from "@lingui-for/internal-shared-test-helpers";
 
-import { compileFixture, extractCompileFixture } from "./support/compile.ts";
+import {
+  transformFixture,
+  extractRoundtripFixture,
+} from "./support/transform.ts";
 
 type Detection =
   | {
@@ -38,7 +41,7 @@ type Fixture = {
 
 const fixtures: readonly Fixture[] = [
   {
-    name: "Svelte compile expression contracts",
+    name: "Svelte transform expression contracts",
     framework: "svelte",
     filename: "/virtual/Fixture.svelte",
     source: dedent`
@@ -124,7 +127,7 @@ const fixtures: readonly Fixture[] = [
     ],
   },
   {
-    name: "Astro compile expression contracts",
+    name: "Astro transform expression contracts",
     framework: "astro",
     filename: "/virtual/Fixture.astro",
     source: dedent`
@@ -195,7 +198,7 @@ const fixtures: readonly Fixture[] = [
     ],
   },
   {
-    name: "Svelte compile nested component and attribute contracts",
+    name: "Svelte transform nested component and attribute contracts",
     framework: "svelte",
     filename: "/virtual/ComponentNested.svelte",
     source: dedent`
@@ -283,7 +286,7 @@ const fixtures: readonly Fixture[] = [
     ],
   },
   {
-    name: "Astro compile nested component and attribute contracts",
+    name: "Astro transform nested component and attribute contracts",
     framework: "astro",
     filename: "/virtual/ComponentNested.astro",
     source: dedent`
@@ -371,7 +374,7 @@ const fixtures: readonly Fixture[] = [
     ],
   },
   {
-    name: "Svelte compile complex expression token contracts",
+    name: "Svelte transform complex expression token contracts",
     framework: "svelte",
     filename: "/virtual/ComplexExpressionScenario.svelte",
     source: dedent`
@@ -483,7 +486,7 @@ const fixtures: readonly Fixture[] = [
     ],
   },
   {
-    name: "Astro compile complex expression token contracts",
+    name: "Astro transform complex expression token contracts",
     framework: "astro",
     filename: "/virtual/ComplexExpressionScenario.astro",
     source: dedent`
@@ -595,7 +598,7 @@ const fixtures: readonly Fixture[] = [
     ],
   },
   {
-    name: "Svelte compile unicode contracts",
+    name: "Svelte transform unicode contracts",
     framework: "svelte",
     filename: "/virtual/UnicodeScenario.svelte",
     source: dedent`
@@ -652,7 +655,7 @@ const fixtures: readonly Fixture[] = [
     ],
   },
   {
-    name: "Astro compile unicode contracts",
+    name: "Astro transform unicode contracts",
     framework: "astro",
     filename: "/virtual/UnicodeScenario.astro",
     source: dedent`
@@ -710,19 +713,19 @@ const fixtures: readonly Fixture[] = [
   },
 ];
 
-describe("package compile roundtrip source map discipline", () => {
+describe("package transform roundtrip source map discipline", () => {
   const prepare = async ({ framework, filename, source }: Fixture) => {
-    const compiled = await compileFixture(framework, source, { filename });
-    const messages = await extractCompileFixture(framework, source, {
+    const transformed = await transformFixture(framework, source, { filename });
+    const messages = await extractRoundtripFixture(framework, source, {
       filename,
     });
-    if (compiled.map == null) {
-      throw new Error(`Missing compile sourcemap for ${filename}`);
+    if (transformed.map == null) {
+      throw new Error(`Missing transform sourcemap for ${filename}`);
     }
 
     return {
-      compiled,
-      consumer: new TraceMap(JSON.stringify(compiled.map)),
+      transformed,
+      consumer: new TraceMap(JSON.stringify(transformed.map)),
       messages,
     };
   };
@@ -736,15 +739,15 @@ describe("package compile roundtrip source map discipline", () => {
     });
 
     test("should not leak synthetic sources", async () => {
-      const { compiled, messages } = prepareResult;
+      const { transformed, messages } = prepareResult;
 
       assertNoSyntheticSourceLeak(
-        JSON.stringify(compiled.map),
-        compiled.artifacts.synthetic.filename,
+        JSON.stringify(transformed.map),
+        transformed.artifacts.synthetic.filename,
       );
       assertNoSyntheticExtractionOrigins(
         messages,
-        compiled.artifacts.synthetic.filename,
+        transformed.artifacts.synthetic.filename,
       );
     });
 
@@ -758,11 +761,11 @@ describe("package compile roundtrip source map discipline", () => {
         > => !detection.fails && detection.contract !== "extract-origin",
       ),
     )("should satisfy contract: $name", async (detection) => {
-      const { compiled, consumer } = prepareResult;
+      const { transformed, consumer } = prepareResult;
 
       assertContractRangeMapping(
         consumer,
-        compiled.code,
+        transformed.code,
         source,
         detection,
         filename,
@@ -779,11 +782,11 @@ describe("package compile roundtrip source map discipline", () => {
         > => !!detection.fails && detection.contract !== "extract-origin",
       ),
     )("should not satisfy contract: $name", async (detection) => {
-      const { compiled, consumer } = prepareResult;
+      const { transformed, consumer } = prepareResult;
 
       assertContractRangeMapping(
         consumer,
-        compiled.code,
+        transformed.code,
         source,
         detection,
         filename,

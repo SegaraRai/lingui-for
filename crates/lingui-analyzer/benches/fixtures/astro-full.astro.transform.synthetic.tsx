@@ -95,7 +95,7 @@ const __lf_41 = translate`Reviewer notes`;
 const __lf_42 = translate(
                 msg`${String(activity.length)} recent notes are attached to this dashboard.`,
               );
-const __lf_43 = translate`These notes mirror the kind of mixed script and template content that the compile benchmark should exercise.`;
+const __lf_43 = translate`These notes mirror the kind of mixed script and template content that the transform benchmark should exercise.`;
 const __lf_44 = translate(msg`Note ${String(index + 1)}`);
 const __lf_45 = translate(
                     msg`${item.owner} asked ${item.assignee} to review ${String(

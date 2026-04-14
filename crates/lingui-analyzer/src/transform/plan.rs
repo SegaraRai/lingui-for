@@ -8,18 +8,18 @@ use crate::synthesis::{
 };
 
 use super::{
-    AdapterError, CommonCompilePlan, CompileError, CompileTarget, CompileTargetPrototype,
-    FrameworkCompilePlan, RuntimeWarningOptions,
+    AdapterError, CommonTransformPlan, FrameworkTransformPlan, RuntimeWarningOptions,
+    TransformError, TransformTarget, TransformTargetPrototype,
 };
 
-pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
+pub(crate) fn build_transform_plan_for_framework<P: FrameworkTransformPlan>(
     source: &LeanString,
     source_name: &LeanString,
     synthetic_name: &LeanString,
     whitespace_mode: WhitespaceMode,
     conventions: FrameworkConventions,
     runtime_warnings: RuntimeWarningOptions,
-) -> Result<P, CompileError> {
+) -> Result<P, TransformError> {
     let mut analysis = P::analyze(source, source_name, whitespace_mode, &conventions)?;
     let (imports, prototypes, import_removals, synthetic_lang, source_anchors) = {
         let common_analysis = P::common_analysis(&mut analysis);
@@ -39,14 +39,14 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         .collect::<Vec<_>>();
     let synthetic_plan =
         build_synthesis_plan(source, source_name, &imports, &candidates, &source_anchors)?;
-    let synthetic = build_compile_synthetic_source(
+    let synthetic = build_transform_synthetic_source(
         source,
         source_name,
         &synthetic_plan,
         &prototypes,
         &source_anchors,
         |prototype, normalized_source| {
-            P::wrap_compile_source(&analysis, prototype, normalized_source)
+            P::wrap_transform_source(&analysis, prototype, normalized_source)
         },
     )?;
     let declaration_ids = synthetic_plan
@@ -57,7 +57,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     let targets = prototypes
         .into_iter()
         .zip(synthetic_plan.targets)
-        .map(|(prototype, target)| CompileTarget {
+        .map(|(prototype, target)| TransformTarget {
             declaration_id: target.declaration_id,
             original_span: target.candidate.outer_span,
             normalized_span: prototype.candidate.normalized_span,
@@ -73,7 +73,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
         .collect::<Vec<_>>();
 
     let runtime_requirements = P::compute_runtime_requirements(&targets);
-    let common = CommonCompilePlan {
+    let common = CommonTransformPlan {
         source_name: source_name.clone(),
         synthetic_name: synthetic_name.clone(),
         synthetic_source: synthetic.code,
@@ -97,7 +97,7 @@ pub(crate) fn build_compile_plan_for_framework<P: FrameworkCompilePlan>(
     ))
 }
 
-fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
+fn retain_standalone_prototypes(prototypes: &mut Vec<TransformTargetPrototype>) {
     let mut candidates = prototypes
         .iter()
         .map(|prototype| prototype.candidate.clone())
@@ -124,17 +124,17 @@ fn retain_standalone_prototypes(prototypes: &mut Vec<CompileTargetPrototype>) {
     }
 }
 
-fn build_compile_synthetic_source(
+fn build_transform_synthetic_source(
     source: &LeanString,
     source_name: &LeanString,
     synthetic_plan: &SynthesisPlan,
-    prototypes: &[CompileTargetPrototype],
+    prototypes: &[TransformTargetPrototype],
     _source_anchors: &[usize],
-    wrap_compile_source: impl Fn(
-        &CompileTargetPrototype,
+    wrap_transform_source: impl Fn(
+        &TransformTargetPrototype,
         &RenderedMappedText,
-    ) -> Result<RenderedMappedText, CompileError>,
-) -> Result<RenderedMappedText, CompileError> {
+    ) -> Result<RenderedMappedText, TransformError>,
+) -> Result<RenderedMappedText, TransformError> {
     let mut output = MappedText::new(source_name, source);
 
     if let Some(line) = render_macro_import_line(&synthetic_plan.imports) {
@@ -143,7 +143,7 @@ fn build_compile_synthetic_source(
     }
 
     for (prototype, target) in prototypes.iter().zip(synthetic_plan.targets.iter()) {
-        let wrapped = wrap_compile_source(prototype, &target.normalized_rendered)?;
+        let wrapped = wrap_transform_source(prototype, &target.normalized_rendered)?;
         let RenderedMappedText {
             code: wrapped_code,
             indexed_source_map: wrapped_source_map,
@@ -155,7 +155,7 @@ fn build_compile_synthetic_source(
             (Some(upper), Some(lower)) => Some(
                 compose_source_maps(upper.source_map(), lower)
                     .map_err(AdapterError::from)
-                    .map_err(CompileError::from)?,
+                    .map_err(TransformError::from)?,
             ),
             (Some(upper), None) => Some(upper),
             (None, Some(lower)) => Some(lower.clone()),
@@ -172,7 +172,7 @@ fn build_compile_synthetic_source(
     output
         .into_rendered()
         .map_err(AdapterError::from)
-        .map_err(CompileError::from)
+        .map_err(TransformError::from)
 }
 
 #[cfg(test)]
@@ -180,17 +180,17 @@ mod tests {
     use lean_string::LeanString;
 
     use crate::common::{IndexedText, RenderedMappedText, Span, build_span_anchor_map};
-    use crate::compile::{
-        CompileTargetContext, CompileTargetOutputKind, CompileTargetPrototype,
-        CompileTranslationMode,
-    };
     use crate::framework::{
         MacroCandidate, MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, MacroImport,
         render_macro_import_line,
     };
     use crate::synthesis::{NormalizedSegment, SynthesisPlan, SynthesisTarget};
+    use crate::transform::{
+        TransformTargetContext, TransformTargetOutputKind, TransformTargetPrototype,
+        TransformTranslationMode,
+    };
 
-    use super::build_compile_synthetic_source;
+    use super::build_transform_synthetic_source;
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)
@@ -221,12 +221,12 @@ mod tests {
         }
     }
 
-    fn prototype(outer_span: Span) -> CompileTargetPrototype {
-        CompileTargetPrototype {
+    fn prototype(outer_span: Span) -> TransformTargetPrototype {
+        TransformTargetPrototype {
             candidate: candidate(outer_span),
-            context: CompileTargetContext::Template,
-            output_kind: CompileTargetOutputKind::Expression,
-            translation_mode: CompileTranslationMode::Contextual,
+            context: TransformTargetContext::Template,
+            output_kind: TransformTargetOutputKind::Expression,
+            translation_mode: TransformTranslationMode::Contextual,
         }
     }
 
@@ -307,7 +307,7 @@ mod tests {
         };
         let prototypes = vec![prototype(Span::new(0, source.len()))];
 
-        let rendered = build_compile_synthetic_source(
+        let rendered = build_transform_synthetic_source(
             &source_text,
             &source_name,
             &synthetic_plan,
@@ -373,7 +373,7 @@ mod tests {
         };
         let prototypes = vec![prototype(Span::new(0, source.len()))];
 
-        let rendered = build_compile_synthetic_source(
+        let rendered = build_transform_synthetic_source(
             &source_text,
             &source_name,
             &synthetic_plan,

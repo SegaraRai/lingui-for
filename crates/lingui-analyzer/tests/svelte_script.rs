@@ -7,7 +7,7 @@ use lingui_analyzer::conventions::{MacroConventions, MacroPackage, MacroPackageK
 use lingui_analyzer::framework::{FrameworkAdapter, svelte::SvelteAdapter};
 use lingui_analyzer::{
     MacroCandidateKind, MacroCandidateStrategy, MacroFlavor, RuntimeWarningOptions,
-    SvelteCompilePlan, WhitespaceMode,
+    SvelteTransformPlan, WhitespaceMode,
 };
 
 #[path = "support/svelte.rs"]
@@ -101,7 +101,7 @@ fn supports_typescript_syntax_in_svelte_script() {
 }
 
 #[test]
-fn allocates_unique_runtime_bindings_for_svelte_compile() {
+fn allocates_unique_runtime_bindings_for_svelte_transform() {
     let source = indoc! {r#"
         <script lang="ts">
           import { t } from "@lingui/core/macro";
@@ -121,15 +121,15 @@ fn allocates_unique_runtime_bindings_for_svelte_compile() {
         <Trans id="welcome" message="Welcome" />
     "#};
 
-    let plan = SvelteCompilePlan::build(
+    let plan = SvelteTransformPlan::build(
         &ls(source),
         &ls("Component.svelte"),
-        &ls("Component.svelte?compile"),
+        &ls("Component.svelte?transform"),
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect("compile plan succeeds");
+    .expect("transform plan succeeds");
 
     assert_eq!(
         plan.runtime_bindings.create_lingui_accessors,
@@ -825,15 +825,15 @@ fn rejects_unsupported_svelte_trans_child_syntax_with_location() {
         </Trans>
     "#};
 
-    let error = SvelteCompilePlan::build(
+    let error = SvelteTransformPlan::build(
         &ls(source),
         &ls("Unsupported.svelte"),
-        &ls("Unsupported.svelte?compile"),
+        &ls("Unsupported.svelte?transform"),
         WhitespaceMode::Svelte,
         svelte_default_conventions(),
         RuntimeWarningOptions::default(),
     )
-    .expect_err("compile plan should fail");
+    .expect_err("transform plan should fail");
     let rendered = error.to_string();
 
     assert!(rendered.contains("Unsupported.svelte:6:3"));

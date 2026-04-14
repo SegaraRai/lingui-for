@@ -5,15 +5,15 @@ use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
     node_text,
 };
-use crate::compile::runtime_component::{
+use crate::syntax::parse::{parse_svelte, parse_tsx};
+use crate::transform::runtime_component::{
     RuntimeComponentError, append_rendered, convert_jsx_named_attribute, copy_node, copy_span,
     find_first_named_descendant, find_node_by_span, first_named_child, jsx_attribute_name_node,
     jsx_attribute_value_node, key_name, lowerable_object_expression_node, push_anchor_mapped,
     push_copied_span, source_slice, spread_argument_node, spread_element_node, spread_prefix_start,
     translated_span, validate_runtime_placeholder_key,
 };
-use crate::compile::{CompileTarget, RuntimeWarningMode};
-use crate::syntax::parse::{parse_svelte, parse_tsx};
+use crate::transform::{RuntimeWarningMode, TransformTarget};
 
 use super::SvelteAdapterError;
 
@@ -28,14 +28,14 @@ struct SvelteRuntimeLoweringContext<'a> {
     source: &'a IndexedText<'a>,
     input: &'a MappedText<'a>,
     original_input: MappedText<'a>,
-    target: &'a CompileTarget,
+    target: &'a TransformTarget,
     runtime_component_name: &'a str,
 }
 
 pub(crate) fn lower_runtime_component_markup(
     source_name: &LeanString,
     original_source: &LeanString,
-    target: &CompileTarget,
+    target: &TransformTarget,
     declaration: &RenderedMappedText,
     runtime_component_name: &str,
     runtime_warning_mode: RuntimeWarningMode,
@@ -441,7 +441,7 @@ fn convert_expression_for_runtime_trans(
 fn collect_component_snippets(
     original_input: &MappedText<'_>,
     original_source: &LeanString,
-    target: &CompileTarget,
+    target: &TransformTarget,
     transformed_source: &LeanString,
     node: Node<'_>,
     base_offset: isize,
@@ -483,7 +483,7 @@ fn collect_component_snippets(
 fn collect_component_snippets_from_source(
     original_input: &MappedText<'_>,
     original_source: &LeanString,
-    target: &CompileTarget,
+    target: &TransformTarget,
     keys: &[LeanString],
     runtime_warning_mode: RuntimeWarningMode,
 ) -> Result<Vec<RenderedMappedText>, SvelteAdapterError> {
@@ -690,12 +690,12 @@ mod tests {
     use lean_string::LeanString;
 
     use crate::common::{RenderedMappedText, Span};
-    use crate::compile::{
-        CompileTarget, CompileTargetContext, CompileTargetOutputKind, CompileTranslationMode,
-        RuntimeWarningMode,
-    };
     use crate::framework::MacroFlavor;
     use crate::synthesis::NormalizedSegment;
+    use crate::transform::{
+        RuntimeWarningMode, TransformTarget, TransformTargetContext, TransformTargetOutputKind,
+        TransformTranslationMode,
+    };
 
     use super::lower_runtime_component_markup;
 
@@ -703,8 +703,8 @@ mod tests {
         LeanString::from(text)
     }
 
-    fn component_target(source: &LeanString) -> CompileTarget {
-        CompileTarget {
+    fn component_target(source: &LeanString) -> TransformTarget {
+        TransformTarget {
             declaration_id: ls("__trans"),
             original_span: Span::new(0, source.len()),
             normalized_span: Span::new(0, source.len()),
@@ -712,9 +712,9 @@ mod tests {
             local_name: ls("Trans"),
             imported_name: ls("Trans"),
             flavor: MacroFlavor::Direct,
-            context: CompileTargetContext::Template,
-            output_kind: CompileTargetOutputKind::Component,
-            translation_mode: CompileTranslationMode::Contextual,
+            context: TransformTargetContext::Template,
+            output_kind: TransformTargetOutputKind::Component,
+            translation_mode: TransformTranslationMode::Contextual,
             normalized_segments: Vec::<NormalizedSegment>::new(),
         }
     }

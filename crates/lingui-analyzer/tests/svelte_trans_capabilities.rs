@@ -1,7 +1,7 @@
 use indoc::indoc;
 use lean_string::LeanString;
 
-use lingui_analyzer::{RuntimeWarningOptions, SvelteCompilePlan, WhitespaceMode};
+use lingui_analyzer::{RuntimeWarningOptions, SvelteTransformPlan, WhitespaceMode};
 
 #[path = "support/svelte_conventions.rs"]
 mod svelte_conventions;
@@ -15,8 +15,8 @@ fn ls(text: &str) -> LeanString {
 fn assert_svelte_trans_allowed(source: &str) {
     let source = ls(source);
     let source_name = ls("Component.svelte");
-    let synthetic_name = ls("Component.svelte?compile");
-    SvelteCompilePlan::build(
+    let synthetic_name = ls("Component.svelte?transform");
+    SvelteTransformPlan::build(
         &source,
         &source_name,
         &synthetic_name,
@@ -30,8 +30,8 @@ fn assert_svelte_trans_allowed(source: &str) {
 fn assert_svelte_trans_rejected(source: &str, needle: &str) {
     let source = ls(source);
     let source_name = ls("Component.svelte");
-    let synthetic_name = ls("Component.svelte?compile");
-    let error = SvelteCompilePlan::build(
+    let synthetic_name = ls("Component.svelte?transform");
+    let error = SvelteTransformPlan::build(
         &source,
         &source_name,
         &synthetic_name,
