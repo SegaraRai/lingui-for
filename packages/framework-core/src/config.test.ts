@@ -223,7 +223,7 @@ describe("config helpers", () => {
       loadConfig: async (_source, options) => {
         calls.push(options?.cwd ?? "<missing>");
         return {
-          linguiConfig: {} as never,
+          linguiConfig: {},
           frameworkConfig: {},
         };
       },
@@ -243,7 +243,7 @@ describe("config helpers", () => {
   test("throws when config is requested before discovery has been finalized", async () => {
     const resolver = createLinguiConfigResolver({
       loadConfig: async () => ({
-        linguiConfig: {} as never,
+        linguiConfig: {},
         frameworkConfig: {},
       }),
       missingConfigMessage: "missing config",

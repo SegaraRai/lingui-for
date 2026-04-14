@@ -36,7 +36,7 @@ describe("normalizeLinguiConfig", () => {
     ]);
   });
 
-  test("preserves explicit overrides", () => {
+  test("respects macro package replacement overrides", () => {
     const config = normalizeLinguiConfig(
       {
         runtimeConfigModule: {
@@ -56,10 +56,8 @@ describe("normalizeLinguiConfig", () => {
       "custom-runtime",
       "customI18n",
     ]);
-    expect(macro.corePackage).toContain("custom-macro");
-    expect(macro.corePackage).toContain("lingui-for-svelte/macro");
-    expect(macro.jsxPackage).toContain("custom-svelte-macro");
-    expect(macro.jsxPackage).toContain("lingui-for-svelte/macro");
+    expect(macro.corePackage).toEqual(["custom-svelte-macro", "custom-macro"]);
+    expect(macro.jsxPackage).toEqual(["custom-svelte-macro"]);
   });
 });
 

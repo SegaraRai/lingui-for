@@ -29,8 +29,7 @@ function linguiForAstro(
       "astro:config:done": ({ config }) => {
         config.vite ??= {};
         config.vite.plugins ??= [];
-        // TODO: remove type assertion once Astro uses Vite 8
-        config.vite.plugins.unshift(viteLinguiForAstro(pluginOptions) as any);
+        config.vite.plugins.unshift(viteLinguiForAstro(pluginOptions));
       },
     },
   } satisfies AstroIntegration;

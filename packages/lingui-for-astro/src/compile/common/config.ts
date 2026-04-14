@@ -3,7 +3,6 @@ import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 import {
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
-  LINGUI_RUNTIME_TRANS_EXPORT,
   LINGUI_STANDARD_CORE_MACRO_PACKAGES,
   type AstroWhitespaceMode,
   type RuntimeWarningOptions,
@@ -15,7 +14,11 @@ import {
 } from "@lingui-for/framework-core/config";
 import type { ParserOptions } from "@lingui-for/framework-core/vendor/babel-core";
 
-import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
+import {
+  EXPORT_RUNTIME_TRANS,
+  PACKAGE_MACRO,
+  PACKAGE_RUNTIME,
+} from "./constants.ts";
 
 /**
  * Whitespace normalization mode for rich-text component macros in `.astro` files.
@@ -28,21 +31,35 @@ import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
 export type RichTextWhitespaceMode = AstroWhitespaceMode;
 
 /**
- * Astro-specific framework config extracted from the shared `framework` section.
+ * Framework-specific config accepted under `framework.astro`.
  *
- * This is the normalized internal view used by Astro transforms, extractors, and bundler plugins.
+ * These settings control Astro-only compile behavior while keeping the Lingui config file as the
+ * single source of truth for both generic Lingui options and framework extensions.
  */
 export interface LinguiAstroFrameworkConfig {
   /**
-   * Additional macro package names that should be recognized as Astro macro entrypoints.
+   * Macro package names that should be treated like `lingui-for-astro/macro`.
+   *
+   * Use this when you wrap or re-export the Astro macro entrypoint under a custom package name.
+   * When set, this replaces the default `lingui-for-astro/macro` package name.
+   *
+   * @default ["lingui-for-astro/macro"]
    */
   packages?: readonly string[] | undefined;
   /**
    * Whitespace normalization mode for rich-text component macros in `.astro` files.
+   *
+   * `"astro"` selects Astro-aware behavior. Use `"jsx"` for JSX-compatible normalization.
+   *
+   * @default "astro"
+   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#astro
    */
-  whitespace?: RichTextWhitespaceMode | undefined;
+  whitespace?: AstroWhitespaceMode | undefined;
   /**
    * Runtime warning switches emitted by generated Astro runtime helpers.
+   *
+   * This is primarily used to control diagnostics such as `Trans` content override warnings.
+   * By default, these warnings are enabled in development and disabled in production.
    */
   runtimeWarnings?: RuntimeWarningOptions | undefined;
 }
@@ -72,21 +89,17 @@ export function normalizeLinguiConfig(
 
   const mergedRuntimeConfigModule = {
     i18n: [LINGUI_CORE_PACKAGE, LINGUI_I18N_EXPORT] as const,
-    Trans: [PACKAGE_RUNTIME, LINGUI_RUNTIME_TRANS_EXPORT] as const,
+    Trans: [PACKAGE_RUNTIME, EXPORT_RUNTIME_TRANS] as const,
   };
 
   if (runtimeConfigModule) {
     Object.assign(mergedRuntimeConfigModule, runtimeConfigModule);
   }
 
-  const astroPackages = uniqueStrings([
-    PACKAGE_MACRO,
-    ...(options?.packages ?? []),
-  ]);
+  const astroPackages = uniqueStrings(options?.packages ?? [PACKAGE_MACRO]);
   const corePackages = uniqueStrings([
-    PACKAGE_MACRO,
-    ...LINGUI_STANDARD_CORE_MACRO_PACKAGES,
-    ...(config?.macro?.corePackage ?? []),
+    ...astroPackages,
+    ...(config?.macro?.corePackage ?? LINGUI_STANDARD_CORE_MACRO_PACKAGES),
   ]);
 
   return {
@@ -108,12 +121,6 @@ export function normalizeLinguiConfig(
  */
 export function getParserPlugins(): NonNullable<ParserOptions["plugins"]> {
   return getParserPluginsShared({ typescript: true });
-}
-
-export function resolveAstroWhitespace(
-  whitespace: RichTextWhitespaceMode,
-): AstroWhitespaceMode {
-  return whitespace;
 }
 
 export async function loadLinguiConfig(

@@ -3,18 +3,13 @@ import type { LinguiConfigNormalized } from "@lingui/conf";
 import {
   buildAstroCompilePlan,
   finishAstroCompile,
-} from "@lingui-for/framework-core/compile";
-import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
-import {
   parseCanonicalSourceMap,
   toBabelSourceMap,
   type CanonicalSourceMap,
 } from "@lingui-for/framework-core/compile";
+import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
 
-import {
-  resolveAstroWhitespace,
-  type LinguiAstroFrameworkConfig,
-} from "../common/config.ts";
+import type { LinguiAstroFrameworkConfig } from "../common/config.ts";
 import { createAstroFrameworkConventions } from "../common/conventions.ts";
 import { lowerAstroTransformProgram } from "../lower/transform.ts";
 
@@ -110,7 +105,7 @@ export async function transformAstro(
     source,
     sourceName: filename,
     syntheticName: `${filename}?rust-compile.tsx`,
-    whitespace: resolveAstroWhitespace(frameworkConfig.whitespace ?? "astro"),
+    whitespace: frameworkConfig.whitespace ?? "astro",
     runtimeWarnings: frameworkConfig.runtimeWarnings,
     conventions: createAstroFrameworkConventions(linguiConfig, {
       packages: frameworkConfig.packages,

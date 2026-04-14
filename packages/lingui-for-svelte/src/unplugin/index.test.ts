@@ -1,4 +1,5 @@
 import dedent from "dedent";
+import type { UnpluginBuildContext, UnpluginContext } from "unplugin";
 import { describe, expect, test } from "vite-plus/test";
 
 import { unpluginFactory } from "./index.ts";
@@ -11,7 +12,7 @@ describe("lingui-for-svelte unplugin", () => {
   };
 
   test("moves the plugin ahead of strip-whitespace in Vite", async () => {
-    const plugin = unpluginFactory(config, { framework: "vite" } as never);
+    const plugin = unpluginFactory(config, { framework: "vite" });
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -34,7 +35,7 @@ describe("lingui-for-svelte unplugin", () => {
       ],
     };
 
-    await runConfigResolved?.call({} as never, viteConfig as never);
+    await runConfigResolved?.call({} as any, viteConfig as any);
 
     expect(viteConfig.plugins.map((entry) => entry.name)).toEqual([
       "vite:pre-alias",
@@ -45,7 +46,7 @@ describe("lingui-for-svelte unplugin", () => {
   });
 
   test("skips non-svelte files", async () => {
-    const plugin = unpluginFactory(config, { framework: "vite" } as never);
+    const plugin = unpluginFactory(config, { framework: "vite" });
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -56,12 +57,12 @@ describe("lingui-for-svelte unplugin", () => {
 
     expect(runTransform).toBeTypeOf("function");
     await expect(
-      runTransform?.call({} as never, "const x = 1;", "/a.ts"),
+      runTransform?.call(createUnpluginContext(), "const x = 1;", "/a.ts"),
     ).resolves.toBeNull();
   });
 
   test("skips .svelte files that do not reference lingui-for-svelte macros", async () => {
-    const plugin = unpluginFactory(config, { framework: "vite" } as never);
+    const plugin = unpluginFactory(config, { framework: "vite" });
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -72,7 +73,11 @@ describe("lingui-for-svelte unplugin", () => {
 
     expect(runTransform).toBeTypeOf("function");
     await expect(
-      runTransform?.call({} as never, "<h1>Hello</h1>", "/Component.svelte"),
+      runTransform?.call(
+        createUnpluginContext(),
+        "<h1>Hello</h1>",
+        "/Component.svelte",
+      ),
     ).resolves.toBeNull();
   });
 
@@ -88,7 +93,7 @@ describe("lingui-for-svelte unplugin", () => {
           },
         },
       },
-      { framework: "vite" } as never,
+      { framework: "vite" },
     );
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
@@ -101,7 +106,7 @@ describe("lingui-for-svelte unplugin", () => {
     expect(runTransform).toBeTypeOf("function");
     await expect(
       runTransform?.call(
-        {} as never,
+        createUnpluginContext(),
         dedent`
           <script>
             import { t } from "@acme/svelte-macro";
@@ -114,8 +119,46 @@ describe("lingui-for-svelte unplugin", () => {
     ).resolves.not.toBeNull();
   });
 
+  test("treats custom macro package names as replacements", async () => {
+    const plugin = unpluginFactory(
+      {
+        config: {
+          locales: ["en"],
+          framework: {
+            svelte: {
+              packages: ["@acme/svelte-macro"],
+            },
+          },
+        },
+      },
+      { framework: "vite" },
+    );
+    const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
+    if (!pluginInstance) {
+      throw new Error("Plugin instance is undefined");
+    }
+    const transform = pluginInstance.transform;
+    const runTransform =
+      typeof transform === "function" ? transform : transform?.handler;
+
+    expect(runTransform).toBeTypeOf("function");
+    await expect(
+      runTransform?.call(
+        createUnpluginContext(),
+        dedent`
+          <script>
+            import { t } from "lingui-for-svelte/macro";
+          </script>
+
+          <p>{$t\`Hello\`}</p>
+        `,
+        "/Component.svelte",
+      ),
+    ).resolves.toBeNull();
+  });
+
   test("throws when no Lingui config file is found", async () => {
-    const plugin = unpluginFactory(undefined, { framework: "vite" } as never);
+    const plugin = unpluginFactory(undefined, { framework: "vite" });
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -126,10 +169,14 @@ describe("lingui-for-svelte unplugin", () => {
 
     await expect(
       runTransform?.call(
-        {} as never,
+        createUnpluginContext(),
         '<script>import { t } from "lingui-for-svelte/macro";</script>',
         "/Component.svelte",
       ),
     ).rejects.toThrow("lingui-for-svelte could not resolve a Lingui config.");
   });
 });
+
+function createUnpluginContext(): UnpluginBuildContext & UnpluginContext {
+  return {} as UnpluginBuildContext & UnpluginContext;
+}

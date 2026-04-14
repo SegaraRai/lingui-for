@@ -43,9 +43,8 @@ export const unpluginFactory: UnpluginFactory<
 
       const activeConfig = await configResolver.getConfig();
 
-      const sveltePackages = [
+      const sveltePackages = activeConfig.frameworkConfig.packages ?? [
         PACKAGE_MACRO,
-        ...(activeConfig.frameworkConfig.packages ?? []),
       ];
       if (!mayContainLinguiMacroImport(code, sveltePackages)) {
         return null;

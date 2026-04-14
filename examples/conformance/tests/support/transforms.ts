@@ -83,17 +83,16 @@ async function runPluginTransform(
   code: string,
   id: string,
 ): Promise<string> {
-  const plugin = factory(options as never);
+  const plugin = factory(options as any);
   const transform =
     typeof plugin.transform === "function"
       ? plugin.transform
       : plugin.transform?.handler;
-
   if (!transform) {
     throw new Error(`Transform hook was not found for ${id}.`);
   }
 
-  const result = (await transform.call({} as never, code, id)) as
+  const result = (await transform.call({} as any, code, id)) as
     | TransformResult
     | null
     | undefined;

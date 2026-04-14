@@ -3,7 +3,6 @@ import type { LinguiConfig, LinguiConfigNormalized } from "@lingui/conf";
 import {
   LINGUI_CORE_PACKAGE,
   LINGUI_I18N_EXPORT,
-  LINGUI_RUNTIME_TRANS_EXPORT,
   LINGUI_STANDARD_CORE_MACRO_PACKAGES,
   type RuntimeWarningOptions,
   type ScriptLang,
@@ -16,34 +15,42 @@ import {
 } from "@lingui-for/framework-core/config";
 import type { ParserOptions } from "@lingui-for/framework-core/vendor/babel-core";
 
-import { PACKAGE_MACRO, PACKAGE_RUNTIME } from "./constants.ts";
+import {
+  EXPORT_RUNTIME_TRANS,
+  PACKAGE_MACRO,
+  PACKAGE_RUNTIME,
+} from "./constants.ts";
 
 /**
- * Whitespace normalization mode for rich-text component macros in `.svelte` files.
+ * Framework-specific config accepted under `framework.svelte`.
  *
- * Use `"svelte"` for Svelte-aware whitespace semantics, or `"jsx"` when you need JSX-compatible
- * normalization.
- *
- * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#svelte
- */
-export type RichTextWhitespaceMode = SvelteWhitespaceMode;
-
-/**
- * Svelte-specific framework config extracted from the shared `framework` section.
- *
- * This is the normalized internal view used by Svelte transforms, extractors, and bundler plugins.
+ * These settings control Svelte-only compile behavior while keeping the Lingui config file as the
+ * single source of truth for both generic Lingui options and framework extensions.
  */
 export interface LinguiSvelteFrameworkConfig {
   /**
-   * Additional macro package names that should be recognized as Svelte macro entrypoints.
+   * Macro package names that should be treated like `lingui-for-svelte/macro`.
+   *
+   * Use this when you wrap or re-export the Svelte macro entrypoint under a custom package name.
+   * When set, this replaces the default `lingui-for-svelte/macro` package name.
+   *
+   * @default ["lingui-for-svelte/macro"]
    */
   packages?: readonly string[] | undefined;
   /**
    * Whitespace normalization mode for rich-text component macros in `.svelte` files.
+   *
+   * `"svelte"` selects Svelte-aware behavior. Use `"jsx"` for JSX-compatible normalization.
+   *
+   * @default "svelte"
+   * @see https://lingui-for.roundtrip.dev/guides/whitespace-in-component-macros#svelte
    */
-  whitespace?: RichTextWhitespaceMode | undefined;
+  whitespace?: SvelteWhitespaceMode | undefined;
   /**
    * Runtime warning switches emitted by generated Svelte runtime helpers.
+   *
+   * This is primarily used to control diagnostics such as `Trans` content override warnings.
+   * By default, these warnings are enabled in development and disabled in production.
    */
   runtimeWarnings?: RuntimeWarningOptions | undefined;
 }
@@ -73,21 +80,17 @@ export function normalizeLinguiConfig(
 
   const mergedRuntimeConfigModule = {
     i18n: [LINGUI_CORE_PACKAGE, LINGUI_I18N_EXPORT] as const,
-    Trans: [PACKAGE_RUNTIME, LINGUI_RUNTIME_TRANS_EXPORT] as const,
+    Trans: [PACKAGE_RUNTIME, EXPORT_RUNTIME_TRANS] as const,
   };
 
   if (runtimeConfigModule) {
     Object.assign(mergedRuntimeConfigModule, runtimeConfigModule);
   }
 
-  const sveltePackages = uniqueStrings([
-    PACKAGE_MACRO,
-    ...(options?.packages ?? []),
-  ]);
+  const sveltePackages = uniqueStrings(options?.packages ?? [PACKAGE_MACRO]);
   const corePackages = uniqueStrings([
-    PACKAGE_MACRO,
-    ...LINGUI_STANDARD_CORE_MACRO_PACKAGES,
-    ...(config?.macro?.corePackage ?? []),
+    ...sveltePackages,
+    ...(config?.macro?.corePackage ?? LINGUI_STANDARD_CORE_MACRO_PACKAGES),
   ]);
 
   return {
@@ -117,12 +120,6 @@ export function getParserPlugins(
   return getParserPluginsShared({
     typescript: lang === "ts",
   });
-}
-
-export function resolveSvelteWhitespace(
-  whitespace: RichTextWhitespaceMode,
-): SvelteWhitespaceMode {
-  return whitespace;
 }
 
 export async function loadLinguiConfig(
