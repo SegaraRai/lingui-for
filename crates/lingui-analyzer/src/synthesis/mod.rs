@@ -21,7 +21,6 @@ pub struct SynthesisPlan {
 pub struct SynthesisTarget {
     pub declaration_id: LeanString,
     pub candidate: MacroCandidate,
-    pub normalized_code: LeanString,
     pub(crate) normalized_rendered: RenderedMappedText,
     pub normalized_segments: Vec<NormalizedSegment>,
 }
@@ -68,11 +67,9 @@ pub fn build_synthesis_plan(
                 rendered: normalized_rendered,
                 segments: normalized_segments,
             } = normalize_candidate_output(source, source_name, candidate, source_anchors)?;
-            let normalized_code = normalized_rendered.code.clone();
             Ok(SynthesisTarget {
                 declaration_id,
                 candidate: candidate.clone(),
-                normalized_code,
                 normalized_rendered,
                 normalized_segments,
             })

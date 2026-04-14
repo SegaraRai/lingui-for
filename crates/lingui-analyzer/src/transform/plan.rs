@@ -291,15 +291,13 @@ mod tests {
         let source = "source";
         let source_text = ls(source);
         let source_name = ls("test.ts");
-        let normalized_code = "wrapped".to_string();
         let synthetic_plan = SynthesisPlan {
             imports: Vec::new(),
             targets: vec![SynthesisTarget {
                 declaration_id: ls("__lf_0"),
                 candidate: candidate(Span::new(0, source.len())),
-                normalized_code: LeanString::from(normalized_code.clone()),
                 normalized_rendered: RenderedMappedText {
-                    code: LeanString::from(normalized_code.clone()),
+                    code: ls("wrapped"),
                     indexed_source_map: None,
                 },
                 normalized_segments: Vec::new(),
@@ -353,7 +351,6 @@ mod tests {
             targets: vec![SynthesisTarget {
                 declaration_id: ls("__lf_0"),
                 candidate: candidate(Span::new(0, source.len())),
-                normalized_code: ls(source),
                 normalized_rendered: RenderedMappedText {
                     code: ls(source),
                     indexed_source_map: build_span_anchor_map(
