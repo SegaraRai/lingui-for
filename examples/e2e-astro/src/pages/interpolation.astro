@@ -40,10 +40,10 @@ const currentPage = t`Astro interpolation extraction page`;
     <div class="card-body">
       <h2 class="card-title">{t`Fragment-wrapped interpolation roots`}</h2>
       {
-        <Fragment>
+        <>
           <p>{t`First translated node inside an Astro fragment interpolation.`}</p>
           <p>{t`Second translated node inside an Astro fragment interpolation.`}</p>
-        </Fragment>
+        </>
       }
     </div>
   </section>

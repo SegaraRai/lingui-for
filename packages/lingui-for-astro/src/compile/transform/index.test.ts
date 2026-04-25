@@ -626,6 +626,27 @@ describe("transformAstro", () => {
     expect(code).not.toContain('message: "Inner"');
   });
 
+  test("normalizes shorthand fragments that contain transformed interpolation macros", async () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+      ---
+
+      {<><p>{t\`First fragment child\`}</p><p>{t\`Second fragment child\`}</p></>}
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain("<Fragment><p>{__l4a_i18n._(");
+    expect(code).toContain("</p><p>{__l4a_i18n._(");
+    expect(code).toContain("</p></Fragment>");
+    expect(code).not.toContain("<><p>");
+    expect(code).not.toContain("</></");
+  });
+
   test("leaves same-name non-macro components untouched", async () => {
     const resolvedConfig = await resolveTestConfig();
     const source = dedent`

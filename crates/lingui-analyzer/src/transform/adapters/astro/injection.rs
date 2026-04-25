@@ -1,7 +1,9 @@
 use lean_string::LeanString;
+use tree_sitter::Node;
 
 use crate::common::{IndexedText, Span, build_span_anchor_map};
 use crate::conventions::FrameworkConventions;
+use crate::syntax::parse::parse_astro;
 use crate::transform::TransformReplacementInternal;
 
 use super::{AstroAdapterError, AstroTransformPlan, AstroTransformRuntimeBindings};
@@ -11,6 +13,8 @@ pub(super) fn append_runtime_injection_replacements(
     source: &LeanString,
     replacements: &mut Vec<TransformReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
+    append_fragment_normalization_replacements(plan, source, replacements)?;
+
     let indexed_source = IndexedText::new(source);
     let injections = build_frontmatter_injections(
         plan.runtime_requirements.needs_runtime_i18n_binding,
@@ -100,6 +104,92 @@ pub(super) fn append_runtime_injection_replacements(
         Vec::new(),
     ));
     Ok(())
+}
+
+fn append_fragment_normalization_replacements(
+    plan: &AstroTransformPlan,
+    source: &LeanString,
+    replacements: &mut Vec<TransformReplacementInternal>,
+) -> Result<(), AstroAdapterError> {
+    if plan.common.targets.is_empty() {
+        return Ok(());
+    }
+
+    let tree = parse_astro(source)?;
+    collect_fragment_normalization_replacements(
+        plan,
+        tree.root_node(),
+        replacements,
+        &mut Vec::new(),
+    );
+    Ok(())
+}
+
+fn collect_fragment_normalization_replacements(
+    plan: &AstroTransformPlan,
+    node: Node<'_>,
+    replacements: &mut Vec<TransformReplacementInternal>,
+    normalized_fragments: &mut Vec<Span>,
+) {
+    if node.kind() == "element"
+        && node_contains_transform_target(plan, node)
+        && let Some((start_tag, end_tag)) = fragment_tag_pair(node)
+    {
+        let element_span = Span::from_node(node);
+        if !normalized_fragments.contains(&element_span) {
+            normalized_fragments.push(element_span);
+            replacements.push(TransformReplacementInternal::new(
+                LeanString::from(format!("__astro_fragment_start_{}", start_tag.start_byte())),
+                start_tag.start_byte(),
+                start_tag.end_byte(),
+                LeanString::from_static_str("<Fragment>"),
+                None,
+                Vec::new(),
+            ));
+            replacements.push(TransformReplacementInternal::new(
+                LeanString::from(format!("__astro_fragment_end_{}", end_tag.start_byte())),
+                end_tag.start_byte(),
+                end_tag.end_byte(),
+                LeanString::from_static_str("</Fragment>"),
+                None,
+                Vec::new(),
+            ));
+        }
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        collect_fragment_normalization_replacements(
+            plan,
+            child,
+            replacements,
+            normalized_fragments,
+        );
+    }
+}
+
+fn node_contains_transform_target(plan: &AstroTransformPlan, node: Node<'_>) -> bool {
+    let span = Span::from_node(node);
+    plan.common.targets.iter().any(|target| {
+        span.start <= target.original_span.start && target.original_span.end <= span.end
+    })
+}
+
+fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
+    let mut cursor = node.walk();
+    let start_tag = node
+        .children(&mut cursor)
+        .find(|child| child.kind() == "start_tag" && tag_name(*child).is_none())?;
+    let mut cursor = node.walk();
+    let end_tag = node
+        .children(&mut cursor)
+        .find(|child| child.kind() == "end_tag" && tag_name(*child).is_none())?;
+    Some((start_tag, end_tag))
+}
+
+fn tag_name(node: Node<'_>) -> Option<Node<'_>> {
+    node.children(&mut node.walk())
+        .find(|child| child.kind() == "tag_name")
 }
 
 struct FrontmatterInjections {

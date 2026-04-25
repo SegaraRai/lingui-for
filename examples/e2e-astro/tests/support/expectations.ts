@@ -28,12 +28,14 @@ const httpRouteExpectations: readonly HttpRouteExpectation[] = [
       en: [
         "Lingui Astro multi-page playground",
         "One Astro app, several translation checkpoints",
+        "Astro interpolation edge cases",
         "Current page: Overview",
         "Server locale: English",
       ],
       ja: [
         "Lingui Astro マルチページプレイグラウンド",
         "1 つの Astro アプリで複数の翻訳チェックポイントを確認します",
+        "Astro interpolation edge cases",
         "現在のページ: 概要",
         "サーバーロケール: 日本語",
       ],
@@ -43,6 +45,7 @@ const httpRouteExpectations: readonly HttpRouteExpectation[] = [
       'href="/islands"',
       'href="/rich-text"',
       'href="/formats"',
+      'href="/interpolation"',
       'href="/routing/alpha"',
       'href="/settings"',
       'href="/transitions"',
