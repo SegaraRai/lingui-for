@@ -1,0 +1,86 @@
+---
+// Unsupported Astro 6.1.9 interpolation forms observed in this fixture.
+//
+// `astro check` accepts these forms, but `astro build` fails because the
+// interpolation contains multiple root nodes:
+//
+//   {<span>first</span><span>second</span>}
+//   {<!-- html-and-one --><span>single node after HTML comment</span>}
+//   {<!-- html-and-two --><span>first node after HTML comment</span><span>second node after HTML comment</span>}
+//   {<!-- before-fragment --><><span>first</span><span>second</span></>}
+//
+// Wrap adjacent nodes in a single Fragment root instead. If an HTML comment is
+// part of that expression, it must be inside the Fragment too.
+//
+// Error observed:
+//
+//   Transform failed with 1 error:
+//   interpolation.astro:line:column: ERROR: Expected "}" but found ...
+
+const trueBranch = true;
+const falseBranch = false;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astro interpolation behavior checks</title>
+  </head>
+  <body>
+    <main>
+      <h1>Astro interpolation behavior checks</h1>
+
+      <section data-case="plain-expression">
+        <h2>Plain expressions</h2>
+        <p>{`Allowed: a JavaScript expression can produce text.`}</p>
+      </section>
+
+      <section data-case="single-element-root">
+        <h2>Single element root</h2>
+        {<p>Allowed: an interpolation can render one element root.</p>}
+      </section>
+
+      <section data-case="html-comment-only">
+        <h2>HTML comment-only interpolation</h2>
+        {<!-- html-only -->}
+        <p>Allowed: an HTML comment can be the whole interpolation.</p>
+      </section>
+
+      <section data-case="js-comment-only">
+        <h2>JS comment-only interpolation</h2>
+        {/* js-only */}
+        <p>Allowed: a JavaScript block comment can be the whole interpolation.</p>
+      </section>
+
+      <section data-case="fragment-wrapped-roots">
+        <h2>Fragment-wrapped adjacent roots</h2>
+        {<><p>Allowed: first node inside fragment.</p><p>Allowed: second node inside fragment.</p></>}
+      </section>
+
+      <section data-case="fragment-wrapped-html-comment">
+        <h2>Fragment-wrapped HTML comment and adjacent roots</h2>
+        {<><!-- fragment comment --><p>Allowed: first node after a comment inside fragment.</p><p>Allowed: second node after a comment inside fragment.</p></>}
+      </section>
+
+      <section data-case="html-comment-left-branch">
+        <h2>HTML comment as conditional left branch</h2>
+        {trueBranch ? <!-- ternary-html-left --> : <span>unexpected left</span>}
+        <p>Allowed: an HTML comment can be the true branch.</p>
+      </section>
+
+      <section data-case="html-comment-right-branch">
+        <h2>HTML comment as conditional right branch</h2>
+        {falseBranch ? <span>unexpected right</span> : <!-- ternary-html-right -->}
+        <p>Allowed: an HTML comment can be the false branch.</p>
+      </section>
+
+      <section data-case="element-right-branch">
+        <h2>Element as alternate conditional branch</h2>
+        {falseBranch ? <!-- ternary-html-left --> : <span>element right branch rendered</span>}
+        <p>Allowed: the alternate branch can render a single element root.</p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -126,4 +126,40 @@ describe.sequential.for(serverModes)("%s http rendering", (mode) => {
       "React components can translate Lingui descriptors inside Astro.",
     );
   });
+
+  test("renders framework interpolation behavior route", async () => {
+    const response = await server.fetch("/framework/interpolation");
+    const html = cleanupHtml(await response.text());
+
+    expect(response.status).toBe(200);
+    expect(html).toContain("Astro interpolation behavior checks");
+    expect(html).toContain(
+      "Allowed: a JavaScript expression can produce text.",
+    );
+    expect(html).toContain(
+      "Allowed: an interpolation can render one element root.",
+    );
+    expect(html).toContain(
+      "Allowed: an HTML comment can be the whole interpolation.",
+    );
+    expect(html).toContain(
+      "Allowed: a JavaScript block comment can be the whole interpolation.",
+    );
+    expect(html).toContain("Allowed: first node inside fragment.");
+    expect(html).toContain("Allowed: second node inside fragment.");
+    expect(html).toContain(
+      "Allowed: first node after a comment inside fragment.",
+    );
+    expect(html).toContain(
+      "Allowed: second node after a comment inside fragment.",
+    );
+    expect(html).toContain("Allowed: an HTML comment can be the true branch.");
+    expect(html).toContain("Allowed: an HTML comment can be the false branch.");
+    expect(html).toContain("element right branch rendered");
+    expect(html).toContain(
+      "Allowed: the alternate branch can render a single element root.",
+    );
+    expect(html).not.toContain("unexpected left");
+    expect(html).not.toContain("unexpected right");
+  });
 });
