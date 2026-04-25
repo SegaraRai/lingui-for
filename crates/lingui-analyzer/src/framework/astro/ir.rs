@@ -2,7 +2,7 @@ use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{Span, is_component_tag_name, node_text, span_text};
-use crate::syntax::parse::{ParseError, parse_astro};
+use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
 
 #[derive(thiserror::Error, Debug)]
 pub enum AstroIrError {
@@ -31,6 +31,7 @@ pub struct LoweredAstroHtmlInterpolation {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BundledAstroHtmlInterpolation {
+    pub declaration_id: LeanString,
     pub outer_span: Span,
     pub inner_span: Span,
     pub synthetic_span: Span,
@@ -132,7 +133,8 @@ pub fn bundle_html_interpolations(
     let mut expressions = Vec::with_capacity(lowered.len());
 
     for (index, interpolation) in lowered.iter().enumerate() {
-        let prefix = format!("const __astro_expr_{index}__ = (");
+        let declaration_id = LeanString::from(format!("__astro_expr_{index}__"));
+        let prefix = format!("const {declaration_id} = (");
         code.push_str(&prefix);
         let synthetic_start = code.len();
         code.push_str(&interpolation.code);
@@ -140,6 +142,7 @@ pub fn bundle_html_interpolations(
         code.push_str(");\n");
 
         expressions.push(BundledAstroHtmlInterpolation {
+            declaration_id,
             outer_span: interpolation.outer_span,
             inner_span: interpolation.inner_span,
             synthetic_span: Span::new(synthetic_start, synthetic_end),
@@ -203,15 +206,26 @@ fn lower_interpolation_expression(
     let mut builder = AstroIrBuilder::default();
     let mut cursor = inner_span.start;
     let mut child_cursor = interpolation.walk();
+    let children = interpolation
+        .named_children(&mut child_cursor)
+        .filter(|child| child.end_byte() > inner_span.start && child.start_byte() < inner_span.end)
+        .collect::<Vec<_>>();
 
-    for child in interpolation.named_children(&mut child_cursor) {
-        if child.end_byte() <= inner_span.start || child.start_byte() >= inner_span.end {
-            continue;
-        }
+    for (index, child) in children.iter().enumerate() {
         if cursor < child.start_byte() {
             builder.push_original(source, Span::new(cursor, child.start_byte()));
         }
-        builder.push_lowered(lower_expressionish_child(source, child)?);
+        if child.kind() == "comment" {
+            if should_insert_comment_sequence_separator_before(source, &children, index) {
+                builder.push_inserted(", ");
+            }
+            builder.push_inserted("__astro_cm");
+            if should_insert_comment_sequence_separator_after(source, &children, index) {
+                builder.push_inserted(", ");
+            }
+        } else {
+            builder.push_lowered(lower_expressionish_child(source, *child)?);
+        }
         cursor = child.end_byte();
     }
 
@@ -227,11 +241,73 @@ fn lower_interpolation_expression(
             segments: Vec::new(),
         });
     }
+    if !lowered_code_has_expression_root(&trimmed_code)? {
+        return Ok(LoweredNode {
+            code: LeanString::from_static_str("undefined"),
+            segments: Vec::new(),
+        });
+    }
     let trimmed_segments = trim_segments(&lowered.code, lowered.segments);
     Ok(LoweredNode {
         code: trimmed_code,
         segments: trimmed_segments,
     })
+}
+
+fn should_insert_comment_sequence_separator_before(
+    source: &str,
+    children: &[Node<'_>],
+    index: usize,
+) -> bool {
+    let comment = children[index];
+    let Some(previous) = index.checked_sub(1).map(|previous| children[previous]) else {
+        return false;
+    };
+    previous.kind() != "permissible_text"
+        && previous.kind() != "comment"
+        && span_text(source, Span::new(previous.end_byte(), comment.start_byte()))
+            .trim()
+            .is_empty()
+}
+
+fn should_insert_comment_sequence_separator_after(
+    source: &str,
+    children: &[Node<'_>],
+    index: usize,
+) -> bool {
+    let comment = children[index];
+    let Some(next) = children.get(index + 1).copied() else {
+        return false;
+    };
+    next.kind() != "permissible_text"
+        && next.kind() != "comment"
+        && span_text(source, Span::new(comment.end_byte(), next.start_byte()))
+            .trim()
+            .is_empty()
+}
+
+fn lowered_code_has_expression_root(code: &str) -> Result<bool, AstroIrError> {
+    let probe = format!("const __astro_probe__ = ({code});");
+    let tree = parse_typescript(&probe)?;
+    let root = tree.root_node();
+    let mut cursor = root.walk();
+
+    for child in root.children(&mut cursor) {
+        if !matches!(child.kind(), "lexical_declaration" | "variable_declaration") {
+            continue;
+        }
+        let mut decl_cursor = child.walk();
+        for declarator in child.children(&mut decl_cursor) {
+            if declarator.kind() != "variable_declarator" {
+                continue;
+            }
+            if declarator.child_by_field_name("value").is_some() {
+                return Ok(true);
+            }
+        }
+    }
+
+    Ok(false)
 }
 
 fn trim_segments(raw_code: &str, segments: Vec<AstroIrSegment>) -> Vec<AstroIrSegment> {
@@ -725,6 +801,46 @@ mod tests {
         assert_eq!(
             expression.remap_generated_span(Span::new(generated, generated + 3)),
             Some(Span::new(original, original + 3))
+        );
+    }
+
+    #[test]
+    fn lowers_comment_only_interpolations_to_opaque_expression() {
+        let source = indoc! {r#"
+            ---
+            const x = 1;
+            ---
+            {/* This is just a code comment */}
+            {<!-- This is an HTML comment -->}
+        "#};
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+
+        assert_eq!(lowered.len(), 2);
+        assert_eq!(lowered[0].code, "undefined");
+        assert_eq!(lowered[1].code, "__astro_cm");
+    }
+
+    #[test]
+    fn lowers_html_comments_inside_interpolations_using_astro_parse_tree() {
+        let source = indoc! {r#"
+            ---
+            const x = 1;
+            ---
+            {<!-- This is an HTML comment --><span>{translate`Inside element`}</span>}
+            {condition ? <!-- This is an HTML comment --> : <span>{translate`Fallback`}</span>}
+        "#};
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+
+        assert_eq!(lowered.len(), 2);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_cm, __astro_el("span", null, translate`Inside element`)"#
+        );
+        assert_eq!(
+            lowered[1].code,
+            r#"condition ? __astro_cm : __astro_el("span", null, translate`Fallback`)"#
         );
     }
 }

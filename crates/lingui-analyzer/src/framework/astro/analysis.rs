@@ -358,27 +358,27 @@ fn analyze_lowered_html_interpolations(
 
     let bundled = bundle_html_interpolations(&lowered);
     let tree = parse_typescript(&bundled.code)?;
-    let roots = collect_bundled_expression_roots(tree.root_node());
-    if roots.len() != bundled.expressions.len() {
-        return Err(AstroFrameworkError::BundledRootCountMismatch {
-            expected: bundled.expressions.len(),
-            found: roots.len(),
-        });
-    }
+    let roots = collect_bundled_expression_roots(&bundled.code, tree.root_node());
 
     let mut analyses = HashMap::with_capacity(bundled.expressions.len());
-    for (root, interpolation) in roots.into_iter().zip(bundled.expressions.iter()) {
-        let candidates = collect_macro_candidates(
-            &bundled.code,
-            root,
-            imports,
-            0,
-            JsMacroSyntax::Standard,
-            std::iter::empty::<&str>(),
-        )
-        .into_iter()
-        .filter_map(|candidate| remap_bundled_candidate(candidate, interpolation))
-        .collect();
+    for interpolation in &bundled.expressions {
+        let candidates = if let Some(root) = roots.get(&interpolation.declaration_id) {
+            collect_macro_candidates(
+                &bundled.code,
+                *root,
+                imports,
+                0,
+                JsMacroSyntax::Standard,
+                std::iter::empty::<&str>(),
+            )
+            .into_iter()
+            .filter_map(|candidate| remap_bundled_candidate(candidate, interpolation))
+            .collect()
+        } else {
+            return Err(AstroFrameworkError::MissingBundledExpressionRoot {
+                declaration_id: interpolation.declaration_id.clone(),
+            });
+        };
         analyses.insert(
             interpolation.outer_span,
             LoweredAstroHtmlInterpolationAnalysis {
@@ -440,8 +440,11 @@ fn push_template_expression(
     Ok(())
 }
 
-fn collect_bundled_expression_roots(root: Node<'_>) -> Vec<Node<'_>> {
-    let mut expressions = Vec::new();
+fn collect_bundled_expression_roots<'tree>(
+    source: &str,
+    root: Node<'tree>,
+) -> HashMap<LeanString, Node<'tree>> {
+    let mut expressions = HashMap::new();
     let mut cursor = root.walk();
     for child in root.children(&mut cursor) {
         if !matches!(child.kind(), "lexical_declaration" | "variable_declaration") {
@@ -452,9 +455,13 @@ fn collect_bundled_expression_roots(root: Node<'_>) -> Vec<Node<'_>> {
             if declarator.kind() != "variable_declarator" {
                 continue;
             }
-            if let Some(value) = declarator.child_by_field_name("value") {
-                expressions.push(value);
-            }
+            let Some(name) = declarator.child_by_field_name("name") else {
+                continue;
+            };
+            let Some(value) = declarator.child_by_field_name("value") else {
+                continue;
+            };
+            expressions.insert(LeanString::from(node_text(source, name)), value);
         }
     }
     expressions
@@ -543,6 +550,8 @@ fn is_pure_html_interpolation_expression(node: Node<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
+
     use crate::common::Span;
     use crate::framework::astro::ir::{AstroIrSegment, BundledAstroHtmlInterpolation};
 
@@ -551,6 +560,7 @@ mod tests {
     #[test]
     fn remap_bundled_offset_handles_segment_boundaries_deterministically() {
         let interpolation = BundledAstroHtmlInterpolation {
+            declaration_id: LeanString::from_static_str("__astro_expr_0__"),
             outer_span: Span::new(0, 0),
             inner_span: Span::new(0, 0),
             synthetic_span: Span::new(0, 0),

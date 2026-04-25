@@ -57,11 +57,9 @@ describe("lingui-analyzer wasm contract", () => {
     expect(result.declarations.__lf_1).toContain('message: "Markup hello"');
   });
 
-  test.fails(
-    "ignores Astro comment-only html interpolations during extraction",
-    async () => {
-      const filename = "/virtual/CommentOnlyInterpolation.astro";
-      const source = dedent`
+  test("ignores Astro comment-only html interpolations during extraction", async () => {
+    const filename = "/virtual/CommentOnlyInterpolation.astro";
+    const source = dedent`
         ---
         import { t as translate } from "@lingui/core/macro";
         ---
@@ -73,23 +71,27 @@ describe("lingui-analyzer wasm contract", () => {
           translate\`After comment\`
         }
         {undefined /* This comment follows an expression. */}
+        {<!-- This is an HTML comment -->}
+        {<!-- This is an HTML comment --><span>{translate\`Inside commented fragment\`}</span>}
+        {condition ? <!-- This is an HTML comment --> : <span>{translate\`Fallback comment\`}</span>}
       `;
 
-      const synthetic = buildSyntheticModuleForTest("astro", source, {
-        sourceName: filename,
-        syntheticName: "/virtual/CommentOnlyInterpolation.synthetic.tsx",
-      });
-      const messages = await extractMessagesFromSyntheticModule(
-        filename,
-        synthetic,
-      );
+    const synthetic = buildSyntheticModuleForTest("astro", source, {
+      sourceName: filename,
+      syntheticName: "/virtual/CommentOnlyInterpolation.synthetic.tsx",
+    });
+    const messages = await extractMessagesFromSyntheticModule(
+      filename,
+      synthetic,
+    );
 
-      expect(messages.map((message) => message.message)).toEqual([
-        "Before comment",
-        "After comment",
-      ]);
-    },
-  );
+    expect(messages.map((message) => message.message)).toEqual([
+      "Before comment",
+      "After comment",
+      "Inside commented fragment",
+      "Fallback comment",
+    ]);
+  });
 
   test("preserves Svelte extraction origins through Rust sourcemaps", async () => {
     const filename = "/virtual/App.svelte";
