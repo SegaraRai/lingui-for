@@ -362,23 +362,22 @@ fn analyze_lowered_html_interpolations(
 
     let mut analyses = HashMap::with_capacity(bundled.expressions.len());
     for interpolation in &bundled.expressions {
-        let candidates = if let Some(root) = roots.get(&interpolation.declaration_id) {
-            collect_macro_candidates(
-                &bundled.code,
-                *root,
-                imports,
-                0,
-                JsMacroSyntax::Standard,
-                std::iter::empty::<&str>(),
-            )
-            .into_iter()
-            .filter_map(|candidate| remap_bundled_candidate(candidate, interpolation))
-            .collect()
-        } else {
-            return Err(AstroFrameworkError::MissingBundledExpressionRoot {
+        let root = roots.get(&interpolation.declaration_id).ok_or_else(|| {
+            AstroFrameworkError::MissingBundledExpressionRoot {
                 declaration_id: interpolation.declaration_id.clone(),
-            });
-        };
+            }
+        })?;
+        let candidates = collect_macro_candidates(
+            &bundled.code,
+            *root,
+            imports,
+            0,
+            JsMacroSyntax::Standard,
+            std::iter::empty::<&str>(),
+        )
+        .into_iter()
+        .filter_map(|candidate| remap_bundled_candidate(candidate, interpolation))
+        .collect();
         analyses.insert(
             interpolation.outer_span,
             LoweredAstroHtmlInterpolationAnalysis {

@@ -439,12 +439,10 @@ fn lower_element_like(source: &str, node: Node<'_>) -> Result<LoweredNode, Astro
 
 fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
     let mut cursor = node.walk();
-    let Some(start_or_self_closing_tag) = node
+    let start_or_self_closing_tag = node
         .children(&mut cursor)
         .find(|child| child.kind() == "start_tag" || child.kind() == "self_closing_tag")
-    else {
-        return Err(AstroIrError::MissingTagName);
-    };
+        .ok_or(AstroIrError::MissingTagName)?;
     if start_or_self_closing_tag.kind() == "self_closing_tag" {
         return lower_self_closing_tag(source, start_or_self_closing_tag);
     }
