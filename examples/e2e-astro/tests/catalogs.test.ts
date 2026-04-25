@@ -37,6 +37,18 @@ describe("lingui extract and compile outputs", () => {
     expect(enPo).toContain("ようこそ <0>{name}</0> さん🚀");
     expect(enPo).toContain("Now viewing the slug {slug}.");
     expect(enPo).toContain("Persisted-props React island");
+    expect(enPo).toContain("Message before an HTML comment interpolation.");
+    expect(enPo).toContain("Message after an HTML comment interpolation.");
+    expect(enPo).toContain(
+      "Message before a JavaScript comment interpolation.",
+    );
+    expect(enPo).toContain("Message after a JavaScript comment interpolation.");
+    expect(enPo).toContain(
+      "First translated node inside an Astro fragment interpolation.",
+    );
+    expect(enPo).toContain(
+      "Second translated node inside an Astro fragment interpolation.",
+    );
   });
 
   test("contains japanese translations for representative multi-page messages", async () => {

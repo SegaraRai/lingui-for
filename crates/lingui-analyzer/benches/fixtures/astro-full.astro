@@ -845,6 +845,26 @@ function rowTone(state: DecisionRow["state"]): string {
       <section
         class="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
       >
+        <h2 class="text-xl font-semibold text-slate-950">
+          {translate`Astro interpolation coverage`}
+        </h2>
+        <p>{translate`Fixture message before an HTML comment interpolation.`}</p>
+        {<!-- fixture-html-comment-only-interpolation -->}
+        <p>{translate`Fixture message after an HTML comment interpolation.`}</p>
+        <p>{translate`Fixture message before a JavaScript comment interpolation.`}</p>
+        {/* fixture-js-comment-only-interpolation */}
+        <p>{translate`Fixture message after a JavaScript comment interpolation.`}</p>
+        {
+          <>
+            <p>{translate`Fixture first message inside an Astro fragment interpolation.`}</p>
+            <p>{translate`Fixture second message inside an Astro fragment interpolation.`}</p>
+          </>
+        }
+      </section>
+
+      <section
+        class="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+      >
         <div class="flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-xl font-semibold text-slate-950">
             {translate`Reviewer notes`}

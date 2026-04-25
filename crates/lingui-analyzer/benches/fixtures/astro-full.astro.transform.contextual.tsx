@@ -336,10 +336,52 @@ const __lf_40 = __l4a_i18n._(
 const __lf_41 = __l4a_i18n._(
 /*i18n*/
 {
+  id: "/Hs6aJ",
+  message: "Astro interpolation coverage"
+});
+const __lf_42 = __l4a_i18n._(
+/*i18n*/
+{
+  id: "gMgE+g",
+  message: "Fixture message before an HTML comment interpolation."
+});
+const __lf_43 = __l4a_i18n._(
+/*i18n*/
+{
+  id: "L5j9K9",
+  message: "Fixture message after an HTML comment interpolation."
+});
+const __lf_44 = __l4a_i18n._(
+/*i18n*/
+{
+  id: "8c97fG",
+  message: "Fixture message before a JavaScript comment interpolation."
+});
+const __lf_45 = __l4a_i18n._(
+/*i18n*/
+{
+  id: "O0RViL",
+  message: "Fixture message after a JavaScript comment interpolation."
+});
+const __lf_46 = __l4a_i18n._(
+/*i18n*/
+{
+  id: "6ai5oU",
+  message: "Fixture first message inside an Astro fragment interpolation."
+});
+const __lf_47 = __l4a_i18n._(
+/*i18n*/
+{
+  id: "ka7iMx",
+  message: "Fixture second message inside an Astro fragment interpolation."
+});
+const __lf_48 = __l4a_i18n._(
+/*i18n*/
+{
   id: "RDy8BL",
   message: "Reviewer notes"
 });
-const __lf_42 = __l4a_i18n._(
+const __lf_49 = __l4a_i18n._(
 /*i18n*/
 {
   id: "CNkP4q",
@@ -348,13 +390,13 @@ const __lf_42 = __l4a_i18n._(
     0: String(activity.length)
   }
 });
-const __lf_43 = __l4a_i18n._(
+const __lf_50 = __l4a_i18n._(
 /*i18n*/
 {
   id: "JpH47+",
   message: "These notes mirror the kind of mixed script and template content that the transform benchmark should exercise."
 });
-const __lf_44 = __l4a_i18n._(
+const __lf_51 = __l4a_i18n._(
 /*i18n*/
 {
   id: "AzV+h+",
@@ -363,7 +405,7 @@ const __lf_44 = __l4a_i18n._(
     0: String(index + 1)
   }
 });
-const __lf_45 = __l4a_i18n._(
+const __lf_52 = __l4a_i18n._(
 /*i18n*/
 {
   id: "wXh6Ku",
@@ -376,7 +418,7 @@ const __lf_45 = __l4a_i18n._(
     4: String(item.unread)
   }
 });
-const __lf_46 = __l4a_i18n._(
+const __lf_53 = __l4a_i18n._(
 /*i18n*/
 {
   id: "e3ghLa",

@@ -91,19 +91,26 @@ const __lf_40 = translate(
                     : `region:${selectedRegion}`,
                 )}.`,
               );
-const __lf_41 = translate`Reviewer notes`;
-const __lf_42 = translate(
+const __lf_41 = translate`Astro interpolation coverage`;
+const __lf_42 = translate`Fixture message before an HTML comment interpolation.`;
+const __lf_43 = translate`Fixture message after an HTML comment interpolation.`;
+const __lf_44 = translate`Fixture message before a JavaScript comment interpolation.`;
+const __lf_45 = translate`Fixture message after a JavaScript comment interpolation.`;
+const __lf_46 = translate`Fixture first message inside an Astro fragment interpolation.`;
+const __lf_47 = translate`Fixture second message inside an Astro fragment interpolation.`;
+const __lf_48 = translate`Reviewer notes`;
+const __lf_49 = translate(
                 msg`${String(activity.length)} recent notes are attached to this dashboard.`,
               );
-const __lf_43 = translate`These notes mirror the kind of mixed script and template content that the transform benchmark should exercise.`;
-const __lf_44 = translate(msg`Note ${String(index + 1)}`);
-const __lf_45 = translate(
+const __lf_50 = translate`These notes mirror the kind of mixed script and template content that the transform benchmark should exercise.`;
+const __lf_51 = translate(msg`Note ${String(index + 1)}`);
+const __lf_52 = translate(
                     msg`${item.owner} asked ${item.assignee} to review ${String(
                       item.pathHint ?? "the current record",
                     )} with ${String(item.comments)} comments and ${String(
                       item.unread,
                     )} unread updates.`,
                   );
-const __lf_46 = translate(
+const __lf_53 = translate(
                     msg`Priority ${String(item.priority)}, region ${String(item.region)}, attachments ${String(item.attachments)}.`,
                   );

@@ -135,6 +135,22 @@ msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 msgid "Astro formats"
 msgstr "Astro formats"
 
+#: src/pages/interpolation.astro:19
+msgid "Astro interpolation extraction"
+msgstr "Astro interpolation extraction"
+
+#: src/pages/interpolation.astro:11
+msgid "Astro interpolation extraction checks"
+msgstr "Astro interpolation extraction checks"
+
+#: src/pages/interpolation.astro:7
+msgid "Astro interpolation extraction page"
+msgstr "Astro interpolation extraction page"
+
+#: src/pages/interpolation.astro:22
+msgid "Astro interpolations can contain comments and fragments."
+msgstr "Astro interpolations can contain comments and fragments."
+
 #: src/components/astro/AstroRichText.astro:18
 msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Astro keeps the <0>settings link</0> inside a translated sentence."
@@ -182,6 +198,10 @@ msgstr "ClientRouter can preserve island state while locale and page props chang
 #: src/components/TransitionShowcase.astro:21
 msgid "ClientRouter enabled"
 msgstr "ClientRouter enabled"
+
+#: src/pages/interpolation.astro:29
+msgid "Comment-only interpolation neighbors"
+msgstr "Comment-only interpolation neighbors"
 
 #: src/pages/transitions.astro:22
 msgid "Compare locale updates and state persistence side by side."
@@ -240,6 +260,10 @@ msgstr "Exact-number branches and deep macro trees"
 msgid "Exercise plural, select, and selectOrdinal macros."
 msgstr "Exercise plural, select, and selectOrdinal macros."
 
+#: src/pages/interpolation.astro:44
+msgid "First translated node inside an Astro fragment interpolation."
+msgstr "First translated node inside an Astro fragment interpolation."
+
 #: src/pages/formats.astro:14
 msgid "Format macro checks"
 msgstr "Format macro checks"
@@ -252,6 +276,10 @@ msgstr "Formats"
 #: src/pages/formats.astro:10
 msgid "Formats page"
 msgstr "Formats page"
+
+#: src/pages/interpolation.astro:41
+msgid "Fragment-wrapped interpolation roots"
+msgstr "Fragment-wrapped interpolation roots"
 
 #: src/pages/index.astro:59
 msgid "Framework islands"
@@ -337,6 +365,22 @@ msgstr "Locale prop: {locale}"
 #: src/pages/stress.astro:67
 msgid "Macro stress page"
 msgstr "Macro stress page"
+
+#: src/pages/interpolation.astro:35
+msgid "Message after a JavaScript comment interpolation."
+msgstr "Message after a JavaScript comment interpolation."
+
+#: src/pages/interpolation.astro:32
+msgid "Message after an HTML comment interpolation."
+msgstr "Message after an HTML comment interpolation."
+
+#: src/pages/interpolation.astro:33
+msgid "Message before a JavaScript comment interpolation."
+msgstr "Message before a JavaScript comment interpolation."
+
+#: src/pages/interpolation.astro:30
+msgid "Message before an HTML comment interpolation."
+msgstr "Message before an HTML comment interpolation."
 
 #: src/pages/index.astro:87
 msgid "Message formats"
@@ -504,6 +548,10 @@ msgstr "Routing"
 #: src/pages/routing/[slug].astro:8
 msgid "Routing page"
 msgstr "Routing page"
+
+#: src/pages/interpolation.astro:45
+msgid "Second translated node inside an Astro fragment interpolation."
+msgstr "Second translated node inside an Astro fragment interpolation."
 
 #: src/layouts/AppLayout.astro:27
 #: src/pages/server.astro:21
