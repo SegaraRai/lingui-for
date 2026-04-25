@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/*
+https://github.com/saadeghi/daisyui/issues/4505
+https://github.com/tailwindlabs/tailwindcss/issues/19950
+
+Revert to `@plugin "daisyui"` once the tailwindcss v4.2.5+ is released.
+*/
 @plugin "daisyui/index.js" {
   themes:
     light --default,
