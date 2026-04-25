@@ -35,6 +35,7 @@ TIP: Run `cargo fmt && vp run format` → `vp run check` → `vp run test` seque
 
 - **IMPORTANT**: DO NOT run `vp run build`, `vp run check`, or `vp run test` concurrently. Run sequentially to avoid conflicts in build artifacts. Build is cached so it’s not a problem to run them one after another.
 - DO NOT use `vp test`, `vp pack`, or `vp build`.
+- DO NOT invoke `tsx` or `ts-node`. `node` can execute TypeScript files directly without any flags since we import files with `.ts` extension. You may also create a temporary test file and run it with `vp run test <filename>`.
 
 ## Project Dependencies
 
