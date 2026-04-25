@@ -115,6 +115,22 @@ msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} 
 msgid "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
 msgstr "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
 
+#: src/pages/interpolation.astro:73
+msgid "<0>Trans-wrapped first fragment child inside an Astro interpolation.</0><1>Trans-wrapped second fragment child inside an Astro interpolation.</1>"
+msgstr "<0>Trans-wrapped first fragment child inside an Astro interpolation.</0><1>Trans-wrapped second fragment child inside an Astro interpolation.</1>"
+
+#: src/pages/interpolation.astro:56
+msgid "<0>Trans-wrapped first fragment child outside an Astro interpolation.</0><1>Trans-wrapped second fragment child outside an Astro interpolation.</1>"
+msgstr "<0>Trans-wrapped first fragment child outside an Astro interpolation.</0><1>Trans-wrapped second fragment child outside an Astro interpolation.</1>"
+
+#: src/pages/interpolation.astro:71
+msgid "<0>Trans-wrapped single root inside an Astro interpolation.</0>"
+msgstr "<0>Trans-wrapped single root inside an Astro interpolation.</0>"
+
+#: src/pages/interpolation.astro:55
+msgid "<0>Trans-wrapped single root outside an Astro interpolation.</0>"
+msgstr "<0>Trans-wrapped single root outside an Astro interpolation.</0>"
+
 #: src/components/TransitionShowcase.astro:49
 msgid "1. Increment one or more counters in Svelte or React."
 msgstr "1. Increment one or more counters in Svelte or React."
@@ -135,7 +151,11 @@ msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 msgid "Astro formats"
 msgstr "Astro formats"
 
-#: src/pages/index.astro:101
+#: src/pages/index.astro:59
+msgid "Astro framework interpolation behavior"
+msgstr "Astro framework interpolation behavior"
+
+#: src/pages/index.astro:119
 msgid "Astro interpolation edge cases"
 msgstr "Astro interpolation edge cases"
 
@@ -187,7 +207,7 @@ msgstr "Astro, Svelte, and React all translate the same imported descriptor."
 msgid "Check request-scoped Astro translations and shared layout text."
 msgstr "Check request-scoped Astro translations and shared layout text."
 
-#: src/pages/index.astro:104
+#: src/pages/index.astro:122
 msgid "Check translated Astro interpolations that contain comments and fragments."
 msgstr "Check translated Astro interpolations that contain comments and fragments."
 
@@ -195,7 +215,7 @@ msgstr "Check translated Astro interpolations that contain comments and fragment
 msgid "Client transition checks"
 msgstr "Client transition checks"
 
-#: src/pages/index.astro:149
+#: src/pages/index.astro:167
 msgid "Client transitions"
 msgstr "Client transitions"
 
@@ -207,7 +227,7 @@ msgstr "ClientRouter can preserve island state while locale and page props chang
 msgid "ClientRouter enabled"
 msgstr "ClientRouter enabled"
 
-#: src/pages/interpolation.astro:29
+#: src/pages/interpolation.astro:43
 msgid "Comment-only interpolation neighbors"
 msgstr "Comment-only interpolation neighbors"
 
@@ -215,13 +235,17 @@ msgstr "Comment-only interpolation neighbors"
 msgid "Compare locale updates and state persistence side by side."
 msgstr "Compare locale updates and state persistence side by side."
 
-#: src/pages/index.astro:152
+#: src/pages/index.astro:170
 msgid "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
 msgstr "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
 
-#: src/pages/index.astro:121
+#: src/pages/index.astro:139
 msgid "Confirm route params and locale cookies survive navigation."
 msgstr "Confirm route params and locale cookies survive navigation."
+
+#: src/pages/index.astro:62
+msgid "Confirm which interpolation forms Astro accepts before Lingui transforms run."
+msgstr "Confirm which interpolation forms Astro accepts before Lingui transforms run."
 
 #: src/components/TransitionShowcase.astro:35
 msgid "Current demo: {pageLabel}"
@@ -244,7 +268,7 @@ msgstr "Dynamic route checks"
 msgid "Dynamic routes can translate with params from Astro.url and route data."
 msgstr "Dynamic routes can translate with params from Astro.url and route data."
 
-#: src/pages/index.astro:119
+#: src/pages/index.astro:137
 msgid "Dynamic routing"
 msgstr "Dynamic routing"
 
@@ -264,13 +288,17 @@ msgstr "English"
 msgid "Exact-number branches and deep macro trees"
 msgstr "Exact-number branches and deep macro trees"
 
-#: src/pages/index.astro:89
+#: src/pages/index.astro:107
 msgid "Exercise plural, select, and selectOrdinal macros."
 msgstr "Exercise plural, select, and selectOrdinal macros."
 
-#: src/pages/interpolation.astro:44
-msgid "First translated node inside an Astro fragment interpolation."
-msgstr "First translated node inside an Astro fragment interpolation."
+#: src/pages/interpolation.astro:29
+msgid "Expression and single root interpolations"
+msgstr "Expression and single root interpolations"
+
+#: src/pages/interpolation.astro:34
+msgid "First translated fragment child inside an Astro interpolation."
+msgstr "First translated fragment child inside an Astro interpolation."
 
 #: src/pages/formats.astro:14
 msgid "Format macro checks"
@@ -285,13 +313,13 @@ msgstr "Formats"
 msgid "Formats page"
 msgstr "Formats page"
 
-#: src/pages/interpolation.astro:41
-msgid "Fragment-wrapped interpolation roots"
-msgstr "Fragment-wrapped interpolation roots"
-
-#: src/pages/index.astro:59
+#: src/pages/index.astro:77
 msgid "Framework islands"
 msgstr "Framework islands"
+
+#: src/pages/index.astro:57
+msgid "Framework routes"
+msgstr "Framework routes"
 
 #: src/components/TransitionShowcase.astro:21
 msgid "Full reload mode"
@@ -362,7 +390,7 @@ msgstr "Lingui React does not seem to support functional macros for plural, sele
 msgid "Locale badge: {localeLabel}"
 msgstr "Locale badge: {localeLabel}"
 
-#: src/pages/index.astro:135
+#: src/pages/index.astro:153
 msgid "Locale persistence"
 msgstr "Locale persistence"
 
@@ -374,23 +402,15 @@ msgstr "Locale prop: {locale}"
 msgid "Macro stress page"
 msgstr "Macro stress page"
 
-#: src/pages/interpolation.astro:35
+#: src/pages/interpolation.astro:46
 msgid "Message after a JavaScript comment interpolation."
 msgstr "Message after a JavaScript comment interpolation."
 
-#: src/pages/interpolation.astro:32
-msgid "Message after an HTML comment interpolation."
-msgstr "Message after an HTML comment interpolation."
-
-#: src/pages/interpolation.astro:33
+#: src/pages/interpolation.astro:44
 msgid "Message before a JavaScript comment interpolation."
 msgstr "Message before a JavaScript comment interpolation."
 
-#: src/pages/interpolation.astro:30
-msgid "Message before an HTML comment interpolation."
-msgstr "Message before an HTML comment interpolation."
-
-#: src/pages/index.astro:87
+#: src/pages/index.astro:105
 msgid "Message formats"
 msgstr "Message formats"
 
@@ -457,6 +477,14 @@ msgstr "Persisted-props React island"
 msgid "Persisted-props Svelte island"
 msgstr "Persisted-props Svelte island"
 
+#: src/pages/interpolation.astro:53
+msgid "Plain Trans component message on the interpolation page."
+msgstr "Plain Trans component message on the interpolation page."
+
+#: src/pages/interpolation.astro:30
+msgid "Plain translated expression inside an Astro interpolation."
+msgstr "Plain translated expression inside an Astro interpolation."
+
 #: src/pages/formats.astro:25
 msgid "Plural and selection macros cover count, tone, and rank."
 msgstr "Plural and selection macros cover count, tone, and rank."
@@ -509,7 +537,7 @@ msgstr "React runs plural, select, and selectOrdinal macros in component code."
 msgid "Render stamp: {renderStamp}"
 msgstr "Render stamp: {renderStamp}"
 
-#: src/pages/index.astro:61
+#: src/pages/index.astro:79
 msgid "Render Svelte and React islands with the same locale."
 msgstr "Render Svelte and React islands with the same locale."
 
@@ -522,7 +550,7 @@ msgstr "Return to the <0>home page</0> when you are done."
 msgid "Rich text"
 msgstr "Rich text"
 
-#: src/pages/index.astro:73
+#: src/pages/index.astro:91
 msgid "Rich text messages"
 msgstr "Rich text messages"
 
@@ -557,9 +585,9 @@ msgstr "Routing"
 msgid "Routing page"
 msgstr "Routing page"
 
-#: src/pages/interpolation.astro:45
-msgid "Second translated node inside an Astro fragment interpolation."
-msgstr "Second translated node inside an Astro fragment interpolation."
+#: src/pages/interpolation.astro:35
+msgid "Second translated fragment child inside an Astro interpolation."
+msgstr "Second translated fragment child inside an Astro interpolation."
 
 #: src/layouts/AppLayout.astro:27
 #: src/pages/server.astro:21
@@ -594,6 +622,10 @@ msgstr "Settings page"
 #: src/lib/i18n/shared-descriptors.ts:3
 msgid "Shared descriptor imported from plain TypeScript."
 msgstr "Shared descriptor imported from plain TypeScript."
+
+#: src/pages/interpolation.astro:31
+msgid "Single translated element root inside an Astro interpolation."
+msgstr "Single translated element root inside an Astro interpolation."
 
 #: src/pages/stress.astro:74
 msgid "Stress"
@@ -727,6 +759,30 @@ msgstr "This Svelte island uses transition:persist and transition:persist-props,
 msgid "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
 msgstr "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
 
+#: src/pages/interpolation.astro:52
+msgid "Trans component baseline"
+msgstr "Trans component baseline"
+
+#: src/pages/interpolation.astro:69
+msgid "Trans component rendered from inside an Astro interpolation."
+msgstr "Trans component rendered from inside an Astro interpolation."
+
+#: src/pages/interpolation.astro:83
+msgid "Trans-wrapped message before a JavaScript comment inside an Astro interpolation.  Trans-wrapped message after a JavaScript comment inside an Astro interpolation."
+msgstr "Trans-wrapped message before a JavaScript comment inside an Astro interpolation.  Trans-wrapped message after a JavaScript comment inside an Astro interpolation."
+
+#: src/pages/interpolation.astro:64
+msgid "Trans-wrapped message before a JavaScript comment outside an Astro interpolation.  Trans-wrapped message after a JavaScript comment outside an Astro interpolation."
+msgstr "Trans-wrapped message before a JavaScript comment outside an Astro interpolation.  Trans-wrapped message after a JavaScript comment outside an Astro interpolation."
+
+#: src/pages/interpolation.astro:70
+msgid "Trans-wrapped plain expression inside an Astro interpolation."
+msgstr "Trans-wrapped plain expression inside an Astro interpolation."
+
+#: src/pages/interpolation.astro:54
+msgid "Trans-wrapped plain expression outside an Astro interpolation."
+msgstr "Trans-wrapped plain expression outside an Astro interpolation."
+
 #: src/pages/transitions/router/a.astro:8
 #: src/pages/transitions/router/a.astro:12
 #: src/pages/transitions/router/b.astro:8
@@ -759,7 +815,7 @@ msgstr "Transitions page"
 msgid "Translation previews can show <0/> and <1/> in the same sentence."
 msgstr "Translation previews can show <0/> and <1/> in the same sentence."
 
-#: src/pages/index.astro:137
+#: src/pages/index.astro:155
 msgid "Use cookies to keep the next request aligned."
 msgstr "Use cookies to keep the next request aligned."
 
@@ -780,17 +836,17 @@ msgid "Use this stamp to confirm that the page itself changed even when a persis
 msgstr "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
 
 #: src/pages/index.astro:43
-#: src/pages/index.astro:57
-#: src/pages/index.astro:71
-#: src/pages/index.astro:85
-#: src/pages/index.astro:99
+#: src/pages/index.astro:75
+#: src/pages/index.astro:89
+#: src/pages/index.astro:103
 #: src/pages/index.astro:117
-#: src/pages/index.astro:133
-#: src/pages/index.astro:147
+#: src/pages/index.astro:135
+#: src/pages/index.astro:151
+#: src/pages/index.astro:165
 msgid "Verification routes"
 msgstr "Verification routes"
 
-#: src/pages/index.astro:75
+#: src/pages/index.astro:93
 msgid "Verify linked and emphasized translations across runtimes."
 msgstr "Verify linked and emphasized translations across runtimes."
 

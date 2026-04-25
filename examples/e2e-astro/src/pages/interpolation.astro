@@ -1,10 +1,12 @@
 ---
-import { t } from "lingui-for-astro/macro";
+import { t, Trans } from "lingui-for-astro/macro";
 
 import AppLayout from "../layouts/AppLayout.astro";
 
 const locale = Astro.locals.locale;
 const currentPage = t`Astro interpolation extraction page`;
+const trueBranch = true;
+const falseBranch = false;
 ---
 
 <AppLayout
@@ -26,24 +28,135 @@ const currentPage = t`Astro interpolation extraction page`;
 
   <section class="card border-base-300 bg-base-100 border shadow-lg">
     <div class="card-body">
-      <h2 class="card-title">{t`Comment-only interpolation neighbors`}</h2>
-      <p>{t`Message before an HTML comment interpolation.`}</p>
-      {<!-- html-comment-only-between-messages -->}
-      <p>{t`Message after an HTML comment interpolation.`}</p>
-      <p>{t`Message before a JavaScript comment interpolation.`}</p>
-      {/* js-comment-only-between-messages */}
-      <p>{t`Message after a JavaScript comment interpolation.`}</p>
+      <h2 class="card-title">{t`Expression and single root interpolations`}</h2>
+      <p>{t`Plain translated expression inside an Astro interpolation.`}</p>
+      {<p>{t`Single translated element root inside an Astro interpolation.`}</p>}
+      {
+        <>
+          <p>{t`First translated fragment child inside an Astro interpolation.`}</p>
+          <p>{t`Second translated fragment child inside an Astro interpolation.`}</p>
+        </>
+      }
+      {
+        <>
+          <!-- lingui-fragment-html-comment -->
+          <p>{t`First translated fragment child after an HTML comment inside an Astro interpolation.`}</p>
+          <p>{t`Second translated fragment child after an HTML comment inside an Astro interpolation.`}</p>
+        </>
+      }
     </div>
   </section>
 
   <section class="card border-base-300 bg-base-100 border shadow-lg">
     <div class="card-body">
-      <h2 class="card-title">{t`Fragment-wrapped interpolation roots`}</h2>
+      <h2 class="card-title">{t`Comment-only interpolation neighbors`}</h2>
+      <p>{t`Message before a JavaScript comment interpolation.`}</p>
+      {/* js-comment-only-between-messages */}
+      <p>{t`Message after a JavaScript comment interpolation.`}</p>
+      <p>{t`Message before an HTML comment-only interpolation.`}</p>
+      {<!-- html-comment-only-between-messages -->}
+      <p>{t`Message after an HTML comment-only interpolation.`}</p>
+    </div>
+  </section>
+
+  <section class="card border-base-300 bg-base-100 border shadow-lg">
+    <div class="card-body">
+      <h2 class="card-title">{t`Conditional HTML comment branches`}</h2>
+      {trueBranch ? <!-- lingui-html-comment-left-selected --> : <span>Unexpected selected consequent alternate.</span>}
+      <p>{t`Message after a selected HTML comment consequent branch.`}</p>
+      {falseBranch ? <!-- lingui-html-comment-left-not-selected --> : <span>{t`Translated alternate element after an unselected HTML comment consequent.`}</span>}
+      {trueBranch ? <span>{t`Translated consequent element before an unselected HTML comment alternate.`}</span> : <!-- lingui-html-comment-right-not-selected -->}
+      {falseBranch ? <span>Unexpected selected alternate consequent.</span> : <!-- lingui-html-comment-right-selected -->}
+      <p>{t`Message after a selected HTML comment alternate branch.`}</p>
+    </div>
+  </section>
+
+  <section class="card border-base-300 bg-base-100 border shadow-lg">
+    <div class="card-body">
+      <h2 class="card-title">{t`Trans component baseline`}</h2>
+      <Trans>Plain Trans component message on the interpolation page.</Trans>
+      <Trans>{`Trans-wrapped plain expression outside an Astro interpolation.`}</Trans>
+      <Trans>{<p>Trans-wrapped single root outside an Astro interpolation.</p>}</Trans>
+      <Trans>
+        {
+          <>
+            <p>Trans-wrapped first fragment child outside an Astro interpolation.</p>
+            <p>Trans-wrapped second fragment child outside an Astro interpolation.</p>
+          </>
+        }
+      </Trans>
+      <Trans>
+        {
+          <>
+            <!-- trans-fragment-html-comment-outside-interpolation -->
+            <p>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</p>
+            <p>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</p>
+          </>
+        }
+      </Trans>
+      <Trans>
+        Trans-wrapped message before a JavaScript comment outside an Astro interpolation.
+        {/* trans-js-comment-only-outside-interpolation */}
+        Trans-wrapped message after a JavaScript comment outside an Astro interpolation.
+      </Trans>
+      <Trans>
+        Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation.
+        {<!-- trans-html-comment-only-outside-interpolation -->}
+        Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation.
+      </Trans>
+      <Trans>
+        {falseBranch ? <!-- trans-html-comment-left-not-selected-outside-interpolation --> : <span>Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.</span>}
+      </Trans>
+      <Trans>
+        {trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate outside an Astro interpolation.</span> : <!-- trans-html-comment-right-not-selected-outside-interpolation -->}
+      </Trans>
+      {<Trans>Trans component rendered from inside an Astro interpolation.</Trans>}
+      {<Trans>{`Trans-wrapped plain expression inside an Astro interpolation.`}</Trans>}
+      {<Trans>{<p>Trans-wrapped single root inside an Astro interpolation.</p>}</Trans>}
       {
-        <>
-          <p>{t`First translated node inside an Astro fragment interpolation.`}</p>
-          <p>{t`Second translated node inside an Astro fragment interpolation.`}</p>
-        </>
+        <Trans>
+          {
+            <>
+              <p>Trans-wrapped first fragment child inside an Astro interpolation.</p>
+              <p>Trans-wrapped second fragment child inside an Astro interpolation.</p>
+            </>
+          }
+        </Trans>
+      }
+      {
+        <Trans>
+          {
+            <>
+              <!-- trans-fragment-html-comment-inside-interpolation -->
+              <p>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</p>
+              <p>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</p>
+            </>
+          }
+        </Trans>
+      }
+      {
+        <Trans>
+          Trans-wrapped message before a JavaScript comment inside an Astro interpolation.
+          {/* trans-js-comment-only-inside-interpolation */}
+          Trans-wrapped message after a JavaScript comment inside an Astro interpolation.
+        </Trans>
+      }
+      {
+        <Trans>
+          Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation.
+          {<!-- trans-html-comment-only-inside-interpolation -->}
+          Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation.
+        </Trans>
+      }
+      {
+        <Trans>
+          {falseBranch ? <!-- trans-html-comment-left-not-selected-inside-interpolation --> : <span>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</span>}
+        </Trans>
+      }
+      {
+        <Trans>
+          {trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</span> : <!-- trans-html-comment-right-not-selected-inside-interpolation -->}
+        </Trans>
       }
     </div>
   </section>

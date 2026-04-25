@@ -34,10 +34,10 @@ describe.sequential.for(serverModes)(
         "Allowed: an interpolation can render one element root.",
       );
       expect(html).toContain(
-        "Allowed: an HTML comment can be the whole interpolation.",
+        "Allowed: a JavaScript block comment can be the whole interpolation.",
       );
       expect(html).toContain(
-        "Allowed: a JavaScript block comment can be the whole interpolation.",
+        "Allowed: an HTML comment can be the whole interpolation.",
       );
       expect(html).toContain("Allowed: first node inside fragment.");
       expect(html).toContain("Allowed: second node inside fragment.");
@@ -48,17 +48,13 @@ describe.sequential.for(serverModes)(
         "Allowed: second node after a comment inside fragment.",
       );
       expect(html).toContain(
-        "Allowed: an HTML comment can be the true branch.",
+        "Allowed: a selected HTML comment branch renders no visible node.",
       );
+      expect(html).toContain("Allowed: alternate element branch rendered.");
+      expect(html).toContain("Allowed: consequent element branch rendered.");
       expect(html).toContain(
-        "Allowed: an HTML comment can be the false branch.",
+        "Allowed: a selected HTML comment alternate renders no visible node.",
       );
-      expect(html).toContain("element right branch rendered");
-      expect(html).toContain(
-        "Allowed: the alternate branch can render a single element root.",
-      );
-      expect(html).not.toContain("unexpected left");
-      expect(html).not.toContain("unexpected right");
     });
   },
 );

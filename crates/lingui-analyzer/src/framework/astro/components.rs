@@ -86,6 +86,7 @@ fn collect_component_normalization_edits(
 ) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
     let mut edits =
         collect_nested_component_normalization_edits(source, node, imports, options, context)?;
+    edits.extend(component_astro_child_normalization_edits(source, node));
     edits.extend(component_whitespace_edits(source, node, options));
     sort_and_dedup_normalization_edits(&mut edits);
     Ok(edits)
@@ -169,6 +170,176 @@ fn parse_and_collect_macros(
         edits.extend(candidate.normalization_edits);
     }
     Ok(())
+}
+
+fn component_astro_child_normalization_edits(
+    source: &str,
+    node: Node<'_>,
+) -> Vec<NormalizationEdit> {
+    let mut edits = Vec::new();
+    let mut cursor = node.walk();
+
+    for child in node.children(&mut cursor) {
+        match child.kind() {
+            "start_tag" | "self_closing_tag" | "end_tag" => {}
+            "comment" => edits.push(NormalizationEdit::Delete {
+                span: Span::from_node(child),
+            }),
+            "html_interpolation" => {
+                append_html_interpolation_child_normalization_edits(source, child, &mut edits);
+            }
+            _ => {}
+        }
+    }
+
+    edits
+}
+
+fn append_html_interpolation_child_normalization_edits(
+    source: &str,
+    node: Node<'_>,
+    edits: &mut Vec<NormalizationEdit>,
+) {
+    let inner = inner_range_from_delimiters(node, 1, 1);
+    let children = named_children_in_span(source, node, inner);
+
+    if is_comment_only_interpolation(&children) {
+        edits.push(NormalizationEdit::Delete {
+            span: Span::from_node(node),
+        });
+        return;
+    }
+
+    if let Some((start_tag, end_tag)) = fragment_root_tag_pair(source, inner, &children) {
+        edits.push(NormalizationEdit::Delete {
+            span: Span::new(node.start_byte(), inner.start),
+        });
+        edits.push(NormalizationEdit::Delete {
+            span: Span::new(inner.end, node.end_byte()),
+        });
+        edits.push(NormalizationEdit::Delete {
+            span: Span::from_node(start_tag),
+        });
+        edits.push(NormalizationEdit::Delete {
+            span: Span::from_node(end_tag),
+        });
+        return;
+    }
+
+    if is_single_root_interpolation(source, inner, &children)
+        && let [root] = children.as_slice()
+    {
+        edits.push(NormalizationEdit::Delete {
+            span: Span::new(node.start_byte(), inner.start),
+        });
+        edits.push(NormalizationEdit::Delete {
+            span: Span::new(inner.end, node.end_byte()),
+        });
+
+        if let Some((start_tag, end_tag)) = fragment_tag_pair(*root) {
+            edits.push(NormalizationEdit::Delete {
+                span: Span::from_node(start_tag),
+            });
+            edits.push(NormalizationEdit::Delete {
+                span: Span::from_node(end_tag),
+            });
+        }
+        return;
+    }
+
+    append_comment_expression_normalization_edits(&children, edits);
+}
+
+fn append_comment_expression_normalization_edits(
+    children: &[Node<'_>],
+    edits: &mut Vec<NormalizationEdit>,
+) {
+    for child in children {
+        if child.kind() == "comment" {
+            edits.push(NormalizationEdit::Delete {
+                span: Span::from_node(*child),
+            });
+            edits.push(NormalizationEdit::Insert {
+                at: child.start_byte(),
+                text: LeanString::from_static_str("undefined"),
+            });
+        }
+    }
+}
+
+fn named_children_in_span<'a>(source: &str, node: Node<'a>, span: Span) -> Vec<Node<'a>> {
+    node.named_children(&mut node.walk())
+        .filter(|child| child.end_byte() > span.start && child.start_byte() < span.end)
+        .filter(|child| {
+            !matches!(child.kind(), "text" | "permissible_text" | "raw_text")
+                || !span_text(source, Span::from_node(*child)).trim().is_empty()
+        })
+        .collect()
+}
+
+fn is_comment_only_interpolation(children: &[Node<'_>]) -> bool {
+    !children.is_empty() && children.iter().all(|child| child.kind() == "comment")
+}
+
+fn is_single_root_interpolation(source: &str, inner: Span, children: &[Node<'_>]) -> bool {
+    let [root] = children else {
+        return false;
+    };
+    if !matches!(root.kind(), "element" | "self_closing_tag") {
+        return false;
+    }
+
+    span_text(source, Span::new(inner.start, root.start_byte()))
+        .trim()
+        .is_empty()
+        && span_text(source, Span::new(root.end_byte(), inner.end))
+            .trim()
+            .is_empty()
+}
+
+fn fragment_root_tag_pair<'a>(
+    source: &str,
+    inner: Span,
+    children: &[Node<'a>],
+) -> Option<(Node<'a>, Node<'a>)> {
+    let start_tag = children.first().copied()?;
+    let end_tag = children.last().copied()?;
+    if start_tag.kind() != "start_tag"
+        || end_tag.kind() != "end_tag"
+        || tag_name(start_tag).is_some()
+        || tag_name(end_tag).is_some()
+    {
+        return None;
+    }
+
+    if !span_text(source, Span::new(inner.start, start_tag.start_byte()))
+        .trim()
+        .is_empty()
+        || !span_text(source, Span::new(end_tag.end_byte(), inner.end))
+            .trim()
+            .is_empty()
+    {
+        return None;
+    }
+
+    Some((start_tag, end_tag))
+}
+
+fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
+    let mut cursor = node.walk();
+    let start_tag = node
+        .children(&mut cursor)
+        .find(|child| child.kind() == "start_tag" && tag_name(*child).is_none())?;
+    let mut cursor = node.walk();
+    let end_tag = node
+        .children(&mut cursor)
+        .find(|child| child.kind() == "end_tag" && tag_name(*child).is_none())?;
+    Some((start_tag, end_tag))
+}
+
+fn tag_name(node: Node<'_>) -> Option<Node<'_>> {
+    node.children(&mut node.walk())
+        .find(|child| child.kind() == "tag_name")
 }
 
 fn component_whitespace_edits(

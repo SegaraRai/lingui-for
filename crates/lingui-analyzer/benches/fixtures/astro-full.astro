@@ -54,6 +54,7 @@ const showAssignedOnly = false;
 const showHistory = true;
 const workspaceWritable = true;
 const latencyMs = 184;
+const useCommentBranch = true;
 const htmlDigest =
   "<strong>Imported digest</strong> with <em>inline</em> reviewer highlights.";
 
@@ -848,17 +849,69 @@ function rowTone(state: DecisionRow["state"]): string {
         <h2 class="text-xl font-semibold text-slate-950">
           {translate`Astro interpolation coverage`}
         </h2>
-        <p>{translate`Fixture message before an HTML comment interpolation.`}</p>
-        {<!-- fixture-html-comment-only-interpolation -->}
-        <p>{translate`Fixture message after an HTML comment interpolation.`}</p>
+        <p>{translate`Fixture plain translated expression inside an Astro interpolation.`}</p>
+        {<p>{translate`Fixture single translated element root inside an Astro interpolation.`}</p>}
+        {
+          <>
+            <p>{translate`Fixture first translated fragment child inside an Astro interpolation.`}</p>
+            <p>{translate`Fixture second translated fragment child inside an Astro interpolation.`}</p>
+          </>
+        }
+        {<p>{translate`Fixture first translated invalid adjacent root inside an Astro interpolation.`}</p><p>{translate`Fixture second translated invalid adjacent root inside an Astro interpolation.`}</p>}
+        {
+          <>
+            <!-- fixture-fragment-html-comment-before-translated-children -->
+            <p>{translate`Fixture first translated fragment child after an HTML comment.`}</p>
+            <p>{translate`Fixture second translated fragment child after an HTML comment.`}</p>
+          </>
+        }
+        {<Trans>Fixture plain Trans component root inside an Astro interpolation.</Trans>}
+        {
+          <Trans>
+            <p>Fixture single element root inside a Trans component interpolation.</p>
+          </Trans>
+        }
         <p>{translate`Fixture message before a JavaScript comment interpolation.`}</p>
         {/* fixture-js-comment-only-interpolation */}
         <p>{translate`Fixture message after a JavaScript comment interpolation.`}</p>
+        <p>{translate`Fixture message before an HTML comment interpolation.`}</p>
+        {<!-- fixture-html-comment-only-interpolation -->}
+        <p>{translate`Fixture message after an HTML comment interpolation.`}</p>
+        <Trans>{`Fixture plain expression inside a Trans-wrapped Astro interpolation.`}</Trans>
+        <Trans>
+          {<p>Fixture single element root inside a Trans-wrapped Astro interpolation.</p>}
+        </Trans>
+        <Trans>
+          {
+            <>
+              <p>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</p>
+              <p>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</p>
+            </>
+          }
+        </Trans>
+        <Trans>
+          Fixture message before a Trans-wrapped HTML comment interpolation.
+          {<!-- fixture-trans-wrapped-html-comment-only-between-messages -->}
+          Fixture message after a Trans-wrapped HTML comment interpolation.
+        </Trans>
+        <Trans>
+          {useCommentBranch ? <!-- fixture-trans-wrapped-html-comment-branch --> : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>}
+          Fixture message after a conditional Astro HTML comment.
+        </Trans>
+        <Trans>
+          Fixture message before a Trans-wrapped JavaScript comment interpolation.
+          {/* fixture-trans-wrapped-js-comment-only-between-messages */}
+          Fixture message after a Trans-wrapped JavaScript comment interpolation.
+        </Trans>
         {
-          <>
-            <p>{translate`Fixture first message inside an Astro fragment interpolation.`}</p>
-            <p>{translate`Fixture second message inside an Astro fragment interpolation.`}</p>
-          </>
+          <Trans>
+            {
+              <>
+                <p>Fixture first fragment child inside an interpolated Trans component.</p>
+                <p>Fixture second fragment child inside an interpolated Trans component.</p>
+              </>
+            }
+          </Trans>
         }
       </section>
 

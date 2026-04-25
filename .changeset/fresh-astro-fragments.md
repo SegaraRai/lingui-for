@@ -3,10 +3,10 @@
 "lingui-for-astro": patch
 ---
 
-Fix Astro extraction for valid interpolation patterns that previously failed or missed messages.
+Fix Astro message extraction and transform output for interpolation markup.
 
-Messages are now extracted correctly from Astro files that include comment-only interpolations, such as `{/* ... */}` or `{<!-- ... -->}`. This fixes failures when comments appear between otherwise valid translated expressions.
+Translated messages are now preserved when they appear inside Astro interpolation markup, including fragment-wrapped markup such as ``{<><span>{t`First`}</span><span>{t`Second`}</span></>}``. `Trans` components that wrap interpolation markup now extract their rich-text placeholders instead of collapsing the whole interpolation to a single `{0}` placeholder.
 
-Messages are also extracted from fragment-wrapped interpolation markup, such as ``{<><span>{t`First`}</span><span>{t`Second`}</span></>}``, matching the form Astro accepts when multiple nodes need to be returned from one interpolation.
+Astro comment-only interpolations are also handled more consistently when they appear around translated content, so comments no longer cause neighboring messages to be skipped during extraction or leave invalid comment expressions in transformed output.
 
-Internally, Astro interpolation analysis now tracks generated expression roots more explicitly and uses dedicated helper shapes for fragments and adjacent root lists.
+Internally, Astro interpolation analysis now keeps the relationship between generated expression roots and their original markup instead of relying on placeholder order.

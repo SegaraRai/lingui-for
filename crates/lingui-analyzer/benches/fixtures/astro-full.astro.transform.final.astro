@@ -55,6 +55,7 @@ const showAssignedOnly = false;
 const showHistory = true;
 const workspaceWritable = true;
 const latencyMs = 184;
+const useCommentBranch = true;
 const htmlDigest =
   "<strong>Imported digest</strong> with <em>inline</em> reviewer highlights.";
 
@@ -1049,15 +1050,64 @@ __l4a_i18n.prime();
         </h2>
         <p>{__l4a_i18n._(
         /*i18n*/ {
-          id: "gMgE+g",
-          message: "Fixture message before an HTML comment interpolation."
+          id: "OUJFY2",
+          message: "Fixture plain translated expression inside an Astro interpolation."
         })}</p>
-        {<!-- fixture-html-comment-only-interpolation -->}
-        <p>{__l4a_i18n._(
+        {<p>{__l4a_i18n._(
         /*i18n*/ {
-          id: "L5j9K9",
-          message: "Fixture message after an HTML comment interpolation."
-        })}</p>
+          id: "3TeUZB",
+          message: "Fixture single translated element root inside an Astro interpolation."
+        })}</p>}
+        {
+          <Fragment>
+            <p>{__l4a_i18n._(
+            /*i18n*/ {
+              id: "XzqH2P",
+              message: "Fixture first translated fragment child inside an Astro interpolation."
+            })}</p>
+            <p>{__l4a_i18n._(
+            /*i18n*/ {
+              id: "EhKDrd",
+              message: "Fixture second translated fragment child inside an Astro interpolation."
+            })}</p>
+          </Fragment>
+        }
+        {<p>{__l4a_i18n._(
+        /*i18n*/ {
+          id: "3Gb71T",
+          message: "Fixture first translated invalid adjacent root inside an Astro interpolation."
+        })}</p><p>{__l4a_i18n._(
+        /*i18n*/ {
+          id: "bl2cw1",
+          message: "Fixture second translated invalid adjacent root inside an Astro interpolation."
+        })}</p>}
+        {
+          <Fragment>
+
+            <p>{__l4a_i18n._(
+            /*i18n*/ {
+              id: "Xw1Yw2",
+              message: "Fixture first translated fragment child after an HTML comment."
+            })}</p>
+            <p>{__l4a_i18n._(
+            /*i18n*/ {
+              id: "iYC4bE",
+              message: "Fixture second translated fragment child after an HTML comment."
+            })}</p>
+          </Fragment>
+        }
+        {<L4aRuntimeTrans {.../*i18n*/ {
+          id: "GQP3fh",
+          message: "Fixture plain Trans component root inside an Astro interpolation."
+        }} />}
+        {
+          <L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {
+            id: "45xGAX",
+            message: "<0>Fixture single element root inside a Trans component interpolation.</0>"
+          }}>
+          <fragment slot="component_0">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+          </L4aRuntimeTrans>
+        }
         <p>{__l4a_i18n._(
         /*i18n*/ {
           id: "8c97fG",
@@ -1069,19 +1119,57 @@ __l4a_i18n.prime();
           id: "O0RViL",
           message: "Fixture message after a JavaScript comment interpolation."
         })}</p>
+        <p>{__l4a_i18n._(
+        /*i18n*/ {
+          id: "gMgE+g",
+          message: "Fixture message before an HTML comment interpolation."
+        })}</p>
+
+        <p>{__l4a_i18n._(
+        /*i18n*/ {
+          id: "L5j9K9",
+          message: "Fixture message after an HTML comment interpolation."
+        })}</p>
+        <L4aRuntimeTrans {.../*i18n*/ {
+          id: "d0h02s",
+          message: "Fixture plain expression inside a Trans-wrapped Astro interpolation."
+        }} />
+        <L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {
+          id: "bJh00U",
+          message: "<0>Fixture single element root inside a Trans-wrapped Astro interpolation.</0>"
+        }}>
+        <fragment slot="component_0">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+        </L4aRuntimeTrans>
+        <L4aRuntimeTrans placeholders={["0", "1"]} {.../*i18n*/ {
+          id: "MGwmlB",
+          message: "<0>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</0><1>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</1>"
+        }}>
+        <fragment slot="component_0">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+        <fragment slot="component_1">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+        </L4aRuntimeTrans>
+        <L4aRuntimeTrans {.../*i18n*/ {
+          id: "reUH1k",
+          message: "Fixture message before a Trans-wrapped HTML comment interpolation.  Fixture message after a Trans-wrapped HTML comment interpolation."
+        }} />
+        <L4aRuntimeTrans {.../*i18n*/ {
+          id: "0tE8NX",
+          message: "{0} Fixture message after a conditional Astro HTML comment.",
+          values: {
+            0: useCommentBranch ? undefined : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>
+          }
+        }} />
+        <L4aRuntimeTrans {.../*i18n*/ {
+          id: "O5ta/s",
+          message: "Fixture message before a Trans-wrapped JavaScript comment interpolation.  Fixture message after a Trans-wrapped JavaScript comment interpolation."
+        }} />
         {
-          <Fragment>
-            <p>{__l4a_i18n._(
-            /*i18n*/ {
-              id: "6ai5oU",
-              message: "Fixture first message inside an Astro fragment interpolation."
-            })}</p>
-            <p>{__l4a_i18n._(
-            /*i18n*/ {
-              id: "ka7iMx",
-              message: "Fixture second message inside an Astro fragment interpolation."
-            })}</p>
-          </Fragment>
+          <L4aRuntimeTrans placeholders={["0", "1"]} {.../*i18n*/ {
+            id: "USRGBq",
+            message: "<0>Fixture first fragment child inside an interpolated Trans component.</0><1>Fixture second fragment child inside an interpolated Trans component.</1>"
+          }}>
+          <fragment slot="component_0">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+          <fragment slot="component_1">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+          </L4aRuntimeTrans>
         }
       </section>
 

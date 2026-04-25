@@ -187,7 +187,6 @@ fn collect_html_interpolations(
 ) -> Result<(), AstroIrError> {
     if node.kind() == "html_interpolation" {
         lowered.push(lower_html_interpolation_node(source, node)?);
-        return Ok(());
     }
 
     let mut cursor = node.walk();
@@ -827,11 +826,12 @@ mod tests {
         "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
-        assert_eq!(lowered.len(), 1);
+        assert_eq!(lowered.len(), 2);
         assert_eq!(
             lowered[0].code,
             r#"foo ? __astro_el(A, { "x": bar }, __astro_el(B, null), baz) : qux"#
         );
+        assert_eq!(lowered[1].code, "baz");
     }
 
     #[test]
@@ -881,11 +881,12 @@ mod tests {
         "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
-        assert_eq!(lowered.len(), 1);
+        assert_eq!(lowered.len(), 2);
         assert_eq!(
             lowered[0].code,
             r#"__astro_el(Trans, null, "Hello", __astro_spread_child__)"#
         );
+        assert_eq!(lowered[1].code, "__astro_spread_child__");
     }
 
     #[test]
@@ -938,15 +939,17 @@ mod tests {
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
 
-        assert_eq!(lowered.len(), 2);
+        assert_eq!(lowered.len(), 4);
         assert_eq!(
             lowered[0].code,
             r#"__astro_root(__astro_cm, __astro_el("span", null, translate`Inside element`))"#
         );
+        assert_eq!(lowered[1].code, "translate`Inside element`");
         assert_eq!(
-            lowered[1].code,
+            lowered[2].code,
             r#"condition ? __astro_cm : __astro_el("span", null, translate`Fallback`)"#
         );
+        assert_eq!(lowered[3].code, "translate`Fallback`");
     }
 
     #[test]
@@ -961,15 +964,18 @@ mod tests {
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
 
-        assert_eq!(lowered.len(), 2);
+        assert_eq!(lowered.len(), 5);
         assert_eq!(
             lowered[0].code,
             r#"__astro_frag(__astro_el("span", null, translate`First`), __astro_el("span", null, translate`Second`))"#
         );
+        assert_eq!(lowered[1].code, "translate`First`");
+        assert_eq!(lowered[2].code, "translate`Second`");
         assert_eq!(
-            lowered[1].code,
+            lowered[3].code,
             r#"__astro_frag(__astro_cm, __astro_el("span", null, translate`After comment`))"#
         );
+        assert_eq!(lowered[4].code, "translate`After comment`");
     }
 
     #[test]
@@ -984,14 +990,17 @@ mod tests {
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
 
-        assert_eq!(lowered.len(), 2);
+        assert_eq!(lowered.len(), 5);
         assert_eq!(
             lowered[0].code,
             r#"__astro_root(__astro_el("span", null, translate`First`), __astro_el("span", null, translate`Second`))"#
         );
+        assert_eq!(lowered[1].code, "translate`First`");
+        assert_eq!(lowered[2].code, "translate`Second`");
         assert_eq!(
-            lowered[1].code,
+            lowered[3].code,
             r#"__astro_root(__astro_cm, __astro_frag(__astro_el("span", null, translate`After comment`)))"#
         );
+        assert_eq!(lowered[4].code, "translate`After comment`");
     }
 }

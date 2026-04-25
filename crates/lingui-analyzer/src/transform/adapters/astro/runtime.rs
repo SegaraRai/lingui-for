@@ -569,6 +569,10 @@ fn collect_runtime_component_wrappers<'a>(
     for child in node.children(&mut cursor) {
         match child.kind() {
             "element" => {
+                if is_fragment_wrapper(source, child) {
+                    collect_runtime_component_wrappers(child, source, wrappers);
+                    continue;
+                }
                 if let Some(self_closing_tag) = child
                     .children(&mut child.walk())
                     .find(|grandchild| grandchild.kind() == "self_closing_tag")
@@ -601,6 +605,10 @@ fn collect_runtime_component_wrappers<'a>(
             _ => collect_runtime_component_wrappers(child, source, wrappers),
         }
     }
+}
+
+fn is_fragment_wrapper(source: &str, node: Node<'_>) -> bool {
+    node.kind() == "element" && tag_name(source, node).is_none()
 }
 
 fn is_skipped_runtime_component_wrapper(source: &str, node: Node<'_>) -> bool {
