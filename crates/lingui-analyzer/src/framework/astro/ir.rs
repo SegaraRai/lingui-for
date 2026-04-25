@@ -203,14 +203,18 @@ fn lower_interpolation_expression(
     interpolation: Node<'_>,
 ) -> Result<LoweredNode, AstroIrError> {
     let inner_span = inner_range_from_delimiters(interpolation, 1, 1);
-    let mut builder = AstroIrBuilder::default();
-    let mut cursor = inner_span.start;
     let mut child_cursor = interpolation.walk();
     let children = interpolation
         .named_children(&mut child_cursor)
         .filter(|child| child.end_byte() > inner_span.start && child.start_byte() < inner_span.end)
         .collect::<Vec<_>>();
 
+    if is_interpolation_root_list(source, inner_span, &children) {
+        return lower_interpolation_root_list(source, &children);
+    }
+
+    let mut builder = AstroIrBuilder::default();
+    let mut cursor = inner_span.start;
     for (index, child) in children.iter().enumerate() {
         if cursor < child.start_byte() {
             builder.push_original(source, Span::new(cursor, child.start_byte()));
@@ -252,6 +256,59 @@ fn lower_interpolation_expression(
         code: trimmed_code,
         segments: trimmed_segments,
     })
+}
+
+fn is_interpolation_root_list(source: &str, inner_span: Span, children: &[Node<'_>]) -> bool {
+    if children.len() < 2 {
+        return false;
+    }
+    if !children
+        .iter()
+        .all(|child| matches!(child.kind(), "element" | "self_closing_tag" | "comment"))
+    {
+        return false;
+    }
+
+    let mut cursor = inner_span.start;
+    for child in children {
+        if !span_text(source, Span::new(cursor, child.start_byte()))
+            .trim()
+            .is_empty()
+        {
+            return false;
+        }
+        cursor = child.end_byte();
+    }
+
+    span_text(source, Span::new(cursor, inner_span.end))
+        .trim()
+        .is_empty()
+}
+
+fn lower_interpolation_root_list(
+    source: &str,
+    children: &[Node<'_>],
+) -> Result<LoweredNode, AstroIrError> {
+    let mut builder = AstroIrBuilder::default();
+    builder.push_inserted("__astro_root(");
+    for (index, child) in children.iter().enumerate() {
+        if index > 0 {
+            builder.push_inserted(", ");
+        }
+        builder.push_lowered(lower_root_child(source, *child)?);
+    }
+    builder.push_inserted(")");
+    Ok(builder.finish())
+}
+
+fn lower_root_child(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    if node.kind() == "comment" {
+        return Ok(LoweredNode {
+            code: LeanString::from_static_str("__astro_cm"),
+            segments: Vec::new(),
+        });
+    }
+    lower_expressionish_child(source, node)
 }
 
 fn should_insert_comment_sequence_separator_before(
@@ -391,6 +448,9 @@ fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrErr
     if start_or_self_closing_tag.kind() == "self_closing_tag" {
         return lower_self_closing_tag(source, start_or_self_closing_tag);
     }
+    if is_fragment_tag(source, start_or_self_closing_tag) {
+        return lower_fragment(source, node);
+    }
 
     let mut builder = AstroIrBuilder::default();
     builder.push_inserted("__astro_el(");
@@ -415,6 +475,33 @@ fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrErr
     Ok(builder.finish())
 }
 
+fn is_fragment_tag(source: &str, tag_node: Node<'_>) -> bool {
+    tag_node.kind() == "start_tag" && render_tag_name_node(source, tag_node).is_none()
+}
+
+fn lower_fragment(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    let mut builder = AstroIrBuilder::default();
+    builder.push_inserted("__astro_frag(");
+    let mut rendered_children = 0usize;
+    let mut child_cursor = node.walk();
+    for child in node.children(&mut child_cursor) {
+        match child.kind() {
+            "start_tag" | "end_tag" => {}
+            _ => {
+                if let Some(rendered_child) = render_fragment_child(source, child)? {
+                    if rendered_children > 0 {
+                        builder.push_inserted(", ");
+                    }
+                    builder.push_lowered(rendered_child);
+                    rendered_children += 1;
+                }
+            }
+        }
+    }
+    builder.push_inserted(")");
+    Ok(builder.finish())
+}
+
 fn lower_self_closing_tag(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
     let mut builder = AstroIrBuilder::default();
     builder.push_inserted("__astro_el(");
@@ -426,11 +513,8 @@ fn lower_self_closing_tag(source: &str, node: Node<'_>) -> Result<LoweredNode, A
 }
 
 fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
-    let mut cursor = tag_node.walk();
-    let tag_name_node = tag_node
-        .children(&mut cursor)
-        .find(|child| child.kind() == "tag_name")
-        .ok_or(AstroIrError::MissingTagName)?;
+    let tag_name_node =
+        render_tag_name_node(source, tag_node).ok_or(AstroIrError::MissingTagName)?;
     let tag_name = node_text(source, tag_name_node);
 
     Ok(if is_component_tag_name(tag_name) {
@@ -447,6 +531,13 @@ fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode
             segments: Vec::new(),
         }
     })
+}
+
+fn render_tag_name_node<'a>(source: &str, tag_node: Node<'a>) -> Option<Node<'a>> {
+    let mut cursor = tag_node.walk();
+    tag_node
+        .children(&mut cursor)
+        .find(|child| child.kind() == "tag_name" && !node_text(source, *child).is_empty())
 }
 
 fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
@@ -697,6 +788,19 @@ fn render_markup_child(source: &str, node: Node<'_>) -> Result<Option<LoweredNod
     }
 }
 
+fn render_fragment_child(
+    source: &str,
+    node: Node<'_>,
+) -> Result<Option<LoweredNode>, AstroIrError> {
+    if node.kind() == "comment" {
+        return Ok(Some(LoweredNode {
+            code: LeanString::from_static_str("__astro_cm"),
+            segments: Vec::new(),
+        }));
+    }
+    render_markup_child(source, node)
+}
+
 fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: usize) -> Span {
     let start = node.start_byte().saturating_add(prefix_len);
     let end = node.end_byte().saturating_sub(suffix_len).max(start);
@@ -836,11 +940,57 @@ mod tests {
         assert_eq!(lowered.len(), 2);
         assert_eq!(
             lowered[0].code,
-            r#"__astro_cm, __astro_el("span", null, translate`Inside element`)"#
+            r#"__astro_root(__astro_cm, __astro_el("span", null, translate`Inside element`))"#
         );
         assert_eq!(
             lowered[1].code,
             r#"condition ? __astro_cm : __astro_el("span", null, translate`Fallback`)"#
+        );
+    }
+
+    #[test]
+    fn lowers_fragment_interpolations_to_astro_frag_calls() {
+        let source = indoc! {r#"
+            ---
+            const x = 1;
+            ---
+            {<><span>{translate`First`}</span><span>{translate`Second`}</span></>}
+            {<><!-- This is an HTML comment --><span>{translate`After comment`}</span></>}
+        "#};
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+
+        assert_eq!(lowered.len(), 2);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_frag(__astro_el("span", null, translate`First`), __astro_el("span", null, translate`Second`))"#
+        );
+        assert_eq!(
+            lowered[1].code,
+            r#"__astro_frag(__astro_cm, __astro_el("span", null, translate`After comment`))"#
+        );
+    }
+
+    #[test]
+    fn wraps_multiple_interpolation_roots_in_astro_root_calls() {
+        let source = indoc! {r#"
+            ---
+            const x = 1;
+            ---
+            {<span>{translate`First`}</span><span>{translate`Second`}</span>}
+            {<!-- This is an HTML comment --><><span>{translate`After comment`}</span></>}
+        "#};
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+
+        assert_eq!(lowered.len(), 2);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_root(__astro_el("span", null, translate`First`), __astro_el("span", null, translate`Second`))"#
+        );
+        assert_eq!(
+            lowered[1].code,
+            r#"__astro_root(__astro_cm, __astro_frag(__astro_el("span", null, translate`After comment`)))"#
         );
     }
 }

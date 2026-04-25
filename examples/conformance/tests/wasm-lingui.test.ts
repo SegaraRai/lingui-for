@@ -73,6 +73,9 @@ describe("lingui-analyzer wasm contract", () => {
         {undefined /* This comment follows an expression. */}
         {<!-- This is an HTML comment -->}
         {<!-- This is an HTML comment --><span>{translate\`Inside commented fragment\`}</span>}
+        {<><span>{translate\`Fragment first\`}</span><span>{translate\`Fragment second\`}</span></>}
+        {<><!-- This is an HTML comment --><span>{translate\`Fragment after comment\`}</span></>}
+        {<span>{translate\`Adjacent first\`}</span><span>{translate\`Adjacent second\`}</span>}
         {condition ? <!-- This is an HTML comment --> : <span>{translate\`Fallback comment\`}</span>}
       `;
 
@@ -89,6 +92,11 @@ describe("lingui-analyzer wasm contract", () => {
       "Before comment",
       "After comment",
       "Inside commented fragment",
+      "Fragment first",
+      "Fragment second",
+      "Fragment after comment",
+      "Adjacent first",
+      "Adjacent second",
       "Fallback comment",
     ]);
   });
