@@ -290,9 +290,9 @@ fn lower_interpolation_root_list(
     children: &[Node<'_>],
 ) -> Result<LoweredNode, AstroIrError> {
     let mut builder = AstroIrBuilder::default();
-    // Astro rejects multiple root nodes in an interpolation, but keeping this
-    // lowering permissive lets extract handle partially valid or pre-normalized
-    // templates without giving a comma expression a misleading meaning.
+    // Astro rejects multiple root nodes in an interpolation, but extract keeps
+    // this path permissive so partially valid or pre-normalized templates can
+    // still be represented as an explicit Astro root list.
     builder.push_inserted("__astro_root(");
     for (index, child) in children.iter().enumerate() {
         if index > 0 {
