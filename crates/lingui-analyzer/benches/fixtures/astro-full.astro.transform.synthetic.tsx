@@ -114,27 +114,27 @@ const __lf_57 = <Trans>
         </Trans>;
 const __lf_58 = <Trans>
 
-
+            <__astro_frag>
               <p>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</p>
               <p>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</p>
-
+            </__astro_frag>
 
         </Trans>;
 const __lf_59 = <Trans>
-          Fixture message before a Trans-wrapped HTML comment interpolation.{" "}{" "}Fixture message after a Trans-wrapped HTML comment interpolation.
+          Fixture message before a Trans-wrapped HTML comment interpolation.{" "}<__astro_cm />{" "}Fixture message after a Trans-wrapped HTML comment interpolation.
         </Trans>;
 const __lf_60 = <Trans>
-          {useCommentBranch ? undefined : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>}{" "}Fixture message after a conditional Astro HTML comment.
+          {useCommentBranch ? <__astro_cm /> : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>}{" "}Fixture message after a conditional Astro HTML comment.
         </Trans>;
 const __lf_61 = <Trans>
           Fixture message before a Trans-wrapped JavaScript comment interpolation.{" "}{/* fixture-trans-wrapped-js-comment-only-between-messages */}{" "}Fixture message after a Trans-wrapped JavaScript comment interpolation.
         </Trans>;
 const __lf_62 = <Trans>
 
-
+              <__astro_frag>
                 <p>Fixture first fragment child inside an interpolated Trans component.</p>
                 <p>Fixture second fragment child inside an interpolated Trans component.</p>
-
+              </__astro_frag>
 
           </Trans>;
 const __lf_63 = translate`Reviewer notes`;

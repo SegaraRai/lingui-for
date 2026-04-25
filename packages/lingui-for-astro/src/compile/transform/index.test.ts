@@ -745,8 +745,8 @@ describe("transformAstro", () => {
       import { Trans } from "lingui-for-astro/macro";
       ---
 
-      <Trans>{<><p>First fragment child.</p><p>Second fragment child.</p></>}</Trans>
-      {<Trans>{<><p>First nested fragment child.</p><p>Second nested fragment child.</p></>}</Trans>}
+      <Trans>{<><!-- ignored --><p>First fragment child.</p><p>Second fragment child.</p></>}</Trans>
+      {<Trans>{<><!-- ignored --><p>First nested fragment child.</p><p>Second nested fragment child.</p></>}</Trans>}
     `;
 
     const result = await expectTransformed(source, {
@@ -761,6 +761,8 @@ describe("transformAstro", () => {
       'message: "<0>First nested fragment child.</0><1>Second nested fragment child.</1>"',
     );
     expect(code).not.toContain('message: "{0}"');
+    expect(code).not.toContain("__astro_cm");
+    expect(code).not.toContain("__astro_frag");
   });
 
   test("leaves same-name non-macro components untouched", async () => {

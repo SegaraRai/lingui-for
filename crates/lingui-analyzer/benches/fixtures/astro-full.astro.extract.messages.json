@@ -670,7 +670,7 @@
     "id": "0tE8NX",
     "message": "{0} Fixture message after a conditional Astro HTML comment.",
     "placeholders": {
-      "0": "useCommentBranch ? undefined : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>"
+      "0": "useCommentBranch ? null : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>"
     },
     "origin": [
       "astro-full.astro",

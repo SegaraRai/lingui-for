@@ -19,6 +19,10 @@ use super::analysis::{
 use super::validation::validate_runtime_lowerable_astro_component;
 use super::{AstroFrameworkError, AstroTemplateComponent};
 
+const ASTRO_COMMENT_MARKER: &str = "<__astro_cm />";
+const ASTRO_FRAGMENT_START_MARKER: &str = "<__astro_frag>";
+const ASTRO_FRAGMENT_END_MARKER: &str = "</__astro_frag>";
+
 pub(super) fn component_candidate_from_element(
     source: &str,
     node: Node<'_>,
@@ -182,9 +186,7 @@ fn component_astro_child_normalization_edits(
     for child in node.children(&mut cursor) {
         match child.kind() {
             "start_tag" | "self_closing_tag" | "end_tag" => {}
-            "comment" => edits.push(NormalizationEdit::Delete {
-                span: Span::from_node(child),
-            }),
+            "comment" => replace_with_astro_comment_marker(child, &mut edits),
             "html_interpolation" => {
                 append_html_interpolation_child_normalization_edits(source, child, &mut edits);
             }
@@ -204,9 +206,11 @@ fn append_html_interpolation_child_normalization_edits(
     let children = named_children_in_span(source, node, inner);
 
     if is_comment_only_interpolation(&children) {
-        edits.push(NormalizationEdit::Delete {
-            span: Span::from_node(node),
-        });
+        replace_span_with_text(
+            Span::from_node(node),
+            LeanString::from_static_str(ASTRO_COMMENT_MARKER),
+            edits,
+        );
         return;
     }
 
@@ -217,12 +221,9 @@ fn append_html_interpolation_child_normalization_edits(
         edits.push(NormalizationEdit::Delete {
             span: Span::new(inner.end, node.end_byte()),
         });
-        edits.push(NormalizationEdit::Delete {
-            span: Span::from_node(start_tag),
-        });
-        edits.push(NormalizationEdit::Delete {
-            span: Span::from_node(end_tag),
-        });
+        replace_with_astro_fragment_start_marker(start_tag, edits);
+        replace_with_astro_fragment_end_marker(end_tag, edits);
+        append_descendant_comment_marker_replacements(start_tag, end_tag, edits);
         return;
     }
 
@@ -237,12 +238,11 @@ fn append_html_interpolation_child_normalization_edits(
         });
 
         if let Some((start_tag, end_tag)) = fragment_tag_pair(*root) {
-            edits.push(NormalizationEdit::Delete {
-                span: Span::from_node(start_tag),
-            });
-            edits.push(NormalizationEdit::Delete {
-                span: Span::from_node(end_tag),
-            });
+            replace_with_astro_fragment_start_marker(start_tag, edits);
+            replace_with_astro_fragment_end_marker(end_tag, edits);
+            append_descendant_comment_marker_replacements(start_tag, end_tag, edits);
+        } else {
+            append_comment_marker_replacements(*root, edits);
         }
         return;
     }
@@ -256,15 +256,71 @@ fn append_comment_expression_normalization_edits(
 ) {
     for child in children {
         if child.kind() == "comment" {
-            edits.push(NormalizationEdit::Delete {
-                span: Span::from_node(*child),
-            });
-            edits.push(NormalizationEdit::Insert {
-                at: child.start_byte(),
-                text: LeanString::from_static_str("undefined"),
-            });
+            replace_with_astro_comment_marker(*child, edits);
+        } else {
+            append_comment_marker_replacements(*child, edits);
         }
     }
+}
+
+fn append_comment_marker_replacements(node: Node<'_>, edits: &mut Vec<NormalizationEdit>) {
+    if node.kind() == "comment" {
+        replace_with_astro_comment_marker(node, edits);
+        return;
+    }
+
+    for child in node.named_children(&mut node.walk()) {
+        append_comment_marker_replacements(child, edits);
+    }
+}
+
+fn append_descendant_comment_marker_replacements(
+    start_tag: Node<'_>,
+    end_tag: Node<'_>,
+    edits: &mut Vec<NormalizationEdit>,
+) {
+    let Some(parent) = start_tag.parent() else {
+        return;
+    };
+
+    for child in parent.named_children(&mut parent.walk()) {
+        if child.start_byte() <= start_tag.start_byte() || child.end_byte() >= end_tag.end_byte() {
+            continue;
+        }
+        append_comment_marker_replacements(child, edits);
+    }
+}
+
+fn replace_with_astro_comment_marker(node: Node<'_>, edits: &mut Vec<NormalizationEdit>) {
+    replace_span_with_text(
+        Span::from_node(node),
+        LeanString::from_static_str(ASTRO_COMMENT_MARKER),
+        edits,
+    );
+}
+
+fn replace_with_astro_fragment_start_marker(node: Node<'_>, edits: &mut Vec<NormalizationEdit>) {
+    replace_span_with_text(
+        Span::from_node(node),
+        LeanString::from_static_str(ASTRO_FRAGMENT_START_MARKER),
+        edits,
+    );
+}
+
+fn replace_with_astro_fragment_end_marker(node: Node<'_>, edits: &mut Vec<NormalizationEdit>) {
+    replace_span_with_text(
+        Span::from_node(node),
+        LeanString::from_static_str(ASTRO_FRAGMENT_END_MARKER),
+        edits,
+    );
+}
+
+fn replace_span_with_text(span: Span, text: LeanString, edits: &mut Vec<NormalizationEdit>) {
+    edits.push(NormalizationEdit::Delete { span });
+    edits.push(NormalizationEdit::Insert {
+        at: span.start,
+        text,
+    });
 }
 
 fn named_children_in_span<'a>(source: &str, node: Node<'a>, span: Span) -> Vec<Node<'a>> {
