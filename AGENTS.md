@@ -22,10 +22,10 @@ If you believe a test case is correct, don’t modify it; instead, **mark it as 
 
 - `cargo test`: run Rust tests
 - `vp run build`: build the package
-- `vp run test`: run tests with Vitest
+- `vp run test`: build the package and run tests with Vitest
   - You can pass extra arguments to Vitest, such as `vp run test <filename>`.
 - `cargo fmt && vp run format`: format code (workspace root only)
-- `vp run check`: run formatting checks and type checks
+- `vp run check`: build the package and run formatting checks and type checks. Run `vp run format` first to fix any formatting issues, then run `vp run check` to ensure there are no type errors.
 - `vp exec <command>`: run an external package command, such as `vp exec lingui extract`.
 - `vp add <package>`: add a new package
 
@@ -34,7 +34,7 @@ TIP: Run `cargo fmt && vp run format` → `vp run check` → `vp run test` seque
 ## Common Pitfalls
 
 - **IMPORTANT**: DO NOT run `vp run build`, `vp run check`, or `vp run test` concurrently. Run sequentially to avoid conflicts in build artifacts. Build is cached so it’s not a problem to run them one after another.
-- DO NOT use `vp test`, `vp pack`, or `vp build`. Use `vp run build` from the workspace root.
+- DO NOT use `vp test`, `vp pack`, or `vp build`.
 
 ## Project Dependencies
 
