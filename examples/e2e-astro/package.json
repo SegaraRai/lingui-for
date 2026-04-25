@@ -3,33 +3,33 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@astrojs/node": "^10.0.4",
-    "@astrojs/react": "^5.0.3",
-    "@astrojs/svelte": "^8.0.4",
+    "@astrojs/node": "^10.0.6",
+    "@astrojs/react": "^5.0.4",
+    "@astrojs/svelte": "^8.0.5",
     "@lingui/core": "^5.9.5",
     "@lingui/react": "^5.9.5",
-    "astro": "^6.1.5",
+    "astro": "^6.1.9",
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "svelte": "^5.55.2"
+    "svelte": "^5.55.5"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.7",
     "@lingui/cli": "^5.9.5",
     "@lingui/conf": "^5.9.5",
-    "@tailwindcss/vite": "^4.2.2",
+    "@tailwindcss/vite": "^4.2.4",
     "@types/node": "catalog:",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro-strip-whitespace": "^0.2.2",
     "daisyui": "^5.5.19",
     "playwright": "^1.59.1",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "^4.2.4",
     "typescript": "catalog:",
     "unplugin-lingui-macro": "workspace:*",
-    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.16",
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.19",
     "vite-plus": "catalog:"
   }
 }

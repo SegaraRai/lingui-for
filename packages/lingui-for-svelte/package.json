@@ -121,7 +121,7 @@
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@types/node": "catalog:",
     "dedent": "^1.7.2",
-    "svelte": "^5.55.2",
+    "svelte": "^5.55.5",
     "typescript": "catalog:",
     "unplugin-markup-import": "workspace:*",
     "vite-plus": "catalog:"
