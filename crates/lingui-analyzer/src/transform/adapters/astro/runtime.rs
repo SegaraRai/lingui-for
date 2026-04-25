@@ -660,7 +660,13 @@ fn collect_runtime_component_wrappers<'a>(
 }
 
 fn is_fragment_wrapper(source: &str, node: Node<'_>) -> bool {
-    node.kind() == "element" && tag_name(source, node).is_none()
+    node.kind() == "element"
+        && node
+            .children(&mut node.walk())
+            .any(|child| child.kind() == "start_tag" && tag_node_name(source, child).is_none())
+        && node
+            .children(&mut node.walk())
+            .any(|child| child.kind() == "end_tag" && tag_node_name(source, child).is_none())
 }
 
 fn is_skipped_runtime_component_wrapper(source: &str, node: Node<'_>) -> bool {
@@ -687,6 +693,12 @@ fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
             .map(|tag_name| node_text(source, tag_name)),
         _ => None,
     }
+}
+
+fn tag_node_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
+    node.children(&mut node.walk())
+        .find(|child| child.kind() == "tag_name")
+        .map(|tag_name| node_text(source, tag_name))
 }
 
 fn lower_original_wrapper_to_slot_callback(

@@ -947,7 +947,7 @@ __l4a_i18n.prime();
                 id: "GM89YS",
                 message: "Imported digest: <0/>"
               }}>
-              <fragment slot="component_0">{(children) => <Fragment set:html={children} />}</fragment>
+              <fragment slot="component_0">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span set:html={htmlDigest} />)}</fragment>
               </L4aRuntimeTrans>
             </p>
             <p>
@@ -955,8 +955,10 @@ __l4a_i18n.prime();
                 id: "8e7f33",
                 message: "Also we can embed <0/> and <1/> directly in translations."
               }}>
-              <fragment slot="component_0">{(children) => <Fragment set:html={children} />}</fragment>
-              <fragment slot="component_1">{(children) => <Fragment set:html={children} />}</fragment>
+              <fragment slot="component_0">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span set:text="some text" />)}</fragment>
+              <fragment slot="component_1">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span
+                                set:html="<em>some HTML</em>"
+                              />)}</fragment>
               </L4aRuntimeTrans>
             </p>
             <div>
