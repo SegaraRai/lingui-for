@@ -64,9 +64,9 @@ msgstr "{0, selectordinal, one {React finished #st.} two {React finished #nd.} f
 msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 msgstr "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 
-#. placeholder {0}: falseBranch ? null : <span>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</span>
-#. placeholder {0}: falseBranch ? null : <span>Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.</span>
-#. placeholder {0}: trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</span> : null
+#. placeholder {0}: falseBranch ? <__astro_cm /> : <span>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</span>
+#. placeholder {0}: falseBranch ? <__astro_cm /> : <span>Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.</span>
+#. placeholder {0}: trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</span> : <__astro_cm />
 #: src/pages/interpolation.astro:107
 #: src/pages/interpolation.astro:110
 #: src/pages/interpolation.astro:152
@@ -119,27 +119,27 @@ msgstr "{rank, selectordinal, =1 {{role, select, admin {component zero first adm
 msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 
+#: src/pages/interpolation.astro:127
+msgid "<0><1/><2>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</3></0>"
+msgstr "<0><1/><2>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</3></0>"
+
+#: src/pages/interpolation.astro:88
+msgid "<0><1/><2>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</3></0>"
+msgstr "<0><1/><2>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</3></0>"
+
+#: src/pages/interpolation.astro:117
+msgid "<0><1>Trans-wrapped first fragment child inside an Astro interpolation.</1><2>Trans-wrapped second fragment child inside an Astro interpolation.</2></0>"
+msgstr "<0><1>Trans-wrapped first fragment child inside an Astro interpolation.</1><2>Trans-wrapped second fragment child inside an Astro interpolation.</2></0>"
+
+#: src/pages/interpolation.astro:80
+msgid "<0><1>Trans-wrapped first fragment child outside an Astro interpolation.</1><2>Trans-wrapped second fragment child outside an Astro interpolation.</2></0>"
+msgstr "<0><1>Trans-wrapped first fragment child outside an Astro interpolation.</1><2>Trans-wrapped second fragment child outside an Astro interpolation.</2></0>"
+
 #. placeholder {0}: highlightedQueue.length
 #: src/components/astro/AstroRichText.astro:44
 #: src/components/svelte/SvelteRichTextIsland.svelte:49
 msgid "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
 msgstr "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
-
-#: src/pages/interpolation.astro:127
-msgid "<0>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</0><1>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</1>"
-msgstr "<0>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</0><1>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</1>"
-
-#: src/pages/interpolation.astro:88
-msgid "<0>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</0><1>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</1>"
-msgstr "<0>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</0><1>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</1>"
-
-#: src/pages/interpolation.astro:117
-msgid "<0>Trans-wrapped first fragment child inside an Astro interpolation.</0><1>Trans-wrapped second fragment child inside an Astro interpolation.</1>"
-msgstr "<0>Trans-wrapped first fragment child inside an Astro interpolation.</0><1>Trans-wrapped second fragment child inside an Astro interpolation.</1>"
-
-#: src/pages/interpolation.astro:80
-msgid "<0>Trans-wrapped first fragment child outside an Astro interpolation.</0><1>Trans-wrapped second fragment child outside an Astro interpolation.</1>"
-msgstr "<0>Trans-wrapped first fragment child outside an Astro interpolation.</0><1>Trans-wrapped second fragment child outside an Astro interpolation.</1>"
 
 #: src/pages/interpolation.astro:115
 msgid "<0>Trans-wrapped single root inside an Astro interpolation.</0>"
@@ -822,12 +822,12 @@ msgid "Trans-wrapped message before a JavaScript comment outside an Astro interp
 msgstr "Trans-wrapped message before a JavaScript comment outside an Astro interpolation.  Trans-wrapped message after a JavaScript comment outside an Astro interpolation."
 
 #: src/pages/interpolation.astro:145
-msgid "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation.  Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation."
-msgstr "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation.  Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation."
+msgid "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation."
+msgstr "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation."
 
 #: src/pages/interpolation.astro:102
-msgid "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation.  Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation."
-msgstr "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation.  Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation."
+msgid "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation."
+msgstr "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation."
 
 #: src/pages/interpolation.astro:114
 msgid "Trans-wrapped plain expression inside an Astro interpolation."

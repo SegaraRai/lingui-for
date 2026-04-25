@@ -647,8 +647,8 @@
     ]
   },
   {
-    "id": "MGwmlB",
-    "message": "<0>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</0><1>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</1>",
+    "id": "x2qFIo",
+    "message": "<0><1>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</1><2>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</2></0>",
     "placeholders": {},
     "origin": [
       "astro-full.astro",
@@ -657,8 +657,8 @@
     ]
   },
   {
-    "id": "reUH1k",
-    "message": "Fixture message before a Trans-wrapped HTML comment interpolation.  Fixture message after a Trans-wrapped HTML comment interpolation.",
+    "id": "yJ0bVP",
+    "message": "Fixture message before a Trans-wrapped HTML comment interpolation. <0/> Fixture message after a Trans-wrapped HTML comment interpolation.",
     "placeholders": {},
     "origin": [
       "astro-full.astro",
@@ -670,7 +670,7 @@
     "id": "0tE8NX",
     "message": "{0} Fixture message after a conditional Astro HTML comment.",
     "placeholders": {
-      "0": "useCommentBranch ? null : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>"
+      "0": "useCommentBranch ? <__astro_cm /> : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>"
     },
     "origin": [
       "astro-full.astro",
@@ -689,8 +689,8 @@
     ]
   },
   {
-    "id": "USRGBq",
-    "message": "<0>Fixture first fragment child inside an interpolated Trans component.</0><1>Fixture second fragment child inside an interpolated Trans component.</1>",
+    "id": "domltM",
+    "message": "<0><1>Fixture first fragment child inside an interpolated Trans component.</1><2>Fixture second fragment child inside an interpolated Trans component.</2></0>",
     "placeholders": {},
     "origin": [
       "astro-full.astro",

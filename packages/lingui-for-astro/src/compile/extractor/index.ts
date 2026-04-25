@@ -1,10 +1,8 @@
 import type {
-  ExtractedMessage,
   ExtractorCtx,
   ExtractorType,
   LinguiConfigNormalized,
 } from "@lingui/conf";
-import { createHash } from "node:crypto";
 
 import {
   buildAstroSyntheticModule,
@@ -15,7 +13,6 @@ import {
   type CanonicalSourceMap,
 } from "@lingui-for/framework-core/compile";
 import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
-import * as t from "@lingui-for/framework-core/vendor/babel-types";
 import {
   createLinguiConfigResolver,
   type LinguiConfigSource,
@@ -92,9 +89,6 @@ function astroExtractorFactory(options?: AstroExtractorOptions): ExtractorType {
           parseCanonicalSourceMap(synthetic.sourceMapJson),
         ),
       });
-      const generatedDescriptors = collectGeneratedMacroDescriptors(
-        transformed.ast,
-      );
 
       await runBabelExtractionUnits(
         filename,
@@ -104,10 +98,7 @@ function astroExtractorFactory(options?: AstroExtractorOptions): ExtractorType {
             map: transformed.map,
           },
         ],
-        normalizeGeneratedMacroMessageIds(
-          generatedDescriptors,
-          onMessageExtracted,
-        ),
+        onMessageExtracted,
         extractorCtx,
         {
           normalizeSourceMap: normalizeExtractionSourceMap,
@@ -115,117 +106,6 @@ function astroExtractorFactory(options?: AstroExtractorOptions): ExtractorType {
       );
     },
   };
-}
-
-function normalizeGeneratedMacroMessageIds(
-  generatedDescriptors: ReadonlySet<string>,
-  onMessageExtracted: (message: ExtractedMessage) => void,
-): (message: ExtractedMessage) => void {
-  return (message) => {
-    if (
-      message.message != null &&
-      generatedDescriptors.has(
-        descriptorKey(message.id, message.message, message.context),
-      )
-    ) {
-      onMessageExtracted({
-        ...message,
-        id: generateLinguiMessageId(message.message, message.context),
-      });
-      return;
-    }
-
-    onMessageExtracted(message);
-  };
-}
-
-function generateLinguiMessageId(message: string, context?: string): string {
-  return createHash("sha256")
-    .update(message + "\u001f" + (context ?? ""))
-    .digest("base64")
-    .slice(0, 6);
-}
-
-function collectGeneratedMacroDescriptors(root: t.Node): Set<string> {
-  const generatedDescriptors = new Set<string>();
-  const visited = new WeakSet<object>();
-
-  const visit = (node: unknown): void => {
-    if (!isBabelNode(node) || visited.has(node)) {
-      return;
-    }
-    visited.add(node);
-
-    if (t.isObjectExpression(node)) {
-      const idProperty = findStringObjectProperty(node, "id");
-      const messageProperty = findStringObjectProperty(node, "message");
-      const contextProperty = findStringObjectProperty(node, "context");
-
-      if (
-        idProperty != null &&
-        messageProperty != null &&
-        idProperty.loc == null
-      ) {
-        generatedDescriptors.add(
-          descriptorKey(
-            idProperty.value.value,
-            messageProperty.value.value,
-            contextProperty?.value.value,
-          ),
-        );
-      }
-    }
-
-    for (const [key, value] of Object.entries(node)) {
-      if (
-        key === "loc" ||
-        key === "leadingComments" ||
-        key === "trailingComments"
-      ) {
-        continue;
-      }
-      if (Array.isArray(value)) {
-        value.forEach(visit);
-      } else {
-        visit(value);
-      }
-    }
-  };
-
-  visit(root);
-  return generatedDescriptors;
-}
-
-function findStringObjectProperty(
-  node: t.ObjectExpression,
-  name: string,
-): (t.ObjectProperty & { value: t.StringLiteral }) | undefined {
-  return node.properties.find((property) => {
-    if (!t.isObjectProperty(property) || !t.isStringLiteral(property.value)) {
-      return false;
-    }
-    if (t.isIdentifier(property.key)) {
-      return property.key.name === name;
-    }
-    return t.isStringLiteral(property.key) && property.key.value === name;
-  }) as (t.ObjectProperty & { value: t.StringLiteral }) | undefined;
-}
-
-function descriptorKey(
-  id: string,
-  message: string,
-  context: string | undefined,
-): string {
-  return `${id}\u{1f}${message}\u{1f}${context ?? ""}`;
-}
-
-function isBabelNode(node: unknown): node is t.Node {
-  return (
-    typeof node === "object" &&
-    node != null &&
-    "type" in node &&
-    typeof (node as { type?: unknown }).type === "string"
-  );
 }
 
 function createExtractorContext(

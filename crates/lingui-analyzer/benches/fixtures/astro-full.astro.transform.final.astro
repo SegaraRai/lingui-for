@@ -947,7 +947,7 @@ __l4a_i18n.prime();
                 id: "GM89YS",
                 message: "Imported digest: <0/>"
               }}>
-              <fragment slot="component_0">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span set:html={htmlDigest} />)}</fragment>
+              <fragment slot="component_0">{(children) => <Fragment set:html={children} />}</fragment>
               </L4aRuntimeTrans>
             </p>
             <p>
@@ -955,10 +955,8 @@ __l4a_i18n.prime();
                 id: "8e7f33",
                 message: "Also we can embed <0/> and <1/> directly in translations."
               }}>
-              <fragment slot="component_0">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span set:text="some text" />)}</fragment>
-              <fragment slot="component_1">{(children) => (children !== "" && console.warn("[lingui-for-astro] <Trans> wrapper with content directives ignores translated children and uses its own content source instead."), <span
-                                set:html="<em>some HTML</em>"
-                              />)}</fragment>
+              <fragment slot="component_0">{(children) => <Fragment set:html={children} />}</fragment>
+              <fragment slot="component_1">{(children) => <Fragment set:html={children} />}</fragment>
               </L4aRuntimeTrans>
             </p>
             <div>
@@ -1140,22 +1138,25 @@ __l4a_i18n.prime();
         }}>
         <fragment slot="component_0">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
         </L4aRuntimeTrans>
-        <L4aRuntimeTrans placeholders={["0", "1"]} {.../*i18n*/ {
+        <L4aRuntimeTrans placeholders={["0", "1", "2"]} {.../*i18n*/ {
           id: "x2qFIo",
-          message: "<0>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</0><1>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</1>"
+          message: "<0><1>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</1><2>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</2></0>"
         }}>
-        <fragment slot="component_0">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+        <fragment slot="component_0">{(children) => <Fragment set:html={children} />}</fragment>
         <fragment slot="component_1">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+        <fragment slot="component_2">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
         </L4aRuntimeTrans>
-        <L4aRuntimeTrans {.../*i18n*/ {
+        <L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {
           id: "yJ0bVP",
-          message: "Fixture message before a Trans-wrapped HTML comment interpolation.  Fixture message after a Trans-wrapped HTML comment interpolation."
-        }} />
+          message: "Fixture message before a Trans-wrapped HTML comment interpolation. <0/> Fixture message after a Trans-wrapped HTML comment interpolation."
+        }}>
+        <fragment slot="component_0">{(children) => <!-- fixture-trans-wrapped-html-comment-only-between-messages -->}</fragment>
+        </L4aRuntimeTrans>
         <L4aRuntimeTrans {.../*i18n*/ {
           id: "0tE8NX",
           message: "{0} Fixture message after a conditional Astro HTML comment.",
           values: {
-            0: useCommentBranch ? null : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>
+            0: useCommentBranch ? <__astro_cm /> : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>
           }
         }} />
         <L4aRuntimeTrans {.../*i18n*/ {
@@ -1163,12 +1164,13 @@ __l4a_i18n.prime();
           message: "Fixture message before a Trans-wrapped JavaScript comment interpolation.  Fixture message after a Trans-wrapped JavaScript comment interpolation."
         }} />
         {
-          <L4aRuntimeTrans placeholders={["0", "1"]} {.../*i18n*/ {
+          <L4aRuntimeTrans placeholders={["0", "1", "2"]} {.../*i18n*/ {
             id: "domltM",
-            message: "<0>Fixture first fragment child inside an interpolated Trans component.</0><1>Fixture second fragment child inside an interpolated Trans component.</1>"
+            message: "<0><1>Fixture first fragment child inside an interpolated Trans component.</1><2>Fixture second fragment child inside an interpolated Trans component.</2></0>"
           }}>
-          <fragment slot="component_0">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+          <fragment slot="component_0">{(children) => <Fragment set:html={children} />}</fragment>
           <fragment slot="component_1">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
+          <fragment slot="component_2">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
           </L4aRuntimeTrans>
         }
       </section>

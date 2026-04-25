@@ -445,17 +445,21 @@ const __lf_58 = <_Trans {...
 /*i18n*/
 {
   id: "x2qFIo",
-  message: "<0>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</0><1>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</1>",
+  message: "<0><1>Fixture first fragment child inside a Trans-wrapped Astro interpolation.</1><2>Fixture second fragment child inside a Trans-wrapped Astro interpolation.</2></0>",
   components: {
-    0: <p />,
-    1: <p />
+    0: <__astro_frag />,
+    1: <p />,
+    2: <p />
   }
 }} />;
 const __lf_59 = <_Trans {...
 /*i18n*/
 {
   id: "yJ0bVP",
-  message: "Fixture message before a Trans-wrapped HTML comment interpolation.  Fixture message after a Trans-wrapped HTML comment interpolation."
+  message: "Fixture message before a Trans-wrapped HTML comment interpolation. <0/> Fixture message after a Trans-wrapped HTML comment interpolation.",
+  components: {
+    0: <__astro_cm />
+  }
 }} />;
 const __lf_60 = <_Trans {...
 /*i18n*/
@@ -463,7 +467,7 @@ const __lf_60 = <_Trans {...
   id: "0tE8NX",
   message: "{0} Fixture message after a conditional Astro HTML comment.",
   values: {
-    0: useCommentBranch ? null : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>
+    0: useCommentBranch ? <__astro_cm /> : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>
   }
 }} />;
 const __lf_61 = <_Trans {...
@@ -476,10 +480,11 @@ const __lf_62 = <_Trans {...
 /*i18n*/
 {
   id: "domltM",
-  message: "<0>Fixture first fragment child inside an interpolated Trans component.</0><1>Fixture second fragment child inside an interpolated Trans component.</1>",
+  message: "<0><1>Fixture first fragment child inside an interpolated Trans component.</1><2>Fixture second fragment child inside an interpolated Trans component.</2></0>",
   components: {
-    0: <p />,
-    1: <p />
+    0: <__astro_frag />,
+    1: <p />,
+    2: <p />
   }
 }} />;
 const __lf_63 = __l4a_i18n._(

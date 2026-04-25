@@ -514,8 +514,8 @@ fn collect_component_slot_callbacks_from_source(
     let root = tree.root_node();
     let component_node = find_node_by_span(root, target.original_span)
         .ok_or(AstroAdapterError::MissingOriginalAstroTransNode)?;
-    let mut wrappers = Vec::new();
-    collect_runtime_component_wrappers(component_node, original_source, &mut wrappers);
+    let wrappers =
+        collect_matching_runtime_component_wrappers(component_node, original_source, keys);
 
     if wrappers.len() != keys.len() {
         return Err(
@@ -546,6 +546,26 @@ fn collect_component_slot_callbacks_from_source(
     })
 }
 
+fn collect_matching_runtime_component_wrappers<'a>(
+    component_node: Node<'a>,
+    source: &str,
+    keys: &[LeanString],
+) -> Vec<Node<'a>> {
+    [
+        FragmentWrapperMode::Deep,
+        FragmentWrapperMode::Shallow,
+        FragmentWrapperMode::Transparent,
+    ]
+    .into_iter()
+    .map(|fragment_mode| {
+        let mut wrappers = Vec::new();
+        collect_runtime_component_wrappers(component_node, source, fragment_mode, &mut wrappers);
+        wrappers
+    })
+    .find(|wrappers| wrappers.len() == keys.len())
+    .unwrap_or_else(Vec::new)
+}
+
 struct AstroLoweredComponentSlots {
     slot_callbacks: Vec<RenderedMappedText>,
     placeholder_keys: Vec<LeanString>,
@@ -560,9 +580,17 @@ fn render_placeholder_keys_inline(keys: &[LeanString]) -> String {
     format!("[{joined}]")
 }
 
+#[derive(Clone, Copy)]
+enum FragmentWrapperMode {
+    Deep,
+    Shallow,
+    Transparent,
+}
+
 fn collect_runtime_component_wrappers<'a>(
     node: Node<'a>,
     source: &str,
+    fragment_mode: FragmentWrapperMode,
     wrappers: &mut Vec<Node<'a>>,
 ) {
     let mut cursor = node.walk();
@@ -570,7 +598,28 @@ fn collect_runtime_component_wrappers<'a>(
         match child.kind() {
             "element" => {
                 if is_fragment_wrapper(source, child) {
-                    collect_runtime_component_wrappers(child, source, wrappers);
+                    match fragment_mode {
+                        FragmentWrapperMode::Deep => {
+                            wrappers.push(child);
+                            collect_runtime_component_wrappers(
+                                child,
+                                source,
+                                fragment_mode,
+                                wrappers,
+                            );
+                        }
+                        FragmentWrapperMode::Shallow => {
+                            wrappers.push(child);
+                        }
+                        FragmentWrapperMode::Transparent => {
+                            collect_runtime_component_wrappers(
+                                child,
+                                source,
+                                fragment_mode,
+                                wrappers,
+                            );
+                        }
+                    }
                     continue;
                 }
                 if let Some(self_closing_tag) = child
@@ -593,7 +642,7 @@ fn collect_runtime_component_wrappers<'a>(
                     continue;
                 }
                 wrappers.push(child);
-                collect_runtime_component_wrappers(child, source, wrappers);
+                collect_runtime_component_wrappers(child, source, fragment_mode, wrappers);
             }
             "self_closing_tag" => {
                 if has_content_hole(source, child)
@@ -602,7 +651,10 @@ fn collect_runtime_component_wrappers<'a>(
                     wrappers.push(child);
                 }
             }
-            _ => collect_runtime_component_wrappers(child, source, wrappers),
+            "comment" => {
+                wrappers.push(child);
+            }
+            _ => collect_runtime_component_wrappers(child, source, fragment_mode, wrappers),
         }
     }
 }
@@ -662,6 +714,17 @@ fn lower_original_wrapper_to_slot_callback(
 
     match node.kind() {
         "element" => {
+            if is_fragment_wrapper(source, node) {
+                rendered.push_unmapped("<Fragment set:html={children} />");
+                push_original_anchor(
+                    &mut rendered,
+                    &indexed_source,
+                    "}</fragment>",
+                    node.end_byte(),
+                );
+                return rendered.into_rendered().map_err(Into::into);
+            }
+
             let start_tag = node
                 .children(&mut node.walk())
                 .find(|child| child.kind() == "start_tag")
@@ -706,6 +769,9 @@ fn lower_original_wrapper_to_slot_callback(
                 node,
                 node,
             )?;
+        }
+        "comment" => {
+            push_copied_span(&mut rendered, input, Span::from_node(node))?;
         }
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }

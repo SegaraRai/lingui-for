@@ -755,14 +755,12 @@ describe("transformAstro", () => {
     const code = compact(result.code);
 
     expect(code).toContain(
-      'message: "<0>First fragment child.</0><1>Second fragment child.</1>"',
+      'message: "<0><1/><2>First fragment child.</2><3>Second fragment child.</3></0>"',
     );
     expect(code).toContain(
-      'message: "<0>First nested fragment child.</0><1>Second nested fragment child.</1>"',
+      'message: "<0><1/><2>First nested fragment child.</2><3>Second nested fragment child.</3></0>"',
     );
     expect(code).not.toContain('message: "{0}"');
-    expect(code).not.toContain("__astro_cm");
-    expect(code).not.toContain("__astro_frag");
   });
 
   test("leaves same-name non-macro components untouched", async () => {

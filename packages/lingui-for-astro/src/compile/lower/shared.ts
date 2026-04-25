@@ -11,7 +11,6 @@ import type { File } from "@lingui-for/framework-core/vendor/babel-types";
 
 import { getParserPlugins } from "../common/config.ts";
 import {
-  createAstroMacroPreprocessPlugin,
   createAstroMacroPostprocessPlugin,
   type AstroMacroPostprocessRequest,
 } from "./macro-rewrite.ts";
@@ -46,7 +45,6 @@ export function transformAstroProgram(
       plugins: getParserPlugins(),
     },
     plugins: [
-      createAstroMacroPreprocessPlugin(),
       [
         linguiMacroPlugin,
         {
