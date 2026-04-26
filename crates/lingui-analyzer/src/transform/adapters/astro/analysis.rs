@@ -93,15 +93,19 @@ pub(crate) fn analyze_astro_transform(
 }
 
 pub(crate) fn compute_runtime_requirements(targets: &[TransformTarget]) -> RuntimeRequirements {
+    let needs_runtime_trans_component = targets
+        .iter()
+        .any(|target| target.output_kind == TransformTargetOutputKind::Component);
+
+    let needs_runtime_i18n_binding = targets.iter().any(|target| {
+        target.translation_mode == TransformTranslationMode::Contextual
+            && target.output_kind == TransformTargetOutputKind::Expression
+            && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
+    });
+
     RuntimeRequirements {
-        needs_runtime_i18n_binding: targets.iter().any(|target| {
-            target.translation_mode == TransformTranslationMode::Contextual
-                && target.output_kind == TransformTargetOutputKind::Expression
-                && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
-        }),
-        needs_runtime_trans_component: targets
-            .iter()
-            .any(|target| target.output_kind == TransformTargetOutputKind::Component),
+        needs_runtime_i18n_binding,
+        needs_runtime_trans_component,
     }
 }
 

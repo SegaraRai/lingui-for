@@ -13,7 +13,6 @@ pub(super) fn append_runtime_injection_replacements(
     source: &LeanString,
     replacements: &mut Vec<TransformReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
-    append_comment_only_interpolation_replacements(plan, source, replacements)?;
     append_fragment_normalization_replacements(plan, source, replacements)?;
 
     let indexed_source = IndexedText::new(source);
@@ -107,85 +106,6 @@ pub(super) fn append_runtime_injection_replacements(
     Ok(())
 }
 
-fn append_comment_only_interpolation_replacements(
-    plan: &AstroTransformPlan,
-    source: &LeanString,
-    replacements: &mut Vec<TransformReplacementInternal>,
-) -> Result<(), AstroAdapterError> {
-    if plan.common.targets.is_empty() {
-        return Ok(());
-    }
-
-    let tree = parse_astro(source)?;
-    collect_comment_only_interpolation_replacements(plan, tree.root_node(), replacements);
-    Ok(())
-}
-
-fn collect_comment_only_interpolation_replacements(
-    plan: &AstroTransformPlan,
-    node: Node<'_>,
-    replacements: &mut Vec<TransformReplacementInternal>,
-) {
-    if node.kind() == "comment"
-        && is_inside_html_interpolation(node)
-        && !node_is_inside_transform_target(plan, node)
-    {
-        replacements.push(TransformReplacementInternal::new(
-            LeanString::from(format!(
-                "__astro_interpolation_comment_{}",
-                node.start_byte()
-            )),
-            node.start_byte(),
-            node.end_byte(),
-            LeanString::new(),
-            None,
-            Vec::new(),
-        ));
-        return;
-    }
-
-    if node.kind() == "html_interpolation"
-        && !node_is_inside_transform_target(plan, node)
-        && is_comment_only_html_interpolation(node)
-    {
-        replacements.push(TransformReplacementInternal::new(
-            LeanString::from(format!("__astro_comment_{}", node.start_byte())),
-            node.start_byte(),
-            node.end_byte(),
-            LeanString::new(),
-            None,
-            Vec::new(),
-        ));
-        return;
-    }
-
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_comment_only_interpolation_replacements(plan, child, replacements);
-    }
-}
-
-fn is_comment_only_html_interpolation(node: Node<'_>) -> bool {
-    let inner_span = Span::new(node.start_byte() + 1, node.end_byte().saturating_sub(1));
-    let children = named_children_in_span(node, inner_span);
-    children.len() == 1 && children[0].kind() == "comment"
-}
-
-fn node_is_inside_transform_target(plan: &AstroTransformPlan, node: Node<'_>) -> bool {
-    let span = Span::from_node(node);
-    plan.common.targets.iter().any(|target| {
-        target.original_span.start <= span.start && span.end <= target.original_span.end
-    })
-}
-
-fn named_children_in_span(node: Node<'_>, span: Span) -> Vec<Node<'_>> {
-    node.children(&mut node.walk())
-        .filter(|child| {
-            child.is_named() && span.start <= child.start_byte() && child.end_byte() <= span.end
-        })
-        .collect()
-}
-
 fn append_fragment_normalization_replacements(
     plan: &AstroTransformPlan,
     source: &LeanString,
@@ -253,17 +173,6 @@ fn node_contains_transform_target(plan: &AstroTransformPlan, node: Node<'_>) -> 
     plan.common.targets.iter().any(|target| {
         span.start <= target.original_span.start && target.original_span.end <= span.end
     })
-}
-
-fn is_inside_html_interpolation(node: Node<'_>) -> bool {
-    let mut current = node.parent();
-    while let Some(parent) = current {
-        if parent.kind() == "html_interpolation" {
-            return true;
-        }
-        current = parent.parent();
-    }
-    false
 }
 
 fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {

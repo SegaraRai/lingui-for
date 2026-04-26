@@ -68,13 +68,13 @@ describe.sequential.for(serverModes)(
         "Translated consequent element before an unselected HTML comment alternate.",
       );
       expect(html).toContain(
+        "Translated alternate Trans branch after an unselected HTML comment consequent.",
+      );
+      expect(html).toContain(
+        "Translated consequent Trans branch before an unselected HTML comment alternate.",
+      );
+      expect(html).toContain(
         "Message after a selected HTML comment alternate branch.",
-      );
-      expect(html).toContain(
-        "Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.",
-      );
-      expect(html).toContain(
-        "Trans consequent element before an unselected HTML comment alternate outside an Astro interpolation.",
       );
       expect(html).toContain(
         "Plain Trans component message on the interpolation page.",
@@ -108,6 +108,12 @@ describe.sequential.for(serverModes)(
       );
       expect(html).toContain(
         "Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation.",
+      );
+      expect(html).toContain(
+        "Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.",
+      );
+      expect(html).toContain(
+        "Trans consequent element before an unselected HTML comment alternate outside an Astro interpolation.",
       );
       expect(html).toContain(
         "Trans component rendered from inside an Astro interpolation.",
@@ -148,6 +154,7 @@ describe.sequential.for(serverModes)(
       expect(html).toContain(
         "Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.",
       );
+      expect(html.match(/\[object Object\]/g) ?? []).toHaveLength(0);
     });
   },
 );

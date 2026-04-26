@@ -12,8 +12,7 @@ use crate::transform::runtime_component::{
     convert_jsx_named_attribute, copy_span, find_first_named_descendant, find_node_by_span,
     first_named_child, jsx_attribute_name_node, jsx_attribute_value_node, key_name,
     lowerable_object_expression_node, push_anchor_mapped, push_copied_span, source_slice,
-    spread_argument_node, spread_element_node, spread_prefix_start, translated_span,
-    validate_runtime_placeholder_key,
+    spread_argument_node, spread_element_node, translated_span, validate_runtime_placeholder_key,
 };
 use crate::transform::{RuntimeWarningMode, TransformTarget};
 
@@ -126,8 +125,6 @@ fn convert_runtime_trans_root(
                     .ok_or(RuntimeComponentError::ExpectedSpreadElementInJsxSpreadAttribute)?;
 
                 if let Some(object) = lowerable_object_expression_node(argument) {
-                    let spread_span = translated_span(spread, base_offset)?;
-                    let object_span = translated_span(object, base_offset)?;
                     let lowered = lower_object_expression_node(
                         context,
                         object,
@@ -135,33 +132,9 @@ fn convert_runtime_trans_root(
                         0,
                         runtime_warning_mode,
                     )?;
-                    attributes.push_unmapped(" {...");
-                    let prefix_start =
-                        spread_prefix_start(context.source.text(), spread_span, object_span)?;
-                    let prefix_trimmed_start = context.source.text()
-                        [prefix_start..object_span.start]
-                        .find(|char: char| !char.is_ascii_whitespace())
-                        .map(|offset| prefix_start + offset);
-                    if let Some(prefix_trimmed_start) = prefix_trimmed_start {
-                        push_copied_span(
-                            &mut attributes,
-                            context.input,
-                            Span::new(prefix_trimmed_start, object_span.start),
-                        )?;
-                    }
+                    attributes.push_unmapped(" {...(/*i18n*/ ");
                     append_rendered(&mut attributes, lowered.props);
-                    let suffix_trimmed_end = context.source.text()
-                        [object_span.end..spread_span.end]
-                        .rfind(|char: char| !char.is_ascii_whitespace())
-                        .map(|offset| object_span.end + offset + 1);
-                    if let Some(suffix_trimmed_end) = suffix_trimmed_end {
-                        push_copied_span(
-                            &mut attributes,
-                            context.input,
-                            Span::new(object_span.end, suffix_trimmed_end),
-                        )?;
-                    }
-                    attributes.push_unmapped("}");
+                    attributes.push_unmapped(")}");
                     slot_callbacks.extend(lowered.slot_callbacks);
                     placeholder_keys.extend(lowered.placeholder_keys);
                     continue;
@@ -234,7 +207,23 @@ fn convert_runtime_trans_root(
             context.declaration_source_map,
             context.source,
             context.original_source,
-            " />",
+            "></",
+            root_span.end,
+        );
+        push_anchor_mapped(
+            &mut mapped,
+            context.declaration_source_map,
+            context.source,
+            context.original_source,
+            context.runtime_component_name,
+            root_span.end,
+        );
+        push_anchor_mapped(
+            &mut mapped,
+            context.declaration_source_map,
+            context.source,
+            context.original_source,
+            ">",
             root_span.end,
         );
     } else {
@@ -348,7 +337,6 @@ fn convert_object_expression(
                     placeholder_keys.extend(component_slots.placeholder_keys);
                     continue;
                 }
-
                 if wrote_entry {
                     rendered.push_unmapped(",\n");
                 } else {
@@ -654,9 +642,100 @@ fn collect_runtime_component_wrappers<'a>(
             "comment" => {
                 wrappers.push(child);
             }
+            "html_interpolation" => {
+                if is_rich_node_expression_interpolation(source, child) {
+                    wrappers.push(child);
+                } else {
+                    collect_runtime_component_wrappers(child, source, fragment_mode, wrappers);
+                }
+            }
             _ => collect_runtime_component_wrappers(child, source, fragment_mode, wrappers),
         }
     }
+}
+
+fn is_rich_node_expression_interpolation(source: &str, node: Node<'_>) -> bool {
+    if node.kind() != "html_interpolation" {
+        return false;
+    }
+
+    let inner = Span::new(node.start_byte() + 1, node.end_byte().saturating_sub(1));
+    let children = named_children_in_span(source, node, inner);
+
+    !is_comment_only_interpolation(&children)
+        && !is_single_root_interpolation(source, inner, &children)
+        && fragment_root_tag_pair(source, inner, &children).is_none()
+        && children.iter().any(|child| contains_rich_node(*child))
+}
+
+fn named_children_in_span<'a>(source: &str, node: Node<'a>, span: Span) -> Vec<Node<'a>> {
+    node.named_children(&mut node.walk())
+        .filter(|child| child.end_byte() > span.start && child.start_byte() < span.end)
+        .filter(|child| {
+            !matches!(child.kind(), "text" | "permissible_text" | "raw_text")
+                || !span_text(source, Span::from_node(*child)).trim().is_empty()
+        })
+        .collect()
+}
+
+fn is_comment_only_interpolation(children: &[Node<'_>]) -> bool {
+    !children.is_empty() && children.iter().all(|child| child.kind() == "comment")
+}
+
+fn is_single_root_interpolation(source: &str, inner: Span, children: &[Node<'_>]) -> bool {
+    let [root] = children else {
+        return false;
+    };
+    if !matches!(root.kind(), "element" | "self_closing_tag") {
+        return false;
+    }
+
+    span_text(source, Span::new(inner.start, root.start_byte()))
+        .trim()
+        .is_empty()
+        && span_text(source, Span::new(root.end_byte(), inner.end))
+            .trim()
+            .is_empty()
+}
+
+fn fragment_root_tag_pair<'a>(
+    source: &str,
+    inner: Span,
+    children: &[Node<'a>],
+) -> Option<(Node<'a>, Node<'a>)> {
+    let start_tag = children.first().copied()?;
+    let end_tag = children.last().copied()?;
+    if start_tag.kind() != "start_tag"
+        || end_tag.kind() != "end_tag"
+        || tag_node_name(source, start_tag).is_some()
+        || tag_node_name(source, end_tag).is_some()
+    {
+        return None;
+    }
+
+    if !span_text(source, Span::new(inner.start, start_tag.start_byte()))
+        .trim()
+        .is_empty()
+        || !span_text(source, Span::new(end_tag.end_byte(), inner.end))
+            .trim()
+            .is_empty()
+    {
+        return None;
+    }
+
+    Some((start_tag, end_tag))
+}
+
+fn contains_rich_node(node: Node<'_>) -> bool {
+    if matches!(
+        node.kind(),
+        "element" | "self_closing_tag" | "comment" | "start_tag" | "end_tag"
+    ) {
+        return true;
+    }
+
+    node.named_children(&mut node.walk())
+        .any(contains_rich_node)
 }
 
 fn is_fragment_wrapper(source: &str, node: Node<'_>) -> bool {
@@ -711,6 +790,23 @@ fn lower_original_wrapper_to_slot_callback(
     let indexed_source = IndexedText::new(source);
     let mut rendered = input.empty_like();
     let has_content_hole = has_content_hole(source, node);
+    if matches!(node.kind(), "comment" | "html_interpolation") {
+        push_original_anchor(
+            &mut rendered,
+            &indexed_source,
+            &format!("<fragment slot=\"{slot_name}\">"),
+            node.start_byte(),
+        );
+        push_copied_span(&mut rendered, input, Span::from_node(node))?;
+        push_original_anchor(
+            &mut rendered,
+            &indexed_source,
+            "</fragment>",
+            node.end_byte(),
+        );
+        return rendered.into_rendered().map_err(Into::into);
+    }
+
     push_original_anchor(
         &mut rendered,
         &indexed_source,
@@ -781,9 +877,6 @@ fn lower_original_wrapper_to_slot_callback(
                 node,
                 node,
             )?;
-        }
-        "comment" => {
-            push_copied_span(&mut rendered, input, Span::from_node(node))?;
         }
         _ => return Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into()),
     }
@@ -977,10 +1070,10 @@ mod tests {
         assert_eq!(
             lowered.code,
             indoc! {r#"
-                <L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {
+                <L4aRuntimeTrans placeholders={["0"]} {...(/*i18n*/ {
                   id: "demo.docs",
                   message: "Read the <0>docs</0>."
-                }}>
+                })}>
                 <fragment slot="component_0">{(children) => <a href="/docs"><Fragment set:html={children} /></a>}</fragment>
                 </L4aRuntimeTrans>
             "#}
@@ -1014,10 +1107,10 @@ mod tests {
         assert_eq!(
             lowered.code,
             indoc! {r#"
-                <L4aRuntimeTrans placeholders={["0", "1"]} {.../*i18n*/ {
+                <L4aRuntimeTrans placeholders={["0", "1"]} {...(/*i18n*/ {
                   id: "demo.docs",
                   message: "Read <0><1>carefully</1></0>."
-                }}>
+                })}>
                 <fragment slot="component_0">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>
                 <fragment slot="component_1">{(children) => <DocLink href="/docs"><Fragment set:html={children} /></DocLink>}</fragment>
                 </L4aRuntimeTrans>

@@ -55,8 +55,14 @@ pub(super) fn component_candidate_from_element(
         return Ok(None);
     };
     validate_runtime_lowerable_astro_component(source, node, options)?;
-    let normalization_edits =
-        collect_component_normalization_edits(source, node, imports, options, context)?;
+    let normalization_edits = collect_component_normalization_edits(
+        source,
+        node,
+        imports,
+        options,
+        context,
+        import_decl.imported_name.as_str(),
+    )?;
 
     Ok(Some(AstroTemplateComponent {
         candidate: MacroCandidate {
@@ -87,10 +93,15 @@ fn collect_component_normalization_edits(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
     context: &mut AstroCollectContext,
+    imported_name: &str,
 ) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
     let mut edits =
         collect_nested_component_normalization_edits(source, node, imports, options, context)?;
-    edits.extend(component_astro_child_normalization_edits(source, node));
+    edits.extend(component_astro_child_normalization_edits(
+        source,
+        node,
+        imported_name,
+    ));
     edits.extend(component_whitespace_edits(source, node, options));
     sort_and_dedup_normalization_edits(&mut edits);
     Ok(edits)
@@ -179,6 +190,7 @@ fn parse_and_collect_macros(
 fn component_astro_child_normalization_edits(
     source: &str,
     node: Node<'_>,
+    imported_name: &str,
 ) -> Vec<NormalizationEdit> {
     let mut edits = Vec::new();
     let mut cursor = node.walk();
@@ -188,9 +200,14 @@ fn component_astro_child_normalization_edits(
             "start_tag" | "self_closing_tag" | "end_tag" => {}
             "comment" => replace_with_astro_comment_marker(child, &mut edits),
             "html_interpolation" => {
-                append_html_interpolation_child_normalization_edits(source, child, &mut edits);
+                append_html_interpolation_child_normalization_edits(
+                    source,
+                    child,
+                    imported_name,
+                    &mut edits,
+                );
             }
-            _ => {}
+            _ => append_comment_marker_replacements(child, &mut edits),
         }
     }
 
@@ -200,6 +217,7 @@ fn component_astro_child_normalization_edits(
 fn append_html_interpolation_child_normalization_edits(
     source: &str,
     node: Node<'_>,
+    imported_name: &str,
     edits: &mut Vec<NormalizationEdit>,
 ) {
     let inner = inner_range_from_delimiters(node, 1, 1);
@@ -247,7 +265,37 @@ fn append_html_interpolation_child_normalization_edits(
         return;
     }
 
+    if imported_name == "Trans" && is_rich_node_expression_interpolation(&children) {
+        // Keep node-bearing Astro expressions as one rich placeholder. The
+        // runtime adapter restores the original expression as the matching
+        // static slot, so nested nodes are not extracted here.
+        replace_span_with_text(
+            Span::from_node(node),
+            LeanString::from_static_str("<Fragment />"),
+            edits,
+        );
+        return;
+    }
+
     append_comment_expression_normalization_edits(&children, edits);
+}
+
+fn is_rich_node_expression_interpolation(children: &[Node<'_>]) -> bool {
+    children
+        .iter()
+        .any(|child| contains_rich_node_expression_child(*child))
+}
+
+fn contains_rich_node_expression_child(node: Node<'_>) -> bool {
+    if matches!(
+        node.kind(),
+        "element" | "self_closing_tag" | "comment" | "start_tag" | "end_tag"
+    ) {
+        return true;
+    }
+
+    node.named_children(&mut node.walk())
+        .any(contains_rich_node_expression_child)
 }
 
 fn append_comment_expression_normalization_edits(

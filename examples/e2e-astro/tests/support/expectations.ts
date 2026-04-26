@@ -36,8 +36,8 @@ const httpRouteExpectations: readonly HttpRouteExpectation[] = [
       ja: [
         "Lingui Astro マルチページプレイグラウンド",
         "1 つの Astro アプリで複数の翻訳チェックポイントを確認します",
-        "Astro interpolation edge cases",
-        "Astro framework interpolation behavior",
+        "Astro interpolation のエッジケース",
+        "Astro framework interpolation の挙動",
         "現在のページ: 概要",
         "サーバーロケール: 日本語",
       ],

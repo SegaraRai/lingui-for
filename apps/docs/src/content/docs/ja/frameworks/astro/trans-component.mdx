@@ -17,6 +17,42 @@ Astro の `Trans` は、JSX 専用の形に留まらず、ネイティブな Ast
 - `set:html`
 - `set:text`
 
+## Astro 補間式
+
+`Trans` は、HTML 要素、フラグメント、HTML コメントを含む Astro 補間式を保持できます。
+
+<!-- prettier-ignore -->
+```astro
+---
+import { Trans } from "lingui-for-astro/macro";
+
+const showDetails = true;
+---
+
+<Trans>{showDetails ? <span>Details</span> : <!-- details hidden -->}</Trans>
+<Trans>{<><span data-marker="section" /><span>Details</span></>}</Trans>
+```
+
+これらの式は 1 つのリッチテキストプレースホルダーとして扱われます。
+実行時には、そのプレースホルダーが元の Astro 式を Astro マークアップとして描画します。
+
+外側の `Trans` は、この保持された式の内側にあるテキストを追加で抽出しません。
+条件分岐の中のテキストも翻訳したい場合は、分岐の中で `t` を使ってください。
+
+<!-- prettier-ignore -->
+```astro
+---
+import { Trans, t } from "lingui-for-astro/macro";
+
+const showDetails = true;
+---
+
+<Trans>{showDetails ? <span>{t`Details`}</span> : <span aria-hidden="true" />}</Trans>
+```
+
+入れ子の `Trans` はサポートされません。
+外側の `Trans` は子ノードを含む式全体を 1 つのリッチテキストプレースホルダーとして扱うため、式の内側で翻訳が必要なテキストには `t` を使ってください。
+
 ## まだサポートされないもの
 
 一部の Astro 構文は、実行時のリッチテキストレンダリングと衝突するため、意図的に拒否されます。

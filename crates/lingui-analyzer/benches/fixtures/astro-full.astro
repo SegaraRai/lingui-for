@@ -895,9 +895,23 @@ function rowTone(state: DecisionRow["state"]): string {
           Fixture message after a Trans-wrapped HTML comment interpolation.
         </Trans>
         <Trans>
-          {useCommentBranch ? <!-- fixture-trans-wrapped-html-comment-branch --> : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>}
+          {
+            useCommentBranch
+              ? <!-- fixture-trans-wrapped-html-comment-branch -->
+              : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>
+          }
           Fixture message after a conditional Astro HTML comment.
         </Trans>
+        {
+          useCommentBranch
+            ? <Trans>Fixture translated Trans consequent branch inside an Astro interpolation.</Trans>
+            : <!-- fixture-trans-right-html-comment-branch -->
+        }
+        {
+          !useCommentBranch
+            ? <!-- fixture-trans-left-html-comment-branch -->
+            : <Trans>Fixture translated Trans alternate branch inside an Astro interpolation.</Trans>
+        }
         <Trans>
           Fixture message before a Trans-wrapped JavaScript comment interpolation.
           {/* fixture-trans-wrapped-js-comment-only-between-messages */}

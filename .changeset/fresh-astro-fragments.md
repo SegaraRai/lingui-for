@@ -3,10 +3,10 @@
 "lingui-for-astro": patch
 ---
 
-Fix Astro message extraction and transform output for interpolation markup.
+Fix Astro interpolation markup in translated content.
 
-Translated messages are now preserved when they appear inside Astro interpolation markup, including fragment-wrapped markup such as ``{<><span>{t`First`}</span><span>{t`Second`}</span></>}``. `Trans` components that wrap interpolation markup now preserve the rich-text placeholder structure instead of collapsing the whole interpolation to a single `{0}` placeholder.
+Messages are now preserved when they appear inside Astro interpolation markup, including fragment-wrapped markup such as ``{<><span>{t`First`}</span><span>{t`Second`}</span></>}``. HTML comments inside Astro interpolation markup no longer cause neighboring messages to be skipped during extraction or leave invalid comment expressions in transformed output.
 
-Astro fragments and HTML comments inside translated interpolation markup are treated as rich-text placeholders, so they can be carried through extraction and transform output consistently. This also prevents comment-only interpolations from causing neighboring messages to be skipped during extraction or leaving invalid comment expressions in transformed output.
+`Trans` in Astro now also preserves interpolation expressions that contain elements, fragments, or HTML comments. These expressions are carried as rich-text placeholders and restored as Astro markup at runtime.
 
-Internally, Astro interpolation analysis now keeps the relationship between generated expression roots and their original markup instead of relying on placeholder order.
+This is intentionally a minimal adapter behavior: the outer `Trans` does not recursively extract text or nested `Trans` components inside those preserved expressions. If a conditional branch inside an outer `Trans` contains user-facing text that should be translated, use `t` inside that branch.

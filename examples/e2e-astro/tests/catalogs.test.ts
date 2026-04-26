@@ -74,13 +74,13 @@ describe("lingui extract and compile outputs", () => {
       "Translated consequent element before an unselected HTML comment alternate.",
     );
     expect(enPo).toContain(
+      "Translated alternate Trans branch after an unselected HTML comment consequent.",
+    );
+    expect(enPo).toContain(
+      "Translated consequent Trans branch before an unselected HTML comment alternate.",
+    );
+    expect(enPo).toContain(
       "Message after a selected HTML comment alternate branch.",
-    );
-    expect(enPo).toContain(
-      "<0>Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.</0>",
-    );
-    expect(enPo).toContain(
-      "<0>Trans consequent element before an unselected HTML comment alternate outside an Astro interpolation.</0>",
     );
     expect(enPo).toContain(
       "Plain Trans component message on the interpolation page.",
@@ -92,16 +92,16 @@ describe("lingui extract and compile outputs", () => {
       "Trans-wrapped single root outside an Astro interpolation.",
     );
     expect(enPo).toContain(
-      "<0>Trans-wrapped first fragment child outside an Astro interpolation.</0><1>Trans-wrapped second fragment child outside an Astro interpolation.</1>",
+      "<0><1>Trans-wrapped first fragment child outside an Astro interpolation.</1><2>Trans-wrapped second fragment child outside an Astro interpolation.</2></0>",
     );
     expect(enPo).toContain(
-      "<0>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</0><1>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</1>",
+      "<0><1/><2>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</3></0>",
     );
     expect(enPo).toContain(
       "Trans-wrapped message before a JavaScript comment outside an Astro interpolation.  Trans-wrapped message after a JavaScript comment outside an Astro interpolation.",
     );
     expect(enPo).toContain(
-      "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation.  Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation.",
+      "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation.",
     );
     expect(enPo).toContain(
       "Trans component rendered from inside an Astro interpolation.",
@@ -110,25 +110,25 @@ describe("lingui extract and compile outputs", () => {
       "Trans-wrapped plain expression inside an Astro interpolation.",
     );
     expect(enPo).toContain(
-      "Trans-wrapped single root inside an Astro interpolation.",
+      "<0>Trans-wrapped single root inside an Astro interpolation.</0>",
     );
     expect(enPo).toContain(
-      "<0>Trans-wrapped first fragment child inside an Astro interpolation.</0><1>Trans-wrapped second fragment child inside an Astro interpolation.</1>",
+      "<0><1>Trans-wrapped first fragment child inside an Astro interpolation.</1><2>Trans-wrapped second fragment child inside an Astro interpolation.</2></0>",
     );
     expect(enPo).toContain(
-      "<0>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</0><1>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</1>",
+      "<0><1/><2>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</3></0>",
     );
     expect(enPo).toContain(
       "Trans-wrapped message before a JavaScript comment inside an Astro interpolation.  Trans-wrapped message after a JavaScript comment inside an Astro interpolation.",
     );
     expect(enPo).toContain(
-      "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation.  Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation.",
+      "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation.",
     );
     expect(enPo).toContain(
-      "<0>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</0>",
+      "Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.",
     );
     expect(enPo).toContain(
-      "<0>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</0>",
+      "Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.",
     );
   });
 

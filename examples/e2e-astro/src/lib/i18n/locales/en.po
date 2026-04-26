@@ -64,16 +64,6 @@ msgstr "{0, selectordinal, one {React finished #st.} two {React finished #nd.} f
 msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 msgstr "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 
-#. placeholder {0}: falseBranch ? <__astro_cm /> : <span>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</span>
-#. placeholder {0}: falseBranch ? <__astro_cm /> : <span>Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.</span>
-#. placeholder {0}: trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</span> : <__astro_cm />
-#: src/pages/interpolation.astro:107
-#: src/pages/interpolation.astro:110
-#: src/pages/interpolation.astro:152
-#: src/pages/interpolation.astro:157
-msgid "{0}"
-msgstr "{0}"
-
 #. placeholder {0}: _i18n._( /*i18n*/ { id: "SMt/JO", message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}", values: { rank: rank, role: role } })
 #. placeholder {1}: _i18n._( /*i18n*/ { id: "IN7jEl", message: "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}", values: { rank: rank, role: role } })
 #. placeholder {2}: _i18n._( /*i18n*/ { id: "MTuVZ1", message: "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}", values: { rank: rank, role: role } })
@@ -119,19 +109,26 @@ msgstr "{rank, selectordinal, =1 {{role, select, admin {component zero first adm
 msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 msgstr "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 
-#: src/pages/interpolation.astro:127
+#: src/pages/interpolation.astro:109
+#: src/pages/interpolation.astro:112
+#: src/pages/interpolation.astro:160
+#: src/pages/interpolation.astro:165
+msgid "<0/>"
+msgstr "<0/>"
+
+#: src/pages/interpolation.astro:129
 msgid "<0><1/><2>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</3></0>"
 msgstr "<0><1/><2>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</3></0>"
 
-#: src/pages/interpolation.astro:88
+#: src/pages/interpolation.astro:90
 msgid "<0><1/><2>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</3></0>"
 msgstr "<0><1/><2>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</3></0>"
 
-#: src/pages/interpolation.astro:117
+#: src/pages/interpolation.astro:119
 msgid "<0><1>Trans-wrapped first fragment child inside an Astro interpolation.</1><2>Trans-wrapped second fragment child inside an Astro interpolation.</2></0>"
 msgstr "<0><1>Trans-wrapped first fragment child inside an Astro interpolation.</1><2>Trans-wrapped second fragment child inside an Astro interpolation.</2></0>"
 
-#: src/pages/interpolation.astro:80
+#: src/pages/interpolation.astro:82
 msgid "<0><1>Trans-wrapped first fragment child outside an Astro interpolation.</1><2>Trans-wrapped second fragment child outside an Astro interpolation.</2></0>"
 msgstr "<0><1>Trans-wrapped first fragment child outside an Astro interpolation.</1><2>Trans-wrapped second fragment child outside an Astro interpolation.</2></0>"
 
@@ -141,11 +138,11 @@ msgstr "<0><1>Trans-wrapped first fragment child outside an Astro interpolation.
 msgid "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
 msgstr "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
 
-#: src/pages/interpolation.astro:115
+#: src/pages/interpolation.astro:117
 msgid "<0>Trans-wrapped single root inside an Astro interpolation.</0>"
 msgstr "<0>Trans-wrapped single root inside an Astro interpolation.</0>"
 
-#: src/pages/interpolation.astro:79
+#: src/pages/interpolation.astro:81
 msgid "<0>Trans-wrapped single root outside an Astro interpolation.</0>"
 msgstr "<0>Trans-wrapped single root outside an Astro interpolation.</0>"
 
@@ -432,7 +429,7 @@ msgstr "Macro stress page"
 msgid "Message after a JavaScript comment interpolation."
 msgstr "Message after a JavaScript comment interpolation."
 
-#: src/pages/interpolation.astro:70
+#: src/pages/interpolation.astro:72
 msgid "Message after a selected HTML comment alternate branch."
 msgstr "Message after a selected HTML comment alternate branch."
 
@@ -519,7 +516,7 @@ msgstr "Persisted-props React island"
 msgid "Persisted-props Svelte island"
 msgstr "Persisted-props Svelte island"
 
-#: src/pages/interpolation.astro:77
+#: src/pages/interpolation.astro:79
 msgid "Plain Trans component message on the interpolation page."
 msgstr "Plain Trans component message on the interpolation page."
 
@@ -805,35 +802,43 @@ msgstr "This Svelte island uses transition:persist and transition:persist-props,
 msgid "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
 msgstr "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
 
-#: src/pages/interpolation.astro:76
+#: src/pages/interpolation.astro:154
+msgid "Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation."
+msgstr "Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation."
+
+#: src/pages/interpolation.astro:78
 msgid "Trans component baseline"
 msgstr "Trans component baseline"
 
-#: src/pages/interpolation.astro:113
+#: src/pages/interpolation.astro:115
 msgid "Trans component rendered from inside an Astro interpolation."
 msgstr "Trans component rendered from inside an Astro interpolation."
 
-#: src/pages/interpolation.astro:138
+#: src/pages/interpolation.astro:157
+msgid "Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation."
+msgstr "Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation."
+
+#: src/pages/interpolation.astro:140
 msgid "Trans-wrapped message before a JavaScript comment inside an Astro interpolation.  Trans-wrapped message after a JavaScript comment inside an Astro interpolation."
 msgstr "Trans-wrapped message before a JavaScript comment inside an Astro interpolation.  Trans-wrapped message after a JavaScript comment inside an Astro interpolation."
 
-#: src/pages/interpolation.astro:97
+#: src/pages/interpolation.astro:99
 msgid "Trans-wrapped message before a JavaScript comment outside an Astro interpolation.  Trans-wrapped message after a JavaScript comment outside an Astro interpolation."
 msgstr "Trans-wrapped message before a JavaScript comment outside an Astro interpolation.  Trans-wrapped message after a JavaScript comment outside an Astro interpolation."
 
-#: src/pages/interpolation.astro:145
+#: src/pages/interpolation.astro:147
 msgid "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation."
 msgstr "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation."
 
-#: src/pages/interpolation.astro:102
+#: src/pages/interpolation.astro:104
 msgid "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation."
 msgstr "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation."
 
-#: src/pages/interpolation.astro:114
+#: src/pages/interpolation.astro:116
 msgid "Trans-wrapped plain expression inside an Astro interpolation."
 msgstr "Trans-wrapped plain expression inside an Astro interpolation."
 
-#: src/pages/interpolation.astro:78
+#: src/pages/interpolation.astro:80
 msgid "Trans-wrapped plain expression outside an Astro interpolation."
 msgstr "Trans-wrapped plain expression outside an Astro interpolation."
 
@@ -868,9 +873,17 @@ msgstr "Transitions page"
 msgid "Translated alternate element after an unselected HTML comment consequent."
 msgstr "Translated alternate element after an unselected HTML comment consequent."
 
+#: src/pages/interpolation.astro:69
+msgid "Translated alternate Trans branch after an unselected HTML comment consequent."
+msgstr "Translated alternate Trans branch after an unselected HTML comment consequent."
+
 #: src/pages/interpolation.astro:68
 msgid "Translated consequent element before an unselected HTML comment alternate."
 msgstr "Translated consequent element before an unselected HTML comment alternate."
+
+#: src/pages/interpolation.astro:70
+msgid "Translated consequent Trans branch before an unselected HTML comment alternate."
+msgstr "Translated consequent Trans branch before an unselected HTML comment alternate."
 
 #: src/components/astro/AstroRichText.astro:37
 #: src/components/svelte/SvelteRichTextIsland.svelte:43

@@ -464,19 +464,31 @@ const __lf_59 = <_Trans {...
 const __lf_60 = <_Trans {...
 /*i18n*/
 {
-  id: "0tE8NX",
-  message: "{0} Fixture message after a conditional Astro HTML comment.",
-  values: {
-    0: useCommentBranch ? <__astro_cm /> : <span>Fixture fallback branch inside a Trans-wrapped Astro interpolation.</span>
+  id: "Em/oYy",
+  message: "<0/> Fixture message after a conditional Astro HTML comment.",
+  components: {
+    0: <Fragment />
   }
 }} />;
 const __lf_61 = <_Trans {...
 /*i18n*/
 {
+  id: "0zpEy9",
+  message: "Fixture translated Trans consequent branch inside an Astro interpolation."
+}} />;
+const __lf_62 = <_Trans {...
+/*i18n*/
+{
+  id: "HHKN6Z",
+  message: "Fixture translated Trans alternate branch inside an Astro interpolation."
+}} />;
+const __lf_63 = <_Trans {...
+/*i18n*/
+{
   id: "O5ta/s",
   message: "Fixture message before a Trans-wrapped JavaScript comment interpolation.  Fixture message after a Trans-wrapped JavaScript comment interpolation."
 }} />;
-const __lf_62 = <_Trans {...
+const __lf_64 = <_Trans {...
 /*i18n*/
 {
   id: "domltM",
@@ -487,13 +499,13 @@ const __lf_62 = <_Trans {...
     2: <p />
   }
 }} />;
-const __lf_63 = __l4a_i18n._(
+const __lf_65 = __l4a_i18n._(
 /*i18n*/
 {
   id: "RDy8BL",
   message: "Reviewer notes"
 });
-const __lf_64 = __l4a_i18n._(
+const __lf_66 = __l4a_i18n._(
 /*i18n*/
 {
   id: "CNkP4q",
@@ -502,13 +514,13 @@ const __lf_64 = __l4a_i18n._(
     0: String(activity.length)
   }
 });
-const __lf_65 = __l4a_i18n._(
+const __lf_67 = __l4a_i18n._(
 /*i18n*/
 {
   id: "JpH47+",
   message: "These notes mirror the kind of mixed script and template content that the transform benchmark should exercise."
 });
-const __lf_66 = __l4a_i18n._(
+const __lf_68 = __l4a_i18n._(
 /*i18n*/
 {
   id: "AzV+h+",
@@ -517,7 +529,7 @@ const __lf_66 = __l4a_i18n._(
     0: String(index + 1)
   }
 });
-const __lf_67 = __l4a_i18n._(
+const __lf_69 = __l4a_i18n._(
 /*i18n*/
 {
   id: "wXh6Ku",
@@ -530,7 +542,7 @@ const __lf_67 = __l4a_i18n._(
     4: String(item.unread)
   }
 });
-const __lf_68 = __l4a_i18n._(
+const __lf_70 = __l4a_i18n._(
 /*i18n*/
 {
   id: "e3ghLa",
