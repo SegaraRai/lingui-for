@@ -209,7 +209,7 @@ fn collect_normalization_operations(
                 let start = span.start.clamp(outer_start, outer_end);
                 let end = span.end.clamp(outer_start, outer_end);
                 if start < end {
-                    strips.push(Span::new(start, end));
+                    strips.push(Span::new_unchecked(start, end));
                 }
             }
             NormalizationEdit::Insert { at, text } => {
@@ -271,7 +271,7 @@ fn append_normalized_chunk(
             .filter(|(at, _)| *at > cursor && *at < end)
             .map(|(at, _)| *at)
             .unwrap_or(end);
-        let span = Span::new(cursor, next_insertion);
+        let span = Span::new_unchecked(cursor, next_insertion);
         if let Some(chunk) = context.source.text().get(span.start..span.end)
             && !chunk.is_empty()
         {
@@ -386,7 +386,7 @@ mod tests {
         let outer_start = "prefix<".len();
         let outer_end = outer_start + "VALUE".len();
         let candidate = candidate(
-            Span::new(outer_start, outer_end),
+            Span::new_unchecked(outer_start, outer_end),
             vec![
                 NormalizationEdit::Insert {
                     at: outer_start,
@@ -416,10 +416,10 @@ mod tests {
     fn applies_insertions_adjacent_to_deleted_ranges() {
         let source = ls("abcde");
         let candidate = candidate(
-            Span::new(0, source.len()),
+            Span::new_unchecked(0, source.len()),
             vec![
                 NormalizationEdit::Delete {
-                    span: Span::new(1, 3),
+                    span: Span::new_unchecked(1, 3),
                 },
                 NormalizationEdit::Insert {
                     at: 1,
@@ -458,9 +458,9 @@ mod tests {
         let outer_start = "XX".len();
         let outer_end = outer_start + "abcde".len();
         let candidate = candidate(
-            Span::new(outer_start, outer_end),
+            Span::new_unchecked(outer_start, outer_end),
             vec![NormalizationEdit::Delete {
-                span: Span::new(0, source.len()),
+                span: Span::new_unchecked(0, source.len()),
             }],
         );
 
@@ -477,14 +477,17 @@ mod tests {
         let outer_text = "😀\r\nBé";
         let outer_end = outer_start + outer_text.len();
         let candidate = candidate(
-            Span::new(outer_start, outer_end),
+            Span::new_unchecked(outer_start, outer_end),
             vec![
                 NormalizationEdit::Insert {
                     at: outer_start,
                     text: LeanString::from_static_str("<"),
                 },
                 NormalizationEdit::Delete {
-                    span: Span::new(outer_start + "😀".len(), outer_start + "😀\r\n".len()),
+                    span: Span::new_unchecked(
+                        outer_start + "😀".len(),
+                        outer_start + "😀\r\n".len(),
+                    ),
                 },
                 NormalizationEdit::Insert {
                     at: outer_end,
@@ -523,10 +526,10 @@ mod tests {
                 imported_name: LeanString::from_static_str("t"),
                 local_name: LeanString::from_static_str("t"),
                 flavor: MacroFlavor::Direct,
-                outer_span: Span::new(0, source.len()),
-                normalized_span: Span::new(0, source.len()),
+                outer_span: Span::new_unchecked(0, source.len()),
+                normalized_span: Span::new_unchecked(0, source.len()),
                 normalization_edits: vec![NormalizationEdit::Delete {
-                    span: Span::new(1, 3),
+                    span: Span::new_unchecked(1, 3),
                 }],
                 source_map_anchor: None,
                 owner_id: None,
@@ -539,15 +542,15 @@ mod tests {
                 imported_name: LeanString::from_static_str("t"),
                 local_name: LeanString::from_static_str("t"),
                 flavor: MacroFlavor::Direct,
-                outer_span: Span::new(0, source.len()),
-                normalized_span: Span::new(0, source.len()),
+                outer_span: Span::new_unchecked(0, source.len()),
+                normalized_span: Span::new_unchecked(0, source.len()),
                 normalization_edits: vec![
                     NormalizationEdit::Insert {
                         at: 3,
                         text: LeanString::from_static_str("[]"),
                     },
                     NormalizationEdit::Delete {
-                        span: Span::new(3, 5),
+                        span: Span::new_unchecked(3, 5),
                     },
                 ],
                 source_map_anchor: None,
@@ -589,14 +592,17 @@ mod tests {
         let outer_start = "prefix<".len();
         let outer_end = outer_start + "A😀\r\nBéZ".len();
         let candidate = candidate(
-            Span::new(outer_start, outer_end),
+            Span::new_unchecked(outer_start, outer_end),
             vec![
                 NormalizationEdit::Insert {
                     at: outer_start,
                     text: LeanString::from_static_str("("),
                 },
                 NormalizationEdit::Delete {
-                    span: Span::new(outer_start + "A".len(), outer_start + "A😀\r\n".len()),
+                    span: Span::new_unchecked(
+                        outer_start + "A".len(),
+                        outer_start + "A😀\r\n".len(),
+                    ),
                 },
                 NormalizationEdit::Insert {
                     at: outer_start + "A😀\r\n".len(),

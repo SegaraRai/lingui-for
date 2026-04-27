@@ -1,7 +1,7 @@
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::{Span, is_component_tag_name, node_text, span_text};
+use crate::common::{InvalidSpan, Span, is_component_tag_name, node_text, span_text};
 use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
 
 #[derive(thiserror::Error, Debug)]
@@ -12,6 +12,8 @@ pub enum AstroIrError {
     ExpectedHtmlInterpolation,
     #[error("missing Astro tag name while lowering interpolation")]
     MissingTagName,
+    #[error(transparent)]
+    InvalidSpan(#[from] InvalidSpan),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -48,7 +50,7 @@ impl BundledAstroHtmlInterpolation {
     pub fn remap_generated_span(&self, span: Span) -> Option<Span> {
         let start = self.remap_generated_offset(span.start, false)?;
         let end = self.remap_generated_offset(span.end, true)?;
-        Some(Span::new(start, end.max(start)))
+        Span::new(start, end).ok()
     }
 
     fn remap_generated_offset(&self, offset: usize, allow_end_boundary: bool) -> Option<usize> {
@@ -158,7 +160,7 @@ pub fn bundle_html_interpolations(
             declaration_id,
             outer_span: interpolation.outer_span,
             inner_span: interpolation.inner_span,
-            synthetic_span: Span::new(synthetic_start, synthetic_end),
+            synthetic_span: Span::new_unchecked(synthetic_start, synthetic_end),
             segments: interpolation
                 .segments
                 .iter()
@@ -229,7 +231,7 @@ fn lower_interpolation_expression(
     let mut cursor = inner_span.start;
     for child in &children {
         if cursor < child.start_byte() {
-            builder.push_original(source, Span::new(cursor, child.start_byte()));
+            builder.push_original(source, Span::new_unchecked(cursor, child.start_byte()));
         }
         if child.kind() == "comment" {
             builder.push_inserted("__astro_cm");
@@ -240,7 +242,7 @@ fn lower_interpolation_expression(
     }
 
     if cursor < inner_span.end {
-        builder.push_original(source, Span::new(cursor, inner_span.end));
+        builder.push_original(source, Span::new_unchecked(cursor, inner_span.end));
     }
 
     let lowered = builder.finish();
@@ -257,7 +259,7 @@ fn lower_interpolation_expression(
             segments: Vec::new(),
         });
     }
-    let trimmed_segments = trim_segments(&lowered.code, lowered.segments);
+    let trimmed_segments = trim_segments(&lowered.code, lowered.segments)?;
     Ok(LoweredNode {
         code: trimmed_code,
         segments: trimmed_segments,
@@ -277,7 +279,7 @@ fn is_interpolation_root_list(source: &str, inner_span: Span, children: &[Node<'
 
     let mut cursor = inner_span.start;
     for child in children {
-        if !span_text(source, Span::new(cursor, child.start_byte()))
+        if !span_text(source, Span::new_unchecked(cursor, child.start_byte()))
             .trim()
             .is_empty()
         {
@@ -286,7 +288,7 @@ fn is_interpolation_root_list(source: &str, inner_span: Span, children: &[Node<'
         cursor = child.end_byte();
     }
 
-    span_text(source, Span::new(cursor, inner_span.end))
+    span_text(source, Span::new_unchecked(cursor, inner_span.end))
         .trim()
         .is_empty()
 }
@@ -350,7 +352,10 @@ fn lowered_code_has_expression_root(code: &str) -> Result<bool, AstroIrError> {
     Ok(false)
 }
 
-fn trim_segments(raw_code: &str, segments: Vec<AstroIrSegment>) -> Vec<AstroIrSegment> {
+fn trim_segments(
+    raw_code: &str,
+    segments: Vec<AstroIrSegment>,
+) -> Result<Vec<AstroIrSegment>, AstroIrError> {
     let leading_trim = raw_code.len().saturating_sub(raw_code.trim_start().len());
     let trailing_trim = raw_code.len().saturating_sub(raw_code.trim_end().len());
     let kept_end = raw_code.len().saturating_sub(trailing_trim);
@@ -369,25 +374,33 @@ fn trim_segments(raw_code: &str, segments: Vec<AstroIrSegment>) -> Vec<AstroIrSe
             }
             let original_start = segment.original.start + (clamped_start - segment.generated.start);
             let original_end = segment.original.end - (segment.generated.end - clamped_end);
-            Some(AstroIrSegment {
-                generated: Span::new(start, trimmed_end),
-                original: Span::new(original_start, original_end),
-            })
+            let generated = match Span::new(start, trimmed_end) {
+                Ok(generated) => generated,
+                Err(err) => return Some(Err(AstroIrError::from(err))),
+            };
+            let original = match Span::new(original_start, original_end) {
+                Ok(original) => original,
+                Err(err) => return Some(Err(AstroIrError::from(err))),
+            };
+            Some(Ok(AstroIrSegment {
+                generated,
+                original,
+            }))
         })
         .collect()
 }
 
-fn lowered_trimmed_original(source: &str, span: Span) -> LoweredNode {
+fn lowered_trimmed_original(source: &str, span: Span) -> Result<LoweredNode, AstroIrError> {
     let raw = span_text(source, span);
     let code = LeanString::from(raw.trim());
     let segments = trim_segments(
         raw,
         vec![AstroIrSegment {
-            generated: Span::new(0, raw.len()),
+            generated: Span::new_unchecked(0, raw.len()),
             original: span,
         }],
-    );
-    LoweredNode { code, segments }
+    )?;
+    Ok(LoweredNode { code, segments })
 }
 
 fn lower_expressionish_child(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
@@ -501,7 +514,7 @@ fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode
         LoweredNode {
             code: LeanString::from(tag_name),
             segments: vec![AstroIrSegment {
-                generated: Span::new(0, tag_name.len()),
+                generated: Span::new_unchecked(0, tag_name.len()),
                 original: Span::from_node(tag_name_node),
             }],
         }
@@ -529,7 +542,7 @@ fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNo
             "attribute" => {
                 if let Some(prop) = render_attribute(source, child)? {
                     pending_props.push(prop);
-                } else if let Some(spread) = render_spread_attribute(source, child) {
+                } else if let Some(spread) = render_spread_attribute(source, child)? {
                     if !pending_props.is_empty() {
                         ordered.push(lower_props_object(std::mem::take(&mut pending_props)));
                     }
@@ -537,7 +550,7 @@ fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNo
                 }
             }
             "spread_attribute" | "attribute_interpolation" => {
-                let Some(spread) = render_spread_attribute(source, child) else {
+                let Some(spread) = render_spread_attribute(source, child)? else {
                     continue;
                 };
                 if !pending_props.is_empty() {
@@ -589,7 +602,10 @@ fn lower_props_object(props: Vec<LoweredNode>) -> LoweredNode {
     builder.finish()
 }
 
-fn render_spread_attribute(source: &str, node: Node<'_>) -> Option<LoweredNode> {
+fn render_spread_attribute(
+    source: &str,
+    node: Node<'_>,
+) -> Result<Option<LoweredNode>, AstroIrError> {
     let spread = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "attribute_interpolation")
@@ -599,14 +615,15 @@ fn render_spread_attribute(source: &str, node: Node<'_>) -> Option<LoweredNode> 
         .find(|child| child.kind() == "attribute_js_expr")
         .map(Span::from_node)
         .unwrap_or_else(|| inner_range_from_delimiters(spread, 1, 1));
-    let spread = lowered_trimmed_original(source, spread);
+    let spread = lowered_trimmed_original(source, spread)?;
     spread
         .code
         .starts_with("...")
         .then(|| trim_leading_dots(spread))
+        .transpose()
 }
 
-fn trim_leading_dots(lowered: LoweredNode) -> LoweredNode {
+fn trim_leading_dots(lowered: LoweredNode) -> Result<LoweredNode, AstroIrError> {
     let trimmed_code = LeanString::from(lowered.code.trim_start_matches('.'));
     let leading_trim = lowered.code.len().saturating_sub(trimmed_code.len());
     let segments = lowered
@@ -618,19 +635,27 @@ fn trim_leading_dots(lowered: LoweredNode) -> LoweredNode {
             if start >= end {
                 return None;
             }
-            Some(AstroIrSegment {
-                generated: Span::new(start - leading_trim, end - leading_trim),
-                original: Span::new(
-                    segment.original.start + (start - segment.generated.start),
-                    segment.original.end,
-                ),
-            })
+            let generated = match Span::new(start - leading_trim, end - leading_trim) {
+                Ok(generated) => generated,
+                Err(err) => return Some(Err(AstroIrError::from(err))),
+            };
+            let original = match Span::new(
+                segment.original.start + (start - segment.generated.start),
+                segment.original.end,
+            ) {
+                Ok(original) => original,
+                Err(err) => return Some(Err(AstroIrError::from(err))),
+            };
+            Some(Ok(AstroIrSegment {
+                generated,
+                original,
+            }))
         })
-        .collect();
-    LoweredNode {
+        .collect::<Result<Vec<_>, AstroIrError>>()?;
+    Ok(LoweredNode {
         code: trimmed_code,
         segments,
-    }
+    })
 }
 
 fn render_attribute(
@@ -651,7 +676,7 @@ fn render_attribute(
     for child in attribute.children(&mut child_cursor) {
         value = match child.kind() {
             "quoted_attribute_value" => Some(render_quoted_attribute_value(source, child)?),
-            "attribute_interpolation" => Some(render_attribute_interpolation(source, child)),
+            "attribute_interpolation" => Some(render_attribute_interpolation(source, child)?),
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
                 Some(LoweredNode {
@@ -694,7 +719,7 @@ fn render_quoted_attribute_value(
             parts.push(builder.finish());
         }
         match child.kind() {
-            "attribute_interpolation" => parts.push(render_attribute_interpolation(source, child)),
+            "attribute_interpolation" => parts.push(render_attribute_interpolation(source, child)?),
             _ => {
                 let mut builder = AstroIrBuilder::default();
                 builder.push_quoted_literal(node_text(source, child));
@@ -731,7 +756,10 @@ fn render_quoted_attribute_value(
     Ok(builder.finish())
 }
 
-fn render_attribute_interpolation(source: &str, node: Node<'_>) -> LoweredNode {
+fn render_attribute_interpolation(
+    source: &str,
+    node: Node<'_>,
+) -> Result<LoweredNode, AstroIrError> {
     let inner = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "attribute_js_expr")
@@ -888,8 +916,8 @@ mod tests {
         let generated = bundled.code.find("bar").expect("bar exists");
         let original = source.rfind("bar").expect("interpolation bar exists");
         assert_eq!(
-            expression.remap_generated_span(Span::new(generated, generated + 3)),
-            Some(Span::new(original, original + 3))
+            expression.remap_generated_span(Span::new_unchecked(generated, generated + 3)),
+            Some(Span::new_unchecked(original, original + 3))
         );
     }
 

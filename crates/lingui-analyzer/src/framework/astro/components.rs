@@ -388,10 +388,10 @@ fn append_html_interpolation_child_normalization_edits(
 
     if let Some((start_tag, end_tag)) = fragment_root_tag_pair(source, inner, &children) {
         edits.push(NormalizationEdit::Delete {
-            span: Span::new(node.start_byte(), inner.start),
+            span: Span::new_unchecked(node.start_byte(), inner.start),
         });
         edits.push(NormalizationEdit::Delete {
-            span: Span::new(inner.end, node.end_byte()),
+            span: Span::new_unchecked(inner.end, node.end_byte()),
         });
         replace_with_astro_fragment_start_marker(start_tag, edits);
         replace_with_astro_fragment_end_marker(end_tag, edits);
@@ -402,10 +402,10 @@ fn append_html_interpolation_child_normalization_edits(
     if is_single_root_interpolation(source, inner, &children) {
         let root = children[0];
         edits.push(NormalizationEdit::Delete {
-            span: Span::new(node.start_byte(), inner.start),
+            span: Span::new_unchecked(node.start_byte(), inner.start),
         });
         edits.push(NormalizationEdit::Delete {
-            span: Span::new(inner.end, node.end_byte()),
+            span: Span::new_unchecked(inner.end, node.end_byte()),
         });
 
         if let Some((start_tag, end_tag)) = fragment_tag_pair(root) {

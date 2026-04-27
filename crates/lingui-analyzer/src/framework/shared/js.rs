@@ -364,7 +364,7 @@ fn to_svelte_call_candidate(
             let import_decl = scope.resolve_macro(reactive_name)?;
             let outer_span = Span::from_node(node).shifted(base_offset);
             let identifier_span = Span::from_node(identifier).shifted(base_offset);
-            let anchor = Span::new(identifier_span.start + 1, identifier_span.end);
+            let anchor = Span::new_unchecked(identifier_span.start + 1, identifier_span.end);
 
             return Some(MacroCandidate {
                 id: LeanString::new(),
@@ -375,7 +375,7 @@ fn to_svelte_call_candidate(
                 outer_span,
                 normalized_span: outer_span,
                 normalization_edits: vec![NormalizationEdit::Delete {
-                    span: Span::new(identifier_span.start, identifier_span.start + 1),
+                    span: Span::new_unchecked(identifier_span.start, identifier_span.start + 1),
                 }],
                 source_map_anchor: Some(anchor),
                 owner_id: None,
@@ -414,7 +414,7 @@ fn to_svelte_call_candidate(
     let import_decl = scope.resolve_macro(local_name)?;
     let object_span = Span::from_node(member_object).shifted(base_offset);
     let property_span = Span::from_node(member_property).shifted(base_offset);
-    let outer_span = Span::new(
+    let outer_span = Span::new_unchecked(
         object_span.start,
         Span::from_node(node).shifted(base_offset).end,
     );
@@ -426,12 +426,12 @@ fn to_svelte_call_candidate(
         local_name: import_decl.local_name.clone(),
         flavor: MacroFlavor::Eager,
         outer_span,
-        normalized_span: Span::new(
+        normalized_span: Span::new_unchecked(
             object_span.start,
             Span::from_node(arguments).shifted(base_offset).end,
         ),
         normalization_edits: vec![NormalizationEdit::Delete {
-            span: Span::new(object_span.end, property_span.end),
+            span: Span::new_unchecked(object_span.end, property_span.end),
         }],
         source_map_anchor: Some(object_span),
         owner_id: None,
@@ -581,7 +581,7 @@ mod tests {
             source: LeanString::from("lingui-for-astro/macro"),
             imported_name: LeanString::from("t"),
             local_name: LeanString::from("t"),
-            span: Span::new(0, 0),
+            span: Span::new_unchecked(0, 0),
         }];
 
         let tree = parse_typescript(source).expect("parse succeeds");

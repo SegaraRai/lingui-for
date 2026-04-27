@@ -663,13 +663,13 @@ fn lower_original_wrapper_to_slot_callback(
                 push_copied_span(
                     &mut rendered,
                     input,
-                    Span::new(node.start_byte(), content_start),
+                    indexed_source.span(node.start_byte(), content_start)?,
                 )?;
                 rendered.push_unmapped("<Fragment set:html={children} />");
                 push_copied_span(
                     &mut rendered,
                     input,
-                    Span::new(content_end, node.end_byte()),
+                    indexed_source.span(content_end, node.end_byte())?,
                 )?;
             }
         }
@@ -732,14 +732,22 @@ fn append_copied_wrapper_with_content_hole_anchors<'a>(
     let mut cursor = wrapper_node.start_byte();
     for attribute in attributes {
         if cursor < attribute.start_byte() {
-            push_copied_span(rendered, input, Span::new(cursor, attribute.start_byte()))?;
+            push_copied_span(
+                rendered,
+                input,
+                source.span(cursor, attribute.start_byte())?,
+            )?;
         }
         append_copied_content_hole_attribute(rendered, input, source, attribute)?;
         cursor = attribute.end_byte();
     }
 
     if cursor < wrapper_node.end_byte() {
-        push_copied_span(rendered, input, Span::new(cursor, wrapper_node.end_byte()))?;
+        push_copied_span(
+            rendered,
+            input,
+            source.span(cursor, wrapper_node.end_byte())?,
+        )?;
     }
 
     Ok(())
@@ -763,13 +771,13 @@ fn append_copied_content_hole_attribute<'a>(
         push_copied_span(
             rendered,
             input,
-            Span::new(attribute.start_byte(), name.start_byte()),
+            source.span(attribute.start_byte(), name.start_byte())?,
         )?;
     }
     push_original_span(
         rendered,
         source,
-        Span::new(name.start_byte(), attribute.end_byte()),
+        source.span(name.start_byte(), attribute.end_byte())?,
     );
     Ok(())
 }
@@ -843,12 +851,12 @@ mod tests {
 
     fn component_target(source: &LeanString) -> TransformTarget {
         let tree = parse_astro(source).expect("astro source parses");
-        let node = find_node_by_span(tree.root_node(), Span::new(0, source.len()))
+        let node = find_node_by_span(tree.root_node(), Span::new_unchecked(0, source.len()))
             .expect("component node exists");
         TransformTarget {
             declaration_id: ls("__trans"),
-            original_span: Span::new(0, source.len()),
-            normalized_span: Span::new(0, source.len()),
+            original_span: Span::new_unchecked(0, source.len()),
+            normalized_span: Span::new_unchecked(0, source.len()),
             source_map_anchor: None,
             local_name: ls("Trans"),
             imported_name: ls("Trans"),

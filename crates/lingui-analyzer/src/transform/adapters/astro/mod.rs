@@ -6,7 +6,7 @@ use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{MappedTextError, RenderedMappedText, Span};
+use crate::common::{InvalidSourceSpan, InvalidSpan, MappedTextError, RenderedMappedText, Span};
 use crate::conventions::FrameworkConventions;
 use crate::framework::{AstroFrameworkError, FrameworkError, JsAnalysisError, WhitespaceMode};
 use crate::syntax::parse::ParseError;
@@ -34,6 +34,10 @@ pub enum AstroAdapterError {
     Parse(#[from] ParseError),
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
+    #[error(transparent)]
+    InvalidSourceSpan(#[from] InvalidSourceSpan),
+    #[error(transparent)]
+    InvalidSpan(#[from] InvalidSpan),
     #[error(transparent)]
     RuntimeComponent(#[from] RuntimeComponentError),
     #[error("missing Astro convention field: {0}")]

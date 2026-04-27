@@ -185,7 +185,7 @@ pub(crate) fn wrap_transform_source(
                 push_wrapped_copy(
                     &mut mapped,
                     &indexed_source,
-                    Span::new(0, normalized_source.code.len()),
+                    Span::new_unchecked(0, normalized_source.code.len()),
                     &copy_anchors,
                 );
                 push_wrapper_anchor(
@@ -202,7 +202,7 @@ pub(crate) fn wrap_transform_source(
                 push_wrapped_copy(
                     &mut mapped,
                     &indexed_source,
-                    Span::new(0, normalized_source.code.len()),
+                    Span::new_unchecked(0, normalized_source.code.len()),
                     &copy_anchors,
                 );
                 push_wrapper_anchor(
@@ -220,7 +220,7 @@ pub(crate) fn wrap_transform_source(
     push_wrapped_copy(
         &mut mapped,
         &indexed_source,
-        Span::new(0, normalized_source.code.len()),
+        Span::new_unchecked(0, normalized_source.code.len()),
         &copy_anchors,
     );
     mapped.into_rendered().map_err(SvelteAdapterError::from)

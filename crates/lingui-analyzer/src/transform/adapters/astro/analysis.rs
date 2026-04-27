@@ -2,7 +2,7 @@ use std::collections::BTreeSet;
 
 use lean_string::LeanString;
 
-use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
+use crate::common::{EmbeddedScriptRegion, InvalidSpan, ScriptLang, Span};
 use crate::conventions::FrameworkConventions;
 use crate::framework::astro::AstroAdapter;
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, WhitespaceMode};
@@ -36,7 +36,8 @@ pub(crate) fn analyze_astro_transform(
         .metadata
         .frontmatter
         .as_ref()
-        .map(|region| build_frontmatter_region(source, region, &import_removals));
+        .map(|region| build_frontmatter_region(source, region, &import_removals))
+        .transpose()?;
     let mut prototypes = Vec::new();
 
     prototypes.extend(
@@ -157,8 +158,8 @@ fn build_frontmatter_region(
     source: &str,
     region: &EmbeddedScriptRegion,
     import_removals: &[Span],
-) -> AstroTransformFrontmatterRegion {
-    AstroTransformFrontmatterRegion {
+) -> Result<AstroTransformFrontmatterRegion, AstroAdapterError> {
+    Ok(AstroTransformFrontmatterRegion {
         outer_span: region.outer_span,
         content_span: region.inner_span,
         prelude_insert_point: compute_prelude_insert_point(source, region.inner_span.start),
@@ -167,8 +168,8 @@ fn build_frontmatter_region(
             source,
             region,
             import_removals,
-        ),
-    }
+        )?,
+    })
 }
 
 fn compute_prelude_insert_point(source: &str, content_start: usize) -> usize {
@@ -192,7 +193,7 @@ fn compute_trailing_whitespace_range(source: &str, region: &EmbeddedScriptRegion
 
     let trailing = &source[region.inner_span.end..closing_fence_start];
     if trailing.trim().is_empty() {
-        Some(Span::new(region.inner_span.end, closing_fence_start))
+        Span::new(region.inner_span.end, closing_fence_start).ok()
     } else {
         None
     }
@@ -202,24 +203,35 @@ fn has_remaining_content_after_import_removal(
     source: &str,
     region: &EmbeddedScriptRegion,
     import_removals: &[Span],
-) -> bool {
+) -> Result<bool, AstroAdapterError> {
     let content = &source[region.inner_span.start..region.inner_span.end];
     let relative_ranges = import_removals
         .iter()
         .copied()
         .map(|span| {
-            Span::new(
-                span.start - region.inner_span.start,
-                span.end - region.inner_span.start,
-            )
+            let start =
+                span.start
+                    .checked_sub(region.inner_span.start)
+                    .ok_or(InvalidSpan::Reversed {
+                        start: span.start,
+                        end: region.inner_span.start,
+                    })?;
+            let end =
+                span.end
+                    .checked_sub(region.inner_span.start)
+                    .ok_or(InvalidSpan::Reversed {
+                        start: span.end,
+                        end: region.inner_span.start,
+                    })?;
+            Span::new(start, end)
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>, _>>()?;
     let mut cursor = 0usize;
     for range in relative_ranges {
         if !content[cursor..range.start].trim().is_empty() {
-            return true;
+            return Ok(true);
         }
         cursor = range.end;
     }
-    !content[cursor..].trim().is_empty()
+    Ok(!content[cursor..].trim().is_empty())
 }

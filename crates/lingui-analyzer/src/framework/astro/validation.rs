@@ -54,7 +54,7 @@ fn special_astro_tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<(&'a st
             .get("<style".len())
             .is_none_or(|byte| byte.is_ascii_whitespace() || *byte == b'>')
     {
-        return Some(("style", Span::new(start + 1, start + 6)));
+        return Some(("style", Span::new_unchecked(start + 1, start + 6)));
     }
 
     if source_slice.starts_with("<script")
@@ -63,7 +63,7 @@ fn special_astro_tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<(&'a st
             .get("<script".len())
             .is_none_or(|byte| byte.is_ascii_whitespace() || *byte == b'>')
     {
-        return Some(("script", Span::new(start + 1, start + 7)));
+        return Some(("script", Span::new_unchecked(start + 1, start + 7)));
     }
 
     None
@@ -149,7 +149,7 @@ fn astro_tag_name<'a>(source: &'a str, tag: Node<'_>) -> Option<(&'a str, Span)>
 
     let start = tag_start + relative_start;
     let end = tag_start + relative_end;
-    Some((&source[start..end], Span::new(start, end)))
+    Some((&source[start..end], Span::new_unchecked(start, end)))
 }
 
 fn is_unsupported_astro_directive(attribute_name: &str) -> bool {

@@ -66,7 +66,7 @@ pub fn build_synthetic_module_from_plan(
         original_spans.insert(declaration_id.clone(), target.candidate.outer_span);
         generated_spans.insert(
             declaration_id.clone(),
-            Span::new(generated_start, generated_end),
+            Span::new_unchecked(generated_start, generated_end),
         );
     }
 
@@ -130,10 +130,10 @@ mod tests {
                 imported_name: ls("t"),
                 local_name: ls("t"),
                 flavor: MacroFlavor::Direct,
-                outer_span: Span::new(0, 1),
-                normalized_span: Span::new(0, 1),
+                outer_span: Span::new_unchecked(0, 1),
+                normalized_span: Span::new_unchecked(0, 1),
                 normalization_edits: Vec::new(),
-                source_map_anchor: Some(Span::new(0, 1)),
+                source_map_anchor: Some(Span::new_unchecked(0, 1)),
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
                 runtime_component_wrapper_spans: Vec::new(),

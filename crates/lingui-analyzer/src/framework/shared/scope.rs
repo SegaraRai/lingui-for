@@ -81,7 +81,7 @@ mod tests {
             source: "@lingui/core/macro".into(),
             imported_name: imported_name.into(),
             local_name: local_name.into(),
-            span: Span::new(0, 0),
+            span: Span::new_unchecked(0, 0),
         }
     }
 

@@ -127,7 +127,7 @@ fn find_frontmatter(root: Node<'_>) -> Option<EmbeddedScriptRegion> {
 
             let inner_span = content
                 .map(Span::from_node)
-                .unwrap_or_else(|| Span::new(node.start_byte(), node.start_byte()));
+                .unwrap_or_else(|| Span::new_unchecked(node.start_byte(), node.start_byte()));
 
             EmbeddedScriptRegion {
                 kind: EmbeddedScriptKind::Frontmatter,
@@ -200,7 +200,7 @@ fn collect_macro_import_statement_spans_from_root(
         while matches!(source.as_bytes().get(end), Some(b'\r' | b'\n')) {
             end += 1;
         }
-        spans.push(Span::new(
+        spans.push(Span::new_unchecked(
             base_offset + child.start_byte(),
             base_offset + end,
         ));
@@ -560,17 +560,17 @@ mod tests {
     fn remap_bundled_offset_handles_segment_boundaries_deterministically() {
         let interpolation = BundledAstroHtmlInterpolation {
             declaration_id: LeanString::from_static_str("__astro_expr_0__"),
-            outer_span: Span::new(0, 0),
-            inner_span: Span::new(0, 0),
-            synthetic_span: Span::new(0, 0),
+            outer_span: Span::new_unchecked(0, 0),
+            inner_span: Span::new_unchecked(0, 0),
+            synthetic_span: Span::new_unchecked(0, 0),
             segments: vec![
                 AstroIrSegment {
-                    generated: Span::new(0, 3),
-                    original: Span::new(10, 13),
+                    generated: Span::new_unchecked(0, 3),
+                    original: Span::new_unchecked(10, 13),
                 },
                 AstroIrSegment {
-                    generated: Span::new(3, 6),
-                    original: Span::new(20, 23),
+                    generated: Span::new_unchecked(3, 6),
+                    original: Span::new_unchecked(20, 23),
                 },
             ],
         };

@@ -36,10 +36,10 @@ pub(crate) fn is_single_root_interpolation(
         return false;
     }
 
-    span_text(source, Span::new(inner.start, root.start_byte()))
+    span_text(source, Span::new_unchecked(inner.start, root.start_byte()))
         .trim()
         .is_empty()
-        && span_text(source, Span::new(root.end_byte(), inner.end))
+        && span_text(source, Span::new_unchecked(root.end_byte(), inner.end))
             .trim()
             .is_empty()
 }
@@ -59,10 +59,13 @@ pub(crate) fn fragment_root_tag_pair<'a>(
         return None;
     }
 
-    if !span_text(source, Span::new(inner.start, start_tag.start_byte()))
-        .trim()
-        .is_empty()
-        || !span_text(source, Span::new(end_tag.end_byte(), inner.end))
+    if !span_text(
+        source,
+        Span::new_unchecked(inner.start, start_tag.start_byte()),
+    )
+    .trim()
+    .is_empty()
+        || !span_text(source, Span::new_unchecked(end_tag.end_byte(), inner.end))
             .trim()
             .is_empty()
     {

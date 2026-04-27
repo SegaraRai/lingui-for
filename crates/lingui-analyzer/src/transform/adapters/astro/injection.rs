@@ -35,15 +35,15 @@ pub(super) fn append_runtime_injection_replacements(
         } else {
             prelude
         };
-        let anchor_span = plan
-            .common
-            .import_removals
-            .first()
-            .copied()
-            .unwrap_or(Span::new(
-                frontmatter.prelude_insert_point,
-                frontmatter.prelude_insert_point,
-            ));
+        let anchor_span =
+            plan.common
+                .import_removals
+                .first()
+                .copied()
+                .unwrap_or(Span::new_unchecked(
+                    frontmatter.prelude_insert_point,
+                    frontmatter.prelude_insert_point,
+                ));
         let source_map = build_span_anchor_map(
             plan.common.source_name.as_str(),
             &indexed_source,

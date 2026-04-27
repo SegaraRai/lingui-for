@@ -35,7 +35,7 @@ pub(crate) fn whitespace_replacement_edits(
             continue;
         }
 
-        let gap = Span::new(previous.end_byte(), next.start_byte());
+        let gap = Span::new_unchecked(previous.end_byte(), next.start_byte());
         if !span_text(source, gap).trim().is_empty() {
             continue;
         }
