@@ -1,0 +1,19 @@
+{
+  "name": "compat-astro-basic",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@lingui/core": "^5.9.5",
+    "astro": "^6.1.9",
+    "lingui-for-astro": "workspace:*"
+  },
+  "devDependencies": {
+    "@lingui/cli": "^5.9.5",
+    "@lingui/conf": "^5.9.5",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-lingui-macro": "workspace:*",
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.19",
+    "vite-plus": "catalog:"
+  }
+}

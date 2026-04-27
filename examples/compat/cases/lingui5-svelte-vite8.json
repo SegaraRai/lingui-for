@@ -1,0 +1,26 @@
+{
+  "name": "lingui5-svelte-vite8",
+  "description": "SvelteKit compatibility fixture with Lingui 5 and the primary Vite 8-compatible Svelte plugin line.",
+  "lingui": "5",
+  "patches": [
+    {
+      "path": "examples/compat/sveltekit-basic/package.json",
+      "sections": {
+        "dependencies": {
+          "@lingui/core": "^5.9.5"
+        },
+        "devDependencies": {
+          "@lingui/cli": "^5.9.5",
+          "@lingui/conf": "^5.9.5",
+          "@sveltejs/vite-plugin-svelte": "^7.0.0"
+        }
+      }
+    }
+  ],
+  "projects": [
+    {
+      "cwd": "examples/compat/sveltekit-basic",
+      "commands": [["vp", "run", "build"]]
+    }
+  ]
+}

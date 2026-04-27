@@ -1,20 +1,25 @@
-import { access } from "node:fs/promises";
-import { constants as fsConstants } from "node:fs";
-import { createServer as createNetServer } from "node:net";
-import { resolve } from "node:path";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { constants as fsConstants } from "node:fs";
+import { access } from "node:fs/promises";
+import { createRequire } from "node:module";
+import { createServer as createNetServer } from "node:net";
+import { dirname, resolve } from "node:path";
 
 const HOST = "127.0.0.1";
 const STARTUP_TIMEOUT_MS = 30_000;
 const projectRoot = resolve(import.meta.dirname, "..", "..");
+const require = createRequire(import.meta.url);
+const astroPackageJsonPath = require.resolve("astro/package.json", {
+  paths: [projectRoot],
+});
+const astroPackageJson = require(astroPackageJsonPath) as {
+  bin?: { astro?: string };
+};
 const astroCliEntry = resolve(
-  projectRoot,
-  "node_modules",
-  "astro",
-  "bin",
-  "astro.mjs",
+  dirname(astroPackageJsonPath),
+  astroPackageJson.bin?.astro ?? "bin/astro.mjs",
 );
-const previewEntry = resolve(projectRoot, "dist", "server", "entry.mjs");
+const previewEntry = resolve(projectRoot, "dist/server/entry.mjs");
 
 export const serverModes = ["dev", "preview"] as const;
 

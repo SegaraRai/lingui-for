@@ -93,6 +93,52 @@ jobs:
 
       - run: vp run test
 
+  compatibility:
+    name: Compatibility (${{ matrix.case }})
+    needs: build-wasm
+    runs-on: ubuntu-latest
+
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      options: --user 1001
+
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        case:
+          - lingui5-astro6
+          - lingui5-astro5
+          - lingui5-svelte-vite7
+          - lingui5-svelte-vite8
+          - lingui5-vite8
+          - lingui6-astro6
+          - lingui6-astro5
+          - lingui6-svelte-vite7
+          - lingui6-svelte-vite8
+          - lingui6-vite8
+
+    env:
+      LINGUI_WASM_PREBUILT: "1"
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: wasm-package
+          path: shared/lingui-analyzer-wasm/dist
+
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: "24"
+          cache: true
+
+      - run: vp install
+
+      - run: vp run test:compat -- --case ${{ matrix.case }}
+
   spelling:
     name: Spell Check with Typos
     runs-on: ubuntu-latest

@@ -1,0 +1,25 @@
+{
+  "name": "lingui5-astro6",
+  "description": "Astro compatibility fixture with Lingui 5 and the primary Astro 6 line.",
+  "lingui": "5",
+  "patches": [
+    {
+      "path": "examples/compat/astro-basic/package.json",
+      "sections": {
+        "dependencies": {
+          "@lingui/core": "^5.9.5"
+        },
+        "devDependencies": {
+          "@lingui/cli": "^5.9.5",
+          "@lingui/conf": "^5.9.5"
+        }
+      }
+    }
+  ],
+  "projects": [
+    {
+      "cwd": "examples/compat/astro-basic",
+      "commands": [["vp", "run", "build"]]
+    }
+  ]
+}
