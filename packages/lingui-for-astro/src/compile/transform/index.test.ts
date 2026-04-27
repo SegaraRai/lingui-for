@@ -556,7 +556,7 @@ describe("transformAstro", () => {
       'message: "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"',
     );
     expect(code).toMatch(
-      /0:\s*__l4a_i18n\._\(\s*\/\*i18n\*\/\s*\{ id: "SMt\/JO", message: "\{rank, selectordinal, =1 \{\{role, select, admin \{component zero first admin\} other \{component zero first other\}\}\}/,
+      /0:\s*__l4a_i18n\._\(\s*\/\*i18n\*\/\s*\{ id: "SMt_JO", message: "\{rank, selectordinal, =1 \{\{role, select, admin \{component zero first admin\} other \{component zero first other\}\}\}/,
     );
     expect(code).toContain("component many later admin");
   });

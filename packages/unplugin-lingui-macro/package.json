@@ -81,7 +81,7 @@
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
     "@lingui-for/internal-shared-common": "workspace:*",
-    "@lingui/conf": "^5.9.5",
+    "@lingui/conf": "^6.0.0",
     "@types/babel__core": "^7.20.5",
     "@types/node": "catalog:",
     "dedent": "^1.7.2",

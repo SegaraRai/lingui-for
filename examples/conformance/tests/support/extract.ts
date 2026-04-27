@@ -1,6 +1,6 @@
 import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
-import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
+import { makeConfig, type ExtractedMessage } from "@lingui/conf";
 
 import { defineConfig as defineAstroConfig } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
@@ -11,25 +11,28 @@ import { transformOfficialCore, transformOfficialReact } from "./transforms.ts";
 
 type FixtureWhitespace = "auto" | "jsx";
 
-const linguiConfig: LinguiConfigNormalized = {
-  catalogs: [],
-  compileNamespace: "cjs",
-  extractorParserOptions: {},
-  fallbackLocales: {},
-  locales: [],
-  macro: {
-    corePackage: ["@lingui/core/macro", "@lingui/macro"],
-    jsxPackage: ["@lingui/react/macro", "@lingui/macro"],
+const linguiConfig = makeConfig(
+  {
+    catalogs: [],
+    compileNamespace: "cjs",
+    extractorParserOptions: {},
+    fallbackLocales: {},
+    locales: [],
+    macro: {
+      corePackage: ["@lingui/core/macro", "@lingui/macro"],
+      jsxPackage: ["@lingui/react/macro", "@lingui/macro"],
+    },
+    orderBy: "messageId",
+    rootDir: "/virtual",
+    runtimeConfigModule: {
+      i18n: ["@lingui/core", "i18n"],
+      Trans: ["@lingui/react", "Trans"],
+      useLingui: ["@lingui/react", "useLingui"],
+    },
+    sourceLocale: "en",
   },
-  orderBy: "messageId",
-  rootDir: "/virtual",
-  runtimeConfigModule: {
-    i18n: ["@lingui/core", "i18n"],
-    Trans: ["@lingui/react", "Trans"],
-    useLingui: ["@lingui/react", "useLingui"],
-  },
-  sourceLocale: "en",
-};
+  { skipValidation: true },
+);
 
 const parserPlugins: NonNullable<ParserOptions["plugins"]> = [
   "importAttributes",
@@ -61,7 +64,7 @@ const IGNORED_EXTRACT_KEYS = new Set([
   "start",
 ]);
 
-function getExtractorContext(): { linguiConfig: LinguiConfigNormalized } {
+function getExtractorContext(): { linguiConfig: typeof linguiConfig } {
   return { linguiConfig };
 }
 

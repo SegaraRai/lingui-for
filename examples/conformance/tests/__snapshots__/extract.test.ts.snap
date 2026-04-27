@@ -5,7 +5,7 @@ exports[`extract fixtures > 'component-whitespacing' > astro extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.astro",
@@ -33,7 +33,7 @@ exports[`extract fixtures > 'component-whitespacing' > astro extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.astro",
@@ -66,7 +66,7 @@ exports[`extract fixtures > 'component-whitespacing' > official react extraction
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.reference.tsx",
@@ -94,7 +94,7 @@ exports[`extract fixtures > 'component-whitespacing' > official react extraction
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.reference.tsx",
@@ -127,7 +127,7 @@ exports[`extract fixtures > 'component-whitespacing' > svelte extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.svelte",
@@ -155,7 +155,7 @@ exports[`extract fixtures > 'component-whitespacing' > svelte extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing.svelte",
@@ -188,7 +188,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > astro extraction 1`]
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.astro",
@@ -202,7 +202,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > astro extraction 1`]
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.astro",
@@ -216,7 +216,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > astro extraction 1`]
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.astro",
@@ -249,7 +249,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > official react extra
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.reference.tsx",
@@ -263,7 +263,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > official react extra
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.reference.tsx",
@@ -277,7 +277,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > official react extra
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.reference.tsx",
@@ -310,7 +310,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > svelte extraction 1`
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.svelte",
@@ -324,7 +324,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > svelte extraction 1`
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.svelte",
@@ -338,7 +338,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > svelte extraction 1`
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/txFeF",
+    "id": "_txFeF",
     "message": "Before {value} After",
     "origin": [
       "/virtual/component-whitespacing-auto.svelte",
@@ -371,7 +371,7 @@ exports[`extract fixtures > 'deep-rich-text-trans' > astro extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "zt7J+8",
+    "id": "zt7J-8",
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
       "/virtual/deep-rich-text-trans.astro",
@@ -392,7 +392,7 @@ exports[`extract fixtures > 'deep-rich-text-trans' > official react extraction 1
   {
     "comment": undefined,
     "context": undefined,
-    "id": "zt7J+8",
+    "id": "zt7J-8",
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
       "/virtual/deep-rich-text-trans.reference.tsx",
@@ -413,7 +413,7 @@ exports[`extract fixtures > 'deep-rich-text-trans' > svelte extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "zt7J+8",
+    "id": "zt7J-8",
     "message": "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     "origin": [
       "/virtual/deep-rich-text-trans.svelte",
@@ -434,7 +434,7 @@ exports[`extract fixtures > 'exact-number-component' > astro extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "a+Xhin",
+    "id": "a-Xhin",
     "message": "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
     "origin": [
       "/virtual/exact-number-component.astro",
@@ -467,7 +467,7 @@ exports[`extract fixtures > 'exact-number-component' > official react extraction
   {
     "comment": undefined,
     "context": undefined,
-    "id": "a+Xhin",
+    "id": "a-Xhin",
     "message": "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
     "origin": [
       "/virtual/exact-number-component.reference.tsx",
@@ -500,7 +500,7 @@ exports[`extract fixtures > 'exact-number-component' > svelte extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "a+Xhin",
+    "id": "a-Xhin",
     "message": "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
     "origin": [
       "/virtual/exact-number-component.svelte",
@@ -533,7 +533,7 @@ exports[`extract fixtures > 'nested-icu-core' > astro extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "K9g4/G",
+    "id": "K9g4_G",
     "message": "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     "origin": [
       "/virtual/nested-icu-core.astro",
@@ -554,7 +554,7 @@ exports[`extract fixtures > 'nested-icu-core' > official core extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "K9g4/G",
+    "id": "K9g4_G",
     "message": "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     "origin": [
       "/virtual/nested-icu-core.reference.ts",
@@ -575,7 +575,7 @@ exports[`extract fixtures > 'nested-icu-core' > svelte extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "K9g4/G",
+    "id": "K9g4_G",
     "message": "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     "origin": [
       "/virtual/nested-icu-core.svelte",
@@ -596,7 +596,7 @@ exports[`extract fixtures > 'rich-text-trans' > astro extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "9/omjw",
+    "id": "9_omjw",
     "message": "Hello <0>{name}</0>.",
     "origin": [
       "/virtual/rich-text-trans.astro",
@@ -615,7 +615,7 @@ exports[`extract fixtures > 'rich-text-trans' > official react extraction 1`] = 
   {
     "comment": undefined,
     "context": undefined,
-    "id": "9/omjw",
+    "id": "9_omjw",
     "message": "Hello <0>{name}</0>.",
     "origin": [
       "/virtual/rich-text-trans.reference.tsx",
@@ -634,7 +634,7 @@ exports[`extract fixtures > 'rich-text-trans' > svelte extraction 1`] = `
   {
     "comment": undefined,
     "context": undefined,
-    "id": "9/omjw",
+    "id": "9_omjw",
     "message": "Hello <0>{name}</0>.",
     "origin": [
       "/virtual/rich-text-trans.svelte",
@@ -674,7 +674,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > astro ext
       "1": "_i18n._(
     /*i18n*/
     {
-      id: "/uwo4+",
+      id: "_uwo4-",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
       values: {
         rank: rank,
@@ -712,7 +712,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > astro ext
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/uwo4+",
+    "id": "_uwo4-",
     "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
     "origin": [
       "/virtual/trans-with-deeply-nested-component-icu.astro",
@@ -768,7 +768,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > official 
       "1": "_i18n._(
       /*i18n*/
       {
-        id: "/uwo4+",
+        id: "_uwo4-",
         message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
         values: {
           rank: rank,
@@ -806,7 +806,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > official 
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/uwo4+",
+    "id": "_uwo4-",
     "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
     "origin": [
       "/virtual/trans-with-deeply-nested-component-icu.reference.tsx",
@@ -862,7 +862,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > svelte ex
       "1": "_i18n._(
     /*i18n*/
     {
-      id: "/uwo4+",
+      id: "_uwo4-",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
       values: {
         rank: rank,
@@ -900,7 +900,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > svelte ex
   {
     "comment": undefined,
     "context": undefined,
-    "id": "/uwo4+",
+    "id": "_uwo4-",
     "message": "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
     "origin": [
       "/virtual/trans-with-deeply-nested-component-icu.svelte",

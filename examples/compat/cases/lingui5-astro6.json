@@ -19,7 +19,11 @@
   "projects": [
     {
       "cwd": "examples/compat/astro-basic",
-      "commands": [["vp", "run", "build"]]
+      "commands": [
+        ["lingui", "extract", "--clean", "--overwrite"],
+        ["lingui", "compile"],
+        ["astro", "build"]
+      ]
     }
   ]
 }

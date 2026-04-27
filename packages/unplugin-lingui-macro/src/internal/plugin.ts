@@ -194,7 +194,7 @@ export const unpluginFactory: UnpluginFactory<
           [
             linguiMacroPlugin,
             {
-              extract: false,
+              descriptorFields: "auto",
               linguiConfig,
             },
           ],

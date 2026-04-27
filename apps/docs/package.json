@@ -5,7 +5,7 @@
     "@astrojs/starlight": "^0.38.4",
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@astrojs/svelte": "^8.0.5",
-    "@lingui/core": "^5.9.5",
+    "@lingui/core": "^6.0.0",
     "@tailwindcss/vite": "4.2.2",
     "astro": "^6.1.9",
     "sharp": "^0.34.5",
@@ -13,9 +13,9 @@
     "tailwindcss": "4.2.2"
   },
   "devDependencies": {
-    "@lingui/cli": "^5.9.5",
-    "@lingui/conf": "^5.9.5",
-    "@lingui/format-po": "^5.9.5",
+    "@lingui/cli": "^6.0.0",
+    "@lingui/conf": "^6.0.0",
+    "@lingui/format-po": "^6.0.0",
     "astro-strip-whitespace": "^0.2.2",
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",

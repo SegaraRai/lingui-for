@@ -48,9 +48,8 @@ export function transformAstroProgram(
       [
         linguiMacroPlugin,
         {
-          extract: lowering.extract,
+          descriptorFields: lowering.extract ? "all" : "auto",
           linguiConfig: lowering.linguiConfig,
-          stripMessageField: lowering.extract ? false : undefined,
         },
       ],
       createAstroMacroPostprocessPlugin(postprocess),

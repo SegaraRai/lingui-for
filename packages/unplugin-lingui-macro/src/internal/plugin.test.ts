@@ -48,6 +48,64 @@ describe("unplugin-lingui-macro", () => {
     expect(getCode(result)).not.toContain("@lingui/core/macro");
   });
 
+  test("keeps descriptor messages in non-production transforms", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    delete process.env.NODE_ENV;
+
+    try {
+      const result = await runTransform(
+        dedent`
+          import { msg } from "@lingui/core/macro";
+
+          export const descriptor = msg\`Hello from development.\`;
+        `,
+        "/virtual/development-descriptor.ts",
+        {
+          config: {
+            locales: ["en"],
+          },
+        },
+      );
+
+      expect(getCode(result)).toContain('message: "Hello from development."');
+    } finally {
+      if (previousNodeEnv == null) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
+  });
+
+  test("omits descriptor messages in production transforms", async () => {
+    const previousNodeEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+
+    try {
+      const result = await runTransform(
+        dedent`
+          import { msg } from "@lingui/core/macro";
+
+          export const descriptor = msg\`Hello from production.\`;
+        `,
+        "/virtual/production-descriptor.ts",
+        {
+          config: {
+            locales: ["en"],
+          },
+        },
+      );
+
+      expect(getCode(result)).not.toContain("Hello from production.");
+    } finally {
+      if (previousNodeEnv == null) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
+  });
+
   test("transforms React macros when a file imports @lingui/react/macro", async () => {
     const result = await runTransform(
       dedent`

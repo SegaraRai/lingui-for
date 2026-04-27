@@ -28,7 +28,12 @@
   "projects": [
     {
       "cwd": "examples/compat/sveltekit-basic",
-      "commands": [["vp", "run", "build"]]
+      "commands": [
+        ["lingui", "extract", "--clean", "--overwrite"],
+        ["lingui", "compile"],
+        ["svelte-kit", "sync"],
+        ["vite", "build"]
+      ]
     }
   ]
 }

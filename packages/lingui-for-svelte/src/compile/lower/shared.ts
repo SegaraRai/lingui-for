@@ -63,9 +63,8 @@ export function lowerProgramWithLingui(
       [
         linguiMacroPlugin,
         {
-          extract: request.extract,
+          descriptorFields: request.extract ? "all" : "auto",
           linguiConfig: request.linguiConfig,
-          stripMessageField: request.extract ? false : undefined,
         },
       ],
     ],

@@ -1,4 +1,4 @@
-import type { ExtractedMessage } from "@lingui/conf";
+import type { ExtractedMessage, ExtractorCtx } from "@lingui/conf";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
@@ -10,6 +10,12 @@ const extractor = svelteExtractor({
     locales: ["en"],
   }),
 });
+
+function createExtractorContext(): ExtractorCtx {
+  return {
+    linguiConfig: {},
+  } as ExtractorCtx;
+}
 
 async function collectMessages(
   run: (
@@ -41,7 +47,7 @@ describe("svelteExtractor", () => {
           "/virtual/origin-check.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -75,7 +81,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -111,7 +117,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -134,7 +140,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -157,7 +163,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -182,7 +188,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -212,7 +218,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -237,7 +243,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -268,7 +274,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -298,7 +304,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -333,7 +339,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );
@@ -390,7 +396,7 @@ describe("svelteExtractor", () => {
           "/virtual/App.svelte",
           source,
           onMessageExtracted,
-          undefined,
+          createExtractorContext(),
         ),
       ),
     );

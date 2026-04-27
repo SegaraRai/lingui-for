@@ -6,7 +6,7 @@ import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
 
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
@@ -20,7 +20,7 @@ import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
   }
 })}></L4aRuntimeTrans>
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
@@ -42,7 +42,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       message: "Before {value} After",
       values: {
         value: value
@@ -60,7 +60,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       message: "Before {value} After",
       values: {
         value: value
@@ -85,7 +85,7 @@ exports[`NODE_ENV=development > 'component-whitespacing' > svelte transform 1`] 
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
@@ -99,7 +99,7 @@ exports[`NODE_ENV=development > 'component-whitespacing' > svelte transform 1`] 
   }
 }} />
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
@@ -120,21 +120,21 @@ import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
 
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 })}></L4aRuntimeTrans>
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 })}></L4aRuntimeTrans>
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
@@ -156,7 +156,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       message: "Before {value} After",
       values: {
         value: value
@@ -165,7 +165,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       message: "Before {value} After",
       values: {
         value: value
@@ -174,7 +174,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       message: "Before {value} After",
       values: {
         value: value
@@ -199,21 +199,21 @@ exports[`NODE_ENV=development > 'component-whitespacing-auto' > svelte transform
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 }} />
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 }} />
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
@@ -238,7 +238,7 @@ const name = "Ada";
 ---
 
 <L4aRuntimeTrans placeholders={["0", "1", "2"]} {...(/*i18n*/ {
-  id: "zt7J+8",
+  id: "zt7J-8",
   message: "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
   values: {
     name: name,
@@ -266,7 +266,7 @@ export function Example({
   return <_Trans {...
   /*i18n*/
   {
-    id: "zt7J+8",
+    id: "zt7J-8",
     message: "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
     values: {
       name: name,
@@ -291,7 +291,7 @@ exports[`NODE_ENV=development > 'deep-rich-text-trans' > svelte transform 1`] = 
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "zt7J+8",
+  id: "zt7J-8",
   message: "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
   values: {
     name: name,
@@ -314,7 +314,7 @@ const rank = 1;
 ---
 
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "a+Xhin",
+  id: "a-Xhin",
   message: "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
   values: {
     count: count
@@ -342,7 +342,7 @@ export function Example({
       <_Trans {...
     /*i18n*/
     {
-      id: "a+Xhin",
+      id: "a-Xhin",
       message: "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
       values: {
         count: count
@@ -369,7 +369,7 @@ exports[`NODE_ENV=development > 'exact-number-component' > svelte transform 1`] 
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "a+Xhin",
+  id: "a-Xhin",
   message: "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
   values: {
     count: count
@@ -394,7 +394,7 @@ const rank = 1;
 const role = "admin";
 const deepCore = __l4a_i18n._(
 /*i18n*/ {
-  id: "K9g4/G",
+  id: "K9g4_G",
   message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
   values: {
     count: count,
@@ -413,7 +413,7 @@ exports[`NODE_ENV=development > 'nested-icu-core' > official core transform 1`] 
 export const message = _i18n._(
 /*i18n*/
 {
-  id: "K9g4/G",
+  id: "K9g4_G",
   message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
   values: {
     count: count,
@@ -435,7 +435,7 @@ exports[`NODE_ENV=development > 'nested-icu-core' > svelte transform 1`] = `
 
   const deepCore = $derived($__l4s_translate(
   /*i18n*/ {
-    id: "K9g4/G",
+    id: "K9g4_G",
     message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     values: {
       count: count,
@@ -458,7 +458,7 @@ const name = "Ada";
 ---
 
 <L4aRuntimeTrans placeholders={["0"]} {...(/*i18n*/ {
-  id: "9/omjw",
+  id: "9_omjw",
   message: "Hello <0>{name}</0>.",
   values: {
     name: name
@@ -478,7 +478,7 @@ export function Example({
   return <_Trans {...
   /*i18n*/
   {
-    id: "9/omjw",
+    id: "9_omjw",
     message: "Hello <0>{name}</0>.",
     values: {
       name: name
@@ -497,7 +497,7 @@ exports[`NODE_ENV=development > 'rich-text-trans' > svelte transform 1`] = `
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "9/omjw",
+  id: "9_omjw",
   message: "Hello <0>{name}</0>.",
   values: {
     name: name
@@ -531,7 +531,7 @@ const role = "admin";
     }),
     1: __l4a_i18n._(
     /*i18n*/ {
-      id: "/uwo4+",
+      id: "_uwo4-",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
       values: {
         rank: rank,
@@ -585,7 +585,7 @@ export function Example({
       1: _i18n._(
       /*i18n*/
       {
-        id: "/uwo4+",
+        id: "_uwo4-",
         message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
         values: {
           rank: rank,
@@ -634,7 +634,7 @@ exports[`NODE_ENV=development > 'trans-with-deeply-nested-component-icu' > svelt
     }),
     1: __l4s_getI18n()._(
     /*i18n*/ {
-      id: "/uwo4+",
+      id: "_uwo4-",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
       values: {
         rank: rank,
@@ -1317,7 +1317,7 @@ import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
 
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
@@ -1329,7 +1329,7 @@ import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
   }
 })}></L4aRuntimeTrans>
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
@@ -1349,7 +1349,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       values: {
         value: value
       }
@@ -1365,7 +1365,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       values: {
         value: value
       }
@@ -1388,7 +1388,7 @@ exports[`NODE_ENV=production > 'component-whitespacing' > svelte transform 1`] =
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
@@ -1400,7 +1400,7 @@ exports[`NODE_ENV=production > 'component-whitespacing' > svelte transform 1`] =
   }
 }} />
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
@@ -1419,19 +1419,19 @@ import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 ---
 
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
 })}></L4aRuntimeTrans>
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
 })}></L4aRuntimeTrans>
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
@@ -1451,7 +1451,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       values: {
         value: value
       }
@@ -1459,7 +1459,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       values: {
         value: value
       }
@@ -1467,7 +1467,7 @@ function Example() {
       <_Trans {...
     /*i18n*/
     {
-      id: "/txFeF",
+      id: "_txFeF",
       values: {
         value: value
       }
@@ -1490,19 +1490,19 @@ exports[`NODE_ENV=production > 'component-whitespacing-auto' > svelte transform 
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
 }} />
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
 }} />
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "/txFeF",
+  id: "_txFeF",
   values: {
     value: value
   }
@@ -1525,7 +1525,7 @@ const name = "Ada";
 ---
 
 <L4aRuntimeTrans placeholders={["0", "1", "2"]} {...(/*i18n*/ {
-  id: "zt7J+8",
+  id: "zt7J-8",
   values: {
     name: name,
     count: count,
@@ -1552,7 +1552,7 @@ export function Example({
   return <_Trans {...
   /*i18n*/
   {
-    id: "zt7J+8",
+    id: "zt7J-8",
     values: {
       name: name,
       count: count,
@@ -1576,7 +1576,7 @@ exports[`NODE_ENV=production > 'deep-rich-text-trans' > svelte transform 1`] = `
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "zt7J+8",
+  id: "zt7J-8",
   values: {
     name: name,
     count: count,
@@ -1598,7 +1598,7 @@ const rank = 1;
 ---
 
 <L4aRuntimeTrans {...(/*i18n*/ {
-  id: "a+Xhin",
+  id: "a-Xhin",
   values: {
     count: count
   }
@@ -1624,7 +1624,7 @@ export function Example({
       <_Trans {...
     /*i18n*/
     {
-      id: "a+Xhin",
+      id: "a-Xhin",
       values: {
         count: count
       }
@@ -1649,7 +1649,7 @@ exports[`NODE_ENV=production > 'exact-number-component' > svelte transform 1`] =
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "a+Xhin",
+  id: "a-Xhin",
   values: {
     count: count
   }
@@ -1672,7 +1672,7 @@ const rank = 1;
 const role = "admin";
 const deepCore = __l4a_i18n._(
 /*i18n*/ {
-  id: "K9g4/G",
+  id: "K9g4_G",
   values: {
     count: count,
     rank: rank,
@@ -1690,7 +1690,7 @@ exports[`NODE_ENV=production > 'nested-icu-core' > official core transform 1`] =
 export const message = _i18n._(
 /*i18n*/
 {
-  id: "K9g4/G",
+  id: "K9g4_G",
   values: {
     count: count,
     rank: rank,
@@ -1711,7 +1711,7 @@ exports[`NODE_ENV=production > 'nested-icu-core' > svelte transform 1`] = `
 
   const deepCore = $derived($__l4s_translate(
   /*i18n*/ {
-    id: "K9g4/G",
+    id: "K9g4_G",
     values: {
       count: count,
       rank: rank,
@@ -1733,7 +1733,7 @@ const name = "Ada";
 ---
 
 <L4aRuntimeTrans placeholders={["0"]} {...(/*i18n*/ {
-  id: "9/omjw",
+  id: "9_omjw",
   values: {
     name: name
   }
@@ -1752,7 +1752,7 @@ export function Example({
   return <_Trans {...
   /*i18n*/
   {
-    id: "9/omjw",
+    id: "9_omjw",
     values: {
       name: name
     },
@@ -1770,7 +1770,7 @@ exports[`NODE_ENV=production > 'rich-text-trans' > svelte transform 1`] = `
 </script>
 
 <L4sRuntimeTrans {.../*i18n*/ {
-  id: "9/omjw",
+  id: "9_omjw",
   values: {
     name: name
   }
@@ -1801,7 +1801,7 @@ const role = "admin";
     }),
     1: __l4a_i18n._(
     /*i18n*/ {
-      id: "/uwo4+",
+      id: "_uwo4-",
       values: {
         rank: rank,
         role: role
@@ -1851,7 +1851,7 @@ export function Example({
       1: _i18n._(
       /*i18n*/
       {
-        id: "/uwo4+",
+        id: "_uwo4-",
         values: {
           rank: rank,
           role: role
@@ -1896,7 +1896,7 @@ exports[`NODE_ENV=production > 'trans-with-deeply-nested-component-icu' > svelte
     }),
     1: __l4s_getI18n()._(
     /*i18n*/ {
-      id: "/uwo4+",
+      id: "_uwo4-",
       values: {
         rank: rank,
         role: role

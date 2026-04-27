@@ -10,7 +10,7 @@
     ]
   },
   {
-    "id": "8+nA3Y",
+    "id": "8-nA3Y",
     "message": "Welcome back, {dashboardOwner}.",
     "placeholders": {
       "dashboardOwner": "dashboardOwner"
@@ -57,7 +57,7 @@
     ]
   },
   {
-    "id": "jJ+oTf",
+    "id": "jJ-oTf",
     "message": "Attention needed: high-priority items are waiting for review.",
     "placeholders": {},
     "origin": [
@@ -77,7 +77,7 @@
     ]
   },
   {
-    "id": "lC/3w5",
+    "id": "lC_3w5",
     "message": "Live snapshot latency: {0}.",
     "placeholders": {
       "0": "String(latencyMs > 250 ? `${latencyMs}ms (slow)` : `${latencyMs}ms`)"
@@ -251,7 +251,7 @@
     ]
   },
   {
-    "id": "Y2+ZT9",
+    "id": "Y2-ZT9",
     "message": "Comments:",
     "placeholders": {},
     "origin": [
@@ -283,7 +283,7 @@
     ]
   },
   {
-    "id": "pa6gX+",
+    "id": "pa6gX-",
     "message": "No path",
     "placeholders": {},
     "origin": [
@@ -293,7 +293,7 @@
     ]
   },
   {
-    "id": "qbgW+C",
+    "id": "qbgW-C",
     "message": "Highlights",
     "placeholders": {},
     "origin": [
@@ -325,7 +325,7 @@
     ]
   },
   {
-    "id": "i4y9D/",
+    "id": "i4y9D_",
     "message": "{0} assigned {1} with {2} comments and {3} unread changes.",
     "placeholders": {
       "0": "item.owner",
@@ -416,7 +416,7 @@
     ]
   },
   {
-    "id": "8p/xVT",
+    "id": "8p_xVT",
     "message": "{0, plural, one {{1}} other {{2}}}",
     "placeholders": {
       "0": "highlightedQueue.length",
@@ -477,7 +477,7 @@
     ]
   },
   {
-    "id": "/Hs6aJ",
+    "id": "_Hs6aJ",
     "message": "Astro interpolation coverage",
     "placeholders": {},
     "origin": [
@@ -607,7 +607,7 @@
     ]
   },
   {
-    "id": "gMgE+g",
+    "id": "gMgE-g",
     "message": "Fixture message before an HTML comment interpolation.",
     "placeholders": {},
     "origin": [
@@ -667,7 +667,7 @@
     ]
   },
   {
-    "id": "Em/oYy",
+    "id": "Em_oYy",
     "message": "<0/> Fixture message after a conditional Astro HTML comment.",
     "placeholders": {},
     "origin": [
@@ -697,7 +697,7 @@
     ]
   },
   {
-    "id": "O5ta/s",
+    "id": "O5ta_s",
     "message": "Fixture message before a Trans-wrapped JavaScript comment interpolation.  Fixture message after a Trans-wrapped JavaScript comment interpolation.",
     "placeholders": {},
     "origin": [
@@ -739,7 +739,7 @@
     ]
   },
   {
-    "id": "JpH47+",
+    "id": "JpH47-",
     "message": "These notes mirror the kind of mixed script and template content that the transform benchmark should exercise.",
     "placeholders": {},
     "origin": [
@@ -749,7 +749,7 @@
     ]
   },
   {
-    "id": "AzV+h+",
+    "id": "AzV-h-",
     "message": "Note {0}",
     "placeholders": {
       "0": "String(index + 1)"

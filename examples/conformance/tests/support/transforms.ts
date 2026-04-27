@@ -54,7 +54,7 @@ function transformOfficial(code: string, filename: string): string {
       sourceType: "module",
       plugins: ["jsx", "typescript"],
     },
-    plugins: [[linguiMacroPlugin, { extract: false, linguiConfig }]],
+    plugins: [[linguiMacroPlugin, { descriptorFields: "auto", linguiConfig }]],
   });
   if (!result?.code) {
     throw new Error(`Failed to transform ${filename}`);
