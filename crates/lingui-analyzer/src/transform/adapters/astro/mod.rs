@@ -86,6 +86,8 @@ pub struct AstroTransformFrontmatterRegion {
     pub has_remaining_content_after_import_removal: bool,
 }
 
+// This mirrors framework::astro::AstroFragmentTagPair but stays separate so
+// the public transform plan owns its serialized representation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
 #[tsify()]
 #[serde(rename_all = "camelCase")]

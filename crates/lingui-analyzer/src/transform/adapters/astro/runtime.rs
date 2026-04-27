@@ -202,6 +202,8 @@ fn convert_runtime_trans_root(
             .map_err(AstroAdapterError::from)?,
     );
 
+    // RuntimeTrans is emitted as paired tags in both branches so slot callback
+    // support does not depend on the original JSX descriptor being self-closing.
     if slot_callbacks.is_empty() {
         push_anchor_mapped(
             &mut mapped,

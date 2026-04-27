@@ -122,3 +122,85 @@ pub(crate) fn is_fragment_wrapper(source: &str, node: Node<'_>) -> bool {
 fn tag_node_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
     non_empty_tag_name_node(node).map(|tag_name| node_text(source, tag_name))
 }
+
+#[cfg(test)]
+mod tests {
+    use tree_sitter::Node;
+
+    use crate::syntax::parse::parse_astro;
+
+    use super::*;
+
+    fn with_html_interpolation<R>(source: &str, test: impl FnOnce(Span, Vec<Node<'_>>) -> R) -> R {
+        let tree = parse_astro(source).expect("source parses as Astro");
+        let interpolation =
+            find_first_node(tree.root_node(), "html_interpolation").expect("interpolation exists");
+        let inner =
+            Span::new_unchecked(interpolation.start_byte() + 1, interpolation.end_byte() - 1);
+        let children = named_children_in_span(source, interpolation, inner);
+        test(inner, children)
+    }
+
+    fn find_first_node<'a>(node: Node<'a>, kind: &str) -> Option<Node<'a>> {
+        if node.kind() == kind {
+            return Some(node);
+        }
+
+        let mut cursor = node.walk();
+        node.children(&mut cursor)
+            .find_map(|child| find_first_node(child, kind))
+    }
+
+    #[test]
+    fn ignores_blank_text_children_around_single_root_interpolation() {
+        with_html_interpolation("{ <span /> }", |inner, children| {
+            assert_eq!(children.len(), 1);
+            assert!(is_single_root_interpolation(
+                "{ <span /> }",
+                inner,
+                &children
+            ));
+            assert!(!is_rich_node_expression_interpolation(
+                "{ <span /> }",
+                inner,
+                &children
+            ));
+        });
+    }
+
+    #[test]
+    fn classifies_comment_only_interpolation_as_not_rich() {
+        with_html_interpolation("{<!-- comment -->}", |inner, children| {
+            assert!(is_comment_only_interpolation(&children));
+            assert!(!is_rich_node_expression_interpolation(
+                "{<!-- comment -->}",
+                inner,
+                &children
+            ));
+        });
+    }
+
+    #[test]
+    fn treats_fragment_root_interpolation_as_not_rich() {
+        with_html_interpolation("{ <><span /></> }", |inner, children| {
+            assert_eq!(children.len(), 1);
+            assert!(is_fragment_wrapper("{ <><span /></> }", children[0]));
+            assert!(!is_rich_node_expression_interpolation(
+                "{ <><span /></> }",
+                inner,
+                &children
+            ));
+        });
+    }
+
+    #[test]
+    fn treats_comment_adjacent_markup_as_rich_root_list() {
+        with_html_interpolation("{<!-- comment --><span />}", |inner, children| {
+            assert!(is_rich_node_expression_interpolation(
+                "{<!-- comment --><span />}",
+                inner,
+                &children
+            ));
+        });
+    }
+}

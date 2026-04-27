@@ -4,6 +4,7 @@ use tree_sitter::Node;
 use crate::common::{InvalidSpan, Span, is_component_tag_name, node_text, span_text};
 use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
 
+use super::markup::named_children_in_span;
 use super::non_empty_tag_name_node;
 
 #[derive(thiserror::Error, Debug)]
@@ -120,6 +121,8 @@ struct LoweredNode {
     segments: Vec<AstroIrSegment>,
 }
 
+// This wrapper keeps extract-only helpers from being passed into transform-only
+// lowering paths without an explicit conversion at the call site.
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct ExtractOnlyLowered(LoweredNode);
 
@@ -219,11 +222,7 @@ fn lower_interpolation_expression(
     interpolation: Node<'_>,
 ) -> Result<LoweredNode, AstroIrError> {
     let inner_span = inner_range_from_delimiters(interpolation, 1, 1);
-    let mut child_cursor = interpolation.walk();
-    let children = interpolation
-        .named_children(&mut child_cursor)
-        .filter(|child| child.end_byte() > inner_span.start && child.start_byte() < inner_span.end)
-        .collect::<Vec<_>>();
+    let children = named_children_in_span(source, interpolation, inner_span);
 
     if is_interpolation_root_list(source, inner_span, &children) {
         return Ok(lower_interpolation_root_list(source, &children)?.into_lowered());
@@ -1004,7 +1003,7 @@ mod tests {
             ---
             const x = 1;
             ---
-            {<span>{translate`First`}</span><span>{translate`Second`}</span>}
+            { <span>{translate`First`}</span> <span>{translate`Second`}</span> }
             {<!-- This is an HTML comment --><><span>{translate`After comment`}</span></>}
         "#};
 
