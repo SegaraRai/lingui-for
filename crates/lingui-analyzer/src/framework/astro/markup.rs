@@ -96,17 +96,26 @@ pub(crate) fn contains_rich_node(node: Node<'_>) -> bool {
 }
 
 pub(crate) fn is_fragment_wrapper(source: &str, node: Node<'_>) -> bool {
-    node.kind() == "element"
-        && node
-            .children(&mut node.walk())
-            .any(|child| child.kind() == "start_tag" && tag_node_name(source, child).is_none())
-        && node
-            .children(&mut node.walk())
-            .any(|child| child.kind() == "end_tag" && tag_node_name(source, child).is_none())
+    if node.kind() != "element" {
+        return false;
+    }
+
+    let mut found_start_none = false;
+    let mut found_end_none = false;
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        match child.kind() {
+            "start_tag" if tag_node_name(source, child).is_none() => found_start_none = true,
+            "end_tag" if tag_node_name(source, child).is_none() => found_end_none = true,
+            _ => {}
+        }
+    }
+
+    found_start_none && found_end_none
 }
 
 fn tag_node_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
     node.children(&mut node.walk())
-        .find(|child| child.kind() == "tag_name")
+        .find(|child| child.kind() == "tag_name" && child.start_byte() != child.end_byte())
         .map(|tag_name| node_text(source, tag_name))
 }

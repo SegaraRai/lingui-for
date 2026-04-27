@@ -155,6 +155,8 @@ fn collect_fragment_normalization_replacements(
 
 fn node_contains_transform_target(plan: &AstroTransformPlan, node: Node<'_>) -> bool {
     let span = Span::from_node(node);
+    // retain_standalone_prototypes sorts prototypes by outer_span, and targets preserve that
+    // order with original_span set from candidate.outer_span.
     let first_contained = plan
         .common
         .targets
@@ -187,7 +189,7 @@ fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
 
 fn tag_name(node: Node<'_>) -> Option<Node<'_>> {
     node.children(&mut node.walk())
-        .find(|child| child.kind() == "tag_name")
+        .find(|child| child.kind() == "tag_name" && child.start_byte() != child.end_byte())
 }
 
 struct FrontmatterInjections {

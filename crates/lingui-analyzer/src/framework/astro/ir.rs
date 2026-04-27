@@ -429,7 +429,7 @@ fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrErr
     if start_or_self_closing_tag.kind() == "self_closing_tag" {
         return lower_self_closing_tag(source, start_or_self_closing_tag);
     }
-    if is_fragment_tag(source, start_or_self_closing_tag) {
+    if is_fragment_tag(start_or_self_closing_tag) {
         return lower_fragment(source, node);
     }
 
@@ -456,8 +456,8 @@ fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrErr
     Ok(builder.finish())
 }
 
-fn is_fragment_tag(source: &str, tag_node: Node<'_>) -> bool {
-    tag_node.kind() == "start_tag" && render_tag_name_node(source, tag_node).is_none()
+fn is_fragment_tag(tag_node: Node<'_>) -> bool {
+    tag_node.kind() == "start_tag" && render_tag_name_node(tag_node).is_none()
 }
 
 fn lower_fragment(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
@@ -494,8 +494,7 @@ fn lower_self_closing_tag(source: &str, node: Node<'_>) -> Result<LoweredNode, A
 }
 
 fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
-    let tag_name_node =
-        render_tag_name_node(source, tag_node).ok_or(AstroIrError::MissingTagName)?;
+    let tag_name_node = render_tag_name_node(tag_node).ok_or(AstroIrError::MissingTagName)?;
     let tag_name = node_text(source, tag_name_node);
 
     Ok(if is_component_tag_name(tag_name) {
@@ -514,11 +513,11 @@ fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode
     })
 }
 
-fn render_tag_name_node<'a>(source: &str, tag_node: Node<'a>) -> Option<Node<'a>> {
+fn render_tag_name_node(tag_node: Node<'_>) -> Option<Node<'_>> {
     let mut cursor = tag_node.walk();
     tag_node
         .children(&mut cursor)
-        .find(|child| child.kind() == "tag_name" && !node_text(source, *child).is_empty())
+        .find(|child| child.kind() == "tag_name" && child.start_byte() != child.end_byte())
 }
 
 fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
@@ -747,7 +746,7 @@ fn render_markup_child(source: &str, node: Node<'_>) -> Result<Option<LoweredNod
         "html_interpolation" => Ok(Some(lower_interpolation_expression(source, node)?)),
         "permissible_text" => {
             let value = node_text(source, node);
-            if value.is_empty() {
+            if node.start_byte() == node.end_byte() {
                 Ok(None)
             } else {
                 let mut builder = AstroIrBuilder::default();

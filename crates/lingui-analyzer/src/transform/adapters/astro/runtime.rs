@@ -520,15 +520,6 @@ fn collect_component_slot_callbacks_from_source(
     let root = tree.root_node();
     let wrappers = collect_runtime_component_wrappers_from_target(root, target, placeholders)?;
 
-    if wrappers.len() != placeholders.len() {
-        return Err(
-            AstroAdapterError::MismatchedAstroRuntimeComponentPlaceholderCount {
-                expected: placeholders.len(),
-                found: wrappers.len(),
-            },
-        );
-    }
-
     let slot_callbacks = placeholders
         .iter()
         .zip(wrappers)
