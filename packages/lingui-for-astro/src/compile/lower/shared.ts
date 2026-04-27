@@ -2,6 +2,7 @@ import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
+  createLinguiMacroPluginOptions,
   fromBabelSourceMap,
   type BabelSourceMap,
   type CanonicalSourceMap,
@@ -47,10 +48,12 @@ export function transformAstroProgram(
     plugins: [
       [
         linguiMacroPlugin,
-        {
-          descriptorFields: lowering.extract ? "all" : "auto",
+        createLinguiMacroPluginOptions({
+          extract: lowering.extract,
           linguiConfig: lowering.linguiConfig,
-        },
+          pluginEntryUrl: import.meta
+            .resolve("@lingui/babel-plugin-lingui-macro"),
+        }),
       ],
       createAstroMacroPostprocessPlugin(postprocess),
     ],

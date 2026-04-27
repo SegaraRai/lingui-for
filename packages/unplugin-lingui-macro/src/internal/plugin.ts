@@ -9,7 +9,10 @@ import {
   type UnpluginInstance,
 } from "unplugin";
 
-import { stripQuery } from "@lingui-for/internal-shared-common";
+import {
+  createLinguiMacroPluginOptions,
+  stripQuery,
+} from "@lingui-for/internal-shared-common";
 
 import type { LinguiMacroPluginOptions } from "../types.ts";
 import { hasImport } from "./imports.ts";
@@ -193,10 +196,12 @@ export const unpluginFactory: UnpluginFactory<
         plugins: [
           [
             linguiMacroPlugin,
-            {
-              descriptorFields: "auto",
+            createLinguiMacroPluginOptions({
+              extract: false,
               linguiConfig,
-            },
+              pluginEntryUrl: import.meta
+                .resolve("@lingui/babel-plugin-lingui-macro"),
+            }),
           ],
         ],
       });
