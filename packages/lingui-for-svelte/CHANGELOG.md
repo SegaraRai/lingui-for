@@ -1,5 +1,12 @@
 # lingui-for-svelte
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`c97a39a`](https://github.com/SegaraRai/lingui-for/commit/c97a39aff9d7e236e515e719c73cb4802843ed86)]:
+  - @lingui-for/framework-core@0.5.1
+
 ## 0.5.0
 
 ### Minor Changes
