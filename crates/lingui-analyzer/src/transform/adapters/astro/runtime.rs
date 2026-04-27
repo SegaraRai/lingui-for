@@ -643,6 +643,12 @@ fn collect_matching_runtime_component_wrappers<'a>(
     if best_matches.len() == 1 {
         return Ok(best_matches[0].1.clone());
     }
+    if best_matches
+        .iter()
+        .all(|(_, wrappers, _, _)| same_wrapper_sequence(wrappers, &best_matches[0].1))
+    {
+        return Ok(best_matches[0].1.clone());
+    }
 
     Err(
         AstroAdapterError::AmbiguousAstroRuntimeComponentWrapperMatch {
@@ -658,6 +664,15 @@ fn collect_matching_runtime_component_wrappers<'a>(
             ),
         },
     )
+}
+
+fn same_wrapper_sequence(left: &[Node<'_>], right: &[Node<'_>]) -> bool {
+    left.len() == right.len()
+        && left.iter().zip(right).all(|(left, right)| {
+            left.kind() == right.kind()
+                && left.start_byte() == right.start_byte()
+                && left.end_byte() == right.end_byte()
+        })
 }
 
 struct AstroLoweredComponentSlots {
