@@ -21,7 +21,7 @@ Astro の `Trans` は、JSX 専用の形に留まらず、ネイティブな Ast
 
 `Trans` は、HTML 要素、フラグメント、HTML コメントを含む Astro 補間式を保持できます。
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```astro
 ---
 import { Trans } from "lingui-for-astro/macro";
@@ -39,7 +39,7 @@ const showDetails = true;
 外側の `Trans` は、この保持された式の内側にあるテキストを追加で抽出しません。
 条件分岐の中のテキストも翻訳したい場合は、分岐の中で `t` を使ってください。
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```astro
 ---
 import { Trans, t } from "lingui-for-astro/macro";

@@ -23,7 +23,7 @@ JSX-only shape.
 `Trans` can preserve Astro interpolation expressions that contain HTML elements, fragments, or HTML
 comments.
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```astro
 ---
 import { Trans } from "lingui-for-astro/macro";
@@ -41,7 +41,7 @@ original Astro expression as Astro markup.
 The outer `Trans` does not extract text from inside that preserved expression. If text inside a
 conditional branch should be translated, use `t` inside the branch:
 
-<!-- prettier-ignore -->
+{/* prettier-ignore */}
 ```astro
 ---
 import { Trans, t } from "lingui-for-astro/macro";
