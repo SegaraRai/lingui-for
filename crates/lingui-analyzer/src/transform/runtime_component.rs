@@ -2,8 +2,8 @@ use lean_string::LeanString;
 use tree_sitter::Node;
 
 use crate::common::{
-    IndexedSourceMap, IndexedText, MappedText, MappedTextError, RenderedMappedText, Span,
-    build_span_anchor_map, unquote,
+    IndexedSourceMap, IndexedText, InvalidSpan, MappedText, MappedTextError, RenderedMappedText,
+    Span, build_span_anchor_map, unquote,
 };
 use crate::syntax::parse::ParseError;
 
@@ -13,6 +13,8 @@ pub enum RuntimeComponentError {
     Parse(#[from] ParseError),
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
+    #[error(transparent)]
+    InvalidSpan(#[from] InvalidSpan),
     #[error("missing variable declarator for transformed component")]
     MissingVariableDeclaratorForTransformedComponent,
     #[error("missing initializer for transformed component")]
@@ -513,7 +515,7 @@ pub(super) fn translated_span(
 ) -> Result<Span, RuntimeComponentError> {
     let start = translated_offset(node.start_byte(), base_offset)?;
     let end = translated_offset(node.end_byte(), base_offset)?;
-    Ok(Span::new(start, end))
+    Ok(Span::new(start, end)?)
 }
 
 fn translated_offset(offset: usize, base_offset: isize) -> Result<usize, RuntimeComponentError> {
@@ -720,14 +722,33 @@ mod tests {
         let source = "... /*keep*/ ({ foo: bar })";
 
         assert_eq!(
-            spread_prefix_start(source, Span::new(0, source.len()), Span::new(12, 26)).unwrap(),
+            spread_prefix_start(
+                source,
+                Span::new_unchecked(0, source.len()),
+                Span::new_unchecked(12, 26)
+            )
+            .unwrap(),
             3
         );
     }
 
     #[test]
     fn rejects_invalid_spread_prefix_start() {
-        assert!(spread_prefix_start("{..x}", Span::new(0, 5), Span::new(4, 5)).is_err());
-        assert!(spread_prefix_start("{...x}", Span::new(0, 6), Span::new(2, 5)).is_err());
+        assert!(
+            spread_prefix_start(
+                "{..x}",
+                Span::new_unchecked(0, 5),
+                Span::new_unchecked(4, 5)
+            )
+            .is_err()
+        );
+        assert!(
+            spread_prefix_start(
+                "{...x}",
+                Span::new_unchecked(0, 6),
+                Span::new_unchecked(2, 5)
+            )
+            .is_err()
+        );
     }
 }

@@ -113,7 +113,7 @@ describe("transformAstro", () => {
       'import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";',
     );
     expect(code).toContain(
-      '<L4aRuntimeTrans placeholders={["0"]} {.../*i18n*/ {',
+      '<L4aRuntimeTrans placeholders={["0"]} {...(/*i18n*/ {',
     );
     expect(code).not.toContain("<LocalTrans");
     expect(code).toContain('message: "Read the <0>docs</0>, {name}."');
@@ -624,6 +624,185 @@ describe("transformAstro", () => {
     expect(code).toContain('message: "Outer"');
     expect(result.code).toContain("return translate`Inner`;");
     expect(code).not.toContain('message: "Inner"');
+  });
+
+  test("normalizes shorthand fragments inside html interpolation after transforming nested macros", async () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+      ---
+
+      {<><p>{t\`First fragment child\`}</p><p>{t\`Second fragment child\`}</p></>}
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain("<Fragment><p>{__l4a_i18n._(");
+    expect(code).toContain("</p><p>{__l4a_i18n._(");
+    expect(code).toContain("</p></Fragment>");
+  });
+
+  test("supports transformed macros next to Astro HTML comment conditional branches", async () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+      const ok = true;
+      ---
+
+      {ok ? <!-- ignored --> : <span>{t\`Fallback branch\`}</span>}
+      <p>{t\`Message after an Astro HTML comment branch.\`}</p>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain("Fallback branch");
+    expect(code).toContain("ok ? <!-- ignored --> : <span>{__l4a_i18n._(");
+    expect(code).toContain("Message after an Astro HTML comment branch.");
+  });
+
+  test("supports Trans components next to Astro HTML comment conditional branches", async () => {
+    const source = dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      const ok = true;
+      ---
+
+      {ok ? <!-- ignored --> : (<Trans>Fallback Trans branch</Trans>)}
+      {ok ? (<Trans>Consequent Trans branch</Trans>) : <!-- ignored -->}
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain('message: "Fallback Trans branch"');
+    expect(code).toContain('message: "Consequent Trans branch"');
+    expect(code).toContain(
+      "ok ? <!-- ignored --> : (<L4aRuntimeTrans {...(/*i18n*/ {",
+    );
+    expect(code).toContain("ok ? (<L4aRuntimeTrans {...(/*i18n*/ {");
+    expect(code).toContain(": <!-- ignored -->");
+  });
+
+  test("supports transformed macros around Astro HTML comment-only interpolation", async () => {
+    const source = dedent`
+      ---
+      import { t } from "lingui-for-astro/macro";
+      ---
+
+      <p>{t\`Before an Astro HTML comment interpolation.\`}</p>
+      {<!-- ignored -->}
+      <p>{t\`After an Astro HTML comment interpolation.\`}</p>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain("Before an Astro HTML comment interpolation.");
+    expect(code).toContain("After an Astro HTML comment interpolation.");
+  });
+
+  test("supports Astro HTML comments inside Trans component content", async () => {
+    const source = dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>Before an Astro HTML comment.<!-- ignored -->After an Astro HTML comment.</Trans>
+      <Trans>{<><!-- ignored fragment comment --><span>After a Fragment expression comment.</span></>}</Trans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain("Before an Astro HTML comment.");
+    expect(code).toContain("After an Astro HTML comment.");
+    expect(code).toContain("After a Fragment expression comment.");
+    expect(code).toContain(
+      '<fragment slot="component_0"><!-- ignored --></fragment>',
+    );
+    expect(code).not.toContain("=> <!--");
+  });
+
+  test("supports Astro interpolation comments inside Trans component content", async () => {
+    const source = dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      const ok = true;
+      ---
+
+      <Trans>{ok ? <!-- ignored --> : <span>Fallback</span>}After a conditional Astro HTML comment.</Trans>
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain("After a conditional Astro HTML comment.");
+    expect(code).toContain(
+      'message: "<0/>After a conditional Astro HTML comment."',
+    );
+    expect(code).toContain('placeholders={["0"]}');
+    expect(code).toContain(
+      '<fragment slot="component_0">{ok ? <!-- ignored --> : <span>Fallback</span>}</fragment>',
+    );
+    expect(code).not.toContain("values:");
+    expect(code).not.toContain("[object Object]");
+    expect(code).not.toContain("<__astro_cm />");
+  });
+
+  test("supports Trans components with Astro-only children inside html interpolation", async () => {
+    const source = dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      {<Trans>Before a JavaScript comment.{/* ignored */}After a JavaScript comment.</Trans>}
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain("Before a JavaScript comment.");
+    expect(code).toContain("After a JavaScript comment.");
+  });
+
+  test("extracts rich text placeholders from Trans-wrapped fragment interpolations", async () => {
+    const source = dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>{<><!-- ignored --><p>First fragment child.</p><p>Second fragment child.</p></>}</Trans>
+      {<Trans>{<><!-- ignored --><p>First nested fragment child.</p><p>Second nested fragment child.</p></>}</Trans>}
+    `;
+
+    const result = await expectTransformed(source, {
+      filename: "/virtual/Page.astro",
+    });
+    const code = compact(result.code);
+
+    expect(code).toContain(
+      'message: "<0><1/><2>First fragment child.</2><3>Second fragment child.</3></0>"',
+    );
+    expect(code).toContain(
+      'message: "<0><1/><2>First nested fragment child.</2><3>Second nested fragment child.</3></0>"',
+    );
+    expect(code).not.toContain('message: "{0}"');
   });
 
   test("leaves same-name non-macro components untouched", async () => {

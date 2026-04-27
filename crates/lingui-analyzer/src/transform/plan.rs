@@ -69,6 +69,7 @@ pub(crate) fn build_transform_plan_for_framework<P: FrameworkTransformPlan>(
             output_kind: prototype.output_kind,
             translation_mode: prototype.translation_mode,
             normalized_segments: target.normalized_segments,
+            runtime_component_wrapper_spans: target.candidate.runtime_component_wrapper_spans,
         })
         .collect::<Vec<_>>();
 
@@ -201,7 +202,7 @@ mod tests {
             source: ls(source),
             imported_name: ls(imported_name),
             local_name: ls(local_name),
-            span: Span::new(0, 0),
+            span: Span::new_unchecked(0, 0),
         }
     }
 
@@ -218,6 +219,7 @@ mod tests {
             source_map_anchor: None,
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
+            runtime_component_wrapper_spans: Vec::new(),
         }
     }
 
@@ -295,7 +297,7 @@ mod tests {
             imports: Vec::new(),
             targets: vec![SynthesisTarget {
                 declaration_id: ls("__lf_0"),
-                candidate: candidate(Span::new(0, source.len())),
+                candidate: candidate(Span::new_unchecked(0, source.len())),
                 normalized_rendered: RenderedMappedText {
                     code: ls("wrapped"),
                     indexed_source_map: None,
@@ -303,7 +305,7 @@ mod tests {
                 normalized_segments: Vec::new(),
             }],
         };
-        let prototypes = vec![prototype(Span::new(0, source.len()))];
+        let prototypes = vec![prototype(Span::new_unchecked(0, source.len()))];
 
         let rendered = build_transform_synthetic_source(
             &source_text,
@@ -350,7 +352,7 @@ mod tests {
             imports: Vec::new(),
             targets: vec![SynthesisTarget {
                 declaration_id: ls("__lf_0"),
-                candidate: candidate(Span::new(0, source.len())),
+                candidate: candidate(Span::new_unchecked(0, source.len())),
                 normalized_rendered: RenderedMappedText {
                     code: ls(source),
                     indexed_source_map: build_span_anchor_map(
@@ -368,7 +370,7 @@ mod tests {
                 }],
             }],
         };
-        let prototypes = vec![prototype(Span::new(0, source.len()))];
+        let prototypes = vec![prototype(Span::new_unchecked(0, source.len()))];
 
         let rendered = build_transform_synthetic_source(
             &source_text,

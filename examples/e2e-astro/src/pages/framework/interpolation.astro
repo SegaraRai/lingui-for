@@ -1,0 +1,87 @@
+---
+// Unsupported Astro 6.1.9 interpolation forms observed in this fixture:
+//
+//   {<span>first</span><span>second</span>}
+//   {<!-- comment --><span>single node after comment</span>}
+//   {<!-- comment --><><span>first</span><span>second</span></>}
+//
+// In production builds, an interpolation must resolve to a single root
+// expression. Use a Fragment when returning adjacent nodes. HTML comments are
+// valid as a root by themselves, inside a Fragment, or as a conditional branch.
+//
+// `astro build` error observed:
+//
+//   Transform failed with 1 error:
+//   interpolation.astro:line:column: ERROR: Expected "}" but found ...
+
+const trueBranch = true;
+const falseBranch = false;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Astro interpolation behavior checks</title>
+  </head>
+  <body>
+    <main>
+      <h1>Astro interpolation behavior checks</h1>
+
+      <section data-case="plain-expression">
+        <h2>Plain expressions</h2>
+        <p>{`Allowed: a JavaScript expression can produce text.`}</p>
+      </section>
+
+      <section data-case="single-element-root">
+        <h2>Single element root</h2>
+        {<p>Allowed: an interpolation can render one element root.</p>}
+      </section>
+
+      <section data-case="js-comment-only">
+        <h2>JS comment-only interpolation</h2>
+        {/* js-only */}
+        <p>Allowed: a JavaScript block comment can be the whole interpolation.</p>
+      </section>
+
+      <section data-case="html-comment-only">
+        <h2>HTML comment-only interpolation</h2>
+        {<!-- html-only -->}
+        <p>Allowed: an HTML comment can be the whole interpolation.</p>
+      </section>
+
+      <section data-case="fragment-wrapped-roots">
+        <h2>Fragment-wrapped adjacent roots</h2>
+        {<><p>Allowed: first node inside fragment.</p><p>Allowed: second node inside fragment.</p></>}
+      </section>
+
+      <section data-case="fragment-wrapped-html-comment">
+        <h2>Fragment-wrapped HTML comment and adjacent roots</h2>
+        {<><!-- fragment comment --><p>Allowed: first node after a comment inside fragment.</p><p>Allowed: second node after a comment inside fragment.</p></>}
+      </section>
+
+      <section data-case="html-comment-left-branch-selected">
+        <h2>HTML comment as selected conditional consequent</h2>
+        {trueBranch ? <!-- ternary-html-left-selected --> : <span>unexpected left selected alternate</span>}
+        <p>Allowed: a selected HTML comment branch renders no visible node.</p>
+      </section>
+
+      <section data-case="html-comment-left-branch-not-selected">
+        <h2>HTML comment as unselected conditional consequent</h2>
+        {falseBranch ? <!-- ternary-html-left-not-selected --> : <span>Allowed: alternate element branch rendered.</span>}
+      </section>
+
+      <section data-case="html-comment-right-branch-not-selected">
+        <h2>HTML comment as unselected conditional alternate</h2>
+        {trueBranch ? <span>Allowed: consequent element branch rendered.</span> : <!-- ternary-html-right-not-selected -->}
+      </section>
+
+      <section data-case="html-comment-right-branch-selected">
+        <h2>HTML comment as selected conditional alternate</h2>
+        {falseBranch ? <span>unexpected right selected consequent</span> : <!-- ternary-html-right-selected -->}
+        <p>Allowed: a selected HTML comment alternate renders no visible node.</p>
+      </section>
+    </main>
+  </body>
+</html>

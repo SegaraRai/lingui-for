@@ -1,7 +1,7 @@
 use lean_string::LeanString;
 use sourcemap::{SourceMap, SourceMapBuilder};
 
-use crate::common::{IndexedText, Span};
+use crate::common::{IndexedText, InvalidSourceSpan, InvalidSpan, Span};
 
 use super::primitives::{
     IndexedSourceMap, IndexedToken, extract_generated_submap,
@@ -26,6 +26,10 @@ pub(crate) struct MappedText<'a> {
 
 #[derive(thiserror::Error, Debug)]
 pub enum MappedTextError {
+    #[error(transparent)]
+    InvalidSpan(#[from] InvalidSpan),
+    #[error(transparent)]
+    InvalidSourceSpan(#[from] InvalidSourceSpan),
     #[error("failed to compose source maps")]
     SourceMapCompositionFailed,
     #[error("span out of bounds")]
@@ -487,7 +491,9 @@ mod tests {
         let mut mapped = MappedText::new(&source_name, &source_text);
         mapped.push("cde", Some(identity_submap("test.ts", source, 2, 5)));
 
-        let sliced = mapped.slice(Span::new(1, 3)).expect("slice succeeds");
+        let sliced = mapped
+            .slice(Span::new_unchecked(1, 3))
+            .expect("slice succeeds");
         let rendered = sliced.into_rendered().expect("render succeeds");
 
         assert_eq!(rendered.code, "de");
@@ -519,10 +525,10 @@ mod tests {
             None,
         );
         let prefix = mapped
-            .slice(Span::new(0, 2))
+            .slice(Span::new_unchecked(0, 2))
             .expect("prefix slice succeeds");
         let suffix = mapped
-            .slice(Span::new(4, mapped.len()))
+            .slice(Span::new_unchecked(4, mapped.len()))
             .expect("suffix slice succeeds");
         let mut combined = MappedText::new(&source_name, &source_text);
         combined.append(prefix).expect("append prefix succeeds");

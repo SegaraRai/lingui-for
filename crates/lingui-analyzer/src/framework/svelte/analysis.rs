@@ -449,7 +449,7 @@ fn expand_import_removal_span_in_source(source: &str, span: Span) -> Span {
         end += 1;
     }
 
-    Span::new(start, end)
+    Span::new_unchecked(start, end)
 }
 
 fn start_tag_is_module(source: &str, start_tag: Node<'_>) -> bool {

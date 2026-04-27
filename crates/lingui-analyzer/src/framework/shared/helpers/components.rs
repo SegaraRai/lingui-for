@@ -15,7 +15,7 @@ pub(crate) fn first_non_whitespace_child_anchor(
 
         let child_text = node_text(source, child);
         if let Some(trimmed_start) = child_text.find(|char: char| !char.is_whitespace()) {
-            return Some(Span::new(
+            return Some(Span::new_unchecked(
                 child.start_byte() + trimmed_start,
                 child.end_byte(),
             ));

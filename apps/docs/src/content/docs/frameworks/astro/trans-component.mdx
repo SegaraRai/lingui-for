@@ -18,6 +18,44 @@ JSX-only shape.
 - `set:html`
 - `set:text`
 
+## Astro interpolation expressions
+
+`Trans` can preserve Astro interpolation expressions that contain HTML elements, fragments, or HTML
+comments.
+
+{/* prettier-ignore */}
+```astro
+---
+import { Trans } from "lingui-for-astro/macro";
+
+const showDetails = true;
+---
+
+<Trans>{showDetails ? <span>Details</span> : <!-- details hidden -->}</Trans>
+<Trans>{<><!-- details marker --><span>Details</span></>}</Trans>
+```
+
+These expressions are treated as one rich-text placeholder. At runtime, the placeholder renders the
+original Astro expression as Astro markup.
+
+The outer `Trans` does not extract text from inside that preserved expression. If text inside a
+conditional branch should be translated, use `t` inside the branch:
+
+{/* prettier-ignore */}
+```astro
+---
+import { Trans, t } from "lingui-for-astro/macro";
+
+const showDetails = true;
+---
+
+<Trans>{showDetails ? <span>{t`Details`}</span> : <span aria-hidden="true" />}</Trans>
+```
+
+Nested `Trans` is not supported. The outer `Trans` treats the whole node-bearing expression as a
+single rich-text placeholder, so inner text that needs translation should use `t` inside the
+expression.
+
 ## Still unsupported
 
 Some Astro constructs conflict with runtime rich-text rendering and are intentionally rejected.

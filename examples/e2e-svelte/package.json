@@ -5,23 +5,23 @@
   "dependencies": {
     "@lingui/core": "^5.9.5",
     "lingui-for-svelte": "workspace:*",
-    "svelte": "^5.55.2"
+    "svelte": "^5.55.5"
   },
   "devDependencies": {
     "@lingui/cli": "^5.9.5",
     "@lingui/conf": "^5.9.5",
     "@sveltejs/adapter-node": "^5.5.4",
-    "@sveltejs/kit": "^2.57.0",
+    "@sveltejs/kit": "^2.58.0",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "@tailwindcss/vite": "^4.2.2",
+    "@tailwindcss/vite": "^4.2.4",
     "@types/node": "catalog:",
     "daisyui": "^5.5.19",
     "playwright": "^1.59.1",
     "svelte-check": "^4.4.6",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "^4.2.4",
     "typescript": "catalog:",
     "unplugin-lingui-macro": "workspace:*",
-    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.16",
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.19",
     "vite-plus": "catalog:"
   }
 }

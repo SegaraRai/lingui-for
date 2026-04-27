@@ -1,9 +1,11 @@
 mod analysis;
-mod components;
+pub(crate) mod components;
 pub mod ir;
+pub(crate) mod markup;
 mod validation;
 
 use lean_string::LeanString;
+use tree_sitter::Node;
 
 use crate::common::{EmbeddedScriptRegion, Span};
 use crate::diagnostics::LinguiAnalyzerDiagnostic;
@@ -25,10 +27,8 @@ pub enum AstroFrameworkError {
     Js(#[from] JsAnalysisError),
     #[error(transparent)]
     Ir(#[from] AstroIrError),
-    #[error(
-        "bundled Astro html interpolation root count mismatch: expected {expected}, found {found}"
-    )]
-    BundledRootCountMismatch { expected: usize, found: usize },
+    #[error("missing bundled Astro html interpolation root for declaration `{declaration_id}`")]
+    MissingBundledExpressionRoot { declaration_id: LeanString },
     #[error("{0}")]
     InvalidMacroUsage(LinguiAnalyzerDiagnostic),
 }
@@ -74,6 +74,7 @@ pub struct AstroSemanticAnalysis {
 pub struct AstroSourceMetadata {
     pub frontmatter: Option<EmbeddedScriptRegion>,
     pub frontmatter_import_statement_spans: Vec<Span>,
+    pub fragment_tag_pairs: Vec<AstroFragmentTagPair>,
     pub source_anchors: Vec<usize>,
 }
 
@@ -81,6 +82,18 @@ pub struct AstroSourceMetadata {
 pub struct AstroFrontmatterAnalysis {
     pub semantic: AstroSemanticAnalysis,
     pub metadata: AstroSourceMetadata,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AstroFragmentTagPair {
+    pub element_span: Span,
+    pub start_tag_span: Span,
+    pub end_tag_span: Span,
+}
+
+pub(crate) fn non_empty_tag_name_node(node: Node<'_>) -> Option<Node<'_>> {
+    node.children(&mut node.walk())
+        .find(|child| child.kind() == "tag_name" && child.start_byte() != child.end_byte())
 }
 
 #[cfg(test)]

@@ -41,7 +41,7 @@ pub(super) fn append_runtime_injection_replacements(
                     span.start >= insertion_start && span.end <= instance_script.content_span.end
                 })
                 .copied()
-                .unwrap_or(Span::new(insertion_start, insertion_start));
+                .unwrap_or(Span::new_unchecked(insertion_start, insertion_start));
             let prelude = injections.prelude;
             let source_map = build_span_anchor_map(
                 plan.common.source_name.as_str(),

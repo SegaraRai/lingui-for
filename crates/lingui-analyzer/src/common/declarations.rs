@@ -57,7 +57,7 @@ pub(crate) fn collect_variable_initializer_declarations(
                 declarator,
                 value_start,
                 value.end_byte(),
-            );
+            )?;
             let rendered = normalize_i18n_comment_layout_rendered(
                 &raw_code,
                 raw_indexed_submap.as_ref(),
@@ -128,7 +128,12 @@ fn normalize_i18n_comment_layout_rendered(
     let mut cursor = 0usize;
 
     for span in collapse_spans {
-        mapped.append_slice_from(&original, Span::new(cursor, span.start))?;
+        mapped.append_slice_from(
+            &original,
+            indexed_input
+                .span(cursor, span.start)
+                .map_err(MappedTextError::from)?,
+        )?;
         mapped.push(
             " ",
             build_span_anchor_map(
@@ -143,7 +148,12 @@ fn normalize_i18n_comment_layout_rendered(
     }
 
     if cursor < input.len() {
-        mapped.append_slice_from(&original, Span::new(cursor, input.len()))?;
+        mapped.append_slice_from(
+            &original,
+            indexed_input
+                .span(cursor, input.len())
+                .map_err(MappedTextError::from)?,
+        )?;
     }
 
     mapped.into_rendered().map_err(Into::into)
@@ -154,7 +164,7 @@ fn collect_i18n_comment_whitespace_spans(
     declarator: Node<'_>,
     base_offset: usize,
     limit: usize,
-) -> Vec<Span> {
+) -> Result<Vec<Span>, MappedTextError> {
     let mut spans = Vec::new();
     collect_i18n_comment_whitespace_spans_recursive(
         source,
@@ -163,9 +173,9 @@ fn collect_i18n_comment_whitespace_spans(
         base_offset,
         limit,
         &mut spans,
-    );
+    )?;
     spans.sort_by_key(|span| (span.start, span.end));
-    spans
+    Ok(spans)
 }
 
 fn collect_i18n_comment_whitespace_spans_recursive(
@@ -175,17 +185,14 @@ fn collect_i18n_comment_whitespace_spans_recursive(
     declaration_start: usize,
     declaration_end: usize,
     spans: &mut Vec<Span>,
-) {
+) -> Result<(), MappedTextError> {
     if node.kind() == "comment"
         && node.start_byte() >= declaration_start
         && node.end_byte() <= declaration_end
         && node_text(source, node) == "/*i18n*/"
         && let Some(span) = whitespace_span_before_object(source, node.end_byte(), declaration_end)
     {
-        spans.push(Span::new(
-            span.start.saturating_sub(base_offset),
-            span.end.saturating_sub(base_offset),
-        ));
+        spans.push(Span::new(span.start - base_offset, span.end - base_offset)?);
     }
 
     let mut cursor = node.walk();
@@ -197,8 +204,9 @@ fn collect_i18n_comment_whitespace_spans_recursive(
             declaration_start,
             declaration_end,
             spans,
-        );
+        )?;
     }
+    Ok(())
 }
 
 fn whitespace_span_before_object(source: &str, start: usize, limit: usize) -> Option<Span> {
@@ -210,7 +218,7 @@ fn whitespace_span_before_object(source: &str, start: usize, limit: usize) -> Op
     }
 
     if cursor > start && cursor < bounded_limit && source[cursor..].starts_with('{') {
-        Some(Span::new(start, cursor))
+        Some(Span::new_unchecked(start, cursor))
     } else {
         None
     }
@@ -235,7 +243,8 @@ mod tests {
     fn normalize_i18n_comment_layout_collapses_comment_to_object_spacing() {
         let input = "/*i18n*/\n  \t{ id: \"x\" }";
         let tree = parse_tsx(input).expect("parse succeeds");
-        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
+        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len())
+            .expect("span collection succeeds");
 
         assert_eq!(
             normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
@@ -249,7 +258,8 @@ mod tests {
     fn normalize_i18n_comment_layout_leaves_non_prefix_sequences_untouched() {
         let input = "before /*other*/\n{ value } after";
         let tree = parse_tsx(input).expect("parse succeeds");
-        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
+        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len())
+            .expect("span collection succeeds");
 
         assert_eq!(
             normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
@@ -264,7 +274,8 @@ mod tests {
         let input = r#""prefix /*i18n*/
   { sample } suffix""#;
         let tree = parse_tsx(input).expect("parse succeeds");
-        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
+        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len())
+            .expect("span collection succeeds");
 
         assert_eq!(
             normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
@@ -278,7 +289,8 @@ mod tests {
     fn normalize_i18n_comment_layout_ignores_marker_inside_template_data() {
         let input = "String.raw`prefix /*i18n*/\n  { sample } suffix`";
         let tree = parse_tsx(input).expect("parse succeeds");
-        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
+        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len())
+            .expect("span collection succeeds");
 
         assert_eq!(
             normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
@@ -292,7 +304,8 @@ mod tests {
     fn normalize_i18n_comment_layout_collapses_i18n_comment_inside_call() {
         let input = "render(/*i18n*/\n  { id: \"x\" })";
         let tree = parse_tsx(input).expect("parse succeeds");
-        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len());
+        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len())
+            .expect("span collection succeeds");
 
         assert_eq!(
             normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)

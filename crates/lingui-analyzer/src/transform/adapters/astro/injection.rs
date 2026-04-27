@@ -11,6 +11,8 @@ pub(super) fn append_runtime_injection_replacements(
     source: &LeanString,
     replacements: &mut Vec<TransformReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
+    append_fragment_normalization_replacements(plan, replacements);
+
     let indexed_source = IndexedText::new(source);
     let injections = build_frontmatter_injections(
         plan.runtime_requirements.needs_runtime_i18n_binding,
@@ -31,15 +33,15 @@ pub(super) fn append_runtime_injection_replacements(
         } else {
             prelude
         };
-        let anchor_span = plan
-            .common
-            .import_removals
-            .first()
-            .copied()
-            .unwrap_or(Span::new(
-                frontmatter.prelude_insert_point,
-                frontmatter.prelude_insert_point,
-            ));
+        let anchor_span =
+            plan.common
+                .import_removals
+                .first()
+                .copied()
+                .unwrap_or(Span::new_unchecked(
+                    frontmatter.prelude_insert_point,
+                    frontmatter.prelude_insert_point,
+                ));
         let source_map = build_span_anchor_map(
             plan.common.source_name.as_str(),
             &indexed_source,
@@ -100,6 +102,33 @@ pub(super) fn append_runtime_injection_replacements(
         Vec::new(),
     ));
     Ok(())
+}
+
+fn append_fragment_normalization_replacements(
+    plan: &AstroTransformPlan,
+    replacements: &mut Vec<TransformReplacementInternal>,
+) {
+    for pair in &plan.fragment_tag_pairs {
+        replacements.push(TransformReplacementInternal::new(
+            LeanString::from(format!(
+                "__astro_fragment_start_{}",
+                pair.start_tag_span.start
+            )),
+            pair.start_tag_span.start,
+            pair.start_tag_span.end,
+            LeanString::from_static_str("<Fragment>"),
+            None,
+            Vec::new(),
+        ));
+        replacements.push(TransformReplacementInternal::new(
+            LeanString::from(format!("__astro_fragment_end_{}", pair.end_tag_span.start)),
+            pair.end_tag_span.start,
+            pair.end_tag_span.end,
+            LeanString::from_static_str("</Fragment>"),
+            None,
+            Vec::new(),
+        ));
+    }
 }
 
 struct FrontmatterInjections {

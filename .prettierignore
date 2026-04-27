@@ -1,2 +1,6 @@
-crates/lingui-analyzer/benches/fixtures/*
 **/generated/**
+
+crates/lingui-analyzer/benches/fixtures/*
+
+examples/e2e-astro/src/pages/framework/interpolation.astro
+examples/e2e-astro/src/pages/interpolation.astro

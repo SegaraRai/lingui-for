@@ -82,6 +82,7 @@ pub(super) fn component_candidate_from_element(
             source_map_anchor: component_source_map_anchor(source, node),
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
+            runtime_component_wrapper_spans: Vec::new(),
         },
         shadowed_names,
     }))
@@ -295,7 +296,7 @@ fn append_virtual_trans_child_wrapper_edits(
 
     if outer_span.start < inner_span.start {
         normalization_edits.push(NormalizationEdit::Delete {
-            span: Span::new(outer_span.start, inner_span.start),
+            span: Span::new_unchecked(outer_span.start, inner_span.start),
         });
     }
     normalization_edits.push(NormalizationEdit::Insert {
@@ -305,7 +306,7 @@ fn append_virtual_trans_child_wrapper_edits(
 
     if inner_span.end < outer_span.end {
         normalization_edits.push(NormalizationEdit::Delete {
-            span: Span::new(inner_span.end, outer_span.end),
+            span: Span::new_unchecked(inner_span.end, outer_span.end),
         });
     }
     normalization_edits.push(NormalizationEdit::Insert {

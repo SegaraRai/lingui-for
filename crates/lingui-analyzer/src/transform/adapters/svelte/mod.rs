@@ -8,7 +8,7 @@ use lean_string::LeanString;
 use serde::{Deserialize, Serialize};
 use tsify::Tsify;
 
-use crate::common::{MappedTextError, RenderedMappedText, ScriptLang, Span};
+use crate::common::{InvalidSourceSpan, MappedTextError, RenderedMappedText, ScriptLang, Span};
 use crate::conventions::FrameworkConventions;
 use crate::diagnostics::LinguiAnalyzerDiagnostic;
 use crate::diagnostics::svelte::bare_direct_macro_usage;
@@ -36,6 +36,8 @@ pub enum SvelteAdapterError {
     SvelteFramework(#[from] SvelteFrameworkError),
     #[error(transparent)]
     MappedText(#[from] MappedTextError),
+    #[error(transparent)]
+    InvalidSourceSpan(#[from] InvalidSourceSpan),
     #[error(transparent)]
     Parse(#[from] ParseError),
     #[error(transparent)]

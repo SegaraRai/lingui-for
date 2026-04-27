@@ -2,7 +2,17 @@ use std::ops::Range;
 
 use lean_string::LeanString;
 
-use super::Span;
+use super::{InvalidSpan, Span};
+
+#[derive(thiserror::Error, Debug, Clone, Copy, PartialEq, Eq)]
+pub enum InvalidSourceSpan {
+    #[error(transparent)]
+    InvalidSpan(#[from] InvalidSpan),
+    #[error("span end is out of bounds: end={end}, source_len={source_len}")]
+    OutOfBounds { end: usize, source_len: usize },
+    #[error("span boundary is not a UTF-8 character boundary: byte={byte}")]
+    NonCharBoundary { byte: usize },
+}
 
 mod utf16;
 
@@ -49,6 +59,23 @@ impl<'a> IndexedText<'a> {
 
     pub fn slice(&'a self, span: Span) -> Option<IndexedTextSlice<'a>> {
         IndexedTextSlice::new(self, span)
+    }
+
+    pub fn span(&self, start: usize, end: usize) -> Result<Span, InvalidSourceSpan> {
+        let span = Span::new(start, end)?;
+        if span.end > self.len() {
+            return Err(InvalidSourceSpan::OutOfBounds {
+                end: span.end,
+                source_len: self.len(),
+            });
+        }
+        if !self.text().is_char_boundary(span.start) {
+            return Err(InvalidSourceSpan::NonCharBoundary { byte: span.start });
+        }
+        if !self.text().is_char_boundary(span.end) {
+            return Err(InvalidSourceSpan::NonCharBoundary { byte: span.end });
+        }
+        Ok(span)
     }
 }
 
@@ -116,7 +143,7 @@ fn compute_line_starts(source: &str) -> Vec<usize> {
 mod tests {
     use lean_string::LeanString;
 
-    use crate::common::Span;
+    use crate::common::{InvalidSourceSpan, InvalidSpan, Span};
 
     use super::IndexedText;
 
@@ -125,7 +152,7 @@ mod tests {
         let source_text = LeanString::from("ab😀\nxyz\n");
         let source = IndexedText::new(&source_text);
         let slice = source
-            .slice(Span::new(1, "ab😀\nxy".len()))
+            .slice(Span::new_unchecked(1, "ab😀\nxy".len()))
             .expect("valid slice");
 
         assert_eq!(slice.byte_to_line_utf16_col(0), Some((0, 0)));
@@ -140,7 +167,7 @@ mod tests {
         let source_text = LeanString::from("abc");
         let source = IndexedText::new(&source_text);
 
-        assert!(source.slice(Span::new(1, 4)).is_none());
+        assert!(source.slice(Span::new_unchecked(1, 4)).is_none());
     }
 
     #[test]
@@ -148,7 +175,36 @@ mod tests {
         let source_text = LeanString::from("a😀b");
         let source = IndexedText::new(&source_text);
 
-        assert!(source.slice(Span::new(1, 2)).is_none());
-        assert!(source.slice(Span::new(0, 2)).is_none());
+        assert!(source.slice(Span::new_unchecked(1, 2)).is_none());
+        assert!(source.slice(Span::new_unchecked(0, 2)).is_none());
+    }
+
+    #[test]
+    fn span_validates_order_bounds_and_char_boundaries() {
+        let source_text = LeanString::from("a😀b");
+        let source = IndexedText::new(&source_text);
+
+        assert_eq!(
+            source.span(0, source_text.len()),
+            Ok(Span::new_unchecked(0, source_text.len()))
+        );
+        assert_eq!(
+            source.span(3, 1),
+            Err(InvalidSourceSpan::InvalidSpan(InvalidSpan::Reversed {
+                start: 3,
+                end: 1,
+            }))
+        );
+        assert_eq!(
+            source.span(0, source_text.len() + 1),
+            Err(InvalidSourceSpan::OutOfBounds {
+                end: source_text.len() + 1,
+                source_len: source_text.len(),
+            })
+        );
+        assert_eq!(
+            source.span(0, 2),
+            Err(InvalidSourceSpan::NonCharBoundary { byte: 2 })
+        );
     }
 }

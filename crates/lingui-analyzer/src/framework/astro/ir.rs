@@ -1,8 +1,11 @@
 use lean_string::LeanString;
 use tree_sitter::Node;
 
-use crate::common::{Span, is_component_tag_name, node_text, span_text};
-use crate::syntax::parse::{ParseError, parse_astro};
+use crate::common::{InvalidSpan, Span, is_component_tag_name, node_text, span_text};
+use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
+
+use super::markup::named_children_in_span;
+use super::non_empty_tag_name_node;
 
 #[derive(thiserror::Error, Debug)]
 pub enum AstroIrError {
@@ -12,6 +15,8 @@ pub enum AstroIrError {
     ExpectedHtmlInterpolation,
     #[error("missing Astro tag name while lowering interpolation")]
     MissingTagName,
+    #[error(transparent)]
+    InvalidSpan(#[from] InvalidSpan),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -31,6 +36,7 @@ pub struct LoweredAstroHtmlInterpolation {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BundledAstroHtmlInterpolation {
+    pub declaration_id: LeanString,
     pub outer_span: Span,
     pub inner_span: Span,
     pub synthetic_span: Span,
@@ -47,7 +53,7 @@ impl BundledAstroHtmlInterpolation {
     pub fn remap_generated_span(&self, span: Span) -> Option<Span> {
         let start = self.remap_generated_offset(span.start, false)?;
         let end = self.remap_generated_offset(span.end, true)?;
-        Some(Span::new(start, end.max(start)))
+        Span::new(start, end).ok()
     }
 
     fn remap_generated_offset(&self, offset: usize, allow_end_boundary: bool) -> Option<usize> {
@@ -115,6 +121,21 @@ struct LoweredNode {
     segments: Vec<AstroIrSegment>,
 }
 
+// This wrapper keeps extract-only helpers from being passed into transform-only
+// lowering paths without an explicit conversion at the call site.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ExtractOnlyLowered(LoweredNode);
+
+impl ExtractOnlyLowered {
+    pub fn new(node: LoweredNode) -> Self {
+        Self(node)
+    }
+
+    fn into_lowered(self) -> LoweredNode {
+        self.0
+    }
+}
+
 pub fn lower_astro_html_interpolations(
     source: &str,
 ) -> Result<Vec<LoweredAstroHtmlInterpolation>, AstroIrError> {
@@ -132,7 +153,8 @@ pub fn bundle_html_interpolations(
     let mut expressions = Vec::with_capacity(lowered.len());
 
     for (index, interpolation) in lowered.iter().enumerate() {
-        let prefix = format!("const __astro_expr_{index}__ = (");
+        let declaration_id = LeanString::from(format!("__astro_expr_{index}__"));
+        let prefix = format!("const {declaration_id} = (");
         code.push_str(&prefix);
         let synthetic_start = code.len();
         code.push_str(&interpolation.code);
@@ -140,9 +162,10 @@ pub fn bundle_html_interpolations(
         code.push_str(");\n");
 
         expressions.push(BundledAstroHtmlInterpolation {
+            declaration_id,
             outer_span: interpolation.outer_span,
             inner_span: interpolation.inner_span,
-            synthetic_span: Span::new(synthetic_start, synthetic_end),
+            synthetic_span: Span::new_unchecked(synthetic_start, synthetic_end),
             segments: interpolation
                 .segments
                 .iter()
@@ -184,7 +207,6 @@ fn collect_html_interpolations(
 ) -> Result<(), AstroIrError> {
     if node.kind() == "html_interpolation" {
         lowered.push(lower_html_interpolation_node(source, node)?);
-        return Ok(());
     }
 
     let mut cursor = node.walk();
@@ -200,23 +222,28 @@ fn lower_interpolation_expression(
     interpolation: Node<'_>,
 ) -> Result<LoweredNode, AstroIrError> {
     let inner_span = inner_range_from_delimiters(interpolation, 1, 1);
+    let children = named_children_in_span(source, interpolation, inner_span);
+
+    if is_interpolation_root_list(source, inner_span, &children) {
+        return Ok(lower_interpolation_root_list(source, &children)?.into_lowered());
+    }
+
     let mut builder = AstroIrBuilder::default();
     let mut cursor = inner_span.start;
-    let mut child_cursor = interpolation.walk();
-
-    for child in interpolation.named_children(&mut child_cursor) {
-        if child.end_byte() <= inner_span.start || child.start_byte() >= inner_span.end {
-            continue;
-        }
+    for child in &children {
         if cursor < child.start_byte() {
-            builder.push_original(source, Span::new(cursor, child.start_byte()));
+            builder.push_original(source, Span::new_unchecked(cursor, child.start_byte()));
         }
-        builder.push_lowered(lower_expressionish_child(source, child)?);
+        if child.kind() == "comment" {
+            builder.push_inserted("__astro_cm");
+        } else {
+            builder.push_lowered(lower_expressionish_child(source, *child)?);
+        }
         cursor = child.end_byte();
     }
 
     if cursor < inner_span.end {
-        builder.push_original(source, Span::new(cursor, inner_span.end));
+        builder.push_original(source, Span::new_unchecked(cursor, inner_span.end));
     }
 
     let lowered = builder.finish();
@@ -227,14 +254,116 @@ fn lower_interpolation_expression(
             segments: Vec::new(),
         });
     }
-    let trimmed_segments = trim_segments(&lowered.code, lowered.segments);
+    if !lowered_code_has_expression_root(&trimmed_code)? {
+        return Ok(LoweredNode {
+            code: LeanString::from_static_str("undefined"),
+            segments: Vec::new(),
+        });
+    }
+    let trimmed_segments = trim_segments(&lowered.code, lowered.segments)?;
     Ok(LoweredNode {
         code: trimmed_code,
         segments: trimmed_segments,
     })
 }
 
-fn trim_segments(raw_code: &str, segments: Vec<AstroIrSegment>) -> Vec<AstroIrSegment> {
+fn is_interpolation_root_list(source: &str, inner_span: Span, children: &[Node<'_>]) -> bool {
+    if children.len() < 2 {
+        return false;
+    }
+    if !children
+        .iter()
+        .all(|child| matches!(child.kind(), "element" | "self_closing_tag" | "comment"))
+    {
+        return false;
+    }
+
+    let mut cursor = inner_span.start;
+    for child in children {
+        if cursor > child.start_byte() {
+            return false;
+        }
+        if cursor < child.start_byte()
+            && !span_text(source, Span::new_unchecked(cursor, child.start_byte()))
+                .trim()
+                .is_empty()
+        {
+            return false;
+        }
+        cursor = child.end_byte();
+    }
+
+    if cursor > inner_span.end {
+        return false;
+    }
+    span_text(source, Span::new_unchecked(cursor, inner_span.end))
+        .trim()
+        .is_empty()
+}
+
+fn lower_interpolation_root_list(
+    source: &str,
+    children: &[Node<'_>],
+) -> Result<ExtractOnlyLowered, AstroIrError> {
+    let mut builder = AstroIrBuilder::default();
+    // Astro rejects multiple root nodes in an interpolation, but extract keeps
+    // this path permissive so partially valid or pre-normalized templates can
+    // still be represented as an explicit Astro root list.
+    builder.push_inserted("__astro_root(");
+    for (index, child) in children.iter().enumerate() {
+        if index > 0 {
+            builder.push_inserted(", ");
+        }
+        builder.push_lowered(lower_root_child(source, *child)?);
+    }
+    builder.push_inserted(")");
+    Ok(ExtractOnlyLowered::new(builder.finish()))
+}
+
+fn lower_root_child(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    if node.kind() == "comment" {
+        return Ok(LoweredNode {
+            code: LeanString::from_static_str("__astro_cm"),
+            segments: Vec::new(),
+        });
+    }
+    lower_expressionish_child(source, node)
+}
+
+fn lowered_code_has_expression_root(code: &str) -> Result<bool, AstroIrError> {
+    if code.trim().is_empty() {
+        return Ok(false);
+    }
+    let probe = format!("const __astro_probe__ = ({code});");
+    let tree = parse_typescript(&probe)?;
+    let root = tree.root_node();
+    if root.has_error() {
+        return Ok(false);
+    }
+    let mut cursor = root.walk();
+
+    for child in root.children(&mut cursor) {
+        if !matches!(child.kind(), "lexical_declaration" | "variable_declaration") {
+            continue;
+        }
+        let mut decl_cursor = child.walk();
+        for declarator in child.children(&mut decl_cursor) {
+            if declarator.kind() != "variable_declarator" {
+                continue;
+            }
+            if declarator.child_by_field_name("value").is_some() {
+                return Ok(true);
+            }
+        }
+    }
+
+    Ok(false)
+}
+
+fn trim_segments(
+    raw_code: &str,
+    segments: Vec<AstroIrSegment>,
+) -> Result<Vec<AstroIrSegment>, AstroIrError> {
     let leading_trim = raw_code.len().saturating_sub(raw_code.trim_start().len());
     let trailing_trim = raw_code.len().saturating_sub(raw_code.trim_end().len());
     let kept_end = raw_code.len().saturating_sub(trailing_trim);
@@ -253,25 +382,33 @@ fn trim_segments(raw_code: &str, segments: Vec<AstroIrSegment>) -> Vec<AstroIrSe
             }
             let original_start = segment.original.start + (clamped_start - segment.generated.start);
             let original_end = segment.original.end - (segment.generated.end - clamped_end);
-            Some(AstroIrSegment {
-                generated: Span::new(start, trimmed_end),
-                original: Span::new(original_start, original_end),
-            })
+            let generated = match Span::new(start, trimmed_end) {
+                Ok(generated) => generated,
+                Err(err) => return Some(Err(AstroIrError::from(err))),
+            };
+            let original = match Span::new(original_start, original_end) {
+                Ok(original) => original,
+                Err(err) => return Some(Err(AstroIrError::from(err))),
+            };
+            Some(Ok(AstroIrSegment {
+                generated,
+                original,
+            }))
         })
         .collect()
 }
 
-fn lowered_trimmed_original(source: &str, span: Span) -> LoweredNode {
+fn lowered_trimmed_original(source: &str, span: Span) -> Result<LoweredNode, AstroIrError> {
     let raw = span_text(source, span);
     let code = LeanString::from(raw.trim());
     let segments = trim_segments(
         raw,
         vec![AstroIrSegment {
-            generated: Span::new(0, raw.len()),
+            generated: Span::new_unchecked(0, raw.len()),
             original: span,
         }],
-    );
-    LoweredNode { code, segments }
+    )?;
+    Ok(LoweredNode { code, segments })
 }
 
 fn lower_expressionish_child(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
@@ -306,14 +443,15 @@ fn lower_element_like(source: &str, node: Node<'_>) -> Result<LoweredNode, Astro
 
 fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
     let mut cursor = node.walk();
-    let Some(start_or_self_closing_tag) = node
+    let start_or_self_closing_tag = node
         .children(&mut cursor)
         .find(|child| child.kind() == "start_tag" || child.kind() == "self_closing_tag")
-    else {
-        return Err(AstroIrError::MissingTagName);
-    };
+        .ok_or(AstroIrError::MissingTagName)?;
     if start_or_self_closing_tag.kind() == "self_closing_tag" {
         return lower_self_closing_tag(source, start_or_self_closing_tag);
+    }
+    if is_fragment_tag(start_or_self_closing_tag) {
+        return lower_fragment(source, node);
     }
 
     let mut builder = AstroIrBuilder::default();
@@ -339,6 +477,33 @@ fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrErr
     Ok(builder.finish())
 }
 
+fn is_fragment_tag(tag_node: Node<'_>) -> bool {
+    tag_node.kind() == "start_tag" && non_empty_tag_name_node(tag_node).is_none()
+}
+
+fn lower_fragment(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
+    let mut builder = AstroIrBuilder::default();
+    builder.push_inserted("__astro_frag(");
+    let mut rendered_children = 0usize;
+    let mut child_cursor = node.walk();
+    for child in node.children(&mut child_cursor) {
+        match child.kind() {
+            "start_tag" | "end_tag" => {}
+            _ => {
+                if let Some(rendered_child) = render_fragment_child(source, child)? {
+                    if rendered_children > 0 {
+                        builder.push_inserted(", ");
+                    }
+                    builder.push_lowered(rendered_child);
+                    rendered_children += 1;
+                }
+            }
+        }
+    }
+    builder.push_inserted(")");
+    Ok(builder.finish())
+}
+
 fn lower_self_closing_tag(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
     let mut builder = AstroIrBuilder::default();
     builder.push_inserted("__astro_el(");
@@ -350,18 +515,14 @@ fn lower_self_closing_tag(source: &str, node: Node<'_>) -> Result<LoweredNode, A
 }
 
 fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
-    let mut cursor = tag_node.walk();
-    let tag_name_node = tag_node
-        .children(&mut cursor)
-        .find(|child| child.kind() == "tag_name")
-        .ok_or(AstroIrError::MissingTagName)?;
+    let tag_name_node = non_empty_tag_name_node(tag_node).ok_or(AstroIrError::MissingTagName)?;
     let tag_name = node_text(source, tag_name_node);
 
     Ok(if is_component_tag_name(tag_name) {
         LoweredNode {
             code: LeanString::from(tag_name),
             segments: vec![AstroIrSegment {
-                generated: Span::new(0, tag_name.len()),
+                generated: Span::new_unchecked(0, tag_name.len()),
                 original: Span::from_node(tag_name_node),
             }],
         }
@@ -382,7 +543,7 @@ fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNo
             "attribute" => {
                 if let Some(prop) = render_attribute(source, child)? {
                     pending_props.push(prop);
-                } else if let Some(spread) = render_spread_attribute(source, child) {
+                } else if let Some(spread) = render_spread_attribute(source, child)? {
                     if !pending_props.is_empty() {
                         ordered.push(lower_props_object(std::mem::take(&mut pending_props)));
                     }
@@ -390,7 +551,7 @@ fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNo
                 }
             }
             "spread_attribute" | "attribute_interpolation" => {
-                let Some(spread) = render_spread_attribute(source, child) else {
+                let Some(spread) = render_spread_attribute(source, child)? else {
                     continue;
                 };
                 if !pending_props.is_empty() {
@@ -442,7 +603,10 @@ fn lower_props_object(props: Vec<LoweredNode>) -> LoweredNode {
     builder.finish()
 }
 
-fn render_spread_attribute(source: &str, node: Node<'_>) -> Option<LoweredNode> {
+fn render_spread_attribute(
+    source: &str,
+    node: Node<'_>,
+) -> Result<Option<LoweredNode>, AstroIrError> {
     let spread = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "attribute_interpolation")
@@ -452,14 +616,15 @@ fn render_spread_attribute(source: &str, node: Node<'_>) -> Option<LoweredNode> 
         .find(|child| child.kind() == "attribute_js_expr")
         .map(Span::from_node)
         .unwrap_or_else(|| inner_range_from_delimiters(spread, 1, 1));
-    let spread = lowered_trimmed_original(source, spread);
+    let spread = lowered_trimmed_original(source, spread)?;
     spread
         .code
         .starts_with("...")
         .then(|| trim_leading_dots(spread))
+        .transpose()
 }
 
-fn trim_leading_dots(lowered: LoweredNode) -> LoweredNode {
+fn trim_leading_dots(lowered: LoweredNode) -> Result<LoweredNode, AstroIrError> {
     let trimmed_code = LeanString::from(lowered.code.trim_start_matches('.'));
     let leading_trim = lowered.code.len().saturating_sub(trimmed_code.len());
     let segments = lowered
@@ -471,19 +636,27 @@ fn trim_leading_dots(lowered: LoweredNode) -> LoweredNode {
             if start >= end {
                 return None;
             }
-            Some(AstroIrSegment {
-                generated: Span::new(start - leading_trim, end - leading_trim),
-                original: Span::new(
-                    segment.original.start + (start - segment.generated.start),
-                    segment.original.end,
-                ),
-            })
+            let generated = match Span::new(start - leading_trim, end - leading_trim) {
+                Ok(generated) => generated,
+                Err(err) => return Some(Err(AstroIrError::from(err))),
+            };
+            let original = match Span::new(
+                segment.original.start + (start - segment.generated.start),
+                segment.original.end,
+            ) {
+                Ok(original) => original,
+                Err(err) => return Some(Err(AstroIrError::from(err))),
+            };
+            Some(Ok(AstroIrSegment {
+                generated,
+                original,
+            }))
         })
-        .collect();
-    LoweredNode {
+        .collect::<Result<Vec<_>, AstroIrError>>()?;
+    Ok(LoweredNode {
         code: trimmed_code,
         segments,
-    }
+    })
 }
 
 fn render_attribute(
@@ -504,7 +677,7 @@ fn render_attribute(
     for child in attribute.children(&mut child_cursor) {
         value = match child.kind() {
             "quoted_attribute_value" => Some(render_quoted_attribute_value(source, child)?),
-            "attribute_interpolation" => Some(render_attribute_interpolation(source, child)),
+            "attribute_interpolation" => Some(render_attribute_interpolation(source, child)?),
             "attribute_backtick_string" => {
                 let inner = inner_range_from_delimiters(child, 1, 1);
                 Some(LoweredNode {
@@ -547,7 +720,7 @@ fn render_quoted_attribute_value(
             parts.push(builder.finish());
         }
         match child.kind() {
-            "attribute_interpolation" => parts.push(render_attribute_interpolation(source, child)),
+            "attribute_interpolation" => parts.push(render_attribute_interpolation(source, child)?),
             _ => {
                 let mut builder = AstroIrBuilder::default();
                 builder.push_quoted_literal(node_text(source, child));
@@ -584,7 +757,10 @@ fn render_quoted_attribute_value(
     Ok(builder.finish())
 }
 
-fn render_attribute_interpolation(source: &str, node: Node<'_>) -> LoweredNode {
+fn render_attribute_interpolation(
+    source: &str,
+    node: Node<'_>,
+) -> Result<LoweredNode, AstroIrError> {
     let inner = node
         .children(&mut node.walk())
         .find(|child| child.kind() == "attribute_js_expr")
@@ -599,7 +775,7 @@ fn render_markup_child(source: &str, node: Node<'_>) -> Result<Option<LoweredNod
         "html_interpolation" => Ok(Some(lower_interpolation_expression(source, node)?)),
         "permissible_text" => {
             let value = node_text(source, node);
-            if value.is_empty() {
+            if node.start_byte() == node.end_byte() {
                 Ok(None)
             } else {
                 let mut builder = AstroIrBuilder::default();
@@ -621,6 +797,19 @@ fn render_markup_child(source: &str, node: Node<'_>) -> Result<Option<LoweredNod
     }
 }
 
+fn render_fragment_child(
+    source: &str,
+    node: Node<'_>,
+) -> Result<Option<LoweredNode>, AstroIrError> {
+    if node.kind() == "comment" {
+        return Ok(Some(LoweredNode {
+            code: LeanString::from_static_str("__astro_cm"),
+            segments: Vec::new(),
+        }));
+    }
+    render_markup_child(source, node)
+}
+
 fn inner_range_from_delimiters(node: Node<'_>, prefix_len: usize, suffix_len: usize) -> Span {
     let start = node.start_byte().saturating_add(prefix_len);
     let end = node.end_byte().saturating_sub(suffix_len).max(start);
@@ -633,7 +822,10 @@ mod tests {
 
     use crate::common::Span;
 
-    use super::{bundle_html_interpolations, lower_astro_html_interpolations};
+    use super::{
+        bundle_html_interpolations, lower_astro_html_interpolations,
+        lowered_code_has_expression_root,
+    };
 
     #[test]
     fn lowers_nested_markup_inside_html_interpolation_to_astro_el_calls() {
@@ -646,11 +838,12 @@ mod tests {
         "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
-        assert_eq!(lowered.len(), 1);
+        assert_eq!(lowered.len(), 2);
         assert_eq!(
             lowered[0].code,
             r#"foo ? __astro_el(A, { "x": bar }, __astro_el(B, null), baz) : qux"#
         );
+        assert_eq!(lowered[1].code, "baz");
     }
 
     #[test]
@@ -700,11 +893,12 @@ mod tests {
         "#};
 
         let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
-        assert_eq!(lowered.len(), 1);
+        assert_eq!(lowered.len(), 2);
         assert_eq!(
             lowered[0].code,
             r#"__astro_el(Trans, null, "Hello", __astro_spread_child__)"#
         );
+        assert_eq!(lowered[1].code, "__astro_spread_child__");
     }
 
     #[test]
@@ -723,8 +917,109 @@ mod tests {
         let generated = bundled.code.find("bar").expect("bar exists");
         let original = source.rfind("bar").expect("interpolation bar exists");
         assert_eq!(
-            expression.remap_generated_span(Span::new(generated, generated + 3)),
-            Some(Span::new(original, original + 3))
+            expression.remap_generated_span(Span::new_unchecked(generated, generated + 3)),
+            Some(Span::new_unchecked(original, original + 3))
         );
+    }
+
+    #[test]
+    fn lowers_comment_only_interpolations_to_opaque_expression() {
+        let source = indoc! {r#"
+            ---
+            const x = 1;
+            ---
+            {/* This is just a code comment */}
+            {<!-- This is an HTML comment -->}
+        "#};
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+
+        assert_eq!(lowered.len(), 2);
+        assert_eq!(lowered[0].code, "undefined");
+        assert_eq!(lowered[1].code, "__astro_cm");
+    }
+
+    #[test]
+    fn expression_root_probe_rejects_empty_or_erroneous_code() {
+        assert!(!lowered_code_has_expression_root("").expect("empty probe succeeds"));
+        assert!(!lowered_code_has_expression_root("   ").expect("blank probe succeeds"));
+        assert!(!lowered_code_has_expression_root("<span>").expect("erroneous probe succeeds"));
+    }
+
+    #[test]
+    fn lowers_html_comments_inside_interpolations_using_astro_parse_tree() {
+        let source = indoc! {r#"
+            ---
+            const x = 1;
+            ---
+            {<!-- This is an HTML comment --><span>{translate`Inside element`}</span>}
+            {condition ? <!-- This is an HTML comment --> : <span>{translate`Fallback`}</span>}
+        "#};
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+
+        assert_eq!(lowered.len(), 4);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_root(__astro_cm, __astro_el("span", null, translate`Inside element`))"#
+        );
+        assert_eq!(lowered[1].code, "translate`Inside element`");
+        assert_eq!(
+            lowered[2].code,
+            r#"condition ? __astro_cm : __astro_el("span", null, translate`Fallback`)"#
+        );
+        assert_eq!(lowered[3].code, "translate`Fallback`");
+    }
+
+    #[test]
+    fn lowers_fragment_interpolations_to_astro_frag_calls() {
+        let source = indoc! {r#"
+            ---
+            const x = 1;
+            ---
+            {<><span>{translate`First`}</span><span>{translate`Second`}</span></>}
+            {<><!-- This is an HTML comment --><span>{translate`After comment`}</span></>}
+        "#};
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+
+        assert_eq!(lowered.len(), 5);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_frag(__astro_el("span", null, translate`First`), __astro_el("span", null, translate`Second`))"#
+        );
+        assert_eq!(lowered[1].code, "translate`First`");
+        assert_eq!(lowered[2].code, "translate`Second`");
+        assert_eq!(
+            lowered[3].code,
+            r#"__astro_frag(__astro_cm, __astro_el("span", null, translate`After comment`))"#
+        );
+        assert_eq!(lowered[4].code, "translate`After comment`");
+    }
+
+    #[test]
+    fn wraps_multiple_interpolation_roots_in_astro_root_calls() {
+        let source = indoc! {r#"
+            ---
+            const x = 1;
+            ---
+            { <span>{translate`First`}</span> <span>{translate`Second`}</span> }
+            {<!-- This is an HTML comment --><><span>{translate`After comment`}</span></>}
+        "#};
+
+        let lowered = lower_astro_html_interpolations(source).expect("lowering succeeds");
+
+        assert_eq!(lowered.len(), 5);
+        assert_eq!(
+            lowered[0].code,
+            r#"__astro_root(__astro_el("span", null, translate`First`), __astro_el("span", null, translate`Second`))"#
+        );
+        assert_eq!(lowered[1].code, "translate`First`");
+        assert_eq!(lowered[2].code, "translate`Second`");
+        assert_eq!(
+            lowered[3].code,
+            r#"__astro_root(__astro_cm, __astro_frag(__astro_el("span", null, translate`After comment`)))"#
+        );
+        assert_eq!(lowered[4].code, "translate`After comment`");
     }
 }

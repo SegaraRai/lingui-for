@@ -57,6 +57,50 @@ describe("lingui-analyzer wasm contract", () => {
     expect(result.declarations.__lf_1).toContain('message: "Markup hello"');
   });
 
+  test("ignores Astro comment-only html interpolations during extraction", async () => {
+    const filename = "/virtual/CommentOnlyInterpolation.astro";
+    const source = dedent`
+        ---
+        import { t as translate } from "@lingui/core/macro";
+        ---
+
+        {translate\`Before comment\`}
+        {/* This is just a code comment */}
+        {
+          /* This comment shares the interpolation with an expression. */
+          translate\`After comment\`
+        }
+        {undefined /* This comment follows an expression. */}
+        {<!-- This is an HTML comment -->}
+        {<!-- This is an HTML comment --><span>{translate\`Inside commented fragment\`}</span>}
+        {<><span>{translate\`Fragment first\`}</span><span>{translate\`Fragment second\`}</span></>}
+        {<><!-- This is an HTML comment --><span>{translate\`Fragment after comment\`}</span></>}
+        {<span>{translate\`Adjacent first\`}</span><span>{translate\`Adjacent second\`}</span>}
+        {condition ? <!-- This is an HTML comment --> : <span>{translate\`Fallback comment\`}</span>}
+      `;
+
+    const synthetic = buildSyntheticModuleForTest("astro", source, {
+      sourceName: filename,
+      syntheticName: "/virtual/CommentOnlyInterpolation.synthetic.tsx",
+    });
+    const messages = await extractMessagesFromSyntheticModule(
+      filename,
+      synthetic,
+    );
+
+    expect(messages.map((message) => message.message)).toEqual([
+      "Before comment",
+      "After comment",
+      "Inside commented fragment",
+      "Fragment first",
+      "Fragment second",
+      "Fragment after comment",
+      "Adjacent first",
+      "Adjacent second",
+      "Fallback comment",
+    ]);
+  });
+
   test("preserves Svelte extraction origins through Rust sourcemaps", async () => {
     const filename = "/virtual/App.svelte";
     const source = dedent`

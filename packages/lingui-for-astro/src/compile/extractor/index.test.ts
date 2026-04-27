@@ -11,6 +11,10 @@ const extractor = astroExtractor({
   }),
 });
 
+function extractedText(message: ExtractedMessage): string {
+  return message.message ?? message.id;
+}
+
 describe("astroExtractor", () => {
   test("preserves original origins without query suffixes for indexed source maps", async () => {
     const source = `---
@@ -88,7 +92,7 @@ const role = "admin";
 
     const nested = messages.find(
       (message) =>
-        message.message ===
+        extractedText(message) ===
         "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
     );
 
@@ -166,7 +170,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}",
       )?.origin,
     ).toEqual([filename, 11, 6]);
@@ -174,7 +178,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}",
       )?.origin,
     ).toEqual([filename, 25, 6]);
@@ -182,7 +186,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}",
       )?.origin,
     ).toEqual([filename, 39, 9]);
@@ -212,9 +216,45 @@ const role = "admin";
 
     expect(
       messages.some(
-        (message) => message.message === "<0>Read</0> <1>carefully</1>",
+        (message) => extractedText(message) === "<0>Read</0> <1>carefully</1>",
       ),
     ).toBe(true);
+  });
+
+  test("keeps generated Trans ids non-explicit during extraction", async () => {
+    const source = dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+      ---
+
+      <Trans>Plain message</Trans>
+      <Trans id="custom.id">Explicit message</Trans>
+    `;
+    const messages: ExtractedMessage[] = [];
+
+    await extractor.extract(
+      "/virtual/generated-trans-id.astro",
+      source,
+      (message) => {
+        messages.push(message);
+      },
+      undefined,
+    );
+
+    expect(
+      messages.find((message) => extractedText(message) === "Plain message"),
+    ).toMatchObject({
+      message: "Plain message",
+    });
+    expect(
+      messages.find((message) => extractedText(message) === "Plain message")
+        ?.id,
+    ).not.toBe("Plain message");
+    expect(
+      messages.find((message) => extractedText(message) === "Explicit message"),
+    ).toMatchObject({
+      id: "custom.id",
+    });
   });
 
   test("keeps origins for core macro template expressions in Astro component markup", async () => {
@@ -297,7 +337,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "Astro runs plural, select, and selectOrdinal macros in component code.",
       )?.origin,
     ).toEqual([filename, 16, 6]);
@@ -305,7 +345,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "{0, plural, one {# Astro format sample} other {# Astro format samples}}",
       )?.origin,
     ).toEqual([filename, 22, 6]);
@@ -313,7 +353,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}",
       )?.origin,
     ).toEqual([filename, 30, 6]);
@@ -321,7 +361,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}",
       )?.origin,
     ).toEqual([filename, 39, 6]);
@@ -362,7 +402,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "2. Switch between English and Japanese in the header and watch the locale labels.",
       )?.origin,
     ).toEqual([filename, 9, 6]);
@@ -370,7 +410,7 @@ const role = "admin";
     expect(
       messages.find(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen.",
       )?.origin,
     ).toEqual([filename, 14, 6]);
@@ -411,28 +451,30 @@ const role = "admin";
     );
 
     expect(
-      messages.some((message) => message.message === "ClientRouter enabled"),
+      messages.some(
+        (message) => extractedText(message) === "ClientRouter enabled",
+      ),
     ).toBe(true);
     expect(
-      messages.some((message) => message.message === "Full reload mode"),
+      messages.some((message) => extractedText(message) === "Full reload mode"),
     ).toBe(true);
     expect(
       messages.some(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "ClientRouter can preserve island state while locale and page props change.",
       ),
     ).toBe(true);
     expect(
       messages.some(
         (message) =>
-          message.message ===
+          extractedText(message) ===
           "Without ClientRouter, every navigation reloads the document.",
       ),
     ).toBe(true);
     expect(
       messages.some(
-        (message) => message.message === "Current demo: {pageLabel}",
+        (message) => extractedText(message) === "Current demo: {pageLabel}",
       ),
     ).toBe(true);
   });
@@ -480,25 +522,29 @@ const role = "admin";
       undefined,
     );
 
-    expect(messages.some((message) => message.message === "Home")).toBe(true);
-    expect(messages.some((message) => message.message === "Server")).toBe(true);
-    expect(messages.some((message) => message.message === "Islands")).toBe(
+    expect(messages.some((message) => extractedText(message) === "Home")).toBe(
       true,
     );
-    expect(messages.some((message) => message.message === "Rich text")).toBe(
-      true,
-    );
-    expect(messages.some((message) => message.message === "Formats")).toBe(
-      true,
-    );
-    expect(messages.some((message) => message.message === "Routing")).toBe(
-      true,
-    );
-    expect(messages.some((message) => message.message === "Settings")).toBe(
-      true,
-    );
-    expect(messages.some((message) => message.message === "Transitions")).toBe(
-      true,
-    );
+    expect(
+      messages.some((message) => extractedText(message) === "Server"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => extractedText(message) === "Islands"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => extractedText(message) === "Rich text"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => extractedText(message) === "Formats"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => extractedText(message) === "Routing"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => extractedText(message) === "Settings"),
+    ).toBe(true);
+    expect(
+      messages.some((message) => extractedText(message) === "Transitions"),
+    ).toBe(true);
   });
 });

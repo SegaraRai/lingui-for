@@ -5,10 +5,10 @@ packages:
   - shared/*
 
 catalog:
-  "@types/node": ^25.5.2
+  "@types/node": ^25.6.0
   typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@latest
-  vite-plus: ^0.1.16
+  vite-plus: ^0.1.19
 
 onlyBuiltDependencies:
   - esbuild

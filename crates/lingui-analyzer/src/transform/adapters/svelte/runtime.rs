@@ -145,7 +145,9 @@ fn convert_runtime_trans_root(
                         push_copied_span(
                             &mut mapped,
                             context.input,
-                            Span::new(prefix_trimmed_start, object_span.start),
+                            context
+                                .source
+                                .span(prefix_trimmed_start, object_span.start)?,
                         )?;
                     }
                     append_rendered(&mut mapped, lowered.props);
@@ -157,7 +159,7 @@ fn convert_runtime_trans_root(
                         push_copied_span(
                             &mut mapped,
                             context.input,
-                            Span::new(object_span.end, suffix_trimmed_end),
+                            context.source.span(object_span.end, suffix_trimmed_end)?,
                         )?;
                     }
                     mapped.push_unmapped("}");
@@ -611,13 +613,13 @@ fn lower_original_wrapper_to_snippet(
             push_copied_span(
                 &mut rendered,
                 input,
-                Span::new(node.start_byte(), content_start),
+                indexed_source.span(node.start_byte(), content_start)?,
             )?;
             rendered.push_unmapped("{@render children?.()}");
             push_copied_span(
                 &mut rendered,
                 input,
-                Span::new(content_end, node.end_byte()),
+                indexed_source.span(content_end, node.end_byte())?,
             )?;
         }
         "self_closing_tag" => {
@@ -632,7 +634,7 @@ fn lower_original_wrapper_to_snippet(
             push_copied_span(
                 &mut rendered,
                 input,
-                Span::new(node.start_byte(), node.start_byte() + self_closing_offset),
+                indexed_source.span(node.start_byte(), node.start_byte() + self_closing_offset)?,
             )?;
             rendered.push_unmapped(">{@render children?.()}</");
             push_copied_span(&mut rendered, input, tag_name_span)?;
@@ -706,8 +708,8 @@ mod tests {
     fn component_target(source: &LeanString) -> TransformTarget {
         TransformTarget {
             declaration_id: ls("__trans"),
-            original_span: Span::new(0, source.len()),
-            normalized_span: Span::new(0, source.len()),
+            original_span: Span::new_unchecked(0, source.len()),
+            normalized_span: Span::new_unchecked(0, source.len()),
             source_map_anchor: None,
             local_name: ls("Trans"),
             imported_name: ls("Trans"),
@@ -716,6 +718,7 @@ mod tests {
             output_kind: TransformTargetOutputKind::Component,
             translation_mode: TransformTranslationMode::Contextual,
             normalized_segments: Vec::<NormalizedSegment>::new(),
+            runtime_component_wrapper_spans: Vec::new(),
         }
     }
 

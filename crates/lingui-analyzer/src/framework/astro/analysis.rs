@@ -24,8 +24,8 @@ use super::ir::{
     BundledAstroHtmlInterpolation, bundle_html_interpolations, lower_astro_html_interpolations,
 };
 use super::{
-    AstroFrameworkError, AstroFrontmatterAnalysis, AstroSemanticAnalysis, AstroSourceMetadata,
-    AstroTemplateComponent, AstroTemplateExpression,
+    AstroFragmentTagPair, AstroFrameworkError, AstroFrontmatterAnalysis, AstroSemanticAnalysis,
+    AstroSourceMetadata, AstroTemplateComponent, AstroTemplateExpression, non_empty_tag_name_node,
 };
 
 #[derive(Debug, Default)]
@@ -49,6 +49,7 @@ pub fn analyze_astro(
     let root = astro_tree.root_node();
     let mut source_anchors = collect_node_start_anchors(source, root);
     let frontmatter = find_frontmatter(root);
+    let fragment_tag_pairs = collect_fragment_tag_pairs(root);
 
     let (
         macro_imports,
@@ -111,6 +112,7 @@ pub fn analyze_astro(
         metadata: AstroSourceMetadata {
             frontmatter,
             frontmatter_import_statement_spans,
+            fragment_tag_pairs,
             source_anchors,
         },
     })
@@ -127,7 +129,7 @@ fn find_frontmatter(root: Node<'_>) -> Option<EmbeddedScriptRegion> {
 
             let inner_span = content
                 .map(Span::from_node)
-                .unwrap_or_else(|| Span::new(node.start_byte(), node.start_byte()));
+                .unwrap_or_else(|| Span::new_unchecked(node.start_byte(), node.start_byte()));
 
             EmbeddedScriptRegion {
                 kind: EmbeddedScriptKind::Frontmatter,
@@ -135,6 +137,47 @@ fn find_frontmatter(root: Node<'_>) -> Option<EmbeddedScriptRegion> {
                 inner_span,
             }
         })
+}
+
+fn collect_fragment_tag_pairs(root: Node<'_>) -> Vec<AstroFragmentTagPair> {
+    let mut pairs = Vec::new();
+    collect_fragment_tag_pairs_from_node(root, &mut pairs);
+    pairs
+}
+
+fn collect_fragment_tag_pairs_from_node(node: Node<'_>, pairs: &mut Vec<AstroFragmentTagPair>) {
+    if node.kind() == "element"
+        && let Some((start_tag, end_tag)) = fragment_tag_pair(node)
+    {
+        pairs.push(AstroFragmentTagPair {
+            element_span: Span::from_node(node),
+            start_tag_span: Span::from_node(start_tag),
+            end_tag_span: Span::from_node(end_tag),
+        });
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        collect_fragment_tag_pairs_from_node(child, pairs);
+    }
+}
+
+fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
+    let mut cursor = node.walk();
+    let mut start_tag = None;
+    let mut end_tag = None;
+    for child in node.children(&mut cursor) {
+        match child.kind() {
+            "start_tag" if start_tag.is_none() && non_empty_tag_name_node(child).is_none() => {
+                start_tag = Some(child);
+            }
+            "end_tag" if non_empty_tag_name_node(child).is_none() => {
+                end_tag = Some(child);
+            }
+            _ => {}
+        }
+    }
+    Some((start_tag?, end_tag?))
 }
 
 fn collect_macro_imports(
@@ -200,7 +243,7 @@ fn collect_macro_import_statement_spans_from_root(
         while matches!(source.as_bytes().get(end), Some(b'\r' | b'\n')) {
             end += 1;
         }
-        spans.push(Span::new(
+        spans.push(Span::new_unchecked(
             base_offset + child.start_byte(),
             base_offset + end,
         ));
@@ -358,19 +401,18 @@ fn analyze_lowered_html_interpolations(
 
     let bundled = bundle_html_interpolations(&lowered);
     let tree = parse_typescript(&bundled.code)?;
-    let roots = collect_bundled_expression_roots(tree.root_node());
-    if roots.len() != bundled.expressions.len() {
-        return Err(AstroFrameworkError::BundledRootCountMismatch {
-            expected: bundled.expressions.len(),
-            found: roots.len(),
-        });
-    }
+    let roots = collect_bundled_expression_roots(&bundled.code, tree.root_node());
 
     let mut analyses = HashMap::with_capacity(bundled.expressions.len());
-    for (root, interpolation) in roots.into_iter().zip(bundled.expressions.iter()) {
+    for interpolation in &bundled.expressions {
+        let root = roots.get(&interpolation.declaration_id).ok_or_else(|| {
+            AstroFrameworkError::MissingBundledExpressionRoot {
+                declaration_id: interpolation.declaration_id.clone(),
+            }
+        })?;
         let candidates = collect_macro_candidates(
             &bundled.code,
-            root,
+            *root,
             imports,
             0,
             JsMacroSyntax::Standard,
@@ -440,8 +482,11 @@ fn push_template_expression(
     Ok(())
 }
 
-fn collect_bundled_expression_roots(root: Node<'_>) -> Vec<Node<'_>> {
-    let mut expressions = Vec::new();
+fn collect_bundled_expression_roots<'tree>(
+    source: &str,
+    root: Node<'tree>,
+) -> HashMap<LeanString, Node<'tree>> {
+    let mut expressions = HashMap::new();
     let mut cursor = root.walk();
     for child in root.children(&mut cursor) {
         if !matches!(child.kind(), "lexical_declaration" | "variable_declaration") {
@@ -452,9 +497,13 @@ fn collect_bundled_expression_roots(root: Node<'_>) -> Vec<Node<'_>> {
             if declarator.kind() != "variable_declarator" {
                 continue;
             }
-            if let Some(value) = declarator.child_by_field_name("value") {
-                expressions.push(value);
-            }
+            let Some(name) = declarator.child_by_field_name("name") else {
+                continue;
+            };
+            let Some(value) = declarator.child_by_field_name("value") else {
+                continue;
+            };
+            expressions.insert(LeanString::from(node_text(source, name)), value);
         }
     }
     expressions
@@ -543,6 +592,8 @@ fn is_pure_html_interpolation_expression(node: Node<'_>) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use lean_string::LeanString;
+
     use crate::common::Span;
     use crate::framework::astro::ir::{AstroIrSegment, BundledAstroHtmlInterpolation};
 
@@ -551,17 +602,18 @@ mod tests {
     #[test]
     fn remap_bundled_offset_handles_segment_boundaries_deterministically() {
         let interpolation = BundledAstroHtmlInterpolation {
-            outer_span: Span::new(0, 0),
-            inner_span: Span::new(0, 0),
-            synthetic_span: Span::new(0, 0),
+            declaration_id: LeanString::from_static_str("__astro_expr_0__"),
+            outer_span: Span::new_unchecked(0, 0),
+            inner_span: Span::new_unchecked(0, 0),
+            synthetic_span: Span::new_unchecked(0, 0),
             segments: vec![
                 AstroIrSegment {
-                    generated: Span::new(0, 3),
-                    original: Span::new(10, 13),
+                    generated: Span::new_unchecked(0, 3),
+                    original: Span::new_unchecked(10, 13),
                 },
                 AstroIrSegment {
-                    generated: Span::new(3, 6),
-                    original: Span::new(20, 23),
+                    generated: Span::new_unchecked(3, 6),
+                    original: Span::new_unchecked(20, 23),
                 },
             ],
         };

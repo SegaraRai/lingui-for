@@ -36,7 +36,8 @@ pub(crate) fn analyze_astro_transform(
         .metadata
         .frontmatter
         .as_ref()
-        .map(|region| build_frontmatter_region(source, region, &import_removals));
+        .map(|region| build_frontmatter_region(source, region, &import_removals))
+        .transpose()?;
     let mut prototypes = Vec::new();
 
     prototypes.extend(
@@ -89,19 +90,24 @@ pub(crate) fn analyze_astro_transform(
             conventions,
         )?,
         frontmatter,
+        fragment_tag_pairs: analysis.metadata.fragment_tag_pairs,
     })
 }
 
 pub(crate) fn compute_runtime_requirements(targets: &[TransformTarget]) -> RuntimeRequirements {
+    let needs_runtime_trans_component = targets
+        .iter()
+        .any(|target| target.output_kind == TransformTargetOutputKind::Component);
+
+    let needs_runtime_i18n_binding = targets.iter().any(|target| {
+        target.translation_mode == TransformTranslationMode::Contextual
+            && target.output_kind == TransformTargetOutputKind::Expression
+            && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
+    });
+
     RuntimeRequirements {
-        needs_runtime_i18n_binding: targets.iter().any(|target| {
-            target.translation_mode == TransformTranslationMode::Contextual
-                && target.output_kind == TransformTargetOutputKind::Expression
-                && !matches!(target.imported_name.as_str(), "msg" | "defineMessage")
-        }),
-        needs_runtime_trans_component: targets
-            .iter()
-            .any(|target| target.output_kind == TransformTargetOutputKind::Component),
+        needs_runtime_i18n_binding,
+        needs_runtime_trans_component,
     }
 }
 
@@ -153,8 +159,8 @@ fn build_frontmatter_region(
     source: &str,
     region: &EmbeddedScriptRegion,
     import_removals: &[Span],
-) -> AstroTransformFrontmatterRegion {
-    AstroTransformFrontmatterRegion {
+) -> Result<AstroTransformFrontmatterRegion, AstroAdapterError> {
+    Ok(AstroTransformFrontmatterRegion {
         outer_span: region.outer_span,
         content_span: region.inner_span,
         prelude_insert_point: compute_prelude_insert_point(source, region.inner_span.start),
@@ -163,8 +169,8 @@ fn build_frontmatter_region(
             source,
             region,
             import_removals,
-        ),
-    }
+        )?,
+    })
 }
 
 fn compute_prelude_insert_point(source: &str, content_start: usize) -> usize {
@@ -188,7 +194,7 @@ fn compute_trailing_whitespace_range(source: &str, region: &EmbeddedScriptRegion
 
     let trailing = &source[region.inner_span.end..closing_fence_start];
     if trailing.trim().is_empty() {
-        Some(Span::new(region.inner_span.end, closing_fence_start))
+        Span::new(region.inner_span.end, closing_fence_start).ok()
     } else {
         None
     }
@@ -198,24 +204,23 @@ fn has_remaining_content_after_import_removal(
     source: &str,
     region: &EmbeddedScriptRegion,
     import_removals: &[Span],
-) -> bool {
+) -> Result<bool, AstroAdapterError> {
     let content = &source[region.inner_span.start..region.inner_span.end];
     let relative_ranges = import_removals
         .iter()
         .copied()
         .map(|span| {
-            Span::new(
-                span.start - region.inner_span.start,
-                span.end - region.inner_span.start,
-            )
+            let start = region.inner_span.relative_offset(span.start)?;
+            let end = region.inner_span.relative_offset(span.end)?;
+            Span::new(start, end)
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>, _>>()?;
     let mut cursor = 0usize;
     for range in relative_ranges {
         if !content[cursor..range.start].trim().is_empty() {
-            return true;
+            return Ok(true);
         }
         cursor = range.end;
     }
-    !content[cursor..].trim().is_empty()
+    Ok(!content[cursor..].trim().is_empty())
 }

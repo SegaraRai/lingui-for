@@ -280,7 +280,7 @@ pub(crate) fn build_final_output(
                 &mut output,
                 source_name,
                 &source,
-                Span::new(cursor, replacement.start),
+                source.span(cursor, replacement.start)?,
                 source_anchors,
             )?;
         }
@@ -298,7 +298,7 @@ pub(crate) fn build_final_output(
             &mut output,
             source_name,
             &source,
-            Span::new(cursor, source_text.len()),
+            source.span(cursor, source_text.len())?,
             source_anchors,
         )?;
     }
@@ -619,7 +619,7 @@ mod tests {
         let (_, insertion_end_col) = source
             .byte_to_line_utf16_col(insertion_end)
             .expect("insertion end is on a character boundary");
-        let full_span = Span::new(0, source_text.len());
+        let full_span = Span::new_unchecked(0, source_text.len());
 
         let anchor_only = build_copy_map_from_anchors(
             source_name,
@@ -647,7 +647,7 @@ mod tests {
         let source_name = "test.tsx";
         let source_text = LeanString::from_static_str("ロケール");
         let source = IndexedText::new(&source_text);
-        let full_span = Span::new(0, source_text.len());
+        let full_span = Span::new_unchecked(0, source_text.len());
         let (_, end_col) = source
             .byte_to_line_utf16_col(source_text.len())
             .expect("end is on a character boundary");
