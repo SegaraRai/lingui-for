@@ -227,18 +227,12 @@ fn lower_interpolation_expression(
 
     let mut builder = AstroIrBuilder::default();
     let mut cursor = inner_span.start;
-    for (index, child) in children.iter().enumerate() {
+    for child in &children {
         if cursor < child.start_byte() {
             builder.push_original(source, Span::new(cursor, child.start_byte()));
         }
         if child.kind() == "comment" {
-            if should_insert_comment_sequence_separator_before(source, &children, index) {
-                builder.push_inserted(", ");
-            }
             builder.push_inserted("__astro_cm");
-            if should_insert_comment_sequence_separator_after(source, &children, index) {
-                builder.push_inserted(", ");
-            }
         } else {
             builder.push_lowered(lower_expressionish_child(source, *child)?);
         }
@@ -324,38 +318,6 @@ fn lower_root_child(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIr
         });
     }
     lower_expressionish_child(source, node)
-}
-
-fn should_insert_comment_sequence_separator_before(
-    source: &str,
-    children: &[Node<'_>],
-    index: usize,
-) -> bool {
-    let comment = children[index];
-    let Some(previous) = index.checked_sub(1).map(|previous| children[previous]) else {
-        return false;
-    };
-    previous.kind() != "permissible_text"
-        && previous.kind() != "comment"
-        && span_text(source, Span::new(previous.end_byte(), comment.start_byte()))
-            .trim()
-            .is_empty()
-}
-
-fn should_insert_comment_sequence_separator_after(
-    source: &str,
-    children: &[Node<'_>],
-    index: usize,
-) -> bool {
-    let comment = children[index];
-    let Some(next) = children.get(index + 1).copied() else {
-        return false;
-    };
-    next.kind() != "permissible_text"
-        && next.kind() != "comment"
-        && span_text(source, Span::new(comment.end_byte(), next.start_byte()))
-            .trim()
-            .is_empty()
 }
 
 fn lowered_code_has_expression_root(code: &str) -> Result<bool, AstroIrError> {
