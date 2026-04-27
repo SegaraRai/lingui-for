@@ -1,6 +1,6 @@
 use tree_sitter::Node;
 
-use crate::common::{Span, node_text, span_text};
+use crate::common::{Span, span_text};
 
 use super::non_empty_tag_name_node;
 
@@ -55,8 +55,8 @@ pub(crate) fn fragment_root_tag_pair<'a>(
     let end_tag = children.last().copied()?;
     if start_tag.kind() != "start_tag"
         || end_tag.kind() != "end_tag"
-        || tag_node_name(source, start_tag).is_some()
-        || tag_node_name(source, end_tag).is_some()
+        || non_empty_tag_name_node(start_tag).is_some()
+        || non_empty_tag_name_node(end_tag).is_some()
     {
         return None;
     }
@@ -100,7 +100,7 @@ pub(crate) fn contains_rich_node(node: Node<'_>) -> bool {
         .any(contains_rich_node)
 }
 
-pub(crate) fn is_fragment_wrapper(source: &str, node: Node<'_>) -> bool {
+pub(crate) fn is_fragment_wrapper(node: Node<'_>) -> bool {
     if node.kind() != "element" {
         return false;
     }
@@ -110,17 +110,13 @@ pub(crate) fn is_fragment_wrapper(source: &str, node: Node<'_>) -> bool {
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
         match child.kind() {
-            "start_tag" if tag_node_name(source, child).is_none() => found_start_none = true,
-            "end_tag" if tag_node_name(source, child).is_none() => found_end_none = true,
+            "start_tag" if non_empty_tag_name_node(child).is_none() => found_start_none = true,
+            "end_tag" if non_empty_tag_name_node(child).is_none() => found_end_none = true,
             _ => {}
         }
     }
 
     found_start_none && found_end_none
-}
-
-fn tag_node_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
-    non_empty_tag_name_node(node).map(|tag_name| node_text(source, tag_name))
 }
 
 #[cfg(test)]
@@ -184,7 +180,7 @@ mod tests {
     fn treats_fragment_root_interpolation_as_not_rich() {
         with_html_interpolation("{ <><span /></> }", |inner, children| {
             assert_eq!(children.len(), 1);
-            assert!(is_fragment_wrapper("{ <><span /></> }", children[0]));
+            assert!(is_fragment_wrapper(children[0]));
             assert!(!is_rich_node_expression_interpolation(
                 "{ <><span /></> }",
                 inner,

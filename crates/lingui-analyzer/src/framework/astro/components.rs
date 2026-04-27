@@ -247,7 +247,7 @@ fn collect_runtime_component_wrapper_child_spans(
 ) {
     match node.kind() {
         "element" => {
-            if is_fragment_wrapper(source, node) {
+            if is_fragment_wrapper(node) {
                 spans.push(Span::from_node(node));
                 for child in node.children(&mut node.walk()) {
                     collect_runtime_component_wrapper_child_spans(source, child, spans);
@@ -334,16 +334,11 @@ fn runtime_tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
         "element" => node
             .children(&mut node.walk())
             .find(|child| child.kind() == "start_tag")
-            .and_then(|start_tag| {
-                start_tag
-                    .children(&mut start_tag.walk())
-                    .find(|child| child.kind() == "tag_name")
-            })
+            .and_then(non_empty_tag_name_node)
             .map(|tag_name| node_text(source, tag_name)),
-        "self_closing_tag" => node
-            .children(&mut node.walk())
-            .find(|child| child.kind() == "tag_name")
-            .map(|tag_name| node_text(source, tag_name)),
+        "self_closing_tag" => {
+            non_empty_tag_name_node(node).map(|tag_name| node_text(source, tag_name))
+        }
         _ => None,
     }
 }

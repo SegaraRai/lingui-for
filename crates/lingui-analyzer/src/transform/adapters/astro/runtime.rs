@@ -632,7 +632,7 @@ fn lower_original_wrapper_to_slot_callback(
 
     match node.kind() {
         "element" => {
-            if is_fragment_wrapper(source, node) {
+            if is_fragment_wrapper(node) {
                 rendered.push_unmapped("<Fragment set:html={children} />");
                 push_original_anchor(
                     &mut rendered,

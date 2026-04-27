@@ -2,7 +2,7 @@ use std::collections::BTreeSet;
 
 use lean_string::LeanString;
 
-use crate::common::{EmbeddedScriptRegion, InvalidSpan, ScriptLang, Span};
+use crate::common::{EmbeddedScriptRegion, ScriptLang, Span};
 use crate::conventions::FrameworkConventions;
 use crate::framework::astro::AstroAdapter;
 use crate::framework::{AnalyzeOptions, FrameworkAdapter, WhitespaceMode};
@@ -210,20 +210,8 @@ fn has_remaining_content_after_import_removal(
         .iter()
         .copied()
         .map(|span| {
-            let start =
-                span.start
-                    .checked_sub(region.inner_span.start)
-                    .ok_or(InvalidSpan::Reversed {
-                        start: span.start,
-                        end: region.inner_span.start,
-                    })?;
-            let end =
-                span.end
-                    .checked_sub(region.inner_span.start)
-                    .ok_or(InvalidSpan::Reversed {
-                        start: span.end,
-                        end: region.inner_span.start,
-                    })?;
+            let start = region.inner_span.relative_offset(span.start)?;
+            let end = region.inner_span.relative_offset(span.end)?;
             Span::new(start, end)
         })
         .collect::<Result<Vec<_>, _>>()?;
