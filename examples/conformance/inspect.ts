@@ -56,7 +56,6 @@ const linguiConfig = makeConfig(
   {
     catalogs: [],
     compileNamespace: "cjs",
-    extractorParserOptions: {},
     fallbackLocales: {},
     locales: ["en", "ja"],
     macro: {

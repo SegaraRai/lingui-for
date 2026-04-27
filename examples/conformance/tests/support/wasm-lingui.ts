@@ -170,7 +170,6 @@ function createLinguiConfigForFramework(
     {
       catalogs: [],
       compileNamespace: "cjs",
-      extractorParserOptions: {},
       fallbackLocales: {},
       locales: [],
       macro: {
