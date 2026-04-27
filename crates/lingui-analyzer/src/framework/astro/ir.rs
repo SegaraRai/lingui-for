@@ -116,6 +116,19 @@ struct LoweredNode {
     segments: Vec<AstroIrSegment>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ExtractOnlyLowered(LoweredNode);
+
+impl ExtractOnlyLowered {
+    pub fn new(node: LoweredNode) -> Self {
+        Self(node)
+    }
+
+    fn into_lowered(self) -> LoweredNode {
+        self.0
+    }
+}
+
 pub fn lower_astro_html_interpolations(
     source: &str,
 ) -> Result<Vec<LoweredAstroHtmlInterpolation>, AstroIrError> {
@@ -209,7 +222,7 @@ fn lower_interpolation_expression(
         .collect::<Vec<_>>();
 
     if is_interpolation_root_list(source, inner_span, &children) {
-        return lower_interpolation_root_list(source, &children);
+        return Ok(lower_interpolation_root_list(source, &children)?.into_lowered());
     }
 
     let mut builder = AstroIrBuilder::default();
@@ -287,7 +300,7 @@ fn is_interpolation_root_list(source: &str, inner_span: Span, children: &[Node<'
 fn lower_interpolation_root_list(
     source: &str,
     children: &[Node<'_>],
-) -> Result<LoweredNode, AstroIrError> {
+) -> Result<ExtractOnlyLowered, AstroIrError> {
     let mut builder = AstroIrBuilder::default();
     // Astro rejects multiple root nodes in an interpolation, but extract keeps
     // this path permissive so partially valid or pre-normalized templates can
@@ -300,7 +313,7 @@ fn lower_interpolation_root_list(
         builder.push_lowered(lower_root_child(source, *child)?);
     }
     builder.push_inserted(")");
-    Ok(builder.finish())
+    Ok(ExtractOnlyLowered::new(builder.finish()))
 }
 
 fn lower_root_child(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {

@@ -151,19 +151,19 @@ const falseBranch = false;
         </Trans>
       }
       {
-        falseBranch ? <!-- trans-html-comment-left-not-selected-inside-interpolation --> : <Trans>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</Trans>
+        falseBranch ? <!-- trans-html-comment-left-not-selected-interpolation --> : <Trans>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</Trans>
       }
       {
-        trueBranch ? <Trans>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</Trans> : <!-- trans-html-comment-right-not-selected-inside-interpolation -->
+        trueBranch ? <Trans>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</Trans> : <!-- trans-html-comment-right-not-selected-interpolation -->
       }
       {
         <Trans>
-          {falseBranch ? <!-- trans-html-comment-left-not-selected-inside-interpolation --> : <span>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</span>}
+          {falseBranch ? <!-- trans-html-comment-left-not-selected-inside-trans --> : <span>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</span>}
         </Trans>
       }
       {
         <Trans>
-          {trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</span> : <!-- trans-html-comment-right-not-selected-inside-interpolation -->}
+          {trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</span> : <!-- trans-html-comment-right-not-selected-inside-trans -->}
         </Trans>
       }
     </div>

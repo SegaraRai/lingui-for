@@ -65,7 +65,7 @@ pub(super) fn component_candidate_from_element(
         imports,
         options,
         context,
-        import_decl.imported_name.as_str(),
+        import_decl,
     )?;
     let runtime_component_wrapper_spans =
         collect_runtime_component_wrapper_spans(source, node, import_decl.imported_name.as_str());
@@ -100,14 +100,14 @@ fn collect_component_normalization_edits(
     imports: &[MacroImport],
     options: &AnalyzeOptions,
     context: &mut AstroCollectContext,
-    imported_name: &str,
+    import_decl: &MacroImport,
 ) -> Result<Vec<NormalizationEdit>, AstroFrameworkError> {
     let mut edits =
         collect_nested_component_normalization_edits(source, node, imports, options, context)?;
     edits.extend(component_astro_child_normalization_edits(
         source,
         node,
-        imported_name,
+        import_decl,
     ));
     edits.extend(component_whitespace_edits(source, node, options));
     sort_and_dedup_normalization_edits(&mut edits);
@@ -197,7 +197,7 @@ fn parse_and_collect_macros(
 fn component_astro_child_normalization_edits(
     source: &str,
     node: Node<'_>,
-    imported_name: &str,
+    import_decl: &MacroImport,
 ) -> Vec<NormalizationEdit> {
     let mut edits = Vec::new();
     let mut cursor = node.walk();
@@ -210,7 +210,7 @@ fn component_astro_child_normalization_edits(
                 append_html_interpolation_child_normalization_edits(
                     source,
                     child,
-                    imported_name,
+                    import_decl,
                     &mut edits,
                 );
             }
@@ -371,7 +371,7 @@ fn attribute_value<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
 fn append_html_interpolation_child_normalization_edits(
     source: &str,
     node: Node<'_>,
-    imported_name: &str,
+    import_decl: &MacroImport,
     edits: &mut Vec<NormalizationEdit>,
 ) {
     let inner = inner_range_from_delimiters(node, 1, 1);
@@ -399,9 +399,8 @@ fn append_html_interpolation_child_normalization_edits(
         return;
     }
 
-    if is_single_root_interpolation(source, inner, &children)
-        && let [root] = children.as_slice()
-    {
+    if is_single_root_interpolation(source, inner, &children) {
+        let root = children[0];
         edits.push(NormalizationEdit::Delete {
             span: Span::new(node.start_byte(), inner.start),
         });
@@ -409,17 +408,19 @@ fn append_html_interpolation_child_normalization_edits(
             span: Span::new(inner.end, node.end_byte()),
         });
 
-        if let Some((start_tag, end_tag)) = fragment_tag_pair(*root) {
+        if let Some((start_tag, end_tag)) = fragment_tag_pair(root) {
             replace_with_astro_fragment_start_marker(start_tag, edits);
             replace_with_astro_fragment_end_marker(end_tag, edits);
             append_descendant_comment_marker_replacements(start_tag, end_tag, edits);
         } else {
-            append_comment_marker_replacements(*root, edits);
+            append_comment_marker_replacements(root, edits);
         }
         return;
     }
 
-    if imported_name == "Trans" && is_rich_node_expression_interpolation(source, inner, &children) {
+    if import_decl.imported_name == "Trans"
+        && is_rich_node_expression_interpolation(source, inner, &children)
+    {
         // Keep node-bearing Astro expressions as one rich placeholder. The
         // runtime adapter restores the original expression as the matching
         // static slot, so nested nodes are not extracted here.

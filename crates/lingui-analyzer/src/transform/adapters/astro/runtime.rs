@@ -605,6 +605,9 @@ fn lower_original_wrapper_to_slot_callback(
     let mut rendered = input.empty_like();
     let has_content_hole = has_content_hole(source, node);
     if matches!(node.kind(), "comment" | "html_interpolation") {
+        // RuntimeTrans accepts static markup slots as well as callback slots.
+        // Copying html_interpolation with Span::from_node keeps its braces, so
+        // the emitted slot content remains valid Astro markup.
         push_original_anchor(
             &mut rendered,
             &indexed_source,

@@ -7,6 +7,10 @@ pub(crate) fn named_children_in_span<'a>(
     node: Node<'a>,
     span: Span,
 ) -> Vec<Node<'a>> {
+    // Empty trimmed text nodes are intentionally ignored so comment-only and
+    // single-root interpolation checks operate on semantic children. Add any
+    // future ignorable node kinds here and audit the child-slice consumers
+    // below together to keep those predicates aligned.
     node.named_children(&mut node.walk())
         .filter(|child| child.end_byte() > span.start && child.start_byte() < span.end)
         .filter(|child| {

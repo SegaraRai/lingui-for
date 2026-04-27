@@ -116,12 +116,7 @@ fn append_fragment_normalization_replacements(
     }
 
     let tree = parse_astro(source)?;
-    collect_fragment_normalization_replacements(
-        plan,
-        tree.root_node(),
-        replacements,
-        &mut Vec::new(),
-    );
+    collect_fragment_normalization_replacements(plan, tree.root_node(), replacements);
     Ok(())
 }
 
@@ -129,61 +124,64 @@ fn collect_fragment_normalization_replacements(
     plan: &AstroTransformPlan,
     node: Node<'_>,
     replacements: &mut Vec<TransformReplacementInternal>,
-    normalized_fragments: &mut Vec<Span>,
 ) {
     if node.kind() == "element"
         && node_contains_transform_target(plan, node)
         && let Some((start_tag, end_tag)) = fragment_tag_pair(node)
     {
-        let element_span = Span::from_node(node);
-        if !normalized_fragments.contains(&element_span) {
-            normalized_fragments.push(element_span);
-            replacements.push(TransformReplacementInternal::new(
-                LeanString::from(format!("__astro_fragment_start_{}", start_tag.start_byte())),
-                start_tag.start_byte(),
-                start_tag.end_byte(),
-                LeanString::from_static_str("<Fragment>"),
-                None,
-                Vec::new(),
-            ));
-            replacements.push(TransformReplacementInternal::new(
-                LeanString::from(format!("__astro_fragment_end_{}", end_tag.start_byte())),
-                end_tag.start_byte(),
-                end_tag.end_byte(),
-                LeanString::from_static_str("</Fragment>"),
-                None,
-                Vec::new(),
-            ));
-        }
+        replacements.push(TransformReplacementInternal::new(
+            LeanString::from(format!("__astro_fragment_start_{}", start_tag.start_byte())),
+            start_tag.start_byte(),
+            start_tag.end_byte(),
+            LeanString::from_static_str("<Fragment>"),
+            None,
+            Vec::new(),
+        ));
+        replacements.push(TransformReplacementInternal::new(
+            LeanString::from(format!("__astro_fragment_end_{}", end_tag.start_byte())),
+            end_tag.start_byte(),
+            end_tag.end_byte(),
+            LeanString::from_static_str("</Fragment>"),
+            None,
+            Vec::new(),
+        ));
     }
 
     let mut cursor = node.walk();
     for child in node.children(&mut cursor) {
-        collect_fragment_normalization_replacements(
-            plan,
-            child,
-            replacements,
-            normalized_fragments,
-        );
+        collect_fragment_normalization_replacements(plan, child, replacements);
     }
 }
 
 fn node_contains_transform_target(plan: &AstroTransformPlan, node: Node<'_>) -> bool {
     let span = Span::from_node(node);
-    plan.common.targets.iter().any(|target| {
-        span.start <= target.original_span.start && target.original_span.end <= span.end
-    })
+    let first_contained = plan
+        .common
+        .targets
+        .partition_point(|target| target.original_span.start < span.start);
+    plan.common.targets[first_contained..]
+        .iter()
+        .take_while(|target| target.original_span.start <= span.end)
+        .any(|target| target.original_span.end <= span.end)
 }
 
 fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
     let mut cursor = node.walk();
-    let start_tag = node
-        .children(&mut cursor)
-        .find(|child| child.kind() == "start_tag" && tag_name(*child).is_none())?;
-    let mut cursor = node.walk();
-    let end_tag = node
-        .children(&mut cursor)
-        .find(|child| child.kind() == "end_tag" && tag_name(*child).is_none())?;
+    let mut start_tag = None;
+    let mut end_tag = None;
+    for child in node.children(&mut cursor) {
+        match child.kind() {
+            "start_tag" if start_tag.is_none() && tag_name(child).is_none() => {
+                start_tag = Some(child);
+            }
+            "end_tag" if tag_name(child).is_none() => {
+                end_tag = Some(child);
+            }
+            _ => {}
+        }
+    }
+    let start_tag = start_tag?;
+    let end_tag = end_tag?;
     Some((start_tag, end_tag))
 }
 
