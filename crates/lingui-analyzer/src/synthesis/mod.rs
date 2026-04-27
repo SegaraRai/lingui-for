@@ -362,6 +362,7 @@ mod tests {
             source_map_anchor: None,
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
+            runtime_component_wrapper_spans: Vec::new(),
         }
     }
 
@@ -530,6 +531,7 @@ mod tests {
                 source_map_anchor: None,
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
+                runtime_component_wrapper_spans: Vec::new(),
             },
             MacroCandidate {
                 id: LeanString::from_static_str("child"),
@@ -551,6 +553,7 @@ mod tests {
                 source_map_anchor: None,
                 owner_id: Some(LeanString::from_static_str("parent")),
                 strategy: MacroCandidateStrategy::OwnedByParent,
+                runtime_component_wrapper_spans: Vec::new(),
             },
         ];
 

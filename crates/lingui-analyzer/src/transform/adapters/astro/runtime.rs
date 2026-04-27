@@ -5,9 +5,7 @@ use crate::common::{
     IndexedSourceMap, IndexedText, MappedText, RenderedMappedText, Span, build_span_anchor_map,
     node_text, span_text,
 };
-use crate::framework::astro::markup::{
-    is_fragment_wrapper, is_rich_node_expression_interpolation, named_children_in_span,
-};
+use crate::framework::astro::markup::is_fragment_wrapper;
 use crate::syntax::parse::{parse_astro, parse_tsx};
 use crate::transform::runtime_component::{
     RuntimeComponentError, append_rendered,
@@ -483,9 +481,9 @@ fn collect_component_slot_callbacks(
         let value = child
             .child_by_field_name("value")
             .ok_or(RuntimeComponentError::MissingObjectPairValue)?;
+        validate_component_placeholder_value(value)?;
         placeholders.push(AstroRuntimeComponentPlaceholder {
             key: LeanString::from(validate_runtime_placeholder_key(key_name)?),
-            kind: placeholder_kind_from_component_value(transformed_source, value, base_offset)?,
         });
     }
 
@@ -498,43 +496,17 @@ fn collect_component_slot_callbacks(
     )?))
 }
 
-fn placeholder_kind_from_component_value(
-    source: &str,
-    node: Node<'_>,
-    base_offset: isize,
-) -> Result<AstroRuntimeWrapperKind, AstroAdapterError> {
+fn validate_component_placeholder_value(node: Node<'_>) -> Result<(), AstroAdapterError> {
     let node = match node.kind() {
         "parenthesized_expression" | "jsx_expression" => first_named_child(node).unwrap_or(node),
         _ => node,
     };
 
-    Ok(match node.kind() {
-        "jsx_element" | "jsx_self_closing_element" => match jsx_tag_name(source, node, base_offset)
-        {
-            Some("__astro_cm") => AstroRuntimeWrapperKind::Comment,
-            Some("__astro_frag" | "Fragment") => AstroRuntimeWrapperKind::Fragment,
-            _ => AstroRuntimeWrapperKind::Element,
-        },
-        _ => AstroRuntimeWrapperKind::Element,
-    })
-}
-
-fn jsx_tag_name<'a>(source: &'a str, node: Node<'_>, base_offset: isize) -> Option<&'a str> {
-    let name = match node.kind() {
-        "jsx_element" => node
-            .children(&mut node.walk())
-            .find(|child| child.kind() == "jsx_opening_element")
-            .and_then(|opening| {
-                opening
-                    .children(&mut opening.walk())
-                    .find(|child| child.kind() == "identifier")
-            }),
-        "jsx_self_closing_element" => node
-            .children(&mut node.walk())
-            .find(|child| child.kind() == "identifier"),
-        _ => None,
-    }?;
-    source_slice(source, name, base_offset).ok()
+    if matches!(node.kind(), "jsx_element" | "jsx_self_closing_element") {
+        Ok(())
+    } else {
+        Err(RuntimeComponentError::ExpectedJsxElementDescriptor.into())
+    }
 }
 
 fn collect_component_slot_callbacks_from_source(
@@ -546,10 +518,7 @@ fn collect_component_slot_callbacks_from_source(
 ) -> Result<AstroLoweredComponentSlots, AstroAdapterError> {
     let tree = parse_astro(original_source)?;
     let root = tree.root_node();
-    let component_node = find_node_by_span(root, target.original_span)
-        .ok_or(AstroAdapterError::MissingOriginalAstroTransNode)?;
-    let wrappers =
-        collect_matching_runtime_component_wrappers(component_node, original_source, placeholders)?;
+    let wrappers = collect_runtime_component_wrappers_from_target(root, target, placeholders)?;
 
     if wrappers.len() != placeholders.len() {
         return Err(
@@ -583,96 +552,27 @@ fn collect_component_slot_callbacks_from_source(
     })
 }
 
-fn collect_matching_runtime_component_wrappers<'a>(
-    component_node: Node<'a>,
-    source: &str,
+fn collect_runtime_component_wrappers_from_target<'a>(
+    root: Node<'a>,
+    target: &TransformTarget,
     placeholders: &[AstroRuntimeComponentPlaceholder],
 ) -> Result<Vec<Node<'a>>, AstroAdapterError> {
-    let expected_kinds = placeholders
-        .iter()
-        .map(|placeholder| placeholder.kind)
-        .collect::<Vec<_>>();
-    let mut matches = Vec::new();
-
-    for mode in [
-        FragmentWrapperMode::Deep,
-        FragmentWrapperMode::Shallow,
-        FragmentWrapperMode::Transparent,
-    ]
-    .into_iter()
-    {
-        let mut wrappers = Vec::new();
-        collect_runtime_component_wrappers(component_node, source, mode, &mut wrappers);
-        if wrappers.len() == placeholders.len() {
-            let wrapper_kinds = wrappers
-                .iter()
-                .map(|wrapper| wrapper_kind(source, *wrapper))
-                .collect::<Vec<_>>();
-            let score = wrapper_kind_alignment_score(&expected_kinds, &wrapper_kinds);
-            matches.push((mode, wrappers, wrapper_kinds, score));
-        }
+    if target.runtime_component_wrapper_spans.len() != placeholders.len() {
+        return Err(
+            AstroAdapterError::MismatchedAstroRuntimeComponentPlaceholderCount {
+                expected: placeholders.len(),
+                found: target.runtime_component_wrapper_spans.len(),
+            },
+        );
     }
 
-    if matches.is_empty() {
-        return Ok(Vec::new());
-    }
-
-    let exact_matches = matches
+    target
+        .runtime_component_wrapper_spans
         .iter()
-        .filter(|(_, _, wrapper_kinds, _)| wrapper_kinds == &expected_kinds)
-        .collect::<Vec<_>>();
-    if exact_matches.len() == 1 {
-        return Ok(exact_matches[0].1.clone());
-    }
-    if let Some((_, wrappers, _, _)) = exact_matches
-        .iter()
-        .find(|(mode, _, _, _)| *mode == FragmentWrapperMode::Deep)
-    {
-        return Ok(wrappers.clone());
-    }
-
-    let best_score = matches
-        .iter()
-        .map(|(_, _, _, score)| *score)
-        .max()
-        .unwrap_or(0);
-    let best_matches = matches
-        .iter()
-        .filter(|(_, _, _, score)| *score == best_score)
-        .collect::<Vec<_>>();
-    if best_matches.len() == 1 {
-        return Ok(best_matches[0].1.clone());
-    }
-    if best_matches
-        .iter()
-        .all(|(_, wrappers, _, _)| same_wrapper_sequence(wrappers, &best_matches[0].1))
-    {
-        return Ok(best_matches[0].1.clone());
-    }
-
-    Err(
-        AstroAdapterError::AmbiguousAstroRuntimeComponentWrapperMatch {
-            expected: LeanString::from(format_wrapper_kinds(&expected_kinds)),
-            candidates: LeanString::from(
-                best_matches
-                    .iter()
-                    .map(|(mode, _, wrapper_kinds, _)| {
-                        format!("{mode:?}: {}", format_wrapper_kinds(wrapper_kinds))
-                    })
-                    .collect::<Vec<_>>()
-                    .join("; "),
-            ),
-        },
-    )
-}
-
-fn same_wrapper_sequence(left: &[Node<'_>], right: &[Node<'_>]) -> bool {
-    left.len() == right.len()
-        && left.iter().zip(right).all(|(left, right)| {
-            left.kind() == right.kind()
-                && left.start_byte() == right.start_byte()
-                && left.end_byte() == right.end_byte()
+        .map(|span| {
+            find_node_by_span(root, *span).ok_or(AstroAdapterError::MissingOriginalAstroTransNode)
         })
+        .collect()
 }
 
 struct AstroLoweredComponentSlots {
@@ -683,15 +583,6 @@ struct AstroLoweredComponentSlots {
 #[derive(Clone, Debug, PartialEq, Eq)]
 struct AstroRuntimeComponentPlaceholder {
     key: LeanString,
-    kind: AstroRuntimeWrapperKind,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum AstroRuntimeWrapperKind {
-    Element,
-    Fragment,
-    Comment,
-    Interpolation,
 }
 
 fn render_placeholder_keys_inline(keys: &[LeanString]) -> String {
@@ -701,170 +592,6 @@ fn render_placeholder_keys_inline(keys: &[LeanString]) -> String {
         .collect::<Vec<_>>()
         .join(", ");
     format!("[{joined}]")
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum FragmentWrapperMode {
-    Deep,
-    Shallow,
-    Transparent,
-}
-
-fn wrapper_kind(source: &str, node: Node<'_>) -> AstroRuntimeWrapperKind {
-    match node.kind() {
-        "comment" => AstroRuntimeWrapperKind::Comment,
-        "html_interpolation" => AstroRuntimeWrapperKind::Interpolation,
-        "element" if is_fragment_wrapper(source, node) => AstroRuntimeWrapperKind::Fragment,
-        _ => AstroRuntimeWrapperKind::Element,
-    }
-}
-
-fn wrapper_kind_alignment_score(
-    expected: &[AstroRuntimeWrapperKind],
-    actual: &[AstroRuntimeWrapperKind],
-) -> usize {
-    expected
-        .iter()
-        .zip(actual)
-        .map(|(expected, actual)| {
-            if expected == actual {
-                2
-            } else if matches!(
-                (expected, actual),
-                (
-                    AstroRuntimeWrapperKind::Fragment,
-                    AstroRuntimeWrapperKind::Interpolation
-                )
-            ) {
-                1
-            } else {
-                0
-            }
-        })
-        .sum()
-}
-
-fn format_wrapper_kinds(kinds: &[AstroRuntimeWrapperKind]) -> String {
-    kinds
-        .iter()
-        .map(|kind| match kind {
-            AstroRuntimeWrapperKind::Element => "element",
-            AstroRuntimeWrapperKind::Fragment => "fragment",
-            AstroRuntimeWrapperKind::Comment => "comment",
-            AstroRuntimeWrapperKind::Interpolation => "interpolation",
-        })
-        .collect::<Vec<_>>()
-        .join(",")
-}
-
-fn collect_runtime_component_wrappers<'a>(
-    node: Node<'a>,
-    source: &str,
-    fragment_mode: FragmentWrapperMode,
-    wrappers: &mut Vec<Node<'a>>,
-) {
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        match child.kind() {
-            "element" => {
-                if is_fragment_wrapper(source, child) {
-                    match fragment_mode {
-                        FragmentWrapperMode::Deep => {
-                            wrappers.push(child);
-                            collect_runtime_component_wrappers(
-                                child,
-                                source,
-                                fragment_mode,
-                                wrappers,
-                            );
-                        }
-                        FragmentWrapperMode::Shallow => {
-                            wrappers.push(child);
-                        }
-                        FragmentWrapperMode::Transparent => {
-                            collect_runtime_component_wrappers(
-                                child,
-                                source,
-                                fragment_mode,
-                                wrappers,
-                            );
-                        }
-                    }
-                    continue;
-                }
-                if let Some(self_closing_tag) = child
-                    .children(&mut child.walk())
-                    .find(|grandchild| grandchild.kind() == "self_closing_tag")
-                {
-                    if has_content_hole(source, self_closing_tag)
-                        || !is_skipped_runtime_component_wrapper(source, self_closing_tag)
-                    {
-                        wrappers.push(self_closing_tag);
-                    }
-                    continue;
-                }
-
-                if has_content_hole(source, child) {
-                    wrappers.push(child);
-                    continue;
-                }
-                if is_skipped_runtime_component_wrapper(source, child) {
-                    continue;
-                }
-                wrappers.push(child);
-                collect_runtime_component_wrappers(child, source, fragment_mode, wrappers);
-            }
-            "self_closing_tag" => {
-                if has_content_hole(source, child)
-                    || !is_skipped_runtime_component_wrapper(source, child)
-                {
-                    wrappers.push(child);
-                }
-            }
-            "comment" => {
-                // Astro HTML comments inside <Trans> are message-significant:
-                // they become rich placeholders so the transform can restore
-                // the original comments in the final Astro output.
-                wrappers.push(child);
-            }
-            "html_interpolation" => {
-                let inner = Span::new(child.start_byte() + 1, child.end_byte().saturating_sub(1));
-                let children = named_children_in_span(source, child, inner);
-                if is_rich_node_expression_interpolation(source, inner, &children) {
-                    wrappers.push(child);
-                } else {
-                    collect_runtime_component_wrappers(child, source, fragment_mode, wrappers);
-                }
-            }
-            _ => collect_runtime_component_wrappers(child, source, fragment_mode, wrappers),
-        }
-    }
-}
-
-fn is_skipped_runtime_component_wrapper(source: &str, node: Node<'_>) -> bool {
-    matches!(
-        tag_name(source, node),
-        Some("Plural" | "Select" | "SelectOrdinal" | "Trans")
-    )
-}
-
-fn tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
-    match node.kind() {
-        "element" => node
-            .children(&mut node.walk())
-            .find(|child| child.kind() == "start_tag")
-            .and_then(|start_tag| {
-                start_tag
-                    .children(&mut start_tag.walk())
-                    .find(|child| child.kind() == "tag_name")
-            })
-            .map(|tag_name| node_text(source, tag_name)),
-        "self_closing_tag" => node
-            .children(&mut node.walk())
-            .find(|child| child.kind() == "tag_name")
-            .map(|tag_name| node_text(source, tag_name)),
-        _ => None,
-    }
 }
 
 fn lower_original_wrapper_to_slot_callback(
@@ -1105,7 +832,10 @@ mod tests {
 
     use crate::common::{RenderedMappedText, Span};
     use crate::framework::MacroFlavor;
+    use crate::framework::astro::components::collect_runtime_component_wrapper_spans;
+    use crate::syntax::parse::parse_astro;
     use crate::synthesis::NormalizedSegment;
+    use crate::transform::runtime_component::find_node_by_span;
     use crate::transform::{
         RuntimeWarningMode, TransformTarget, TransformTargetContext, TransformTargetOutputKind,
         TransformTranslationMode,
@@ -1118,6 +848,9 @@ mod tests {
     }
 
     fn component_target(source: &LeanString) -> TransformTarget {
+        let tree = parse_astro(source).expect("astro source parses");
+        let node = find_node_by_span(tree.root_node(), Span::new(0, source.len()))
+            .expect("component node exists");
         TransformTarget {
             declaration_id: ls("__trans"),
             original_span: Span::new(0, source.len()),
@@ -1130,6 +863,9 @@ mod tests {
             output_kind: TransformTargetOutputKind::Component,
             translation_mode: TransformTranslationMode::Contextual,
             normalized_segments: Vec::<NormalizedSegment>::new(),
+            runtime_component_wrapper_spans: collect_runtime_component_wrapper_spans(
+                source, node, "Trans",
+            ),
         }
     }
 
@@ -1207,11 +943,11 @@ mod tests {
     }
 
     #[test]
-    fn disambiguates_fragment_wrapper_modes_by_component_placeholder_kinds() {
+    fn lowers_fragment_wrappers_from_stored_original_spans() {
         let source = ls("<Trans>{<><strong>Alpha</strong></>}<em>Beta</em></Trans>");
         let declaration = RenderedMappedText {
             code: ls(
-                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"<0>Alpha</0><1>Beta</1>\", components: { 0: <strong />, 1: <em /> } }} />",
+                "<Trans {.../*i18n*/ { id: \"demo.docs\", message: \"<0><1>Alpha</1></0><2>Beta</2>\", components: { 0: <Fragment />, 1: <strong />, 2: <em /> } }} />",
             ),
             indexed_source_map: None,
         };
@@ -1228,16 +964,14 @@ mod tests {
         .expect("astro runtime component lowering succeeds");
 
         assert!(lowered.code.contains(
-            "<fragment slot=\"component_0\">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>"
+            "<fragment slot=\"component_0\">{(children) => <Fragment set:html={children} />}</fragment>"
         ));
         assert!(lowered.code.contains(
-            "<fragment slot=\"component_1\">{(children) => <em><Fragment set:html={children} /></em>}</fragment>"
+            "<fragment slot=\"component_1\">{(children) => <strong><Fragment set:html={children} /></strong>}</fragment>"
         ));
-        assert!(
-            !lowered
-                .code
-                .contains("component_0\">{(children) => <Fragment")
-        );
+        assert!(lowered.code.contains(
+            "<fragment slot=\"component_2\">{(children) => <em><Fragment set:html={children} /></em>}</fragment>"
+        ));
     }
 
     #[test]

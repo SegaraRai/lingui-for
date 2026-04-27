@@ -136,6 +136,7 @@ mod tests {
                 source_map_anchor: Some(Span::new(0, 1)),
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
+                runtime_component_wrapper_spans: Vec::new(),
             },
             normalized_rendered: RenderedMappedText {
                 code: ls("t"),

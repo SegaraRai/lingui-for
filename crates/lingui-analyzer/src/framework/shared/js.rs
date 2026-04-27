@@ -340,6 +340,7 @@ fn to_call_candidate(
                 source_map_anchor: Some(identifier_span),
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
+                runtime_component_wrapper_spans: Vec::new(),
             })
         }
         JsMacroSyntax::Svelte => {
@@ -379,6 +380,7 @@ fn to_svelte_call_candidate(
                 source_map_anchor: Some(anchor),
                 owner_id: None,
                 strategy: MacroCandidateStrategy::Standalone,
+                runtime_component_wrapper_spans: Vec::new(),
             });
         }
 
@@ -395,6 +397,7 @@ fn to_svelte_call_candidate(
             source_map_anchor: Some(Span::from_node(identifier).shifted(base_offset)),
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
+            runtime_component_wrapper_spans: Vec::new(),
         });
     }
 
@@ -433,6 +436,7 @@ fn to_svelte_call_candidate(
         source_map_anchor: Some(object_span),
         owner_id: None,
         strategy: MacroCandidateStrategy::Standalone,
+        runtime_component_wrapper_spans: Vec::new(),
     })
 }
 

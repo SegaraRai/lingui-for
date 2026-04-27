@@ -82,6 +82,7 @@ pub(super) fn component_candidate_from_element(
             source_map_anchor: component_source_map_anchor(source, node),
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
+            runtime_component_wrapper_spans: Vec::new(),
         },
         shadowed_names,
     }))

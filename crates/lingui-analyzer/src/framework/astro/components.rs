@@ -17,8 +17,8 @@ use super::analysis::{
     AstroCollectContext, inner_range_from_delimiters, lowered_html_interpolation,
 };
 use super::markup::{
-    fragment_root_tag_pair, is_comment_only_interpolation, is_rich_node_expression_interpolation,
-    is_single_root_interpolation, named_children_in_span,
+    fragment_root_tag_pair, is_comment_only_interpolation, is_fragment_wrapper,
+    is_rich_node_expression_interpolation, is_single_root_interpolation, named_children_in_span,
 };
 use super::validation::validate_runtime_lowerable_astro_component;
 use super::{AstroFrameworkError, AstroTemplateComponent};
@@ -67,6 +67,8 @@ pub(super) fn component_candidate_from_element(
         context,
         import_decl.imported_name.as_str(),
     )?;
+    let runtime_component_wrapper_spans =
+        collect_runtime_component_wrapper_spans(source, node, import_decl.imported_name.as_str());
 
     Ok(Some(AstroTemplateComponent {
         candidate: MacroCandidate {
@@ -81,6 +83,7 @@ pub(super) fn component_candidate_from_element(
             source_map_anchor: component_source_map_anchor(source, node),
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
+            runtime_component_wrapper_spans,
         },
         shadowed_names: Vec::new(),
     }))
@@ -216,6 +219,153 @@ fn component_astro_child_normalization_edits(
     }
 
     edits
+}
+
+pub(crate) fn collect_runtime_component_wrapper_spans(
+    source: &str,
+    node: Node<'_>,
+    imported_name: &str,
+) -> Vec<Span> {
+    if imported_name != "Trans" {
+        return Vec::new();
+    }
+
+    let mut spans = Vec::new();
+    for child in node.children(&mut node.walk()) {
+        match child.kind() {
+            "start_tag" | "self_closing_tag" | "end_tag" => {}
+            _ => collect_runtime_component_wrapper_child_spans(source, child, &mut spans),
+        }
+    }
+    spans
+}
+
+fn collect_runtime_component_wrapper_child_spans(
+    source: &str,
+    node: Node<'_>,
+    spans: &mut Vec<Span>,
+) {
+    match node.kind() {
+        "element" => {
+            if is_fragment_wrapper(source, node) {
+                spans.push(Span::from_node(node));
+                for child in node.children(&mut node.walk()) {
+                    collect_runtime_component_wrapper_child_spans(source, child, spans);
+                }
+                return;
+            }
+
+            if let Some(self_closing_tag) = node
+                .children(&mut node.walk())
+                .find(|child| child.kind() == "self_closing_tag")
+            {
+                if has_content_hole(source, self_closing_tag)
+                    || !is_skipped_runtime_component_wrapper(source, self_closing_tag)
+                {
+                    spans.push(Span::from_node(self_closing_tag));
+                }
+                return;
+            }
+
+            if has_content_hole(source, node) {
+                spans.push(Span::from_node(node));
+                return;
+            }
+            if is_skipped_runtime_component_wrapper(source, node) {
+                return;
+            }
+
+            spans.push(Span::from_node(node));
+            for child in node.children(&mut node.walk()) {
+                collect_runtime_component_wrapper_child_spans(source, child, spans);
+            }
+        }
+        "self_closing_tag" => {
+            if has_content_hole(source, node) || !is_skipped_runtime_component_wrapper(source, node)
+            {
+                spans.push(Span::from_node(node));
+            }
+        }
+        "comment" => spans.push(Span::from_node(node)),
+        "html_interpolation" => {
+            let inner = inner_range_from_delimiters(node, 1, 1);
+            let children = named_children_in_span(source, node, inner);
+            if is_rich_node_expression_interpolation(source, inner, &children) {
+                spans.push(Span::from_node(node));
+            } else {
+                for child in node.children(&mut node.walk()) {
+                    collect_runtime_component_wrapper_child_spans(source, child, spans);
+                }
+            }
+        }
+        _ => {
+            for child in node.children(&mut node.walk()) {
+                collect_runtime_component_wrapper_child_spans(source, child, spans);
+            }
+        }
+    }
+}
+
+fn is_skipped_runtime_component_wrapper(source: &str, node: Node<'_>) -> bool {
+    matches!(
+        runtime_tag_name(source, node),
+        Some("Plural" | "Select" | "SelectOrdinal" | "Trans")
+    )
+}
+
+fn has_content_hole(source: &str, node: Node<'_>) -> bool {
+    node.children(&mut node.walk()).any(|child| {
+        matches!(
+            (
+                attribute_name(source, child),
+                attribute_value(source, child)
+            ),
+            (Some("set:html" | "set:text"), _)
+                | (
+                    Some("set"),
+                    Some("html" | "text" | "\"html\"" | "\"text\"" | "'html'" | "'text'")
+                )
+        )
+    })
+}
+
+fn runtime_tag_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
+    match node.kind() {
+        "element" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "start_tag")
+            .and_then(|start_tag| {
+                start_tag
+                    .children(&mut start_tag.walk())
+                    .find(|child| child.kind() == "tag_name")
+            })
+            .map(|tag_name| node_text(source, tag_name)),
+        "self_closing_tag" => node
+            .children(&mut node.walk())
+            .find(|child| child.kind() == "tag_name")
+            .map(|tag_name| node_text(source, tag_name)),
+        _ => None,
+    }
+}
+
+fn attribute_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
+    if !matches!(node.kind(), "attribute" | "directive_attribute") {
+        return None;
+    }
+    node.children(&mut node.walk())
+        .find(|child| {
+            matches!(
+                child.kind(),
+                "attribute_name" | "directive_name" | "property_identifier"
+            )
+        })
+        .map(|name| node_text(source, name))
+}
+
+fn attribute_value<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
+    node.children(&mut node.walk())
+        .find(|child| matches!(child.kind(), "quoted_attribute_value" | "attribute_value"))
+        .map(|value| node_text(source, value).trim())
 }
 
 fn append_html_interpolation_child_normalization_edits(

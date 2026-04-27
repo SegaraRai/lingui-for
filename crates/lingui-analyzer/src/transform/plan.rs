@@ -69,6 +69,7 @@ pub(crate) fn build_transform_plan_for_framework<P: FrameworkTransformPlan>(
             output_kind: prototype.output_kind,
             translation_mode: prototype.translation_mode,
             normalized_segments: target.normalized_segments,
+            runtime_component_wrapper_spans: target.candidate.runtime_component_wrapper_spans,
         })
         .collect::<Vec<_>>();
 
@@ -218,6 +219,7 @@ mod tests {
             source_map_anchor: None,
             owner_id: None,
             strategy: MacroCandidateStrategy::Standalone,
+            runtime_component_wrapper_spans: Vec::new(),
         }
     }
 

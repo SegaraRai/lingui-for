@@ -128,6 +128,7 @@ pub struct MacroCandidate {
     pub source_map_anchor: Option<Span>,
     pub owner_id: Option<LeanString>,
     pub strategy: MacroCandidateStrategy,
+    pub runtime_component_wrapper_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]

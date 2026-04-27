@@ -117,6 +117,7 @@ pub struct TransformTarget {
     pub output_kind: TransformTargetOutputKind,
     pub translation_mode: TransformTranslationMode,
     pub normalized_segments: Vec<NormalizedSegment>,
+    pub runtime_component_wrapper_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]

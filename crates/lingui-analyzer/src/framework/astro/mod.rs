@@ -1,5 +1,5 @@
 mod analysis;
-mod components;
+pub(crate) mod components;
 pub mod ir;
 pub(crate) mod markup;
 mod validation;

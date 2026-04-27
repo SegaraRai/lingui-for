@@ -46,13 +46,6 @@ pub enum AstroAdapterError {
     InvalidOriginalSpanWhileLoweringAstroSourceMap { start: usize, end: usize },
     #[error("mismatched Astro runtime component placeholders: expected {expected}, found {found}")]
     MismatchedAstroRuntimeComponentPlaceholderCount { expected: usize, found: usize },
-    #[error(
-        "ambiguous Astro runtime component wrapper match: expected placeholder kinds {expected}, candidates {candidates}"
-    )]
-    AmbiguousAstroRuntimeComponentWrapperMatch {
-        expected: LeanString,
-        candidates: LeanString,
-    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Tsify)]

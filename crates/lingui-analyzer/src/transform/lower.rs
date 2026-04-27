@@ -208,6 +208,7 @@ mod tests {
                         generated_start: 0,
                         len: 13,
                     }],
+                    runtime_component_wrapper_spans: Vec::new(),
                 }],
                 import_removals: vec![],
             },

@@ -716,6 +716,7 @@ mod tests {
             output_kind: TransformTargetOutputKind::Component,
             translation_mode: TransformTranslationMode::Contextual,
             normalized_segments: Vec::<NormalizedSegment>::new(),
+            runtime_component_wrapper_spans: Vec::new(),
         }
     }
 
