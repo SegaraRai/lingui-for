@@ -4,6 +4,8 @@ use tree_sitter::Node;
 use crate::common::{InvalidSpan, Span, is_component_tag_name, node_text, span_text};
 use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
 
+use super::non_empty_tag_name_node;
+
 #[derive(thiserror::Error, Debug)]
 pub enum AstroIrError {
     #[error(transparent)]
@@ -279,15 +281,22 @@ fn is_interpolation_root_list(source: &str, inner_span: Span, children: &[Node<'
 
     let mut cursor = inner_span.start;
     for child in children {
-        if !span_text(source, Span::new_unchecked(cursor, child.start_byte()))
-            .trim()
-            .is_empty()
+        if cursor > child.start_byte() {
+            return false;
+        }
+        if cursor < child.start_byte()
+            && !span_text(source, Span::new_unchecked(cursor, child.start_byte()))
+                .trim()
+                .is_empty()
         {
             return false;
         }
         cursor = child.end_byte();
     }
 
+    if cursor > inner_span.end {
+        return false;
+    }
     span_text(source, Span::new_unchecked(cursor, inner_span.end))
         .trim()
         .is_empty()
@@ -470,7 +479,7 @@ fn lower_element(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrErr
 }
 
 fn is_fragment_tag(tag_node: Node<'_>) -> bool {
-    tag_node.kind() == "start_tag" && render_tag_name_node(tag_node).is_none()
+    tag_node.kind() == "start_tag" && non_empty_tag_name_node(tag_node).is_none()
 }
 
 fn lower_fragment(source: &str, node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
@@ -507,7 +516,7 @@ fn lower_self_closing_tag(source: &str, node: Node<'_>) -> Result<LoweredNode, A
 }
 
 fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {
-    let tag_name_node = render_tag_name_node(tag_node).ok_or(AstroIrError::MissingTagName)?;
+    let tag_name_node = non_empty_tag_name_node(tag_node).ok_or(AstroIrError::MissingTagName)?;
     let tag_name = node_text(source, tag_name_node);
 
     Ok(if is_component_tag_name(tag_name) {
@@ -524,13 +533,6 @@ fn render_tag_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode
             segments: Vec::new(),
         }
     })
-}
-
-fn render_tag_name_node(tag_node: Node<'_>) -> Option<Node<'_>> {
-    let mut cursor = tag_node.walk();
-    tag_node
-        .children(&mut cursor)
-        .find(|child| child.kind() == "tag_name" && child.start_byte() != child.end_byte())
 }
 
 fn render_props_expression(source: &str, tag_node: Node<'_>) -> Result<LoweredNode, AstroIrError> {

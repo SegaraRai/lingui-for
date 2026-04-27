@@ -218,7 +218,7 @@ fn whitespace_span_before_object(source: &str, start: usize, limit: usize) -> Op
     }
 
     if cursor > start && cursor < bounded_limit && source[cursor..].starts_with('{') {
-        Span::new(start, cursor).ok()
+        Some(Span::new_unchecked(start, cursor))
     } else {
         None
     }

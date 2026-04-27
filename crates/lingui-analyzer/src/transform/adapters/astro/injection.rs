@@ -1,9 +1,7 @@
 use lean_string::LeanString;
-use tree_sitter::Node;
 
 use crate::common::{IndexedText, Span, build_span_anchor_map};
 use crate::conventions::FrameworkConventions;
-use crate::syntax::parse::parse_astro;
 use crate::transform::TransformReplacementInternal;
 
 use super::{AstroAdapterError, AstroTransformPlan, AstroTransformRuntimeBindings};
@@ -13,7 +11,7 @@ pub(super) fn append_runtime_injection_replacements(
     source: &LeanString,
     replacements: &mut Vec<TransformReplacementInternal>,
 ) -> Result<(), AstroAdapterError> {
-    append_fragment_normalization_replacements(plan, source, replacements)?;
+    append_fragment_normalization_replacements(plan, replacements);
 
     let indexed_source = IndexedText::new(source);
     let injections = build_frontmatter_injections(
@@ -108,88 +106,29 @@ pub(super) fn append_runtime_injection_replacements(
 
 fn append_fragment_normalization_replacements(
     plan: &AstroTransformPlan,
-    source: &LeanString,
-    replacements: &mut Vec<TransformReplacementInternal>,
-) -> Result<(), AstroAdapterError> {
-    if plan.common.targets.is_empty() {
-        return Ok(());
-    }
-
-    let tree = parse_astro(source)?;
-    collect_fragment_normalization_replacements(plan, tree.root_node(), replacements);
-    Ok(())
-}
-
-fn collect_fragment_normalization_replacements(
-    plan: &AstroTransformPlan,
-    node: Node<'_>,
     replacements: &mut Vec<TransformReplacementInternal>,
 ) {
-    if node.kind() == "element"
-        && node_contains_transform_target(plan, node)
-        && let Some((start_tag, end_tag)) = fragment_tag_pair(node)
-    {
+    for pair in &plan.fragment_tag_pairs {
         replacements.push(TransformReplacementInternal::new(
-            LeanString::from(format!("__astro_fragment_start_{}", start_tag.start_byte())),
-            start_tag.start_byte(),
-            start_tag.end_byte(),
+            LeanString::from(format!(
+                "__astro_fragment_start_{}",
+                pair.start_tag_span.start
+            )),
+            pair.start_tag_span.start,
+            pair.start_tag_span.end,
             LeanString::from_static_str("<Fragment>"),
             None,
             Vec::new(),
         ));
         replacements.push(TransformReplacementInternal::new(
-            LeanString::from(format!("__astro_fragment_end_{}", end_tag.start_byte())),
-            end_tag.start_byte(),
-            end_tag.end_byte(),
+            LeanString::from(format!("__astro_fragment_end_{}", pair.end_tag_span.start)),
+            pair.end_tag_span.start,
+            pair.end_tag_span.end,
             LeanString::from_static_str("</Fragment>"),
             None,
             Vec::new(),
         ));
     }
-
-    let mut cursor = node.walk();
-    for child in node.children(&mut cursor) {
-        collect_fragment_normalization_replacements(plan, child, replacements);
-    }
-}
-
-fn node_contains_transform_target(plan: &AstroTransformPlan, node: Node<'_>) -> bool {
-    let span = Span::from_node(node);
-    // retain_standalone_prototypes sorts prototypes by outer_span, and targets preserve that
-    // order with original_span set from candidate.outer_span.
-    let first_contained = plan
-        .common
-        .targets
-        .partition_point(|target| target.original_span.start < span.start);
-    plan.common.targets[first_contained..]
-        .iter()
-        .take_while(|target| target.original_span.start <= span.end)
-        .any(|target| target.original_span.end <= span.end)
-}
-
-fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
-    let mut cursor = node.walk();
-    let mut start_tag = None;
-    let mut end_tag = None;
-    for child in node.children(&mut cursor) {
-        match child.kind() {
-            "start_tag" if start_tag.is_none() && tag_name(child).is_none() => {
-                start_tag = Some(child);
-            }
-            "end_tag" if tag_name(child).is_none() => {
-                end_tag = Some(child);
-            }
-            _ => {}
-        }
-    }
-    let start_tag = start_tag?;
-    let end_tag = end_tag?;
-    Some((start_tag, end_tag))
-}
-
-fn tag_name(node: Node<'_>) -> Option<Node<'_>> {
-    node.children(&mut node.walk())
-        .find(|child| child.kind() == "tag_name" && child.start_byte() != child.end_byte())
 }
 
 struct FrontmatterInjections {

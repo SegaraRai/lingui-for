@@ -90,6 +90,7 @@ pub(crate) fn analyze_astro_transform(
             conventions,
         )?,
         frontmatter,
+        fragment_tag_pairs: analysis.metadata.fragment_tag_pairs,
     })
 }
 

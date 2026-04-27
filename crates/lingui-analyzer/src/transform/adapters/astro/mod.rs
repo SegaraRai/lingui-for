@@ -8,6 +8,7 @@ use tsify::Tsify;
 
 use crate::common::{InvalidSourceSpan, InvalidSpan, MappedTextError, RenderedMappedText, Span};
 use crate::conventions::FrameworkConventions;
+use crate::framework::astro::AstroFragmentTagPair;
 use crate::framework::{AstroFrameworkError, FrameworkError, JsAnalysisError, WhitespaceMode};
 use crate::syntax::parse::ParseError;
 use crate::transform::{
@@ -61,6 +62,8 @@ pub struct AstroTransformPlan {
     pub runtime_warnings: RuntimeWarningOptions,
     pub runtime_bindings: AstroTransformRuntimeBindings,
     pub frontmatter: Option<AstroTransformFrontmatterRegion>,
+    #[serde(default)]
+    pub fragment_tag_pairs: Vec<AstroTransformFragmentTagPair>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Tsify)]
@@ -81,6 +84,15 @@ pub struct AstroTransformFrontmatterRegion {
     pub prelude_insert_point: usize,
     pub trailing_whitespace_range: Option<Span>,
     pub has_remaining_content_after_import_removal: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Tsify)]
+#[tsify()]
+#[serde(rename_all = "camelCase")]
+pub struct AstroTransformFragmentTagPair {
+    pub element_span: Span,
+    pub start_tag_span: Span,
+    pub end_tag_span: Span,
 }
 
 impl FrameworkTransformPlan for AstroTransformPlan {
@@ -123,12 +135,19 @@ impl FrameworkTransformPlan for AstroTransformPlan {
         runtime_warnings: RuntimeWarningOptions,
         analysis: Self::Analysis,
     ) -> Self {
+        let fragment_tag_pairs = analysis
+            .fragment_tag_pairs
+            .into_iter()
+            .filter(|pair| span_contains_transform_target(&common.targets, pair.element_span))
+            .map(AstroTransformFragmentTagPair::from)
+            .collect();
         Self {
             common,
             runtime_requirements,
             runtime_warnings,
             runtime_bindings: analysis.runtime_bindings,
             frontmatter: analysis.frontmatter,
+            fragment_tag_pairs,
         }
     }
 
@@ -189,4 +208,25 @@ pub(crate) struct AstroFrameworkTransformAnalysis {
     pub(crate) common: CommonFrameworkTransformAnalysis,
     pub(crate) runtime_bindings: AstroTransformRuntimeBindings,
     pub(crate) frontmatter: Option<AstroTransformFrontmatterRegion>,
+    pub(crate) fragment_tag_pairs: Vec<AstroFragmentTagPair>,
+}
+
+impl From<AstroFragmentTagPair> for AstroTransformFragmentTagPair {
+    fn from(value: AstroFragmentTagPair) -> Self {
+        Self {
+            element_span: value.element_span,
+            start_tag_span: value.start_tag_span,
+            end_tag_span: value.end_tag_span,
+        }
+    }
+}
+
+fn span_contains_transform_target(targets: &[TransformTarget], span: Span) -> bool {
+    // retain_standalone_prototypes sorts prototypes by outer_span, and targets preserve that
+    // order with original_span set from candidate.outer_span. partition_point depends on it.
+    let first_contained = targets.partition_point(|target| target.original_span.start < span.start);
+    targets[first_contained..]
+        .iter()
+        .take_while(|target| target.original_span.start <= span.end)
+        .any(|target| target.original_span.end <= span.end)
 }

@@ -24,8 +24,8 @@ use super::ir::{
     BundledAstroHtmlInterpolation, bundle_html_interpolations, lower_astro_html_interpolations,
 };
 use super::{
-    AstroFrameworkError, AstroFrontmatterAnalysis, AstroSemanticAnalysis, AstroSourceMetadata,
-    AstroTemplateComponent, AstroTemplateExpression,
+    AstroFragmentTagPair, AstroFrameworkError, AstroFrontmatterAnalysis, AstroSemanticAnalysis,
+    AstroSourceMetadata, AstroTemplateComponent, AstroTemplateExpression, non_empty_tag_name_node,
 };
 
 #[derive(Debug, Default)]
@@ -49,6 +49,7 @@ pub fn analyze_astro(
     let root = astro_tree.root_node();
     let mut source_anchors = collect_node_start_anchors(source, root);
     let frontmatter = find_frontmatter(root);
+    let fragment_tag_pairs = collect_fragment_tag_pairs(root);
 
     let (
         macro_imports,
@@ -111,6 +112,7 @@ pub fn analyze_astro(
         metadata: AstroSourceMetadata {
             frontmatter,
             frontmatter_import_statement_spans,
+            fragment_tag_pairs,
             source_anchors,
         },
     })
@@ -135,6 +137,47 @@ fn find_frontmatter(root: Node<'_>) -> Option<EmbeddedScriptRegion> {
                 inner_span,
             }
         })
+}
+
+fn collect_fragment_tag_pairs(root: Node<'_>) -> Vec<AstroFragmentTagPair> {
+    let mut pairs = Vec::new();
+    collect_fragment_tag_pairs_from_node(root, &mut pairs);
+    pairs
+}
+
+fn collect_fragment_tag_pairs_from_node(node: Node<'_>, pairs: &mut Vec<AstroFragmentTagPair>) {
+    if node.kind() == "element"
+        && let Some((start_tag, end_tag)) = fragment_tag_pair(node)
+    {
+        pairs.push(AstroFragmentTagPair {
+            element_span: Span::from_node(node),
+            start_tag_span: Span::from_node(start_tag),
+            end_tag_span: Span::from_node(end_tag),
+        });
+    }
+
+    let mut cursor = node.walk();
+    for child in node.children(&mut cursor) {
+        collect_fragment_tag_pairs_from_node(child, pairs);
+    }
+}
+
+fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
+    let mut cursor = node.walk();
+    let mut start_tag = None;
+    let mut end_tag = None;
+    for child in node.children(&mut cursor) {
+        match child.kind() {
+            "start_tag" if start_tag.is_none() && non_empty_tag_name_node(child).is_none() => {
+                start_tag = Some(child);
+            }
+            "end_tag" if non_empty_tag_name_node(child).is_none() => {
+                end_tag = Some(child);
+            }
+            _ => {}
+        }
+    }
+    Some((start_tag?, end_tag?))
 }
 
 fn collect_macro_imports(

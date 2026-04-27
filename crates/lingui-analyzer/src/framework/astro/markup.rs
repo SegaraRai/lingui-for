@@ -2,6 +2,8 @@ use tree_sitter::Node;
 
 use crate::common::{Span, node_text, span_text};
 
+use super::non_empty_tag_name_node;
+
 pub(crate) fn named_children_in_span<'a>(
     source: &str,
     node: Node<'a>,
@@ -118,7 +120,5 @@ pub(crate) fn is_fragment_wrapper(source: &str, node: Node<'_>) -> bool {
 }
 
 fn tag_node_name<'a>(source: &'a str, node: Node<'_>) -> Option<&'a str> {
-    node.children(&mut node.walk())
-        .find(|child| child.kind() == "tag_name" && child.start_byte() != child.end_byte())
-        .map(|tag_name| node_text(source, tag_name))
+    non_empty_tag_name_node(node).map(|tag_name| node_text(source, tag_name))
 }

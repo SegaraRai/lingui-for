@@ -21,7 +21,7 @@ use super::markup::{
     is_rich_node_expression_interpolation, is_single_root_interpolation, named_children_in_span,
 };
 use super::validation::validate_runtime_lowerable_astro_component;
-use super::{AstroFrameworkError, AstroTemplateComponent};
+use super::{AstroFrameworkError, AstroTemplateComponent, non_empty_tag_name_node};
 
 const ASTRO_COMMENT_MARKER: &str = "<__astro_cm />";
 const ASTRO_FRAGMENT_START_MARKER: &str = "<__astro_frag>";
@@ -512,17 +512,12 @@ fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
     let mut cursor = node.walk();
     let start_tag = node
         .children(&mut cursor)
-        .find(|child| child.kind() == "start_tag" && tag_name(*child).is_none())?;
+        .find(|child| child.kind() == "start_tag" && non_empty_tag_name_node(*child).is_none())?;
     let mut cursor = node.walk();
     let end_tag = node
         .children(&mut cursor)
-        .find(|child| child.kind() == "end_tag" && tag_name(*child).is_none())?;
+        .find(|child| child.kind() == "end_tag" && non_empty_tag_name_node(*child).is_none())?;
     Some((start_tag, end_tag))
-}
-
-fn tag_name(node: Node<'_>) -> Option<Node<'_>> {
-    node.children(&mut node.walk())
-        .find(|child| child.kind() == "tag_name")
 }
 
 fn component_whitespace_edits(
