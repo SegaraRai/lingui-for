@@ -31,8 +31,8 @@ import { Trans } from "lingui-for-astro/macro";
 const showDetails = true;
 ---
 
-<Trans>{showDetails ? <span>Details</span> : <span aria-hidden="true" />}</Trans>
-<Trans>{<><span data-marker="section" /><span>Details</span></>}</Trans>
+<Trans>{showDetails ? <span>Details</span> : <!-- details hidden -->}</Trans>
+<Trans>{<><!-- details marker --><span>Details</span></>}</Trans>
 ```
 
 These expressions are treated as one rich-text placeholder. At runtime, the placeholder renders the
