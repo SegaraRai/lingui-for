@@ -16,6 +16,10 @@ use super::super::{
 use super::analysis::{
     AstroCollectContext, inner_range_from_delimiters, lowered_html_interpolation,
 };
+use super::markup::{
+    fragment_root_tag_pair, is_comment_only_interpolation, is_rich_node_expression_interpolation,
+    is_single_root_interpolation, named_children_in_span,
+};
 use super::validation::validate_runtime_lowerable_astro_component;
 use super::{AstroFrameworkError, AstroTemplateComponent};
 
@@ -265,7 +269,7 @@ fn append_html_interpolation_child_normalization_edits(
         return;
     }
 
-    if imported_name == "Trans" && is_rich_node_expression_interpolation(&children) {
+    if imported_name == "Trans" && is_rich_node_expression_interpolation(source, inner, &children) {
         // Keep node-bearing Astro expressions as one rich placeholder. The
         // runtime adapter restores the original expression as the matching
         // static slot, so nested nodes are not extracted here.
@@ -278,24 +282,6 @@ fn append_html_interpolation_child_normalization_edits(
     }
 
     append_comment_expression_normalization_edits(&children, edits);
-}
-
-fn is_rich_node_expression_interpolation(children: &[Node<'_>]) -> bool {
-    children
-        .iter()
-        .any(|child| contains_rich_node_expression_child(*child))
-}
-
-fn contains_rich_node_expression_child(node: Node<'_>) -> bool {
-    if matches!(
-        node.kind(),
-        "element" | "self_closing_tag" | "comment" | "start_tag" | "end_tag"
-    ) {
-        return true;
-    }
-
-    node.named_children(&mut node.walk())
-        .any(contains_rich_node_expression_child)
 }
 
 fn append_comment_expression_normalization_edits(
@@ -369,64 +355,6 @@ fn replace_span_with_text(span: Span, text: LeanString, edits: &mut Vec<Normaliz
         at: span.start,
         text,
     });
-}
-
-fn named_children_in_span<'a>(source: &str, node: Node<'a>, span: Span) -> Vec<Node<'a>> {
-    node.named_children(&mut node.walk())
-        .filter(|child| child.end_byte() > span.start && child.start_byte() < span.end)
-        .filter(|child| {
-            !matches!(child.kind(), "text" | "permissible_text" | "raw_text")
-                || !span_text(source, Span::from_node(*child)).trim().is_empty()
-        })
-        .collect()
-}
-
-fn is_comment_only_interpolation(children: &[Node<'_>]) -> bool {
-    !children.is_empty() && children.iter().all(|child| child.kind() == "comment")
-}
-
-fn is_single_root_interpolation(source: &str, inner: Span, children: &[Node<'_>]) -> bool {
-    let [root] = children else {
-        return false;
-    };
-    if !matches!(root.kind(), "element" | "self_closing_tag") {
-        return false;
-    }
-
-    span_text(source, Span::new(inner.start, root.start_byte()))
-        .trim()
-        .is_empty()
-        && span_text(source, Span::new(root.end_byte(), inner.end))
-            .trim()
-            .is_empty()
-}
-
-fn fragment_root_tag_pair<'a>(
-    source: &str,
-    inner: Span,
-    children: &[Node<'a>],
-) -> Option<(Node<'a>, Node<'a>)> {
-    let start_tag = children.first().copied()?;
-    let end_tag = children.last().copied()?;
-    if start_tag.kind() != "start_tag"
-        || end_tag.kind() != "end_tag"
-        || tag_name(start_tag).is_some()
-        || tag_name(end_tag).is_some()
-    {
-        return None;
-    }
-
-    if !span_text(source, Span::new(inner.start, start_tag.start_byte()))
-        .trim()
-        .is_empty()
-        || !span_text(source, Span::new(end_tag.end_byte(), inner.end))
-            .trim()
-            .is_empty()
-    {
-        return None;
-    }
-
-    Some((start_tag, end_tag))
 }
 
 fn fragment_tag_pair(node: Node<'_>) -> Option<(Node<'_>, Node<'_>)> {
