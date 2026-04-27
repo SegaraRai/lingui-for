@@ -318,7 +318,7 @@ fn append_descendant_comment_marker_replacements(
     };
 
     for child in parent.named_children(&mut parent.walk()) {
-        if child.start_byte() <= start_tag.start_byte() || child.end_byte() >= end_tag.end_byte() {
+        if child.start_byte() < start_tag.end_byte() || child.end_byte() > end_tag.start_byte() {
             continue;
         }
         append_comment_marker_replacements(child, edits);
