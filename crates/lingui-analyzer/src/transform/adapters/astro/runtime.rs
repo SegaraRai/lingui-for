@@ -807,6 +807,9 @@ fn collect_runtime_component_wrappers<'a>(
                 }
             }
             "comment" => {
+                // Astro HTML comments inside <Trans> are message-significant:
+                // they become rich placeholders so the transform can restore
+                // the original comments in the final Astro output.
                 wrappers.push(child);
             }
             "html_interpolation" => {

@@ -346,9 +346,15 @@ fn should_insert_comment_sequence_separator_after(
 }
 
 fn lowered_code_has_expression_root(code: &str) -> Result<bool, AstroIrError> {
+    if code.trim().is_empty() {
+        return Ok(false);
+    }
     let probe = format!("const __astro_probe__ = ({code});");
     let tree = parse_typescript(&probe)?;
     let root = tree.root_node();
+    if root.has_error() {
+        return Ok(false);
+    }
     let mut cursor = root.walk();
 
     for child in root.children(&mut cursor) {
@@ -813,7 +819,10 @@ mod tests {
 
     use crate::common::Span;
 
-    use super::{bundle_html_interpolations, lower_astro_html_interpolations};
+    use super::{
+        bundle_html_interpolations, lower_astro_html_interpolations,
+        lowered_code_has_expression_root,
+    };
 
     #[test]
     fn lowers_nested_markup_inside_html_interpolation_to_astro_el_calls() {
@@ -925,6 +934,13 @@ mod tests {
         assert_eq!(lowered.len(), 2);
         assert_eq!(lowered[0].code, "undefined");
         assert_eq!(lowered[1].code, "__astro_cm");
+    }
+
+    #[test]
+    fn expression_root_probe_rejects_empty_or_erroneous_code() {
+        assert!(!lowered_code_has_expression_root("").expect("empty probe succeeds"));
+        assert!(!lowered_code_has_expression_root("   ").expect("blank probe succeeds"));
+        assert!(!lowered_code_has_expression_root("<span>").expect("erroneous probe succeeds"));
     }
 
     #[test]
