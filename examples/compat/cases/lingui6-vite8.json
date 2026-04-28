@@ -4,7 +4,7 @@
   "lingui": "6",
   "projects": [
     {
-      "cwd": "examples/compat/vite-basic",
+      "cwd": "examples/compat/projects/vite-basic",
       "devDependencies": {
         "vite": "^8.0.0"
       },
@@ -13,18 +13,18 @@
       },
       "assertions": [
         {
-          "cwd": "examples/compat/vite-basic",
+          "cwd": "examples/compat/projects/vite-basic",
           "name": "unplugin-lingui-macro",
           "major": "0"
         },
         {
-          "cwd": "examples/compat/vite-basic",
+          "cwd": "examples/compat/projects/vite-basic",
           "name": "@lingui/babel-plugin-lingui-macro",
           "issuerPackage": "unplugin-lingui-macro",
           "major": "6"
         },
         {
-          "cwd": "examples/compat/vite-basic",
+          "cwd": "examples/compat/projects/vite-basic",
           "name": "vite",
           "major": "8",
           "source": "moduleVersion"

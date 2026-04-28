@@ -4,7 +4,7 @@
   "lingui": "5",
   "projects": [
     {
-      "cwd": "examples/compat/sveltekit-basic",
+      "cwd": "examples/compat/projects/sveltekit-basic",
       "devDependencies": {
         "@sveltejs/vite-plugin-svelte": "^7.0.0",
         "vite": "^8.0.0"
@@ -15,34 +15,34 @@
       },
       "assertions": [
         {
-          "cwd": "examples/compat/sveltekit-basic",
+          "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "unplugin-lingui-macro",
           "major": "0"
         },
         {
-          "cwd": "examples/compat/sveltekit-basic",
+          "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "@lingui/babel-plugin-lingui-macro",
           "issuerPackage": "unplugin-lingui-macro",
           "major": "5"
         },
         {
-          "cwd": "examples/compat/sveltekit-basic",
+          "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "@sveltejs/vite-plugin-svelte",
           "major": "7"
         },
         {
-          "cwd": "examples/compat/sveltekit-basic",
+          "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "vite",
           "major": "8",
           "source": "moduleVersion"
         },
         {
-          "cwd": "examples/compat/sveltekit-basic",
+          "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "lingui-for-svelte",
           "major": "0"
         },
         {
-          "cwd": "examples/compat/sveltekit-basic",
+          "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "@lingui-for/framework-core",
           "issuerPackage": "lingui-for-svelte",
           "major": "0"

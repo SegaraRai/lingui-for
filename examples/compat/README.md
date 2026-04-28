@@ -5,7 +5,7 @@ testing. The runner copies the repository to a temporary worktree, applies the
 selected case manifest from `cases/`, installs there, and runs the target
 fixture commands. Local package manifests and lockfiles are not modified.
 
-Fixtures:
+Fixtures live under `projects/`:
 
 - `astro-basic`: Astro integration, Astro macro extraction, and Astro build.
 - `sveltekit-basic`: SvelteKit plugin, Svelte macro extraction, and SvelteKit

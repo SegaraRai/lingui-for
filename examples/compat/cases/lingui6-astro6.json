@@ -4,7 +4,7 @@
   "lingui": "6",
   "projects": [
     {
-      "cwd": "examples/compat/astro-basic",
+      "cwd": "examples/compat/projects/astro-basic",
       "dependencies": {
         "astro": "^6.1.9"
       },
@@ -14,28 +14,28 @@
       },
       "assertions": [
         {
-          "cwd": "examples/compat/astro-basic",
+          "cwd": "examples/compat/projects/astro-basic",
           "name": "unplugin-lingui-macro",
           "major": "0"
         },
         {
-          "cwd": "examples/compat/astro-basic",
+          "cwd": "examples/compat/projects/astro-basic",
           "name": "@lingui/babel-plugin-lingui-macro",
           "issuerPackage": "unplugin-lingui-macro",
           "major": "6"
         },
         {
-          "cwd": "examples/compat/astro-basic",
+          "cwd": "examples/compat/projects/astro-basic",
           "name": "astro",
           "major": "6"
         },
         {
-          "cwd": "examples/compat/astro-basic",
+          "cwd": "examples/compat/projects/astro-basic",
           "name": "lingui-for-astro",
           "major": "0"
         },
         {
-          "cwd": "examples/compat/astro-basic",
+          "cwd": "examples/compat/projects/astro-basic",
           "name": "@lingui-for/framework-core",
           "issuerPackage": "lingui-for-astro",
           "major": "0"
