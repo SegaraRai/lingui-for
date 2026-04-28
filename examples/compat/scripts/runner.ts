@@ -9,6 +9,7 @@ import {
   patchFixtureConfig,
   prepareFixturePackageJson,
   prepareLocalTarballs,
+  validatePackagePatches,
 } from "./fixture.ts";
 import { OPTION, parseArgs } from "./options.ts";
 import { repoRoot } from "./paths.ts";
@@ -83,6 +84,7 @@ function runCompatCase(compatCase: CompatCase, options: Options): void {
   try {
     const tarballDir = path.join(worktree, "tarballs");
     mkdirSync(tarballDir);
+    validatePackagePatches(compatCase);
     const tarballs = prepareLocalTarballs(tarballDir);
 
     for (const project of compatCase.projects) {
@@ -93,20 +95,20 @@ function runCompatCase(compatCase: CompatCase, options: Options): void {
 
       if (!options.skipInstall) {
         run("vp", ["install", "--no-frozen-lockfile"], projectRoot);
+
+        assertResolvedPackageVersions(projectRoot, compatCase);
+
+        for (const command of project.commands) {
+          run(command[0], command.slice(1), projectRoot);
+        }
+
+        verifyProjectSnapshots(
+          projectRoot,
+          compatCase,
+          project,
+          options.updateSnapshots,
+        );
       }
-
-      assertResolvedPackageVersions(projectRoot, compatCase);
-
-      for (const command of project.commands) {
-        run(command[0], command.slice(1), projectRoot);
-      }
-
-      verifyProjectSnapshots(
-        projectRoot,
-        compatCase,
-        project,
-        options.updateSnapshots,
-      );
     }
   } finally {
     if (options.keep) {

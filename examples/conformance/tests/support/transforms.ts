@@ -1,6 +1,7 @@
 import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 
+import { createLinguiMacroPluginOptions } from "@lingui-for/framework-core/compile";
 import { defineConfig as defineAstroConfig } from "lingui-for-astro/config";
 import { unpluginFactory as astroUnpluginFactory } from "lingui-for-astro/unplugin";
 import { defineConfig as defineSvelteConfig } from "lingui-for-svelte/config";
@@ -54,7 +55,17 @@ function transformOfficial(code: string, filename: string): string {
       sourceType: "module",
       plugins: ["jsx", "typescript"],
     },
-    plugins: [[linguiMacroPlugin, { descriptorFields: "auto", linguiConfig }]],
+    plugins: [
+      [
+        linguiMacroPlugin,
+        createLinguiMacroPluginOptions({
+          extract: false,
+          linguiConfig,
+          pluginEntryUrl: import.meta
+            .resolve("@lingui/babel-plugin-lingui-macro"),
+        }),
+      ],
+    ],
   });
   if (!result?.code) {
     throw new Error(`Failed to transform ${filename}`);

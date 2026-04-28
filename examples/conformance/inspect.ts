@@ -7,7 +7,10 @@ import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import { makeConfig, type ExtractedMessage } from "@lingui/conf";
 
-import type { CanonicalSourceMap } from "@lingui-for/framework-core/compile";
+import {
+  createLinguiMacroPluginOptions,
+  type CanonicalSourceMap,
+} from "@lingui-for/framework-core/compile";
 import { defineConfig as defineConfigAstro } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
 import {
@@ -411,7 +414,17 @@ function transformOfficialSource(
       sourceType: "module",
       plugins: ["jsx", "typescript"],
     },
-    plugins: [[linguiMacroPlugin, { descriptorFields: "auto", linguiConfig }]],
+    plugins: [
+      [
+        linguiMacroPlugin,
+        createLinguiMacroPluginOptions({
+          extract: false,
+          linguiConfig,
+          pluginEntryUrl: import.meta
+            .resolve("@lingui/babel-plugin-lingui-macro"),
+        }),
+      ],
+    ],
     sourceMaps: true,
   });
 

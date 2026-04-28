@@ -96,6 +96,9 @@ describe("unplugin-lingui-macro", () => {
         },
       );
 
+      expect(result).toBeDefined();
+      expect(result).not.toBeNull();
+      expect(getCode(result)).not.toBe("");
       expect(getCode(result)).not.toContain("Hello from production.");
     } finally {
       if (previousNodeEnv == null) {

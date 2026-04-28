@@ -38,6 +38,25 @@ export function prepareLocalTarballs(tarballDir: string): LocalTarballs {
   return tarballs;
 }
 
+export function validatePackagePatches(compatCase: CompatCase): void {
+  const projectPackagePaths = new Set(
+    compatCase.projects.map((project) =>
+      path.normalize(path.join(project.cwd, "package.json")),
+    ),
+  );
+
+  for (const patch of compatCase.patches) {
+    const patchPath = path.normalize(patch.path);
+    if (projectPackagePaths.has(patchPath)) {
+      continue;
+    }
+
+    throw new Error(
+      `${compatCase.name} contains unsupported workspace package patch "${patch.path}". Compat patches currently apply only to project package.json files; package patches would need to be applied before local tarballs are packed.`,
+    );
+  }
+}
+
 export function copyFixture(projectCwd: string, destination: string): void {
   cpSync(path.join(repoRoot, projectCwd), destination, {
     dereference: false,

@@ -8,11 +8,22 @@ export type LinguiMacroDescriptorFields =
   | "id-only"
   | "message";
 
-export type LinguiMacroPluginOptions<TLinguiConfig> = {
-  descriptorFields?: LinguiMacroDescriptorFields;
-  extract?: true;
-  linguiConfig: TLinguiConfig;
-};
+export type LinguiMacroPluginOptions<TLinguiConfig> =
+  | {
+      descriptorFields?: never;
+      extract: true;
+      linguiConfig: TLinguiConfig;
+    }
+  | {
+      descriptorFields: LinguiMacroDescriptorFields;
+      extract?: never;
+      linguiConfig: TLinguiConfig;
+    }
+  | {
+      descriptorFields?: never;
+      extract?: never;
+      linguiConfig: TLinguiConfig;
+    };
 
 const LINGUI_MACRO_PLUGIN_PACKAGE = "@lingui/babel-plugin-lingui-macro";
 
