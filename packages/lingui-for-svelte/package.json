@@ -1,6 +1,6 @@
 {
   "name": "lingui-for-svelte",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Macro-first Lingui integration for Svelte 5.",
   "keywords": [
     "esbuild",
