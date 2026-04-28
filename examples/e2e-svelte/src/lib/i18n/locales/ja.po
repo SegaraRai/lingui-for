@@ -13,7 +13,7 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#. placeholder {0}: _i18n._( /*i18n*/ { id: "SMt/JO", message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}", values: { rank: rank, role: role } })
+#. placeholder {0}: _i18n._( /*i18n*/ { id: "SMt_JO", message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}", values: { rank: rank, role: role } })
 #. placeholder {1}: _i18n._( /*i18n*/ { id: "IN7jEl", message: "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}", values: { rank: rank, role: role } })
 #. placeholder {2}: _i18n._( /*i18n*/ { id: "MTuVZ1", message: "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}", values: { rank: rank, role: role } })
 #: src/routes/playground/stress/+page.svelte:181
