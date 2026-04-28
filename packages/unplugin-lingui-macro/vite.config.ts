@@ -25,6 +25,7 @@ export default defineConfig({
         command: "vp pack",
         cache: true,
         input: [{ auto: true }, "!**/.vite-temp/**", "!dist/**"],
+        untrackedEnv: ["PATHEXT"],
       },
       check: {
         command: "vp check",

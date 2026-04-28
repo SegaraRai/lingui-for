@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import {
   cpSync,
   existsSync,
@@ -10,7 +11,6 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 
 type PackageSection = "dependencies" | "devDependencies" | "peerDependencies";
 
@@ -22,13 +22,19 @@ type PackagePatch = {
 type CompatCase = {
   name: string;
   description: string;
-  lingui: "5" | "6";
+  lingui: LinguiMajor;
   assertions: CompatAssertions;
   patches: PackagePatch[];
-  projects: {
-    cwd: string;
-    commands: string[][];
-  }[];
+  projects: CompatProject[];
+};
+
+type CompatProject = {
+  cwd: string;
+  commands: string[][];
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  localPackages?: Partial<Record<PackageSection, LocalPackageName[]>>;
+  assertions?: PackageVersionAssertion[];
 };
 
 type CompatCaseConfig = Omit<CompatCase, "assertions"> & {
@@ -47,29 +53,6 @@ type PackageVersionAssertion = {
   source?: "packageJson" | "moduleVersion";
 };
 
-type LocalTarballs = Record<
-  | "@lingui-for/framework-core"
-  | "lingui-for-astro"
-  | "lingui-for-svelte"
-  | "unplugin-lingui-macro"
-  | "unplugin-markup-import",
-  string
->;
-
-const lingui5 = {
-  "@lingui/babel-plugin-lingui-macro": "^5.0.0",
-  "@lingui/cli": "^5.9.5",
-  "@lingui/conf": "^5.9.5",
-  "@lingui/core": "^5.9.5",
-};
-
-const lingui6 = {
-  "@lingui/babel-plugin-lingui-macro": "^6.0.0",
-  "@lingui/cli": "^6.0.0",
-  "@lingui/conf": "^6.0.0",
-  "@lingui/core": "^6.0.0",
-};
-
 type Options = {
   names: string[];
   list: boolean;
@@ -77,6 +60,96 @@ type Options = {
   skipInstall: boolean;
   tmpRoot: string | undefined;
 };
+
+const PACKAGE = {
+  frameworkCore: "@lingui-for/framework-core",
+  linguiAstro: "lingui-for-astro",
+  linguiSvelte: "lingui-for-svelte",
+  markupImport: "unplugin-markup-import",
+  macro: "unplugin-lingui-macro",
+  linguiBabelMacro: "@lingui/babel-plugin-lingui-macro",
+  linguiCli: "@lingui/cli",
+  linguiConf: "@lingui/conf",
+  linguiCore: "@lingui/core",
+  vite: "vite",
+  vitePlus: "vite-plus",
+  typesNode: "@types/node",
+  typescript: "typescript",
+} as const;
+
+const PACKAGE_PATH = {
+  [PACKAGE.frameworkCore]: "packages/framework-core",
+  [PACKAGE.markupImport]: "packages/unplugin-markup-import",
+  [PACKAGE.macro]: "packages/unplugin-lingui-macro",
+  [PACKAGE.linguiAstro]: "packages/lingui-for-astro",
+  [PACKAGE.linguiSvelte]: "packages/lingui-for-svelte",
+} as const;
+
+const COMMAND = {
+  vp: "vp",
+  cmdWindows: "cmd.exe",
+} as const;
+
+const VERSION_MAJOR = {
+  package: "0",
+  lingui5: "5",
+  lingui6: "6",
+} as const;
+
+const VERSIONS = {
+  packageManager: "pnpm@10.33.0",
+  lingui: {
+    [VERSION_MAJOR.lingui5]: {
+      [PACKAGE.linguiBabelMacro]: "^5.0.0",
+      [PACKAGE.linguiCli]: "^5.9.5",
+      [PACKAGE.linguiConf]: "^5.9.5",
+      [PACKAGE.linguiCore]: "^5.9.5",
+    },
+    [VERSION_MAJOR.lingui6]: {
+      [PACKAGE.linguiBabelMacro]: "^6.0.0",
+      [PACKAGE.linguiCli]: "^6.0.0",
+      [PACKAGE.linguiConf]: "^6.0.0",
+      [PACKAGE.linguiCore]: "^6.0.0",
+    },
+  },
+  catalog: {
+    [PACKAGE.typesNode]: "^25.6.0",
+    [PACKAGE.typescript]: "^5.9.3",
+  },
+} as const;
+
+const LOCAL_PACKAGES = [
+  PACKAGE.frameworkCore,
+  PACKAGE.markupImport,
+  PACKAGE.macro,
+  PACKAGE.linguiAstro,
+  PACKAGE.linguiSvelte,
+] as const;
+
+const IGNORED_FIXTURE_BASENAMES = new Set([
+  "node_modules",
+  "dist",
+  ".astro",
+  ".svelte-kit",
+  ".sveltekit-build",
+  ".vite",
+]);
+
+const TAR_DIR = "tarballs";
+const CASES_DIR = "cases";
+const DEFAULT_TMP_PREFIX = "lingui-for-compat-";
+const OPTION = {
+  case: "--case",
+  keep: "--keep",
+  list: "--list",
+  skipInstall: "--skip-install",
+  tmpRoot: "--tmp-root",
+  separator: "--",
+} as const;
+
+type LinguiMajor = keyof typeof VERSIONS.lingui;
+type LocalPackageName = (typeof LOCAL_PACKAGES)[number];
+type LocalTarballs = Record<LocalPackageName, string>;
 
 const repoRoot = path.resolve(import.meta.dirname, "..", "..");
 const cases = loadCases();
@@ -98,7 +171,7 @@ const selectedCases = options.names.map((name) => {
   const compatCase = cases.find((item) => item.name === name);
   if (!compatCase) {
     throw new Error(
-      `Unknown compatibility case "${name}". Run "vp run test:compat -- --list" for available cases.`,
+      `Unknown compatibility case "${name}". Run "vp run test:compat --list" for available cases.`,
     );
   }
   return compatCase;
@@ -110,26 +183,24 @@ for (const compatCase of selectedCases) {
 
 function runAllCasesInIsolatedProcesses(options: Options): void {
   for (const compatCase of cases) {
-    const args = [process.argv[1], "--case", compatCase.name];
+    const args = [process.argv[1], OPTION.case, compatCase.name];
     if (options.keep) {
-      args.push("--keep");
+      args.push(OPTION.keep);
     }
     if (options.skipInstall) {
-      args.push("--skip-install");
+      args.push(OPTION.skipInstall);
     }
     if (options.tmpRoot) {
-      args.push("--tmp-root", options.tmpRoot);
+      args.push(OPTION.tmpRoot, options.tmpRoot);
     }
     run(process.execPath, args, repoRoot);
   }
 }
 
 function runCompatCase(compatCase: CompatCase, options: Options): void {
-  validateCompatCaseCommands(compatCase);
-
   const tmpRoot = options.tmpRoot ? path.resolve(options.tmpRoot) : tmpdir();
   const worktree = mkdtempSync(
-    path.join(tmpRoot, `lingui-for-compat-${compatCase.name}-`),
+    path.join(tmpRoot, `${DEFAULT_TMP_PREFIX}${compatCase.name}-`),
   );
 
   console.log(`\n==> ${compatCase.name}`);
@@ -137,7 +208,7 @@ function runCompatCase(compatCase: CompatCase, options: Options): void {
   console.log(`worktree: ${worktree}`);
 
   try {
-    const tarballDir = path.join(worktree, "tarballs");
+    const tarballDir = path.join(worktree, TAR_DIR);
     mkdirSync(tarballDir);
     const tarballs = prepareLocalTarballs(tarballDir);
 
@@ -148,7 +219,7 @@ function runCompatCase(compatCase: CompatCase, options: Options): void {
       patchFixtureConfig(projectRoot);
 
       if (!options.skipInstall) {
-        run("vp", ["install", "--no-frozen-lockfile"], projectRoot);
+        run(COMMAND.vp, ["install", "--no-frozen-lockfile"], projectRoot);
       }
 
       assertResolvedPackageVersions(projectRoot, compatCase);
@@ -167,29 +238,9 @@ function runCompatCase(compatCase: CompatCase, options: Options): void {
 }
 
 function prepareLocalTarballs(tarballDir: string): LocalTarballs {
-  const wasmEntry = path.join(
-    repoRoot,
-    "shared",
-    "lingui-analyzer-wasm",
-    "dist",
-    "index.js",
-  );
-  if (!existsSync(wasmEntry)) {
-    run("vp", ["run", "build:wasm"], repoRoot);
-  }
-
-  const packages = [
-    ["@lingui-for/framework-core", "packages/framework-core"],
-    ["unplugin-markup-import", "packages/unplugin-markup-import"],
-    ["unplugin-lingui-macro", "packages/unplugin-lingui-macro"],
-    ["lingui-for-astro", "packages/lingui-for-astro"],
-    ["lingui-for-svelte", "packages/lingui-for-svelte"],
-  ] as const;
-
   const tarballs = {} as LocalTarballs;
-  for (const [name, packagePath] of packages) {
-    const packageRoot = path.join(repoRoot, packagePath);
-    run("vp", ["pack"], packageRoot);
+  for (const name of LOCAL_PACKAGES) {
+    const packageRoot = path.join(repoRoot, PACKAGE_PATH[name]);
     tarballs[name] = packLocalPackage(packageRoot, tarballDir);
   }
 
@@ -198,39 +249,20 @@ function prepareLocalTarballs(tarballDir: string): LocalTarballs {
 
 function packLocalPackage(packageRoot: string, tarballDir: string): string {
   const before = new Set(readdirSync(tarballDir));
-  runNpm(["pack", ".", "--pack-destination", tarballDir], packageRoot);
+  run(
+    COMMAND.vp,
+    ["pm", "pack", `--pack-destination=${tarballDir}`],
+    packageRoot,
+  );
   const created = readdirSync(tarballDir).filter(
     (entry) => entry.endsWith(".tgz") && !before.has(entry),
   );
   if (created.length !== 1) {
     throw new Error(
-      `Expected npm pack to create one tarball for ${packageRoot}, got ${created.length}.`,
+      `Expected vp pm pack to create one tarball for ${packageRoot}, got ${created.length}.`,
     );
   }
-  return `file:../tarballs/${created[0]}`;
-}
-
-function runNpm(args: string[], cwd: string): void {
-  const command = process.platform === "win32" ? "npm.exe" : "npm";
-  console.log(`$ npm ${args.join(" ")}`);
-  const result = spawnSync(command, args, {
-    cwd,
-    env: {
-      ...process.env,
-      LINGUI_WASM_PREBUILT: process.env.LINGUI_WASM_PREBUILT ?? "1",
-      PATH: withNodeModulesBins(cwd),
-    },
-    stdio: "inherit",
-  });
-
-  if (result.error) {
-    throw result.error;
-  }
-  if (result.status !== 0) {
-    throw new Error(
-      `Command failed with exit code ${result.status}: npm ${args.join(" ")}`,
-    );
-  }
+  return `file:../${TAR_DIR}/${created[0]}`;
 }
 
 function copyFixture(projectCwd: string, destination: string): void {
@@ -244,14 +276,7 @@ function copyFixture(projectCwd: string, destination: string): void {
 
 function shouldCopyFixtureFile(source: string): boolean {
   const basename = path.basename(source);
-  return ![
-    "node_modules",
-    "dist",
-    ".astro",
-    ".svelte-kit",
-    ".sveltekit-build",
-    ".vite",
-  ].includes(basename);
+  return !IGNORED_FIXTURE_BASENAMES.has(basename);
 }
 
 function prepareFixturePackageJson(
@@ -262,14 +287,14 @@ function prepareFixturePackageJson(
 ): void {
   const packageJsonPath = path.join(projectRoot, "package.json");
   const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-  packageJson.packageManager = "pnpm@10.33.0";
+  packageJson.packageManager = VERSIONS.packageManager;
   packageJson.dependencies ??= {};
   packageJson.devDependencies ??= {};
 
   applyProjectPackagePatches(packageJson, compatCase.patches, project.cwd);
   replaceCatalogDependencies(packageJson);
-  injectLocalPackages(packageJson, project.cwd, tarballs);
-  injectVersionMatrixDependencies(packageJson, compatCase);
+  injectLocalPackages(packageJson, project, tarballs);
+  injectVersionMatrixDependencies(packageJson, compatCase, project);
   injectPackageOverrides(packageJson, compatCase, tarballs);
 
   writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`);
@@ -300,11 +325,10 @@ function replaceCatalogDependencies(packageJson: Record<string, any>): void {
       if (version !== "catalog:") {
         continue;
       }
-      if (name === "@types/node") {
-        dependencies[name] = "^25.6.0";
-      } else if (name === "typescript") {
-        dependencies[name] = "^5.9.3";
-      } else if (name === "vite-plus") {
+      if (name in VERSIONS.catalog) {
+        dependencies[name] =
+          VERSIONS.catalog[name as keyof typeof VERSIONS.catalog];
+      } else if (name === PACKAGE.vitePlus) {
         delete dependencies[name];
       } else {
         throw new Error(
@@ -317,38 +341,34 @@ function replaceCatalogDependencies(packageJson: Record<string, any>): void {
 
 function injectLocalPackages(
   packageJson: Record<string, any>,
-  projectCwd: string,
+  project: CompatProject,
   tarballs: LocalTarballs,
 ): void {
-  packageJson.devDependencies["unplugin-lingui-macro"] =
-    tarballs["unplugin-lingui-macro"];
-
-  if (projectCwd.includes("astro-basic")) {
-    packageJson.dependencies["lingui-for-astro"] = tarballs["lingui-for-astro"];
-  } else if (projectCwd.includes("sveltekit-basic")) {
-    packageJson.dependencies["lingui-for-svelte"] =
-      tarballs["lingui-for-svelte"];
+  for (const [section, packages] of Object.entries(
+    project.localPackages ?? {},
+  )) {
+    packageJson[section] ??= {};
+    for (const name of packages) {
+      packageJson[section][name] = tarballs[name];
+    }
   }
 }
 
 function injectVersionMatrixDependencies(
   packageJson: Record<string, any>,
   compatCase: CompatCase,
+  project: CompatCase["projects"][number],
 ): void {
-  const versions = compatCase.lingui === "5" ? lingui5 : lingui6;
-  Object.assign(packageJson.dependencies, pick(versions, ["@lingui/core"]));
+  const versions = VERSIONS.lingui[compatCase.lingui];
+  Object.assign(packageJson.dependencies, pick(versions, [PACKAGE.linguiCore]));
   Object.assign(
     packageJson.devDependencies,
-    pick(versions, ["@lingui/cli", "@lingui/conf"]),
+    pick(versions, [PACKAGE.linguiCli, PACKAGE.linguiConf]),
   );
 
-  delete packageJson.devDependencies["vite-plus"];
-  const viteMajor = expectedViteMajor(compatCase);
-  if (viteMajor === "7") {
-    packageJson.devDependencies.vite = "^7.2.7";
-  } else {
-    packageJson.devDependencies.vite = "^8.0.0";
-  }
+  delete packageJson.devDependencies[PACKAGE.vitePlus];
+  Object.assign(packageJson.dependencies, project.dependencies ?? {});
+  Object.assign(packageJson.devDependencies, project.devDependencies ?? {});
 }
 
 function injectPackageOverrides(
@@ -356,12 +376,12 @@ function injectPackageOverrides(
   compatCase: CompatCase,
   tarballs: LocalTarballs,
 ): void {
-  const versions = compatCase.lingui === "5" ? lingui5 : lingui6;
+  const versions = VERSIONS.lingui[compatCase.lingui];
   packageJson.pnpm ??= {};
   packageJson.pnpm.overrides ??= {};
   Object.assign(packageJson.pnpm.overrides, {
-    "@lingui-for/framework-core": tarballs["@lingui-for/framework-core"],
-    "unplugin-markup-import": tarballs["unplugin-markup-import"],
+    [PACKAGE.frameworkCore]: tarballs[PACKAGE.frameworkCore],
+    [PACKAGE.markupImport]: tarballs[PACKAGE.markupImport],
     ...versions,
   });
 }
@@ -372,11 +392,14 @@ function patchFixtureConfig(projectRoot: string): void {
     return;
   }
   const viteConfig = readFileSync(viteConfigPath, "utf8");
-  writeFileSync(viteConfigPath, viteConfig.replaceAll("vite-plus", "vite"));
+  writeFileSync(
+    viteConfigPath,
+    viteConfig.replaceAll(PACKAGE.vitePlus, PACKAGE.vite),
+  );
 }
 
 function loadCases(): CompatCase[] {
-  const casesDir = path.resolve(import.meta.dirname, "cases");
+  const casesDir = path.resolve(import.meta.dirname, CASES_DIR);
   return readdirSync(casesDir)
     .filter((entry) => entry.endsWith(".json"))
     .sort()
@@ -392,6 +415,7 @@ function loadCases(): CompatCase[] {
           packages: [
             ...defaultPackageAssertions(config),
             ...(config.assertions?.packages ?? []),
+            ...config.projects.flatMap((project) => project.assertions ?? []),
           ],
         },
         patches: config.patches ?? [],
@@ -409,141 +433,23 @@ function defaultPackageAssertions(
     packages.push(
       {
         cwd: project.cwd,
-        name: "@lingui/core",
+        name: PACKAGE.linguiCore,
         major: config.lingui,
       },
       {
         cwd: project.cwd,
-        name: "@lingui/cli",
+        name: PACKAGE.linguiCli,
         major: config.lingui,
       },
       {
         cwd: project.cwd,
-        name: "@lingui/conf",
-        major: config.lingui,
-      },
-      {
-        cwd: project.cwd,
-        name: "unplugin-lingui-macro",
-        major: "0",
-      },
-      {
-        cwd: project.cwd,
-        name: "@lingui/babel-plugin-lingui-macro",
-        issuerPackage: "unplugin-lingui-macro",
+        name: PACKAGE.linguiConf,
         major: config.lingui,
       },
     );
-
-    if (project.cwd.includes("astro-basic")) {
-      packages.push(
-        {
-          cwd: project.cwd,
-          name: "astro",
-          major: expectedAstroMajor(config),
-        },
-        {
-          cwd: project.cwd,
-          name: "lingui-for-astro",
-          major: "0",
-        },
-        {
-          cwd: project.cwd,
-          name: "@lingui-for/framework-core",
-          issuerPackage: "lingui-for-astro",
-          major: "0",
-        },
-      );
-    }
-
-    if (project.cwd.includes("sveltekit-basic")) {
-      packages.push(
-        {
-          cwd: project.cwd,
-          name: "@sveltejs/vite-plugin-svelte",
-          major: expectedSveltePluginMajor(config),
-        },
-        {
-          cwd: project.cwd,
-          name: "vite",
-          major: expectedViteMajor(config),
-          source: "moduleVersion",
-        },
-        {
-          cwd: project.cwd,
-          name: "lingui-for-svelte",
-          major: "0",
-        },
-        {
-          cwd: project.cwd,
-          name: "@lingui-for/framework-core",
-          issuerPackage: "lingui-for-svelte",
-          major: "0",
-        },
-      );
-    }
-
-    if (project.cwd.includes("vite-basic")) {
-      packages.push({
-        cwd: project.cwd,
-        name: "vite",
-        major: expectedViteMajor(config),
-        source: "moduleVersion",
-      });
-    }
   }
 
   return packages;
-}
-
-function expectedAstroMajor(config: Pick<CompatCase, "name">): string {
-  return config.name.includes("astro5") ? "5" : "6";
-}
-
-function expectedSveltePluginMajor(config: Pick<CompatCase, "name">): string {
-  return config.name.includes("vite7") ? "6" : "7";
-}
-
-function expectedViteMajor(config: Pick<CompatCase, "name">): string {
-  return config.name.includes("vite7") ? "7" : "8";
-}
-
-function validateCompatCaseCommands(compatCase: CompatCase): void {
-  for (const project of compatCase.projects) {
-    const commands = project.commands.map((command) => command.join(" "));
-    if (!commands.includes("lingui extract --clean --overwrite")) {
-      throw new Error(
-        `${compatCase.name}:${project.cwd} must explicitly run lingui extract --clean --overwrite.`,
-      );
-    }
-    if (!commands.includes("lingui compile")) {
-      throw new Error(
-        `${compatCase.name}:${project.cwd} must explicitly run lingui compile.`,
-      );
-    }
-
-    if (project.cwd.includes("astro-basic")) {
-      requireCommand(commands, "astro build", compatCase, project.cwd);
-    } else if (project.cwd.includes("sveltekit-basic")) {
-      requireCommand(commands, "svelte-kit sync", compatCase, project.cwd);
-      requireCommand(commands, "vite build", compatCase, project.cwd);
-    } else {
-      requireCommand(commands, "vite build", compatCase, project.cwd);
-    }
-  }
-}
-
-function requireCommand(
-  commands: string[],
-  expected: string,
-  compatCase: CompatCase,
-  projectCwd: string,
-): void {
-  if (!commands.includes(expected)) {
-    throw new Error(
-      `${compatCase.name}:${projectCwd} must explicitly run ${expected}.`,
-    );
-  }
 }
 
 function assertResolvedPackageVersions(
@@ -581,7 +487,7 @@ function readResolvedPackageVersion(
   };
 
   if (typeof packageJson.version !== "string") {
-    throw new Error(
+    throw new TypeError(
       `${caseName}:${projectRoot} resolved ${assertion.name}, but its package.json did not contain a string version.`,
     );
   }
@@ -682,7 +588,7 @@ function readResolvedModuleVersion(
 function run(command: string, args: string[], cwd: string): void {
   console.log(`$ ${command} ${args.join(" ")}`);
   const [executable, executableArgs] = commandRequiresWindowsShell(command)
-    ? ["cmd.exe", ["/d", "/s", "/c", quoteCommand([command, ...args])]]
+    ? [COMMAND.cmdWindows, ["/d", "/s", "/c", quoteCommand([command, ...args])]]
     : [command, args];
 
   const result = spawnSync(executable, executableArgs, {
@@ -690,7 +596,10 @@ function run(command: string, args: string[], cwd: string): void {
     env: {
       ...process.env,
       LINGUI_WASM_PREBUILT: process.env.LINGUI_WASM_PREBUILT ?? "1",
-      PATH: withNodeModulesBins(cwd),
+      PATH:
+        command === COMMAND.vp
+          ? withoutNodeModulesBins()
+          : withNodeModulesBins(cwd),
     },
     stdio: "inherit",
   });
@@ -723,20 +632,29 @@ function withNodeModulesBins(cwd: string): string {
   }
 
   const currentPath = process.env.PATH ?? "";
-  return [
-    ...paths,
-    ...currentPath.split(path.delimiter).filter((entry) => {
-      return !path
-        .normalize(entry)
-        .endsWith(path.normalize("node_modules/.bin"));
-    }),
-  ]
+  return [...paths, ...pathEntriesWithoutNodeModulesBins(currentPath)]
     .filter(Boolean)
     .join(path.delimiter);
 }
 
+function withoutNodeModulesBins(): string {
+  return pathEntriesWithoutNodeModulesBins(process.env.PATH ?? "")
+    .filter(Boolean)
+    .join(path.delimiter);
+}
+
+function pathEntriesWithoutNodeModulesBins(value: string): string[] {
+  return value.split(path.delimiter).filter((entry) => {
+    return !path.normalize(entry).endsWith(path.normalize("node_modules/.bin"));
+  });
+}
+
 function commandRequiresWindowsShell(command: string): boolean {
-  return process.platform === "win32" && !path.isAbsolute(command);
+  return (
+    process.platform === "win32" &&
+    command !== COMMAND.vp &&
+    !path.isAbsolute(command)
+  );
 }
 
 function quoteCommand(args: string[]): string {
@@ -761,30 +679,30 @@ function parseArgs(args: string[]): Options {
 
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
-    if (arg === "--") {
+    if (arg === OPTION.separator) {
       continue;
-    } else if (arg === "--list") {
+    } else if (arg === OPTION.list) {
       options.list = true;
-    } else if (arg === "--case") {
+    } else if (arg === OPTION.case) {
       const value = args[++index];
       if (!value) {
-        throw new Error("--case requires a case name.");
+        throw new Error(`${OPTION.case} requires a case name.`);
       }
       options.names.push(value);
-    } else if (arg.startsWith("--case=")) {
-      options.names.push(arg.slice("--case=".length));
-    } else if (arg === "--keep") {
+    } else if (arg.startsWith(`${OPTION.case}=`)) {
+      options.names.push(arg.slice(`${OPTION.case}=`.length));
+    } else if (arg === OPTION.keep) {
       options.keep = true;
-    } else if (arg === "--skip-install") {
+    } else if (arg === OPTION.skipInstall) {
       options.skipInstall = true;
-    } else if (arg === "--tmp-root") {
+    } else if (arg === OPTION.tmpRoot) {
       const value = args[++index];
       if (!value) {
-        throw new Error("--tmp-root requires a directory path.");
+        throw new Error(`${OPTION.tmpRoot} requires a directory path.`);
       }
       options.tmpRoot = value;
-    } else if (arg.startsWith("--tmp-root=")) {
-      options.tmpRoot = arg.slice("--tmp-root=".length);
+    } else if (arg.startsWith(`${OPTION.tmpRoot}=`)) {
+      options.tmpRoot = arg.slice(`${OPTION.tmpRoot}=`.length);
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }

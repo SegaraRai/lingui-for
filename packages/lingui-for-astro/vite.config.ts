@@ -52,6 +52,7 @@ export default defineConfig({
           "!.astro/**",
           "!dist/**",
         ],
+        untrackedEnv: ["PATHEXT"],
       },
       check: {
         command: "vp check",
@@ -59,7 +60,7 @@ export default defineConfig({
         cache: false,
       },
       "check:extra": {
-        command: "vp exec astro check",
+        command: "astro check",
         dependsOn: ["build"],
         cache: false,
       },
@@ -67,6 +68,7 @@ export default defineConfig({
         command: "node scripts/generate-framework-whitespace-fixtures.ts",
         cache: true,
         input: [{ auto: true }],
+        untrackedEnv: ["PATHEXT"],
       },
       test: {
         command: "vp test",

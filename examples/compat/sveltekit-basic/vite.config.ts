@@ -19,16 +19,16 @@ export default defineConfig({
         cache: false,
       },
       "sveltekit:sync": {
-        command: "vp exec svelte-kit sync",
+        command: "svelte-kit sync",
         cache: false,
       },
       "i18n:extract": {
-        command: "vp exec lingui extract --clean --overwrite",
+        command: "lingui extract --clean --overwrite",
         dependsOn: ["lingui-for-svelte#build", "unplugin-lingui-macro#build"],
         cache: false,
       },
       "i18n:build": {
-        command: "vp exec lingui compile",
+        command: "lingui compile",
         dependsOn: ["i18n:extract"],
         cache: false,
       },

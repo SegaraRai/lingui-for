@@ -2,32 +2,45 @@
   "name": "lingui6-astro5",
   "description": "Astro compatibility fixture with Lingui 6 on the latest Astro 5 line.",
   "lingui": "6",
-  "patches": [
-    {
-      "path": "examples/compat/astro-basic/package.json",
-      "sections": {
-        "dependencies": {
-          "@lingui/core": "^6.0.0",
-          "astro": "^5.17.3"
-        },
-        "devDependencies": {
-          "@lingui/cli": "^6.0.0",
-          "@lingui/conf": "^6.0.0"
-        }
-      }
-    },
-    {
-      "path": "packages/lingui-for-astro/package.json",
-      "sections": {
-        "devDependencies": {
-          "astro": "^5.17.3"
-        }
-      }
-    }
-  ],
   "projects": [
     {
       "cwd": "examples/compat/astro-basic",
+      "dependencies": {
+        "astro": "^5.17.3"
+      },
+      "localPackages": {
+        "dependencies": ["lingui-for-astro"],
+        "devDependencies": ["unplugin-lingui-macro"]
+      },
+      "assertions": [
+        {
+          "cwd": "examples/compat/astro-basic",
+          "name": "unplugin-lingui-macro",
+          "major": "0"
+        },
+        {
+          "cwd": "examples/compat/astro-basic",
+          "name": "@lingui/babel-plugin-lingui-macro",
+          "issuerPackage": "unplugin-lingui-macro",
+          "major": "6"
+        },
+        {
+          "cwd": "examples/compat/astro-basic",
+          "name": "astro",
+          "major": "5"
+        },
+        {
+          "cwd": "examples/compat/astro-basic",
+          "name": "lingui-for-astro",
+          "major": "0"
+        },
+        {
+          "cwd": "examples/compat/astro-basic",
+          "name": "@lingui-for/framework-core",
+          "issuerPackage": "lingui-for-astro",
+          "major": "0"
+        }
+      ],
       "commands": [
         ["lingui", "extract", "--clean", "--overwrite"],
         ["lingui", "compile"],

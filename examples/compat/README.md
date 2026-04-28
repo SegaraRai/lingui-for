@@ -13,8 +13,8 @@ Fixtures:
 - `vite-basic`: plain Vite with `unplugin-lingui-macro`.
 
 ```sh
-vp run test:compat -- --list
-vp run test:compat -- --case lingui6-astro6
+vp run test:compat --list
+vp run test:compat --case lingui6-astro6
 ```
 
 Use `--keep` to retain the temporary copy for debugging.

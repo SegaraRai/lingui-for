@@ -12,12 +12,12 @@ export default defineConfig({
         cache: false,
       },
       "i18n:extract": {
-        command: "vp exec lingui extract --clean --overwrite",
+        command: "lingui extract --clean --overwrite",
         dependsOn: ["unplugin-lingui-macro#build"],
         cache: false,
       },
       "i18n:build": {
-        command: "vp exec lingui compile",
+        command: "lingui compile",
         dependsOn: ["i18n:extract"],
         cache: false,
       },

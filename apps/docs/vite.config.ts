@@ -4,7 +4,7 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command: "vp exec astro build",
+        command: "astro build",
         dependsOn: [
           "lingui-for-astro#build",
           "lingui-for-svelte#build",
@@ -18,9 +18,10 @@ export default defineConfig({
           "!.astro/**",
           "!dist/**",
         ],
+        untrackedEnv: ["PATHEXT"],
       },
       dev: {
-        command: "vp exec astro dev",
+        command: "astro dev",
         dependsOn: [
           "lingui-for-astro#build",
           "lingui-for-svelte#build",
@@ -30,7 +31,7 @@ export default defineConfig({
         cache: false,
       },
       preview: {
-        command: "vp exec astro preview",
+        command: "astro preview",
         dependsOn: ["build"],
         cache: false,
       },
@@ -40,24 +41,26 @@ export default defineConfig({
         cache: false,
       },
       "check:extra": {
-        command: "vp exec astro check",
+        command: "astro check",
         dependsOn: ["build"],
         cache: false,
       },
       "i18n:extract": {
-        command: "vp exec lingui extract --clean --overwrite",
+        command: "lingui extract --clean --overwrite",
         dependsOn: [
           "lingui-for-astro#build",
           "lingui-for-svelte#build",
           "unplugin-lingui-macro#build",
         ],
         cache: true,
+        untrackedEnv: ["PATHEXT"],
       },
       "i18n:build": {
-        command: "vp exec lingui compile && vp fmt src/i18n/locales",
+        command: "lingui compile && vp fmt src/i18n/locales",
         dependsOn: ["i18n:extract"],
         cache: true,
         input: ["src/i18n/locales/**/*.po"],
+        untrackedEnv: ["PATHEXT"],
       },
     },
   },

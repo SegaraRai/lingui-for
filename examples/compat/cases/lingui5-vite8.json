@@ -2,23 +2,34 @@
   "name": "lingui5-vite8",
   "description": "Plain Vite compatibility fixture with Lingui 5 and unplugin-lingui-macro.",
   "lingui": "5",
-  "patches": [
-    {
-      "path": "examples/compat/vite-basic/package.json",
-      "sections": {
-        "dependencies": {
-          "@lingui/core": "^5.9.5"
-        },
-        "devDependencies": {
-          "@lingui/cli": "^5.9.5",
-          "@lingui/conf": "^5.9.5"
-        }
-      }
-    }
-  ],
   "projects": [
     {
       "cwd": "examples/compat/vite-basic",
+      "devDependencies": {
+        "vite": "^8.0.0"
+      },
+      "localPackages": {
+        "devDependencies": ["unplugin-lingui-macro"]
+      },
+      "assertions": [
+        {
+          "cwd": "examples/compat/vite-basic",
+          "name": "unplugin-lingui-macro",
+          "major": "0"
+        },
+        {
+          "cwd": "examples/compat/vite-basic",
+          "name": "@lingui/babel-plugin-lingui-macro",
+          "issuerPackage": "unplugin-lingui-macro",
+          "major": "5"
+        },
+        {
+          "cwd": "examples/compat/vite-basic",
+          "name": "vite",
+          "major": "8",
+          "source": "moduleVersion"
+        }
+      ],
       "commands": [
         ["lingui", "extract", "--clean", "--overwrite"],
         ["lingui", "compile"],

@@ -25,6 +25,7 @@ export default defineConfig({
           "!.sveltekit-build/**",
           "!dist/**",
         ],
+        untrackedEnv: ["PATHEXT"],
       },
       dev: {
         command: "vp dev",
@@ -47,12 +48,12 @@ export default defineConfig({
         cache: false,
       },
       "check:extra": {
-        command: "vp exec svelte-check",
+        command: "svelte-check",
         dependsOn: ["build"],
         cache: false,
       },
       "sveltekit:sync": {
-        command: "vp exec svelte-kit sync",
+        command: "svelte-kit sync",
         cache: true,
         input: [
           { auto: true },
@@ -61,17 +62,20 @@ export default defineConfig({
           "!.sveltekit-build/**",
           "!dist/**",
         ],
+        untrackedEnv: ["PATHEXT"],
       },
       "i18n:extract": {
-        command: "vp exec lingui extract --clean --overwrite",
+        command: "lingui extract --clean --overwrite",
         dependsOn: ["lingui-for-svelte#build", "unplugin-lingui-macro#build"],
         cache: true,
+        untrackedEnv: ["PATHEXT"],
       },
       "i18n:build": {
-        command: "vp exec lingui compile && vp fmt src/lib/i18n/locales",
+        command: "lingui compile && vp fmt src/lib/i18n/locales",
         dependsOn: ["i18n:extract"],
         cache: true,
         input: ["src/lib/i18n/locales/**/*.po"],
+        untrackedEnv: ["PATHEXT"],
       },
       test: {
         command: "vp test",
