@@ -32,6 +32,7 @@ Useful commands from the workspace root:
 ## Workspace Apps
 
 - [`apps/docs`](./apps/docs): Documentation site.
+- [`examples/compat`](./examples/compat): Isolated compatibility matrix for Lingui, framework, and Vite version combinations.
 - [`examples/config-types`](./examples/config-types): Type-level checks for framework config combinations.
 - [`examples/conformance`](./examples/conformance): Conformance tests with examples of various patterns and their expected output.
 - [`examples/e2e-astro`](./examples/e2e-astro): End-to-end Astro verification app.

@@ -1,0 +1,15 @@
+{
+  "name": "compat-vite-basic",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@lingui/core": "^6.0.0"
+  },
+  "devDependencies": {
+    "@lingui/cli": "^6.0.0",
+    "@lingui/conf": "^6.0.0",
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "unplugin-lingui-macro": "workspace:*"
+  }
+}

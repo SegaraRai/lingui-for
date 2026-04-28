@@ -64,8 +64,8 @@
   "devDependencies": {
     "@lingui-for/internal-lingui-analyzer-wasm": "workspace:*",
     "@lingui-for/internal-shared-common": "workspace:*",
-    "@lingui/cli": "^5.9.5",
-    "@lingui/conf": "^5.9.5",
+    "@lingui/cli": "^6.0.0",
+    "@lingui/conf": "^6.0.0",
     "@types/babel__core": "^7.20.5",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "catalog:",
@@ -75,8 +75,8 @@
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "@lingui/cli": "^5.0.0",
-    "@lingui/conf": "^5.0.0"
+    "@lingui/cli": "^5.0.0 || ^6.0.0",
+    "@lingui/conf": "^5.0.0 || ^6.0.0"
   },
   "peerDependenciesMeta": {
     "@lingui/conf": {

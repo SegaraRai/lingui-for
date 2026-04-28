@@ -8,7 +8,7 @@ const __lf_0 = __l4a_i18n._(
 const __lf_1 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "8+nA3Y",
+  id: "8-nA3Y",
   message: "Welcome back, {dashboardOwner}.",
   values: {
     dashboardOwner: dashboardOwner
@@ -42,7 +42,7 @@ const __lf_4 = __l4a_i18n._(
 const __lf_5 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "jJ+oTf",
+  id: "jJ-oTf",
   message: "Attention needed: high-priority items are waiting for review."
 });
 const __lf_6 = __l4a_i18n._(
@@ -54,7 +54,7 @@ const __lf_6 = __l4a_i18n._(
 const __lf_7 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "lC/3w5",
+  id: "lC_3w5",
   message: "Live snapshot latency: {0}.",
   values: {
     0: String(latencyMs > 250 ? `${latencyMs}ms (slow)` : `${latencyMs}ms`)
@@ -169,7 +169,7 @@ const __lf_22 = __l4a_i18n._(
 const __lf_23 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "Y2+ZT9",
+  id: "Y2-ZT9",
   message: "Comments:"
 });
 const __lf_24 = __l4a_i18n._(
@@ -190,13 +190,13 @@ const __lf_25 = __l4a_i18n._(
 const __lf_26 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "pa6gX+",
+  id: "pa6gX-",
   message: "No path"
 });
 const __lf_27 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "qbgW+C",
+  id: "qbgW-C",
   message: "Highlights"
 });
 const __lf_28 = __l4a_i18n._(
@@ -217,7 +217,7 @@ const __lf_29 = __l4a_i18n._(
 const __lf_30 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "i4y9D/",
+  id: "i4y9D_",
   message: "{0} assigned {1} with {2} comments and {3} unread changes.",
   values: {
     0: item.owner,
@@ -293,7 +293,7 @@ const __lf_37 = __l4a_i18n._(
 const __lf_38 = <_Trans {...
 /*i18n*/
 {
-  id: "8p/xVT",
+  id: "8p_xVT",
   message: "{0, plural, one {{1}} other {{2}}}",
   values: {
     0: highlightedQueue.length,
@@ -336,7 +336,7 @@ const __lf_40 = __l4a_i18n._(
 const __lf_41 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "/Hs6aJ",
+  id: "_Hs6aJ",
   message: "Astro interpolation coverage"
 });
 const __lf_42 = __l4a_i18n._(
@@ -417,7 +417,7 @@ const __lf_53 = __l4a_i18n._(
 const __lf_54 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "gMgE+g",
+  id: "gMgE-g",
   message: "Fixture message before an HTML comment interpolation."
 });
 const __lf_55 = __l4a_i18n._(
@@ -464,7 +464,7 @@ const __lf_59 = <_Trans {...
 const __lf_60 = <_Trans {...
 /*i18n*/
 {
-  id: "Em/oYy",
+  id: "Em_oYy",
   message: "<0/> Fixture message after a conditional Astro HTML comment.",
   components: {
     0: <Fragment />
@@ -485,7 +485,7 @@ const __lf_62 = <_Trans {...
 const __lf_63 = <_Trans {...
 /*i18n*/
 {
-  id: "O5ta/s",
+  id: "O5ta_s",
   message: "Fixture message before a Trans-wrapped JavaScript comment interpolation.  Fixture message after a Trans-wrapped JavaScript comment interpolation."
 }} />;
 const __lf_64 = <_Trans {...
@@ -517,13 +517,13 @@ const __lf_66 = __l4a_i18n._(
 const __lf_67 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "JpH47+",
+  id: "JpH47-",
   message: "These notes mirror the kind of mixed script and template content that the transform benchmark should exercise."
 });
 const __lf_68 = __l4a_i18n._(
 /*i18n*/
 {
-  id: "AzV+h+",
+  id: "AzV-h-",
   message: "Note {0}",
   values: {
     0: String(index + 1)

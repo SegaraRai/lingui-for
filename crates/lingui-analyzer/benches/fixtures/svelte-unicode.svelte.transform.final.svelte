@@ -28,7 +28,7 @@
     // Note that this method is actually not recommended for complex messages with multiple variables.
     // It's better to use `select` or `plural` for such cases.
     {
-      id: "DSRd7/",
+      id: "DSRd7_",
       message: "\u53C2\u7167\u4E2D\u306E\u30D1\u30B9\u306F {0} \u3067\u3001\u5019\u88DC\u306F {1} \u3067\u3059\u3002",
       values: {
         0: String(selectedPath ?? __l4s_getI18n()._(

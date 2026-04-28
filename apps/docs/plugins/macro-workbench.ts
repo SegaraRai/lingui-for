@@ -213,7 +213,7 @@ async function buildPoCatalogArtifacts(
       );
       const po = stripPoHeader(
         await poFormatter.serialize(filteredCatalog, {
-          existing: null,
+          existing: undefined,
           filename: poCatalogPath,
           locale,
           sourceLocale: "en",

@@ -428,7 +428,7 @@ describe("transformSvelte", () => {
     	      message: "idle"
     	    }) : $__l4s_translate(
     	    /*i18n*/ {
-    	      id: "s/ereB",
+    	      id: "s_ereB",
     	      message: "active"
     	    });
     	  }
@@ -469,7 +469,7 @@ describe("transformSvelte", () => {
     	  const status = $derived.by(() => ({
     	    books: $__l4s_translate(
     	    /*i18n*/ {
-    	      id: "V/M0Vc",
+    	      id: "V_M0Vc",
     	      message: "{count, plural, one {# Book} other {# Books}}",
     	      values: {
     	        count: count
@@ -519,7 +519,7 @@ describe("transformSvelte", () => {
     	    message: "idle"
     	  }) : $__l4s_translate(
     	  /*i18n*/ {
-    	    id: "s/ereB",
+    	    id: "s_ereB",
     	    message: "active"
     	  });
 
@@ -560,7 +560,7 @@ describe("transformSvelte", () => {
     	    }),
     	    books: $__l4s_translate(
     	    /*i18n*/ {
-    	      id: "V/M0Vc",
+    	      id: "V_M0Vc",
     	      message: "{count, plural, one {# Book} other {# Books}}",
     	      values: {
     	        count: count
@@ -755,7 +755,7 @@ describe("transformSvelte", () => {
 
     	<p>{$__l4s_translate(
     	/*i18n*/ {
-    	  id: "V/M0Vc",
+    	  id: "V_M0Vc",
     	  message: "{count, plural, one {# Book} other {# Books}}",
     	  values: {
     	    count: count
@@ -1069,7 +1069,7 @@ describe("transformSvelte", () => {
     	</script>
 
     	<L4sRuntimeTrans {.../*i18n*/ {
-    	  id: "N+nKUg",
+    	  id: "N-nKUg",
     	  message: "Read <0><1>{name}</1></0> carefully.",
     	  values: {
     	    name: name
@@ -1139,7 +1139,7 @@ describe("transformSvelte", () => {
     	</script>
 
     	<L4sRuntimeTrans {.../*i18n*/ {
-    	  id: "V/M0Vc",
+    	  id: "V_M0Vc",
     	  message: "{count, plural, one {# Book} other {# Books}}",
     	  values: {
     	    count: count

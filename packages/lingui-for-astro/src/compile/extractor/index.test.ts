@@ -1,4 +1,4 @@
-import type { ExtractedMessage } from "@lingui/conf";
+import type { ExtractedMessage, ExtractorCtx } from "@lingui/conf";
 import dedent from "dedent";
 import { describe, expect, test } from "vite-plus/test";
 
@@ -13,6 +13,12 @@ const extractor = astroExtractor({
 
 function extractedText(message: ExtractedMessage): string {
   return message.message ?? message.id;
+}
+
+function createExtractorContext(): ExtractorCtx {
+  return {
+    linguiConfig: {},
+  } as ExtractorCtx;
 }
 
 describe("astroExtractor", () => {
@@ -33,7 +39,7 @@ const label = t\`Frontmatter origin message\`;
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     expect(messages).toHaveLength(1);
@@ -87,7 +93,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     const nested = messages.find(
@@ -164,7 +170,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     expect(
@@ -211,7 +217,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     expect(
@@ -238,7 +244,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     expect(
@@ -331,7 +337,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     expect(
@@ -396,7 +402,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     expect(
@@ -447,7 +453,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     expect(
@@ -519,7 +525,7 @@ const role = "admin";
       (message) => {
         messages.push(message);
       },
-      undefined,
+      createExtractorContext(),
     );
 
     expect(messages.some((message) => extractedText(message) === "Home")).toBe(

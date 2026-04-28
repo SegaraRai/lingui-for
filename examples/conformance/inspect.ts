@@ -5,9 +5,12 @@ import type { ParserOptions } from "@babel/core";
 import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
-import type { ExtractedMessage, LinguiConfigNormalized } from "@lingui/conf";
+import { makeConfig, type ExtractedMessage } from "@lingui/conf";
 
-import type { CanonicalSourceMap } from "@lingui-for/framework-core/compile";
+import {
+  createLinguiMacroPluginOptions,
+  type CanonicalSourceMap,
+} from "@lingui-for/framework-core/compile";
 import { defineConfig as defineConfigAstro } from "lingui-for-astro/config";
 import { astroExtractor } from "lingui-for-astro/extractor";
 import {
@@ -52,25 +55,27 @@ type BabelTransformResult = NonNullable<ReturnType<typeof transformSync>>;
 const usage =
   "usage: node inspect.ts [--whitespace auto|astro|svelte|jsx] [--extract] [--transform] [--artifacts] [--artifacts-dir <DIR>] <FILE>";
 
-const linguiConfig: LinguiConfigNormalized = {
-  catalogs: [],
-  compileNamespace: "cjs",
-  extractorParserOptions: {},
-  fallbackLocales: {},
-  locales: ["en", "ja"],
-  macro: {
-    corePackage: ["@lingui/core/macro", "@lingui/macro"],
-    jsxPackage: ["@lingui/react/macro", "@lingui/macro"],
+const linguiConfig = makeConfig(
+  {
+    catalogs: [],
+    compileNamespace: "cjs",
+    fallbackLocales: {},
+    locales: ["en", "ja"],
+    macro: {
+      corePackage: ["@lingui/core/macro", "@lingui/macro"],
+      jsxPackage: ["@lingui/react/macro", "@lingui/macro"],
+    },
+    orderBy: "messageId",
+    rootDir: process.cwd(),
+    runtimeConfigModule: {
+      i18n: ["@lingui/core", "i18n"],
+      Trans: ["@lingui/react", "Trans"],
+      useLingui: ["@lingui/react", "useLingui"],
+    },
+    sourceLocale: "en",
   },
-  orderBy: "messageId",
-  rootDir: process.cwd(),
-  runtimeConfigModule: {
-    i18n: ["@lingui/core", "i18n"],
-    Trans: ["@lingui/react", "Trans"],
-    useLingui: ["@lingui/react", "useLingui"],
-  },
-  sourceLocale: "en",
-};
+  { skipValidation: true },
+);
 
 const parserPlugins: NonNullable<ParserOptions["plugins"]> = [
   "importAttributes",
@@ -409,7 +414,17 @@ function transformOfficialSource(
       sourceType: "module",
       plugins: ["jsx", "typescript"],
     },
-    plugins: [[linguiMacroPlugin, { extract: false, linguiConfig }]],
+    plugins: [
+      [
+        linguiMacroPlugin,
+        createLinguiMacroPluginOptions({
+          extract: false,
+          linguiConfig,
+          pluginEntryUrl: import.meta
+            .resolve("@lingui/babel-plugin-lingui-macro"),
+        }),
+      ],
+    ],
     sourceMaps: true,
   });
 

@@ -2,6 +2,7 @@ import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import type { LinguiConfigNormalized } from "@lingui/conf";
 
 import {
+  createLinguiMacroPluginOptions,
   fromBabelSourceMap,
   type BabelSourceMap,
   type CanonicalSourceMap,
@@ -62,11 +63,12 @@ export function lowerProgramWithLingui(
     plugins: [
       [
         linguiMacroPlugin,
-        {
+        createLinguiMacroPluginOptions({
           extract: request.extract,
           linguiConfig: request.linguiConfig,
-          stripMessageField: request.extract ? false : undefined,
-        },
+          pluginEntryUrl: import.meta
+            .resolve("@lingui/babel-plugin-lingui-macro"),
+        }),
       ],
     ],
     sourceMaps: true,

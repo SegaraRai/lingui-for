@@ -18,6 +18,7 @@ export default defineConfig({
           "!.astro/**",
           "!dist/**",
         ],
+        untrackedEnv: ["PATHEXT"],
       },
       dev: {
         command: "astro dev",
@@ -52,12 +53,14 @@ export default defineConfig({
           "unplugin-lingui-macro#build",
         ],
         cache: true,
+        untrackedEnv: ["PATHEXT"],
       },
       "i18n:build": {
         command: "lingui compile && vp fmt src/lib/i18n/locales",
         dependsOn: ["i18n:extract"],
         cache: true,
         input: ["src/lib/i18n/locales/**/*.po"],
+        untrackedEnv: ["PATHEXT"],
       },
       test: {
         command: "vp test",

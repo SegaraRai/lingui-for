@@ -12,7 +12,7 @@
     ]
   },
   {
-    "id": "DSRd7/",
+    "id": "DSRd7_",
     "message": "参照中のパスは {0} で、候補は {1} です。",
     "placeholders": {
       "0": "String(selectedPath ?? _i18n._(\n    /*i18n*/\n    {\n      id: \"ggPEgU\",\n      message: \"\\u672A\\u8A2D\\u5B9A\"\n    }))",

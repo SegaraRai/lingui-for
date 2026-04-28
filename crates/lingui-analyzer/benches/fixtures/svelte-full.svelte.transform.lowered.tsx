@@ -3,7 +3,7 @@ import { Trans as _Trans } from "@lingui/react";
 const __lf_0 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
-  id: "8+nA3Y",
+  id: "8-nA3Y",
   message: "Welcome back, {dashboardOwner}.",
   values: {
     dashboardOwner: dashboardOwner
@@ -37,7 +37,7 @@ const __lf_3 = __lingui_for_svelte_reactive_translation__(_i18n._(
 const __lf_4 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
-  id: "jJ+oTf",
+  id: "jJ-oTf",
   message: "Attention needed: high-priority items are waiting for review."
 }), "translate");
 const __lf_5 = __lingui_for_svelte_reactive_translation__(_i18n._(
@@ -49,7 +49,7 @@ const __lf_5 = __lingui_for_svelte_reactive_translation__(_i18n._(
 const __lf_6 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
-  id: "lC/3w5",
+  id: "lC_3w5",
   message: "Live snapshot latency: {0}.",
   values: {
     0: String(latencyMs > 250 ? `${latencyMs}ms (slow)` : `${latencyMs}ms`)
@@ -223,7 +223,7 @@ const __lf_30 = __lingui_for_svelte_reactive_translation__(_i18n._(
 const __lf_31 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
-  id: "Y2+ZT9",
+  id: "Y2-ZT9",
   message: "Comments:"
 }), "translate");
 const __lf_32 = __lingui_for_svelte_reactive_translation__(_i18n._(
@@ -244,13 +244,13 @@ const __lf_33 = __lingui_for_svelte_reactive_translation__(_i18n._(
 const __lf_34 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
-  id: "pa6gX+",
+  id: "pa6gX-",
   message: "No path"
 }), "translate");
 const __lf_35 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
-  id: "qbgW+C",
+  id: "qbgW-C",
   message: "Highlights"
 }), "translate");
 const __lf_36 = __lingui_for_svelte_reactive_translation__(_i18n._(
@@ -271,7 +271,7 @@ const __lf_37 = __lingui_for_svelte_reactive_translation__(_i18n._(
 const __lf_38 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /*i18n*/
 {
-  id: "i4y9D/",
+  id: "i4y9D_",
   message: "{0} assigned {1} with {2} comments and {3} unread changes.",
   values: {
     0: item.owner,
@@ -315,7 +315,7 @@ const __lf_42 = <_Trans {...
 const __lf_43 = <_Trans {...
 /*i18n*/
 {
-  id: "JUNx+G",
+  id: "JUNx-G",
   message: "Also we can embed some text and <0/> directly in translations.",
   components: {
     0: <LinguiForSvelteHtml value={"<em>some HTML</em>"} />
@@ -347,7 +347,7 @@ const __lf_45 = __lingui_for_svelte_reactive_translation__(_i18n._(
 const __lf_46 = <_Trans {...
 /*i18n*/
 {
-  id: "8p/xVT",
+  id: "8p_xVT",
   message: "{0, plural, one {{1}} other {{2}}}",
   values: {
     0: $highlightedQueue.length,

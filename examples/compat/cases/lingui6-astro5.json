@@ -1,0 +1,58 @@
+{
+  "name": "lingui6-astro5",
+  "description": "Astro compatibility fixture with Lingui 6 on the latest Astro 5 line.",
+  "lingui": "6",
+  "projects": [
+    {
+      "cwd": "examples/compat/projects/astro-basic",
+      "dependencies": {
+        "astro": "^5.17.3"
+      },
+      "localPackages": {
+        "dependencies": ["lingui-for-astro"],
+        "devDependencies": ["unplugin-lingui-macro"]
+      },
+      "assertions": [
+        {
+          "cwd": "examples/compat/projects/astro-basic",
+          "name": "unplugin-lingui-macro",
+          "major": "0"
+        },
+        {
+          "cwd": "examples/compat/projects/astro-basic",
+          "name": "@lingui/babel-plugin-lingui-macro",
+          "issuerPackage": "unplugin-lingui-macro",
+          "major": "6"
+        },
+        {
+          "cwd": "examples/compat/projects/astro-basic",
+          "name": "astro",
+          "major": "5"
+        },
+        {
+          "cwd": "examples/compat/projects/astro-basic",
+          "name": "lingui-for-astro",
+          "major": "0"
+        },
+        {
+          "cwd": "examples/compat/projects/astro-basic",
+          "name": "@lingui-for/framework-core",
+          "issuerPackage": "lingui-for-astro",
+          "major": "0"
+        }
+      ],
+      "commands": [
+        ["lingui", "extract", "--clean", "--overwrite"],
+        ["lingui", "compile"],
+        ["astro", "build"]
+      ],
+      "snapshots": [
+        "src/i18n/locales/en.po",
+        "src/i18n/locales/ja.po",
+        "src/i18n/locales/en.ts",
+        "src/i18n/locales/ja.ts",
+        "dist/index.html"
+      ]
+    }
+  ]
+}

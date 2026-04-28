@@ -14,6 +14,8 @@ export default defineConfig({
       "**/dist",
       "**/generated",
       "crates/lingui-analyzer/benches/fixtures/*",
+      "examples/compat/__snapshots__/**",
+      "examples/compat/projects/**",
       "examples/config-types/cases/*",
     ],
   },
@@ -30,6 +32,7 @@ export default defineConfig({
       "**/dist",
       "**/generated",
       "crates/lingui-analyzer/benches/fixtures/*",
+      "examples/compat/__snapshots__/**",
       "pnpm-lock.yaml",
     ],
   },
@@ -73,6 +76,7 @@ export default defineConfig({
           "!shared/lingui-analyzer-wasm/dist/**",
         ],
         env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
+        untrackedEnv: ["PATHEXT"],
       },
       check: {
         command: "vp run -r check",
@@ -87,6 +91,15 @@ export default defineConfig({
         dependsOn: ["build"],
         cache: false,
       },
+      "test:compat": {
+        command: "node ./examples/compat/compat-matrix.ts",
+        dependsOn: [
+          "lingui-for-svelte#build",
+          "lingui-for-astro#build",
+          "unplugin-lingui-macro#build",
+        ],
+        cache: false,
+      },
       inspect: {
         command: "vp run inspect --filter conformance",
         cache: false,
@@ -96,6 +109,7 @@ export default defineConfig({
         dependsOn: ["build:lib"],
         cache: true,
         input: [{ auto: true }],
+        untrackedEnv: ["PATHEXT"],
       },
       release: {
         command:

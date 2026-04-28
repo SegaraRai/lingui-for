@@ -489,7 +489,7 @@
 
   const ownerGreeting = $derived($__l4s_translate(
   /*i18n*/ {
-    id: "8+nA3Y",
+    id: "8-nA3Y",
     message: "Welcome back, {dashboardOwner}.",
     values: {
       dashboardOwner: dashboardOwner
@@ -526,7 +526,7 @@
       : alertLevel === "warn"
         ? $__l4s_translate(
         /*i18n*/ {
-          id: "jJ+oTf",
+          id: "jJ-oTf",
           message: "Attention needed: high-priority items are waiting for review."
         })
         : $__l4s_translate(
@@ -538,7 +538,7 @@
   const latencyLabel = $derived(
     $__l4s_translate(
     /*i18n*/ {
-      id: "lC/3w5",
+      id: "lC_3w5",
       message: "Live snapshot latency: {0}.",
       values: {
         0: String(latencyMs > 250 ? `${latencyMs}ms (slow)` : `${latencyMs}ms`)
@@ -826,7 +826,7 @@
               })} {item.assignee}</p>
               <p>{$__l4s_translate(
               /*i18n*/ {
-                id: "Y2+ZT9",
+                id: "Y2-ZT9",
                 message: "Comments:"
               })} {item.comments}</p>
               <p>{$__l4s_translate(
@@ -859,7 +859,7 @@
                 <span class="rounded-full bg-slate-100 px-3 py-1">
                   {$__l4s_translate(
                   /*i18n*/ {
-                    id: "pa6gX+",
+                    id: "pa6gX-",
                     message: "No path"
                   })}
                 </span>
@@ -878,7 +878,7 @@
           <h2 class="text-xl font-semibold text-slate-950">
             {$__l4s_translate(
             /*i18n*/ {
-              id: "qbgW+C",
+              id: "qbgW-C",
               message: "Highlights"
             })}
           </h2>
@@ -910,7 +910,7 @@
                 <p class="mt-1 text-xs text-slate-500">
                   {$__l4s_translate(
                   /*i18n*/ {
-                    id: "i4y9D/",
+                    id: "i4y9D_",
                     message: "{0} assigned {1} with {2} comments and {3} unread changes.",
                     values: {
                       0: item.owner,
@@ -1000,7 +1000,7 @@
         </p>
         <p>
           <L4sRuntimeTrans {.../*i18n*/ {
-            id: "JUNx+G",
+            id: "JUNx-G",
             message: "Also we can embed some text and <0/> directly in translations."
           }}>
           {#snippet component_0(children)}{#if children}{@const __l4s_ignored = console.warn("[lingui-for-svelte] <Trans> content tags ignore translated children and use their own source instead.")}{/if}{@html "<em>some HTML</em>"}{/snippet}
@@ -1036,7 +1036,7 @@
         })}
       </h2>
       <L4sRuntimeTrans {.../*i18n*/ {
-        id: "8p/xVT",
+        id: "8p_xVT",
         message: "{0, plural, one {{1}} other {{2}}}",
         values: {
           0: $highlightedQueue.length,

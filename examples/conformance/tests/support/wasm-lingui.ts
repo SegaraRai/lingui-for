@@ -3,10 +3,11 @@ import { generate } from "@babel/generator";
 import { type NodePath } from "@babel/traverse";
 import type { File, VariableDeclarator } from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
-import type {
-  ExtractedMessage,
-  ExtractorCtx,
-  LinguiConfigNormalized,
+import {
+  makeConfig,
+  type ExtractedMessage,
+  type ExtractorCtx,
+  type LinguiConfigNormalized,
 } from "@lingui/conf";
 
 import {
@@ -72,8 +73,8 @@ export function transformSyntheticModule(
       [
         linguiMacroPlugin,
         {
+          descriptorFields: "all",
           linguiConfig,
-          stripMessageField: false,
         },
       ],
     ],
@@ -165,25 +166,27 @@ function createLinguiConfigForFramework(
       ? "lingui-for-astro/runtime"
       : "lingui-for-svelte/runtime";
 
-  return {
-    catalogs: [],
-    compileNamespace: "cjs",
-    extractorParserOptions: {},
-    fallbackLocales: {},
-    locales: [],
-    macro: {
-      corePackage: [...LINGUI_STANDARD_CORE_MACRO_PACKAGES, macroPackage],
-      jsxPackage: [macroPackage],
+  return makeConfig(
+    {
+      catalogs: [],
+      compileNamespace: "cjs",
+      fallbackLocales: {},
+      locales: [],
+      macro: {
+        corePackage: [...LINGUI_STANDARD_CORE_MACRO_PACKAGES, macroPackage],
+        jsxPackage: [macroPackage],
+      },
+      orderBy: "messageId",
+      rootDir: "/virtual",
+      runtimeConfigModule: {
+        i18n: [LINGUI_CORE_PACKAGE, LINGUI_I18N_EXPORT],
+        Trans: [runtimePackage, "RuntimeTrans"],
+        useLingui: ["@lingui/react", "useLingui"],
+      },
+      sourceLocale: "en",
     },
-    orderBy: "messageId",
-    rootDir: "/virtual",
-    runtimeConfigModule: {
-      i18n: [LINGUI_CORE_PACKAGE, LINGUI_I18N_EXPORT],
-      Trans: [runtimePackage, "RuntimeTrans"],
-      useLingui: ["@lingui/react", "useLingui"],
-    },
-    sourceLocale: "en",
-  };
+    { skipValidation: true },
+  );
 }
 
 function createTestFrameworkConventions(framework: "astro" | "svelte") {
