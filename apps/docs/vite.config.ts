@@ -4,7 +4,7 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command: "astro build",
+        command: "vp exec astro build",
         dependsOn: [
           "lingui-for-astro#build",
           "lingui-for-svelte#build",
@@ -20,7 +20,7 @@ export default defineConfig({
         ],
       },
       dev: {
-        command: "astro dev",
+        command: "vp exec astro dev",
         dependsOn: [
           "lingui-for-astro#build",
           "lingui-for-svelte#build",
@@ -30,7 +30,7 @@ export default defineConfig({
         cache: false,
       },
       preview: {
-        command: "astro preview",
+        command: "vp exec astro preview",
         dependsOn: ["build"],
         cache: false,
       },
@@ -40,12 +40,12 @@ export default defineConfig({
         cache: false,
       },
       "check:extra": {
-        command: "astro check",
+        command: "vp exec astro check",
         dependsOn: ["build"],
         cache: false,
       },
       "i18n:extract": {
-        command: "lingui extract --clean --overwrite",
+        command: "vp exec lingui extract --clean --overwrite",
         dependsOn: [
           "lingui-for-astro#build",
           "lingui-for-svelte#build",
@@ -54,7 +54,7 @@ export default defineConfig({
         cache: true,
       },
       "i18n:build": {
-        command: "lingui compile && vp fmt src/i18n/locales",
+        command: "vp exec lingui compile && vp fmt src/i18n/locales",
         dependsOn: ["i18n:extract"],
         cache: true,
         input: ["src/i18n/locales/**/*.po"],

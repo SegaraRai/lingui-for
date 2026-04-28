@@ -4,7 +4,7 @@ export default defineConfig({
   run: {
     tasks: {
       build: {
-        command: "astro build",
+        command: "vp exec astro build",
         dependsOn: [
           "lingui-for-astro#build",
           "unplugin-lingui-macro#build",
@@ -13,12 +13,12 @@ export default defineConfig({
         cache: false,
       },
       "i18n:extract": {
-        command: "lingui extract --clean --overwrite",
+        command: "vp exec lingui extract --clean --overwrite",
         dependsOn: ["lingui-for-astro#build", "unplugin-lingui-macro#build"],
         cache: false,
       },
       "i18n:build": {
-        command: "lingui compile",
+        command: "vp exec lingui compile",
         dependsOn: ["i18n:extract"],
         cache: false,
       },

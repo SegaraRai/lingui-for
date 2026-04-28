@@ -59,7 +59,7 @@ export default defineConfig({
         cache: false,
       },
       "check:extra": {
-        command: "astro check",
+        command: "vp exec astro check",
         dependsOn: ["build"],
         cache: false,
       },

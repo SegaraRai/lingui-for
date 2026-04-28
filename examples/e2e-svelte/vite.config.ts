@@ -47,12 +47,12 @@ export default defineConfig({
         cache: false,
       },
       "check:extra": {
-        command: "svelte-check",
+        command: "vp exec svelte-check",
         dependsOn: ["build"],
         cache: false,
       },
       "sveltekit:sync": {
-        command: "svelte-kit sync",
+        command: "vp exec svelte-kit sync",
         cache: true,
         input: [
           { auto: true },
@@ -63,12 +63,12 @@ export default defineConfig({
         ],
       },
       "i18n:extract": {
-        command: "lingui extract --clean --overwrite",
+        command: "vp exec lingui extract --clean --overwrite",
         dependsOn: ["lingui-for-svelte#build", "unplugin-lingui-macro#build"],
         cache: true,
       },
       "i18n:build": {
-        command: "lingui compile && vp fmt src/lib/i18n/locales",
+        command: "vp exec lingui compile && vp fmt src/lib/i18n/locales",
         dependsOn: ["i18n:extract"],
         cache: true,
         input: ["src/lib/i18n/locales/**/*.po"],
