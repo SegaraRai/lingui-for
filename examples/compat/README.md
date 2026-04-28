@@ -18,3 +18,8 @@ vp run test:compat --case lingui6-astro6
 ```
 
 Use `--keep` to retain the temporary copy for debugging.
+
+Generated catalogs, compiled catalogs, and selected framework build outputs are
+compared with snapshots under `__snapshots__/<case_name>_<project_name>/`.
+Missing snapshots are created automatically. Existing snapshots fail the run on
+diffs unless `-u` or `--update` is passed.

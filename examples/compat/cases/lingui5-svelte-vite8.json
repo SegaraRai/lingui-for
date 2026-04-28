@@ -53,6 +53,13 @@
         ["lingui", "compile"],
         ["svelte-kit", "sync"],
         ["vite", "build"]
+      ],
+      "snapshots": [
+        "src/i18n/locales/en.po",
+        "src/i18n/locales/ja.po",
+        "src/i18n/locales/en.ts",
+        "src/i18n/locales/ja.ts",
+        "build/index.html"
       ]
     }
   ]

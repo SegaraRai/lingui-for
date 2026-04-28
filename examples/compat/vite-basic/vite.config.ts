@@ -3,6 +3,22 @@ import { defineConfig } from "vite-plus";
 import linguiMacro from "unplugin-lingui-macro/vite";
 
 export default defineConfig({
+  build: {
+    lib: {
+      entry: "src/main.ts",
+      fileName: "index",
+      formats: ["es"],
+    },
+    minify: false,
+    rollupOptions: {
+      external: ["@lingui/core"],
+      output: {
+        chunkFileNames: "[name].js",
+        entryFileNames: "[name].js",
+      },
+    },
+    sourcemap: false,
+  },
   plugins: [linguiMacro()],
   run: {
     tasks: {

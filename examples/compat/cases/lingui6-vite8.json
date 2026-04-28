@@ -34,6 +34,13 @@
         ["lingui", "extract", "--clean", "--overwrite"],
         ["lingui", "compile"],
         ["vite", "build"]
+      ],
+      "snapshots": [
+        "src/i18n/locales/en.po",
+        "src/i18n/locales/ja.po",
+        "src/i18n/locales/en.ts",
+        "src/i18n/locales/ja.ts",
+        "dist/main.js"
       ]
     }
   ]
