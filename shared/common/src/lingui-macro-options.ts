@@ -19,6 +19,7 @@ export type LinguiMacroPluginOptions<TLinguiConfig> =
       extract?: never;
       linguiConfig: TLinguiConfig;
     }
+  // Lingui 5 transform mode uses neither `extract` nor `descriptorFields`.
   | {
       descriptorFields?: never;
       extract?: never;

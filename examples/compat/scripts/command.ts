@@ -12,13 +12,14 @@ export function run(command: string, args: string[], cwd: string): void {
   const [executable, executableArgs] = commandRequiresWindowsShell(command)
     ? [COMMAND.cmdWindows, ["/d", "/s", "/c", quoteCommand([command, ...args])]]
     : [command, args];
+  const pathEnvKey = getPathEnvKey();
 
   const result = spawnSync(executable, executableArgs, {
     cwd,
     env: {
       ...process.env,
       LINGUI_WASM_PREBUILT: process.env.LINGUI_WASM_PREBUILT ?? "1",
-      PATH:
+      [pathEnvKey]:
         command === COMMAND.vp
           ? withoutNodeModulesBins()
           : withNodeModulesBins(cwd),
@@ -53,16 +54,27 @@ function withNodeModulesBins(cwd: string): string {
     current = parent;
   }
 
-  const currentPath = process.env.PATH ?? "";
+  const currentPath = getPathEnvValue();
   return [...paths, ...pathEntriesWithoutNodeModulesBins(currentPath)]
     .filter(Boolean)
     .join(path.delimiter);
 }
 
 function withoutNodeModulesBins(): string {
-  return pathEntriesWithoutNodeModulesBins(process.env.PATH ?? "")
+  return pathEntriesWithoutNodeModulesBins(getPathEnvValue())
     .filter(Boolean)
     .join(path.delimiter);
+}
+
+function getPathEnvKey(): string {
+  return (
+    Object.keys(process.env).find((key) => key.toLowerCase() === "path") ??
+    "PATH"
+  );
+}
+
+function getPathEnvValue(): string {
+  return process.env[getPathEnvKey()] ?? "";
 }
 
 function pathEntriesWithoutNodeModulesBins(value: string): string[] {

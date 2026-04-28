@@ -146,8 +146,6 @@ function replaceCatalogDependencies(packageJson: Record<string, any>): void {
       if (name in VERSIONS.catalog) {
         dependencies[name] =
           VERSIONS.catalog[name as keyof typeof VERSIONS.catalog];
-      } else if (name === PACKAGE.vitePlus) {
-        delete dependencies[name];
       } else {
         throw new Error(
           `Unsupported catalog dependency in compat fixture: ${name}`,
@@ -184,7 +182,6 @@ function injectVersionMatrixDependencies(
     pick(versions, [PACKAGE.linguiCli, PACKAGE.linguiConf]),
   );
 
-  delete packageJson.devDependencies[PACKAGE.vitePlus];
   Object.assign(packageJson.dependencies, project.dependencies ?? {});
   Object.assign(packageJson.devDependencies, project.devDependencies ?? {});
 }

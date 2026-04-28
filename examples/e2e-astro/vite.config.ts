@@ -59,7 +59,7 @@ export default defineConfig({
         command: "lingui compile && vp fmt src/lib/i18n/locales",
         dependsOn: ["i18n:extract"],
         cache: true,
-        input: ["src/i18n/locales/**/*.po"],
+        input: ["src/lib/i18n/locales/**/*.po"],
         untrackedEnv: ["PATHEXT"],
       },
       test: {

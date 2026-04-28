@@ -15,8 +15,6 @@
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@types/node": "catalog:",
     "typescript": "catalog:",
-    "unplugin-lingui-macro": "workspace:*",
-    "vite": "npm:@voidzero-dev/vite-plus-core@^0.1.19",
-    "vite-plus": "catalog:"
+    "unplugin-lingui-macro": "workspace:*"
   }
 }

@@ -1,6 +1,11 @@
 import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import type { CompatCase, PackageVersionAssertion } from "./types.ts";
+
+const findPackageJsonScriptPath = fileURLToPath(
+  new URL("./find-package-json.cjs", import.meta.url),
+);
 
 export function assertResolvedPackageVersions(
   projectRoot: string,
@@ -50,29 +55,9 @@ function resolvePackageJson(
   assertion: PackageVersionAssertion,
   caseName: string,
 ): string {
-  const script = [
-    "const fs = require('node:fs');",
-    "const path = require('node:path');",
-    "const { createRequire } = require('node:module');",
-    "let req = createRequire(path.join(process.argv[1], 'package.json'));",
-    "if (process.argv[3]) {",
-    "  req = createRequire(req.resolve(process.argv[3]));",
-    "}",
-    "let current = path.dirname(req.resolve(process.argv[2]));",
-    "for (;;) {",
-    "  const packageJson = path.join(current, 'package.json');",
-    "  if (fs.existsSync(packageJson)) {",
-    "    process.stdout.write(packageJson);",
-    "    break;",
-    "  }",
-    "  const parent = path.dirname(current);",
-    "  if (parent === current) throw new Error(`Could not find package.json for ${process.argv[2]}.`);",
-    "  current = parent;",
-    "}",
-  ].join("");
   const result = spawnSync(
     process.execPath,
-    ["-e", script, projectRoot, assertion.name, assertion.issuerPackage ?? ""],
+    [findPackageJsonScriptPath, assertion.name, assertion.issuerPackage ?? ""],
     {
       cwd: projectRoot,
       encoding: "utf8",

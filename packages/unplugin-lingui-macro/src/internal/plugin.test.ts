@@ -67,7 +67,11 @@ describe("unplugin-lingui-macro", () => {
         },
       );
 
-      expect(getCode(result)).toContain('message: "Hello from development."');
+      const code = getCode(result);
+      expect(code).toContain('id: "');
+      expect(code).toContain('message: "Hello from development."');
+      expect(code).not.toContain("@lingui/core/macro");
+      expect(code).not.toContain("msg`");
     } finally {
       if (previousNodeEnv == null) {
         delete process.env.NODE_ENV;

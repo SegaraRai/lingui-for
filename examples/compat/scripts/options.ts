@@ -24,7 +24,8 @@ export function parseArgs(args: string[]): Options {
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === OPTION.separator) {
-      continue;
+      options.names.push(...args.slice(index + 1));
+      break;
     } else if (arg === OPTION.list) {
       options.list = true;
     } else if (arg === OPTION.case) {
