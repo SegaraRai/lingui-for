@@ -69,6 +69,8 @@ describe("createMarkupFacadeModule", () => {
       import { helper, type HelperOptions } from "./helpers.ts";
       import View from "./View.svelte";
       import { runtime } from "@scope/runtime";
+      export { helper as exportedHelper, type HelperOptions as ExportedOptions } from "./helpers.ts";
+      export type { RuntimeOptions } from "./runtime-types.ts";
     `;
 
     const result = createMarkupFacadeModule(
@@ -87,7 +89,9 @@ describe("createMarkupFacadeModule", () => {
       import { __unplugin_markup_import_1 as namespace } from "./Entry.svelte.imports.mjs";
       import { __unplugin_markup_import_2 as helper, type __unplugin_markup_import_3 as HelperOptions } from "./Entry.svelte.imports.mjs";
       import { __unplugin_markup_import_4 as View } from "./Entry.svelte.imports.mjs";
-      import { __unplugin_markup_import_5 as runtime } from "./Entry.svelte.imports.mjs";"
+      import { __unplugin_markup_import_5 as runtime } from "./Entry.svelte.imports.mjs";
+      export { __unplugin_markup_import_6 as exportedHelper, type __unplugin_markup_import_7 as ExportedOptions } from "./Entry.svelte.imports.mjs";
+      export type { __unplugin_markup_import_8 as RuntimeOptions } from "./Entry.svelte.imports.mjs";"
     `);
     expect(result.facadeCode).toMatchInlineSnapshot(`
     	"import "/virtual/runtime/polyfill.ts";
@@ -97,6 +101,9 @@ describe("createMarkupFacadeModule", () => {
     	export type { HelperOptions as __unplugin_markup_import_3 } from "/virtual/runtime/helpers.ts";
     	export { default as __unplugin_markup_import_4 } from "/virtual/runtime/View.svelte";
     	export { runtime as __unplugin_markup_import_5 } from "@scope/runtime";
+    	export { helper as __unplugin_markup_import_6 } from "/virtual/runtime/helpers.ts";
+    	export type { HelperOptions as __unplugin_markup_import_7 } from "/virtual/runtime/helpers.ts";
+    	export type { RuntimeOptions as __unplugin_markup_import_8 } from "/virtual/runtime/runtime-types.ts";
     	"
     `);
   });
@@ -140,6 +147,29 @@ describe("createMarkupFacadeModule", () => {
     `);
     expect(result.facadeCode).toBe(
       'export { default as __unplugin_markup_import_0 } from "/virtual/runtime/View.svelte";\n',
+    );
+  });
+
+  test("keeps export-all declarations direct to avoid leaking facade bindings", () => {
+    const source = dedent`
+      import { helper } from "./helpers.ts";
+      export * from "./public-api.ts";
+    `;
+
+    const result = createMarkupFacadeModule(
+      source,
+      "/virtual/runtime/Entry.svelte",
+      "runtime/Entry.svelte",
+      ".svelte",
+      collectWholeModuleScript,
+    );
+
+    expect(result.rewrittenCode).toMatchInlineSnapshot(`
+      "import { __unplugin_markup_import_0 as helper } from "./Entry.svelte.imports.mjs";
+      export * from "./public-api.ts";"
+    `);
+    expect(result.facadeCode).toBe(
+      'export { helper as __unplugin_markup_import_0 } from "/virtual/runtime/helpers.ts";\n',
     );
   });
 });
