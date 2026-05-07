@@ -55,11 +55,11 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@babel/core": "^7.29.0",
-    "@babel/traverse": "^7.29.0",
-    "@babel/types": "^7.29.0",
-    "cosmiconfig": "^9.0.1",
-    "jiti": "^2.7.0"
+    "@babel/core": "^7.24.0",
+    "@babel/traverse": "^7.24.0",
+    "@babel/types": "^7.24.0",
+    "cosmiconfig": "^9",
+    "jiti": "^2"
   },
   "devDependencies": {
     "@lingui-for/internal-lingui-analyzer-wasm": "workspace:*",

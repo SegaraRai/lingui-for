@@ -367,19 +367,19 @@ importers:
   packages/framework-core:
     dependencies:
       '@babel/core':
-        specifier: ^7.29.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@babel/traverse':
-        specifier: ^7.29.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@babel/types':
-        specifier: ^7.29.0
+        specifier: ^7.24.0
         version: 7.29.0
       cosmiconfig:
-        specifier: ^9.0.1
+        specifier: ^9
         version: 9.0.1(typescript@5.9.3)
       jiti:
-        specifier: ^2.7.0
+        specifier: ^2
         version: 2.7.0
     devDependencies:
       '@lingui-for/internal-lingui-analyzer-wasm':
@@ -422,7 +422,7 @@ importers:
         specifier: workspace:*
         version: link:../framework-core
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^6.0.1
+        specifier: ^5 || ^6
         version: 6.0.1
       esbuild:
         specifier: ^0.28.0
@@ -434,7 +434,7 @@ importers:
         specifier: ^3 || ^4
         version: 4.60.3
       unplugin:
-        specifier: ^3.0.0
+        specifier: ^3
         version: 3.0.0
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@0.1.20
@@ -486,7 +486,7 @@ importers:
         specifier: workspace:*
         version: link:../framework-core
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^6.0.1
+        specifier: ^5 || ^6
         version: 6.0.1
       esbuild:
         specifier: ^0.28.0
@@ -498,7 +498,7 @@ importers:
         specifier: ^3 || ^4
         version: 4.60.3
       unplugin:
-        specifier: ^3.0.0
+        specifier: ^3
         version: 3.0.0
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@0.1.20
@@ -550,16 +550,16 @@ importers:
   packages/unplugin-lingui-macro:
     dependencies:
       '@babel/core':
-        specifier: ^7.29.0
+        specifier: ^7.24.0
         version: 7.29.0
       '@lingui/babel-plugin-lingui-macro':
-        specifier: ^6.0.1
+        specifier: ^5 || ^6
         version: 6.0.1
       esbuild:
         specifier: ^0.28.0
         version: 0.28.0
       oxc-parser:
-        specifier: ^0.129.0
+        specifier: '>=0.100.0 <1.0.0'
         version: 0.129.0
       rolldown:
         specifier: ^1.0.0-0
@@ -568,7 +568,7 @@ importers:
         specifier: ^3 || ^4
         version: 4.60.3
       unplugin:
-        specifier: ^3.0.0
+        specifier: ^3
         version: 3.0.0
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@0.1.20

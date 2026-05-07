@@ -108,8 +108,8 @@
   },
   "dependencies": {
     "@lingui-for/framework-core": "workspace:*",
-    "@lingui/babel-plugin-lingui-macro": "^6.0.1",
-    "unplugin": "^3.0.0"
+    "@lingui/babel-plugin-lingui-macro": "^5 || ^6",
+    "unplugin": "^3"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
