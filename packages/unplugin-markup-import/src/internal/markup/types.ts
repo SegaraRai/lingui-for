@@ -72,3 +72,5 @@ export type ImportSpecifierNode =
   | TSESTree.ImportSpecifier
   | TSESTree.ImportDefaultSpecifier
   | TSESTree.ImportNamespaceSpecifier;
+
+export type ExportSpecifierNode = TSESTree.ExportSpecifier;

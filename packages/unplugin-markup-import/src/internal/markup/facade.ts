@@ -9,6 +9,7 @@ import {
 import type {
   FacadeBinding,
   FacadeDeclaration,
+  ExportSpecifierNode,
   ImportSpecifierNode,
   InputDeclaration,
   MarkupFacadeModule,
@@ -183,7 +184,11 @@ export function createMarkupFacadeModule(
     const program = parseScript(script.content, script.lang);
 
     for (const statement of program.body) {
-      if (statement.type !== "ImportDeclaration" || !statement.source) {
+      if (
+        (statement.type !== "ImportDeclaration" &&
+          statement.type !== "ExportNamedDeclaration") ||
+        !statement.source
+      ) {
         continue;
       }
 
@@ -201,12 +206,20 @@ export function createMarkupFacadeModule(
         continue;
       }
 
-      const replacement = createFacadeImportReplacement(
-        statement,
-        relativePath,
-        markupExtension,
-        bindingCounter,
-      );
+      const replacement =
+        statement.type === "ImportDeclaration"
+          ? createFacadeImportReplacement(
+              statement,
+              relativePath,
+              markupExtension,
+              bindingCounter,
+            )
+          : createFacadeExportReplacement(
+              statement,
+              relativePath,
+              markupExtension,
+              bindingCounter,
+            );
       bindingCounter = replacement.nextBindingCounter;
 
       const globalStart = script.contentStart + statement.range[0];
@@ -246,6 +259,35 @@ export function createMarkupFacadeModule(
   };
 }
 
+function createFacadeExportReplacement(
+  statement: TSESTree.ExportNamedDeclaration,
+  relativePath: string,
+  markupExtension: string,
+  bindingCounter: number,
+): {
+  code: string;
+  facadeSpecifiers: FacadeBinding[];
+  nextBindingCounter: number;
+  sideEffectOnly: boolean;
+} {
+  const facadeSpecifier = createFacadeSpecifier(relativePath, markupExtension);
+  const facadeSpecifiers = statement.specifiers.map((specifier) => {
+    const exportName = `__unplugin_markup_import_${bindingCounter++}`;
+    return createFacadeReExportBinding(
+      specifier,
+      statement.exportKind === "type",
+      exportName,
+    );
+  });
+
+  return {
+    code: createFacadeExportStatement(facadeSpecifier, facadeSpecifiers),
+    facadeSpecifiers,
+    nextBindingCounter: bindingCounter,
+    sideEffectOnly: false,
+  };
+}
+
 function createFacadeImportReplacement(
   statement: TSESTree.ImportDeclaration,
   relativePath: string,
@@ -257,10 +299,7 @@ function createFacadeImportReplacement(
   nextBindingCounter: number;
   sideEffectOnly: boolean;
 } {
-  const facadeSpecifier = `./${basenamePath(relativePath).replace(
-    new RegExp(`${escapeRegExp(markupExtension)}$`),
-    `${markupExtension}.imports.mjs`,
-  )}`;
+  const facadeSpecifier = createFacadeSpecifier(relativePath, markupExtension);
 
   if (statement.specifiers.length === 0) {
     return {
@@ -286,6 +325,16 @@ function createFacadeImportReplacement(
     nextBindingCounter: bindingCounter,
     sideEffectOnly: false,
   };
+}
+
+function createFacadeSpecifier(
+  relativePath: string,
+  markupExtension: string,
+): string {
+  return `./${basenamePath(relativePath).replace(
+    new RegExp(`${escapeRegExp(markupExtension)}$`),
+    `${markupExtension}.imports.mjs`,
+  )}`;
 }
 
 function createFacadeBinding(
@@ -325,6 +374,20 @@ function createFacadeBinding(
   };
 }
 
+function createFacadeReExportBinding(
+  specifier: ExportSpecifierNode,
+  declarationTypeOnly: boolean,
+  exportName: string,
+): FacadeBinding {
+  return {
+    exportName,
+    importedName: renderModuleExportName(specifier.local),
+    kind: "named",
+    localName: renderModuleExportName(specifier.exported),
+    typeOnly: declarationTypeOnly || specifier.exportKind === "type",
+  };
+}
+
 function createFacadeImportStatement(
   facadeSpecifier: string,
   specifiers: readonly FacadeBinding[],
@@ -337,6 +400,20 @@ function createFacadeImportStatement(
 
   const importKeyword = allTypeOnly ? "import type" : "import";
   return `${importKeyword} { ${renderedSpecifiers.join(", ")} } from "${facadeSpecifier}";`;
+}
+
+function createFacadeExportStatement(
+  facadeSpecifier: string,
+  specifiers: readonly FacadeBinding[],
+): string {
+  const allTypeOnly = specifiers.every((specifier) => specifier.typeOnly);
+  const renderedSpecifiers = specifiers.map((specifier) => {
+    const prefix = allTypeOnly || !specifier.typeOnly ? "" : "type ";
+    return `${prefix}${specifier.exportName} as ${specifier.localName}`;
+  });
+
+  const exportKeyword = allTypeOnly ? "export type" : "export";
+  return `${exportKeyword} { ${renderedSpecifiers.join(", ")} } from "${facadeSpecifier}";`;
 }
 
 function createFacadeModuleCode(
@@ -373,6 +450,12 @@ function createFacadeModuleCode(
   }
 
   return "export {};\n";
+}
+
+function renderModuleExportName(
+  node: TSESTree.Identifier | TSESTree.StringLiteral,
+): string {
+  return node.type === "Identifier" ? node.name : JSON.stringify(node.value);
 }
 
 function toFacadeSourceSpecifier(
