@@ -91,7 +91,7 @@
   "peerDependencies": {
     "@lingui/conf": "^5 || ^6",
     "esbuild": "*",
-    "rolldown": "^1.0.0-0",
+    "rolldown": "^1.0.0-0 || ^1",
     "rollup": "^3 || ^4",
     "vite": ">=3",
     "webpack": "^4 || ^5"

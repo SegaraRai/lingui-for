@@ -59,7 +59,7 @@
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "rolldown": "^1.0.0-0",
+    "rolldown": "^1.0.0-0 || ^1",
     "rollup": "^3 || ^4",
     "vite": ">=3"
   },
