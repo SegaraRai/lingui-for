@@ -193,6 +193,20 @@ jobs:
 
       - run: vp run test:compat --case ${{ matrix.case }}
 
+  compatibility-matrix:
+    name: Compatibility Matrix
+    needs: compatibility
+    if: always()
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 5
+
+    steps:
+      - name: Check compatibility matrix result
+        run: |
+          echo "compatibility result: ${{ needs.compatibility.result }}"
+          test "${{ needs.compatibility.result }}" = "success"
+
   cleanup-transfer-artifacts:
     name: Cleanup Transfer Artifacts
     needs:
@@ -200,6 +214,7 @@ jobs:
       - build
       - test
       - compatibility
+      - compatibility-matrix
     if: always()
     runs-on: ubuntu-latest
 
