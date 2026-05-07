@@ -25,7 +25,7 @@ export function dirnamePath(value: string): string {
 }
 
 export function basenamePath(value: string): string {
-  const normalized = normalizePath(value);
+  const normalized = normalizePath(value).replaceAll(/\/+$/g, "");
   const slashIndex = normalized.lastIndexOf("/");
   return slashIndex === -1 ? normalized : normalized.slice(slashIndex + 1);
 }
