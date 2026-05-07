@@ -1,5 +1,16 @@
 # lingui-for-astro
 
+## 0.6.1
+
+### Patch Changes
+
+- [#44](https://github.com/SegaraRai/lingui-for/pull/44) [`e91972b`](https://github.com/SegaraRai/lingui-for/commit/e91972bfea99f72094be9190c787578239293319) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Update workspace dependencies and compatibility coverage.
+
+- [#44](https://github.com/SegaraRai/lingui-for/pull/44) [`e91972b`](https://github.com/SegaraRai/lingui-for/commit/e91972bfea99f72094be9190c787578239293319) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Add support for Astro 7 alpha.
+
+- Updated dependencies [[`e91972b`](https://github.com/SegaraRai/lingui-for/commit/e91972bfea99f72094be9190c787578239293319)]:
+  - @lingui-for/framework-core@0.6.1
+
 ## 0.6.0
 
 ### Minor Changes
