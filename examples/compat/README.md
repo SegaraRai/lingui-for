@@ -12,9 +12,17 @@ Fixtures live under `projects/`:
   build.
 - `vite-basic`: plain Vite with `unplugin-lingui-macro`.
 
+The matrix currently covers both Lingui 5 and Lingui 6:
+
+| Fixture           | Framework and bundler combinations                         |
+| ----------------- | ---------------------------------------------------------- |
+| `astro-basic`     | Astro 5 + Vite 6, Astro 6 + Vite 7, Astro 7 alpha + Vite 8 |
+| `sveltekit-basic` | Svelte 5 + Vite 6, Svelte 5 + Vite 7, Svelte 5 + Vite 8    |
+| `vite-basic`      | Plain Vite 6, Vite 7, and Vite 8                           |
+
 ```sh
 vp run test:compat --list
-vp run test:compat --case lingui6-astro6
+vp run test:compat --case lingui6-astro6-vite7
 ```
 
 Use `--keep` to retain the temporary copy for debugging.

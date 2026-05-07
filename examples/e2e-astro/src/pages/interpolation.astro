@@ -62,13 +62,13 @@ const falseBranch = false;
   <section class="card border-base-300 bg-base-100 border shadow-lg">
     <div class="card-body">
       <h2 class="card-title">{t`Conditional HTML comment branches`}</h2>
-      {trueBranch ? <!-- lingui-html-comment-left-selected --> : <span>Unexpected selected consequent alternate.</span>}
+      {trueBranch ? <><!-- lingui-html-comment-left-selected --></> : <span>Unexpected selected consequent alternate.</span>}
       <p>{t`Message after a selected HTML comment consequent branch.`}</p>
-      {falseBranch ? <!-- lingui-html-comment-left-not-selected --> : <span>{t`Translated alternate element after an unselected HTML comment consequent.`}</span>}
-      {trueBranch ? <span>{t`Translated consequent element before an unselected HTML comment alternate.`}</span> : <!-- lingui-html-comment-right-not-selected -->}
-      {falseBranch ? <!-- lingui-trans-html-comment-left-not-selected --> : (<Trans>Translated alternate Trans branch after an unselected HTML comment consequent.</Trans>)}
-      {trueBranch ? (<Trans>Translated consequent Trans branch before an unselected HTML comment alternate.</Trans>) : <!-- lingui-trans-html-comment-right-not-selected -->}
-      {falseBranch ? <span>Unexpected selected alternate consequent.</span> : <!-- lingui-html-comment-right-selected -->}
+      {falseBranch ? <><!-- lingui-html-comment-left-not-selected --></> : <span>{t`Translated alternate element after an unselected HTML comment consequent.`}</span>}
+      {trueBranch ? <span>{t`Translated consequent element before an unselected HTML comment alternate.`}</span> : <><!-- lingui-html-comment-right-not-selected --></>}
+      {falseBranch ? <><!-- lingui-trans-html-comment-left-not-selected --></> : (<Trans>Translated alternate Trans branch after an unselected HTML comment consequent.</Trans>)}
+      {trueBranch ? (<Trans>Translated consequent Trans branch before an unselected HTML comment alternate.</Trans>) : <><!-- lingui-trans-html-comment-right-not-selected --></>}
+      {falseBranch ? <span>Unexpected selected alternate consequent.</span> : <><!-- lingui-html-comment-right-selected --></>}
       <p>{t`Message after a selected HTML comment alternate branch.`}</p>
     </div>
   </section>
@@ -107,10 +107,10 @@ const falseBranch = false;
         Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation.
       </Trans>
       <Trans>
-        {falseBranch ? <!-- trans-html-comment-left-not-selected-outside-interpolation --> : <span>Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.</span>}
+        {falseBranch ? <><!-- trans-html-comment-left-not-selected-outside-interpolation --></> : <span>Trans alternate element after an unselected HTML comment consequent outside an Astro interpolation.</span>}
       </Trans>
       <Trans>
-        {trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate outside an Astro interpolation.</span> : <!-- trans-html-comment-right-not-selected-outside-interpolation -->}
+        {trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate outside an Astro interpolation.</span> : <><!-- trans-html-comment-right-not-selected-outside-interpolation --></>}
       </Trans>
       {<Trans>Trans component rendered from inside an Astro interpolation.</Trans>}
       {<Trans>{`Trans-wrapped plain expression inside an Astro interpolation.`}</Trans>}
@@ -151,19 +151,19 @@ const falseBranch = false;
         </Trans>
       }
       {
-        falseBranch ? <!-- trans-html-comment-left-not-selected-interpolation --> : <Trans>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</Trans>
+        falseBranch ? <><!-- trans-html-comment-left-not-selected-interpolation --></> : <Trans>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</Trans>
       }
       {
-        trueBranch ? <Trans>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</Trans> : <!-- trans-html-comment-right-not-selected-interpolation -->
+        trueBranch ? <Trans>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</Trans> : <><!-- trans-html-comment-right-not-selected-interpolation --></>
       }
       {
         <Trans>
-          {falseBranch ? <!-- trans-html-comment-left-not-selected-inside-trans --> : <span>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</span>}
+          {falseBranch ? <><!-- trans-html-comment-left-not-selected-inside-trans --></> : <span>Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation.</span>}
         </Trans>
       }
       {
         <Trans>
-          {trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</span> : <!-- trans-html-comment-right-not-selected-inside-trans -->}
+          {trueBranch ? <span>Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation.</span> : <><!-- trans-html-comment-right-not-selected-inside-trans --></>}
         </Trans>
       }
     </div>

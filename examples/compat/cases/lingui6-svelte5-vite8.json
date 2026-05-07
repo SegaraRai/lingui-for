@@ -1,6 +1,6 @@
 {
-  "name": "lingui6-svelte-vite8",
-  "description": "SvelteKit compatibility fixture with Lingui 6 and the primary Vite 8-compatible Svelte plugin line.",
+  "name": "lingui6-svelte5-vite8",
+  "description": "SvelteKit compatibility fixture with Lingui 6, Svelte 5, and Vite 8.",
   "lingui": "6",
   "projects": [
     {
@@ -29,6 +29,11 @@
           "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "@sveltejs/vite-plugin-svelte",
           "major": "7"
+        },
+        {
+          "cwd": "examples/compat/projects/sveltekit-basic",
+          "name": "svelte",
+          "major": "5"
         },
         {
           "cwd": "examples/compat/projects/sveltekit-basic",

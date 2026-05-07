@@ -12,7 +12,19 @@ It provides:
 - runtime helpers for request-scoped Lingui context
 - unplugin entrypoints for direct bundler use when needed
 
-**Requirements:** Astro `^5.0.0` or `^6.0.0`, `@lingui/core` `^5.0.0`, Node.js 22+
+**Requirements:** Astro `^5.0.0`, `^6.0.0`, or `^7.0.0-alpha.0`; `@lingui/core` `^5.0.0` or `^6.0.0`; Node.js 22+
+
+## Supported Versions
+
+The compatibility matrix currently tests:
+
+| Lingui | Astro   | Vite |
+| ------ | ------- | ---- |
+| 5, 6   | 5       | 6    |
+| 5, 6   | 6       | 7    |
+| 5, 6   | 7 alpha | 8    |
+
+Astro 7 support tracks the current alpha line and may change before Astro 7 stable.
 
 ## Install
 

@@ -1,7 +1,7 @@
 {
-  "name": "lingui5-astro5",
-  "description": "Astro compatibility fixture with Lingui 5 on the latest Astro 5 line.",
-  "lingui": "5",
+  "name": "lingui6-astro5-vite6",
+  "description": "Astro compatibility fixture with Lingui 6, Astro 5, and Vite 6.",
+  "lingui": "6",
   "projects": [
     {
       "cwd": "examples/compat/projects/astro-basic",
@@ -22,12 +22,19 @@
           "cwd": "examples/compat/projects/astro-basic",
           "name": "@lingui/babel-plugin-lingui-macro",
           "issuerPackage": "unplugin-lingui-macro",
-          "major": "5"
+          "major": "6"
         },
         {
           "cwd": "examples/compat/projects/astro-basic",
           "name": "astro",
           "major": "5"
+        },
+        {
+          "cwd": "examples/compat/projects/astro-basic",
+          "name": "vite",
+          "issuerPackage": "astro",
+          "major": "6",
+          "source": "moduleVersion"
         },
         {
           "cwd": "examples/compat/projects/astro-basic",

@@ -12,6 +12,10 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  BUILT_REPOSITORY_ARTIFACT_NAME: ci-built-repository-${{ github.run_id }}-${{ github.run_attempt }}
+  WASM_PACKAGE_ARTIFACT_NAME: ci-wasm-package-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   build-wasm:
     name: Build Wasm Package and Test Rust Code
@@ -39,7 +43,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: "24"
+          node-version-file: ".node-version"
           cache: true
 
       - run: vp install
@@ -48,13 +52,13 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: wasm-package
+          name: ${{ env.WASM_PACKAGE_ARTIFACT_NAME }}
           path: shared/lingui-analyzer-wasm/dist/
           if-no-files-found: error
           retention-days: 1
 
-  test:
-    name: Test
+  build:
+    name: Build
     needs: build-wasm
     runs-on: ubuntu-latest
 
@@ -70,14 +74,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v7
         with:
-          name: wasm-package
+          name: ${{ env.WASM_PACKAGE_ARTIFACT_NAME }}
           path: shared/lingui-analyzer-wasm/dist
 
       - uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: "24"
+          node-version-file: ".node-version"
           cache: true
 
       - run: vp install
@@ -89,13 +93,54 @@ jobs:
           git status --short
           test -z "$(git status --porcelain)"
 
+      - name: Pack built repository
+        run: tar --exclude='./.git' --exclude='./built-repository.tar' -cf built-repository.tar .
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
+          path: built-repository.tar
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  test:
+    name: Test
+    needs: build
+    runs-on: ubuntu-latest
+
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      options: --user 1001
+
+    timeout-minutes: 30
+
+    env:
+      LINGUI_WASM_PREBUILT: "1"
+
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
+          path: .
+
+      - name: Unpack built repository
+        run: |
+          tar -xf built-repository.tar
+          rm built-repository.tar
+
+      - uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version-file: ".node-version"
+          cache: true
+
       - run: vp run check
 
       - run: vp run test
 
   compatibility:
     name: Compatibility (${{ matrix.case }})
-    needs: build-wasm
+    needs: build
     runs-on: ubuntu-latest
 
     container:
@@ -108,36 +153,112 @@ jobs:
       fail-fast: false
       matrix:
         case:
-          - lingui5-astro6
-          - lingui5-astro5
-          - lingui5-svelte-vite7
-          - lingui5-svelte-vite8
+          - lingui5-astro5-vite6
+          - lingui5-astro6-vite7
+          - lingui5-astro7-vite8
+          - lingui5-svelte5-vite6
+          - lingui5-svelte5-vite7
+          - lingui5-svelte5-vite8
+          - lingui5-vite6
+          - lingui5-vite7
           - lingui5-vite8
-          - lingui6-astro6
-          - lingui6-astro5
-          - lingui6-svelte-vite7
-          - lingui6-svelte-vite8
+          - lingui6-astro5-vite6
+          - lingui6-astro6-vite7
+          - lingui6-astro7-vite8
+          - lingui6-svelte5-vite6
+          - lingui6-svelte5-vite7
+          - lingui6-svelte5-vite8
+          - lingui6-vite6
+          - lingui6-vite7
           - lingui6-vite8
 
     env:
       LINGUI_WASM_PREBUILT: "1"
 
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v7
         with:
-          name: wasm-package
-          path: shared/lingui-analyzer-wasm/dist
+          name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
+          path: .
+
+      - name: Unpack built repository
+        run: |
+          tar -xf built-repository.tar
+          rm built-repository.tar
 
       - uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: "24"
+          node-version-file: ".node-version"
           cache: true
 
-      - run: vp install
-
       - run: vp run test:compat --case ${{ matrix.case }}
+
+  compatibility-matrix:
+    name: Compatibility Matrix
+    needs: compatibility
+    if: always()
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 5
+
+    steps:
+      - name: Check compatibility matrix result
+        run: |
+          echo "compatibility result: ${{ needs.compatibility.result }}"
+          test "${{ needs.compatibility.result }}" = "success"
+
+  cleanup-transfer-artifacts:
+    name: Cleanup Transfer Artifacts
+    needs:
+      - build-wasm
+      - build
+      - test
+      - compatibility
+      - compatibility-matrix
+    if: always()
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: write
+      contents: read
+
+    steps:
+      - uses: actions/github-script@v8
+        env:
+          TRANSFER_ARTIFACT_NAMES: |
+            ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
+            ${{ env.WASM_PACKAGE_ARTIFACT_NAME }}
+        with:
+          script: |
+            const names = new Set(
+              process.env.TRANSFER_ARTIFACT_NAMES
+                .split(/\r?\n/)
+                .map((name) => name.trim())
+                .filter(Boolean),
+            );
+            const response = await github.request(
+              "GET /repos/{owner}/{repo}/actions/runs/{run_id}/artifacts",
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                run_id: context.runId,
+                per_page: 100,
+              },
+            );
+
+            for (const artifact of response.data.artifacts) {
+              if (!names.has(artifact.name)) {
+                continue;
+              }
+              await github.request(
+                "DELETE /repos/{owner}/{repo}/actions/artifacts/{artifact_id}",
+                {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id,
+                },
+              );
+            }
 
   spelling:
     name: Spell Check with Typos

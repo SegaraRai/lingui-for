@@ -108,30 +108,30 @@
   },
   "dependencies": {
     "@lingui-for/framework-core": "workspace:*",
-    "@lingui/babel-plugin-lingui-macro": "^5.0.0 || ^6.0.0",
-    "unplugin": "^3.0.0"
+    "@lingui/babel-plugin-lingui-macro": "^5 || ^6",
+    "unplugin": "^3"
   },
   "devDependencies": {
     "@arethetypeswrong/core": "^0.18.2",
     "@jridgewell/trace-mapping": "^0.3.31",
     "@lingui-for/internal-shared-test-helpers": "workspace:*",
-    "@lingui/cli": "^6.0.0",
-    "@lingui/conf": "^6.0.0",
-    "@lingui/core": "^6.0.0",
+    "@lingui/cli": "^6.0.1",
+    "@lingui/conf": "^6.0.1",
+    "@lingui/core": "^6.0.1",
     "@types/node": "catalog:",
-    "astro": "^6.1.9",
+    "astro": "7.0.0-alpha.0",
     "dedent": "^1.7.2",
     "typescript": "catalog:",
     "unplugin-markup-import": "workspace:*",
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "@lingui/cli": "^5.0.0 || ^6.0.0",
-    "@lingui/conf": "^5.0.0 || ^6.0.0",
-    "@lingui/core": "^5.0.0 || ^6.0.0",
-    "astro": "^5 || ^6",
+    "@lingui/cli": "^5 || ^6",
+    "@lingui/conf": "^5 || ^6",
+    "@lingui/core": "^5 || ^6",
+    "astro": "^5 || ^6 || ^7.0.0-0",
     "esbuild": "*",
-    "rolldown": "^1.0.0-0",
+    "rolldown": "^1.0.0-0 || ^1",
     "rollup": "^3 || ^4",
     "vite": ">=3",
     "webpack": "^4 || ^5"

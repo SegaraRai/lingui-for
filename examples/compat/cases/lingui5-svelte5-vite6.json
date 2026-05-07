@@ -1,13 +1,13 @@
 {
-  "name": "lingui6-svelte-vite7",
-  "description": "SvelteKit compatibility fixture with Lingui 6 and the Vite 7-compatible Svelte plugin line.",
-  "lingui": "6",
+  "name": "lingui5-svelte5-vite6",
+  "description": "SvelteKit compatibility fixture with Lingui 5, Svelte 5, and Vite 6.",
+  "lingui": "5",
   "projects": [
     {
       "cwd": "examples/compat/projects/sveltekit-basic",
       "devDependencies": {
-        "@sveltejs/vite-plugin-svelte": "^6.2.4",
-        "vite": "^7.2.7"
+        "@sveltejs/vite-plugin-svelte": "^5.1.1",
+        "vite": "^6.4.2"
       },
       "localPackages": {
         "dependencies": ["lingui-for-svelte"],
@@ -23,17 +23,22 @@
           "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "@lingui/babel-plugin-lingui-macro",
           "issuerPackage": "unplugin-lingui-macro",
-          "major": "6"
+          "major": "5"
         },
         {
           "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "@sveltejs/vite-plugin-svelte",
-          "major": "6"
+          "major": "5"
+        },
+        {
+          "cwd": "examples/compat/projects/sveltekit-basic",
+          "name": "svelte",
+          "major": "5"
         },
         {
           "cwd": "examples/compat/projects/sveltekit-basic",
           "name": "vite",
-          "major": "7",
+          "major": "6",
           "source": "moduleVersion"
         },
         {
