@@ -1,0 +1,1 @@
+/*eslint-disable*/import type{Messages}from"@lingui/core";export const messages=JSON.parse("{\"VjErhN\":[\"Build <0>SvelteKit</0> compatibility.\"],\"tLUJKK\":[\"Hello \",[\"subject\"]]}")as Messages;

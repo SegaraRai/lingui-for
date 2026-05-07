@@ -63,23 +63,23 @@ const falseBranch = false;
 
       <section data-case="html-comment-left-branch-selected">
         <h2>HTML comment as selected conditional consequent</h2>
-        {trueBranch ? <!-- ternary-html-left-selected --> : <span>unexpected left selected alternate</span>}
+        {trueBranch ? <><!-- ternary-html-left-selected --></> : <span>unexpected left selected alternate</span>}
         <p>Allowed: a selected HTML comment branch renders no visible node.</p>
       </section>
 
       <section data-case="html-comment-left-branch-not-selected">
         <h2>HTML comment as unselected conditional consequent</h2>
-        {falseBranch ? <!-- ternary-html-left-not-selected --> : <span>Allowed: alternate element branch rendered.</span>}
+        {falseBranch ? <><!-- ternary-html-left-not-selected --></> : <span>Allowed: alternate element branch rendered.</span>}
       </section>
 
       <section data-case="html-comment-right-branch-not-selected">
         <h2>HTML comment as unselected conditional alternate</h2>
-        {trueBranch ? <span>Allowed: consequent element branch rendered.</span> : <!-- ternary-html-right-not-selected -->}
+        {trueBranch ? <span>Allowed: consequent element branch rendered.</span> : <><!-- ternary-html-right-not-selected --></>}
       </section>
 
       <section data-case="html-comment-right-branch-selected">
         <h2>HTML comment as selected conditional alternate</h2>
-        {falseBranch ? <span>unexpected right selected consequent</span> : <!-- ternary-html-right-selected -->}
+        {falseBranch ? <span>unexpected right selected consequent</span> : <><!-- ternary-html-right-selected --></>}
         <p>Allowed: a selected HTML comment alternate renders no visible node.</p>
       </section>
     </main>

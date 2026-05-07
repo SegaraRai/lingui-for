@@ -5,7 +5,11 @@
 
 Bundler plugin for compiling Lingui macros in plain JavaScript and TypeScript modules.
 
-**Requirements:** `@lingui/core` `^5.0.0`, Node.js 22+
+**Requirements:** `@lingui/core` `^5.0.0` or `^6.0.0`, Node.js 22+
+
+## Supported Versions
+
+The compatibility matrix currently tests plain Vite projects with Lingui 5 and Lingui 6 across Vite 6, Vite 7, and Vite 8.
 
 This package is useful when your app uses Lingui macros outside framework-owned files such as `.svelte` or `.astro`.
 

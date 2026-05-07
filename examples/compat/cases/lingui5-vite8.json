@@ -1,6 +1,6 @@
 {
   "name": "lingui5-vite8",
-  "description": "Plain Vite compatibility fixture with Lingui 5 and unplugin-lingui-macro.",
+  "description": "Plain Vite compatibility fixture with Lingui 5, Vite 8, and unplugin-lingui-macro.",
   "lingui": "5",
   "projects": [
     {
