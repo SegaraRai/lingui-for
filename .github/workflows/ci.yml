@@ -45,7 +45,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: "24"
+          node-version-file: ".node-version"
           cache: true
 
       - run: vp install
@@ -83,7 +83,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: "24"
+          node-version-file: ".node-version"
           cache: true
 
       - run: vp install
@@ -124,7 +124,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: "24"
+          node-version-file: ".node-version"
           cache: true
 
       - run: vp run check
@@ -178,7 +178,7 @@ jobs:
 
       - uses: voidzero-dev/setup-vp@v1
         with:
-          node-version: "24"
+          node-version-file: ".node-version"
           cache: true
 
       - run: vp run test:compat --case ${{ matrix.case }}
