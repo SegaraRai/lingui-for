@@ -33,7 +33,6 @@ export default defineConfig({
         dependsOn: ["lingui-for-workspace#build:wasm"],
         cache: true,
         input: [{ auto: true }, "!**/.vite-temp/**", "!dist/**"],
-        untrackedEnv: ["PATHEXT"],
       },
       check: {
         command: "vp check",
