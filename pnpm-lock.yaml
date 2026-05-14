@@ -16,7 +16,7 @@ catalogs:
       specifier: ^5.9.3
       version: 5.9.3
     vite-plus:
-      specifier: ^0.1.21
+      specifier: latest
       version: 0.1.21
 
 overrides:
