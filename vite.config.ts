@@ -76,7 +76,6 @@ export default defineConfig({
           "!shared/lingui-analyzer-wasm/dist/**",
         ],
         env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
-        untrackedEnv: ["PATHEXT"],
       },
       check: {
         command: "vp run -r check",
@@ -109,7 +108,6 @@ export default defineConfig({
         dependsOn: ["build:lib"],
         cache: true,
         input: [{ auto: true }],
-        untrackedEnv: ["PATHEXT"],
       },
       release: {
         command:

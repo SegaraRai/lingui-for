@@ -10,10 +10,11 @@ allowBuilds:
   wasm-pack: true
 
 catalog:
-  "@types/node": ^25.6.0
+  "@types/node": ^25.7.0
+  playwright: ^1.60.0
   typescript: ^5.9.3
-  vite: npm:@voidzero-dev/vite-plus-core@0.1.20
-  vite-plus: 0.1.20
+  vite: npm:@voidzero-dev/vite-plus-core@latest
+  vite-plus: latest
 
 overrides:
   esbuild: "^0.28.0"
