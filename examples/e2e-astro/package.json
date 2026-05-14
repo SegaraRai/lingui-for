@@ -25,7 +25,7 @@
     "@types/react-dom": "^19.2.3",
     "astro-strip-whitespace": "^0.2.2",
     "daisyui": "^5.5.19",
-    "playwright": "^1.60.0",
+    "playwright": "catalog:",
     "tailwindcss": "^4.3.0",
     "typescript": "catalog:",
     "unplugin-lingui-macro": "workspace:*",

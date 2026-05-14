@@ -11,6 +11,7 @@ allowBuilds:
 
 catalog:
   "@types/node": ^25.7.0
+  playwright: ^1.60.0
   typescript: ^5.9.3
   vite: npm:@voidzero-dev/vite-plus-core@latest
   vite-plus: ^0.1.21
