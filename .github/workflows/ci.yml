@@ -210,11 +210,6 @@ jobs:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
           path: .
 
-      - name: Unpack built repository
-        run: |
-          tar -xf built-repository.tar
-          rm built-repository.tar
-
       - name: Run compatibility in isolated container
         uses: SegaraRai/gha-sandbox-probes@807dc79aa0e5cadeffc55d34672628ff745ebb8d
         with:
@@ -224,6 +219,9 @@ jobs:
             LINGUI_WASM_PREBUILT=1
           command: |
             echo "compatibility: case=${{ matrix.case }}"
+            echo "compatibility: unpacking built repository"
+            tar -xf built-repository.tar
+            rm built-repository.tar
             echo "compatibility: installing vite-plus"
             curl -fsSL --connect-timeout 5 --max-time 15 https://viteplus.dev/install.sh | bash
             . "$HOME/.vite-plus/env"
