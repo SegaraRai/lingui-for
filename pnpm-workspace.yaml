@@ -9,15 +9,54 @@ allowBuilds:
   sharp: true
   wasm-pack: true
 
-catalog:
-  "@types/node": ^25.7.0
-  playwright: ^1.60.0
-  typescript: ^5.9.3
-  vite: npm:@voidzero-dev/vite-plus-core@latest
-  vite-plus: latest
+catalogs:
+  default:
+    "@arethetypeswrong/core": ^0.18.2
+    "@astrojs/svelte": 9.0.0-alpha.0
+    "@jridgewell/trace-mapping": ^0.3.31
+    "@lingui/cli": ^6.0.1
+    "@lingui/conf": ^6.0.1
+    "@lingui/core": ^6.0.1
+    "@lingui/react": ^6.0.1
+    "@sveltejs/vite-plugin-svelte": ^7.1.2
+    "@tailwindcss/vite": ^4.3.0
+    "@types/babel__core": ^7.20.5
+    "@types/babel__traverse": ^7.28.0
+    "@types/node": ^25.7.0
+    astro: ^7.0.0-0
+    astro-strip-whitespace: ^0.2.2
+    daisyui: ^5.5.19
+    dedent: ^1.7.2
+    playwright: ^1.60.0
+    react: ^19.2.6
+    svelte: ^5.55.7
+    tailwindcss: ^4.3.0
+    typescript: ^5.9.3
+    vite: npm:@voidzero-dev/vite-plus-core@latest
+    vite-plus: latest
+
+  dep:
+    "@babel/core": ^7.24.0
+    "@babel/traverse": ^7.24.0
+    "@babel/types": ^7.24.0
+    "@lingui/cli": "^5 || ^6"
+    "@lingui/conf": "^5 || ^6"
+    "@lingui/core": "^5 || ^6"
+    "@lingui/babel-plugin-lingui-macro": "^5 || ^6"
+    astro: "^5 || ^6 || ^7.0.0-0"
+    cosmiconfig: ^9
+    esbuild: "*"
+    jiti: ^2
+    oxc-parser: ">=0.100.0 <1.0.0"
+    rolldown: "^1.0.0-0 || ^1"
+    rollup: "^3 || ^4"
+    svelte: ^5
+    unplugin: ^3
+    vite: ">=3"
+    webpack: "^4 || ^5"
 
 overrides:
-  esbuild: "^0.28.0"
+  esbuild: ^0.28.0
   vite: "catalog:"
 
 peerDependencyRules:

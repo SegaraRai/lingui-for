@@ -5,7 +5,7 @@
   "dependencies": {
     "@lingui/core": "^6.0.0",
     "lingui-for-svelte": "workspace:*",
-    "svelte": "^5.55.5"
+    "svelte": "catalog:"
   },
   "devDependencies": {
     "@lingui/cli": "^6.0.0",
