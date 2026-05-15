@@ -216,68 +216,18 @@ jobs:
           rm built-repository.tar
 
       - name: Run compatibility in isolated container
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          docker run --rm \
-            --user 1001 \
-            --cap-drop=ALL \
-            --security-opt no-new-privileges \
-            --pids-limit 512 \
-            --env HOME=/tmp/home \
-            --env CI=true \
-            --env LINGUI_WASM_PREBUILT=1 \
-            --env TMPDIR=/tmp \
-            --volume "$PWD:/workspace:ro" \
-            --workdir /tmp \
-            "${{ needs.config.outputs.playwright-container-image }}" \
-            bash -euo pipefail -c '
-              mkdir -p "$HOME" /tmp/workspace
-              tar -C /workspace -cf - . | tar -C /tmp/workspace -xf -
-              cd /tmp/workspace
-
-              test -f /.dockerenv
-
-              cap_eff="$(awk "/^CapEff:/ { print \$2 }" /proc/self/status)"
-              if [ "$cap_eff" != "0000000000000000" ]; then
-                echo "::error::Compatibility container has effective capabilities: $cap_eff"
-                exit 1
-              fi
-
-              if [ -S /var/run/docker.sock ]; then
-                echo "::error::Docker socket is visible inside the compatibility container"
-                exit 1
-              fi
-
-              for cmdline in /proc/[0-9]*/cmdline; do
-                [ -r "$cmdline" ] || continue
-                pid="${cmdline#/proc/}"
-                pid="${pid%%/*}"
-                [ "$pid" != "$$" ] || continue
-                command="$(tr "\0" " " < "$cmdline" || true)"
-                case "$command" in
-                  *Runner.Worker* | *Runner.Listener* | *actions-runner* | *runsvc.sh*)
-                    echo "::error::Host runner process is visible inside the compatibility container: $command"
-                    exit 1
-                    ;;
-                esac
-              done
-
-              curl -fsSL --connect-timeout 5 --max-time 15 https://viteplus.dev/install.sh | bash
-              . "$HOME/.vite-plus/env"
-              vp env use "$(cat .node-version)"
-              vp install
-
-              env -i \
-                HOME="$HOME" \
-                PATH="$PATH" \
-                LANG="${LANG:-C.UTF-8}" \
-                CI=true \
-                LINGUI_WASM_PREBUILT=1 \
-                TMPDIR=/tmp \
-                vp run test:compat --case "${{ matrix.case }}"
-            '
+        uses: SegaraRai/gha-sandbox-probes@35f7590e04c0e08593644d66c4091ed39bec8309
+        with:
+          image: ${{ needs.config.outputs.playwright-container-image }}
+          network: bridge
+          env: |
+            LINGUI_WASM_PREBUILT=1
+          command: |
+            curl -fsSL --connect-timeout 5 --max-time 15 https://viteplus.dev/install.sh | bash
+            . "$HOME/.vite-plus/env"
+            vp env use "$(cat .node-version)"
+            vp install
+            vp run test:compat --case "${{ matrix.case }}"
 
   compatibility-matrix:
     name: Compatibility Matrix
