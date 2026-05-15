@@ -64,6 +64,7 @@ export const PACKAGE = {
   linguiCore: "@lingui/core",
   vite: "vite",
   vitePlus: "vite-plus",
+  svelte: "svelte",
   typesNode: "@types/node",
   typescript: "typescript",
 } as const;
@@ -91,6 +92,7 @@ export const VERSIONS = {
     },
   },
   catalog: {
+    [PACKAGE.svelte]: "^5.55.7",
     [PACKAGE.typesNode]: "^25.6.0",
     [PACKAGE.typescript]: "^5.9.3",
   },

@@ -48,20 +48,20 @@
   "dependencies": {
     "@typescript-eslint/typescript-estree": "^8.59.3",
     "magic-string": "^0.30.21",
-    "svelte": "^5.55.5",
-    "unplugin": "^3.0.0"
+    "svelte": "catalog:dep",
+    "unplugin": "catalog:dep"
   },
   "devDependencies": {
-    "@arethetypeswrong/core": "^0.18.2",
+    "@arethetypeswrong/core": "catalog:",
     "@types/node": "catalog:",
-    "dedent": "^1.7.2",
+    "dedent": "catalog:",
     "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
   "peerDependencies": {
-    "rolldown": "^1.0.0-0 || ^1",
-    "rollup": "^3 || ^4",
-    "vite": ">=3"
+    "rolldown": "catalog:dep",
+    "rollup": "catalog:dep",
+    "vite": "catalog:dep"
   },
   "peerDependenciesMeta": {
     "rolldown": {
