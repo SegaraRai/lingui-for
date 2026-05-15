@@ -7,6 +7,20 @@ const COMMAND = {
   cmdWindows: "cmd.exe",
 } as const;
 
+const BLOCKED_CHILD_ENV_KEYS = new Set([
+  "ACTIONS_CACHE_SERVICE_V2",
+  "ACTIONS_CACHE_URL",
+  "ACTIONS_ID_TOKEN_REQUEST_TOKEN",
+  "ACTIONS_ID_TOKEN_REQUEST_URL",
+  "ACTIONS_RESULTS_URL",
+  "ACTIONS_RUNTIME_TOKEN",
+  "ACTIONS_RUNTIME_URL",
+  "GH_TOKEN",
+  "GITHUB_TOKEN",
+  "NODE_AUTH_TOKEN",
+  "NPM_TOKEN",
+]);
+
 export function run(command: string, args: string[], cwd: string): void {
   console.log(`$ ${command} ${args.join(" ")}`);
   const [executable, executableArgs] = commandRequiresWindowsShell(command)
@@ -17,7 +31,7 @@ export function run(command: string, args: string[], cwd: string): void {
   const result = spawnSync(executable, executableArgs, {
     cwd,
     env: {
-      ...process.env,
+      ...sanitizedProcessEnv(),
       LINGUI_WASM_PREBUILT: process.env.LINGUI_WASM_PREBUILT ?? "1",
       [pathEnvKey]:
         command === COMMAND.vp
@@ -35,6 +49,18 @@ export function run(command: string, args: string[], cwd: string): void {
       `Command failed with exit code ${result.status}: ${command} ${args.join(" ")}`,
     );
   }
+}
+
+function sanitizedProcessEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+
+  for (const key of Object.keys(env)) {
+    if (BLOCKED_CHILD_ENV_KEYS.has(key.toUpperCase())) {
+      delete env[key];
+    }
+  }
+
+  return env;
 }
 
 function withNodeModulesBins(cwd: string): string {
