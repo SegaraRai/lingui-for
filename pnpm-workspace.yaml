@@ -17,6 +17,7 @@ catalogs:
     "@lingui/cli": ^6.0.1
     "@lingui/conf": ^6.0.1
     "@lingui/core": ^6.0.1
+    "@lingui/format-po": ^6.0.1
     "@lingui/react": ^6.0.1
     "@sveltejs/vite-plugin-svelte": ^7.1.2
     "@tailwindcss/vite": ^4.3.0

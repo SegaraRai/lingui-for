@@ -6,19 +6,19 @@
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@astrojs/svelte": "catalog:",
     "@lingui/core": "catalog:",
-    "@tailwindcss/vite": "4.2.2",
+    "@tailwindcss/vite": "catalog:",
     "astro": "catalog:",
-    "sharp": "^0.34.5",
     "svelte": "catalog:",
-    "tailwindcss": "4.2.2"
+    "tailwindcss": "catalog:"
   },
   "devDependencies": {
     "@lingui/cli": "catalog:",
     "@lingui/conf": "catalog:",
-    "@lingui/format-po": "^6.0.1",
+    "@lingui/format-po": "catalog:",
     "astro-strip-whitespace": "catalog:",
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
+    "sharp": "^0.34.5",
     "shiki": "^4.0.2",
     "unplugin-lingui-macro": "workspace:*",
     "vite": "catalog:",
