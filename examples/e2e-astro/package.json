@@ -3,8 +3,8 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@astrojs/node": "11.0.0-alpha.0",
-    "@astrojs/react": "6.0.0-alpha.0",
+    "@astrojs/node": "catalog:",
+    "@astrojs/react": "catalog:",
     "@astrojs/svelte": "catalog:",
     "@lingui/core": "catalog:",
     "@lingui/react": "catalog:",
@@ -12,11 +12,11 @@
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
     "react": "catalog:",
-    "react-dom": "^19.2.6",
+    "react-dom": "catalog:",
     "svelte": "catalog:"
   },
   "devDependencies": {
-    "@astrojs/check": "0.9.9",
+    "@astrojs/check": "catalog:",
     "@lingui/cli": "catalog:",
     "@lingui/conf": "catalog:",
     "@tailwindcss/vite": "catalog:",
