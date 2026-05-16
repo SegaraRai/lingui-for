@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { FORBIDDEN_ACTIONS_RUNTIME_ENV_KEYS } from "./security.ts";
 
 const COMMAND = {
   vp: "vp",
@@ -8,13 +9,7 @@ const COMMAND = {
 } as const;
 
 const BLOCKED_CHILD_ENV_KEYS = new Set([
-  "ACTIONS_CACHE_SERVICE_V2",
-  "ACTIONS_CACHE_URL",
-  "ACTIONS_ID_TOKEN_REQUEST_TOKEN",
-  "ACTIONS_ID_TOKEN_REQUEST_URL",
-  "ACTIONS_RESULTS_URL",
-  "ACTIONS_RUNTIME_TOKEN",
-  "ACTIONS_RUNTIME_URL",
+  ...FORBIDDEN_ACTIONS_RUNTIME_ENV_KEYS,
   "GH_TOKEN",
   "GITHUB_TOKEN",
   "NODE_AUTH_TOKEN",
