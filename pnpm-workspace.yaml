@@ -73,6 +73,7 @@ catalogs:
 
 overrides:
   esbuild: ^0.28.0
+  fflate: 0.8.2
   vite: "catalog:"
 
 peerDependencyRules:
