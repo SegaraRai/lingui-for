@@ -13,12 +13,15 @@ import {
 } from "./fixture.ts";
 import { OPTION, parseArgs } from "./options.ts";
 import { repoRoot } from "./paths.ts";
+import { assertNoActionsRuntimeCredentials } from "./security.ts";
 import { verifyProjectSnapshots } from "./snapshots.ts";
 import type { CompatCase, Options } from "./types.ts";
 
 const DEFAULT_TMP_PREFIX = "lingui-for-compat-";
 
 export function main(args: string[]): void {
+  assertNoActionsRuntimeCredentials();
+
   const cases = loadCases();
   const options = parseArgs(args);
 

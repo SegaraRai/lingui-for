@@ -174,10 +174,7 @@ jobs:
       - config
       - build
     runs-on: ubuntu-latest
-
-    container:
-      image: ${{ needs.config.outputs.playwright-container-image }}
-      options: --user 1001
+    permissions: {}
 
     timeout-minutes: 30
 
@@ -213,17 +210,26 @@ jobs:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
           path: .
 
-      - name: Unpack built repository
-        run: |
-          tar -xf built-repository.tar
-          rm built-repository.tar
-
-      - uses: voidzero-dev/setup-vp@v1
+      - name: Run compatibility in isolated container
+        uses: SegaraRai/gha-sandbox-probes@807dc79aa0e5cadeffc55d34672628ff745ebb8d
         with:
-          node-version-file: ".node-version"
-          cache: true
-
-      - run: vp run test:compat --case ${{ matrix.case }}
+          image: ${{ needs.config.outputs.playwright-container-image }}
+          network: bridge
+          env: |
+            LINGUI_WASM_PREBUILT=1
+          command: |
+            echo "compatibility: case=${{ matrix.case }}"
+            echo "compatibility: unpacking built repository"
+            tar -xf built-repository.tar
+            rm built-repository.tar
+            echo "compatibility: installing vite-plus"
+            curl -fsSL --connect-timeout 5 --max-time 15 https://viteplus.dev/install.sh | bash
+            . "$HOME/.vite-plus/env"
+            vp env use "$(cat .node-version)"
+            echo "compatibility: installing dependencies"
+            vp install
+            echo "compatibility: running test:compat"
+            vp run test:compat --case "${{ matrix.case }}"
 
   compatibility-matrix:
     name: Compatibility Matrix

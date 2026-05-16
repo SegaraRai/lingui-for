@@ -30,7 +30,7 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:",
-    "wasm-pack": "^0.14.0"
+    "wasm-pack": "^0.15.0"
   },
   "packageManager": "pnpm@11.0.8"
 }

@@ -1,11 +1,20 @@
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import { FORBIDDEN_ACTIONS_RUNTIME_ENV_KEYS } from "./security.ts";
 
 const COMMAND = {
   vp: "vp",
   cmdWindows: "cmd.exe",
 } as const;
+
+const BLOCKED_CHILD_ENV_KEYS = new Set([
+  ...FORBIDDEN_ACTIONS_RUNTIME_ENV_KEYS,
+  "GH_TOKEN",
+  "GITHUB_TOKEN",
+  "NODE_AUTH_TOKEN",
+  "NPM_TOKEN",
+]);
 
 export function run(command: string, args: string[], cwd: string): void {
   console.log(`$ ${command} ${args.join(" ")}`);
@@ -17,7 +26,7 @@ export function run(command: string, args: string[], cwd: string): void {
   const result = spawnSync(executable, executableArgs, {
     cwd,
     env: {
-      ...process.env,
+      ...sanitizedProcessEnv(),
       LINGUI_WASM_PREBUILT: process.env.LINGUI_WASM_PREBUILT ?? "1",
       [pathEnvKey]:
         command === COMMAND.vp
@@ -35,6 +44,18 @@ export function run(command: string, args: string[], cwd: string): void {
       `Command failed with exit code ${result.status}: ${command} ${args.join(" ")}`,
     );
   }
+}
+
+function sanitizedProcessEnv(): NodeJS.ProcessEnv {
+  const env = { ...process.env };
+
+  for (const key of Object.keys(env)) {
+    if (BLOCKED_CHILD_ENV_KEYS.has(key.toUpperCase())) {
+      delete env[key];
+    }
+  }
+
+  return env;
 }
 
 function withNodeModulesBins(cwd: string): string {
