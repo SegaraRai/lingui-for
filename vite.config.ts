@@ -82,7 +82,7 @@ export default defineConfig({
         cache: false,
       },
       format: {
-        command: "prettier -w **/*.{astro,svelte,mdx} && vp fmt .",
+        command: "prettier -w **/*.{astro,mdx} && vp fmt .",
         cache: false,
       },
       test: {
