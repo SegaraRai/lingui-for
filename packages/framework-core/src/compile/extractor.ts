@@ -1,6 +1,6 @@
-import type { ParserOptions } from "@babel/core";
+import type { ParserOptions } from "@babel/parser";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
-import type { ExtractorCtx, ExtractorType } from "@lingui/conf";
+import type { ExtractorCtx, PerFileExtractorType } from "@lingui/conf";
 
 import type { CanonicalSourceMap } from "./sourcemap-types.ts";
 
@@ -24,13 +24,13 @@ export function getLinguiExtractorParserPlugins(
     parserOptions?.tsExperimentalDecorators
       ? "decorators-legacy"
       : "decorators",
-  ];
+  ] as unknown as NonNullable<ParserOptions["plugins"]>;
 }
 
 export async function runBabelExtractionUnits(
   filename: string,
   units: readonly ExtractionUnit[],
-  onMessageExtracted: Parameters<ExtractorType["extract"]>[2],
+  onMessageExtracted: Parameters<PerFileExtractorType["extract"]>[2],
   ctx: ExtractorCtx,
   options?: {
     normalizeSourceMap?: (map: CanonicalSourceMap) => CanonicalSourceMap;
@@ -49,7 +49,9 @@ export async function runBabelExtractionUnits(
       unit.code,
       onMessageExtracted,
       sourceMaps != null ? { ...ctx, sourceMaps } : ctx,
-      { plugins: parserPlugins },
+      {
+        plugins: parserPlugins,
+      } as Parameters<typeof extractFromFileWithBabel>[4],
       !sourceMaps,
     );
   }

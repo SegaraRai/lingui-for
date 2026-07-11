@@ -3,14 +3,14 @@ import { describe, expect, test } from "vite-plus/test";
 
 import {
   transformSync,
-  type PluginItem,
+  type PluginObject,
 } from "@lingui-for/framework-core/vendor/babel-core";
 
 import { createAstroMacroPostprocessPlugin } from "./macro-rewrite.ts";
 
 function runWithPlugin(
   code: string,
-  plugin: PluginItem,
+  plugin: PluginObject,
   filename = "/virtual/Page.astro?frontmatter",
 ): string {
   const result = transformSync(code, {
@@ -23,7 +23,7 @@ function runWithPlugin(
       sourceType: "module",
       plugins: ["typescript", "jsx"],
     },
-    plugins: [plugin],
+    plugins: [() => plugin],
   });
 
   if (result?.code == null) {

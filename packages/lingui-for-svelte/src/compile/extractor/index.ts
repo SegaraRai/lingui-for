@@ -1,7 +1,7 @@
 import type {
   ExtractorCtx,
-  ExtractorType,
   LinguiConfigNormalized,
+  PerFileExtractorType,
 } from "@lingui/conf";
 
 import {
@@ -37,7 +37,8 @@ export interface SvelteExtractorOptions {
  * and forwards that module to Lingui's Babel-based extractor together with the corresponding
  * source map. Messages are emitted through Lingui's `onMessageExtracted` callback.
  */
-export const svelteExtractor: ExtractorType & typeof svelteExtractorFactory =
+export const svelteExtractor: PerFileExtractorType &
+  typeof svelteExtractorFactory =
   /*#__PURE__*/ Object.assign(svelteExtractorFactory, svelteExtractorFactory());
 
 /**
@@ -45,7 +46,7 @@ export const svelteExtractor: ExtractorType & typeof svelteExtractorFactory =
  */
 function svelteExtractorFactory(
   options?: SvelteExtractorOptions,
-): ExtractorType {
+): PerFileExtractorType {
   const configResolver = createLinguiConfigResolver({
     loadConfig: loadLinguiConfig,
     config: options?.config,

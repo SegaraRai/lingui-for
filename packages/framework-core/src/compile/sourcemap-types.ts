@@ -1,4 +1,4 @@
-import type { TransformOptions } from "@babel/core";
+import type { FileResult, InputOptions } from "@babel/core";
 
 export interface CanonicalSourceMap {
   file?: string | undefined;
@@ -20,7 +20,8 @@ export interface UnpluginSourceMap {
   version: number;
 }
 
-export type BabelSourceMap = TransformOptions["inputSourceMap"];
+export type BabelSourceMap = InputOptions["inputSourceMap"];
+export type BabelTransformSourceMap = FileResult["map"];
 
 export function parseCanonicalSourceMap(
   map: string | null | undefined,
@@ -35,13 +36,13 @@ export function toUnpluginSourceMap(
 }
 
 export function fromBabelSourceMap(
-  map: BabelSourceMap,
+  map: BabelTransformSourceMap,
 ): CanonicalSourceMap | null {
   return (map ?? null) as CanonicalSourceMap | null;
 }
 
 export function toBabelSourceMap(
   map: CanonicalSourceMap | null,
-): BabelSourceMap {
-  return map as BabelSourceMap;
+): BabelSourceMap | undefined {
+  return map == null ? undefined : (map as BabelSourceMap);
 }

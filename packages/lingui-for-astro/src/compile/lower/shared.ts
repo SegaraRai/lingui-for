@@ -7,7 +7,10 @@ import {
   type BabelSourceMap,
   type CanonicalSourceMap,
 } from "@lingui-for/framework-core/compile";
-import { transformSync } from "@lingui-for/framework-core/vendor/babel-core";
+import {
+  type PluginItem,
+  transformSync,
+} from "@lingui-for/framework-core/vendor/babel-core";
 import type { File } from "@lingui-for/framework-core/vendor/babel-types";
 
 import { getParserPlugins } from "../common/config.ts";
@@ -40,7 +43,9 @@ export function transformAstroProgram(
     code: true,
     configFile: false,
     filename: lowering.filename,
-    inputSourceMap: lowering.inputSourceMap ?? undefined,
+    ...(lowering.inputSourceMap != null
+      ? { inputSourceMap: lowering.inputSourceMap }
+      : {}),
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(),
@@ -54,8 +59,8 @@ export function transformAstroProgram(
           pluginEntryUrl: import.meta
             .resolve("@lingui/babel-plugin-lingui-macro"),
         }),
-      ],
-      createAstroMacroPostprocessPlugin(postprocess),
+      ] as unknown as PluginItem,
+      () => createAstroMacroPostprocessPlugin(postprocess),
     ],
     sourceMaps: true,
   });

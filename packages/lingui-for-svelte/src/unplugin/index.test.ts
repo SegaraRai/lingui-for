@@ -12,7 +12,7 @@ describe("lingui-for-svelte unplugin", () => {
   };
 
   test("moves the plugin ahead of strip-whitespace in Vite", async () => {
-    const plugin = unpluginFactory(config, { framework: "vite" });
+    const plugin = unpluginFactory(config, { framework: "vite", versions: {} });
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -46,7 +46,7 @@ describe("lingui-for-svelte unplugin", () => {
   });
 
   test("skips non-svelte files", async () => {
-    const plugin = unpluginFactory(config, { framework: "vite" });
+    const plugin = unpluginFactory(config, { framework: "vite", versions: {} });
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -62,7 +62,7 @@ describe("lingui-for-svelte unplugin", () => {
   });
 
   test("skips .svelte files that do not reference lingui-for-svelte macros", async () => {
-    const plugin = unpluginFactory(config, { framework: "vite" });
+    const plugin = unpluginFactory(config, { framework: "vite", versions: {} });
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");
@@ -93,7 +93,7 @@ describe("lingui-for-svelte unplugin", () => {
           },
         },
       },
-      { framework: "vite" },
+      { framework: "vite", versions: {} },
     );
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
@@ -131,7 +131,7 @@ describe("lingui-for-svelte unplugin", () => {
           },
         },
       },
-      { framework: "vite" },
+      { framework: "vite", versions: {} },
     );
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
@@ -158,7 +158,10 @@ describe("lingui-for-svelte unplugin", () => {
   });
 
   test("throws when no Lingui config file is found", async () => {
-    const plugin = unpluginFactory(undefined, { framework: "vite" });
+    const plugin = unpluginFactory(undefined, {
+      framework: "vite",
+      versions: {},
+    });
     const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
     if (!pluginInstance) {
       throw new Error("Plugin instance is undefined");

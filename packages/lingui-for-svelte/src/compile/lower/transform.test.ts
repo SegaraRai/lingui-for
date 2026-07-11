@@ -40,7 +40,7 @@ describe("lowerSvelteTransformPrograms", () => {
     );
     expect(result.contextual.code).toMatchInlineSnapshot(`
       "const __lingui_for_svelte_expr_0 = $__l4s_translate(
-      /*i18n*/
+      /** i18n */
       {
         id: "OVaF9k",
         message: "Hello {name}",

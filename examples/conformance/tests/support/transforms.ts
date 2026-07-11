@@ -160,7 +160,7 @@ function extractFields(code: string, field: string): string[] {
   const matches: string[] = [];
   let match;
   while ((match = regex.exec(code)) !== null) {
-    matches.push(match[1]);
+    matches.push(JSON.parse(`"${match[1]}"`) as string);
   }
   return Array.from(new Set(matches)).toSorted();
 }

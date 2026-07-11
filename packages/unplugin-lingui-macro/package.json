@@ -74,6 +74,7 @@
   },
   "dependencies": {
     "@babel/core": "catalog:dep",
+    "@babel/parser": "catalog:dep",
     "@lingui/babel-plugin-lingui-macro": "catalog:dep",
     "oxc-parser": "catalog:dep",
     "unplugin": "catalog:dep"

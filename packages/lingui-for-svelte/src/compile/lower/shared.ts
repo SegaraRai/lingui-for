@@ -9,6 +9,7 @@ import {
   type ScriptLang,
 } from "@lingui-for/framework-core/compile";
 import {
+  type PluginItem,
   transformFromAstSync,
   transformSync,
 } from "@lingui-for/framework-core/vendor/babel-core";
@@ -55,7 +56,9 @@ export function lowerProgramWithLingui(
     code: false,
     configFile: false,
     filename: request.filename,
-    inputSourceMap: request.inputSourceMap ?? undefined,
+    ...(request.inputSourceMap != null
+      ? { inputSourceMap: request.inputSourceMap }
+      : {}),
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
@@ -69,7 +72,7 @@ export function lowerProgramWithLingui(
           pluginEntryUrl: import.meta
             .resolve("@lingui/babel-plugin-lingui-macro"),
         }),
-      ],
+      ] as unknown as PluginItem,
     ],
     sourceMaps: true,
   });
@@ -101,8 +104,10 @@ export function finalizeSvelteProgram(
       code: true,
       configFile: false,
       filename,
-      inputSourceMap: lowered.inputSourceMap ?? undefined,
-      plugins: [createSvelteMacroPostprocessPlugin(request)],
+      ...(lowered.inputSourceMap != null
+        ? { inputSourceMap: lowered.inputSourceMap }
+        : {}),
+      plugins: [() => createSvelteMacroPostprocessPlugin(request)],
       sourceMaps: true,
     },
   );

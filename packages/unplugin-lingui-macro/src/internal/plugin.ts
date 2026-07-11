@@ -1,12 +1,15 @@
 import { fileURLToPath } from "node:url";
 
-import { transformAsync } from "@babel/core";
+import { transformAsync, type PluginItem } from "@babel/core";
+import type { ParserOptions } from "@babel/parser";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import { getConfig, type LinguiConfig } from "@lingui/conf";
 import {
   createUnplugin,
   type UnpluginFactory,
   type UnpluginInstance,
+  type UnpluginOptions,
+  type SourceMapCompact,
 } from "unplugin";
 
 import {
@@ -39,11 +42,8 @@ type LoadedLinguiMacroConfig = {
 };
 
 type BabelParserPlugin =
-  | "importAttributes"
-  | "jsx"
-  | "typescript"
-  | "decorators-legacy"
-  | ["flow", { all: boolean }];
+  | NonNullable<ParserOptions["plugins"]>[number]
+  | "importAttributes";
 
 function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values)];
@@ -112,7 +112,7 @@ function getMacroPackages(config: LoadedLinguiMacroConfig): string[] {
 function getParserPlugins(
   filename: string,
   config: LoadedLinguiMacroConfig,
-): BabelParserPlugin[] {
+): NonNullable<ParserOptions["plugins"]> {
   const plugins: BabelParserPlugin[] = ["importAttributes"];
 
   if (/\.[cm]?tsx?$/.test(filename)) {
@@ -135,7 +135,23 @@ function getParserPlugins(
     plugins.push("decorators-legacy");
   }
 
-  return plugins;
+  return plugins as NonNullable<ParserOptions["plugins"]>;
+}
+
+function toUnpluginSourceMap(
+  map: NonNullable<
+    NonNullable<Awaited<ReturnType<typeof transformAsync>>>["map"]
+  >,
+): SourceMapCompact {
+  return {
+    file: map.file ?? undefined,
+    mappings: map.mappings,
+    names: [...map.names],
+    sourceRoot: map.sourceRoot ?? undefined,
+    sources: map.sources.map((source) => source ?? ""),
+    sourcesContent: map.sourcesContent ? [...map.sourcesContent] : undefined,
+    version: map.version,
+  };
 }
 
 export const unpluginFactory: UnpluginFactory<
@@ -202,7 +218,7 @@ export const unpluginFactory: UnpluginFactory<
               pluginEntryUrl: import.meta
                 .resolve("@lingui/babel-plugin-lingui-macro"),
             }),
-          ],
+          ] as unknown as PluginItem,
         ],
       });
 
@@ -212,7 +228,7 @@ export const unpluginFactory: UnpluginFactory<
 
       return {
         code: transformed.code,
-        map: transformed.map ?? null,
+        map: transformed.map ? toUnpluginSourceMap(transformed.map) : undefined,
       };
     },
     vite: {
@@ -221,7 +237,7 @@ export const unpluginFactory: UnpluginFactory<
         finalizeConfig(config.root);
       },
     },
-    webpack(compiler) {
+    webpack(compiler: Parameters<NonNullable<UnpluginOptions["webpack"]>>[0]) {
       finalizeConfig(compiler.context);
     },
     buildStart() {

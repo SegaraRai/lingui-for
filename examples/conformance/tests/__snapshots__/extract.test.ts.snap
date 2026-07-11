@@ -662,7 +662,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > astro ext
     ],
     "placeholders": {
       "0": "_i18n._(
-    /*i18n*/
+    /** i18n */
     {
       id: "Ro3jDG",
       message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
@@ -672,7 +672,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > astro ext
       }
     })",
       "1": "_i18n._(
-    /*i18n*/
+    /** i18n */
     {
       id: "_uwo4-",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
@@ -682,7 +682,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > astro ext
       }
     })",
       "2": "_i18n._(
-    /*i18n*/
+    /** i18n */
     {
       id: "OsAInm",
       message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
@@ -756,7 +756,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > official 
     ],
     "placeholders": {
       "0": "_i18n._(
-      /*i18n*/
+      /** i18n */
       {
         id: "Ro3jDG",
         message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
@@ -766,7 +766,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > official 
         }
       })",
       "1": "_i18n._(
-      /*i18n*/
+      /** i18n */
       {
         id: "_uwo4-",
         message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
@@ -776,7 +776,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > official 
         }
       })",
       "2": "_i18n._(
-      /*i18n*/
+      /** i18n */
       {
         id: "OsAInm",
         message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
@@ -850,7 +850,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > svelte ex
     ],
     "placeholders": {
       "0": "_i18n._(
-    /*i18n*/
+    /** i18n */
     {
       id: "Ro3jDG",
       message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
@@ -860,7 +860,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > svelte ex
       }
     })",
       "1": "_i18n._(
-    /*i18n*/
+    /** i18n */
     {
       id: "_uwo4-",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
@@ -870,7 +870,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > svelte ex
       }
     })",
       "2": "_i18n._(
-    /*i18n*/
+    /** i18n */
     {
       id: "OsAInm",
       message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",

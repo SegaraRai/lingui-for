@@ -1,7 +1,5 @@
 import { transformSync } from "@babel/core";
 import { generate } from "@babel/generator";
-import { type NodePath } from "@babel/traverse";
-import type { File, VariableDeclarator } from "@babel/types";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import {
   makeConfig,
@@ -25,6 +23,7 @@ import {
 } from "@lingui-for/framework-core/compile";
 import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
 import { getParserPlugins } from "@lingui-for/framework-core/config";
+import type { File } from "@lingui-for/framework-core/vendor/babel-types";
 
 export type SyntheticTransformResult = {
   synthetic: SyntheticModule;
@@ -68,7 +67,7 @@ export function transformSyntheticModule(
     inputSourceMap: parseSourceMap(synthetic.sourceMapJson),
     parserOpts: {
       plugins: SYNTHETIC_MODULE_PARSER_PLUGINS,
-    },
+    } as never,
     plugins: [
       [
         linguiMacroPlugin,
@@ -92,7 +91,7 @@ export function transformSyntheticModule(
     code: transformed.code,
     map: transformed.map != null ? JSON.stringify(transformed.map) : null,
     declarations: collectDeclarationInitializers(
-      transformed.ast,
+      transformed.ast as unknown as File,
       synthetic.declarationIds,
     ),
   };
@@ -255,7 +254,7 @@ function collectDeclarationInitializers(
   const declarationIdSet = new Set(declarationIds);
 
   babelTraverse(ast, {
-    VariableDeclarator(path: NodePath<VariableDeclarator>) {
+    VariableDeclarator(path) {
       if (path.node.id.type !== "Identifier" || !path.node.init) {
         return;
       }
@@ -263,7 +262,7 @@ function collectDeclarationInitializers(
         return;
       }
 
-      found[path.node.id.name] = generate(path.node.init).code;
+      found[path.node.id.name] = generate(path.node.init as never).code;
     },
   });
 

@@ -53,6 +53,7 @@ catalogs:
 
   dep:
     "@babel/core": "^7.24.0 || ^8"
+    "@babel/parser": "^7.24.0 || ^8"
     "@babel/traverse": "^7.24.0 || ^8"
     "@babel/types": "^7.24.0 || ^8"
     "@lingui/cli": "^5 || ^6"

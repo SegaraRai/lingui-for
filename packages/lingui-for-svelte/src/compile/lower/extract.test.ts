@@ -19,12 +19,12 @@ describe("lowerSvelteExtractProgram", () => {
       },
     );
 
-    expect(result.code).toContain("/*i18n*/");
+    expect(result.code).toContain("/** i18n */");
     expect(result.code).toContain("_i18n._(");
     expect(result.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
       const label = _i18n._(
-      /*i18n*/
+      /** i18n */
       {
         id: "OVaF9k",
         message: "Hello {name}",
@@ -49,12 +49,12 @@ describe("lowerSvelteExtractProgram", () => {
       },
     );
 
-    expect(result.code).toContain("/*i18n*/");
+    expect(result.code).toContain("/** i18n */");
     expect(result.code).toContain("_i18n._(");
     expect(result.code).toMatchInlineSnapshot(`
       "import { i18n as _i18n } from "@lingui/core";
       const __lingui_for_svelte_expr_0 = _i18n._(
-      /*i18n*/
+      /** i18n */
       {
         id: "demo.save",
         message: "Save"
