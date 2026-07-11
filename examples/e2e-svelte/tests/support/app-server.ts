@@ -10,6 +10,14 @@ const STARTUP_TIMEOUT_MS = 30_000;
 const projectRoot = resolve(import.meta.dirname, "..", "..");
 const previewEntry = resolve(projectRoot, ".sveltekit-build", "index.js");
 
+function getServerEnvironment(): NodeJS.ProcessEnv {
+  const environment = { ...process.env };
+  delete environment.VITEST;
+  delete environment.VITEST_POOL_ID;
+  delete environment.VITEST_WORKER_ID;
+  return environment;
+}
+
 export const serverModes = ["dev", "preview"] as const;
 
 export type ServerMode = (typeof serverModes)[number];
@@ -187,7 +195,7 @@ export class AppServer {
     this.child = spawn("node", [previewEntry], {
       cwd: projectRoot,
       env: {
-        ...process.env,
+        ...getServerEnvironment(),
         HOST,
         ORIGIN: this.origin,
         PORT: String(this.port),
