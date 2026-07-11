@@ -469,12 +469,14 @@ const alertLevel: AlertLevel = queueItems.some(
     : "info";
 
 const headline = __l4a_i18n._(
-/*i18n*/ {
+/** i18n */
+{
   id: "8KhxNb",
   message: "Localization review dashboard"
 });
 const ownerGreeting = __l4a_i18n._(
-/*i18n*/ {
+/** i18n */
+{
   id: "8-nA3Y",
   message: "Welcome back, {dashboardOwner}.",
   values: {
@@ -482,7 +484,8 @@ const ownerGreeting = __l4a_i18n._(
   }
 });
 const queueSummary = __l4a_i18n._(
-/*i18n*/ {
+/** i18n */
+{
   id: "5kwh2a",
   message: "Showing {0} queue items for {1}.",
   values: {
@@ -491,7 +494,8 @@ const queueSummary = __l4a_i18n._(
   }
 });
 const workflowLabel = __l4a_i18n._(
-/*i18n*/ {
+/** i18n */
+{
   id: "wc9bP7",
   message: "{localeMode, select, en {English workflow} ja {Japanese workflow} fr {French workflow} other {Fallback workflow}}",
   values: {
@@ -501,23 +505,27 @@ const workflowLabel = __l4a_i18n._(
 const statusBanner =
   alertLevel === "error"
     ? __l4a_i18n._(
-    /*i18n*/ {
+    /** i18n */
+    {
       id: "C81jcY",
       message: "Escalation required: unresolved high-priority queue items remain."
     })
     : alertLevel === "warn"
       ? __l4a_i18n._(
-      /*i18n*/ {
+      /** i18n */
+      {
         id: "jJ-oTf",
         message: "Attention needed: high-priority items are waiting for review."
       })
       : __l4a_i18n._(
-      /*i18n*/ {
+      /** i18n */
+      {
         id: "GzY8qo",
         message: "All monitored queues are stable."
       });
 const latencyLabel = __l4a_i18n._(
-/*i18n*/ {
+/** i18n */
+{
   id: "lC_3w5",
   message: "Live snapshot latency: {0}.",
   values: {
@@ -559,7 +567,8 @@ __l4a_i18n.prime();
               class="text-sm font-medium tracking-[0.24em] text-slate-500 uppercase"
             >
               {__l4a_i18n._(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "B1MDds",
                 message: "Operations"
               })}
@@ -576,7 +585,8 @@ __l4a_i18n.prime();
             <p class="text-xs text-slate-500">{latencyLabel}</p>
             <p class="text-xs text-slate-500">
               {__l4a_i18n._(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "xdDw1Z",
                 message: "Workspace mode:"
               })}
@@ -586,12 +596,14 @@ __l4a_i18n.prime();
               {
                 workspaceWritable
                   ? __l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "5wic0R",
                     message: "Editing tools are enabled for this workspace."
                   })
                   : __l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "oYLtG0",
                     message: "Editing tools are read-only for this workspace."
                   })
@@ -612,7 +624,8 @@ __l4a_i18n.prime();
                   </h2>
                   <p class="text-xs text-slate-500">
                     {__l4a_i18n._(
-                    /*i18n*/ {
+                    /** i18n */
+                    {
                       id: "W3Ae0L",
                       message: "{0} active reviewers available.",
                       values: {
@@ -628,7 +641,8 @@ __l4a_i18n.prime();
               <div class="grid grid-cols-2 gap-3 text-sm text-slate-700">
                 <div class="rounded-2xl bg-slate-50 p-3">
                   <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">{__l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "UbRKMZ",
                     message: "Pending"
                   })}</p>
@@ -638,7 +652,8 @@ __l4a_i18n.prime();
                 </div>
                 <div class="rounded-2xl bg-slate-50 p-3">
                   <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">{__l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "FEPXtw",
                     message: "Reviewed"
                   })}</p>
@@ -648,7 +663,8 @@ __l4a_i18n.prime();
                 </div>
                 <div class="rounded-2xl bg-slate-50 p-3">
                   <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">{__l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "3UYUtA",
                     message: "Flagged"
                   })}</p>
@@ -658,7 +674,8 @@ __l4a_i18n.prime();
                 </div>
                 <div class="rounded-2xl bg-slate-50 p-3">
                   <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">{__l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "yiNL80",
                     message: "Reviewers"
                   })}</p>
@@ -680,7 +697,8 @@ __l4a_i18n.prime();
             <div>
               <h2 class="text-xl font-semibold text-slate-950">
                 {__l4a_i18n._(
-                /*i18n*/ {
+                /** i18n */
+                {
                   id: "mtE2Ev",
                   message: "Queue details"
                 })}
@@ -688,7 +706,8 @@ __l4a_i18n.prime();
               <p class="text-sm text-slate-500">
                 {
                   __l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "gimT52",
                     message: "{0} items match the current filters.",
                     values: {
@@ -706,7 +725,8 @@ __l4a_i18n.prime();
                 const nestedLabel =
                   item.unread > 0
                     ? __l4a_i18n._(
-                    /*i18n*/ {
+                    /** i18n */
+                    {
                       id: "szWjCj",
                       message: "{0} left {1} comments while {2} still has {3} unread updates.",
                       values: {
@@ -717,7 +737,8 @@ __l4a_i18n.prime();
                       }
                     })
                     : __l4a_i18n._(
-                    /*i18n*/ {
+                    /** i18n */
+                    {
                       id: "IDpMOo",
                       message: "{0} left {1} comments and the queue is fully read.",
                       values: {
@@ -745,28 +766,32 @@ __l4a_i18n.prime();
                     <div class="grid gap-2 text-sm text-slate-700 md:grid-cols-2">
                       <p>
                         {__l4a_i18n._(
-                        /*i18n*/ {
+                        /** i18n */
+                        {
                           id: "2TUOis",
                           message: "Owner:"
                         })} {item.owner}
                       </p>
                       <p>
                         {__l4a_i18n._(
-                        /*i18n*/ {
+                        /** i18n */
+                        {
                           id: "GRmQfp",
                           message: "Assignee:"
                         })} {item.assignee}
                       </p>
                       <p>
                         {__l4a_i18n._(
-                        /*i18n*/ {
+                        /** i18n */
+                        {
                           id: "Y2-ZT9",
                           message: "Comments:"
                         })} {item.comments}
                       </p>
                       <p>
                         {__l4a_i18n._(
-                        /*i18n*/ {
+                        /** i18n */
+                        {
                           id: "jqmIfA",
                           message: "Attachments:"
                         })} {item.attachments}
@@ -786,7 +811,8 @@ __l4a_i18n.prime();
                       {item.pathHint ? (
                         <span class="rounded-full bg-slate-100 px-3 py-1">
                           {__l4a_i18n._(
-                          /*i18n*/ {
+                          /** i18n */
+                          {
                             id: "lvcfoy",
                             message: "Path {0}",
                             values: {
@@ -796,7 +822,8 @@ __l4a_i18n.prime();
                         </span>
                       ) : (
                         <span class="rounded-full bg-slate-100 px-3 py-1">{__l4a_i18n._(
-                        /*i18n*/ {
+                        /** i18n */
+                        {
                           id: "pa6gX-",
                           message: "No path"
                         })}</span>
@@ -816,7 +843,8 @@ __l4a_i18n.prime();
             <div class="flex items-center justify-between gap-3">
               <h2 class="text-xl font-semibold text-slate-950">
                 {__l4a_i18n._(
-                /*i18n*/ {
+                /** i18n */
+                {
                   id: "qbgW-C",
                   message: "Highlights"
                 })}
@@ -824,7 +852,8 @@ __l4a_i18n.prime();
               <p class="text-sm text-slate-500">
                 {
                   __l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "ubwhkQ",
                     message: "{0} items need attention.",
                     values: {
@@ -839,7 +868,8 @@ __l4a_i18n.prime();
               highlightedQueue.length === 0 ? (
                 <p class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
                   {__l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "nj0sbN",
                     message: "No highlighted queue items."
                   })}
@@ -853,7 +883,8 @@ __l4a_i18n.prime();
                       </p>
                       <p class="mt-1 text-xs text-slate-500">
                         {__l4a_i18n._(
-                        /*i18n*/ {
+                        /** i18n */
+                        {
                           id: "i4y9D_",
                           message: "{0} assigned {1} with {2} comments and {3} unread changes.",
                           values: {
@@ -876,7 +907,8 @@ __l4a_i18n.prime();
           >
             <h2 class="text-xl font-semibold text-slate-950">
               {__l4a_i18n._(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "quM66o",
                 message: "Decision log"
               })}
@@ -897,7 +929,8 @@ __l4a_i18n.prime();
                     </div>
                     <p class="text-xs text-slate-500">
                       {__l4a_i18n._(
-                      /*i18n*/ {
+                      /** i18n */
+                      {
                         id: "LZB4fD",
                         message: "{0} updated {1} during this step.",
                         values: {
@@ -920,7 +953,8 @@ __l4a_i18n.prime();
         >
           <h2 class="text-xl font-semibold text-slate-950">
             {__l4a_i18n._(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "OcCQjb",
               message: "Activity stream"
             })}
@@ -985,7 +1019,8 @@ __l4a_i18n.prime();
         >
           <h2 class="text-xl font-semibold text-slate-950">
             {__l4a_i18n._(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "UsgvkK",
               message: "Status digest"
             })}
@@ -996,12 +1031,14 @@ __l4a_i18n.prime();
             values: {
               0: highlightedQueue.length,
               1: __l4a_i18n._(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "s0sXxO",
                 message: "There is one highlighted queue item."
               }),
               2: __l4a_i18n._(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "J4w9XN",
                 message: "There are {0} highlighted queue items.",
                 values: {
@@ -1013,7 +1050,8 @@ __l4a_i18n.prime();
           <p class="text-sm text-slate-600">
             {
               __l4a_i18n._(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "pnokNm",
                 message: "The queue is {0} and {1}.",
                 values: {
@@ -1026,7 +1064,8 @@ __l4a_i18n.prime();
           <p class="text-sm text-slate-600">
             {
               __l4a_i18n._(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "d8ajL9",
                 message: "Nested expression summary: {0}.",
                 values: {
@@ -1043,41 +1082,48 @@ __l4a_i18n.prime();
       >
         <h2 class="text-xl font-semibold text-slate-950">
           {__l4a_i18n._(
-          /*i18n*/ {
+          /** i18n */
+          {
             id: "_Hs6aJ",
             message: "Astro interpolation coverage"
           })}
         </h2>
         <p>{__l4a_i18n._(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "OUJFY2",
           message: "Fixture plain translated expression inside an Astro interpolation."
         })}</p>
         {<p>{__l4a_i18n._(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "3TeUZB",
           message: "Fixture single translated element root inside an Astro interpolation."
         })}</p>}
         {
           <Fragment>
             <p>{__l4a_i18n._(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "XzqH2P",
               message: "Fixture first translated fragment child inside an Astro interpolation."
             })}</p>
             <p>{__l4a_i18n._(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "EhKDrd",
               message: "Fixture second translated fragment child inside an Astro interpolation."
             })}</p>
           </Fragment>
         }
         {<p>{__l4a_i18n._(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "3Gb71T",
           message: "Fixture first translated invalid adjacent root inside an Astro interpolation."
         })}</p><p>{__l4a_i18n._(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "bl2cw1",
           message: "Fixture second translated invalid adjacent root inside an Astro interpolation."
         })}</p>}
@@ -1085,12 +1131,14 @@ __l4a_i18n.prime();
           <Fragment>
             <!-- fixture-fragment-html-comment-before-translated-children -->
             <p>{__l4a_i18n._(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "Xw1Yw2",
               message: "Fixture first translated fragment child after an HTML comment."
             })}</p>
             <p>{__l4a_i18n._(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "iYC4bE",
               message: "Fixture second translated fragment child after an HTML comment."
             })}</p>
@@ -1109,24 +1157,28 @@ __l4a_i18n.prime();
           </L4aRuntimeTrans>
         }
         <p>{__l4a_i18n._(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "8c97fG",
           message: "Fixture message before a JavaScript comment interpolation."
         })}</p>
         {/* fixture-js-comment-only-interpolation */}
         <p>{__l4a_i18n._(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "O0RViL",
           message: "Fixture message after a JavaScript comment interpolation."
         })}</p>
         <p>{__l4a_i18n._(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "gMgE-g",
           message: "Fixture message before an HTML comment interpolation."
         })}</p>
         {<!-- fixture-html-comment-only-interpolation -->}
         <p>{__l4a_i18n._(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "L5j9K9",
           message: "Fixture message after an HTML comment interpolation."
         })}</p>
@@ -1202,7 +1254,8 @@ __l4a_i18n.prime();
         <div class="flex flex-wrap items-center justify-between gap-3">
           <h2 class="text-xl font-semibold text-slate-950">
             {__l4a_i18n._(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "RDy8BL",
               message: "Reviewer notes"
             })}
@@ -1210,7 +1263,8 @@ __l4a_i18n.prime();
           <p class="text-sm text-slate-500">
             {
               __l4a_i18n._(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "CNkP4q",
                 message: "{0} recent notes are attached to this dashboard.",
                 values: {
@@ -1224,7 +1278,8 @@ __l4a_i18n.prime();
         <p class="text-sm text-slate-600">
           {
             __l4a_i18n._(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "JpH47-",
               message: "These notes mirror the kind of mixed script and template content that the transform benchmark should exercise."
             })
@@ -1239,7 +1294,8 @@ __l4a_i18n.prime();
                   <p class="text-sm font-medium text-slate-900">{item.title}</p>
                   <span class="rounded-full bg-white px-3 py-1 text-xs text-slate-500">
                     {__l4a_i18n._(
-                    /*i18n*/ {
+                    /** i18n */
+                    {
                       id: "AzV-h-",
                       message: "Note {0}",
                       values: {
@@ -1250,7 +1306,8 @@ __l4a_i18n.prime();
                 </div>
                 <p class="text-sm text-slate-600">
                   {__l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "wXh6Ku",
                     message: "{0} asked {1} to review {2} with {3} comments and {4} unread updates.",
                     values: {
@@ -1264,7 +1321,8 @@ __l4a_i18n.prime();
                 </p>
                 <p class="text-xs text-slate-500">
                   {__l4a_i18n._(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "e3ghLa",
                     message: "Priority {0}, region {1}, attachments {2}.",
                     values: {

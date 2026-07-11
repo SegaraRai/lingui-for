@@ -2,7 +2,7 @@
   "name": "docs",
   "type": "module",
   "dependencies": {
-    "@astrojs/starlight": "^0.39.2",
+    "@astrojs/starlight": "^0.41.3",
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@astrojs/svelte": "catalog:",
     "@lingui/core": "catalog:",
@@ -18,8 +18,8 @@
     "astro-strip-whitespace": "catalog:",
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
-    "sharp": "^0.34.5",
-    "shiki": "^4.0.2",
+    "sharp": "^0.35.3",
+    "shiki": "^4.3.1",
     "unplugin-lingui-macro": "workspace:*",
     "vite": "catalog:",
     "vite-plus": "catalog:"
