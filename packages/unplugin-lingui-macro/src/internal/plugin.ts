@@ -43,7 +43,10 @@ type LoadedLinguiMacroConfig = {
 
 type BabelParserPlugin =
   | NonNullable<ParserOptions["plugins"]>[number]
-  | "importAttributes";
+  | "importAttributes"
+  | "explicitResourceManagement"
+  | "decoratorAutoAccessors"
+  | "deferredImportEvaluation";
 
 function uniqueStrings(values: readonly string[]): string[] {
   return [...new Set(values)];
@@ -113,7 +116,12 @@ function getParserPlugins(
   filename: string,
   config: LoadedLinguiMacroConfig,
 ): NonNullable<ParserOptions["plugins"]> {
-  const plugins: BabelParserPlugin[] = ["importAttributes"];
+  const plugins: BabelParserPlugin[] = [
+    "importAttributes",
+    "explicitResourceManagement",
+    "decoratorAutoAccessors",
+    "deferredImportEvaluation",
+  ];
 
   if (/\.[cm]?tsx?$/.test(filename)) {
     plugins.push("typescript");

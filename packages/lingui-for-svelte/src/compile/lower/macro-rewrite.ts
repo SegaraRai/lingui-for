@@ -6,8 +6,8 @@ import {
 import type {
   NodePath,
   PluginObj,
-  PluginPass,
 } from "@lingui-for/framework-core/vendor/babel-core";
+import { getPluginState } from "@lingui-for/framework-core/vendor/babel-core";
 import * as t from "@lingui-for/framework-core/vendor/babel-types";
 
 import { PACKAGE_RUNTIME } from "../common/constants.ts";
@@ -42,12 +42,6 @@ function createInitialState(): MacroRewriteState {
   return {
     runtimeI18nLocals: new Set<string>(),
   };
-}
-
-function getMacroRewriteState(
-  state: PluginPass,
-): PluginPass & MacroRewriteState {
-  return state as PluginPass & MacroRewriteState;
 }
 
 function collectRuntimeI18nLocals(program: t.Program): Set<string> {
@@ -188,7 +182,7 @@ export function createSvelteMacroPostprocessPlugin(
       Program: {
         exit(path, state) {
           if (request.translationMode === "contextual") {
-            const macroState = getMacroRewriteState(state);
+            const macroState = getPluginState<MacroRewriteState>(state);
             macroState.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
             removeRuntimeI18nImports(path.node, macroState.runtimeI18nLocals);
           }

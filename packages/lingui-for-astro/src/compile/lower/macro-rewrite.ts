@@ -3,10 +3,8 @@ import {
   LINGUI_I18N_EXPORT,
   LINGUI_TRANSLATE_METHOD,
 } from "@lingui-for/framework-core/compile";
-import type {
-  PluginObj,
-  PluginPass,
-} from "@lingui-for/framework-core/vendor/babel-core";
+import type { PluginObj } from "@lingui-for/framework-core/vendor/babel-core";
+import { getPluginState } from "@lingui-for/framework-core/vendor/babel-core";
 import * as t from "@lingui-for/framework-core/vendor/babel-types";
 
 export type AstroMacroPostprocessRequest =
@@ -26,12 +24,6 @@ function createInitialState(): MacroRewriteState {
   return {
     runtimeI18nLocals: new Set<string>(),
   };
-}
-
-function getMacroRewriteState(
-  state: PluginPass,
-): PluginPass & MacroRewriteState {
-  return state as PluginPass & MacroRewriteState;
 }
 
 function collectRuntimeI18nLocals(program: t.Program): Set<string> {
@@ -109,7 +101,7 @@ export function createAstroMacroPostprocessPlugin(
             return;
           }
 
-          getMacroRewriteState(state).runtimeI18nLocals =
+          getPluginState<MacroRewriteState>(state).runtimeI18nLocals =
             collectRuntimeI18nLocals(path.node);
         },
         exit(path, state) {
@@ -119,7 +111,7 @@ export function createAstroMacroPostprocessPlugin(
 
           removeRuntimeI18nImports(
             path.node,
-            getMacroRewriteState(state).runtimeI18nLocals,
+            getPluginState<MacroRewriteState>(state).runtimeI18nLocals,
           );
         },
       },
@@ -132,7 +124,7 @@ export function createAstroMacroPostprocessPlugin(
           !t.isMemberExpression(path.node.callee) ||
           path.node.callee.computed ||
           !t.isIdentifier(path.node.callee.object) ||
-          !getMacroRewriteState(state).runtimeI18nLocals.has(
+          !getPluginState<MacroRewriteState>(state).runtimeI18nLocals.has(
             path.node.callee.object.name,
           ) ||
           !t.isIdentifier(path.node.callee.property, {

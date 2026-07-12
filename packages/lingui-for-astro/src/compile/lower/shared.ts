@@ -9,6 +9,7 @@ import {
 } from "@lingui-for/framework-core/compile";
 import {
   type PluginItem,
+  type PluginTarget,
   transformSync,
 } from "@lingui-for/framework-core/vendor/babel-core";
 import type { File } from "@lingui-for/framework-core/vendor/babel-types";
@@ -37,6 +38,14 @@ export function transformAstroProgram(
   lowering: LinguiProgramLoweringRequest,
   postprocess: AstroMacroPostprocessRequest,
 ): ProgramTransform {
+  const linguiMacroPluginItem: PluginItem = [
+    linguiMacroPlugin as unknown as PluginTarget,
+    createLinguiMacroPluginOptions({
+      extract: lowering.extract,
+      linguiConfig: lowering.linguiConfig,
+      pluginEntryUrl: import.meta.resolve("@lingui/babel-plugin-lingui-macro"),
+    }),
+  ];
   const result = transformSync(code, {
     ast: true,
     babelrc: false,
@@ -51,15 +60,7 @@ export function transformAstroProgram(
       plugins: getParserPlugins(),
     },
     plugins: [
-      [
-        linguiMacroPlugin,
-        createLinguiMacroPluginOptions({
-          extract: lowering.extract,
-          linguiConfig: lowering.linguiConfig,
-          pluginEntryUrl: import.meta
-            .resolve("@lingui/babel-plugin-lingui-macro"),
-        }),
-      ] as unknown as PluginItem,
+      linguiMacroPluginItem,
       () => createAstroMacroPostprocessPlugin(postprocess),
     ],
     sourceMaps: true,

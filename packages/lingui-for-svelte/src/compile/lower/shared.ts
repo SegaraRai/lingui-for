@@ -10,6 +10,7 @@ import {
 } from "@lingui-for/framework-core/compile";
 import {
   type PluginItem,
+  type PluginTarget,
   transformFromAstSync,
   transformSync,
 } from "@lingui-for/framework-core/vendor/babel-core";
@@ -50,6 +51,14 @@ export function lowerProgramWithLingui(
   code: string,
   request: LinguiProgramLoweringRequest,
 ): LinguiLoweredProgram {
+  const linguiMacroPluginItem: PluginItem = [
+    linguiMacroPlugin as unknown as PluginTarget,
+    createLinguiMacroPluginOptions({
+      extract: request.extract,
+      linguiConfig: request.linguiConfig,
+      pluginEntryUrl: import.meta.resolve("@lingui/babel-plugin-lingui-macro"),
+    }),
+  ];
   const result = transformSync(code, {
     ast: true,
     babelrc: false,
@@ -63,17 +72,7 @@ export function lowerProgramWithLingui(
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
     },
-    plugins: [
-      [
-        linguiMacroPlugin,
-        createLinguiMacroPluginOptions({
-          extract: request.extract,
-          linguiConfig: request.linguiConfig,
-          pluginEntryUrl: import.meta
-            .resolve("@lingui/babel-plugin-lingui-macro"),
-        }),
-      ] as unknown as PluginItem,
-    ],
+    plugins: [linguiMacroPluginItem],
     sourceMaps: true,
   });
 
