@@ -56,6 +56,7 @@
   },
   "dependencies": {
     "@babel/core": "catalog:dep",
+    "@babel/parser": "catalog:dep",
     "@babel/traverse": "catalog:dep",
     "@babel/types": "catalog:dep",
     "cosmiconfig": "catalog:dep",

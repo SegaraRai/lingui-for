@@ -9,6 +9,8 @@ import {
   type ScriptLang,
 } from "@lingui-for/framework-core/compile";
 import {
+  type PluginItem,
+  type PluginTarget,
   transformFromAstSync,
   transformSync,
 } from "@lingui-for/framework-core/vendor/babel-core";
@@ -49,28 +51,28 @@ export function lowerProgramWithLingui(
   code: string,
   request: LinguiProgramLoweringRequest,
 ): LinguiLoweredProgram {
+  const linguiMacroPluginItem: PluginItem = [
+    linguiMacroPlugin as unknown as PluginTarget,
+    createLinguiMacroPluginOptions({
+      extract: request.extract,
+      linguiConfig: request.linguiConfig,
+      pluginEntryUrl: import.meta.resolve("@lingui/babel-plugin-lingui-macro"),
+    }),
+  ];
   const result = transformSync(code, {
     ast: true,
     babelrc: false,
     code: false,
     configFile: false,
     filename: request.filename,
-    inputSourceMap: request.inputSourceMap ?? undefined,
+    ...(request.inputSourceMap != null
+      ? { inputSourceMap: request.inputSourceMap }
+      : {}),
     parserOpts: {
       sourceType: "module",
       plugins: getParserPlugins(request.lang),
     },
-    plugins: [
-      [
-        linguiMacroPlugin,
-        createLinguiMacroPluginOptions({
-          extract: request.extract,
-          linguiConfig: request.linguiConfig,
-          pluginEntryUrl: import.meta
-            .resolve("@lingui/babel-plugin-lingui-macro"),
-        }),
-      ],
-    ],
+    plugins: [linguiMacroPluginItem],
     sourceMaps: true,
   });
 
@@ -101,8 +103,10 @@ export function finalizeSvelteProgram(
       code: true,
       configFile: false,
       filename,
-      inputSourceMap: lowered.inputSourceMap ?? undefined,
-      plugins: [createSvelteMacroPostprocessPlugin(request)],
+      ...(lowered.inputSourceMap != null
+        ? { inputSourceMap: lowered.inputSourceMap }
+        : {}),
+      plugins: [() => createSvelteMacroPostprocessPlugin(request)],
       sourceMaps: true,
     },
   );

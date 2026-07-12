@@ -21,6 +21,14 @@ const astroCliEntry = resolve(
 );
 const previewEntry = resolve(projectRoot, "dist/server/entry.mjs");
 
+function getServerEnvironment(): NodeJS.ProcessEnv {
+  const environment = { ...process.env };
+  delete environment.VITEST;
+  delete environment.VITEST_POOL_ID;
+  delete environment.VITEST_WORKER_ID;
+  return environment;
+}
+
 export const serverModes = ["dev", "preview"] as const;
 
 export type ServerMode = (typeof serverModes)[number];
@@ -71,7 +79,7 @@ async function waitForServer(
 
     try {
       const response = await fetch(url);
-      if (response.status > 0) {
+      if (response.ok) {
         return;
       }
     } catch {
@@ -165,7 +173,8 @@ export class AppServer {
       {
         cwd: projectRoot,
         env: {
-          ...process.env,
+          ...getServerEnvironment(),
+          ASTRO_DEV_BACKGROUND: "0",
           ASTRO_TELEMETRY_DISABLED: "1",
         },
         stdio: "pipe",
@@ -190,7 +199,7 @@ export class AppServer {
     const child = spawn(process.execPath, [previewEntry], {
       cwd: projectRoot,
       env: {
-        ...process.env,
+        ...getServerEnvironment(),
         ASTRO_TELEMETRY_DISABLED: "1",
         HOST,
         PORT: String(port),

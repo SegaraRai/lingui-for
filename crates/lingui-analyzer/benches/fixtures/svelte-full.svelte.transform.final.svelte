@@ -488,7 +488,8 @@
   });
 
   const ownerGreeting = $derived($__l4s_translate(
-  /*i18n*/ {
+  /** i18n */
+  {
     id: "8-nA3Y",
     message: "Welcome back, {dashboardOwner}.",
     values: {
@@ -497,7 +498,8 @@
   }));
   const queueSummary = $derived(
     $__l4s_translate(
-    /*i18n*/ {
+    /** i18n */
+    {
       id: "5kwh2a",
       message: "Showing {0} queue items for {1}.",
       values: {
@@ -508,7 +510,8 @@
   );
   const workflowLabel = $derived(
     $__l4s_translate(
-    /*i18n*/ {
+    /** i18n */
+    {
       id: "wc9bP7",
       message: "{localeMode, select, en {English workflow} ja {Japanese workflow} fr {French workflow} other {Fallback workflow}}",
       values: {
@@ -519,25 +522,29 @@
   const statusBanner = $derived(
     alertLevel === "error"
       ? $__l4s_translate(
-      /*i18n*/ {
+      /** i18n */
+      {
         id: "C81jcY",
         message: "Escalation required: unresolved high-priority queue items remain."
       })
       : alertLevel === "warn"
         ? $__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "jJ-oTf",
           message: "Attention needed: high-priority items are waiting for review."
         })
         : $__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "GzY8qo",
           message: "All monitored queues are stable."
         }),
   );
   const latencyLabel = $derived(
     $__l4s_translate(
-    /*i18n*/ {
+    /** i18n */
+    {
       id: "lC_3w5",
       message: "Live snapshot latency: {0}.",
       values: {
@@ -575,7 +582,8 @@
           class="text-sm font-medium tracking-[0.24em] text-slate-500 uppercase"
         >
           {$__l4s_translate(
-          /*i18n*/ {
+          /** i18n */
+          {
             id: "B1MDds",
             message: "Operations"
           })}
@@ -588,7 +596,8 @@
         <p class="text-xs text-slate-500">{latencyLabel}</p>
         <p class="text-xs text-slate-500">
           {$__l4s_translate(
-          /*i18n*/ {
+          /** i18n */
+          {
             id: "xdDw1Z",
             message: "Workspace mode:"
           })}
@@ -597,12 +606,14 @@
         <p class="text-xs text-slate-500">
           {workspaceWritable
             ? $__l4s_translate(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "5wic0R",
               message: "Editing tools are enabled for this workspace."
             })
             : $__l4s_translate(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "oYLtG0",
               message: "Editing tools are read-only for this workspace."
             })}
@@ -613,46 +624,54 @@
     <div class="flex flex-wrap gap-3 text-sm">
       <span class="rounded-full border px-3 py-2"
         >{$__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "tQcxxg",
           message: "Region:"
         })} {selectedRegion}</span
       >
       <span class="rounded-full border px-3 py-2"
         >{$__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "7lRCx1",
           message: "Queue kind:"
         })} {selectedKind}</span
       >
       <span class="rounded-full border px-3 py-2">
         {$__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "gzWinp",
           message: "Assigned only:"
         })}
         {showAssignedOnly ? $__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "Fdp03t",
           message: "on"
         }) : $__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "Bdtwnw",
           message: "off"
         })}
       </span>
       <span class="rounded-full border px-3 py-2">
         {$__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "jYKshG",
           message: "History:"
         })}
         {showHistory ? $__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "JkIYli",
           message: "shown"
         }) : $__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "zNCBmf",
           message: "hidden"
         })}
@@ -670,7 +689,8 @@
             <h2 class="text-base font-semibold text-slate-950">{card.label}</h2>
             <p class="text-xs text-slate-500">
               {$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "W3Ae0L",
                 message: "{0} active reviewers available.",
                 values: {
@@ -687,7 +707,8 @@
           <div class="rounded-2xl bg-slate-50 p-3">
             <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">
               {$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "UbRKMZ",
                 message: "Pending"
               })}
@@ -699,7 +720,8 @@
           <div class="rounded-2xl bg-slate-50 p-3">
             <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">
               {$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "FEPXtw",
                 message: "Reviewed"
               })}
@@ -711,7 +733,8 @@
           <div class="rounded-2xl bg-slate-50 p-3">
             <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">
               {$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "3UYUtA",
                 message: "Flagged"
               })}
@@ -723,7 +746,8 @@
           <div class="rounded-2xl bg-slate-50 p-3">
             <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">
               {$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "yiNL80",
                 message: "Reviewers"
               })}
@@ -745,14 +769,16 @@
         <div>
           <h2 class="text-xl font-semibold text-slate-950">
             {$__l4s_translate(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "mtE2Ev",
               message: "Queue details"
             })}
           </h2>
           <p class="text-sm text-slate-500">
             {$__l4s_translate(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "gimT52",
               message: "{0} items match the current filters.",
               values: {
@@ -763,7 +789,8 @@
         </div>
         <p class="text-sm text-slate-500">
           {$__l4s_translate(
-          /*i18n*/ {
+          /** i18n */
+          {
             id: "Ji1wwM",
             message: "Attachments {0}, comments {1}, unread {2}.",
             values: {
@@ -780,7 +807,8 @@
           {@const nestedLabel =
             item.unread > 0
               ? $__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "szWjCj",
                 message: "{0} left {1} comments while {2} still has {3} unread updates.",
                 values: {
@@ -791,7 +819,8 @@
                 }
               })
               : $__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "IDpMOo",
                 message: "{0} left {1} comments and the queue is fully read.",
                 values: {
@@ -815,22 +844,26 @@
 
             <div class="grid gap-2 text-sm text-slate-700 md:grid-cols-2">
               <p>{$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "2TUOis",
                 message: "Owner:"
               })} {item.owner}</p>
               <p>{$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "GRmQfp",
                 message: "Assignee:"
               })} {item.assignee}</p>
               <p>{$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "Y2-ZT9",
                 message: "Comments:"
               })} {item.comments}</p>
               <p>{$__l4s_translate(
-              /*i18n*/ {
+              /** i18n */
+              {
                 id: "jqmIfA",
                 message: "Attachments:"
               })} {item.attachments}</p>
@@ -847,7 +880,8 @@
               {#if item.pathHint}
                 <span class="rounded-full bg-slate-100 px-3 py-1">
                   {$__l4s_translate(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "lvcfoy",
                     message: "Path {0}",
                     values: {
@@ -858,7 +892,8 @@
               {:else}
                 <span class="rounded-full bg-slate-100 px-3 py-1">
                   {$__l4s_translate(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "pa6gX-",
                     message: "No path"
                   })}
@@ -877,14 +912,16 @@
         <div class="flex items-center justify-between gap-3">
           <h2 class="text-xl font-semibold text-slate-950">
             {$__l4s_translate(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "qbgW-C",
               message: "Highlights"
             })}
           </h2>
           <p class="text-sm text-slate-500">
             {$__l4s_translate(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "ubwhkQ",
               message: "{0} items need attention.",
               values: {
@@ -897,7 +934,8 @@
         {#if $highlightedQueue.length === 0}
           <p class="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">
             {$__l4s_translate(
-            /*i18n*/ {
+            /** i18n */
+            {
               id: "nj0sbN",
               message: "No highlighted queue items."
             })}
@@ -909,7 +947,8 @@
                 <p class="text-sm font-medium text-slate-900">{item.title}</p>
                 <p class="mt-1 text-xs text-slate-500">
                   {$__l4s_translate(
-                  /*i18n*/ {
+                  /** i18n */
+                  {
                     id: "i4y9D_",
                     message: "{0} assigned {1} with {2} comments and {3} unread changes.",
                     values: {
@@ -931,7 +970,8 @@
       >
         <h2 class="text-xl font-semibold text-slate-950">
           {$__l4s_translate(
-          /*i18n*/ {
+          /** i18n */
+          {
             id: "quM66o",
             message: "Decision log"
           })}
@@ -949,7 +989,8 @@
               </div>
               <p class="text-xs text-slate-500">
                 {$__l4s_translate(
-                /*i18n*/ {
+                /** i18n */
+                {
                   id: "LZB4fD",
                   message: "{0} updated {1} during this step.",
                   values: {
@@ -971,7 +1012,8 @@
     >
       <h2 class="text-xl font-semibold text-slate-950">
         {$__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "OcCQjb",
           message: "Activity stream"
         })}
@@ -990,7 +1032,8 @@
 
       <div class="rounded-2xl border border-dashed border-slate-200 p-4">
         <p class="text-sm text-slate-600">
-          <L4sRuntimeTrans {.../*i18n*/ {
+          <L4sRuntimeTrans {.../** i18n */
+          {
             id: "FJeYAi",
             message: "Imported digest: <0><1/></0>"
           }}>
@@ -999,7 +1042,8 @@
           </L4sRuntimeTrans>
         </p>
         <p>
-          <L4sRuntimeTrans {.../*i18n*/ {
+          <L4sRuntimeTrans {.../** i18n */
+          {
             id: "JUNx-G",
             message: "Also we can embed some text and <0/> directly in translations."
           }}>
@@ -1007,7 +1051,8 @@
           </L4sRuntimeTrans>
         </p>
         <div>
-          <L4sRuntimeTrans {.../*i18n*/ {
+          <L4sRuntimeTrans {.../** i18n */
+          {
             id: "cKxDiJ",
             message: "<0>Maybe we even have some nested content to summarize, like</0> <1><2><3>{0} highlighted queue items</3> and</2><4>a selected region of {selectedRegion}.</4></1>",
             values: {
@@ -1030,23 +1075,27 @@
     >
       <h2 class="text-xl font-semibold text-slate-950">
         {$__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "UsgvkK",
           message: "Status digest"
         })}
       </h2>
-      <L4sRuntimeTrans {.../*i18n*/ {
+      <L4sRuntimeTrans {.../** i18n */
+      {
         id: "8p_xVT",
         message: "{0, plural, one {{1}} other {{2}}}",
         values: {
           0: $highlightedQueue.length,
           1: __l4s_getI18n()._(
-          /*i18n*/ {
+          /** i18n */
+          {
             id: "s0sXxO",
             message: "There is one highlighted queue item."
           }),
           2: __l4s_getI18n()._(
-          /*i18n*/ {
+          /** i18n */
+          {
             id: "J4w9XN",
             message: "There are {0} highlighted queue items.",
             values: {
@@ -1057,7 +1106,8 @@
       }} />
       <p class="text-sm text-slate-600">
         {$__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "pnokNm",
           message: "The queue is {0} and {1}.",
           values: {
@@ -1068,7 +1118,8 @@
       </p>
       <p class="text-sm text-slate-600">
         {$__l4s_translate(
-        /*i18n*/ {
+        /** i18n */
+        {
           id: "d8ajL9",
           message: "Nested expression summary: {0}.",
           values: {

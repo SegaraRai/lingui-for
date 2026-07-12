@@ -20,6 +20,7 @@ export default defineConfig({
       },
       "sveltekit:sync": {
         command: "svelte-kit sync",
+        dependsOn: ["lingui-for-svelte#build", "unplugin-lingui-macro#build"],
         cache: false,
       },
       "i18n:extract": {

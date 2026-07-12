@@ -7,6 +7,7 @@ import type {
   NodePath,
   PluginObj,
 } from "@lingui-for/framework-core/vendor/babel-core";
+import { getPluginState } from "@lingui-for/framework-core/vendor/babel-core";
 import * as t from "@lingui-for/framework-core/vendor/babel-types";
 
 import { PACKAGE_RUNTIME } from "../common/constants.ts";
@@ -171,7 +172,7 @@ function removeRuntimeI18nImports(
  */
 export function createSvelteMacroPostprocessPlugin(
   request: SvelteMacroPostprocessRequest,
-): PluginObj<MacroRewriteState> {
+): PluginObj {
   return {
     name: "lingui-for-svelte-macro-postprocess",
     pre() {
@@ -181,8 +182,9 @@ export function createSvelteMacroPostprocessPlugin(
       Program: {
         exit(path, state) {
           if (request.translationMode === "contextual") {
-            state.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
-            removeRuntimeI18nImports(path.node, state.runtimeI18nLocals);
+            const macroState = getPluginState<MacroRewriteState>(state);
+            macroState.runtimeI18nLocals = collectRuntimeI18nLocals(path.node);
+            removeRuntimeI18nImports(path.node, macroState.runtimeI18nLocals);
           }
         },
       },

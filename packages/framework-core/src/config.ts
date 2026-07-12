@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { ParserOptions } from "@babel/core";
+import type { ParserOptions } from "@babel/parser";
 import {
   makeConfig,
   type LinguiConfig,
@@ -139,6 +139,8 @@ export interface LinguiConfigResolver<TLoadedConfig> {
 export function getParserPlugins(options?: {
   readonly typescript?: boolean;
 }): NonNullable<ParserOptions["plugins"]> {
+  // Babel 8's declaration omits these proposals, but both Babel 7 and 8 still
+  // require them at runtime to parse the corresponding syntax.
   return [
     "importAttributes",
     "explicitResourceManagement",
@@ -146,7 +148,7 @@ export function getParserPlugins(options?: {
     "deferredImportEvaluation",
     ...(options?.typescript ? (["typescript"] as const) : []),
     "jsx",
-  ];
+  ] as unknown as NonNullable<ParserOptions["plugins"]>;
 }
 
 export function defineConfig<

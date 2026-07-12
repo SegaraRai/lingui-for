@@ -1,7 +1,7 @@
 import type {
   ExtractorCtx,
-  ExtractorType,
   LinguiConfigNormalized,
+  PerFileExtractorType,
 } from "@lingui/conf";
 
 import {
@@ -39,13 +39,16 @@ export interface AstroExtractorOptions {
  * synthetic module, and forwards the extracted messages to Lingui's Babel
  * extractor pipeline.
  */
-export const astroExtractor: ExtractorType & typeof astroExtractorFactory =
+export const astroExtractor: PerFileExtractorType &
+  typeof astroExtractorFactory =
   /*#__PURE__*/ Object.assign(astroExtractorFactory, astroExtractorFactory());
 
 /**
  * Lingui extractor factory for `.astro` source files.
  */
-function astroExtractorFactory(options?: AstroExtractorOptions): ExtractorType {
+function astroExtractorFactory(
+  options?: AstroExtractorOptions,
+): PerFileExtractorType {
   const configResolver = createLinguiConfigResolver({
     loadConfig: loadLinguiConfig,
     config: options?.config,

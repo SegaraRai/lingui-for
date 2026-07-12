@@ -18,7 +18,7 @@ describe("lowerAstroExtractProgram", () => {
       },
     );
 
-    expect(result.code).toContain("/*i18n*/");
+    expect(result.code).toContain("/** i18n */");
     expect(result.code).toContain("_i18n._(");
   });
 });

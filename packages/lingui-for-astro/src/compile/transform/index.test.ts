@@ -215,7 +215,7 @@ describe("transformAstro", () => {
     expect(code).not.toContain("{t`inline emphasis`}");
   });
 
-  test("keeps returned msg descriptors on the same line as the i18n marker", async () => {
+  test("emits returned msg descriptors with an i18n marker", async () => {
     const result = await expectTransformed(
       dedent`
         ---
@@ -229,7 +229,7 @@ describe("transformAstro", () => {
       { filename: "/virtual/Page.astro" },
     );
 
-    expect(result.code).toContain("return /*i18n*/ {");
+    expect(result.code).toContain("return /** i18n */\n  {");
   });
 
   test("does not inject Astro i18n context for descriptor-only files", async () => {
@@ -249,7 +249,7 @@ describe("transformAstro", () => {
 
     expect(code).not.toContain("createLinguiAccessors");
     expect(code).not.toContain("__l4a_i18n");
-    expect(code).toContain("const descriptor = /*i18n*/ {");
+    expect(code).toContain("const descriptor = /** i18n */ {");
   });
 
   test("only injects RuntimeTrans for component-only files", async () => {
@@ -556,7 +556,7 @@ describe("transformAstro", () => {
       'message: "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"',
     );
     expect(code).toMatch(
-      /0:\s*__l4a_i18n\._\(\s*\/\*i18n\*\/\s*\{ id: "SMt_JO", message: "\{rank, selectordinal, =1 \{\{role, select, admin \{component zero first admin\} other \{component zero first other\}\}\}/,
+      /0:\s*__l4a_i18n\._\(\s*\/\*\* i18n \*\/\s*\{ id: "SMt_JO", message: "\{rank, selectordinal, =1 \{\{role, select, admin \{component zero first admin\} other \{component zero first other\}\}\}/,
     );
     expect(code).toContain("component many later admin");
   });

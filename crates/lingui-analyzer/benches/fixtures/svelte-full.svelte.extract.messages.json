@@ -504,8 +504,8 @@
     "message": "{0, plural, one {{1}} other {{2}}}",
     "placeholders": {
       "0": "$highlightedQueue.length",
-      "1": "_i18n._(\n    /*i18n*/\n    {\n      id: \"s0sXxO\",\n      message: \"There is one highlighted queue item.\"\n    })",
-      "2": "_i18n._(\n    /*i18n*/\n    {\n      id: \"J4w9XN\",\n      message: \"There are {0} highlighted queue items.\",\n      values: {\n        0: String($highlightedQueue.length)\n      }\n    })"
+      "1": "_i18n._(\n    /** i18n */\n    {\n      id: \"s0sXxO\",\n      message: \"There is one highlighted queue item.\"\n    })",
+      "2": "_i18n._(\n    /** i18n */\n    {\n      id: \"J4w9XN\",\n      message: \"There are {0} highlighted queue items.\",\n      values: {\n        0: String($highlightedQueue.length)\n      }\n    })"
     },
     "origin": [
       "svelte-full.svelte",

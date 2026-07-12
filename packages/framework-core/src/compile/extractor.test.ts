@@ -44,11 +44,11 @@ describe("extractor helpers", () => {
       "/virtual/example.tsx",
       [
         {
-          code: "/*i18n*/ const a = 1;",
+          code: "/** i18n */ const a = 1;",
           map: null,
         },
         {
-          code: "/*i18n*/ const b = 2;",
+          code: "/** i18n */ const b = 2;",
           map: {
             version: 3,
             file: "/virtual/example.tsx?query",
@@ -75,7 +75,7 @@ describe("extractor helpers", () => {
     expect(extractFromFileWithBabelMock).toHaveBeenNthCalledWith(
       1,
       "/virtual/example.tsx",
-      "/*i18n*/ const a = 1;",
+      "/** i18n */ const a = 1;",
       onMessageExtracted,
       ctx,
       {
@@ -86,7 +86,7 @@ describe("extractor helpers", () => {
     expect(extractFromFileWithBabelMock).toHaveBeenNthCalledWith(
       2,
       "/virtual/example.tsx",
-      "/*i18n*/ const b = 2;",
+      "/** i18n */ const b = 2;",
       onMessageExtracted,
       {
         ...ctx,

@@ -10,7 +10,7 @@ async function runTransform(
   id: string,
   options?: LinguiMacroPluginOptions,
 ) {
-  const plugin = unpluginFactory(options, { framework: "vite" });
+  const plugin = unpluginFactory(options, { framework: "vite", versions: {} });
   const pluginInstance = Array.isArray(plugin) ? plugin[0] : plugin;
   const transform = pluginInstance?.transform;
   const runTransform =

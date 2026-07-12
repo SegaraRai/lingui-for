@@ -3,7 +3,7 @@ const subject = "Vite";
 const app = document.querySelector("#app");
 if (app) {
   app.textContent = i18n._(
-    /*i18n*/
+    /** i18n */
     {
       id: "tLUJKK",
       values: {
