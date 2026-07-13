@@ -23,6 +23,7 @@ export default defineConfig({
     endOfLine: "lf",
     sortTailwindcss: {},
     sortPackageJson: true,
+    svelte: true,
     printWidth: 80,
     ignorePatterns: [
       "**/.astro",
