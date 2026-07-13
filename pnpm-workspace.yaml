@@ -60,7 +60,7 @@ catalogs:
     "@lingui/conf": "^5 || ^6"
     "@lingui/core": "^5 || ^6"
     "@lingui/babel-plugin-lingui-macro": "^5 || ^6"
-    astro: "^5 || ^6 || ^7.0.0-0"
+    astro: "^5 || ^6 || ^7"
     cosmiconfig: ^9
     esbuild: "*"
     jiti: ^2
