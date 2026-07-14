@@ -126,7 +126,7 @@ Use macros in Svelte components:
 ## Entrypoints
 
 - `lingui-for-svelte`: runtime exports such as `setLinguiContext` and `RuntimeTrans`
-- `lingui-for-svelte/macro`: authoring macros such as `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, and `defineMessage`
+- `lingui-for-svelte/macro`: authoring macros such as `t`, `plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage`, and `ph`
 - `lingui-for-svelte/extractor`: `svelteExtractor` for Lingui CLI extraction
 - `lingui-for-svelte/unplugin/*`: bundler plugins for Vite, Rollup, Webpack, esbuild, Rolldown, Rspack, and Bun
 - `lingui-for-svelte/internal/*`: internal utilities and helpers (unstable, not for public use)
