@@ -1,11 +1,37 @@
 [
   {
+    "id": "fixture.frontmatter-block",
+    "message": "Fixture frontmatter block directive message.",
+    "context": "fixture-frontmatter-block",
+    "comment": "Astro fixture frontmatter block directive",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      62,
+      44
+    ]
+  },
+  {
+    "id": "a0z5dy",
+    "message": "Fixture review owner: {ownerName}.",
+    "context": "fixture-frontmatter-block",
+    "comment": "Astro fixture frontmatter block directive",
+    "placeholders": {
+      "ownerName": "dashboardOwner"
+    },
+    "origin": [
+      "astro-full.astro",
+      66,
+      33
+    ]
+  },
+  {
     "id": "8KhxNb",
     "message": "Localization review dashboard",
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      470,
+      478,
       17
     ]
   },
@@ -17,7 +43,7 @@
     },
     "origin": [
       "astro-full.astro",
-      471,
+      479,
       22
     ]
   },
@@ -30,7 +56,7 @@
     },
     "origin": [
       "astro-full.astro",
-      473,
+      481,
       2
     ]
   },
@@ -42,7 +68,7 @@
     },
     "origin": [
       "astro-full.astro",
-      475,
+      483,
       22
     ]
   },
@@ -52,7 +78,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      483,
+      491,
       6
     ]
   },
@@ -62,7 +88,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      485,
+      493,
       8
     ]
   },
@@ -72,7 +98,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      486,
+      494,
       8
     ]
   },
@@ -84,8 +110,20 @@
     },
     "origin": [
       "astro-full.astro",
-      488,
+      496,
       2
+    ]
+  },
+  {
+    "id": "fixture.cross-block",
+    "message": "Fixture directive inherited from Astro frontmatter.",
+    "context": "fixture-cross-block",
+    "comment": "Astro fixture directive crossing frontmatter",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      525,
+      6
     ]
   },
   {
@@ -94,7 +132,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      523,
+      536,
       15
     ]
   },
@@ -104,7 +142,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      536,
+      549,
       15
     ]
   },
@@ -114,7 +152,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      542,
+      555,
       20
     ]
   },
@@ -124,7 +162,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      543,
+      556,
       20
     ]
   },
@@ -136,7 +174,7 @@
     },
     "origin": [
       "astro-full.astro",
-      561,
+      574,
       22
     ]
   },
@@ -146,7 +184,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      571,
+      584,
       81
     ]
   },
@@ -156,7 +194,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      577,
+      590,
       81
     ]
   },
@@ -166,7 +204,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      583,
+      596,
       81
     ]
   },
@@ -176,7 +214,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      589,
+      602,
       81
     ]
   },
@@ -186,7 +224,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      607,
+      620,
       17
     ]
   },
@@ -198,7 +236,7 @@
     },
     "origin": [
       "astro-full.astro",
-      612,
+      625,
       20
     ]
   },
@@ -213,7 +251,7 @@
     },
     "origin": [
       "astro-full.astro",
-      625,
+      638,
       24
     ]
   },
@@ -226,7 +264,7 @@
     },
     "origin": [
       "astro-full.astro",
-      628,
+      641,
       24
     ]
   },
@@ -236,7 +274,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      649,
+      662,
       25
     ]
   },
@@ -246,7 +284,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      652,
+      665,
       25
     ]
   },
@@ -256,7 +294,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      655,
+      668,
       25
     ]
   },
@@ -266,7 +304,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      658,
+      671,
       25
     ]
   },
@@ -278,7 +316,7 @@
     },
     "origin": [
       "astro-full.astro",
-      674,
+      687,
       37
     ]
   },
@@ -288,7 +326,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      677,
+      690,
       75
     ]
   },
@@ -298,7 +336,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      693,
+      706,
       17
     ]
   },
@@ -310,7 +348,7 @@
     },
     "origin": [
       "astro-full.astro",
-      698,
+      711,
       20
     ]
   },
@@ -320,7 +358,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      707,
+      720,
       19
     ]
   },
@@ -335,7 +373,7 @@
     },
     "origin": [
       "astro-full.astro",
-      718,
+      731,
       26
     ]
   },
@@ -345,7 +383,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      732,
+      745,
       15
     ]
   },
@@ -358,7 +396,7 @@
     },
     "origin": [
       "astro-full.astro",
-      750,
+      763,
       24
     ]
   },
@@ -368,7 +406,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      766,
+      779,
       13
     ]
   },
@@ -378,7 +416,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      786,
+      799,
       14
     ]
   },
@@ -388,7 +426,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      792,
+      805,
       14
     ]
   },
@@ -401,7 +439,7 @@
     },
     "origin": [
       "astro-full.astro",
-      799,
+      812,
       14
     ]
   },
@@ -411,7 +449,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      816,
+      829,
       13
     ]
   },
@@ -425,7 +463,7 @@
     },
     "origin": [
       "astro-full.astro",
-      818,
+      831,
       10
     ]
   },
@@ -435,7 +473,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      820,
+      833,
       17
     ]
   },
@@ -447,7 +485,7 @@
     },
     "origin": [
       "astro-full.astro",
-      822,
+      835,
       14
     ]
   },
@@ -460,7 +498,7 @@
     },
     "origin": [
       "astro-full.astro",
-      828,
+      841,
       16
     ]
   },
@@ -472,7 +510,7 @@
     },
     "origin": [
       "astro-full.astro",
-      835,
+      848,
       16
     ]
   },
@@ -482,7 +520,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      850,
+      863,
       11
     ]
   },
@@ -492,7 +530,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      852,
+      865,
       12
     ]
   },
@@ -502,7 +540,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      853,
+      866,
       13
     ]
   },
@@ -512,7 +550,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      856,
+      869,
       16
     ]
   },
@@ -522,7 +560,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      857,
+      870,
       16
     ]
   },
@@ -532,7 +570,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      860,
+      873,
       13
     ]
   },
@@ -542,7 +580,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      860,
+      873,
       110
     ]
   },
@@ -552,7 +590,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      864,
+      877,
       16
     ]
   },
@@ -562,7 +600,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      865,
+      878,
       16
     ]
   },
@@ -572,7 +610,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      868,
+      881,
       9
     ]
   },
@@ -582,7 +620,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      870,
+      883,
       10
     ]
   },
@@ -592,7 +630,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      874,
+      887,
       12
     ]
   },
@@ -602,7 +640,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      876,
+      889,
       12
     ]
   },
@@ -612,7 +650,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      877,
+      890,
       12
     ]
   },
@@ -622,7 +660,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      879,
+      892,
       12
     ]
   },
@@ -632,7 +670,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      880,
+      893,
       8
     ]
   },
@@ -642,7 +680,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      881,
+      894,
       8
     ]
   },
@@ -652,7 +690,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      884,
+      897,
       8
     ]
   },
@@ -662,7 +700,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      892,
+      905,
       8
     ]
   },
@@ -672,7 +710,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      897,
+      910,
       8
     ]
   },
@@ -682,7 +720,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      907,
+      920,
       14
     ]
   },
@@ -692,7 +730,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      913,
+      926,
       14
     ]
   },
@@ -702,7 +740,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      915,
+      928,
       8
     ]
   },
@@ -712,8 +750,56 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      921,
+      934,
       10
+    ]
+  },
+  {
+    "id": "903OZm",
+    "message": "Fixture named placeholder in Astro markup: {ownerName}.",
+    "placeholders": {
+      "ownerName": "dashboardOwner"
+    },
+    "origin": [
+      "astro-full.astro",
+      944,
+      8
+    ]
+  },
+  {
+    "id": "ial1rQ",
+    "message": "Fixture directive from an Astro HTML comment.",
+    "context": "fixture-html-comment",
+    "comment": "Astro fixture HTML directive",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      946,
+      8
+    ]
+  },
+  {
+    "id": "4Hv1ia",
+    "message": "Fixture directive from an Astro expression block comment.",
+    "context": "fixture-expression-block",
+    "comment": "Astro fixture expression block directive",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      948,
+      8
+    ]
+  },
+  {
+    "id": "LREI6Z",
+    "message": "Fixture directive from an Astro expression line comment.",
+    "context": "fixture-expression-line",
+    "comment": "Astro fixture expression line directive",
+    "placeholders": {},
+    "origin": [
+      "astro-full.astro",
+      951,
+      8
     ]
   },
   {
@@ -722,7 +808,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      937,
+      960,
       13
     ]
   },
@@ -734,7 +820,7 @@
     },
     "origin": [
       "astro-full.astro",
-      942,
+      965,
       16
     ]
   },
@@ -744,7 +830,7 @@
     "placeholders": {},
     "origin": [
       "astro-full.astro",
-      950,
+      973,
       12
     ]
   },
@@ -756,7 +842,7 @@
     },
     "origin": [
       "astro-full.astro",
-      961,
+      984,
       31
     ]
   },
@@ -772,7 +858,7 @@
     },
     "origin": [
       "astro-full.astro",
-      966,
+      989,
       20
     ]
   },
@@ -786,7 +872,7 @@
     },
     "origin": [
       "astro-full.astro",
-      975,
+      998,
       20
     ]
   }

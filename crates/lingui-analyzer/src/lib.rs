@@ -97,6 +97,7 @@ pub fn build_synthetic_module_for_framework(
                 &analysis.semantic.macro_imports,
                 &candidates,
                 &analysis.metadata.source_anchors,
+                &analysis.metadata.lingui_directive_spans,
             )
             .map_err(ExtractError::from)?)
         }
@@ -146,6 +147,7 @@ pub fn build_synthetic_module_for_framework(
                 &imports,
                 &candidates,
                 &analysis.metadata.source_anchors,
+                &analysis.metadata.lingui_directive_spans,
             )
             .map_err(ExtractError::from)?)
         }

@@ -349,6 +349,108 @@ describe("svelteExtractor", () => {
     ).toBe(true);
   });
 
+  test("applies file-scoped Lingui directives to script macros and markup Trans", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t, Trans } from "lingui-for-svelte/macro";
+
+        // lingui-set context="settings" comment="Settings action" idPrefix="settings."
+        const save = t.eager({ id: "save", message: "Save" });
+
+        // lingui-reset
+        const plain = t.eager({ id: "plain", message: "Plain" });
+
+        // lingui-set context="shared" comment="Shared component" idPrefix="shared."
+      </script>
+
+      <Trans id="title">Shared welcome</Trans>
+      <!-- lingui-reset context="hero" comment="Hero heading" idPrefix="page." -->
+      <Trans id="title">Welcome</Trans>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        extractor.extract(
+          "/virtual/directives.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(
+      messages.find((message) => message.message === "Save"),
+    ).toMatchObject({
+      id: "settings.save",
+      context: "settings",
+      comment: "Settings action",
+    });
+    expect(
+      messages.find((message) => message.message === "Plain"),
+    ).toMatchObject({
+      id: "plain",
+    });
+    expect(
+      messages.find((message) => message.message === "Shared welcome"),
+    ).toMatchObject({
+      id: "shared.title",
+      context: "shared",
+      comment: "Shared component",
+    });
+    expect(
+      messages.find((message) => message.message === "Welcome"),
+    ).toMatchObject({
+      id: "page.title",
+      context: "hero",
+      comment: "Hero heading",
+    });
+  });
+
+  test("supports every valid Svelte comment form for Lingui directives", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { t, Trans } from "lingui-for-svelte/macro";
+
+        /* lingui-set context="script-block" */
+        const block = t.eager\`Script block\`;
+        // lingui-reset context="script-line"
+        const line = t.eager\`Script line\`;
+      </script>
+
+      <!-- lingui-reset context="markup-html" -->
+      <Trans>Markup HTML</Trans>
+      {true /* lingui-reset context="expression-block" */}
+      <Trans>Expression block</Trans>
+      {true // lingui-reset context="expression-line"
+      }
+      <Trans>Expression line</Trans>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        extractor.extract(
+          "/virtual/comment-forms.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    for (const [message, context] of [
+      ["Script block", "script-block"],
+      ["Script line", "script-line"],
+      ["Markup HTML", "markup-html"],
+      ["Expression block", "expression-block"],
+      ["Expression line", "expression-line"],
+    ] as const) {
+      expect(messages.find((item) => item.message === message)).toMatchObject({
+        context,
+      });
+    }
+  });
+
   test("extracts Plural, Select, and SelectOrdinal component macros", async () => {
     const source = dedent`
       <script lang="ts">

@@ -62,6 +62,28 @@
   const htmlDigest =
     "<strong>Imported digest</strong> with <em>inline</em> reviewer highlights.";
 
+  /* lingui-set context="fixture-script-block" comment="Svelte fixture script block directive" idPrefix="fixture." */
+  const directiveScriptBlock = __l4s_getI18n()._(
+  /** i18n */
+  {
+    id: "fixture.script-block",
+    message: "Fixture script block directive message.",
+    comment: "Svelte fixture script block directive",
+    context: "fixture-script-block"
+  });
+  const namedPlaceholderGreeting = __l4s_getI18n()._(
+  /** i18n */
+  {
+    id: "5yUBUl",
+    message: "Fixture review owner: {ownerName}.",
+    comment: "Svelte fixture script block directive",
+    context: "fixture-script-block",
+    values: {
+      ownerName: dashboardOwner
+    }
+  });
+  /* lingui-reset */
+
   const teamCards = $state<TeamCard[]>([
     {
       badge: "A",
@@ -569,10 +591,21 @@
         : "bg-slate-100 text-slate-700";
   }
 
+  // lingui-reset context="fixture-cross-block" comment="Svelte fixture directive crossing script" idPrefix="fixture."
+
   __l4s_ctx.prime();
 </script>
 
 <div class="mx-auto grid max-w-7xl gap-8 px-6 py-8">
+  <L4sRuntimeTrans {.../** i18n */
+  {
+    id: "fixture.cross-block",
+    message: "Fixture directive inherited from Svelte script.",
+    comment: "Svelte fixture directive crossing script",
+    context: "fixture-cross-block"
+  }} />
+  <!-- lingui-reset -->
+
   <header
     class="grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
   >
@@ -1128,5 +1161,49 @@
         })}
       </p>
     </aside>
+  </section>
+
+  <section class="grid gap-3 rounded-3xl border border-slate-200 bg-white p-5">
+    <h2>{$__l4s_translate(
+    /** i18n */
+    {
+      id: "RE9p73",
+      message: "Svelte directive and placeholder coverage"
+    })}</h2>
+    <p>{namedPlaceholderGreeting}</p>
+    <L4sRuntimeTrans {.../** i18n */
+    {
+      id: "sB8NuA",
+      message: "Fixture named placeholder in Svelte markup: {ownerName}.",
+      values: {
+        ownerName: dashboardOwner
+      }
+    }} />
+    <!-- lingui-set context="fixture-html-comment" comment="Svelte fixture HTML directive" -->
+    <L4sRuntimeTrans {.../** i18n */
+    {
+      id: "Rucwpn",
+      message: "Fixture directive from a Svelte HTML comment.",
+      comment: "Svelte fixture HTML directive",
+      context: "fixture-html-comment"
+    }} />
+    {true /* lingui-reset context="fixture-expression-block" comment="Svelte fixture expression block directive" */}
+    <L4sRuntimeTrans {.../** i18n */
+    {
+      id: "TgeS8h",
+      message: "Fixture directive from a Svelte expression block comment.",
+      comment: "Svelte fixture expression block directive",
+      context: "fixture-expression-block"
+    }} />
+    {true // lingui-reset context="fixture-expression-line" comment="Svelte fixture expression line directive"
+    }
+    <L4sRuntimeTrans {.../** i18n */
+    {
+      id: "Sjbwv0",
+      message: "Fixture directive from a Svelte expression line comment.",
+      comment: "Svelte fixture expression line directive",
+      context: "fixture-expression-line"
+    }} />
+    <!-- lingui-reset -->
   </section>
 </div>

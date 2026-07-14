@@ -1,5 +1,14 @@
 <script lang="ts">
-  import { t } from "lingui-for-svelte/macro";
+  import { ph, t, Trans } from "lingui-for-svelte/macro";
+
+  const syntaxOwner = "Svelte syntax";
+  /* lingui-set context="e2e-svelte-directive" comment="Svelte E2E directive" idPrefix="e2e." */
+  const directiveMessage = t.eager({
+    id: "svelte-directive",
+    message: "Svelte E2E directive from script.",
+  });
+  const namedPlaceholder = t.eager`Svelte syntax owner: ${ph({ ownerName: syntaxOwner })}.`;
+  /* lingui-reset */
 
   let syntaxState = $state({
     query: "",
@@ -15,7 +24,14 @@
   function bumpRevision(): void {
     syntaxState.revision += 1;
   }
+
+  // lingui-set context="e2e-cross-block" comment="Svelte E2E directive crossing script" idPrefix="e2e."
 </script>
+
+<Trans id="svelte-cross-block"
+  >Svelte directive inherited across the script boundary.</Trans
+>
+<!-- lingui-reset -->
 
 {#snippet syntaxChip(text: string)}
   <span class="badge badge-outline flex-none" title={$t`Snippet badge`}>
@@ -34,6 +50,13 @@
     <p class="text-base-content/80">
       {$t`This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte.`}
     </p>
+    <p>{directiveMessage}</p>
+    <p>{namedPlaceholder}</p>
+    <Trans
+      >Svelte named component placeholder: {ph({
+        ownerName: syntaxOwner,
+      })}.</Trans
+    >
 
     <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
       <label class="form-control gap-2">

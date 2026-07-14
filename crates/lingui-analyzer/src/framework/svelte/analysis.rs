@@ -8,6 +8,7 @@ use crate::conventions::{FrameworkConventions, MacroPackageKind};
 use crate::diagnostics::svelte::module_script_must_use_core_macro_package;
 use crate::syntax::parse::parse_svelte;
 
+use super::super::shared::directives::collect_lingui_directive_spans;
 use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
 };
@@ -33,6 +34,14 @@ pub fn analyze_svelte(
     let root = tree.root_node();
     let mut source_anchors = collect_node_start_anchors(source, root);
     let scripts = collect_script_blocks(source, root, options, &mut source_anchors)?;
+    let mut lingui_directive_spans = collect_lingui_directive_spans(source, root, 0);
+    lingui_directive_spans.extend(
+        scripts
+            .iter()
+            .flat_map(|script| script.lingui_directive_spans.iter().copied()),
+    );
+    lingui_directive_spans.sort_unstable_by_key(|span| (span.start, span.end));
+    lingui_directive_spans.dedup();
     let template_imports = scripts
         .iter()
         .filter(|script| !script.is_module)
@@ -57,13 +66,23 @@ pub fn analyze_svelte(
     let mut visitor = AnalysisVisitor::new(&template_imports, options);
     walk_svelte_template(source, root, options, &mut context, &mut visitor)?;
     let (expressions, components) = visitor.finish();
+    lingui_directive_spans.extend(
+        expressions
+            .iter()
+            .flat_map(|expression| expression.lingui_directive_spans.iter().copied()),
+    );
+    lingui_directive_spans.sort_unstable_by_key(|span| (span.start, span.end));
+    lingui_directive_spans.dedup();
     Ok(SvelteScriptAnalysis {
         semantic: SvelteSemanticAnalysis {
             scripts,
             template_expressions: expressions,
             template_components: components,
         },
-        metadata: SvelteSourceMetadata { source_anchors },
+        metadata: SvelteSourceMetadata {
+            source_anchors,
+            lingui_directive_spans,
+        },
     })
 }
 
@@ -172,6 +191,8 @@ fn analyze_script_block(
         },
         std::iter::empty::<&str>(),
     );
+    let lingui_directive_spans =
+        collect_lingui_directive_spans(script_source, script_root, content_region.inner_span.start);
 
     Ok(Some(SvelteScriptBlock {
         region: content_region,
@@ -181,6 +202,7 @@ fn analyze_script_block(
         macro_imports,
         macro_import_statement_spans,
         candidates,
+        lingui_directive_spans,
     }))
 }
 
@@ -282,11 +304,14 @@ fn push_expression(
         JsMacroSyntax::Svelte,
         shadowed_names.iter(),
     );
+    let lingui_directive_spans =
+        collect_lingui_directive_spans(expression_source, tree.root_node(), inner_span.start);
     expressions.push(SvelteTemplateExpression {
         outer_span,
         inner_span,
         candidates,
         shadowed_names,
+        lingui_directive_spans,
     });
     Ok(())
 }
@@ -316,11 +341,14 @@ fn push_raw_text_expression(
         JsMacroSyntax::Svelte,
         shadowed_names.iter(),
     );
+    let lingui_directive_spans =
+        collect_lingui_directive_spans(expression_source, tree.root_node(), inner_span.start);
     expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(node),
         inner_span,
         candidates,
         shadowed_names,
+        lingui_directive_spans,
     });
     Ok(())
 }
@@ -350,11 +378,17 @@ fn push_each_start_expression(
         JsMacroSyntax::Svelte,
         shadowed_names.iter(),
     );
+    let lingui_directive_spans = collect_lingui_directive_spans(
+        node_text(source, identifier),
+        tree.root_node(),
+        inner_span.start,
+    );
     expressions.push(SvelteTemplateExpression {
         outer_span: Span::from_node(each_start),
         inner_span,
         candidates,
         shadowed_names,
+        lingui_directive_spans,
     });
     Ok(())
 }

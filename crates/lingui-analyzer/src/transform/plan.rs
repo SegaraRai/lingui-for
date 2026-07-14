@@ -2,6 +2,7 @@ use lean_string::LeanString;
 
 use crate::common::{MappedText, RenderedMappedText, compose_source_maps, source_map_to_json};
 use crate::conventions::FrameworkConventions;
+use crate::framework::shared::directives::render_lingui_directive;
 use crate::framework::{MacroCandidateStrategy, WhitespaceMode, render_macro_import_line};
 use crate::synthesis::{
     SynthesisPlan, build_synthesis_plan, merge_owned_candidate_normalization_edits,
@@ -21,7 +22,14 @@ pub(crate) fn build_transform_plan_for_framework<P: FrameworkTransformPlan>(
     runtime_warnings: RuntimeWarningOptions,
 ) -> Result<P, TransformError> {
     let mut analysis = P::analyze(source, source_name, whitespace_mode, &conventions)?;
-    let (imports, prototypes, import_removals, synthetic_lang, source_anchors) = {
+    let (
+        imports,
+        prototypes,
+        import_removals,
+        synthetic_lang,
+        source_anchors,
+        lingui_directive_spans,
+    ) = {
         let common_analysis = P::common_analysis(&mut analysis);
         retain_standalone_prototypes(&mut common_analysis.prototypes);
         (
@@ -30,6 +38,7 @@ pub(crate) fn build_transform_plan_for_framework<P: FrameworkTransformPlan>(
             common_analysis.import_removals.clone(),
             common_analysis.synthetic_lang,
             common_analysis.source_anchors.clone(),
+            common_analysis.lingui_directive_spans.clone(),
         )
     };
 
@@ -45,6 +54,7 @@ pub(crate) fn build_transform_plan_for_framework<P: FrameworkTransformPlan>(
         &synthetic_plan,
         &prototypes,
         &source_anchors,
+        &lingui_directive_spans,
         |prototype, normalized_source| {
             P::wrap_transform_source(&analysis, prototype, normalized_source)
         },
@@ -131,6 +141,7 @@ fn build_transform_synthetic_source(
     synthetic_plan: &SynthesisPlan,
     prototypes: &[TransformTargetPrototype],
     _source_anchors: &[usize],
+    lingui_directive_spans: &[crate::common::Span],
     wrap_transform_source: impl Fn(
         &TransformTargetPrototype,
         &RenderedMappedText,
@@ -143,7 +154,16 @@ fn build_transform_synthetic_source(
         output.push_unmapped("\n");
     }
 
+    let mut directive_index = 0;
     for (prototype, target) in prototypes.iter().zip(synthetic_plan.targets.iter()) {
+        while let Some(span) = lingui_directive_spans.get(directive_index)
+            && span.start <= target.candidate.outer_span.start
+        {
+            if let Some(comment) = render_lingui_directive(source, *span) {
+                output.push_unmapped_dynamic(comment);
+            }
+            directive_index += 1;
+        }
         let wrapped = wrap_transform_source(prototype, &target.normalized_rendered)?;
         let RenderedMappedText {
             code: wrapped_code,
@@ -313,6 +333,7 @@ mod tests {
             &synthetic_plan,
             &prototypes,
             &[0, source.len()],
+            &[],
             |_, normalized_source| {
                 let indexed_source = IndexedText::new(&source_text);
                 Ok(RenderedMappedText {
@@ -378,6 +399,7 @@ mod tests {
             &synthetic_plan,
             &prototypes,
             &[0, source.len()],
+            &[],
             |_, normalized_source| {
                 Ok(RenderedMappedText {
                     code: normalized_source.code.clone(),

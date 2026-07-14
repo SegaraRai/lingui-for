@@ -17,6 +17,11 @@ surface is broader than plain JSX-shaped rich text.
 - `{@html ...}` wrappers
 - `{@render ...}` wrappers
 
+Ordinary comments inside `Trans` are ignored when Lingui builds the message. Lingui directives in
+Svelte comments still follow source order, so put a directive before the opening tag when it should
+apply to that `Trans`. See [Lingui Directives](/guides/lingui-directives) for supported comment forms
+and scope rules.
+
 ## Still unsupported
 
 `Trans` still expects wrapper-shaped rich text, not general template control flow.

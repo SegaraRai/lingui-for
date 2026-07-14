@@ -1,6 +1,26 @@
 import { i18n as _i18n } from "@lingui/core";
-import { Trans as _Trans } from "@lingui/react";
-const __lf_0 = __lingui_for_svelte_reactive_translation__(_i18n._(
+/* lingui-set context="fixture-script-block" comment="Svelte fixture script block directive" idPrefix="fixture." */import { Trans as _Trans } from "@lingui/react";
+const __lf_0 = _i18n._(
+/** i18n */
+{
+  id: "fixture.script-block",
+  message: "Fixture script block directive message.",
+  comment: "Svelte fixture script block directive",
+  context: "fixture-script-block"
+});
+const __lf_1 = _i18n._(
+/** i18n */
+{
+  id: "5yUBUl",
+  message: "Fixture review owner: {ownerName}.",
+  comment: "Svelte fixture script block directive",
+  context: "fixture-script-block",
+  values: {
+    ownerName: dashboardOwner
+  }
+});
+/* lingui-reset */
+const __lf_2 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "8-nA3Y",
@@ -9,7 +29,7 @@ const __lf_0 = __lingui_for_svelte_reactive_translation__(_i18n._(
     dashboardOwner: dashboardOwner
   }
 }), "translate");
-const __lf_1 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_3 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "5kwh2a",
@@ -19,7 +39,7 @@ const __lf_1 = __lingui_for_svelte_reactive_translation__(_i18n._(
     1: selectedRegion === "all" ? "all regions" : selectedRegion
   }
 }), "translate");
-const __lf_2 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_4 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "wc9bP7",
@@ -28,25 +48,25 @@ const __lf_2 = __lingui_for_svelte_reactive_translation__(_i18n._(
     localeMode: localeMode
   }
 }), "select");
-const __lf_3 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_5 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "C81jcY",
   message: "Escalation required: unresolved high-priority queue items remain."
 }), "translate");
-const __lf_4 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_6 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "jJ-oTf",
   message: "Attention needed: high-priority items are waiting for review."
 }), "translate");
-const __lf_5 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_7 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "GzY8qo",
   message: "All monitored queues are stable."
 }), "translate");
-const __lf_6 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_8 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "lC_3w5",
@@ -55,79 +75,89 @@ const __lf_6 = __lingui_for_svelte_reactive_translation__(_i18n._(
     0: String(latencyMs > 250 ? `${latencyMs}ms (slow)` : `${latencyMs}ms`)
   }
 }), "translate");
-const __lf_7 = __lingui_for_svelte_reactive_translation__(_i18n._(
+/* lingui-reset context="fixture-cross-block" comment="Svelte fixture directive crossing script" idPrefix="fixture." */
+const __lf_9 = <_Trans {...
+/** i18n */
+{
+  id: "fixture.cross-block",
+  message: "Fixture directive inherited from Svelte script.",
+  comment: "Svelte fixture directive crossing script",
+  context: "fixture-cross-block"
+}} />;
+/* lingui-reset */
+const __lf_10 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "B1MDds",
   message: "Operations"
 }), "translate");
-const __lf_8 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_11 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "xdDw1Z",
   message: "Workspace mode:"
 }), "translate");
-const __lf_9 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_12 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "5wic0R",
   message: "Editing tools are enabled for this workspace."
 }), "translate");
-const __lf_10 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_13 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "oYLtG0",
   message: "Editing tools are read-only for this workspace."
 }), "translate");
-const __lf_11 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_14 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "tQcxxg",
   message: "Region:"
 }), "translate");
-const __lf_12 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_15 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "7lRCx1",
   message: "Queue kind:"
 }), "translate");
-const __lf_13 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_16 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "gzWinp",
   message: "Assigned only:"
 }), "translate");
-const __lf_14 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_17 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "Fdp03t",
   message: "on"
 }), "translate");
-const __lf_15 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_18 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "Bdtwnw",
   message: "off"
 }), "translate");
-const __lf_16 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_19 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "jYKshG",
   message: "History:"
 }), "translate");
-const __lf_17 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_20 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "JkIYli",
   message: "shown"
 }), "translate");
-const __lf_18 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_21 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "zNCBmf",
   message: "hidden"
 }), "translate");
-const __lf_19 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_22 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "W3Ae0L",
@@ -136,37 +166,37 @@ const __lf_19 = __lingui_for_svelte_reactive_translation__(_i18n._(
     0: String(card.reviewers)
   }
 }), "translate");
-const __lf_20 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_23 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "UbRKMZ",
   message: "Pending"
 }), "translate");
-const __lf_21 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_24 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "FEPXtw",
   message: "Reviewed"
 }), "translate");
-const __lf_22 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_25 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "3UYUtA",
   message: "Flagged"
 }), "translate");
-const __lf_23 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_26 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "yiNL80",
   message: "Reviewers"
 }), "translate");
-const __lf_24 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_27 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "mtE2Ev",
   message: "Queue details"
 }), "translate");
-const __lf_25 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_28 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "gimT52",
@@ -175,7 +205,7 @@ const __lf_25 = __lingui_for_svelte_reactive_translation__(_i18n._(
     0: String(filteredQueue.length)
   }
 }), "translate");
-const __lf_26 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_29 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "Ji1wwM",
@@ -186,7 +216,7 @@ const __lf_26 = __lingui_for_svelte_reactive_translation__(_i18n._(
     2: String($totals.unread)
   }
 }), "translate");
-const __lf_27 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_30 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "szWjCj",
@@ -198,7 +228,7 @@ const __lf_27 = __lingui_for_svelte_reactive_translation__(_i18n._(
     3: String(item.unread)
   }
 }), "translate");
-const __lf_28 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_31 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "IDpMOo",
@@ -208,31 +238,31 @@ const __lf_28 = __lingui_for_svelte_reactive_translation__(_i18n._(
     1: String(item.comments)
   }
 }), "translate");
-const __lf_29 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_32 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "2TUOis",
   message: "Owner:"
 }), "translate");
-const __lf_30 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_33 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "GRmQfp",
   message: "Assignee:"
 }), "translate");
-const __lf_31 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_34 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "Y2-ZT9",
   message: "Comments:"
 }), "translate");
-const __lf_32 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_35 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "jqmIfA",
   message: "Attachments:"
 }), "translate");
-const __lf_33 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_36 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "lvcfoy",
@@ -241,19 +271,19 @@ const __lf_33 = __lingui_for_svelte_reactive_translation__(_i18n._(
     0: String(item.pathHint ?? "")
   }
 }), "translate");
-const __lf_34 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_37 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "pa6gX-",
   message: "No path"
 }), "translate");
-const __lf_35 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_38 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "qbgW-C",
   message: "Highlights"
 }), "translate");
-const __lf_36 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_39 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "ubwhkQ",
@@ -262,13 +292,13 @@ const __lf_36 = __lingui_for_svelte_reactive_translation__(_i18n._(
     0: String($highlightedQueue.length)
   }
 }), "translate");
-const __lf_37 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_40 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "nj0sbN",
   message: "No highlighted queue items."
 }), "translate");
-const __lf_38 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_41 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "i4y9D_",
@@ -280,13 +310,13 @@ const __lf_38 = __lingui_for_svelte_reactive_translation__(_i18n._(
     3: String(item.unread)
   }
 }), "translate");
-const __lf_39 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_42 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "quM66o",
   message: "Decision log"
 }), "translate");
-const __lf_40 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_43 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "LZB4fD",
@@ -296,13 +326,13 @@ const __lf_40 = __lingui_for_svelte_reactive_translation__(_i18n._(
     1: String(row.path ?? "the current workflow")
   }
 }), "translate");
-const __lf_41 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_44 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "OcCQjb",
   message: "Activity stream"
 }), "translate");
-const __lf_42 = <_Trans {...
+const __lf_45 = <_Trans {...
 /** i18n */
 {
   id: "FJeYAi",
@@ -312,7 +342,7 @@ const __lf_42 = <_Trans {...
     1: <LinguiForSvelteHtml value={htmlDigest} />
   }
 }} />;
-const __lf_43 = <_Trans {...
+const __lf_46 = <_Trans {...
 /** i18n */
 {
   id: "JUNx-G",
@@ -321,7 +351,7 @@ const __lf_43 = <_Trans {...
     0: <LinguiForSvelteHtml value={"<em>some HTML</em>"} />
   }
 }} />;
-const __lf_44 = <_Trans {...
+const __lf_47 = <_Trans {...
 /** i18n */
 {
   id: "cKxDiJ",
@@ -338,13 +368,13 @@ const __lf_44 = <_Trans {...
     4: <li />
   }
 }} />;
-const __lf_45 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_48 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "UsgvkK",
   message: "Status digest"
 }), "translate");
-const __lf_46 = <_Trans {...
+const __lf_49 = <_Trans {...
 /** i18n */
 {
   id: "8p_xVT",
@@ -368,7 +398,7 @@ const __lf_46 = <_Trans {...
     })
   }
 }} />;
-const __lf_47 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_50 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "pnokNm",
@@ -378,7 +408,7 @@ const __lf_47 = __lingui_for_svelte_reactive_translation__(_i18n._(
     1: String($highlightedQueue.length > 2 ? "requires escalation" : "is within normal review limits")
   }
 }), "translate");
-const __lf_48 = __lingui_for_svelte_reactive_translation__(_i18n._(
+const __lf_51 = __lingui_for_svelte_reactive_translation__(_i18n._(
 /** i18n */
 {
   id: "d8ajL9",
@@ -387,3 +417,45 @@ const __lf_48 = __lingui_for_svelte_reactive_translation__(_i18n._(
     0: String($highlightedQueue.length > 0 ? `highlighted:${$highlightedQueue[0]?.id ?? "none"}` : `region:${selectedRegion}`)
   }
 }), "translate");
+const __lf_52 = __lingui_for_svelte_reactive_translation__(_i18n._(
+/** i18n */
+{
+  id: "RE9p73",
+  message: "Svelte directive and placeholder coverage"
+}), "translate");
+const __lf_53 = <_Trans {...
+/** i18n */
+{
+  id: "sB8NuA",
+  message: "Fixture named placeholder in Svelte markup: {ownerName}.",
+  values: {
+    ownerName: dashboardOwner
+  }
+}} />;
+/* lingui-set context="fixture-html-comment" comment="Svelte fixture HTML directive" */
+const __lf_54 = <_Trans {...
+/** i18n */
+{
+  id: "Rucwpn",
+  message: "Fixture directive from a Svelte HTML comment.",
+  comment: "Svelte fixture HTML directive",
+  context: "fixture-html-comment"
+}} />;
+/* lingui-reset context="fixture-expression-block" comment="Svelte fixture expression block directive" */
+const __lf_55 = <_Trans {...
+/** i18n */
+{
+  id: "TgeS8h",
+  message: "Fixture directive from a Svelte expression block comment.",
+  comment: "Svelte fixture expression block directive",
+  context: "fixture-expression-block"
+}} />;
+/* lingui-reset context="fixture-expression-line" comment="Svelte fixture expression line directive" */
+const __lf_56 = <_Trans {...
+/** i18n */
+{
+  id: "Sjbwv0",
+  message: "Fixture directive from a Svelte expression line comment.",
+  comment: "Svelte fixture expression line directive",
+  context: "fixture-expression-line"
+}} />;

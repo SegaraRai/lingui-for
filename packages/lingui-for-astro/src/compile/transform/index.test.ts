@@ -57,6 +57,68 @@ async function expectTransformed(
   return result;
 }
 
+test("preserves Lingui directive state while transforming frontmatter macros and JSX-comment Trans", async () => {
+  const result = await expectTransformed(dedent`
+    ---
+    import { t, Trans } from "lingui-for-astro/macro";
+
+    // lingui-set context="settings" comment="Settings action" idPrefix="settings."
+    const save = t({ id: "save", message: "Save" });
+
+    // lingui-reset
+    const plain = t({ id: "plain", message: "Plain" });
+
+    // lingui-set context="shared" comment="Shared component" idPrefix="shared."
+    ---
+
+    <Trans id="title">Shared welcome</Trans>
+    {/* lingui-reset context="hero" comment="Hero heading" idPrefix="page." */}
+    <Trans id="title">Welcome</Trans>
+  `);
+  const code = compact(result.code);
+
+  expect(code).toMatch(
+    /id: "settings\.save", message: "Save", comment: "Settings action", context: "settings"/,
+  );
+  expect(code).toMatch(/id: "plain", message: "Plain"/);
+  expect(code).toMatch(
+    /id: "shared\.title", message: "Shared welcome", comment: "Shared component", context: "shared"/,
+  );
+  expect(code).toMatch(
+    /id: "page\.title", message: "Welcome", comment: "Hero heading", context: "hero"/,
+  );
+});
+
+test("transforms directives from Astro block, HTML, and expression comments", async () => {
+  const result = await expectTransformed(dedent`
+    ---
+    import { Trans } from "lingui-for-astro/macro";
+    /* lingui-set context="frontmatter-block" */
+    ---
+
+    <Trans>Frontmatter block</Trans>
+    <!-- lingui-reset context="markup-html" -->
+    <Trans>Markup HTML</Trans>
+    {true /* lingui-reset context="expression-block" */}
+    <Trans>Expression block</Trans>
+    {true // lingui-reset context="expression-line"
+    }
+    <Trans>Expression line</Trans>
+  `);
+  const code = compact(result.code);
+
+  expect(code).toMatch(
+    /message: "Frontmatter block", context: "frontmatter-block"/,
+  );
+  expect(code).toMatch(/message: "Markup HTML", context: "markup-html"/);
+  expect(code).toMatch(
+    /message: "Expression block", context: "expression-block"/,
+  );
+  expect(code).toMatch(
+    /message: "Expression line", context: "expression-line"/,
+  );
+});
+
 describe("transformAstro", () => {
   test("maps aliased ph placeholders from frontmatter and Trans markup to runtime values", async () => {
     const result = await expectTransformed(

@@ -395,6 +395,142 @@ exports[`NODE_ENV=development > 'exact-number-component' > svelte transform 1`] 
 }} />"
 `;
 
+exports[`NODE_ENV=development > 'lingui-directive-cross-block' > astro transform 1`] = `
+"---
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+
+// lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+---
+
+<L4aRuntimeTrans {...(/*i18n*/ {
+  id: "conformance.title",
+  message: "Directive inherited by Trans.",
+  comment: "Directive crossing source regions",
+  context: "conformance"
+})}></L4aRuntimeTrans>"
+`;
+
+exports[`NODE_ENV=development > 'lingui-directive-cross-block' > official react transform 1`] = `
+"// lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+import { Trans as _Trans } from "@lingui/react";
+export function Example() {
+  return <_Trans {...
+  /** i18n */
+  {
+    id: "conformance.title",
+    message: "Directive inherited by Trans.",
+    comment: "Directive crossing source regions",
+    context: "conformance"
+  }} />;
+}"
+`;
+
+exports[`NODE_ENV=development > 'lingui-directive-cross-block' > svelte transform 1`] = `
+"<script lang="ts">
+  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+  // lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+</script>
+
+<L4sRuntimeTrans {.../** i18n */
+{
+  id: "conformance.title",
+  message: "Directive inherited by Trans.",
+  comment: "Directive crossing source regions",
+  context: "conformance"
+}} />"
+`;
+
+exports[`NODE_ENV=development > 'named-ph' > astro transform 1`] = `
+"---
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
+const __l4a_i18n = __l4a_createI18n(Astro.locals);
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+
+const owner = { name: "Ada" };
+const greeting = __l4a_i18n._(
+/** i18n */
+{
+  id: "2w7LlI",
+  message: "Named owner: {ownerName}.",
+  values: {
+    ownerName: owner.name
+  }
+});
+__l4a_i18n.prime();
+---
+
+<p>{greeting}</p>
+<L4aRuntimeTrans {...(/*i18n*/ {
+  id: "3NoARm",
+  message: "Welcome {ownerName}!",
+  values: {
+    ownerName: owner.name
+  }
+})}></L4aRuntimeTrans>"
+`;
+
+exports[`NODE_ENV=development > 'named-ph' > official react transform 1`] = `
+"import { i18n as _i18n } from "@lingui/core";
+import { Trans as _Trans } from "@lingui/react";
+const owner = {
+  name: "Ada"
+};
+const greeting = _i18n._(
+/** i18n */
+{
+  id: "2w7LlI",
+  message: "Named owner: {ownerName}.",
+  values: {
+    ownerName: owner.name
+  }
+});
+export function Example() {
+  return <>
+      <p>{greeting}</p>
+      <_Trans {...
+    /** i18n */
+    {
+      id: "3NoARm",
+      message: "Welcome {ownerName}!",
+      values: {
+        ownerName: owner.name
+      }
+    }} />
+    </>;
+}"
+`;
+
+exports[`NODE_ENV=development > 'named-ph' > svelte transform 1`] = `
+"<script lang="ts">
+  import { RuntimeTrans as L4sRuntimeTrans, createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+  const __l4s_ctx = createLinguiAccessors();
+  const __l4s_getI18n = __l4s_ctx.getI18n;
+  const __l4s_translate = __l4s_ctx._;
+  const owner = { name: "Ada" };
+  const greeting = __l4s_getI18n()._(
+  /** i18n */
+  {
+    id: "2w7LlI",
+    message: "Named owner: {ownerName}.",
+    values: {
+      ownerName: owner.name
+    }
+  });
+
+  __l4s_ctx.prime();
+</script>
+
+<p>{greeting}</p>
+<L4sRuntimeTrans {.../** i18n */
+{
+  id: "3NoARm",
+  message: "Welcome {ownerName}!",
+  values: {
+    ownerName: owner.name
+  }
+}} />"
+`;
+
 exports[`NODE_ENV=development > 'nested-icu-core' > astro transform 1`] = `
 "---
 import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
@@ -1723,6 +1859,127 @@ exports[`NODE_ENV=production > 'exact-number-component' > svelte transform 1`] =
   id: "gM41pk",
   values: {
     rank: rank
+  }
+}} />"
+`;
+
+exports[`NODE_ENV=production > 'lingui-directive-cross-block' > astro transform 1`] = `
+"---
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+
+// lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+---
+
+<L4aRuntimeTrans {...(/*i18n*/ {
+  id: "conformance.title"
+})}></L4aRuntimeTrans>"
+`;
+
+exports[`NODE_ENV=production > 'lingui-directive-cross-block' > official react transform 1`] = `
+"// lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+import { Trans as _Trans } from "@lingui/react";
+export function Example() {
+  return <_Trans {...
+  /** i18n */
+  {
+    id: "conformance.title"
+  }} />;
+}"
+`;
+
+exports[`NODE_ENV=production > 'lingui-directive-cross-block' > svelte transform 1`] = `
+"<script lang="ts">
+  import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
+  // lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+</script>
+
+<L4sRuntimeTrans {.../** i18n */
+{
+  id: "conformance.title"
+}} />"
+`;
+
+exports[`NODE_ENV=production > 'named-ph' > astro transform 1`] = `
+"---
+import { createLinguiAccessors as __l4a_createI18n } from "lingui-for-astro/runtime";
+const __l4a_i18n = __l4a_createI18n(Astro.locals);
+import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
+
+const owner = { name: "Ada" };
+const greeting = __l4a_i18n._(
+/** i18n */
+{
+  id: "2w7LlI",
+  values: {
+    ownerName: owner.name
+  }
+});
+__l4a_i18n.prime();
+---
+
+<p>{greeting}</p>
+<L4aRuntimeTrans {...(/*i18n*/ {
+  id: "3NoARm",
+  values: {
+    ownerName: owner.name
+  }
+})}></L4aRuntimeTrans>"
+`;
+
+exports[`NODE_ENV=production > 'named-ph' > official react transform 1`] = `
+"import { i18n as _i18n } from "@lingui/core";
+import { Trans as _Trans } from "@lingui/react";
+const owner = {
+  name: "Ada"
+};
+const greeting = _i18n._(
+/** i18n */
+{
+  id: "2w7LlI",
+  values: {
+    ownerName: owner.name
+  }
+});
+export function Example() {
+  return <>
+      <p>{greeting}</p>
+      <_Trans {...
+    /** i18n */
+    {
+      id: "3NoARm",
+      values: {
+        ownerName: owner.name
+      }
+    }} />
+    </>;
+}"
+`;
+
+exports[`NODE_ENV=production > 'named-ph' > svelte transform 1`] = `
+"<script lang="ts">
+  import { RuntimeTrans as L4sRuntimeTrans, createLinguiAccessors as createLinguiAccessors } from "lingui-for-svelte/runtime";
+  const __l4s_ctx = createLinguiAccessors();
+  const __l4s_getI18n = __l4s_ctx.getI18n;
+  const __l4s_translate = __l4s_ctx._;
+  const owner = { name: "Ada" };
+  const greeting = __l4s_getI18n()._(
+  /** i18n */
+  {
+    id: "2w7LlI",
+    values: {
+      ownerName: owner.name
+    }
+  });
+
+  __l4s_ctx.prime();
+</script>
+
+<p>{greeting}</p>
+<L4sRuntimeTrans {.../** i18n */
+{
+  id: "3NoARm",
+  values: {
+    ownerName: owner.name
   }
 }} />"
 `;

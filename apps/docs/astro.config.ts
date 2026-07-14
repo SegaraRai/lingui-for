@@ -306,6 +306,13 @@ export default defineConfig({
               slug: "guides/extract-compile-verify",
             },
             {
+              label: "Lingui Directives",
+              translations: {
+                ja: "Lingui ディレクティブ",
+              },
+              slug: "guides/lingui-directives",
+            },
+            {
               label: "Framework Config",
               translations: {
                 ja: "フレームワーク設定",

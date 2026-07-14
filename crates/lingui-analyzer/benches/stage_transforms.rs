@@ -56,6 +56,7 @@ struct ExtractInputs {
     imports: Vec<lingui_analyzer::MacroImport>,
     candidates: Vec<MacroCandidate>,
     source_anchors: Vec<usize>,
+    lingui_directive_spans: Vec<lingui_analyzer::common::Span>,
 }
 
 #[derive(Clone)]
@@ -210,6 +211,7 @@ fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
                 imports: analysis.semantic.macro_imports,
                 candidates: standalone_candidates(candidates),
                 source_anchors: analysis.metadata.source_anchors,
+                lingui_directive_spans: analysis.metadata.lingui_directive_spans,
             }
         }
         FrameworkKind::Svelte => {
@@ -246,6 +248,7 @@ fn collect_extract_inputs(case: &FixtureCase) -> ExtractInputs {
                 imports,
                 candidates: standalone_candidates(candidates),
                 source_anchors: analysis.metadata.source_anchors,
+                lingui_directive_spans: analysis.metadata.lingui_directive_spans,
             }
         }
     }
@@ -338,6 +341,7 @@ fn bench_extract_build_only(c: &mut Criterion) {
                         black_box(&inputs.imports),
                         black_box(&inputs.candidates),
                         black_box(&inputs.source_anchors),
+                        black_box(&inputs.lingui_directive_spans),
                     )
                     .expect("synthetic builder succeeds");
                     black_box(module);

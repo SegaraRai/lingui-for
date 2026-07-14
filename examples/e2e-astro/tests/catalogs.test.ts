@@ -20,6 +20,11 @@ describe("lingui extract and compile outputs", () => {
     expect(enPo).toContain("Island translation checks");
     expect(enPo).toContain("Rich text translation checks");
     expect(enPo).toContain("Format macro checks");
+    expect(enPo).toContain('msgid "e2e.astro-directive"');
+    expect(enPo).toContain('msgid "e2e.astro-cross-block"');
+    expect(enPo).toContain('msgctxt "e2e-astro-directive"');
+    expect(enPo).toContain("Astro format owner: {ownerName}.");
+    expect(enPo).toContain("Astro named component placeholder: {ownerName}.");
     expect(enPo).toContain("Dynamic route checks");
     expect(enPo).toContain("Client transition checks");
     expect(enPo).toContain("Current page: {currentPage}");
@@ -138,6 +143,10 @@ describe("lingui extract and compile outputs", () => {
     expect(jaCatalog).toContain("Lingui Astro マルチページプレイグラウンド");
     expect(jaCatalog).toContain("サーバー翻訳の確認");
     expect(jaCatalog).toContain("動的ルートの確認");
+    expect(jaCatalog).toContain("Astro フォーマットの担当: ");
+    expect(jaCatalog).toContain(
+      "Astro の名前付きコンポーネントプレースホルダー: ",
+    );
     expect(jaCatalog).toContain("クライアント遷移の確認");
     expect(jaCatalog).toContain("テンプレートこんにちは😀 ");
     expect(jaCatalog).toContain("ようこそ <0>");

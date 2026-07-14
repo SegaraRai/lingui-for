@@ -20,6 +20,76 @@ export type ConformanceFixture =
 
 export const conformanceFixtures: readonly ConformanceFixture[] = [
   {
+    name: "lingui-directive-cross-block",
+    officialReact: dedent`
+      import { Trans } from "@lingui/react/macro";
+
+      // lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+      export function Example() {
+        return <Trans id="title">Directive inherited by Trans.</Trans>;
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { Trans } from "lingui-for-svelte/macro";
+
+        // lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+      </script>
+
+      <Trans id="title">Directive inherited by Trans.</Trans>
+    `,
+    astro: dedent`
+      ---
+      import { Trans } from "lingui-for-astro/macro";
+
+      // lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
+      ---
+
+      <Trans id="title">Directive inherited by Trans.</Trans>
+    `,
+  },
+  {
+    name: "named-ph",
+    officialReact: dedent`
+      import { ph, t } from "@lingui/core/macro";
+      import { Trans } from "@lingui/react/macro";
+
+      const owner = { name: "Ada" };
+      const greeting = t\`Named owner: \${ph({ ownerName: owner.name })}.\`;
+
+      export function Example() {
+        return (
+          <>
+            <p>{greeting}</p>
+            <Trans>Welcome {ph({ ownerName: owner.name })}!</Trans>
+          </>
+        );
+      }
+    `,
+    svelte: dedent`
+      <script lang="ts">
+        import { ph, t, Trans } from "lingui-for-svelte/macro";
+
+        const owner = { name: "Ada" };
+        const greeting = t.eager\`Named owner: \${ph({ ownerName: owner.name })}.\`;
+      </script>
+
+      <p>{greeting}</p>
+      <Trans>Welcome {ph({ ownerName: owner.name })}!</Trans>
+    `,
+    astro: dedent`
+      ---
+      import { ph, t, Trans } from "lingui-for-astro/macro";
+
+      const owner = { name: "Ada" };
+      const greeting = t\`Named owner: \${ph({ ownerName: owner.name })}.\`;
+      ---
+
+      <p>{greeting}</p>
+      <Trans>Welcome {ph({ ownerName: owner.name })}!</Trans>
+    `,
+  },
+  {
     name: "rich-text-trans",
     officialReact: dedent`
       import { Trans } from "@lingui/react/macro";

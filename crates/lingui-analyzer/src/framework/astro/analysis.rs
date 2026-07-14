@@ -10,6 +10,7 @@ use crate::common::{
 use crate::conventions::FrameworkConventions;
 use crate::syntax::parse::{ParseError, parse_astro, parse_typescript};
 
+use super::super::shared::directives::collect_lingui_directive_spans;
 use super::super::shared::helpers::anchors::{
     collect_node_start_anchors, extend_shifted_node_start_anchors,
 };
@@ -50,6 +51,7 @@ pub fn analyze_astro(
     let mut source_anchors = collect_node_start_anchors(source, root);
     let frontmatter = find_frontmatter(root);
     let fragment_tag_pairs = collect_fragment_tag_pairs(root);
+    let mut lingui_directive_spans = collect_lingui_directive_spans(source, root, 0);
 
     let (
         macro_imports,
@@ -66,6 +68,11 @@ pub fn analyze_astro(
             &mut source_anchors,
         );
         let frontmatter_root = frontmatter_tree.root_node();
+        lingui_directive_spans.extend(collect_lingui_directive_spans(
+            frontmatter_source,
+            frontmatter_root,
+            frontmatter_region.inner_span.start,
+        ));
         let declared_names =
             collect_top_level_declared_names_from_root(frontmatter_source, frontmatter_root);
         let macro_imports = collect_macro_imports(
@@ -100,6 +107,13 @@ pub fn analyze_astro(
 
     let (template_expressions, template_components) =
         collect_template_expressions(source, root, &macro_imports, options)?;
+    lingui_directive_spans.extend(
+        template_expressions
+            .iter()
+            .flat_map(|expression| expression.lingui_directive_spans.iter().copied()),
+    );
+    lingui_directive_spans.sort_unstable_by_key(|span| (span.start, span.end));
+    lingui_directive_spans.dedup();
 
     Ok(AstroFrontmatterAnalysis {
         semantic: AstroSemanticAnalysis {
@@ -114,6 +128,7 @@ pub fn analyze_astro(
             frontmatter_import_statement_spans,
             fragment_tag_pairs,
             source_anchors,
+            lingui_directive_spans,
         },
     })
 }
@@ -293,6 +308,9 @@ fn collect_template_expressions(
                     outer_span: lowered.outer_span,
                     inner_span: lowered.inner_span,
                     candidates: lowered.candidates.clone(),
+                    lingui_directive_spans: collect_html_interpolation_directive_spans(
+                        source, node, lowered,
+                    ),
                 });
                 if is_pure_html_interpolation_expression(node) {
                     return Ok(());
@@ -390,6 +408,25 @@ fn collect_template_expressions(
     Ok((collected.expressions, collected.components))
 }
 
+fn collect_html_interpolation_directive_spans(
+    source: &str,
+    node: Node<'_>,
+    lowered: &LoweredAstroHtmlInterpolationAnalysis,
+) -> Vec<Span> {
+    let mut spans = collect_lingui_directive_spans(source, node, 0);
+    let expression_source = span_text(source, lowered.inner_span);
+    if let Ok(tree) = parse_typescript(expression_source) {
+        spans.extend(collect_lingui_directive_spans(
+            expression_source,
+            tree.root_node(),
+            lowered.inner_span.start,
+        ));
+    }
+    spans.sort_unstable_by_key(|span| (span.start, span.end));
+    spans.dedup();
+    spans
+}
+
 fn analyze_lowered_html_interpolations(
     source: &str,
     imports: &[MacroImport],
@@ -467,6 +504,8 @@ fn push_template_expression(
         JsMacroSyntax::Standard,
         std::iter::empty::<&str>(),
     );
+    let lingui_directive_spans =
+        collect_lingui_directive_spans(expression_source, tree.root_node(), inner_span.start);
     if !excluded_nested_spans.is_empty() {
         candidates.retain(|candidate| {
             !excluded_nested_spans.iter().any(|span| {
@@ -478,6 +517,7 @@ fn push_template_expression(
         outer_span,
         inner_span,
         candidates,
+        lingui_directive_spans,
     });
     Ok(())
 }

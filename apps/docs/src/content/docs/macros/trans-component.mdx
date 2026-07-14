@@ -102,6 +102,38 @@ The exact set of allowed wrapper syntax depends on the template language.
 Some constructs are still intentionally unsupported because they are not wrapper-shaped rich-text
 content. Examples include block syntax in Svelte and `script`, `style`, or `is:raw` in Astro.
 
+## Comments and Lingui directives
+
+Ordinary comments inside `Trans` are not part of the translated message. They do not add text or a
+rich-text placeholder.
+
+Place a Lingui directive before the opening `Trans` tag when it should apply to that message:
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<!-- lingui-set context="navigation" comment="Main navigation link" -->
+<Trans>Open the <a href="/settings">settings</a>.</Trans>
+<!-- lingui-reset -->
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+{/* lingui-set context="navigation" comment="Main navigation link" */}
+<Trans>Open the <a href="/settings">settings</a>.</Trans>
+{/* lingui-reset */}
+```
+
+  </TabItem>
+</Tabs>
+
+Directive state follows source order, so a directive after the opening tag does not apply
+retroactively to the enclosing `Trans`. See [Lingui Directives](/guides/lingui-directives) for the
+complete scope and comment-syntax rules.
+
 ## Whitespace between child nodes
 
 `Trans` is processed internally through JSX-compatible machinery, but `.svelte` and `.astro`

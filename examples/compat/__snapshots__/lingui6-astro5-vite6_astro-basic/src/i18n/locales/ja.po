@@ -7,10 +7,36 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: ja\n"
 
-#: src/pages/index.astro:10
+#: src/pages/index.astro:30
 msgid "Build <0>Astro</0> compatibility."
 msgstr ""
 
-#: src/pages/index.astro:9
+#. Astro compatibility directive
+#. js-lingui-explicit-id
+#: src/pages/index.astro:6
+msgctxt "compat-astro"
+msgid "compat.directive"
+msgstr ""
+
+#. Astro compatibility directive crossing frontmatter
+#. js-lingui-explicit-id
+#: src/pages/index.astro:21
+msgctxt "compat-cross-block"
+msgid "compat.cross-block"
+msgstr ""
+
+#. Astro compatibility directive crossing frontmatter
+#: src/pages/index.astro:18
+msgctxt "compat-cross-block"
 msgid "Hello {subject}"
+msgstr ""
+
+#: src/pages/index.astro:25
+msgid "Named compatibility component subject: {subjectName}."
+msgstr ""
+
+#. Astro compatibility directive
+#: src/pages/index.astro:10
+msgctxt "compat-astro"
+msgid "Named compatibility subject: {subjectName}."
 msgstr ""

@@ -26,6 +26,15 @@ Rich-text component macros use framework-aware whitespace handling by default in
 semantics. See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) if your
 project needs to force `jsx` behavior or keep extraction and transform settings aligned.
 
+## Directive scope crosses the frontmatter boundary
+
+Lingui directive state is scoped to the source file, not to an individual Astro region. A
+`lingui-set` in frontmatter therefore remains active for macros in the template. Closing the
+frontmatter does not perform an implicit `lingui-reset`.
+
+Use an explicit `lingui-reset` when the state should stop applying. See
+[Lingui Directives](/guides/lingui-directives) for examples and the supported Astro comment forms.
+
 ## MDX is not supported
 
 `.mdx` files in Astro are compiled through a Remark/Rehype pipeline that is separate from the
