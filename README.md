@@ -58,13 +58,13 @@ import { t, Trans } from "lingui-for-astro/macro";
 
 The compatibility matrix currently runs against Lingui 5 and Lingui 6 with these framework and bundler generations:
 
-| Package                 | Tested framework and bundler combinations                  |
-| ----------------------- | ---------------------------------------------------------- |
-| `lingui-for-astro`      | Astro 5 + Vite 6, Astro 6 + Vite 7, Astro 7 alpha + Vite 8 |
-| `lingui-for-svelte`     | Svelte 5 + Vite 6, Svelte 5 + Vite 7, Svelte 5 + Vite 8    |
-| `unplugin-lingui-macro` | Plain Vite 6, Vite 7, and Vite 8                           |
+| Package                 | Tested framework and bundler combinations               |
+| ----------------------- | ------------------------------------------------------- |
+| `lingui-for-astro`      | Astro 5 + Vite 6, Astro 6 + Vite 7, Astro 7 + Vite 8    |
+| `lingui-for-svelte`     | Svelte 5 + Vite 6, Svelte 5 + Vite 7, Svelte 5 + Vite 8 |
+| `unplugin-lingui-macro` | Plain Vite 6, Vite 7, and Vite 8                        |
 
-Astro 7 support tracks the current alpha line and may change before Astro 7 stable.
+Astro 7 support tracks the stable release line.
 
 ## Framework Fit
 
