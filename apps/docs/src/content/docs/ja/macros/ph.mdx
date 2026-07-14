@@ -1,0 +1,110 @@
+---
+title: ph
+description: 複雑なメッセージ式に意味のあるプレースホルダー名を付けるためのマクロ
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import phWorkbench from "virtual:macro-workbench?demo=src/demos/macros/ph";
+
+`ph` は、メッセージのプレースホルダーに明示的な名前を付けます。
+プロパティアクセス、関数呼び出し、その他の複雑な式が `{0}` のような数値プレースホルダーになるのを避けたい場合に使います。
+
+キーは翻訳者にとって意味のあるプレースホルダー名になり、値はランタイムで評価される元の式として保持されます。
+
+フレームワークに依存しない Lingui の意味論については、
+[公式の `ph` リファレンス](https://lingui.dev/ref/macro#ph)を参照してください。
+
+<MacroWorkbench workbench={phWorkbench} language="ja" />
+
+## 使い方
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { ph, t, Trans } from "lingui-for-svelte/macro";
+
+  let user = $state({ name: "Ada" });
+</script>
+
+<p>{$t`Hello ${ph({ username: user.name })}`}</p>
+<Trans>Welcome {ph({ username: user.name })}!</Trans>
+```
+
+`ph` はリアクティブな `$t` 式またはコンポーネントマクロ内で使います。
+意図的に非リアクティブなスクリプトのスナップショットが必要な場合は、`t.eager` 内でも同じプレースホルダー構文を使えます。
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { ph, t, Trans } from "lingui-for-astro/macro";
+
+const user = { name: "Ada" };
+const greeting = t`Hello ${ph({ username: user.name })}`;
+---
+
+<p>{greeting}</p>
+<Trans>Welcome {ph({ username: user.name })}!</Trans>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { ph, t } from "@lingui/core/macro";
+
+const greeting = t`Hello ${ph({ username: getUser().name })}`;
+```
+
+  </TabItem>
+</Tabs>
+
+## 抽出されるメッセージとランタイム値
+
+次のソースを記述した場合:
+
+```ts
+t`Hello ${ph({ username: user.name })}`;
+```
+
+カタログには意味のある ICU プレースホルダーが抽出されます。
+
+```text
+Hello {username}
+```
+
+変換後も、元の式はランタイムの値マッピングに保持されます。
+
+```ts
+{
+  message: "Hello {username}",
+  values: {
+    username: user.name,
+  },
+}
+```
+
+<Aside type="tip">
+
+単純な変数はその名前が自動的に保持されます。
+式が複雑な場合や、翻訳者に別の名前を示したほうが分かりやすい場合を除き、`` t`Hello ${name}` `` と記述してください。
+
+</Aside>
+
+## 構文ルール
+
+- `ph` にはプロパティを1つだけ持つオブジェクトを渡します。
+- プロパティのキーが ICU プレースホルダー名になります。
+- プロパティの値はランタイムで評価され、その名前で `values` に格納されます。
+- `username`、`startDate`、`itemCount` のように、安定した説明的な名前を使います。
+
+## `ph` が向いている場面
+
+- プロパティアクセスや関数呼び出しがそのままでは `{0}` になる
+- プレースホルダーが表す内容を翻訳者に伝えたい
+- 安定したプレースホルダー名によってカタログの変更やレビューを追いやすくしたい

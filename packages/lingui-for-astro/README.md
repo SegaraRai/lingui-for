@@ -129,7 +129,7 @@ import { t, Trans } from "lingui-for-astro/macro";
 ## Entrypoints
 
 - `lingui-for-astro`: runtime exports such as `setLinguiContext`, `getLinguiContext`, and `RuntimeTrans`
-- `lingui-for-astro/macro`: authoring macros such as `t`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, and `defineMessage`
+- `lingui-for-astro/macro`: authoring macros such as `t`, `Trans`, `Plural`, `Select`, `SelectOrdinal`, `msg`, `defineMessage`, and `ph`
 - `lingui-for-astro/extractor`: `astroExtractor` for Lingui CLI extraction
 - `lingui-for-astro/integration`: Astro integration entrypoint for `.astro` transforms
 - `lingui-for-astro/unplugin/*`: bundler plugins for Vite, Rollup, Webpack, esbuild, Rolldown, Rspack, and Bun

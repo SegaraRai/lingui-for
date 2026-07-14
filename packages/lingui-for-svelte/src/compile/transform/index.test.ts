@@ -100,6 +100,31 @@ const preloadedInitPageSource = dedent`
 `;
 
 describe("transformSvelte", () => {
+  test("maps aliased ph placeholders from script and Trans markup to runtime values", async () => {
+    const result = await expectTransformed(dedent`
+      <script lang="ts">
+        import {
+          ph as placeholder,
+          t as translate,
+          Trans as LocalTrans,
+        } from "lingui-for-svelte/macro";
+
+        const user = $state({ name: "Ada" });
+        const greeting = translate.eager\`Hello \${placeholder({ username: user.name })}\`;
+      </script>
+
+      <p>{greeting}</p>
+      <LocalTrans>Welcome {placeholder({ username: user.name })}!</LocalTrans>
+    `);
+    const code = compact(result.code);
+
+    expect(code).toContain('message: "Hello {username}"');
+    expect(code).toContain('message: "Welcome {username}!"');
+    expect(code.match(/values: \{ username: user\.name \}/g)).toHaveLength(2);
+    expect(code).not.toContain("placeholder(");
+    expect(code).not.toContain("<LocalTrans");
+  });
+
   test("keeps msg descriptors pure inside user-authored $derived", async () => {
     const result = await expectTransformed(
       dedent`

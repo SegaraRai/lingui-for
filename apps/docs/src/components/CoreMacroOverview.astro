@@ -40,6 +40,17 @@ const items = [
     href: `${hrefPrefix}/macros/msg-and-define-message`,
   },
   {
+    value: "ph",
+    label: t`ph`,
+    description: t`Give complex expressions meaningful placeholder names.`,
+    preview: t`Hello Lingui`,
+    snippet: String.raw`<p>{
+  $t\`Hello \${ph({ username: user.name })}\`
+}</p>`,
+    snippetLang: "svelte",
+    href: `${hrefPrefix}/macros/ph`,
+  },
+  {
     value: "plural",
     label: t`plural`,
     description: t`Pick text from plural categories based on a numeric count.`,

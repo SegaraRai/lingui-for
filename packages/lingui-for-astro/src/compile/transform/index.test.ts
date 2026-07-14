@@ -58,6 +58,34 @@ async function expectTransformed(
 }
 
 describe("transformAstro", () => {
+  test("maps aliased ph placeholders from frontmatter and Trans markup to runtime values", async () => {
+    const result = await expectTransformed(
+      dedent`
+        ---
+        import {
+          ph as placeholder,
+          t as translate,
+          Trans as LocalTrans,
+        } from "lingui-for-astro/macro";
+
+        const user = { name: "Ada" };
+        const greeting = translate\`Hello \${placeholder({ username: user.name })}\`;
+        ---
+
+        <p>{greeting}</p>
+        <LocalTrans>Welcome {placeholder({ username: user.name })}!</LocalTrans>
+      `,
+      { filename: "/virtual/Page.astro" },
+    );
+    const code = compact(result.code);
+
+    expect(code).toContain('message: "Hello {username}"');
+    expect(code).toContain('message: "Welcome {username}!"');
+    expect(code.match(/values: \{ username: user\.name \}/g)).toHaveLength(2);
+    expect(code).not.toContain("placeholder(");
+    expect(code).not.toContain("<LocalTrans");
+  });
+
   test("rewrites frontmatter and template expressions through request-scoped i18n", async () => {
     const source = dedent`
       ---

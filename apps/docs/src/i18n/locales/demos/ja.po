@@ -35,6 +35,10 @@ msgstr "{tone, select, formal {こんにちは。} casual {やあ！} other {ど
 msgid "Hello {name}"
 msgstr "こんにちは、{name}"
 
+#: src/demos/macros/ph/Demo.svelte:24
+msgid "Hello {username}"
+msgstr "こんにちは、{username}"
+
 #: src/demos/macros/t/Demo.svelte:19
 msgid "Hi there!"
 msgstr "やあ！"
@@ -47,6 +51,10 @@ msgstr "<0>{name}</0>に挨拶しましょう。"
 #: src/demos/macros/msg-and-define-message/Demo.svelte:17
 msgid "form.submit"
 msgstr "送信"
+
+#: src/demos/macros/ph/Demo.svelte:25
+msgid "Welcome {username}!"
+msgstr "ようこそ、{username}さん！"
 
 #: src/demos/macros/msg-and-define-message/Demo.svelte:21
 msgid "Welcome back, {name}"

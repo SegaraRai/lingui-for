@@ -106,6 +106,39 @@ describe("svelteExtractor", () => {
     );
   });
 
+  test("extracts named ph placeholders from script and aliased Trans markup", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import {
+          ph as placeholder,
+          t as translate,
+          Trans as LocalTrans,
+        } from "lingui-for-svelte/macro";
+
+        const user = { name: "Ada" };
+        const greeting = translate.eager\`Hello \${placeholder({ username: user.name })}\`;
+      </script>
+
+      <p>{greeting}</p>
+      <LocalTrans>Welcome {placeholder({ username: user.name })}!</LocalTrans>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        extractor.extract(
+          "/virtual/App.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(messages.map((message) => message.message)).toEqual(
+      expect.arrayContaining(["Hello {username}", "Welcome {username}!"]),
+    );
+  });
+
   test("does not extract markup macros without a user-authored macro import", async () => {
     const source = dedent`
       <p>{$t\`Markup-only extraction\`}</p>

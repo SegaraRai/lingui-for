@@ -7,12 +7,13 @@ import CoreMacroOverview from "@components/CoreMacroOverview.astro";
 
 コアマクロは、JavaScript 側で使う Lingui マクロです。
 
-役割は大きく 2 つあります。
+役割は大きく3つあります。
 
 - その場で翻訳済み文字列を生成する
 - 後で翻訳するためのメッセージ記述子を定義する
+- 抽出されたメッセージ内で値がどのように表現されるかを制御する
 
-公式 Lingui では、これに当たるのが `t`、`msg`、`defineMessage`、`plural`、`select`、`selectOrdinal` です。
+公式 Lingui では、これに当たるのが `t`、`msg`、`defineMessage`、`ph`、`plural`、`select`、`selectOrdinal` です。
 lingui-for では、これらの意味論を保ちながら、必要な箇所だけフレームワークの構文に合わせています。
 
 <CoreMacroOverview language="ja" hrefPrefix="/ja" />
@@ -29,6 +30,7 @@ lingui-for では、これらの意味論を保ちながら、必要な箇所だ
 
 - [`t`](/ja/macros/t)
 - [`msg と defineMessage`](/ja/macros/msg-and-define-message)
+- [`ph`](/ja/macros/ph)
 - [`plural`](/ja/macros/plural)
 - [`select`](/ja/macros/select)
 - [`selectOrdinal`](/ja/macros/select-ordinal)

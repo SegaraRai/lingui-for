@@ -46,6 +46,38 @@ const label = t\`Frontmatter origin message\`;
     expect(messages[0]?.origin).toEqual(["/virtual/origin-check.astro", 4, 14]);
   });
 
+  test("extracts named ph placeholders from frontmatter and aliased Trans markup", async () => {
+    const source = dedent`
+      ---
+      import {
+        ph as placeholder,
+        t as translate,
+        Trans as LocalTrans,
+      } from "lingui-for-astro/macro";
+
+      const user = { name: "Ada" };
+      const greeting = translate\`Hello \${placeholder({ username: user.name })}\`;
+      ---
+
+      <p>{greeting}</p>
+      <LocalTrans>Welcome {placeholder({ username: user.name })}!</LocalTrans>
+    `;
+    const messages: ExtractedMessage[] = [];
+
+    await extractor.extract(
+      "/virtual/Page.astro",
+      source,
+      (message) => {
+        messages.push(message);
+      },
+      createExtractorContext(),
+    );
+
+    expect(messages.map(extractedText)).toEqual(
+      expect.arrayContaining(["Hello {username}", "Welcome {username}!"]),
+    );
+  });
+
   test("preserves origins for nested extracted messages inside component macro ICU branches", async () => {
     const source = `---
 import {
