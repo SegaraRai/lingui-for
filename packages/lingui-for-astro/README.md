@@ -18,13 +18,11 @@ It provides:
 
 The compatibility matrix currently tests:
 
-| Lingui | Astro   | Vite |
-| ------ | ------- | ---- |
-| 5, 6   | 5       | 6    |
-| 5, 6   | 6       | 7    |
-| 5, 6   | 7 alpha | 8    |
-
-Astro 7 support tracks the stable release line.
+| Lingui | Astro | Vite |
+| ------ | ----- | ---- |
+| 5, 6   | 5     | 6    |
+| 5, 6   | 6     | 7    |
+| 5, 6   | 7     | 8    |
 
 ## Install
 
