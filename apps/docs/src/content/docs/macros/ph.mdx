@@ -1,0 +1,112 @@
+---
+title: ph
+description: Give complex message expressions meaningful placeholder names.
+---
+
+import { Aside, TabItem, Tabs } from "@astrojs/starlight/components";
+
+import MacroWorkbench from "@components/MacroWorkbench.astro";
+import phWorkbench from "virtual:macro-workbench?demo=src/demos/macros/ph";
+
+`ph` assigns an explicit name to a message placeholder. It is useful when an interpolation is a
+property access, function call, or other complex expression that would otherwise receive a numeric
+placeholder such as `{0}`.
+
+The key gives translators a meaningful placeholder name, while the value remains the expression
+evaluated at runtime.
+
+For the framework-agnostic Lingui semantics, see the
+[official `ph` reference](https://lingui.dev/ref/macro#ph).
+
+<MacroWorkbench workbench={phWorkbench} />
+
+## Usage
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<script lang="ts">
+  import { ph, t, Trans } from "lingui-for-svelte/macro";
+
+  let user = $state({ name: "Ada" });
+</script>
+
+<p>{$t`Hello ${ph({ username: user.name })}`}</p>
+<Trans>Welcome {ph({ username: user.name })}!</Trans>
+```
+
+Use `ph` inside reactive `$t` expressions or component macros. For an intentional non-reactive
+script snapshot, the same placeholder syntax works inside `t.eager`.
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+---
+import { ph, t, Trans } from "lingui-for-astro/macro";
+
+const user = { name: "Ada" };
+const greeting = t`Hello ${ph({ username: user.name })}`;
+---
+
+<p>{greeting}</p>
+<Trans>Welcome {ph({ username: user.name })}!</Trans>
+```
+
+  </TabItem>
+  <TabItem icon="seti:javascript" label="Official Lingui">
+
+```ts
+import { ph, t } from "@lingui/core/macro";
+
+const greeting = t`Hello ${ph({ username: getUser().name })}`;
+```
+
+  </TabItem>
+</Tabs>
+
+## Extracted message and runtime values
+
+Given this source:
+
+```ts
+t`Hello ${ph({ username: user.name })}`;
+```
+
+the catalog receives a meaningful ICU placeholder:
+
+```text
+Hello {username}
+```
+
+The transform keeps the original expression in the runtime value mapping:
+
+```ts
+{
+  message: "Hello {username}",
+  values: {
+    username: user.name,
+  },
+}
+```
+
+<Aside type="tip">
+
+Simple variables already keep their names. Write `` t`Hello ${name}` `` unless the expression is
+complex or a different translator-facing name would make the message clearer.
+
+</Aside>
+
+## Syntax rules
+
+- Pass an object with exactly one property to `ph`.
+- The property key becomes the ICU placeholder name.
+- The property value is evaluated at runtime and stored under that name in `values`.
+- Keep names stable and descriptive, such as `username`, `startDate`, or `itemCount`.
+
+## When `ph` is a good fit
+
+- a property access or function call would otherwise become `{0}`
+- translators need to understand what a placeholder represents
+- a stable placeholder name makes catalog changes and reviews easier to follow

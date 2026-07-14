@@ -17,7 +17,7 @@ msgstr ""
 msgid "1st"
 msgstr "1st"
 
-#: src/components/CoreMacroOverview.astro:75
+#: src/components/CoreMacroOverview.astro:86
 msgid "2nd"
 msgstr "2nd"
 
@@ -25,7 +25,7 @@ msgstr "2nd"
 msgid "3 files"
 msgstr "3 files"
 
-#: src/components/CoreMacroOverview.astro:46
+#: src/components/CoreMacroOverview.astro:57
 msgid "3 items"
 msgstr "3 items"
 
@@ -38,7 +38,7 @@ msgstr "Casual"
 msgid "Catalog"
 msgstr "Catalog"
 
-#: src/components/CoreMacroOverview.astro:74
+#: src/components/CoreMacroOverview.astro:85
 msgid "Choose ordinal text such as 1st, 2nd, or 3rd."
 msgstr "Choose ordinal text such as 1st, 2nd, or 3rd."
 
@@ -50,7 +50,7 @@ msgstr "Compiled Catalog"
 msgid "Component Macro Overview"
 msgstr "Component Macro Overview"
 
-#: src/components/CoreMacroOverview.astro:90
+#: src/components/CoreMacroOverview.astro:101
 msgid "Core Macro Overview"
 msgstr "Core Macro Overview"
 
@@ -72,6 +72,7 @@ msgid "EN"
 msgstr "EN"
 
 #: src/demos/macros/msg-and-define-message/workbench.ts:15
+#: src/demos/macros/ph/workbench.ts:15
 #: src/demos/macros/t/workbench.ts:15
 #: src/demos/macros/trans-component/workbench.ts:15
 msgid "Enter a name"
@@ -82,7 +83,12 @@ msgstr "Enter a name"
 msgid "Formal"
 msgstr "Formal"
 
+#: src/components/CoreMacroOverview.astro:45
+msgid "Give complex expressions meaningful placeholder names."
+msgstr "Give complex expressions meaningful placeholder names."
+
 #: src/components/CoreMacroOverview.astro:22
+#: src/components/CoreMacroOverview.astro:46
 msgid "Hello Lingui"
 msgstr "Hello Lingui"
 
@@ -103,6 +109,7 @@ msgid "msg / defineMessage"
 msgstr "msg / defineMessage"
 
 #: src/demos/macros/msg-and-define-message/workbench.ts:14
+#: src/demos/macros/ph/workbench.ts:14
 #: src/demos/macros/t/workbench.ts:14
 #: src/demos/macros/trans-component/workbench.ts:14
 msgid "Name"
@@ -113,7 +120,11 @@ msgstr "Name"
 msgid "Other"
 msgstr "Other"
 
-#: src/components/CoreMacroOverview.astro:45
+#: src/components/CoreMacroOverview.astro:44
+msgid "ph"
+msgstr "ph"
+
+#: src/components/CoreMacroOverview.astro:56
 msgid "Pick text from plural categories based on a numeric count."
 msgstr "Pick text from plural categories based on a numeric count."
 
@@ -122,7 +133,7 @@ msgstr "Pick text from plural categories based on a numeric count."
 msgid "Place"
 msgstr "Place"
 
-#: src/components/CoreMacroOverview.astro:44
+#: src/components/CoreMacroOverview.astro:55
 msgid "plural"
 msgstr "plural"
 
@@ -151,7 +162,7 @@ msgstr "Say hello to Lingui."
 msgid "See full demo"
 msgstr "See full demo"
 
-#: src/components/CoreMacroOverview.astro:58
+#: src/components/CoreMacroOverview.astro:69
 msgid "select"
 msgstr "select"
 
@@ -159,7 +170,7 @@ msgstr "select"
 msgid "Select"
 msgstr "Select"
 
-#: src/components/CoreMacroOverview.astro:73
+#: src/components/CoreMacroOverview.astro:84
 msgid "selectOrdinal"
 msgstr "selectOrdinal"
 
@@ -179,7 +190,7 @@ msgstr "Source"
 msgid "Source tabs"
 msgstr "Source tabs"
 
-#: src/components/CoreMacroOverview.astro:59
+#: src/components/CoreMacroOverview.astro:70
 msgid "Switch text by a named case such as tone or status."
 msgstr "Switch text by a named case such as tone or status."
 
@@ -208,7 +219,7 @@ msgstr "Translate a message immediately and return a string."
 msgid "Translate rich text with embedded markup and placeholders."
 msgstr "Translate rich text with embedded markup and placeholders."
 
-#: src/components/CoreMacroOverview.astro:60
+#: src/components/CoreMacroOverview.astro:71
 msgid "Welcome"
 msgstr "Welcome"
 

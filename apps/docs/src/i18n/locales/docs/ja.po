@@ -17,7 +17,7 @@ msgstr ""
 msgid "1st"
 msgstr "1番目"
 
-#: src/components/CoreMacroOverview.astro:75
+#: src/components/CoreMacroOverview.astro:86
 msgid "2nd"
 msgstr "2番目"
 
@@ -25,7 +25,7 @@ msgstr "2番目"
 msgid "3 files"
 msgstr "3個のファイル"
 
-#: src/components/CoreMacroOverview.astro:46
+#: src/components/CoreMacroOverview.astro:57
 msgid "3 items"
 msgstr "3個の項目"
 
@@ -38,7 +38,7 @@ msgstr "カジュアル"
 msgid "Catalog"
 msgstr "カタログ"
 
-#: src/components/CoreMacroOverview.astro:74
+#: src/components/CoreMacroOverview.astro:85
 msgid "Choose ordinal text such as 1st, 2nd, or 3rd."
 msgstr "1番目、2番目、3番目などの序数テキストを選択します"
 
@@ -50,7 +50,7 @@ msgstr "コンパイルされたカタログ"
 msgid "Component Macro Overview"
 msgstr "コンポーネントマクロの概要"
 
-#: src/components/CoreMacroOverview.astro:90
+#: src/components/CoreMacroOverview.astro:101
 msgid "Core Macro Overview"
 msgstr "コアマクロの概要"
 
@@ -72,6 +72,7 @@ msgid "EN"
 msgstr "EN"
 
 #: src/demos/macros/msg-and-define-message/workbench.ts:15
+#: src/demos/macros/ph/workbench.ts:15
 #: src/demos/macros/t/workbench.ts:15
 #: src/demos/macros/trans-component/workbench.ts:15
 msgid "Enter a name"
@@ -82,7 +83,12 @@ msgstr "名前を入力してください"
 msgid "Formal"
 msgstr "フォーマル"
 
+#: src/components/CoreMacroOverview.astro:45
+msgid "Give complex expressions meaningful placeholder names."
+msgstr "複雑な式に意味のあるプレースホルダー名を付けます"
+
 #: src/components/CoreMacroOverview.astro:22
+#: src/components/CoreMacroOverview.astro:46
 msgid "Hello Lingui"
 msgstr "こんにちは、Lingui"
 
@@ -103,6 +109,7 @@ msgid "msg / defineMessage"
 msgstr "msg / defineMessage"
 
 #: src/demos/macros/msg-and-define-message/workbench.ts:14
+#: src/demos/macros/ph/workbench.ts:14
 #: src/demos/macros/t/workbench.ts:14
 #: src/demos/macros/trans-component/workbench.ts:14
 msgid "Name"
@@ -113,7 +120,11 @@ msgstr "名前"
 msgid "Other"
 msgstr "その他"
 
-#: src/components/CoreMacroOverview.astro:45
+#: src/components/CoreMacroOverview.astro:44
+msgid "ph"
+msgstr "ph"
+
+#: src/components/CoreMacroOverview.astro:56
 msgid "Pick text from plural categories based on a numeric count."
 msgstr "数値に基づいて複数のカテゴリからテキストを選択します"
 
@@ -122,7 +133,7 @@ msgstr "数値に基づいて複数のカテゴリからテキストを選択し
 msgid "Place"
 msgstr "順位"
 
-#: src/components/CoreMacroOverview.astro:44
+#: src/components/CoreMacroOverview.astro:55
 msgid "plural"
 msgstr "plural"
 
@@ -151,7 +162,7 @@ msgstr "Linguiに挨拶する"
 msgid "See full demo"
 msgstr "完全なデモを見る"
 
-#: src/components/CoreMacroOverview.astro:58
+#: src/components/CoreMacroOverview.astro:69
 msgid "select"
 msgstr "select"
 
@@ -159,7 +170,7 @@ msgstr "select"
 msgid "Select"
 msgstr "Select"
 
-#: src/components/CoreMacroOverview.astro:73
+#: src/components/CoreMacroOverview.astro:84
 msgid "selectOrdinal"
 msgstr "selectOrdinal"
 
@@ -179,7 +190,7 @@ msgstr "ソース"
 msgid "Source tabs"
 msgstr "ソースタブ"
 
-#: src/components/CoreMacroOverview.astro:59
+#: src/components/CoreMacroOverview.astro:70
 msgid "Switch text by a named case such as tone or status."
 msgstr "トーンやステータスなどの名前付きケースでテキストを切り替えます"
 
@@ -208,7 +219,7 @@ msgstr "メッセージを即座に翻訳し、文字列を返します"
 msgid "Translate rich text with embedded markup and placeholders."
 msgstr "埋め込みマークアップとプレースホルダーを含むリッチテキストを翻訳します"
 
-#: src/components/CoreMacroOverview.astro:60
+#: src/components/CoreMacroOverview.astro:71
 msgid "Welcome"
 msgstr "ようこそ"
 

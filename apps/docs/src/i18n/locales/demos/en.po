@@ -35,6 +35,10 @@ msgstr "{tone, select, formal {Welcome} casual {Hi} other {Hello}}"
 msgid "Hello {name}"
 msgstr "Hello {name}"
 
+#: src/demos/macros/ph/Demo.svelte:24
+msgid "Hello {username}"
+msgstr "Hello {username}"
+
 #: src/demos/macros/t/Demo.svelte:19
 msgid "Hi there!"
 msgstr "Hi there!"
@@ -47,6 +51,10 @@ msgstr "Say hello to <0>{name}</0>."
 #: src/demos/macros/msg-and-define-message/Demo.svelte:17
 msgid "form.submit"
 msgstr "Submit"
+
+#: src/demos/macros/ph/Demo.svelte:25
+msgid "Welcome {username}!"
+msgstr "Welcome {username}!"
 
 #: src/demos/macros/msg-and-define-message/Demo.svelte:21
 msgid "Welcome back, {name}"

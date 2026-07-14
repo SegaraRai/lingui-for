@@ -7,12 +7,13 @@ import CoreMacroOverview from "../../../components/CoreMacroOverview.astro";
 
 Core macros are the JavaScript-side Lingui macros.
 
-They cover two jobs:
+They cover three jobs:
 
 - produce translated strings immediately
 - define message descriptors for later translation
+- control how values appear inside extracted messages
 
-In official Lingui, these are `t`, `msg`, `defineMessage`, `plural`, `select`, and
+In official Lingui, these are `t`, `msg`, `defineMessage`, `ph`, `plural`, `select`, and
 `selectOrdinal`. lingui-for keeps those semantics and adapts them to framework syntax where
 necessary.
 
@@ -30,6 +31,7 @@ Start with a core macro when:
 
 - [`t`](/macros/t)
 - [`msg and defineMessage`](/macros/msg-and-define-message)
+- [`ph`](/macros/ph)
 - [`plural`](/macros/plural)
 - [`select`](/macros/select)
 - [`selectOrdinal`](/macros/select-ordinal)

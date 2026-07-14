@@ -16,6 +16,7 @@ Ask what the translation needs to preserve:
 
 - Use `t` for plain strings and most string-producing cases.
 - Use `Trans` when inline markup or structured rich text matters.
+- Use [`ph`](/macros/ph) when a complex expression needs a meaningful placeholder name.
 - Use `Plural`, `Select`, and `SelectOrdinal` when the component form is clearer in markup than the
   function form.
 
@@ -36,6 +37,13 @@ official semantics.
 ```svelte
 <!-- Translators see "Read the <0>documentation</0>." and can reorder the link. -->
 <Trans>Read the <a href="/docs">documentation</a>.</Trans>
+```
+
+**Complex expression: use `ph` to name the placeholder**
+
+```svelte
+<!-- Translators see "Welcome {username}!" instead of "Welcome {0}!". -->
+<Trans>Welcome {ph({ username: user.profile.displayName })}!</Trans>
 ```
 
 **Plural in markup: component form vs. function form**

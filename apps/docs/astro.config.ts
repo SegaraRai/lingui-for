@@ -200,6 +200,13 @@ export default defineConfig({
               slug: "macros/msg-and-define-message",
             },
             {
+              label: "ph",
+              translations: {
+                ja: "ph",
+              },
+              slug: "macros/ph",
+            },
+            {
               label: "plural",
               translations: {
                 ja: "plural",
