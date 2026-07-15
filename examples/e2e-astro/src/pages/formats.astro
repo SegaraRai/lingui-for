@@ -1,5 +1,5 @@
 ---
-import { t } from "lingui-for-astro/macro";
+import { ph, t, Trans } from "lingui-for-astro/macro";
 
 import AppLayout from "../layouts/AppLayout.astro";
 import ReactFormatsIsland from "../components/react/ReactFormatsIsland";
@@ -8,7 +8,23 @@ import AstroFormats from "../components/astro/AstroFormats.astro";
 
 const locale = Astro.locals.locale;
 const currentPage = t`Formats page`;
+const formatOwner = "Astro formats";
+
+/* lingui-set context="e2e-astro-directive" comment="Astro E2E directive" idPrefix="e2e." */
+const directiveMessage = t({
+  id: "astro-directive",
+  message: "Astro E2E directive from frontmatter.",
+});
+const namedPlaceholder = t`Astro format owner: ${ph({ ownerName: formatOwner })}.`;
+/* lingui-reset */
+
+// lingui-set context="e2e-cross-block" comment="Astro E2E directive crossing frontmatter" idPrefix="e2e."
 ---
+
+<Trans id="astro-cross-block"
+  >Astro directive inherited across the frontmatter boundary.</Trans
+>
+{/* lingui-reset */}
 
 <AppLayout
   title={t`Format macro checks`}
@@ -29,6 +45,13 @@ const currentPage = t`Formats page`;
           t`The cards below mirror the same macro families inside component code.`
         }
       </p>
+      <p>{directiveMessage}</p>
+      <p>{namedPlaceholder}</p>
+      <Trans
+        >Astro named component placeholder: {
+          ph({ ownerName: formatOwner })
+        }.</Trans
+      >
     </div>
   </section>
 

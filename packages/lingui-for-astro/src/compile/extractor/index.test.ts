@@ -259,6 +259,107 @@ const role = "admin";
     ).toBe(true);
   });
 
+  test("applies file-scoped Lingui directives to frontmatter macros and JSX-comment Trans", async () => {
+    const source = dedent`
+      ---
+      import { t, Trans } from "lingui-for-astro/macro";
+
+      // lingui-set context="settings" comment="Settings action" idPrefix="settings."
+      const save = t({ id: "save", message: "Save" });
+
+      // lingui-reset
+      const plain = t({ id: "plain", message: "Plain" });
+
+      // lingui-set context="shared" comment="Shared component" idPrefix="shared."
+      ---
+
+      <Trans id="title">Shared welcome</Trans>
+      {/* lingui-reset context="hero" comment="Hero heading" idPrefix="page." */}
+      <Trans id="title">Welcome</Trans>
+    `;
+    const messages: ExtractedMessage[] = [];
+
+    await extractor.extract(
+      "/virtual/directives.astro",
+      source,
+      (message) => {
+        messages.push(message);
+      },
+      createExtractorContext(),
+    );
+
+    expect(
+      messages.find((message) => message.message === "Save"),
+    ).toMatchObject({
+      id: "settings.save",
+      context: "settings",
+      comment: "Settings action",
+    });
+    expect(
+      messages.find((message) => message.message === "Plain"),
+    ).toMatchObject({
+      id: "plain",
+    });
+    expect(
+      messages.find((message) => message.message === "Shared welcome"),
+    ).toMatchObject({
+      id: "shared.title",
+      context: "shared",
+      comment: "Shared component",
+    });
+    expect(
+      messages.find((message) => message.message === "Welcome"),
+    ).toMatchObject({
+      id: "page.title",
+      context: "hero",
+      comment: "Hero heading",
+    });
+  });
+
+  test("supports every Astro comment form for Lingui directives", async () => {
+    const source = dedent`
+      ---
+      import { t, Trans } from "lingui-for-astro/macro";
+
+      /* lingui-set context="frontmatter-block" */
+      const block = t\`Frontmatter block\`;
+      // lingui-reset context="frontmatter-line"
+      const line = t\`Frontmatter line\`;
+      ---
+
+      {/* lingui-reset context="markup-jsx" */}
+      <Trans>Markup JSX</Trans>
+      <!-- lingui-reset context="markup-html" -->
+      <Trans>Markup HTML</Trans>
+      {true /* lingui-reset context="expression-block" */}
+      <Trans>Expression block</Trans>
+      {true // lingui-reset context="expression-line"
+      }
+      <Trans>Expression line</Trans>
+    `;
+    const messages: ExtractedMessage[] = [];
+
+    await extractor.extract(
+      "/virtual/comment-forms.astro",
+      source,
+      (message) => messages.push(message),
+      createExtractorContext(),
+    );
+
+    for (const [message, context] of [
+      ["Frontmatter block", "frontmatter-block"],
+      ["Frontmatter line", "frontmatter-line"],
+      ["Markup JSX", "markup-jsx"],
+      ["Markup HTML", "markup-html"],
+      ["Expression block", "expression-block"],
+      ["Expression line", "expression-line"],
+    ] as const) {
+      expect(messages.find((item) => item.message === message)).toMatchObject({
+        context,
+      });
+    }
+  });
+
   test("keeps generated Trans ids non-explicit during extraction", async () => {
     const source = dedent`
       ---

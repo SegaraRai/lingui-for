@@ -528,6 +528,156 @@ exports[`extract fixtures > 'exact-number-component' > svelte extraction 1`] = `
 ]
 `;
 
+exports[`extract fixtures > 'lingui-directive-cross-block' > astro extraction 1`] = `
+[
+  {
+    "comment": "Directive crossing source regions",
+    "context": "conformance",
+    "id": "conformance.title",
+    "message": "Directive inherited by Trans.",
+    "origin": [
+      "/virtual/lingui-directive-cross-block.astro",
+      7,
+      0,
+    ],
+    "placeholders": {},
+  },
+]
+`;
+
+exports[`extract fixtures > 'lingui-directive-cross-block' > official react extraction 1`] = `
+[
+  {
+    "comment": "Directive crossing source regions",
+    "context": "conformance",
+    "id": "conformance.title",
+    "message": "Directive inherited by Trans.",
+    "origin": [
+      "/virtual/lingui-directive-cross-block.reference.tsx",
+      6,
+      2,
+    ],
+    "placeholders": {},
+  },
+]
+`;
+
+exports[`extract fixtures > 'lingui-directive-cross-block' > svelte extraction 1`] = `
+[
+  {
+    "comment": "Directive crossing source regions",
+    "context": "conformance",
+    "id": "conformance.title",
+    "message": "Directive inherited by Trans.",
+    "origin": [
+      "/virtual/lingui-directive-cross-block.svelte",
+      7,
+      0,
+    ],
+    "placeholders": {},
+  },
+]
+`;
+
+exports[`extract fixtures > 'named-ph' > astro extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "2w7LlI",
+    "message": "Named owner: {ownerName}.",
+    "origin": [
+      "/virtual/named-ph.astro",
+      5,
+      17,
+    ],
+    "placeholders": {
+      "ownerName": "owner.name",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "3NoARm",
+    "message": "Welcome {ownerName}!",
+    "origin": [
+      "/virtual/named-ph.astro",
+      9,
+      0,
+    ],
+    "placeholders": {
+      "ownerName": "owner.name",
+    },
+  },
+]
+`;
+
+exports[`extract fixtures > 'named-ph' > official react extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "2w7LlI",
+    "message": "Named owner: {ownerName}.",
+    "origin": [
+      "/virtual/named-ph.reference.tsx",
+      8,
+      0,
+    ],
+    "placeholders": {
+      "ownerName": "owner.name",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "3NoARm",
+    "message": "Welcome {ownerName}!",
+    "origin": [
+      "/virtual/named-ph.reference.tsx",
+      20,
+      4,
+    ],
+    "placeholders": {
+      "ownerName": "owner.name",
+    },
+  },
+]
+`;
+
+exports[`extract fixtures > 'named-ph' > svelte extraction 1`] = `
+[
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "2w7LlI",
+    "message": "Named owner: {ownerName}.",
+    "origin": [
+      "/virtual/named-ph.svelte",
+      5,
+      19,
+    ],
+    "placeholders": {
+      "ownerName": "owner.name",
+    },
+  },
+  {
+    "comment": undefined,
+    "context": undefined,
+    "id": "3NoARm",
+    "message": "Welcome {ownerName}!",
+    "origin": [
+      "/virtual/named-ph.svelte",
+      9,
+      0,
+    ],
+    "placeholders": {
+      "ownerName": "owner.name",
+    },
+  },
+]
+`;
+
 exports[`extract fixtures > 'nested-icu-core' > astro extraction 1`] = `
 [
   {

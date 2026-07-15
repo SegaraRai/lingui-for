@@ -21,6 +21,11 @@ Astro の `Trans` は、JSX 専用の形に留まらず、ネイティブな Ast
 
 `Trans` は、HTML 要素、フラグメント、HTML コメントを含む Astro 補間式を保持できます。
 
+これらの式にある通常のコメントは、Lingui がメッセージを組み立てるときに無視されます。
+コメント本文が `lingui-set` または `lingui-reset` で始まる場合は、そのソース位置にある Lingui ディレクティブとして扱われます。
+その `Trans` に適用したい場合は、開始タグより前に置いてください。
+詳しくは [Lingui ディレクティブ](/ja/guides/lingui-directives) を参照してください。
+
 {/* prettier-ignore */}
 ```astro
 ---

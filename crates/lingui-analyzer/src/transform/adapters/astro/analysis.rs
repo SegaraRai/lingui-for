@@ -84,6 +84,7 @@ pub(crate) fn analyze_astro_transform(
             import_removals,
             synthetic_lang: ScriptLang::Ts,
             source_anchors: analysis.metadata.source_anchors.clone(),
+            lingui_directive_spans: analysis.metadata.lingui_directive_spans.clone(),
         },
         runtime_bindings: create_runtime_bindings(
             &analysis.semantic.frontmatter_declared_names,

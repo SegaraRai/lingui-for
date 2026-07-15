@@ -64,6 +64,7 @@ pub struct SvelteSemanticAnalysis {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SvelteSourceMetadata {
     pub source_anchors: Vec<usize>,
+    pub lingui_directive_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -81,6 +82,7 @@ pub struct SvelteScriptBlock {
     pub macro_imports: Vec<MacroImport>,
     pub macro_import_statement_spans: Vec<Span>,
     pub candidates: Vec<MacroCandidate>,
+    pub lingui_directive_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -89,6 +91,7 @@ pub struct SvelteTemplateExpression {
     pub inner_span: Span,
     pub candidates: Vec<MacroCandidate>,
     pub shadowed_names: Vec<LeanString>,
+    pub lingui_directive_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

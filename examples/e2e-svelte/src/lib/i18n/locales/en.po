@@ -69,7 +69,7 @@ msgid "<0>The current locale review can summarize nested details such as</0> <1>
 msgstr "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
 
 #: src/routes/playground/+page.svelte:26
-#: src/routes/playground/syntax/+page.svelte:32
+#: src/routes/playground/syntax/+page.svelte:48
 msgid "$t across Svelte syntax positions"
 msgstr "$t across Svelte syntax positions"
 
@@ -119,7 +119,7 @@ msgstr "All locales preloaded at init"
 msgid "Basic"
 msgstr "Basic"
 
-#: src/routes/playground/syntax/+page.svelte:65
+#: src/routes/playground/syntax/+page.svelte:88
 msgid "Bump revision"
 msgstr "Bump revision"
 
@@ -255,16 +255,16 @@ msgstr "Explicit id from t({...})."
 msgid "Explicit ids"
 msgstr "Explicit ids"
 
-#: src/routes/playground/syntax/+page.svelte:46
+#: src/routes/playground/syntax/+page.svelte:69
 msgid "Filter playground syntax examples"
 msgstr "Filter playground syntax examples"
 
-#: src/routes/playground/syntax/+page.svelte:88
+#: src/routes/playground/syntax/+page.svelte:111
 msgid "Filter text: (empty)"
 msgstr "Filter text: (empty)"
 
 #. placeholder {0}: syntaxState.query
-#: src/routes/playground/syntax/+page.svelte:86
+#: src/routes/playground/syntax/+page.svelte:109
 msgid "Filter text: {0}"
 msgstr "Filter text: {0}"
 
@@ -272,7 +272,7 @@ msgstr "Filter text: {0}"
 msgid "Focused routes for library verification"
 msgstr "Focused routes for library verification"
 
-#: src/routes/playground/syntax/+page.svelte:62
+#: src/routes/playground/syntax/+page.svelte:85
 msgid "Force a keyed subtree refresh"
 msgstr "Force a keyed subtree refresh"
 
@@ -357,12 +357,12 @@ msgstr "Japanese"
 msgid "Keeps explicit-id coverage available without turning the whole app into test code."
 msgstr "Keeps explicit-id coverage available without turning the whole app into test code."
 
-#: src/routes/playground/syntax/+page.svelte:110
+#: src/routes/playground/syntax/+page.svelte:133
 msgid "Keyed block example"
 msgstr "Keyed block example"
 
 #. placeholder {0}: syntaxState.revision
-#: src/routes/playground/syntax/+page.svelte:111
+#: src/routes/playground/syntax/+page.svelte:134
 msgid "Keyed subtree revision {0}"
 msgstr "Keyed subtree revision {0}"
 
@@ -460,7 +460,7 @@ msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's me
 msgstr "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 
 #. placeholder {0}: index + 1
-#: src/routes/playground/syntax/+page.svelte:96
+#: src/routes/playground/syntax/+page.svelte:119
 msgid "Row {0}: {item}"
 msgstr "Row {0}: {item}"
 
@@ -481,7 +481,7 @@ msgstr "Script direct static reactivity."
 msgid "Script value: {0}"
 msgstr "Script value: {0}"
 
-#: src/routes/playground/syntax/+page.svelte:40
+#: src/routes/playground/syntax/+page.svelte:63
 msgid "Search examples"
 msgstr "Search examples"
 
@@ -509,25 +509,49 @@ msgstr "setupI18n() with no arguments. loadAndActivate() loads and switches one 
 msgid "Small, isolated cases for ids, comments, and contexts"
 msgstr "Small, isolated cases for ids, comments, and contexts"
 
-#: src/routes/playground/syntax/+page.svelte:21
+#: src/routes/playground/syntax/+page.svelte:37
 msgid "Snippet badge"
 msgstr "Snippet badge"
 
-#: src/routes/playground/syntax/+page.svelte:22
+#: src/routes/playground/syntax/+page.svelte:38
 msgid "Snippet item: {text}"
 msgstr "Snippet item: {text}"
 
-#: src/routes/playground/syntax/+page.svelte:74
+#: src/routes/playground/syntax/+page.svelte:97
 msgid "Status summary: active"
 msgstr "Status summary: active"
 
-#: src/routes/playground/syntax/+page.svelte:73
+#: src/routes/playground/syntax/+page.svelte:96
 msgid "Status summary: idle"
 msgstr "Status summary: idle"
 
 #: src/routes/playground/stress/+page.svelte:19
 msgid "Stress"
 msgstr "Stress"
+
+#. Svelte E2E directive crossing script
+#. js-lingui-explicit-id
+#: src/routes/playground/syntax/+page.svelte:31
+msgctxt "e2e-cross-block"
+msgid "e2e.svelte-cross-block"
+msgstr "Svelte directive inherited across the script boundary."
+
+#. Svelte E2E directive
+#. js-lingui-explicit-id
+#: src/routes/playground/syntax/+page.svelte:6
+msgctxt "e2e-svelte-directive"
+msgid "e2e.svelte-directive"
+msgstr "Svelte E2E directive from script."
+
+#: src/routes/playground/syntax/+page.svelte:55
+msgid "Svelte named component placeholder: {ownerName}."
+msgstr "Svelte named component placeholder: {ownerName}."
+
+#. Svelte E2E directive
+#: src/routes/playground/syntax/+page.svelte:10
+msgctxt "e2e-svelte-directive"
+msgid "Svelte syntax owner: {ownerName}."
+msgstr "Svelte syntax owner: {ownerName}."
 
 #: src/lib/app/LanguageSwitcher.svelte:16
 msgid "Switch language"
@@ -543,7 +567,7 @@ msgstr "Switch the app locale using the header. The isolated widget below stays 
 
 #: src/lib/app/PlaygroundNav.svelte:44
 #: src/routes/playground/+page.svelte:25
-#: src/routes/playground/syntax/+page.svelte:29
+#: src/routes/playground/syntax/+page.svelte:45
 msgid "Syntax"
 msgstr "Syntax"
 
@@ -581,11 +605,11 @@ msgstr "The main app avoids explicit ids by default. This route keeps those vari
 msgid "The server remembers your preferred language"
 msgstr "The server remembers your preferred language"
 
-#: src/routes/playground/syntax/+page.svelte:82
+#: src/routes/playground/syntax/+page.svelte:105
 msgid "The syntax playground is active."
 msgstr "The syntax playground is active."
 
-#: src/routes/playground/syntax/+page.svelte:80
+#: src/routes/playground/syntax/+page.svelte:103
 msgid "The syntax playground is idle."
 msgstr "The syntax playground is idle."
 
@@ -605,11 +629,11 @@ msgstr "This example keeps locale state in a real app shell and moves library ve
 msgid "This line follows the app locale."
 msgstr "This line follows the app locale."
 
-#: src/routes/playground/syntax/+page.svelte:45
+#: src/routes/playground/syntax/+page.svelte:68
 msgid "This placeholder comes from $t inside an attribute"
 msgstr "This placeholder comes from $t inside an attribute"
 
-#: src/routes/playground/syntax/+page.svelte:35
+#: src/routes/playground/syntax/+page.svelte:51
 msgid "This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte."
 msgstr "This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte."
 
@@ -643,7 +667,7 @@ msgstr "This widget has its own i18n context, independent of the app locale."
 msgid "Toggle locale"
 msgstr "Toggle locale"
 
-#: src/routes/playground/syntax/+page.svelte:57
+#: src/routes/playground/syntax/+page.svelte:80
 msgid "Toggle mode"
 msgstr "Toggle mode"
 
@@ -655,7 +679,7 @@ msgstr "Toggle role"
 msgid "Toggle status"
 msgstr "Toggle status"
 
-#: src/routes/playground/syntax/+page.svelte:54
+#: src/routes/playground/syntax/+page.svelte:77
 msgid "Toggle the status branch"
 msgstr "Toggle the status branch"
 
@@ -663,7 +687,7 @@ msgstr "Toggle the status branch"
 msgid "Translation previews can show <0/> and <1/> in the same sentence."
 msgstr "Translation previews can show <0/> and <1/> in the same sentence."
 
-#: src/routes/playground/syntax/+page.svelte:44
+#: src/routes/playground/syntax/+page.svelte:67
 msgid "Type to filter syntax examples"
 msgstr "Type to filter syntax examples"
 

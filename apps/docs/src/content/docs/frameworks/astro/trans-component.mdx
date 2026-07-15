@@ -23,6 +23,11 @@ JSX-only shape.
 `Trans` can preserve Astro interpolation expressions that contain HTML elements, fragments, or HTML
 comments.
 
+Ordinary comments in these expressions are ignored when Lingui builds the message. A comment whose
+body starts with `lingui-set` or `lingui-reset` is instead treated as a Lingui directive at that
+source position. Put it before the opening `Trans` tag when it should apply to that `Trans`. See
+[Lingui Directives](/guides/lingui-directives) for details.
+
 {/* prettier-ignore */}
 ```astro
 ---

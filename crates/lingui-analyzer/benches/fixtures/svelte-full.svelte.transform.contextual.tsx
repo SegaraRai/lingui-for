@@ -1,5 +1,25 @@
-import { Trans as _Trans } from "@lingui/react";
-const __lf_0 = $__l4s_translate(
+/* lingui-set context="fixture-script-block" comment="Svelte fixture script block directive" idPrefix="fixture." */import { Trans as _Trans } from "@lingui/react";
+const __lf_0 = __l4s_getI18n()._(
+/** i18n */
+{
+  id: "fixture.script-block",
+  message: "Fixture script block directive message.",
+  comment: "Svelte fixture script block directive",
+  context: "fixture-script-block"
+});
+const __lf_1 = __l4s_getI18n()._(
+/** i18n */
+{
+  id: "5yUBUl",
+  message: "Fixture review owner: {ownerName}.",
+  comment: "Svelte fixture script block directive",
+  context: "fixture-script-block",
+  values: {
+    ownerName: dashboardOwner
+  }
+});
+/* lingui-reset */
+const __lf_2 = $__l4s_translate(
 /** i18n */
 {
   id: "8-nA3Y",
@@ -8,7 +28,7 @@ const __lf_0 = $__l4s_translate(
     dashboardOwner: dashboardOwner
   }
 });
-const __lf_1 = $__l4s_translate(
+const __lf_3 = $__l4s_translate(
 /** i18n */
 {
   id: "5kwh2a",
@@ -18,7 +38,7 @@ const __lf_1 = $__l4s_translate(
     1: selectedRegion === "all" ? "all regions" : selectedRegion
   }
 });
-const __lf_2 = $__l4s_translate(
+const __lf_4 = $__l4s_translate(
 /** i18n */
 {
   id: "wc9bP7",
@@ -27,25 +47,25 @@ const __lf_2 = $__l4s_translate(
     localeMode: localeMode
   }
 });
-const __lf_3 = $__l4s_translate(
+const __lf_5 = $__l4s_translate(
 /** i18n */
 {
   id: "C81jcY",
   message: "Escalation required: unresolved high-priority queue items remain."
 });
-const __lf_4 = $__l4s_translate(
+const __lf_6 = $__l4s_translate(
 /** i18n */
 {
   id: "jJ-oTf",
   message: "Attention needed: high-priority items are waiting for review."
 });
-const __lf_5 = $__l4s_translate(
+const __lf_7 = $__l4s_translate(
 /** i18n */
 {
   id: "GzY8qo",
   message: "All monitored queues are stable."
 });
-const __lf_6 = $__l4s_translate(
+const __lf_8 = $__l4s_translate(
 /** i18n */
 {
   id: "lC_3w5",
@@ -54,79 +74,89 @@ const __lf_6 = $__l4s_translate(
     0: String(latencyMs > 250 ? `${latencyMs}ms (slow)` : `${latencyMs}ms`)
   }
 });
-const __lf_7 = $__l4s_translate(
+/* lingui-reset context="fixture-cross-block" comment="Svelte fixture directive crossing script" idPrefix="fixture." */
+const __lf_9 = <_Trans {...
+/** i18n */
+{
+  id: "fixture.cross-block",
+  message: "Fixture directive inherited from Svelte script.",
+  comment: "Svelte fixture directive crossing script",
+  context: "fixture-cross-block"
+}} />;
+/* lingui-reset */
+const __lf_10 = $__l4s_translate(
 /** i18n */
 {
   id: "B1MDds",
   message: "Operations"
 });
-const __lf_8 = $__l4s_translate(
+const __lf_11 = $__l4s_translate(
 /** i18n */
 {
   id: "xdDw1Z",
   message: "Workspace mode:"
 });
-const __lf_9 = $__l4s_translate(
+const __lf_12 = $__l4s_translate(
 /** i18n */
 {
   id: "5wic0R",
   message: "Editing tools are enabled for this workspace."
 });
-const __lf_10 = $__l4s_translate(
+const __lf_13 = $__l4s_translate(
 /** i18n */
 {
   id: "oYLtG0",
   message: "Editing tools are read-only for this workspace."
 });
-const __lf_11 = $__l4s_translate(
+const __lf_14 = $__l4s_translate(
 /** i18n */
 {
   id: "tQcxxg",
   message: "Region:"
 });
-const __lf_12 = $__l4s_translate(
+const __lf_15 = $__l4s_translate(
 /** i18n */
 {
   id: "7lRCx1",
   message: "Queue kind:"
 });
-const __lf_13 = $__l4s_translate(
+const __lf_16 = $__l4s_translate(
 /** i18n */
 {
   id: "gzWinp",
   message: "Assigned only:"
 });
-const __lf_14 = $__l4s_translate(
+const __lf_17 = $__l4s_translate(
 /** i18n */
 {
   id: "Fdp03t",
   message: "on"
 });
-const __lf_15 = $__l4s_translate(
+const __lf_18 = $__l4s_translate(
 /** i18n */
 {
   id: "Bdtwnw",
   message: "off"
 });
-const __lf_16 = $__l4s_translate(
+const __lf_19 = $__l4s_translate(
 /** i18n */
 {
   id: "jYKshG",
   message: "History:"
 });
-const __lf_17 = $__l4s_translate(
+const __lf_20 = $__l4s_translate(
 /** i18n */
 {
   id: "JkIYli",
   message: "shown"
 });
-const __lf_18 = $__l4s_translate(
+const __lf_21 = $__l4s_translate(
 /** i18n */
 {
   id: "zNCBmf",
   message: "hidden"
 });
-const __lf_19 = $__l4s_translate(
+const __lf_22 = $__l4s_translate(
 /** i18n */
 {
   id: "W3Ae0L",
@@ -135,37 +165,37 @@ const __lf_19 = $__l4s_translate(
     0: String(card.reviewers)
   }
 });
-const __lf_20 = $__l4s_translate(
+const __lf_23 = $__l4s_translate(
 /** i18n */
 {
   id: "UbRKMZ",
   message: "Pending"
 });
-const __lf_21 = $__l4s_translate(
+const __lf_24 = $__l4s_translate(
 /** i18n */
 {
   id: "FEPXtw",
   message: "Reviewed"
 });
-const __lf_22 = $__l4s_translate(
+const __lf_25 = $__l4s_translate(
 /** i18n */
 {
   id: "3UYUtA",
   message: "Flagged"
 });
-const __lf_23 = $__l4s_translate(
+const __lf_26 = $__l4s_translate(
 /** i18n */
 {
   id: "yiNL80",
   message: "Reviewers"
 });
-const __lf_24 = $__l4s_translate(
+const __lf_27 = $__l4s_translate(
 /** i18n */
 {
   id: "mtE2Ev",
   message: "Queue details"
 });
-const __lf_25 = $__l4s_translate(
+const __lf_28 = $__l4s_translate(
 /** i18n */
 {
   id: "gimT52",
@@ -174,7 +204,7 @@ const __lf_25 = $__l4s_translate(
     0: String(filteredQueue.length)
   }
 });
-const __lf_26 = $__l4s_translate(
+const __lf_29 = $__l4s_translate(
 /** i18n */
 {
   id: "Ji1wwM",
@@ -185,7 +215,7 @@ const __lf_26 = $__l4s_translate(
     2: String($totals.unread)
   }
 });
-const __lf_27 = $__l4s_translate(
+const __lf_30 = $__l4s_translate(
 /** i18n */
 {
   id: "szWjCj",
@@ -197,7 +227,7 @@ const __lf_27 = $__l4s_translate(
     3: String(item.unread)
   }
 });
-const __lf_28 = $__l4s_translate(
+const __lf_31 = $__l4s_translate(
 /** i18n */
 {
   id: "IDpMOo",
@@ -207,31 +237,31 @@ const __lf_28 = $__l4s_translate(
     1: String(item.comments)
   }
 });
-const __lf_29 = $__l4s_translate(
+const __lf_32 = $__l4s_translate(
 /** i18n */
 {
   id: "2TUOis",
   message: "Owner:"
 });
-const __lf_30 = $__l4s_translate(
+const __lf_33 = $__l4s_translate(
 /** i18n */
 {
   id: "GRmQfp",
   message: "Assignee:"
 });
-const __lf_31 = $__l4s_translate(
+const __lf_34 = $__l4s_translate(
 /** i18n */
 {
   id: "Y2-ZT9",
   message: "Comments:"
 });
-const __lf_32 = $__l4s_translate(
+const __lf_35 = $__l4s_translate(
 /** i18n */
 {
   id: "jqmIfA",
   message: "Attachments:"
 });
-const __lf_33 = $__l4s_translate(
+const __lf_36 = $__l4s_translate(
 /** i18n */
 {
   id: "lvcfoy",
@@ -240,19 +270,19 @@ const __lf_33 = $__l4s_translate(
     0: String(item.pathHint ?? "")
   }
 });
-const __lf_34 = $__l4s_translate(
+const __lf_37 = $__l4s_translate(
 /** i18n */
 {
   id: "pa6gX-",
   message: "No path"
 });
-const __lf_35 = $__l4s_translate(
+const __lf_38 = $__l4s_translate(
 /** i18n */
 {
   id: "qbgW-C",
   message: "Highlights"
 });
-const __lf_36 = $__l4s_translate(
+const __lf_39 = $__l4s_translate(
 /** i18n */
 {
   id: "ubwhkQ",
@@ -261,13 +291,13 @@ const __lf_36 = $__l4s_translate(
     0: String($highlightedQueue.length)
   }
 });
-const __lf_37 = $__l4s_translate(
+const __lf_40 = $__l4s_translate(
 /** i18n */
 {
   id: "nj0sbN",
   message: "No highlighted queue items."
 });
-const __lf_38 = $__l4s_translate(
+const __lf_41 = $__l4s_translate(
 /** i18n */
 {
   id: "i4y9D_",
@@ -279,13 +309,13 @@ const __lf_38 = $__l4s_translate(
     3: String(item.unread)
   }
 });
-const __lf_39 = $__l4s_translate(
+const __lf_42 = $__l4s_translate(
 /** i18n */
 {
   id: "quM66o",
   message: "Decision log"
 });
-const __lf_40 = $__l4s_translate(
+const __lf_43 = $__l4s_translate(
 /** i18n */
 {
   id: "LZB4fD",
@@ -295,13 +325,13 @@ const __lf_40 = $__l4s_translate(
     1: String(row.path ?? "the current workflow")
   }
 });
-const __lf_41 = $__l4s_translate(
+const __lf_44 = $__l4s_translate(
 /** i18n */
 {
   id: "OcCQjb",
   message: "Activity stream"
 });
-const __lf_42 = <_Trans {...
+const __lf_45 = <_Trans {...
 /** i18n */
 {
   id: "FJeYAi",
@@ -311,7 +341,7 @@ const __lf_42 = <_Trans {...
     1: <LinguiForSvelteHtml value={htmlDigest} />
   }
 }} />;
-const __lf_43 = <_Trans {...
+const __lf_46 = <_Trans {...
 /** i18n */
 {
   id: "JUNx-G",
@@ -320,7 +350,7 @@ const __lf_43 = <_Trans {...
     0: <LinguiForSvelteHtml value={"<em>some HTML</em>"} />
   }
 }} />;
-const __lf_44 = <_Trans {...
+const __lf_47 = <_Trans {...
 /** i18n */
 {
   id: "cKxDiJ",
@@ -337,13 +367,13 @@ const __lf_44 = <_Trans {...
     4: <li />
   }
 }} />;
-const __lf_45 = $__l4s_translate(
+const __lf_48 = $__l4s_translate(
 /** i18n */
 {
   id: "UsgvkK",
   message: "Status digest"
 });
-const __lf_46 = <_Trans {...
+const __lf_49 = <_Trans {...
 /** i18n */
 {
   id: "8p_xVT",
@@ -367,7 +397,7 @@ const __lf_46 = <_Trans {...
     })
   }
 }} />;
-const __lf_47 = $__l4s_translate(
+const __lf_50 = $__l4s_translate(
 /** i18n */
 {
   id: "pnokNm",
@@ -377,7 +407,7 @@ const __lf_47 = $__l4s_translate(
     1: String($highlightedQueue.length > 2 ? "requires escalation" : "is within normal review limits")
   }
 });
-const __lf_48 = $__l4s_translate(
+const __lf_51 = $__l4s_translate(
 /** i18n */
 {
   id: "d8ajL9",
@@ -386,3 +416,45 @@ const __lf_48 = $__l4s_translate(
     0: String($highlightedQueue.length > 0 ? `highlighted:${$highlightedQueue[0]?.id ?? "none"}` : `region:${selectedRegion}`)
   }
 });
+const __lf_52 = $__l4s_translate(
+/** i18n */
+{
+  id: "RE9p73",
+  message: "Svelte directive and placeholder coverage"
+});
+const __lf_53 = <_Trans {...
+/** i18n */
+{
+  id: "sB8NuA",
+  message: "Fixture named placeholder in Svelte markup: {ownerName}.",
+  values: {
+    ownerName: dashboardOwner
+  }
+}} />;
+/* lingui-set context="fixture-html-comment" comment="Svelte fixture HTML directive" */
+const __lf_54 = <_Trans {...
+/** i18n */
+{
+  id: "Rucwpn",
+  message: "Fixture directive from a Svelte HTML comment.",
+  comment: "Svelte fixture HTML directive",
+  context: "fixture-html-comment"
+}} />;
+/* lingui-reset context="fixture-expression-block" comment="Svelte fixture expression block directive" */
+const __lf_55 = <_Trans {...
+/** i18n */
+{
+  id: "TgeS8h",
+  message: "Fixture directive from a Svelte expression block comment.",
+  comment: "Svelte fixture expression block directive",
+  context: "fixture-expression-block"
+}} />;
+/* lingui-reset context="fixture-expression-line" comment="Svelte fixture expression line directive" */
+const __lf_56 = <_Trans {...
+/** i18n */
+{
+  id: "Sjbwv0",
+  message: "Fixture directive from a Svelte expression line comment.",
+  comment: "Svelte fixture expression line directive",
+  context: "fixture-expression-line"
+}} />;

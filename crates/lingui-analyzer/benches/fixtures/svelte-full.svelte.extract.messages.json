@@ -1,5 +1,31 @@
 [
   {
+    "id": "fixture.script-block",
+    "message": "Fixture script block directive message.",
+    "context": "fixture-script-block",
+    "comment": "Svelte fixture script block directive",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      65,
+      47
+    ]
+  },
+  {
+    "id": "5yUBUl",
+    "message": "Fixture review owner: {ownerName}.",
+    "context": "fixture-script-block",
+    "comment": "Svelte fixture script block directive",
+    "placeholders": {
+      "ownerName": "dashboardOwner"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      69,
+      35
+    ]
+  },
+  {
     "id": "8-nA3Y",
     "message": "Welcome back, {dashboardOwner}.",
     "placeholders": {
@@ -7,7 +33,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      489,
+      497,
       34
     ]
   },
@@ -20,7 +46,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      492,
+      500,
       6
     ]
   },
@@ -32,7 +58,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      496,
+      504,
       5
     ]
   },
@@ -42,7 +68,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      505,
+      513,
       9
     ]
   },
@@ -52,7 +78,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      507,
+      515,
       11
     ]
   },
@@ -62,7 +88,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      508,
+      516,
       11
     ]
   },
@@ -74,8 +100,20 @@
     },
     "origin": [
       "svelte-full.svelte",
-      512,
+      520,
       6
+    ]
+  },
+  {
+    "id": "fixture.cross-block",
+    "message": "Fixture directive inherited from Svelte script.",
+    "context": "fixture-cross-block",
+    "comment": "Svelte fixture directive crossing script",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      544,
+      2
     ]
   },
   {
@@ -84,7 +122,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      542,
+      555,
       12
     ]
   },
@@ -94,7 +132,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      551,
+      564,
       12
     ]
   },
@@ -104,7 +142,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      556,
+      569,
       15
     ]
   },
@@ -114,7 +152,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      557,
+      570,
       15
     ]
   },
@@ -124,7 +162,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      564,
+      577,
       11
     ]
   },
@@ -134,7 +172,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      567,
+      580,
       11
     ]
   },
@@ -144,7 +182,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      570,
+      583,
       10
     ]
   },
@@ -154,7 +192,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      571,
+      584,
       29
     ]
   },
@@ -164,7 +202,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      571,
+      584,
       46
     ]
   },
@@ -174,7 +212,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      574,
+      587,
       10
     ]
   },
@@ -184,7 +222,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      575,
+      588,
       24
     ]
   },
@@ -194,7 +232,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      575,
+      588,
       44
     ]
   },
@@ -206,7 +244,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      590,
+      603,
       16
     ]
   },
@@ -216,7 +254,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      601,
+      614,
       16
     ]
   },
@@ -226,7 +264,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      609,
+      622,
       16
     ]
   },
@@ -236,7 +274,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      617,
+      630,
       16
     ]
   },
@@ -246,7 +284,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      625,
+      638,
       16
     ]
   },
@@ -256,7 +294,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      643,
+      656,
       14
     ]
   },
@@ -268,7 +306,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      647,
+      660,
       14
     ]
   },
@@ -282,7 +320,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      653,
+      666,
       12
     ]
   },
@@ -297,7 +335,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      663,
+      676,
       18
     ]
   },
@@ -310,7 +348,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      666,
+      679,
       18
     ]
   },
@@ -320,7 +358,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      683,
+      696,
       19
     ]
   },
@@ -330,7 +368,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      684,
+      697,
       19
     ]
   },
@@ -340,7 +378,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      685,
+      698,
       19
     ]
   },
@@ -350,7 +388,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      686,
+      699,
       19
     ]
   },
@@ -362,7 +400,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      699,
+      712,
       30
     ]
   },
@@ -372,7 +410,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      703,
+      716,
       20
     ]
   },
@@ -382,7 +420,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      718,
+      731,
       14
     ]
   },
@@ -394,7 +432,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      722,
+      735,
       14
     ]
   },
@@ -404,7 +442,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      729,
+      742,
       14
     ]
   },
@@ -419,7 +457,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      738,
+      751,
       20
     ]
   },
@@ -429,7 +467,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      751,
+      764,
       12
     ]
   },
@@ -442,7 +480,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      766,
+      779,
       18
     ]
   },
@@ -452,7 +490,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      781,
+      794,
       10
     ]
   },
@@ -462,7 +500,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      797,
+      810,
       10
     ]
   },
@@ -472,7 +510,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      803,
+      816,
       10
     ]
   },
@@ -485,7 +523,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      809,
+      822,
       10
     ]
   },
@@ -495,7 +533,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      826,
+      839,
       10
     ]
   },
@@ -509,7 +547,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      828,
+      841,
       6
     ]
   },
@@ -519,7 +557,7 @@
     "placeholders": {},
     "origin": [
       "svelte-full.svelte",
-      830,
+      843,
       13
     ]
   },
@@ -531,7 +569,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      832,
+      845,
       10
     ]
   },
@@ -544,7 +582,7 @@
     },
     "origin": [
       "svelte-full.svelte",
-      837,
+      850,
       10
     ]
   },
@@ -556,8 +594,66 @@
     },
     "origin": [
       "svelte-full.svelte",
-      842,
+      855,
       10
+    ]
+  },
+  {
+    "id": "RE9p73",
+    "message": "Svelte directive and placeholder coverage",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      866,
+      10
+    ]
+  },
+  {
+    "id": "sB8NuA",
+    "message": "Fixture named placeholder in Svelte markup: {ownerName}.",
+    "placeholders": {
+      "ownerName": "dashboardOwner"
+    },
+    "origin": [
+      "svelte-full.svelte",
+      868,
+      4
+    ]
+  },
+  {
+    "id": "Rucwpn",
+    "message": "Fixture directive from a Svelte HTML comment.",
+    "context": "fixture-html-comment",
+    "comment": "Svelte fixture HTML directive",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      870,
+      4
+    ]
+  },
+  {
+    "id": "TgeS8h",
+    "message": "Fixture directive from a Svelte expression block comment.",
+    "context": "fixture-expression-block",
+    "comment": "Svelte fixture expression block directive",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      872,
+      4
+    ]
+  },
+  {
+    "id": "Sjbwv0",
+    "message": "Fixture directive from a Svelte expression line comment.",
+    "context": "fixture-expression-line",
+    "comment": "Svelte fixture expression line directive",
+    "placeholders": {},
+    "origin": [
+      "svelte-full.svelte",
+      875,
+      4
     ]
   }
 ]

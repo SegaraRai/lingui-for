@@ -7,10 +7,28 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
-#: src/routes/+page.svelte:8
+#: src/routes/+page.svelte:26
 msgid "Build <0>SvelteKit</0> compatibility."
 msgstr "Build <0>SvelteKit</0> compatibility."
 
-#: src/routes/+page.svelte:7
+#. js-lingui-explicit-id
+#: src/routes/+page.svelte:6
+msgid "directive"
+msgstr "Compatibility directive for {subject}."
+
+#. js-lingui-explicit-id
+#: src/routes/+page.svelte:19
+msgid "cross-block"
+msgstr "Compatibility directive inherited from Svelte script."
+
+#: src/routes/+page.svelte:16
 msgid "Hello {subject}"
 msgstr "Hello {subject}"
+
+#: src/routes/+page.svelte:23
+msgid "Named compatibility component subject: {subjectName}."
+msgstr "Named compatibility component subject: {subjectName}."
+
+#: src/routes/+page.svelte:10
+msgid "Named compatibility subject: {subjectName}."
+msgstr "Named compatibility subject: {subjectName}."

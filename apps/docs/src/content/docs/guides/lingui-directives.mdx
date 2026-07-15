@@ -1,0 +1,141 @@
+---
+title: Lingui Directives
+description: Apply shared context, translator comments, and ID prefixes to following Lingui macros.
+---
+
+Lingui directives are comments that set default message metadata for the macros that follow them
+in a source file. They are useful when a group of messages shares a context, translator comment,
+or explicit-ID prefix.
+
+Directive metadata is handled by Lingui's macro transform. The fields documented on this page
+require Lingui 6 or later; Lingui 5 leaves them unapplied.
+
+## Set and reset directive state
+
+`lingui-set` updates the current directive state. It accepts these fields:
+
+| Field      | Effect                                                            |
+| ---------- | ----------------------------------------------------------------- |
+| `context`  | Sets the Lingui message context.                                  |
+| `comment`  | Adds a comment for translators and extracted catalogs.            |
+| `idPrefix` | Prefixes explicit message IDs while the directive remains active. |
+
+```ts
+// lingui-set context="settings" comment="Settings action" idPrefix="settings."
+const label = t({ id: "save", message: "Save" });
+// The explicit ID is "settings.save".
+
+// lingui-reset
+```
+
+`lingui-reset` clears the current directive state. It may also include fields, in which case the
+previous state is cleared before the supplied values become active:
+
+```ts
+// lingui-reset context="account" idPrefix="account."
+```
+
+The state applies to following core and component macros, including `t`, `msg`, `defineMessage`,
+`plural`, `select`, `selectOrdinal`, `Trans`, `Plural`, `Select`, and `SelectOrdinal`.
+
+## Scope follows source order
+
+Directive state belongs to the whole source file. Framework block boundaries do not reset it.
+
+In Astro, a directive in frontmatter continues into the template:
+
+```astro
+---
+import { Trans } from "lingui-for-astro/macro";
+
+// lingui-set context="account" comment="Account navigation"
+---
+
+<Trans>Profile</Trans>
+
+{/* lingui-reset */}
+```
+
+In Svelte, a directive in a `<script>` block continues into the markup:
+
+```svelte
+<script lang="ts">
+  import { Trans } from "lingui-for-svelte/macro";
+
+  // lingui-set context="account" comment="Account navigation"
+</script>
+
+<Trans>Profile</Trans>
+
+<!-- lingui-reset -->
+```
+
+Neither the Astro frontmatter boundary nor the Svelte `<script>` boundary performs an implicit
+`lingui-reset`. Put an explicit reset at the point where the metadata should stop applying.
+
+Directives are interpreted in source order. To apply one to a component macro such as `Trans`, put
+the directive before its opening tag. A directive inside the component does not apply
+retroactively to the enclosing macro.
+
+## Supported comment forms
+
+Use a comment form that is valid at that location in the framework source.
+
+| Location                    | Supported forms                                    |
+| --------------------------- | -------------------------------------------------- |
+| Astro frontmatter           | `// ...`, `/* ... */`                              |
+| Astro markup                | `{/* ... */}`, `<!-- ... -->`                      |
+| Astro JavaScript expression | `// ...` and `/* ... */` inside a valid expression |
+| Svelte `<script>`           | `// ...`, `/* ... */`                              |
+| Svelte markup               | `<!-- ... -->`                                     |
+| Svelte expression           | `// ...` and `/* ... */` inside a valid expression |
+
+For example, these are equivalent places to reset Astro directive state:
+
+```astro
+{/* lingui-reset */}
+<!-- lingui-reset -->
+{true /* lingui-reset */}
+```
+
+Svelte does not use standalone JSX comment syntax in markup. Use an HTML comment there, or place a
+JavaScript comment inside an otherwise valid Svelte expression:
+
+```svelte
+<!-- lingui-reset -->
+{true}
+```
+
+Text that merely looks like a directive is not recognized. It must be a comment parsed by the
+framework grammar.
+
+## Comments inside `Trans`
+
+Ordinary JSX, HTML, and JavaScript comments inside `Trans` are ignored when the translated message
+is built. They do not become message text or rich-text placeholders.
+
+This comment therefore does not change the message:
+
+```astro
+<Trans>
+  Open the {/* implementation note */}<a href="/settings">settings</a>.
+</Trans>
+```
+
+Lingui directive comments are still ordered by their source position. Put a directive before the
+opening tag when it should affect that `Trans`:
+
+```astro
+{/* lingui-set context="navigation" */}
+<Trans>Open settings</Trans>
+{/* lingui-reset */}
+```
+
+## Extraction and transform stay aligned
+
+The Astro and Svelte extractors preserve the same directive state used by their build transforms.
+A message should therefore receive the same context, translator comment, and ID prefix during
+catalog extraction and runtime transformation.
+
+When adopting a new comment form, verify both `lingui extract` and the built output. See
+[Extract, Compile, and Verify](/guides/extract-compile-verify) for the complete workflow.

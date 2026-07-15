@@ -70,6 +70,12 @@ export default defineConfig({
 
 See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) for details.
 
+Lingui directives are another feature that must agree across these two paths. The framework
+extractor and build transform interpret the same directive state, including directives that cross
+an Astro frontmatter or Svelte script boundary. When adding a new comment form, verify extraction
+and transform independently. See [Lingui Directives](/guides/lingui-directives) for the supported
+syntax and scope rules.
+
 ## Which tools are responsible for what
 
 - `lingui-for-svelte` and `lingui-for-astro`

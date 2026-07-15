@@ -4,6 +4,7 @@ use lean_string::LeanString;
 
 use crate::common::{MappedText, MappedTextError, Span, source_map_to_json};
 use crate::extract::{SyntheticMapping, SyntheticModule};
+use crate::framework::shared::directives::render_lingui_directive;
 use crate::framework::{MacroCandidate, MacroImport, render_macro_import_line};
 use crate::synthesis::{SynthesisPlan, build_synthesis_plan};
 
@@ -22,9 +23,17 @@ pub fn build_synthetic_module(
     imports: &[MacroImport],
     candidates: &[MacroCandidate],
     source_anchors: &[usize],
+    lingui_directive_spans: &[Span],
 ) -> Result<SyntheticModule, BuildSyntheticModuleError> {
     let plan = build_synthesis_plan(source, source_name, imports, candidates, source_anchors)?;
-    build_synthetic_module_from_plan(source, source_name, synthetic_name, &plan, source_anchors)
+    build_synthetic_module_from_plan(
+        source,
+        source_name,
+        synthetic_name,
+        &plan,
+        source_anchors,
+        lingui_directive_spans,
+    )
 }
 
 pub fn build_synthetic_module_from_plan(
@@ -33,6 +42,7 @@ pub fn build_synthetic_module_from_plan(
     synthetic_name: &str,
     plan: &SynthesisPlan,
     source_anchors: &[usize],
+    lingui_directive_spans: &[Span],
 ) -> Result<SyntheticModule, BuildSyntheticModuleError> {
     let mut output = MappedText::new(source_name, source);
     let mut declaration_ids = Vec::new();
@@ -45,7 +55,16 @@ pub fn build_synthetic_module_from_plan(
         output.push_unmapped("\n");
     }
 
+    let mut directive_index = 0;
     for target in &plan.targets {
+        while let Some(span) = lingui_directive_spans.get(directive_index)
+            && span.start <= target.candidate.outer_span.start
+        {
+            if let Some(comment) = render_lingui_directive(source, *span) {
+                output.push_unmapped_dynamic(comment);
+            }
+            directive_index += 1;
+        }
         let declaration_id = target.declaration_id.clone();
         if !seen_declaration_ids.insert(declaration_id.clone()) {
             return Err(BuildSyntheticModuleError::DuplicateSyntheticTarget { declaration_id });
@@ -151,9 +170,15 @@ mod tests {
 
         let source = ls("t");
         let source_name = ls("test.ts");
-        let error =
-            build_synthetic_module_from_plan(&source, &source_name, "synthetic.ts", &plan, &[])
-                .expect_err("duplicate declaration ids should fail");
+        let error = build_synthetic_module_from_plan(
+            &source,
+            &source_name,
+            "synthetic.ts",
+            &plan,
+            &[],
+            &[],
+        )
+        .expect_err("duplicate declaration ids should fail");
 
         assert!(matches!(
             error,

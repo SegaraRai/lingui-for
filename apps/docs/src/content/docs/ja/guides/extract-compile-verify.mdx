@@ -66,6 +66,11 @@ export default defineConfig({
 
 詳しくは [コンポーネントマクロにおける空白](/ja/guides/whitespace-in-component-macros) を参照してください。
 
+Lingui ディレクティブについても、この 2 つの経路で挙動が一致している必要があります。
+フレームワークのエクストラクタとビルド変換は、Astro のフロントマターや Svelte の script 境界をまたぐ場合も含め、同じディレクティブ状態を解釈します。
+新しいコメント形式を使うときは、抽出と変換をそれぞれ確認してください。
+対応構文とスコープ規則については [Lingui ディレクティブ](/ja/guides/lingui-directives) を参照してください。
+
 ## どのツールが何を担当するか
 
 - `lingui-for-svelte` と `lingui-for-astro`

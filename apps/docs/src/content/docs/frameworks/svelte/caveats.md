@@ -35,6 +35,15 @@ Rich-text component macros use framework-aware whitespace handling by default in
 semantics. See [Whitespace in Component Macros](/guides/whitespace-in-component-macros) if your
 project needs to force `jsx` behavior or keep extraction and transform settings aligned.
 
+## Directive scope crosses script boundaries
+
+Lingui directive state is scoped to the source file, not to an individual Svelte block. A
+`lingui-set` in a `script` block therefore remains active for macros in the markup. Closing a
+`script` block does not perform an implicit `lingui-reset`.
+
+Use an explicit `lingui-reset` when the state should stop applying. See
+[Lingui Directives](/guides/lingui-directives) for examples and the supported Svelte comment forms.
+
 ## Plain `.js`, `.ts`, `.svelte.js`, and `.svelte.ts`
 
 Plain JavaScript and TypeScript files (including `.svelte.js` and `.svelte.ts`) go through the

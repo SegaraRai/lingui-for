@@ -2,7 +2,7 @@
 
 <script lang="ts">
   import { msg, select, t as translate } from "@lingui/core/macro";
-  import { Plural, Trans } from "lingui-for-svelte/macro";
+  import { ph, Plural, Trans } from "lingui-for-svelte/macro";
 
   type AlertLevel = "info" | "warn" | "error";
   type QueueRegion = "amer" | "apac" | "emea";
@@ -60,6 +60,14 @@
   const latencyMs = $state(184);
   const htmlDigest =
     "<strong>Imported digest</strong> with <em>inline</em> reviewer highlights.";
+
+  /* lingui-set context="fixture-script-block" comment="Svelte fixture script block directive" idPrefix="fixture." */
+  const directiveScriptBlock = translate.eager({
+    id: "script-block",
+    message: "Fixture script block directive message.",
+  });
+  const namedPlaceholderGreeting = translate.eager`Fixture review owner: ${ph({ ownerName: dashboardOwner })}.`;
+  /* lingui-reset */
 
   const teamCards = $state<TeamCard[]>([
     {
@@ -528,9 +536,14 @@
         ? "bg-sky-100 text-sky-700"
         : "bg-slate-100 text-slate-700";
   }
+
+  // lingui-reset context="fixture-cross-block" comment="Svelte fixture directive crossing script" idPrefix="fixture."
 </script>
 
 <div class="mx-auto grid max-w-7xl gap-8 px-6 py-8">
+  <Trans id="cross-block">Fixture directive inherited from Svelte script.</Trans>
+  <!-- lingui-reset -->
+
   <header
     class="grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
   >
@@ -847,5 +860,19 @@
         )}
       </p>
     </aside>
+  </section>
+
+  <section class="grid gap-3 rounded-3xl border border-slate-200 bg-white p-5">
+    <h2>{$translate`Svelte directive and placeholder coverage`}</h2>
+    <p>{namedPlaceholderGreeting}</p>
+    <Trans>Fixture named placeholder in Svelte markup: {ph({ ownerName: dashboardOwner })}.</Trans>
+    <!-- lingui-set context="fixture-html-comment" comment="Svelte fixture HTML directive" -->
+    <Trans>Fixture directive from a Svelte HTML comment.</Trans>
+    {true /* lingui-reset context="fixture-expression-block" comment="Svelte fixture expression block directive" */}
+    <Trans>Fixture directive from a Svelte expression block comment.</Trans>
+    {true // lingui-reset context="fixture-expression-line" comment="Svelte fixture expression line directive"
+    }
+    <Trans>Fixture directive from a Svelte expression line comment.</Trans>
+    <!-- lingui-reset -->
   </section>
 </div>

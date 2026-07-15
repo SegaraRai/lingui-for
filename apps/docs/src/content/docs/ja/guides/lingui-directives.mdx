@@ -1,0 +1,140 @@
+---
+title: Lingui ディレクティブ
+description: 後続の Lingui マクロへ共通のコンテキスト、翻訳者向けコメント、ID プレフィックスを適用する方法
+---
+
+Lingui ディレクティブは、ソースファイル内で後続するマクロにデフォルトのメッセージメタデータを設定するコメントです。
+複数のメッセージでコンテキスト、翻訳者向けコメント、明示的 ID のプレフィックスを共有したい場合に利用できます。
+
+ディレクティブのメタデータは Lingui のマクロ変換によって処理されます。
+このページで説明するフィールドには Lingui 6 以降が必要であり、Lingui 5 では適用されません。
+
+## ディレクティブ状態を設定、リセットする
+
+`lingui-set` は現在のディレクティブ状態を更新します。
+次のフィールドを指定できます。
+
+| フィールド | 効果                                                               |
+| ---------- | ------------------------------------------------------------------ |
+| `context`  | Lingui のメッセージコンテキストを設定します。                      |
+| `comment`  | 翻訳者および抽出カタログ向けのコメントを追加します。               |
+| `idPrefix` | ディレクティブが有効な間、明示的なメッセージ ID の前に付加します。 |
+
+```ts
+// lingui-set context="settings" comment="Settings action" idPrefix="settings."
+const label = t({ id: "save", message: "Save" });
+// 明示的 ID は "settings.save" になります。
+
+// lingui-reset
+```
+
+`lingui-reset` は現在のディレクティブ状態を消去します。
+フィールドを同時に指定した場合は、以前の状態を消去してから、指定した値を新しい状態として有効にします。
+
+```ts
+// lingui-reset context="account" idPrefix="account."
+```
+
+この状態は、`t`、`msg`、`defineMessage`、`plural`、`select`、`selectOrdinal`、`Trans`、`Plural`、`Select`、`SelectOrdinal` など、後続のコアマクロとコンポーネントマクロに適用されます。
+
+## スコープはソース順に従う
+
+ディレクティブ状態はソースファイル全体に属します。
+フレームワークのブロック境界ではリセットされません。
+
+Astro では、フロントマター内のディレクティブがテンプレートまで継続します。
+
+```astro
+---
+import { Trans } from "lingui-for-astro/macro";
+
+// lingui-set context="account" comment="Account navigation"
+---
+
+<Trans>Profile</Trans>
+
+{/* lingui-reset */}
+```
+
+Svelte では、`<script>` ブロック内のディレクティブがマークアップまで継続します。
+
+```svelte
+<script lang="ts">
+  import { Trans } from "lingui-for-svelte/macro";
+
+  // lingui-set context="account" comment="Account navigation"
+</script>
+
+<Trans>Profile</Trans>
+
+<!-- lingui-reset -->
+```
+
+Astro のフロントマター境界でも、Svelte の `<script>` 境界でも、暗黙の `lingui-reset` は行われません。
+メタデータの適用を終えたい位置で、明示的にリセットしてください。
+
+ディレクティブはソース順に解釈されます。
+`Trans` のようなコンポーネントマクロへ適用する場合は、開始タグより前にディレクティブを置いてください。
+コンポーネント内のディレクティブが、外側のマクロへ遡って適用されることはありません。
+
+## 対応するコメント形式
+
+ソース内の配置場所で有効な、フレームワークのコメント形式を使ってください。
+
+| 場所                 | 対応形式                                   |
+| -------------------- | ------------------------------------------ |
+| Astro フロントマター | `// ...`、`/* ... */`                      |
+| Astro マークアップ   | `{/* ... */}`、`<!-- ... -->`              |
+| Astro JavaScript 式  | 有効な式の中にある `// ...` と `/* ... */` |
+| Svelte `<script>`    | `// ...`、`/* ... */`                      |
+| Svelte マークアップ  | `<!-- ... -->`                             |
+| Svelte 式            | 有効な式の中にある `// ...` と `/* ... */` |
+
+たとえば Astro では、次のいずれの位置からもディレクティブ状態をリセットできます。
+
+```astro
+{/* lingui-reset */}
+<!-- lingui-reset -->
+{true /* lingui-reset */}
+```
+
+Svelte のマークアップでは、独立した JSX コメント構文を使いません。
+HTML コメントを使うか、有効な Svelte 式の中に JavaScript コメントを置いてください。
+
+```svelte
+<!-- lingui-reset -->
+{true}
+```
+
+ディレクティブのように見えるだけのテキストは認識されません。
+フレームワークの文法によってコメントとして解析される必要があります。
+
+## `Trans` 内のコメント
+
+`Trans` 内の通常の JSX、HTML、JavaScript コメントは、翻訳メッセージの組み立て時に無視されます。
+メッセージ本文やリッチテキストのプレースホルダーにはなりません。
+
+したがって、次のコメントはメッセージを変更しません。
+
+```astro
+<Trans>
+  Open the {/* implementation note */}<a href="/settings">settings</a>.
+</Trans>
+```
+
+Lingui ディレクティブのコメントも、そのソース位置に従って処理されます。
+その `Trans` に適用したい場合は、開始タグより前に置いてください。
+
+```astro
+{/* lingui-set context="navigation" */}
+<Trans>Open settings</Trans>
+{/* lingui-reset */}
+```
+
+## 抽出と変換の一貫性
+
+Astro と Svelte のエクストラクタは、ビルド変換と同じディレクティブ状態を保持します。
+そのため、カタログ抽出時と実行時コードへの変換時で、メッセージには同じコンテキスト、翻訳者向けコメント、ID プレフィックスが適用されます。
+
+新しいコメント形式を採用するときは、`lingui extract` とビルド結果の両方を確認してください。
+一連の確認方法については [抽出、コンパイル、検証](/ja/guides/extract-compile-verify) を参照してください。

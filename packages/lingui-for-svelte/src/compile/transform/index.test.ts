@@ -64,6 +64,63 @@ async function expectTransformed(
   return result;
 }
 
+test("preserves Lingui directive state while transforming script macros and markup Trans", async () => {
+  const result = await expectTransformed(dedent`
+    <script lang="ts">
+      import { t, Trans } from "lingui-for-svelte/macro";
+
+      // lingui-set context="settings" comment="Settings action" idPrefix="settings."
+      const save = t.eager({ id: "save", message: "Save" });
+
+      // lingui-reset
+      const plain = t.eager({ id: "plain", message: "Plain" });
+
+      // lingui-set context="shared" comment="Shared component" idPrefix="shared."
+    </script>
+
+    <Trans id="title">Shared welcome</Trans>
+    <!-- lingui-reset context="hero" comment="Hero heading" idPrefix="page." -->
+    <Trans id="title">Welcome</Trans>
+  `);
+  const code = compact(result.code);
+
+  expect(code).toMatch(
+    /id: "settings\.save", message: "Save", comment: "Settings action", context: "settings"/,
+  );
+  expect(code).toMatch(/id: "plain", message: "Plain"/);
+  expect(code).toMatch(
+    /id: "shared\.title", message: "Shared welcome", comment: "Shared component", context: "shared"/,
+  );
+  expect(code).toMatch(
+    /id: "page\.title", message: "Welcome", comment: "Hero heading", context: "hero"/,
+  );
+});
+
+test("transforms directives from Svelte block and expression comments", async () => {
+  const result = await expectTransformed(dedent`
+    <script lang="ts">
+      import { Trans } from "lingui-for-svelte/macro";
+      /* lingui-set context="script-block" */
+    </script>
+
+    <Trans>Script block</Trans>
+    {true /* lingui-reset context="expression-block" */}
+    <Trans>Expression block</Trans>
+    {true // lingui-reset context="expression-line"
+    }
+    <Trans>Expression line</Trans>
+  `);
+  const code = compact(result.code);
+
+  expect(code).toMatch(/message: "Script block", context: "script-block"/);
+  expect(code).toMatch(
+    /message: "Expression block", context: "expression-block"/,
+  );
+  expect(code).toMatch(
+    /message: "Expression line", context: "expression-line"/,
+  );
+});
+
 const preloadedInitPageSource = dedent`
   <script lang="ts">
     import { setupI18n } from "@lingui/core";

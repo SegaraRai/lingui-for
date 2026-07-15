@@ -1,12 +1,32 @@
 ---
-import { t, Trans } from "lingui-for-astro/macro";
+import { ph, t, Trans } from "lingui-for-astro/macro";
 
 const subject = "Astro";
+/* lingui-set context="compat-astro" comment="Astro compatibility directive" idPrefix="compat." */
+const directiveMessage = t({
+  id: "directive",
+  message: `Compatibility directive for ${subject}.`,
+});
+const namedPlaceholder = t`Named compatibility subject: ${ph({ subjectName: subject })}.`;
+/* lingui-reset */
+
+// lingui-set context="compat-cross-block" comment="Astro compatibility directive crossing frontmatter" idPrefix="compat."
 ---
 
 <html lang="en">
   <body>
     <h1>{t`Hello ${subject}`}</h1>
+    <p>{directiveMessage}</p>
+    <p>{namedPlaceholder}</p>
+    <Trans id="cross-block"
+      >Compatibility directive inherited from Astro frontmatter.</Trans
+    >
+    {/* lingui-reset */}
+    <Trans
+      >Named compatibility component subject: {
+        ph({ subjectName: subject })
+      }.</Trans
+    >
     <Trans>Build <strong>Astro</strong> compatibility.</Trans>
   </body>
 </html>

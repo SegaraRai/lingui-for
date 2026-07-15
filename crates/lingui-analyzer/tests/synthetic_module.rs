@@ -39,6 +39,7 @@ fn builds_synthetic_module_with_normalized_svelte_macros() {
         &script.macro_imports,
         &script.candidates,
         &analysis.metadata.source_anchors,
+        &analysis.metadata.lingui_directive_spans,
     )
     .expect("synthetic module builds");
 
@@ -107,6 +108,7 @@ fn builds_synthetic_module_for_svelte_template_components() {
         &analysis.semantic.scripts[0].macro_imports,
         &candidates,
         &analysis.metadata.source_anchors,
+        &analysis.metadata.lingui_directive_spans,
     )
     .expect("synthetic module builds");
 
@@ -159,6 +161,7 @@ fn groups_synthetic_imports_by_source() {
         &analysis.semantic.scripts[0].macro_imports,
         &candidates,
         &analysis.metadata.source_anchors,
+        &analysis.metadata.lingui_directive_spans,
     )
     .expect("synthetic module builds");
 
@@ -200,6 +203,7 @@ fn emits_lookupable_sourcemap_for_normalized_segments() {
         &analysis.semantic.scripts[0].macro_imports,
         &analysis.semantic.scripts[0].candidates,
         &analysis.metadata.source_anchors,
+        &analysis.metadata.lingui_directive_spans,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
@@ -240,6 +244,7 @@ fn emits_utf16_columns_for_unicode_prefixes() {
         &analysis.semantic.scripts[0].macro_imports,
         &analysis.semantic.scripts[0].candidates,
         &analysis.metadata.source_anchors,
+        &analysis.metadata.lingui_directive_spans,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
@@ -288,6 +293,7 @@ fn maps_component_declaration_start_to_component_message_anchor() {
         &analysis.semantic.scripts[0].macro_imports,
         &candidates,
         &analysis.metadata.source_anchors,
+        &analysis.metadata.lingui_directive_spans,
     )
     .expect("synthetic module builds");
     let map_json = synthetic.source_map_json.as_ref().expect("map exists");
@@ -334,6 +340,7 @@ fn merges_owned_svelte_nested_macro_normalization_into_parent_synthetic_source()
         &script.macro_imports,
         &script.candidates,
         &analysis.metadata.source_anchors,
+        &analysis.metadata.lingui_directive_spans,
     )
     .expect("synthetic module builds");
 

@@ -122,6 +122,7 @@ pub(crate) fn analyze_svelte_transform(
                 .or_else(|| module_script.as_ref().map(|script| script.lang))
                 .unwrap_or(ScriptLang::Ts),
             source_anchors: analysis.metadata.source_anchors.clone(),
+            lingui_directive_spans: analysis.metadata.lingui_directive_spans.clone(),
         },
         runtime_bindings: create_runtime_bindings(
             analysis

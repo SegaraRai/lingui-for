@@ -59,6 +59,28 @@ const useCommentBranch = true;
 const htmlDigest =
   "<strong>Imported digest</strong> with <em>inline</em> reviewer highlights.";
 
+/* lingui-set context="fixture-frontmatter-block" comment="Astro fixture frontmatter block directive" idPrefix="fixture." */
+const directiveFrontmatterBlock = __l4a_i18n._(
+/** i18n */
+{
+  id: "fixture.frontmatter-block",
+  message: "Fixture frontmatter block directive message.",
+  comment: "Astro fixture frontmatter block directive",
+  context: "fixture-frontmatter-block"
+});
+const namedPlaceholderGreeting = __l4a_i18n._(
+/** i18n */
+{
+  id: "a0z5dy",
+  message: "Fixture review owner: {ownerName}.",
+  comment: "Astro fixture frontmatter block directive",
+  context: "fixture-frontmatter-block",
+  values: {
+    ownerName: dashboardOwner
+  }
+});
+/* lingui-reset */
+
 const teamCards: TeamCard[] = [
   {
     badge: "A",
@@ -548,6 +570,8 @@ function rowTone(state: DecisionRow["state"]): string {
       ? "bg-sky-100 text-sky-700"
       : "bg-slate-100 text-slate-700";
 }
+
+// lingui-reset context="fixture-cross-block" comment="Astro fixture directive crossing frontmatter" idPrefix="fixture."
 __l4a_i18n.prime();
 ---
 
@@ -558,6 +582,14 @@ __l4a_i18n.prime();
   </head>
   <body class="bg-slate-50 text-slate-900">
     <main class="mx-auto grid max-w-7xl gap-8 px-6 py-8">
+      <L4aRuntimeTrans {...(/*i18n*/ {
+        id: "fixture.cross-block",
+        message: "Fixture directive inherited from Astro frontmatter.",
+        comment: "Astro fixture directive crossing frontmatter",
+        context: "fixture-cross-block"
+      })}></L4aRuntimeTrans>
+      {/* lingui-reset */}
+
       <header
         class="grid gap-4 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm"
       >
@@ -1246,6 +1278,37 @@ __l4a_i18n.prime();
           <fragment slot="component_2">{(children) => <p><Fragment set:html={children} /></p>}</fragment>
           </L4aRuntimeTrans>
         }
+        <p>{namedPlaceholderGreeting}</p>
+        <L4aRuntimeTrans {...(/*i18n*/ {
+          id: "903OZm",
+          message: "Fixture named placeholder in Astro markup: {ownerName}.",
+          values: {
+            ownerName: dashboardOwner
+          }
+        })}></L4aRuntimeTrans>
+        <!-- lingui-set context="fixture-html-comment" comment="Astro fixture HTML directive" -->
+        <L4aRuntimeTrans {...(/*i18n*/ {
+          id: "ial1rQ",
+          message: "Fixture directive from an Astro HTML comment.",
+          comment: "Astro fixture HTML directive",
+          context: "fixture-html-comment"
+        })}></L4aRuntimeTrans>
+        {true /* lingui-reset context="fixture-expression-block" comment="Astro fixture expression block directive" */}
+        <L4aRuntimeTrans {...(/*i18n*/ {
+          id: "4Hv1ia",
+          message: "Fixture directive from an Astro expression block comment.",
+          comment: "Astro fixture expression block directive",
+          context: "fixture-expression-block"
+        })}></L4aRuntimeTrans>
+        {true // lingui-reset context="fixture-expression-line" comment="Astro fixture expression line directive"
+        }
+        <L4aRuntimeTrans {...(/*i18n*/ {
+          id: "LREI6Z",
+          message: "Fixture directive from an Astro expression line comment.",
+          comment: "Astro fixture expression line directive",
+          context: "fixture-expression-line"
+        })}></L4aRuntimeTrans>
+        {/* lingui-reset */}
       </section>
 
       <section

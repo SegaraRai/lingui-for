@@ -162,6 +162,26 @@ msgstr "3. Open the paired route and compare which islands kept their counters, 
 msgid "Astro can preserve <0>strong emphasis</0> in translated output."
 msgstr "Astro can preserve <0>strong emphasis</0> in translated output."
 
+#. Astro E2E directive crossing frontmatter
+#. js-lingui-explicit-id
+#: src/pages/formats.astro:24
+msgctxt "e2e-cross-block"
+msgid "e2e.astro-cross-block"
+msgstr "Astro directive inherited across the frontmatter boundary."
+
+#. Astro E2E directive
+#. js-lingui-explicit-id
+#: src/pages/formats.astro:14
+msgctxt "e2e-astro-directive"
+msgid "e2e.astro-directive"
+msgstr "Astro E2E directive from frontmatter."
+
+#. Astro E2E directive
+#: src/pages/formats.astro:18
+msgctxt "e2e-astro-directive"
+msgid "Astro format owner: {ownerName}."
+msgstr "Astro format owner: {ownerName}."
+
 #: src/components/astro/AstroFormats.astro:16
 msgid "Astro formats"
 msgstr "Astro formats"
@@ -193,6 +213,10 @@ msgstr "Astro interpolations can contain comments and fragments."
 #: src/components/astro/AstroRichText.astro:18
 msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Astro keeps the <0>settings link</0> inside a translated sentence."
+
+#: src/pages/formats.astro:50
+msgid "Astro named component placeholder: {ownerName}."
+msgstr "Astro named component placeholder: {ownerName}."
 
 #: src/pages/server.astro:24
 msgid "Astro pages render request-scoped translations through locals."
@@ -323,12 +347,12 @@ msgstr "First translated fragment child after an HTML comment inside an Astro in
 msgid "First translated fragment child inside an Astro interpolation."
 msgstr "First translated fragment child inside an Astro interpolation."
 
-#: src/pages/formats.astro:14
+#: src/pages/formats.astro:30
 msgid "Format macro checks"
 msgstr "Format macro checks"
 
 #: src/layouts/AppLayout.astro:30
-#: src/pages/formats.astro:22
+#: src/pages/formats.astro:38
 msgid "Formats"
 msgstr "Formats"
 
@@ -524,7 +548,7 @@ msgstr "Plain Trans component message on the interpolation page."
 msgid "Plain translated expression inside an Astro interpolation."
 msgstr "Plain translated expression inside an Astro interpolation."
 
-#: src/pages/formats.astro:25
+#: src/pages/formats.astro:41
 msgid "Plural and selection macros cover count, tone, and rank."
 msgstr "Plural and selection macros cover count, tone, and rank."
 
@@ -742,7 +766,7 @@ msgstr "The active <0>Lingui context</0> is created inside the Svelte island."
 msgid "The active locale reaches React through a dedicated Lingui instance."
 msgstr "The active locale reaches React through a dedicated Lingui instance."
 
-#: src/pages/formats.astro:29
+#: src/pages/formats.astro:45
 msgid "The cards below mirror the same macro families inside component code."
 msgstr "The cards below mirror the same macro families inside component code."
 

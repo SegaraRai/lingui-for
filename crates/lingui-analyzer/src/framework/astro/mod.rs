@@ -53,6 +53,7 @@ pub struct AstroTemplateExpression {
     pub outer_span: Span,
     pub inner_span: Span,
     pub candidates: Vec<MacroCandidate>,
+    pub lingui_directive_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -76,6 +77,7 @@ pub struct AstroSourceMetadata {
     pub frontmatter_import_statement_spans: Vec<Span>,
     pub fragment_tag_pairs: Vec<AstroFragmentTagPair>,
     pub source_anchors: Vec<usize>,
+    pub lingui_directive_spans: Vec<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

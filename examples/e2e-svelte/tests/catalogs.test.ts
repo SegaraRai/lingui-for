@@ -23,6 +23,11 @@ describe("lingui extract and compile outputs", () => {
       "A plain TypeScript module can define Lingui descriptors for Svelte.",
     );
     expect(enPo).toContain("$t across Svelte syntax positions");
+    expect(enPo).toContain('msgid "e2e.svelte-directive"');
+    expect(enPo).toContain('msgid "e2e.svelte-cross-block"');
+    expect(enPo).toContain('msgctxt "e2e-svelte-directive"');
+    expect(enPo).toContain("Svelte syntax owner: {ownerName}.");
+    expect(enPo).toContain("Svelte named component placeholder: {ownerName}.");
     expect(enPo).toContain(
       "This placeholder comes from $t inside an attribute",
     );
@@ -48,6 +53,10 @@ describe("lingui extract and compile outputs", () => {
       "素の TypeScript から import したディスクリプタです。",
     );
     expect(jaCatalog).toContain("Svelte 構文の各所で使う $t");
+    expect(jaCatalog).toContain("Svelte 構文の担当: ");
+    expect(jaCatalog).toContain(
+      "Svelte の名前付きコンポーネントプレースホルダー: ",
+    );
     expect(jaCatalog).toContain("キー付きサブツリーのリビジョン");
     expect(jaCatalog).toContain("テンプレートこんにちは😀 ");
     expect(jaCatalog).toContain("ようこそ <0>");

@@ -97,6 +97,37 @@ function Component() {
 一方で、ラッパーで表されないリッチテキスト構文は、意図的にサポートしていません。
 たとえば Svelte のブロック構文や、Astro の `script`、`style`、`is:raw` などがこれに当たります。
 
+## コメントと Lingui ディレクティブ
+
+`Trans` 内の通常のコメントは翻訳メッセージに含まれません。
+コメントによってテキストやリッチテキストのプレースホルダーが追加されることもありません。
+
+Lingui ディレクティブをそのメッセージへ適用する場合は、`Trans` の開始タグより前に置いてください。
+
+<Tabs syncKey="framework">
+  <TabItem icon="seti:svelte" label="Svelte">
+
+```svelte
+<!-- lingui-set context="navigation" comment="Main navigation link" -->
+<Trans>Open the <a href="/settings">settings</a>.</Trans>
+<!-- lingui-reset -->
+```
+
+  </TabItem>
+  <TabItem icon="astro" label="Astro">
+
+```astro
+{/* lingui-set context="navigation" comment="Main navigation link" */}
+<Trans>Open the <a href="/settings">settings</a>.</Trans>
+{/* lingui-reset */}
+```
+
+  </TabItem>
+</Tabs>
+
+ディレクティブ状態はソース順に適用されるため、開始タグより後にあるディレクティブが外側の `Trans` へ遡って適用されることはありません。
+スコープとコメント形式の完全な規則については [Lingui ディレクティブ](/ja/guides/lingui-directives) を参照してください。
+
 ## 子ノード間の空白
 
 `Trans` は内部的には JSX 互換の仕組みで処理されますが、`.svelte` と `.astro` のテンプレートは JSX ではありません。

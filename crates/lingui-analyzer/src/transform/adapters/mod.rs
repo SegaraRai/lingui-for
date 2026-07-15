@@ -28,4 +28,5 @@ pub(crate) struct CommonFrameworkTransformAnalysis {
     pub(crate) import_removals: Vec<Span>,
     pub(crate) synthetic_lang: ScriptLang,
     pub(crate) source_anchors: Vec<usize>,
+    pub(crate) lingui_directive_spans: Vec<Span>,
 }
