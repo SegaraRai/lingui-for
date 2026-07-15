@@ -1,5 +1,11 @@
 # @lingui-for/framework-core
 
+## 0.7.0
+
+### Minor Changes
+
+- [#58](https://github.com/SegaraRai/lingui-for/pull/58) [`4e3ccf1`](https://github.com/SegaraRai/lingui-for/commit/4e3ccf1e55304135c8315391c51fbeeeb8bfa955) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Support Lingui `lingui-set` and `lingui-reset` directives across Astro and Svelte source regions during extraction and transform.
+
 ## 0.6.1
 
 ### Patch Changes
