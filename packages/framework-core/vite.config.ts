@@ -32,7 +32,7 @@ export default defineConfig({
         command: "vp pack",
         dependsOn: ["lingui-for-workspace#build:wasm"],
         cache: true,
-        input: [{ auto: true }, "!**/.vite-temp/**", "!dist/**"],
+        input: [{ auto: true }, "!**/_tmp_*", "!**/.vite-temp/**", "!dist/**"],
       },
       check: {
         command: "vp check",

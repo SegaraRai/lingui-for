@@ -183,9 +183,10 @@ fn convert_runtime_trans_root(
                 );
             }
             other => {
-                return Err(
-                    RuntimeComponentError::UnsupportedJsxAttributeNodeKind { kind: other }.into(),
-                );
+                return Err(RuntimeComponentError::UnsupportedJsxAttributeNodeKind {
+                    kind: LeanString::from(other),
+                }
+                .into());
             }
         }
     }
@@ -401,9 +402,10 @@ fn convert_object_expression(
                 )?;
             }
             other => {
-                return Err(
-                    RuntimeComponentError::UnsupportedObjectChildKind { kind: other }.into(),
-                );
+                return Err(RuntimeComponentError::UnsupportedObjectChildKind {
+                    kind: LeanString::from(other),
+                }
+                .into());
             }
         }
     }

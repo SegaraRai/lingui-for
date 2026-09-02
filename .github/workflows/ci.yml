@@ -27,14 +27,14 @@ jobs:
       playwright-container-image: ${{ steps.playwright-container-image.outputs.image }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - id: playwright-container-image
         name: Resolve Playwright Container Image
         run: |
           image="$(
             ruby -ryaml -e '
-              lockfile = YAML.load_file("pnpm-lock.yaml")
+              lockfile = YAML.load_stream(File.read("pnpm-lock.yaml")).last
               version = lockfile.fetch("catalogs").fetch("default").fetch("playwright").fetch("version")
               abort("Unexpected Playwright version: #{version}") unless version.match?(/\A\d+\.\d+\.\d+\z/)
               puts "mcr.microsoft.com/playwright:v#{version}-noble"
@@ -49,12 +49,12 @@ jobs:
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Rust
         run: rustup install stable
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -99,9 +99,9 @@ jobs:
       LINGUI_WASM_PREBUILT: "1"
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: ${{ env.WASM_PACKAGE_ARTIFACT_NAME }}
           path: shared/lingui-analyzer-wasm/dist
@@ -149,7 +149,7 @@ jobs:
       LINGUI_WASM_PREBUILT: "1"
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
           path: .
@@ -205,7 +205,7 @@ jobs:
       LINGUI_WASM_PREBUILT: "1"
 
     steps:
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         with:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
           path: .
@@ -224,7 +224,7 @@ jobs:
             rm built-repository.tar
             echo "compatibility: installing vite-plus"
             curl -fsSL --connect-timeout 5 --max-time 15 https://viteplus.dev/install.sh | bash
-            . "$HOME/.vite-plus/env"
+            export PATH="$HOME/.local/share/vite-plus/bin:$PATH"
             vp env use "$(cat .node-version)"
             echo "compatibility: installing dependencies"
             vp install
@@ -308,7 +308,7 @@ jobs:
 
     steps:
       - name: Checkout Actions Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Spell Check Repo
-        uses: crate-ci/typos@v1.44.0
+        uses: crate-ci/typos@v1.50.1
