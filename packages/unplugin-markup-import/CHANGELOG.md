@@ -1,5 +1,11 @@
 # unplugin-markup-import
 
+## 0.2.2
+
+### Patch Changes
+
+- [#59](https://github.com/SegaraRai/lingui-for/pull/59) [`b356b5f`](https://github.com/SegaraRai/lingui-for/commit/b356b5fba2755ae0351f1dfc75b80ba5089ec62f) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Update parser, analyzer, and markup transformation dependencies.
+
 ## 0.2.1
 
 ### Patch Changes
