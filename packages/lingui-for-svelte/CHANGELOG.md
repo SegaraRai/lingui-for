@@ -1,5 +1,13 @@
 # lingui-for-svelte
 
+## 0.7.1
+
+### Patch Changes
+
+- [#59](https://github.com/SegaraRai/lingui-for/pull/59) [`b356b5f`](https://github.com/SegaraRai/lingui-for/commit/b356b5fba2755ae0351f1dfc75b80ba5089ec62f) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Update parser, analyzer, and markup transformation dependencies.
+- Updated dependencies [[`b356b5f`](https://github.com/SegaraRai/lingui-for/commit/b356b5fba2755ae0351f1dfc75b80ba5089ec62f)]:
+  - @lingui-for/framework-core@0.7.1
+
 ## 0.7.0
 
 ### Minor Changes
