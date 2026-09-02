@@ -12,10 +12,10 @@ crate-type = ["rlib", "cdylib"]
 console_error_panic_hook = "0.1"
 serde = { version = "1", features = ["derive"] }
 serde-wasm-bindgen = "0.6"
-lean_string = { version = "0.5", features = ["serde"] }
+lean_string = { version = "0.7", features = ["serde"] }
 sourcemap = "9"
 thiserror = "2"
-tree-sitter = "0.26"
+tree-sitter = "0.27"
 tree-sitter-astro = { git = "https://github.com/SegaraRai/tree-sitter-astro.git" }
 tree-sitter-javascript = { git = "https://github.com/SegaraRai/tree-sitter-javascript.git" }
 tree-sitter-svelte-ng = { git = "https://github.com/SegaraRai/tree-sitter-svelte.git" }

@@ -38,8 +38,10 @@ export interface SvelteExtractorOptions {
  * source map. Messages are emitted through Lingui's `onMessageExtracted` callback.
  */
 export const svelteExtractor: PerFileExtractorType &
-  typeof svelteExtractorFactory =
-  /*#__PURE__*/ Object.assign(svelteExtractorFactory, svelteExtractorFactory());
+  typeof svelteExtractorFactory = /*#__PURE__*/ Object.assign(
+  svelteExtractorFactory,
+  svelteExtractorFactory(),
+);
 
 /**
  * Lingui extractor factory for `.svelte` files.

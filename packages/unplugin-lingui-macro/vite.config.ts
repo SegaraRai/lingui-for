@@ -24,7 +24,7 @@ export default defineConfig({
       build: {
         command: "vp pack",
         cache: true,
-        input: [{ auto: true }, "!**/.vite-temp/**", "!dist/**"],
+        input: [{ auto: true }, "!**/_tmp_*", "!**/.vite-temp/**", "!dist/**"],
       },
       check: {
         command: "vp check",

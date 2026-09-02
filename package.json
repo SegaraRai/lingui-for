@@ -18,18 +18,18 @@
     "changeset": "changeset"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.7.0",
-    "@changesets/cli": "^2.31.0",
+    "@changesets/changelog-github": "^1.0.0",
+    "@changesets/cli": "^3.0.1",
     "@types/node": "catalog:",
     "playwright": "catalog:",
-    "prettier": "^3.9.5",
+    "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-organize-imports": "^4.3.0",
-    "prettier-plugin-tailwindcss": "^0.8.0",
+    "prettier-plugin-tailwindcss": "^0.8.1",
     "typescript": "catalog:",
-    "vite": "catalog:",
+    "vite": "npm:@voidzero-dev/vite-plus-core@^0.3.0",
     "vite-plus": "catalog:",
     "wasm-pack": "^0.15.0"
   },
-  "packageManager": "pnpm@11.0.8"
+  "packageManager": "pnpm@12.2.1"
 }

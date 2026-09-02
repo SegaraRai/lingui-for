@@ -111,8 +111,7 @@ export default defineConfig({
         input: [{ auto: true }],
       },
       release: {
-        command:
-          "vp exec pnpm publish -r --access public --provenance && vp exec changeset tag",
+        command: "vp exec changeset publish",
         dependsOn: ["build"],
         cache: false,
       },

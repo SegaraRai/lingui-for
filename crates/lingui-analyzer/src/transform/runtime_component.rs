@@ -22,13 +22,13 @@ pub enum RuntimeComponentError {
     #[error("expected JSX element initializer for transformed component")]
     ExpectedJsxElementInitializerForTransformedComponent,
     #[error("unsupported JSX attribute node kind: {kind}")]
-    UnsupportedJsxAttributeNodeKind { kind: &'static str },
+    UnsupportedJsxAttributeNodeKind { kind: LeanString },
     #[error("expected spread element inside JSX spread attribute")]
     ExpectedSpreadElementInJsxSpreadAttribute,
     #[error("missing JSX attribute name")]
     MissingJsxAttributeName,
     #[error("unsupported JSX attribute value kind: {kind}")]
-    UnsupportedJsxAttributeValueKind { kind: &'static str },
+    UnsupportedJsxAttributeValueKind { kind: LeanString },
     #[error("missing variable declarator while lowering object expression")]
     MissingVariableDeclaratorWhileLoweringObjectExpression,
     #[error("missing object expression initializer")]
@@ -38,13 +38,13 @@ pub enum RuntimeComponentError {
     #[error("missing object pair key")]
     MissingObjectPairKey,
     #[error("runtime component placeholder key contains unsupported characters: {key}")]
-    InvalidRuntimePlaceholderKey { key: String },
+    InvalidRuntimePlaceholderKey { key: LeanString },
     #[error("missing object pair value")]
     MissingObjectPairValue,
     #[error("missing spread argument in object expression")]
     MissingSpreadArgumentInObjectExpression,
     #[error("unsupported object child kind in runtime component lowering: {kind}")]
-    UnsupportedObjectChildKind { kind: &'static str },
+    UnsupportedObjectChildKind { kind: LeanString },
     #[error("expected JSX element descriptor")]
     ExpectedJsxElementDescriptor,
     #[error("missing JSX name in component descriptor")]
@@ -58,7 +58,7 @@ pub enum RuntimeComponentError {
     #[error("missing JSX expression value")]
     MissingJsxExpressionValue,
     #[error("unsupported JSX prop kind: {kind}")]
-    UnsupportedJsxPropKind { kind: &'static str },
+    UnsupportedJsxPropKind { kind: LeanString },
     #[error("translated node offset became negative")]
     TranslatedNodeOffsetNegative,
     #[error(
@@ -174,7 +174,7 @@ pub(super) fn convert_jsx_named_attribute(
         }
         Some(other) => {
             return Err(RuntimeComponentError::UnsupportedJsxAttributeValueKind {
-                kind: other.kind(),
+                kind: LeanString::from(other.kind()),
             });
         }
     }
@@ -298,7 +298,9 @@ fn convert_object_expression(
                 push_copied_span(&mut rendered, input, translated_span(child, base_offset)?)?;
             }
             other => {
-                return Err(RuntimeComponentError::UnsupportedObjectChildKind { kind: other });
+                return Err(RuntimeComponentError::UnsupportedObjectChildKind {
+                    kind: LeanString::from(other),
+                });
             }
         }
     }
@@ -469,7 +471,9 @@ fn convert_jsx_attributes_to_object(
                 }
             }
             other => {
-                return Err(RuntimeComponentError::UnsupportedJsxPropKind { kind: other });
+                return Err(RuntimeComponentError::UnsupportedJsxPropKind {
+                    kind: LeanString::from(other),
+                });
             }
         }
     }
@@ -667,7 +671,7 @@ pub(super) fn validate_runtime_placeholder_key(key: &str) -> Result<&str, Runtim
         Ok(key)
     } else {
         Err(RuntimeComponentError::InvalidRuntimePlaceholderKey {
-            key: key.to_string(),
+            key: LeanString::from(key),
         })
     }
 }

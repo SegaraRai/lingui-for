@@ -47,6 +47,7 @@ export default defineConfig({
         cache: true,
         input: [
           { auto: true },
+          "!**/_tmp_*",
           "!**/.vite-temp/**",
           "!**/.unplugin-markup-import/**",
           "!.astro/**",

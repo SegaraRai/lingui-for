@@ -40,8 +40,10 @@ export interface AstroExtractorOptions {
  * extractor pipeline.
  */
 export const astroExtractor: PerFileExtractorType &
-  typeof astroExtractorFactory =
-  /*#__PURE__*/ Object.assign(astroExtractorFactory, astroExtractorFactory());
+  typeof astroExtractorFactory = /*#__PURE__*/ Object.assign(
+  astroExtractorFactory,
+  astroExtractorFactory(),
+);
 
 /**
  * Lingui extractor factory for `.astro` source files.
