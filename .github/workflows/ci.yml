@@ -34,7 +34,7 @@ jobs:
         run: |
           image="$(
             ruby -ryaml -e '
-              lockfile = YAML.load_stream_file("pnpm-lock.yaml").last
+              lockfile = YAML.load_stream(File.read("pnpm-lock.yaml")).last
               version = lockfile.fetch("catalogs").fetch("default").fetch("playwright").fetch("version")
               abort("Unexpected Playwright version: #{version}") unless version.match?(/\A\d+\.\d+\.\d+\z/)
               puts "mcr.microsoft.com/playwright:v#{version}-noble"
