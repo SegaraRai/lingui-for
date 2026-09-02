@@ -224,7 +224,7 @@ jobs:
             rm built-repository.tar
             echo "compatibility: installing vite-plus"
             curl -fsSL --connect-timeout 5 --max-time 15 https://viteplus.dev/install.sh | bash
-            . "$HOME/.vite-plus/env"
+            export PATH="$HOME/.local/share/vite-plus/bin:$PATH"
             vp env use "$(cat .node-version)"
             echo "compatibility: installing dependencies"
             vp install
