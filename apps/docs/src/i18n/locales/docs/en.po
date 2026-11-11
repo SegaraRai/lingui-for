@@ -34,7 +34,7 @@ msgstr "3 items"
 msgid "Casual"
 msgstr "Casual"
 
-#: src/components/MacroWorkbench.astro:50
+#: src/components/MacroWorkbench.astro:60
 msgid "Catalog"
 msgstr "Catalog"
 
@@ -42,7 +42,7 @@ msgstr "Catalog"
 msgid "Choose ordinal text such as 1st, 2nd, or 3rd."
 msgstr "Choose ordinal text such as 1st, 2nd, or 3rd."
 
-#: src/components/MacroWorkbench.astro:71
+#: src/components/MacroWorkbench.astro:81
 msgid "Compiled Catalog"
 msgstr "Compiled Catalog"
 
@@ -63,7 +63,7 @@ msgstr "Count"
 msgid "Define a descriptor now and translate it later."
 msgstr "Define a descriptor now and translate it later."
 
-#: src/components/MacroWorkbench.astro:43
+#: src/components/MacroWorkbench.astro:53
 msgid "Demo.svelte"
 msgstr "Demo.svelte"
 
@@ -100,7 +100,7 @@ msgstr "Hi"
 msgid "JA"
 msgstr "JA"
 
-#: src/components/MacroWorkbench.astro:234
+#: src/components/MacroWorkbench.astro:244
 msgid "Locale"
 msgstr "Locale"
 
@@ -141,16 +141,16 @@ msgstr "plural"
 msgid "Plural"
 msgstr "Plural"
 
-#: src/components/MacroFamilyOverview.astro:84
-#: src/components/MacroWorkbench.astro:59
+#: src/components/MacroFamilyOverview.astro:105
+#: src/components/MacroWorkbench.astro:69
 msgid "Preview"
 msgstr "Preview"
 
-#: src/components/MacroWorkbench.astro:156
+#: src/components/MacroWorkbench.astro:166
 msgid "Result"
 msgstr "Result"
 
-#: src/components/MacroWorkbench.astro:160
+#: src/components/MacroWorkbench.astro:170
 msgid "Result tabs"
 msgstr "Result tabs"
 
@@ -158,7 +158,7 @@ msgstr "Result tabs"
 msgid "Say hello to Lingui."
 msgstr "Say hello to Lingui."
 
-#: src/components/MacroFamilyOverview.astro:118
+#: src/components/MacroFamilyOverview.astro:145
 msgid "See full demo"
 msgstr "See full demo"
 
@@ -178,15 +178,15 @@ msgstr "selectOrdinal"
 msgid "SelectOrdinal"
 msgstr "SelectOrdinal"
 
-#: src/components/MacroFamilyOverview.astro:98
+#: src/components/MacroFamilyOverview.astro:119
 msgid "Snippet"
 msgstr "Snippet"
 
-#: src/components/MacroWorkbench.astro:100
+#: src/components/MacroWorkbench.astro:112
 msgid "Source"
 msgstr "Source"
 
-#: src/components/MacroWorkbench.astro:104
+#: src/components/MacroWorkbench.astro:116
 msgid "Source tabs"
 msgstr "Source tabs"
 
@@ -207,7 +207,7 @@ msgstr "Tone"
 msgid "Trans"
 msgstr "Trans"
 
-#: src/components/MacroWorkbench.astro:64
+#: src/components/MacroWorkbench.astro:74
 msgid "Transformed Svelte"
 msgstr "Transformed Svelte"
 

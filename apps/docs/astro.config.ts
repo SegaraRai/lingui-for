@@ -3,8 +3,9 @@ import { fileURLToPath } from "node:url";
 
 import starlight from "@astrojs/starlight";
 import svelte from "@astrojs/svelte";
-import tailwindcss from "@tailwindcss/vite";
+import { stillwind } from "@stillwind/integration/astro";
 import stripWhitespace from "astro-strip-whitespace";
+import type { ViteUserConfig } from "astro";
 import { defineConfig } from "astro/config";
 
 import linguiForAstro from "lingui-for-astro/integration";
@@ -12,6 +13,8 @@ import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 import linguiMacro from "unplugin-lingui-macro/vite";
 
 import { macroWorkbenchPlugin } from "./plugins/macro-workbench.ts";
+
+type PluginOption = NonNullable<ViteUserConfig["plugins"]>[number];
 
 const projectRoot = fileURLToPath(new URL("./", import.meta.url));
 const hashTabSyncScript = readFileSync(
@@ -27,6 +30,7 @@ export default defineConfig({
     format: "preserve",
   },
   integrations: [
+    stillwind(),
     linguiForAstro(),
     svelte(),
     starlight({
@@ -48,7 +52,7 @@ export default defineConfig({
           lang: "ja",
         },
       },
-      customCss: ["./src/styles/global.css"],
+      customCss: ["./src/styles/layers.css"],
       social: [
         {
           icon: "github",
@@ -354,11 +358,10 @@ export default defineConfig({
   ],
   vite: {
     plugins: [
-      linguiMacro(),
+      linguiMacro() as unknown as PluginOption,
       macroWorkbenchPlugin({ projectRoot }),
-      tailwindcss(),
       stripWhitespace(),
-      linguiForSvelte(),
+      linguiForSvelte() as unknown as PluginOption,
     ],
   },
 });

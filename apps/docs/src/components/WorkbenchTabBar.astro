@@ -1,4 +1,6 @@
 ---
+import { style } from "stillwind/astro";
+
 interface TabItem {
   label: string;
   selected: boolean;
@@ -14,28 +16,36 @@ interface Props {
 const { ariaLabel, group, tabs } = Astro.props;
 ---
 
-<div class="w-full overflow-x-auto overscroll-x-contain">
+<div {...style("overflow-x-auto overscroll-x-contain w-full")}>
   <div
-    class="relative flex min-w-max after:absolute after:inset-[auto_0_0_0] after:border-b-2 after:border-(--demo-tab-border-default)"
+    {...style("relative flex min-w-max", {
+      "after:": "absolute inset-x-0 inset-be-0 border-panel-border border-b-2",
+    })}
     role="tablist"
     aria-label={ariaLabel}
     data-tab-bar
   >
-    {
-      tabs.map((tab) => (
-        <button
-          type="button"
-          role="tab"
-          tabindex={tab.selected ? 0 : -1}
-          aria-selected={tab.selected}
-          data-tab-group={group}
-          data-tab-value={tab.value}
-          class="relative px-4 py-3 text-sm whitespace-nowrap text-(--demo-tab-text-default) transition-colors after:absolute after:inset-[auto_0_0_0] after:z-1 after:border-b-2 after:border-transparent enabled:cursor-pointer aria-selected:font-medium aria-selected:text-(--demo-tab-text-active) aria-selected:after:border-(--demo-tab-border-active) aria-[selected=false]:enabled:hover:text-(--demo-tab-text-hover) aria-[selected=false]:enabled:hover:after:border-(--demo-tab-border-hover)"
-        >
-          {tab.label}
-        </button>
-      ))
-    }
+    {tabs.map((tab) => (
+      <button
+        type="button"
+        role="tab"
+        tabindex={tab.selected ? 0 : -1}
+        aria-selected={tab.selected}
+        data-tab-group={group}
+        data-tab-value={tab.value}
+        {...style(
+          "relative px-4 py-3 text-panel-text text-sm whitespace-nowrap transition-colors enabled:cursor-pointer",
+          {
+            "after:":
+              "absolute inset-x-0 inset-be-0 z-1 border-transparent border-b-2",
+            "aria-selected:":
+              "text-panel-strong font-medium after:border-panel-accent",
+          },
+        )}
+      >
+        {tab.label}
+      </button>
+    ))}
   </div>
 </div>
 
