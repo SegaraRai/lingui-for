@@ -1,8 +1,24 @@
 import type { ParserOptions } from "@babel/parser";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
-import type { ExtractorCtx, PerFileExtractorType } from "@lingui/conf";
+import type { ExtractedMessage, ExtractorCtx } from "@lingui/conf";
 
 import type { CanonicalSourceMap } from "./sourcemap-types.ts";
+
+/**
+ * Per-file Lingui extractor shape.
+ *
+ * Declared locally because `@lingui/conf` exports it under different names across
+ * Lingui versions (`ExtractorType` in v5 and v6.12+, `PerFileExtractorType` in earlier v6).
+ */
+export interface PerFileExtractor {
+  match(filename: string): boolean;
+  extract(
+    filename: string,
+    code: string,
+    onMessageExtracted: (msg: ExtractedMessage) => void,
+    ctx: ExtractorCtx,
+  ): Promise<void> | void;
+}
 
 export interface ExtractionUnit {
   code: string;
@@ -30,7 +46,7 @@ export function getLinguiExtractorParserPlugins(
 export async function runBabelExtractionUnits(
   filename: string,
   units: readonly ExtractionUnit[],
-  onMessageExtracted: Parameters<PerFileExtractorType["extract"]>[2],
+  onMessageExtracted: Parameters<PerFileExtractor["extract"]>[2],
   ctx: ExtractorCtx,
   options?: {
     normalizeSourceMap?: (map: CanonicalSourceMap) => CanonicalSourceMap;

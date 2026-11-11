@@ -27,11 +27,7 @@ export default defineConfig({
       "vendor/babel-core": "src/vendor/babel-core.ts",
       "vendor/babel-types": "src/vendor/babel-types.ts",
     },
-    plugins: [
-      wasm({
-        publicPath: "../",
-      }) as unknown as PackPlugin,
-    ],
+    plugins: [wasm() as unknown as PackPlugin],
     attw: {
       profile: "esm-only",
     },

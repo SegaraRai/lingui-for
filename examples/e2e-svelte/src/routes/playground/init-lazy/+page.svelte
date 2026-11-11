@@ -4,8 +4,8 @@
   import { setLinguiContext } from "lingui-for-svelte";
   import { plural, t } from "lingui-for-svelte/macro";
 
-  import { catalogs } from "$lib/i18n/catalogs";
-  import type { SupportedLocale } from "$lib/i18n/locale";
+  import { catalogs } from "#lib/i18n/catalogs.ts";
+  import type { SupportedLocale } from "#lib/i18n/locale.ts";
 
   // Empty init - each locale is loaded on demand via loadAndActivate.
   const i18n = setupI18n();

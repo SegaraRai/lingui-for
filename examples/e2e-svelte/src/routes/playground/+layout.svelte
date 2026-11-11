@@ -2,7 +2,7 @@
   import { style } from "stillwind/svelte";
   import { t } from "lingui-for-svelte/macro";
 
-  import PlaygroundNav from "$lib/app/PlaygroundNav.svelte";
+  import PlaygroundNav from "#lib/app/PlaygroundNav.svelte";
 
   let { children } = $props();
 </script>

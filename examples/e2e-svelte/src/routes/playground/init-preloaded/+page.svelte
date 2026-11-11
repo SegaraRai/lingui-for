@@ -4,8 +4,8 @@
   import { setLinguiContext } from "lingui-for-svelte";
   import { plural, t } from "lingui-for-svelte/macro";
 
-  import { messages as en } from "$lib/i18n/locales/en";
-  import { messages as ja } from "$lib/i18n/locales/ja";
+  import { messages as en } from "#lib/i18n/locales/en.ts";
+  import { messages as ja } from "#lib/i18n/locales/ja.ts";
 
   // All locales loaded upfront. activate() is enough to switch - no load() call needed.
   const i18n = setupI18n({

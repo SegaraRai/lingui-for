@@ -2,6 +2,9 @@
   "name": "e2e-svelte",
   "private": true,
   "type": "module",
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  },
   "dependencies": {
     "@lingui/core": "catalog:",
     "lingui-for-svelte": "workspace:*",

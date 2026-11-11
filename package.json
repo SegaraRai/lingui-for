@@ -19,8 +19,8 @@
     "prepare": "vp config"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^1.0.0",
-    "@changesets/cli": "^3.0.1",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
     "@stillwind/cli": "catalog:",
     "@types/node": "catalog:",
     "playwright": "catalog:",
@@ -28,7 +28,7 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vite-plus": "catalog:",
-    "wasm-pack": "^0.15.0"
+    "wasm-pack": "^0.15.1"
   },
   "packageManager": "pnpm@12.2.1"
 }

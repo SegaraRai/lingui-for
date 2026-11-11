@@ -5,7 +5,7 @@
   import {
     reactivityDemoState,
     setReactivityDemoValue,
-  } from "$lib/playground/reactivity-demo.svelte";
+  } from "#lib/playground/reactivity-demo.svelte.ts";
 
   const scriptTaggedStatic = $derived($t`Script direct static reactivity.`);
   const scriptDescriptorStatic = $derived(

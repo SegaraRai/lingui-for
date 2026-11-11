@@ -1,9 +1,9 @@
 <script lang="ts">
   import { setLinguiContext } from "lingui-for-svelte";
 
-  import AppShell from "$lib/app/AppShell.svelte";
-  import { appI18n, ensureLocale } from "$lib/i18n/session.svelte";
-  import type { SupportedLocale } from "$lib/i18n/locale";
+  import AppShell from "#lib/app/AppShell.svelte";
+  import { appI18n, ensureLocale } from "#lib/i18n/session.svelte.ts";
+  import type { SupportedLocale } from "#lib/i18n/locale.ts";
 
   let { data, children } = $props();
   setLinguiContext(appI18n);

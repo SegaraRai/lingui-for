@@ -1,8 +1,4 @@
-import type {
-  ExtractorCtx,
-  LinguiConfigNormalized,
-  PerFileExtractorType,
-} from "@lingui/conf";
+import type { ExtractorCtx, LinguiConfigNormalized } from "@lingui/conf";
 
 import {
   buildAstroSyntheticModule,
@@ -11,6 +7,7 @@ import {
   stripQuery,
   toBabelSourceMap,
   type CanonicalSourceMap,
+  type PerFileExtractor,
 } from "@lingui-for/framework-core/compile";
 import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
 import {
@@ -39,18 +36,15 @@ export interface AstroExtractorOptions {
  * synthetic module, and forwards the extracted messages to Lingui's Babel
  * extractor pipeline.
  */
-export const astroExtractor: PerFileExtractorType &
-  typeof astroExtractorFactory = /*#__PURE__*/ Object.assign(
-  astroExtractorFactory,
-  astroExtractorFactory(),
-);
+export const astroExtractor: PerFileExtractor & typeof astroExtractorFactory =
+  /*#__PURE__*/ Object.assign(astroExtractorFactory, astroExtractorFactory());
 
 /**
  * Lingui extractor factory for `.astro` source files.
  */
 function astroExtractorFactory(
   options?: AstroExtractorOptions,
-): PerFileExtractorType {
+): PerFileExtractor {
   const configResolver = createLinguiConfigResolver({
     loadConfig: loadLinguiConfig,
     config: options?.config,

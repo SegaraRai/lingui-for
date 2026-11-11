@@ -92,7 +92,7 @@ Initialize Lingui near the root of the component tree. After running `lingui com
 <script lang="ts">
   import { setupI18n } from "@lingui/core";
   import { setLinguiContext } from "lingui-for-svelte";
-  import { catalog } from "$lib/i18n/catalog";
+  import { catalog } from "#lib/i18n/catalog.js";
 
   const { data, children } = $props();
 

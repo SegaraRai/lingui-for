@@ -1,4 +1,6 @@
+import adapter from "@sveltejs/adapter-node";
 import { sveltekit } from "@sveltejs/kit/vite";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import { stillwind } from "@stillwind/integration/vite";
 import { defineConfig } from "vite-plus";
 
@@ -6,7 +8,17 @@ import linguiForSvelte from "lingui-for-svelte/unplugin/vite";
 import linguiMacro from "unplugin-lingui-macro/vite";
 
 export default defineConfig({
-  plugins: [linguiMacro(), linguiForSvelte(), stillwind(), sveltekit()],
+  plugins: [
+    linguiMacro(),
+    linguiForSvelte(),
+    stillwind(),
+    sveltekit({
+      preprocess: vitePreprocess(),
+      adapter: adapter({
+        out: ".sveltekit-build",
+      }),
+    }),
+  ],
   run: {
     tasks: {
       build: {

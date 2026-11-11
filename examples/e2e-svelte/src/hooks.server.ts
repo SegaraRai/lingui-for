@@ -1,12 +1,11 @@
-import type { Handle } from "@sveltejs/kit";
-import { sequence } from "@sveltejs/kit/hooks";
+import { sequence, type Handle } from "@sveltejs/kit/hooks";
 import { handle as stillwindHandle } from "@stillwind/integration/sveltekit/handle";
 
 import {
   LOCALE_COOKIE,
   isSupportedLocale,
   resolveLocale,
-} from "$lib/i18n/locale";
+} from "#lib/i18n/locale.ts";
 
 const localeHandle: Handle = async ({ event, resolve }) => {
   const requestedLocale = event.url.searchParams.get("lang");
