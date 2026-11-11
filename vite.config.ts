@@ -1,6 +1,9 @@
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
+  staged: {
+    "*": "vp check --fix",
+  },
   lint: {
     options: {
       typeAware: true,
@@ -70,13 +73,14 @@ export default defineConfig({
       },
       "build:wasm": {
         command: "node ./build-wasm.ts",
-        cache: true,
-        input: [
-          { auto: true },
-          "!target/**",
-          "!shared/lingui-analyzer-wasm/dist/**",
-        ],
-        env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
+        cache: {
+          input: [
+            { auto: true },
+            "!target/**",
+            "!shared/lingui-analyzer-wasm/dist/**",
+          ],
+          env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
+        },
       },
       check: {
         command: "vp run -r check",
@@ -107,8 +111,9 @@ export default defineConfig({
       artifacts: {
         command: "node ./generate-artifacts.ts",
         dependsOn: ["build:lib"],
-        cache: true,
-        input: [{ auto: true }],
+        cache: {
+          input: [{ auto: true }],
+        },
       },
       release: {
         command: "vp exec changeset publish",

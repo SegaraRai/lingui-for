@@ -73,47 +73,51 @@ async function expectReactivityTexts(
   );
 }
 
-describe.sequential.for(serverModes)("%s browser reactivity", (mode) => {
-  const server = new AppServer(mode);
-  let browser: Browser;
+describe.for(serverModes)(
+  "%s browser reactivity",
+  { concurrent: false },
+  (mode) => {
+    const server = new AppServer(mode);
+    let browser: Browser;
 
-  beforeAll(async () => {
-    await server.start();
-    browser = await chromium.launch({ headless: true });
-  }, 60_000);
+    beforeAll(async () => {
+      await server.start();
+      browser = await chromium.launch({ headless: true });
+    }, 60_000);
 
-  afterAll(async () => {
-    await browser.close();
-    await server.close();
-  });
+    afterAll(async () => {
+      await browser.close();
+      await server.close();
+    });
 
-  test("tracks locale and reactive values across script and template bindings", async () => {
-    const session = await openTrackedPage(browser);
+    test("tracks locale and reactive values across script and template bindings", async () => {
+      const session = await openTrackedPage(browser);
 
-    try {
-      await gotoAndStabilize(
-        session.page,
-        new URL("/playground/reactivity?lang=en", server.origin).toString(),
-      );
+      try {
+        await gotoAndStabilize(
+          session.page,
+          new URL("/playground/reactivity?lang=en", server.origin).toString(),
+        );
 
-      await expectReactivityTexts(session.page, "en", "Alpha");
+        await expectReactivityTexts(session.page, "en", "Alpha");
 
-      await session.page.getByTestId("value-beta").click();
-      await expectReactivityTexts(session.page, "en", "Beta");
+        await session.page.getByTestId("value-beta").click();
+        await expectReactivityTexts(session.page, "en", "Beta");
 
-      await session.page.locator('a[href*="lang=ja"]').first().click();
-      await session.page.waitForURL(
-        (url: URL) => url.searchParams.get("lang") === "ja",
-      );
-      await session.page.waitForTimeout(250);
-      await expectReactivityTexts(session.page, "ja", "Beta");
+        await session.page.locator('a[href*="lang=ja"]').first().click();
+        await session.page.waitForURL(
+          (url: URL) => url.searchParams.get("lang") === "ja",
+        );
+        await session.page.waitForTimeout(250);
+        await expectReactivityTexts(session.page, "ja", "Beta");
 
-      await session.page.getByTestId("value-alpha").click();
-      await expectReactivityTexts(session.page, "ja", "Alpha");
+        await session.page.getByTestId("value-alpha").click();
+        await expectReactivityTexts(session.page, "ja", "Alpha");
 
-      expect(session.errors).toEqual([]);
-    } finally {
-      await session.close();
-    }
-  }, 60_000);
-});
+        expect(session.errors).toEqual([]);
+      } finally {
+        await session.close();
+      }
+    }, 60_000);
+  },
+);

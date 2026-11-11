@@ -66,7 +66,7 @@ jobs:
 
       - run: cargo test
 
-      - uses: voidzero-dev/setup-vp@v1
+      - uses: voidzero-dev/setup-vp@v1.21.2
         with:
           node-version-file: ".node-version"
           cache: true
@@ -106,7 +106,7 @@ jobs:
           name: ${{ env.WASM_PACKAGE_ARTIFACT_NAME }}
           path: shared/lingui-analyzer-wasm/dist
 
-      - uses: voidzero-dev/setup-vp@v1
+      - uses: voidzero-dev/setup-vp@v1.21.2
         with:
           node-version-file: ".node-version"
           cache: true
@@ -159,7 +159,7 @@ jobs:
           tar -xf built-repository.tar
           rm built-repository.tar
 
-      - uses: voidzero-dev/setup-vp@v1
+      - uses: voidzero-dev/setup-vp@v1.21.2
         with:
           node-version-file: ".node-version"
           cache: true

@@ -9,6 +9,7 @@ dist
 .astro
 .svelte-kit
 .sveltekit-build
+.vitest
 .vitest-attachments
 __screenshots__
 
