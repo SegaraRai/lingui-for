@@ -59,7 +59,7 @@ Import this shared instance in your root layout and pass it to `setLinguiContext
 ```svelte title="src/routes/+layout.svelte"
 <script lang="ts">
   import { setLinguiContext } from "lingui-for-svelte";
-  import { i18n } from "$lib/i18n/instance";
+  import { i18n } from "#lib/i18n/instance.js";
 
   const { children } = $props();
   setLinguiContext(i18n);
@@ -135,15 +135,15 @@ import to keep setup synchronous, then use dynamic imports only for subsequent l
   import { setLinguiContext } from "lingui-for-svelte";
 
   // Initial locale: static import so setup stays synchronous.
-  import { messages as enMessages } from "$lib/i18n/locales/en";
-  import type { SupportedLocale } from "$lib/i18n/catalog";
+  import { messages as enMessages } from "#lib/i18n/locales/en.js";
+  import type { SupportedLocale } from "#lib/i18n/catalog.js";
 
   const i18n = setupI18n();
   i18n.loadAndActivate({ locale: "en", messages: enMessages });
   setLinguiContext(i18n);
 
   async function switchLocale(next: SupportedLocale): Promise<void> {
-    const { messages } = await import(`$lib/i18n/locales/${next}.ts`);
+    const { messages } = await import(`../lib/i18n/locales/${next}.ts`);
     i18n.loadAndActivate({ locale: next, messages });
   }
 </script>

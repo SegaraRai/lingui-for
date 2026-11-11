@@ -155,8 +155,8 @@ Lingui 内部の `"change"` イベントを購読しています。
   import { setLinguiContext } from "lingui-for-svelte";
   import { t } from "lingui-for-svelte/macro";
 
-  import { messages as enMessages } from "$lib/i18n/locales/en.js";
-  import { messages as jaMessages } from "$lib/i18n/locales/ja.js";
+  import { messages as enMessages } from "#lib/i18n/locales/en.js";
+  import { messages as jaMessages } from "#lib/i18n/locales/ja.js";
 
   let locale = $state<"en" | "ja">("en");
 

@@ -65,12 +65,12 @@ between bundling all locales upfront or loading them on demand.
 </Aside>
 
 ```ts title="src/hooks.server.ts"
-import type { Handle } from "@sveltejs/kit";
+import type { Handle } from "@sveltejs/kit/hooks";
 import {
   LOCALE_COOKIE,
   isSupportedLocale,
   resolveLocale,
-} from "$lib/i18n/locale";
+} from "#lib/i18n/locale.js";
 
 export const handle: Handle = async ({ event, resolve }) => {
   const urlParam = event.url.searchParams.get("lang");
@@ -102,7 +102,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 Register `locals.locale` in the app types:
 
 ```ts title="src/app.d.ts"
-import type { SupportedLocale } from "$lib/i18n/locale";
+import type { SupportedLocale } from "#lib/i18n/locale.js";
 
 declare global {
   namespace App {
@@ -140,7 +140,7 @@ resolved locale for the initial render.
 <script lang="ts">
   import { setupI18n } from "@lingui/core";
   import { setLinguiContext } from "lingui-for-svelte";
-  import { catalog, type SupportedLocale } from "$lib/i18n/catalog";
+  import { catalog, type SupportedLocale } from "#lib/i18n/catalog.js";
 
   let { data, children } = $props();
 
@@ -195,7 +195,7 @@ hook picks up the parameter, updates the cookie, and the layout re-activates.
   import { t } from "lingui-for-svelte/macro";
   import { goto } from "$app/navigation";
   import { page } from "$app/state";
-  import type { SupportedLocale } from "$lib/i18n/locale";
+  import type { SupportedLocale } from "#lib/i18n/locale.js";
 
   function switchLocale(next: SupportedLocale): void {
     const url = new URL(page.url);
