@@ -6,15 +6,17 @@
     "@astrojs/starlight-tailwind": "^5.0.0",
     "@astrojs/svelte": "catalog:",
     "@lingui/core": "catalog:",
-    "@tailwindcss/vite": "catalog:",
     "astro": "catalog:",
-    "svelte": "catalog:",
-    "tailwindcss": "catalog:"
+    "stillwind": "catalog:",
+    "svelte": "catalog:"
   },
   "devDependencies": {
+    "@astrojs/astro2tsx": "catalog:",
     "@lingui/cli": "catalog:",
     "@lingui/conf": "catalog:",
     "@lingui/format-po": "catalog:",
+    "@stillwind/cli": "catalog:",
+    "@stillwind/integration": "catalog:",
     "astro-strip-whitespace": "catalog:",
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
