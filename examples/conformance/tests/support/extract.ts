@@ -1,4 +1,3 @@
-import type { ParserOptions } from "@babel/core";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
 import { makeConfig, type ExtractedMessage } from "@lingui/conf";
 
@@ -33,7 +32,9 @@ const linguiConfig = makeConfig(
   { skipValidation: true },
 );
 
-const parserPlugins: NonNullable<ParserOptions["plugins"]> = [
+const parserPlugins: NonNullable<
+  Parameters<typeof extractFromFileWithBabel>[4]["plugins"]
+> = [
   "importAttributes",
   "explicitResourceManagement",
   "decoratorAutoAccessors",

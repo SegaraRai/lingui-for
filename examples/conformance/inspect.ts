@@ -1,7 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { basename, dirname, extname, join, resolve } from "node:path";
 
-import type { ParserOptions } from "@babel/core";
 import { transformSync } from "@babel/core";
 import linguiMacroPlugin from "@lingui/babel-plugin-lingui-macro";
 import { extractFromFileWithBabel } from "@lingui/cli/api";
@@ -77,7 +76,9 @@ const linguiConfig = makeConfig(
   { skipValidation: true },
 );
 
-const parserPlugins: NonNullable<ParserOptions["plugins"]> = [
+const parserPlugins: NonNullable<
+  Parameters<typeof extractFromFileWithBabel>[4]["plugins"]
+> = [
   "importAttributes",
   "explicitResourceManagement",
   "decoratorAutoAccessors",

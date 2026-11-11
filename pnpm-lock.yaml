@@ -126,17 +126,17 @@ catalogs:
       specifier: ^9.1.2
       version: 9.1.2
     '@babel/core':
-      specifier: ^7.29.13
-      version: 7.29.13
+      specifier: ^8.1.0
+      version: 8.1.0
     '@babel/generator':
-      specifier: ^7.29.13
-      version: 7.29.13
+      specifier: ^8.1.0
+      version: 8.1.0
     '@babel/traverse':
-      specifier: ^7.29.13
-      version: 7.29.13
+      specifier: ^8.1.0
+      version: 8.1.0
     '@babel/types':
-      specifier: ^7.29.11
-      version: 7.29.11
+      specifier: ^8.1.0
+      version: 8.1.0
     '@jridgewell/trace-mapping':
       specifier: ^0.3.31
       version: 0.3.31
@@ -176,9 +176,6 @@ catalogs:
     '@types/babel__core':
       specifier: ^7.20.5
       version: 7.20.5
-    '@types/babel__generator':
-      specifier: ^7.27.0
-      version: 7.27.0
     '@types/babel__traverse':
       specifier: ^7.28.0
       version: 7.28.0
@@ -250,8 +247,8 @@ catalogs:
       specifier: ^5 || ^6
       version: 6.12.0
     cosmiconfig:
-      specifier: ^9
-      version: 9.0.2
+      specifier: ^9 || ^10
+      version: 10.0.1
     esbuild:
       specifier: '*'
       version: 0.28.2
@@ -411,16 +408,16 @@ importers:
     devDependencies:
       '@babel/core':
         specifier: 'catalog:'
-        version: 7.29.13(supports-color@8.1.1)
+        version: 8.1.0
       '@babel/generator':
         specifier: 'catalog:'
-        version: 7.29.13
+        version: 8.1.0
       '@babel/traverse':
         specifier: 'catalog:'
-        version: 7.29.13(supports-color@8.1.1)
+        version: 8.1.0
       '@babel/types':
         specifier: 'catalog:'
-        version: 7.29.11
+        version: 8.1.0
       '@jridgewell/trace-mapping':
         specifier: 'catalog:'
         version: 0.3.31
@@ -432,7 +429,7 @@ importers:
         version: link:../../shared/test-helpers
       '@lingui/babel-plugin-lingui-macro':
         specifier: 'catalog:'
-        version: 6.12.0(@babel/core@7.29.13(supports-color@8.1.1))
+        version: 6.12.0(@babel/core@8.1.0)
       '@lingui/cli':
         specifier: 'catalog:'
         version: 6.12.0(esbuild@0.28.2)(rolldown@1.2.6)(supports-color@8.1.1)
@@ -441,19 +438,10 @@ importers:
         version: 6.12.0
       '@lingui/core':
         specifier: 'catalog:'
-        version: 6.12.0(@babel/core@7.29.13(supports-color@8.1.1))
+        version: 6.12.0(@babel/core@8.1.0)
       '@lingui/react':
         specifier: 'catalog:'
-        version: 6.12.0(@babel/core@7.29.13(supports-color@8.1.1))(react@19.3.1)
-      '@types/babel__core':
-        specifier: 'catalog:'
-        version: 7.20.5
-      '@types/babel__generator':
-        specifier: 'catalog:'
-        version: 7.27.0
-      '@types/babel__traverse':
-        specifier: 'catalog:'
-        version: 7.28.0
+        version: 6.12.0(@babel/core@8.1.0)(react@19.3.1)
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.6
@@ -656,7 +644,7 @@ importers:
         version: 8.1.0
       cosmiconfig:
         specifier: catalog:dep
-        version: 9.0.2(typescript@6.0.3)
+        version: 10.0.1
       jiti:
         specifier: catalog:dep
         version: 2.7.0
@@ -3957,6 +3945,9 @@ packages:
   argparse@2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
 
+  argparse@3.0.4:
+    resolution: {integrity: sha512-fwWK3Zq22l4XJJjx5mcBHGikIk+hJqO+32dPm0Jur7+rtG5x1scOjSfdT9ZKeWHPpsya/l0HHK4tDImBkTrtvA==}
+
   aria-query@5.3.0:
     resolution: {integrity: sha512-b0P0sZPKtyu8HkeRAfCq0IfURZK+SuwMjY1UXGBU27wpAiTwQAIlq56IbIO+ytk/JjS1fMR14ee5WBBfKi5J6A==}
 
@@ -4046,10 +4037,6 @@ packages:
   cac@7.0.0:
     resolution: {integrity: sha512-tixWYgm5ZoOD+3g6UTea91eow5z6AAHaho3g0V9CNSNb45gM8SmflpAc+GRd1InC4AqN/07Unrgp56Y94N9hJQ==}
     engines: {node: '>=20.19.0'}
-
-  callsites@3.1.0:
-    resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
-    engines: {node: '>=6'}
 
   camelcase@6.3.0:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
@@ -4178,14 +4165,9 @@ packages:
     resolution: {integrity: sha512-SL0cVuEdETEp7pN0FuZb01toc3vnODEfVUCooxG1SJN0yIirh7JMb9X9bvfCFf0vzzbT68RdbKDHYTiWy7a7iw==}
     engines: {node: '>=22'}
 
-  cosmiconfig@9.0.2:
-    resolution: {integrity: sha512-gtTZxTDau1wL7Y7zifc2dd8jHSK/k6BTx/2Xp/BpdlAdnlYWFVt7qhJqgwi7637yRwRQ3qL4ZidbB4I8tA5VOg==}
-    engines: {node: '>=14'}
-    peerDependencies:
-      typescript: '>=4.9.5'
-    peerDependenciesMeta:
-      typescript:
-        optional: true
+  cosmiconfig@10.0.1:
+    resolution: {integrity: sha512-/zvGoYn0y27QTBmK+0B+oPdEPC4fKGUmJsMTQbDjqph00TrkqfVFW/M+C6ya54sYCgHC6QCwK/mI6djt8cEGHQ==}
+    engines: {node: ^22.18 || >= 24}
 
   crossws@0.3.5:
     resolution: {integrity: sha512-ojKiDvcmByhwa8YYqbQI/hg7MEU0NC03+pSdEq4ZUnZR9xXpwk7E43SMNGkn+JxJGPFtNvQ48+vV2p+P1ml5PA==}
@@ -4343,9 +4325,6 @@ packages:
   env-paths@2.2.1:
     resolution: {integrity: sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==}
     engines: {node: '>=6'}
-
-  error-ex@1.3.4:
-    resolution: {integrity: sha512-sqQamAnR14VgCr1A618A3sGrygcpK+HEbenA/HiEAkkUwcZIIB/tgWqHFxWgOyDh4nB4JCRimh79dR5Ywc9MDQ==}
 
   es-module-lexer@2.3.2:
     resolution: {integrity: sha512-poHGpORABojJJucnV9KbOavETW8lBVnphkW77ER5/BQ5Fz7oXSoCNek7IH3vR5nRjdsEz926ibFYX8KtLQmdyw==}
@@ -4575,10 +4554,6 @@ packages:
       typescript:
         optional: true
 
-  import-fresh@3.3.1:
-    resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
-    engines: {node: '>=6'}
-
   import-meta-resolve@4.2.0:
     resolution: {integrity: sha512-Iqv2fzaTQN28s/FwZAoFq0ZSs/7hMAHJVX+w8PZl3cY19Pxk6jFFalxQoIfW2826i/fDLXv8IiEZRIT0lDuWcg==}
 
@@ -4593,9 +4568,6 @@ packages:
 
   is-alphanumerical@2.0.1:
     resolution: {integrity: sha512-hmbYhX/9MUMF5uh7tOXyK/n0ZvWpad5caBA17GsC6vyuCqaWliRG5K1qS9inmUhEMaOBIW7/whAnSwveW/LtZw==}
-
-  is-arrayish@0.2.1:
-    resolution: {integrity: sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==}
 
   is-decimal@2.0.1:
     resolution: {integrity: sha512-AAB9hiomQs5DXWcRB1rqsxGUstbRroFOPPVAomNk/3XHR5JyEZChOyTWe2oayKnsSsr/kcGqF+z6yuH6HHpN0A==}
@@ -4660,13 +4632,14 @@ packages:
     resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
     hasBin: true
 
+  js-yaml@5.5.0:
+    resolution: {integrity: sha512-paNr4LFIFPjeeSmwNYdrb8FafLLG/Cr2Af3GjbsHJ5CxIjH4r0c2emlmRdAtpPAieP1gRVzk6buBbVP5gBMGAg==}
+    hasBin: true
+
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
     engines: {node: '>=6'}
     hasBin: true
-
-  json-parse-even-better-errors@2.3.1:
-    resolution: {integrity: sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==}
 
   json-schema-traverse@1.0.0:
     resolution: {integrity: sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug==}
@@ -4774,9 +4747,6 @@ packages:
   lilconfig@3.1.3:
     resolution: {integrity: sha512-/vlFKAoH5Cgt3Ie+JLhRbwOsCQePABiU3tJ1egGvyQ+33R/vcwM2Zl2QR/LzjsBeItPt3oSVXapn+m4nQDvpzw==}
     engines: {node: '>=14'}
-
-  lines-and-columns@1.2.4:
-    resolution: {integrity: sha512-7ylylesZQ/PV29jhEDl3Ufjo6ZX7gCqJr5F7PKrqc93v7fzSymt1BpwEU8nAUXs8qzzvqhbjhK5QZg6Mt/HkBg==}
 
   locate-character@3.0.0:
     resolution: {integrity: sha512-SW13ws7BjaeJ6p7Q6CO2nchbYEc3X3J6WrmTTDto7yMPqVSZTUyY5Tjbid+Ab8gLnATtygYtiDIJGQRRn2ZOiA==}
@@ -5123,16 +5093,8 @@ packages:
     resolution: {integrity: sha512-XTUaK0hXMCu2jszWE584JGQT7y284TmMV9l/HX3rnG5uo3rHI/uHU56XTyyyPFjeWEBxECbAi0CaFDJOONtG0Q==}
     hasBin: true
 
-  parent-module@1.0.1:
-    resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
-    engines: {node: '>=6'}
-
   parse-entities@4.0.2:
     resolution: {integrity: sha512-GG2AQYWoLgL877gQIKeRPGO1xF9+eG1ujIb5soS5gPvLQ1y2o8FL90w2QWNdf9I361Mpp7726c+lj3U0qK1uGw==}
-
-  parse-json@5.2.0:
-    resolution: {integrity: sha512-ayCKvm/phCGxOkYRSCM82iDwct8/EonSEgCSxWxD7ve6jHggsFl4fZVQBPRNgQoKiuV/odhFrGzQXZwbifC8Rg==}
-    engines: {node: '>=8'}
 
   path-browserify@1.0.1:
     resolution: {integrity: sha512-b7uo2UCUOYZcnF/3ID0lulOJi/bafxa1xPe7ZPsammBSpjSWQkjNxlt635YGS2MiR9GjvuXCtz2emr3jbsz98g==}
@@ -5277,10 +5239,6 @@ packages:
   require-from-string@2.0.2:
     resolution: {integrity: sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw==}
     engines: {node: '>=0.10.0'}
-
-  resolve-from@4.0.0:
-    resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
-    engines: {node: '>=4'}
 
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
@@ -7376,10 +7334,10 @@ snapshots:
       '@lingui/native-tools-win32-arm64-msvc': 0.2.0
       '@lingui/native-tools-win32-x64-msvc': 0.2.0
 
-  '@lingui/react@6.12.0(@babel/core@7.29.13(supports-color@8.1.1))(react@19.3.1)':
+  '@lingui/react@6.12.0(@babel/core@8.1.0)(react@19.3.1)':
     dependencies:
-      '@lingui/babel-plugin-lingui-macro': 6.12.0(@babel/core@7.29.13(supports-color@8.1.1))
-      '@lingui/core': 6.12.0(@babel/core@7.29.13(supports-color@8.1.1))
+      '@lingui/babel-plugin-lingui-macro': 6.12.0(@babel/core@8.1.0)
+      '@lingui/core': 6.12.0(@babel/core@8.1.0)
       react: 19.3.1
       use-sync-external-store: 1.6.0(react@19.3.1)
     transitivePeerDependencies:
@@ -9019,7 +8977,10 @@ snapshots:
 
   arg@5.0.2: {}
 
-  argparse@2.0.1: {}
+  argparse@2.0.1:
+    optional: true
+
+  argparse@3.0.4: {}
 
   aria-query@5.3.0:
     dependencies:
@@ -9311,8 +9272,6 @@ snapshots:
 
   cac@7.0.0: {}
 
-  callsites@3.1.0: {}
-
   camelcase@6.3.0: {}
 
   caniuse-lite@1.0.30001810: {}
@@ -9405,14 +9364,10 @@ snapshots:
 
   cookie@2.0.2: {}
 
-  cosmiconfig@9.0.2(typescript@6.0.3):
+  cosmiconfig@10.0.1:
     dependencies:
       env-paths: 2.2.1
-      import-fresh: 3.3.1
-      js-yaml: 4.3.2
-      parse-json: 5.2.0
-    optionalDependencies:
-      typescript: 6.0.3
+      js-yaml: 5.5.0
 
   crossws@0.3.5:
     dependencies:
@@ -9538,10 +9493,6 @@ snapshots:
   entities@4.5.0: {}
 
   env-paths@2.2.1: {}
-
-  error-ex@1.3.4:
-    dependencies:
-      is-arrayish: 0.2.1
 
   es-module-lexer@2.3.2: {}
 
@@ -9834,11 +9785,6 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
-  import-fresh@3.3.1:
-    dependencies:
-      parent-module: 1.0.1
-      resolve-from: 4.0.0
-
   import-meta-resolve@4.2.0: {}
 
   inherits@2.0.4: {}
@@ -9851,8 +9797,6 @@ snapshots:
     dependencies:
       is-alphabetical: 2.0.1
       is-decimal: 2.0.1
-
-  is-arrayish@0.2.1: {}
 
   is-decimal@2.0.1: {}
 
@@ -9903,10 +9847,13 @@ snapshots:
   js-yaml@4.3.2:
     dependencies:
       argparse: 2.0.1
+    optional: true
+
+  js-yaml@5.5.0:
+    dependencies:
+      argparse: 3.0.4
 
   jsesc@3.1.0: {}
-
-  json-parse-even-better-errors@2.3.1: {}
 
   json-schema-traverse@1.0.0: {}
 
@@ -9977,8 +9924,6 @@ snapshots:
       lightningcss-win32-x64-msvc: 1.33.0
 
   lilconfig@3.1.3: {}
-
-  lines-and-columns@1.2.4: {}
 
   locate-character@3.0.0: {}
 
@@ -10501,10 +10446,6 @@ snapshots:
       '@pagefind/windows-arm64': 1.5.2
       '@pagefind/windows-x64': 1.5.2
 
-  parent-module@1.0.1:
-    dependencies:
-      callsites: 3.1.0
-
   parse-entities@4.0.2:
     dependencies:
       '@types/unist': 2.0.11
@@ -10514,13 +10455,6 @@ snapshots:
       is-alphanumerical: 2.0.1
       is-decimal: 2.0.1
       is-hexadecimal: 2.0.1
-
-  parse-json@5.2.0:
-    dependencies:
-      '@babel/code-frame': 7.29.7
-      error-ex: 1.3.4
-      json-parse-even-better-errors: 2.3.1
-      lines-and-columns: 1.2.4
 
   path-browserify@1.0.1: {}
 
@@ -10645,8 +10579,6 @@ snapshots:
   request-light@0.7.0: {}
 
   require-from-string@2.0.2: {}
-
-  resolve-from@4.0.0: {}
 
   resolve-pkg-maps@1.0.0: {}
 
