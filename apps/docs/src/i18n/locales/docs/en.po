@@ -100,7 +100,7 @@ msgstr "Hi"
 msgid "JA"
 msgstr "JA"
 
-#: src/components/MacroWorkbench.astro:244
+#: src/components/MacroWorkbench.astro:240
 msgid "Locale"
 msgstr "Locale"
 
@@ -141,16 +141,16 @@ msgstr "plural"
 msgid "Plural"
 msgstr "Plural"
 
-#: src/components/MacroFamilyOverview.astro:105
+#: src/components/MacroFamilyOverview.astro:100
 #: src/components/MacroWorkbench.astro:69
 msgid "Preview"
 msgstr "Preview"
 
-#: src/components/MacroWorkbench.astro:166
+#: src/components/MacroWorkbench.astro:164
 msgid "Result"
 msgstr "Result"
 
-#: src/components/MacroWorkbench.astro:170
+#: src/components/MacroWorkbench.astro:168
 msgid "Result tabs"
 msgstr "Result tabs"
 
@@ -158,7 +158,7 @@ msgstr "Result tabs"
 msgid "Say hello to Lingui."
 msgstr "Say hello to Lingui."
 
-#: src/components/MacroFamilyOverview.astro:145
+#: src/components/MacroFamilyOverview.astro:140
 msgid "See full demo"
 msgstr "See full demo"
 
@@ -178,7 +178,7 @@ msgstr "selectOrdinal"
 msgid "SelectOrdinal"
 msgstr "SelectOrdinal"
 
-#: src/components/MacroFamilyOverview.astro:119
+#: src/components/MacroFamilyOverview.astro:114
 msgid "Snippet"
 msgstr "Snippet"
 
