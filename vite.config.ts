@@ -92,7 +92,7 @@ export default defineConfig({
         cache: false,
       },
       format: {
-        command: "vp fmt .",
+        command: "stillwind fmt && vp fmt .",
         cache: false,
       },
       test: {
