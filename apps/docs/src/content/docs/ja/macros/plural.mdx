@@ -64,22 +64,18 @@ const count = 2;
 
 <!-- 単独使用: 複数形文字列を直接生成する -->
 <p>
-  {
-    plural(count, {
-      one: "# item",
-      other: "# items",
-    })
-  }
+  {plural(count, {
+    one: "# item",
+    other: "# items",
+  })}
 </p>
 
 <!-- 埋め込み: plural はより大きな翻訳単位の一部 -->
 <p>
-  {
-    t`Cart: ${plural(count, {
-      one: "# item",
-      other: "# items",
-    })}`
-  }
+  {t`Cart: ${plural(count, {
+    one: "# item",
+    other: "# items",
+  })}`}
 </p>
 ```
 

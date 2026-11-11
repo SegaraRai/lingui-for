@@ -123,7 +123,11 @@ import { t, Trans } from "lingui-for-astro/macro";
 
 <h1>{t`Hello from Astro`}</h1>
 
-<p><Trans><strong>Macro-first</strong> translation in Astro</Trans></p>
+<p>
+  <Trans>
+    <strong>Macro-first</strong> translation in Astro
+  </Trans>
+</p>
 ```
 
 ## Entrypoints

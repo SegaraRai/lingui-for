@@ -1,9 +1,19 @@
 import { defineConfig } from "vite-plus";
+import type { PackUserConfig } from "vite-plus/pack";
 
 import markupImport from "unplugin-markup-import/rolldown";
 
+// Rolldown plugins are typed against their own rolldown, not the copy bundled in Vite+
+type PackPlugin = NonNullable<PackUserConfig["plugins"]>;
+
 export default defineConfig({
   pack: {
+    deps: {
+      // tsdown <0.23 compatibility: resolve external dependency subpaths.
+      // Remove to preserve subpath imports as written (the new default).
+      // https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
+      resolveDepSubpath: true,
+    },
     clean: true,
     dts: {
       eager: true,
@@ -30,7 +40,7 @@ export default defineConfig({
       markupImport({
         frameworks: ["astro"],
         exclude: ["**/*.test.astro"],
-      }),
+      }) as unknown as PackPlugin,
     ],
     attw: {
       profile: "esm-only",
@@ -44,15 +54,16 @@ export default defineConfig({
           "@lingui-for/framework-core#build",
           "unplugin-markup-import#build",
         ],
-        cache: true,
-        input: [
-          { auto: true },
-          "!**/_tmp_*",
-          "!**/.vite-temp/**",
-          "!**/.unplugin-markup-import/**",
-          "!.astro/**",
-          "!dist/**",
-        ],
+        cache: {
+          input: [
+            { auto: true },
+            "!**/_tmp_*",
+            "!**/.vite-temp/**",
+            "!**/.unplugin-markup-import/**",
+            "!.astro/**",
+            "!dist/**",
+          ],
+        },
       },
       check: {
         command: "vp check",
@@ -66,8 +77,9 @@ export default defineConfig({
       },
       pretest: {
         command: "node scripts/generate-framework-whitespace-fixtures.ts",
-        cache: true,
-        input: [{ auto: true }],
+        cache: {
+          input: [{ auto: true }],
+        },
       },
       test: {
         command: "vp test",

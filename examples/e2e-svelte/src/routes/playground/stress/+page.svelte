@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import {
     Plural,
     plural,
@@ -13,18 +14,22 @@
   let role = $state("admin");
 </script>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-5">
-    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-5")}>
+    <p
+      {...style(
+        "text-primary text-sm font-semibold tracking-[0.3em] uppercase",
+      )}
+    >
       {$t`Stress`}
     </p>
-    <h1 class="text-4xl font-black md:text-5xl">
+    <h1 {...style("font-black text-4xl md:text-5xl")}>
       {$t`Exact-number branches and deep macro trees`}
     </h1>
 
-    <div class="flex flex-wrap gap-3">
+    <div {...style("flex flex-wrap gap-3")}>
       <button
-        class="btn btn-outline btn-primary"
+        {...style("btn btn-outline btn-primary")}
         data-testid="count-0"
         onclick={() => (count = 0)}
         type="button"
@@ -32,7 +37,7 @@
         count = 0
       </button>
       <button
-        class="btn btn-outline btn-primary"
+        {...style("btn btn-outline btn-primary")}
         data-testid="count-2"
         onclick={() => (count = 2)}
         type="button"
@@ -40,7 +45,7 @@
         count = 2
       </button>
       <button
-        class="btn btn-outline btn-primary"
+        {...style("btn btn-outline btn-primary")}
         data-testid="count-5"
         onclick={() => (count = 5)}
         type="button"
@@ -48,7 +53,7 @@
         count = 5
       </button>
       <button
-        class="btn btn-outline btn-secondary"
+        {...style("btn btn-outline btn-secondary")}
         data-testid="rank-1"
         onclick={() => (rank = 1)}
         type="button"
@@ -56,7 +61,7 @@
         rank = 1
       </button>
       <button
-        class="btn btn-outline btn-secondary"
+        {...style("btn btn-outline btn-secondary")}
         data-testid="rank-2"
         onclick={() => (rank = 2)}
         type="button"
@@ -64,7 +69,7 @@
         rank = 2
       </button>
       <button
-        class="btn btn-outline btn-secondary"
+        {...style("btn btn-outline btn-secondary")}
         data-testid="rank-4"
         onclick={() => (rank = 4)}
         type="button"
@@ -72,7 +77,7 @@
         rank = 4
       </button>
       <button
-        class="btn btn-outline btn-accent"
+        {...style("btn btn-outline btn-accent")}
         data-testid="role-admin"
         onclick={() => (role = "admin")}
         type="button"
@@ -80,7 +85,7 @@
         admin
       </button>
       <button
-        class="btn btn-outline btn-accent"
+        {...style("btn btn-outline btn-accent")}
         data-testid="role-other"
         onclick={() => (role = "other")}
         type="button"
@@ -89,10 +94,10 @@
       </button>
     </div>
 
-    <div class="grid gap-4 xl:grid-cols-2">
-      <article class="card border-base-300 bg-base-200 border">
-        <div class="card-body gap-3">
-          <h2 class="card-title text-2xl">Exact-number branches</h2>
+    <div {...style("grid gap-4 xl:grid-cols-2")}>
+      <article {...style("card bg-base-200 border border-base-300")}>
+        <div {...style("card-body gap-3")}>
+          <h2 {...style("card-title text-2xl")}>Exact-number branches</h2>
           <p data-testid="core-exact-plural">
             {$plural(count, {
               0: "no queued builds",
@@ -126,9 +131,9 @@
         </div>
       </article>
 
-      <article class="card border-base-300 bg-base-200 border">
-        <div class="card-body gap-3">
-          <h2 class="card-title text-2xl">Deep macro trees</h2>
+      <article {...style("card bg-base-200 border border-base-300")}>
+        <div {...style("card-body gap-3")}>
+          <h2 {...style("card-title text-2xl")}>Deep macro trees</h2>
           <p data-testid="deep-core">
             {$t({
               message: plural(count, {

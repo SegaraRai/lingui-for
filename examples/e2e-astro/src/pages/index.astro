@@ -1,4 +1,5 @@
 ---
+import { style } from "stillwind/astro";
 import { t } from "lingui-for-astro/macro";
 
 import AppLayout from "../layouts/AppLayout.astro";
@@ -16,162 +17,173 @@ const currentPage = t`Overview`;
   currentPage={currentPage}
 >
   <section
-    class="hero rounded-box border-base-300 bg-base-100 border shadow-xl"
+    {...style("hero rounded-box bg-base-100 border border-base-300 shadow-xl")}
   >
-    <div class="hero-content justify-start px-6 py-10">
-      <div class="space-y-4">
-        <p class="badge badge-primary badge-outline flex-none">
+    <div {...style("hero-content px-6 py-10 justify-start")}>
+      <div {...style("space-y-4")}>
+        <p {...style("badge badge-outline badge-primary flex-none")}>
           {t`Overview`}
         </p>
-        <h1 class="text-4xl font-black tracking-tight sm:text-5xl">
+        <h1 {...style("font-black text-4xl tracking-tight sm:text-5xl")}>
           {t`One Astro app, several translation checkpoints`}
         </h1>
-        <p class="text-base-content/70">
+        <p {...style("text-base-content/70")}>
           {t`Each page isolates one concern so regressions are easier to spot.`}
         </p>
-        <p class="badge badge-lg badge-secondary flex-none">
+        <p {...style("badge badge-secondary badge-lg flex-none")}>
           {t`Server locale: ${localeLabel}`}
         </p>
       </div>
     </div>
   </section>
 
-  <div class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+  <div {...style("grid gap-4 lg:grid-cols-2 xl:grid-cols-3")}>
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Verification routes`}
         </p>
-        <h2 class="card-title">{t`Server translations`}</h2>
-        <p class="text-base-content/70">
+        <h2 {...style("card-title")}>{t`Server translations`}</h2>
+        <p {...style("text-base-content/70")}>
           {t`Check request-scoped Astro translations and shared layout text.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/server">/server</a>
+        <div {...style("card-actions justify-end")}>
+          <a {...style("btn btn-primary btn-sm")} href="/server">
+            /server
+          </a>
         </div>
       </div>
     </section>
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Framework routes`}
         </p>
-        <h2 class="card-title">{t`Astro framework interpolation behavior`}</h2>
-        <p class="text-base-content/70">
-          {
-            t`Confirm which interpolation forms Astro accepts before Lingui transforms run.`
-          }
+        <h2 {...style("card-title")}>
+          {t`Astro framework interpolation behavior`}
+        </h2>
+        <p {...style("text-base-content/70")}>
+          {t`Confirm which interpolation forms Astro accepts before Lingui transforms run.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/framework/interpolation"
-            >/framework/interpolation</a
+        <div {...style("card-actions justify-end")}>
+          <a
+            {...style("btn btn-primary btn-sm")}
+            href="/framework/interpolation"
           >
+            /framework/interpolation
+          </a>
         </div>
       </div>
     </section>
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Verification routes`}
         </p>
-        <h2 class="card-title">{t`Framework islands`}</h2>
-        <p class="text-base-content/70">
+        <h2 {...style("card-title")}>{t`Framework islands`}</h2>
+        <p {...style("text-base-content/70")}>
           {t`Render Svelte and React islands with the same locale.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/islands">/islands</a>
+        <div {...style("card-actions justify-end")}>
+          <a {...style("btn btn-primary btn-sm")} href="/islands">
+            /islands
+          </a>
         </div>
       </div>
     </section>
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Verification routes`}
         </p>
-        <h2 class="card-title">{t`Rich text messages`}</h2>
-        <p class="text-base-content/70">
+        <h2 {...style("card-title")}>{t`Rich text messages`}</h2>
+        <p {...style("text-base-content/70")}>
           {t`Verify linked and emphasized translations across runtimes.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/rich-text">/rich-text</a>
+        <div {...style("card-actions justify-end")}>
+          <a {...style("btn btn-primary btn-sm")} href="/rich-text">
+            /rich-text
+          </a>
         </div>
       </div>
     </section>
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Verification routes`}
         </p>
-        <h2 class="card-title">{t`Message formats`}</h2>
-        <p class="text-base-content/70">
+        <h2 {...style("card-title")}>{t`Message formats`}</h2>
+        <p {...style("text-base-content/70")}>
           {t`Exercise plural, select, and selectOrdinal macros.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/formats">/formats</a>
+        <div {...style("card-actions justify-end")}>
+          <a {...style("btn btn-primary btn-sm")} href="/formats">
+            /formats
+          </a>
         </div>
       </div>
     </section>
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Verification routes`}
         </p>
-        <h2 class="card-title">{t`Astro interpolation edge cases`}</h2>
-        <p class="text-base-content/70">
-          {
-            t`Check translated Astro interpolations that contain comments and fragments.`
-          }
+        <h2 {...style("card-title")}>{t`Astro interpolation edge cases`}</h2>
+        <p {...style("text-base-content/70")}>
+          {t`Check translated Astro interpolations that contain comments and fragments.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/interpolation"
-            >/interpolation</a
-          >
+        <div {...style("card-actions justify-end")}>
+          <a {...style("btn btn-primary btn-sm")} href="/interpolation">
+            /interpolation
+          </a>
         </div>
       </div>
     </section>
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Verification routes`}
         </p>
-        <h2 class="card-title">{t`Dynamic routing`}</h2>
-        <p class="text-base-content/70">
+        <h2 {...style("card-title")}>{t`Dynamic routing`}</h2>
+        <p {...style("text-base-content/70")}>
           {t`Confirm route params and locale cookies survive navigation.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/routing/alpha"
-            >/routing/alpha</a
-          >
+        <div {...style("card-actions justify-end")}>
+          <a {...style("btn btn-primary btn-sm")} href="/routing/alpha">
+            /routing/alpha
+          </a>
         </div>
       </div>
     </section>
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Verification routes`}
         </p>
-        <h2 class="card-title">{t`Locale persistence`}</h2>
-        <p class="text-base-content/70">
+        <h2 {...style("card-title")}>{t`Locale persistence`}</h2>
+        <p {...style("text-base-content/70")}>
           {t`Use cookies to keep the next request aligned.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/settings">/settings</a>
+        <div {...style("card-actions justify-end")}>
+          <a {...style("btn btn-primary btn-sm")} href="/settings">
+            /settings
+          </a>
         </div>
       </div>
     </section>
-    <section class="card border-base-300 bg-base-100 border shadow-lg">
-      <div class="card-body">
-        <p class="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`Verification routes`}
         </p>
-        <h2 class="card-title">{t`Client transitions`}</h2>
-        <p class="text-base-content/70">
-          {
-            t`Compare whether persisted Svelte and React islands keep state while locale and page props still update.`
-          }
+        <h2 {...style("card-title")}>{t`Client transitions`}</h2>
+        <p {...style("text-base-content/70")}>
+          {t`Compare whether persisted Svelte and React islands keep state while locale and page props still update.`}
         </p>
-        <div class="card-actions justify-end">
-          <a class="btn btn-primary btn-sm" href="/transitions">/transitions</a>
+        <div {...style("card-actions justify-end")}>
+          <a {...style("btn btn-primary btn-sm")} href="/transitions">
+            /transitions
+          </a>
         </div>
       </div>
     </section>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { t } from "lingui-for-svelte/macro";
 
   const sections = [
@@ -65,21 +66,25 @@
   ];
 </script>
 
-<section class="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
-  <div class="contents">
+<section {...style("grid gap-4 lg:grid-cols-2 xl:grid-cols-3")}>
+  <div {...style("contents")}>
     {#each sections as section}
       <a
-        class="card border-base-300 bg-base-100 border shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+        {...style(
+          "card bg-base-100 border border-base-300 shadow-md transition hover:shadow-xl hover:-translate-y-1",
+        )}
         href={section.href}
       >
-        <div class="card-body gap-3">
+        <div {...style("card-body gap-3")}>
           <p
-            class="text-secondary text-xs font-semibold tracking-[0.25em] uppercase"
+            {...style(
+              "text-secondary text-xs font-semibold tracking-[0.25em] uppercase",
+            )}
           >
             {section.eyebrow}
           </p>
-          <h2 class="card-title text-2xl">{section.title}</h2>
-          <p class="text-base-content/75">{section.body}</p>
+          <h2 {...style("card-title text-2xl")}>{section.title}</h2>
+          <p {...style("text-base-content/75")}>{section.body}</p>
         </div>
       </a>
     {/each}

@@ -39,7 +39,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-
 
-      - uses: voidzero-dev/setup-vp@v1
+      - uses: voidzero-dev/setup-vp@v1.21.2
         with:
           node-version-file: ".node-version"
           cache: true
@@ -78,7 +78,7 @@ jobs:
           name: wasm-package
           path: shared/lingui-analyzer-wasm/dist
 
-      - uses: voidzero-dev/setup-vp@v1
+      - uses: voidzero-dev/setup-vp@v1.21.2
         with:
           node-version-file: ".node-version"
           cache: true

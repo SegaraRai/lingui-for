@@ -1,4 +1,5 @@
 ---
+import { style } from "stillwind/astro";
 import { Trans } from "lingui-for-astro/macro";
 
 const htmlDigest = "<strong>Locale review digest</strong>";
@@ -6,41 +7,42 @@ const highlightedQueue = ["North", "West", "South"];
 const selectedRegion = "Kansai";
 ---
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body">
-    <p class="badge badge-accent badge-outline flex-none">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body")}>
+    <p {...style("badge badge-outline badge-accent flex-none")}>
       <Trans>Astro rich text</Trans>
     </p>
-    <h2 class="card-title">
+    <h2 {...style("card-title")}>
       <Trans>Astro rich text keeps component placeholders intact.</Trans>
     </h2>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <Trans>
         Astro keeps the{" "}
-        <a class="link link-primary" href="/settings">settings link</a>{" "}
+        <a class="link link-primary" href="/settings">
+          settings link
+        </a>{" "}
         inside a translated sentence.
       </Trans>
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <Trans>
-        Astro can preserve{" "}<strong>strong emphasis</strong>{" "}in
-        translated output.
+        Astro can preserve <strong>strong emphasis</strong> in translated
+        output.
       </Trans>
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <Trans>
         Imported review digest:
         <span set:html={htmlDigest} />
       </Trans>
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <Trans>
-        Translation previews can show <span set:text="plain text" /> and <span
-          set:html="<em>highlighted markup</em>"
-        /> in the same sentence.
+        Translation previews can show <span set:text="plain text" /> and{" "}
+        <span set:html="<em>highlighted markup</em>" /> in the same sentence.
       </Trans>
     </p>
-    <div class="text-base-content/70">
+    <div {...style("text-base-content/70")}>
       <Trans>
         <p>The current locale review can summarize nested details such as</p>
         <ul>

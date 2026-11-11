@@ -14,6 +14,7 @@ catalogs:
     "@arethetypeswrong/core": ^0.18.5
     "@astrojs/check": ^0.9.10
     "@astrojs/node": ^11.1.5
+    "@astrojs/astro2tsx": ^0.1.4
     "@astrojs/react": ^6.0.5
     "@astrojs/svelte": ^9.0.1
     "@babel/core": ^7.29.7
@@ -29,8 +30,9 @@ catalogs:
     "@lingui/react": ^6.6.0
     "@sveltejs/adapter-node": ^5.5.7
     "@sveltejs/kit": ^2.70.3
+    "@stillwind/cli": ^0.9.0
+    "@stillwind/integration": ^0.9.0
     "@sveltejs/vite-plugin-svelte": ^7.3.0
-    "@tailwindcss/vite": ^4.3.3
     "@types/babel__core": ^7.20.5
     "@types/babel__generator": ^7.27.0
     "@types/babel__traverse": ^7.28.0
@@ -44,12 +46,13 @@ catalogs:
     playwright: ^1.62.1
     react: ^19.2.8
     react-dom: ^19.2.8
+    stillwind: ^0.9.0
     svelte: ^5.57.0
     svelte-check: ^4.7.6
     tailwindcss: ^4.3.3
     typescript: ^6.0.3
-    vite: npm:@voidzero-dev/vite-plus-core@latest
-    vite-plus: ^0.3.0
+    vite: npm:@voidzero-dev/vite-plus-core@1.6.0
+    vite-plus: 1.6.0
 
   dep:
     "@babel/core": "^7.24.0 || ^8"
@@ -69,14 +72,28 @@ catalogs:
     rollup: "^3 || ^4"
     svelte: ^5
     unplugin: ^3
-    vite: ">=3"
+    vite: npm:@voidzero-dev/vite-plus-core@1.6.0
     webpack: "^4 || ^5"
 
 minimumReleaseAgeExclude:
   - "@astrojs/starlight@0.42.0"
+  - "@stillwind/*"
+  - stillwind
+  - "@tsrs/*"
+  - tsrs
+  - "@voidzero-dev/vite-plus-core@1.6.0"
+  - "@voidzero-dev/vite-plus-darwin-arm64@1.6.0"
+  - "@voidzero-dev/vite-plus-darwin-x64@1.6.0"
+  - "@voidzero-dev/vite-plus-linux-arm64-gnu@1.6.0"
+  - "@voidzero-dev/vite-plus-linux-arm64-musl@1.6.0"
+  - "@voidzero-dev/vite-plus-linux-x64-gnu@1.6.0"
+  - "@voidzero-dev/vite-plus-linux-x64-musl@1.6.0"
+  - "@voidzero-dev/vite-plus-win32-arm64-msvc@1.6.0"
+  - "@voidzero-dev/vite-plus-win32-x64-msvc@1.6.0"
+  - vite-plus@1.6.0
 
 overrides:
-  vite: "catalog:"
+  vite@*: "catalog:"
 
 peerDependencyRules:
   allowAny:

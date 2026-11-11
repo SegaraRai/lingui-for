@@ -15,19 +15,18 @@
     "preview:e2e-astro": "vp run --filter e2e-astro preview",
     "preview:docs": "vp run --filter docs preview",
     "test:rust": "cargo test",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "prepare": "vp config"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.0",
     "@changesets/cli": "^3.0.1",
+    "@stillwind/cli": "catalog:",
     "@types/node": "catalog:",
     "playwright": "catalog:",
-    "prettier": "^3.9.6",
-    "prettier-plugin-astro": "^0.14.1",
-    "prettier-plugin-organize-imports": "^4.3.0",
-    "prettier-plugin-tailwindcss": "^0.8.1",
+    "stillwind": "catalog:",
     "typescript": "catalog:",
-    "vite": "npm:@voidzero-dev/vite-plus-core@^0.3.0",
+    "vite": "catalog:",
     "vite-plus": "catalog:",
     "wasm-pack": "^0.15.0"
   },

@@ -1,8 +1,18 @@
 import { wasm } from "rolldown-plugin-wasm";
 import { defineConfig } from "vite-plus";
+import type { PackUserConfig } from "vite-plus/pack";
+
+// Rolldown plugins are typed against their own rolldown, not the copy bundled in Vite+
+type PackPlugin = NonNullable<PackUserConfig["plugins"]>;
 
 export default defineConfig({
   pack: {
+    deps: {
+      // tsdown <0.23 compatibility: resolve external dependency subpaths.
+      // Remove to preserve subpath imports as written (the new default).
+      // https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
+      resolveDepSubpath: true,
+    },
     clean: true,
     dts: {
       eager: true,
@@ -20,7 +30,7 @@ export default defineConfig({
     plugins: [
       wasm({
         publicPath: "../",
-      }),
+      }) as unknown as PackPlugin,
     ],
     attw: {
       profile: "esm-only",
@@ -31,8 +41,14 @@ export default defineConfig({
       build: {
         command: "vp pack",
         dependsOn: ["lingui-for-workspace#build:wasm"],
-        cache: true,
-        input: [{ auto: true }, "!**/_tmp_*", "!**/.vite-temp/**", "!dist/**"],
+        cache: {
+          input: [
+            { auto: true },
+            "!**/_tmp_*",
+            "!**/.vite-temp/**",
+            "!dist/**",
+          ],
+        },
       },
       check: {
         command: "vp check",

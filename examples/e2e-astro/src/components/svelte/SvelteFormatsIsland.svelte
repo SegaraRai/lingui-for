@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import {
     Plural,
     plural,
@@ -17,22 +18,22 @@
   useLinguiLocale(() => locale);
 </script>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body">
-    <p class="badge badge-accent badge-outline flex-none">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body")}>
+    <p {...style("badge badge-outline badge-accent flex-none")}>
       {$t`Svelte formats`}
     </p>
-    <h2 class="card-title">
+    <h2 {...style("card-title")}>
       {$t`Svelte runs plural, select, and selectOrdinal macros in component code.`}
     </h2>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <Plural
         value={3}
         one="# Svelte format sample"
         other="# Svelte format samples"
       />
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <Select
         value="excited"
         _calm="Svelte select says calm."
@@ -40,7 +41,7 @@
         other="Svelte select says unknown."
       />
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <SelectOrdinal
         value={2}
         one="Svelte finished #st."
@@ -49,21 +50,21 @@
         other="Svelte finished #th."
       />
     </p>
-    <hr class="divider" />
-    <p class="text-base-content/70">
+    <hr {...style("divider")} />
+    <p {...style("text-base-content/70")}>
       {$plural(3, {
         one: "# Svelte format sample",
         other: "# Svelte format samples",
       })}
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       {$select("excited", {
         calm: "Svelte select says calm.",
         excited: "Svelte select says excited.",
         other: "Svelte select says unknown.",
       })}
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       {$selectOrdinal(2, {
         one: "Svelte finished #st.",
         two: "Svelte finished #nd.",

@@ -5,15 +5,17 @@
   "dependencies": {
     "@lingui/core": "catalog:",
     "lingui-for-svelte": "workspace:*",
+    "stillwind": "catalog:",
     "svelte": "catalog:"
   },
   "devDependencies": {
     "@lingui/cli": "catalog:",
     "@lingui/conf": "catalog:",
+    "@stillwind/cli": "catalog:",
+    "@stillwind/integration": "catalog:",
     "@sveltejs/adapter-node": "catalog:",
     "@sveltejs/kit": "catalog:",
     "@sveltejs/vite-plugin-svelte": "catalog:",
-    "@tailwindcss/vite": "catalog:",
     "@types/node": "catalog:",
     "daisyui": "catalog:",
     "playwright": "catalog:",

@@ -70,26 +70,22 @@ const place = 2;
 
 <!-- Standalone: produces the ordinal string directly. -->
 <p>
-  {
-    selectOrdinal(place, {
-      one: "#st",
-      two: "#nd",
-      few: "#rd",
-      other: "#th",
-    })
-  }
+  {selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })}
 </p>
 
 <!-- Embedded: selectOrdinal is part of a larger translated unit. -->
 <p>
-  {
-    t`Ranked ${selectOrdinal(place, {
-      one: "#st",
-      two: "#nd",
-      few: "#rd",
-      other: "#th",
-    })}`
-  }
+  {t`Ranked ${selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })}`}
 </p>
 ```
 

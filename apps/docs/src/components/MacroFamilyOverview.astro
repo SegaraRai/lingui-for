@@ -1,6 +1,7 @@
 ---
 import { Code } from "astro/components";
 import { Trans } from "lingui-for-astro/macro";
+import { style } from "stillwind/astro";
 
 import { ensureDocsLinguiContext, type DocsLocale } from "../lib/docs-i18n";
 import { sourceCodeThemes } from "../lib/code-themes.ts";
@@ -17,110 +18,130 @@ const { language, items, title } = Astro.props;
 ensureDocsLinguiContext(Astro.locals, language);
 
 const initialIndex = 0;
+
+const sectionHeader = style("px-5 py-3 border-panel-border border-b");
 ---
 
 <div class="twp">
   <div
-    class="not-content my-6 overflow-hidden border border-(--sl-color-gray-5) bg-(--sl-color-black)"
+    {...style("overflow-hidden my-6 bg-panel border border-panel-border", {
+      class: "not-content",
+    })}
     data-family-overview
   >
-    <div class="border-b border-(--sl-color-gray-5) px-4 py-3">
-      <div
-        class="text-[0.7rem] font-medium tracking-[0.08em] text-(--sl-color-gray-2) uppercase"
-      >
-        {title}
-      </div>
+    <div {...style("px-4 py-3 border-panel-border border-b")}>
+      <div {...style("text-panel-label caption")}>{title}</div>
     </div>
 
-    <div class="grid gap-0 lg:grid-cols-[15rem_minmax(0,1fr)]">
+    <div {...style("grid gap-0 lg:grid-cols-[15rem_minmax(0,1fr)]")}>
       <aside
-        class="overflow-hidden border-b border-(--sl-color-gray-5) bg-(--sl-color-bg-sidebar) lg:border-r lg:border-b-0"
+        {...style(
+          "overflow-hidden bg-panel-muted border-panel-border border-b lg:border-r lg:border-b-0",
+        )}
       >
-        <div class="overflow-x-auto overscroll-x-contain lg:overflow-visible">
-          <div class="flex min-w-max flex-row lg:min-w-0 lg:flex-col">
-            {
-              items.map((item, index) => (
-                <button
-                  type="button"
-                  class="border-r border-b border-(--sl-color-gray-5) px-4 py-3 text-left transition-colors last:border-r-0 enabled:cursor-pointer aria-pressed:bg-(--sl-color-accent-low) aria-pressed:text-(--sl-color-white) lg:border-r-0 lg:last:border-b-0"
-                  tabindex={index === initialIndex ? 0 : -1}
-                  aria-pressed={index === initialIndex ? "true" : "false"}
-                  data-family-tab
-                  data-value={item.value}
-                >
-                  <div class="text-sm font-semibold">{item.label}</div>
-                  <div class="mt-1 max-w-52 text-xs leading-5 text-(--sl-color-gray-2)">
-                    {item.description}
-                  </div>
-                </button>
-              ))
-            }
+        <div
+          {...style("overflow-x-auto overscroll-x-contain lg:overflow-visible")}
+        >
+          <div {...style("flex min-w-max flex-row lg:min-w-0 lg:flex-col")}>
+            {items.map((item, index) => (
+              <button
+                type="button"
+                {...style(
+                  "px-4 py-3 text-left border-panel-border border-r border-b transition-colors last:border-r-0 enabled:cursor-pointer lg:border-r-0 lg:last:border-b-0",
+                  "aria-pressed:text-panel-strong aria-pressed:bg-panel-selected",
+                )}
+                tabindex={index === initialIndex ? 0 : -1}
+                aria-pressed={index === initialIndex ? "true" : "false"}
+                data-family-tab
+                data-value={item.value}
+              >
+                <div {...style("text-sm font-semibold")}>{item.label}</div>
+                <div {...style("mt-1 max-w-52 text-panel-label text-xs/5")}>
+                  {item.description}
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </aside>
 
-      <section class="grid min-h-80 grid-rows-[auto_minmax(0,1fr)_auto]">
-        {
-          items.map((item, index) => (
-            <article
-              class="col-start-1 row-span-3 row-start-1 grid grid-rows-subgrid aria-hidden:pointer-events-none aria-hidden:invisible"
-              data-family-panel
-              data-value={item.value}
-              aria-hidden={index === initialIndex ? "false" : "true"}
+      <section {...style("grid min-h-80 grid-rows-[auto_minmax(0,1fr)_auto]")}>
+        {items.map((item, index) => (
+          <article
+            {...style(
+              "grid col-start-1 row-start-1 row-end-4 grid-rows-subgrid",
+              "aria-hidden:invisible aria-hidden:pointer-events-none",
+            )}
+            data-family-panel
+            data-value={item.value}
+            aria-hidden={index === initialIndex ? "false" : "true"}
+          >
+            <div {...style("px-5 py-4 border-panel-border border-b")}>
+              <div {...style("text-base text-panel-strong font-semibold")}>
+                {item.label}
+              </div>
+              <div {...style("mt-1 text-panel-label text-sm/6")}>
+                {item.description}
+              </div>
+            </div>
+
+            <div
+              {...style(
+                "grid h-full grid-rows-[1fr_auto] gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]",
+              )}
             >
-              <div class="border-b border-(--sl-color-gray-5) px-5 py-4">
-                <div class="text-base font-semibold text-(--sl-color-white)">
-                  {item.label}
-                </div>
-                <div class="mt-1 text-sm leading-6 text-(--sl-color-gray-2)">
-                  {item.description}
-                </div>
-              </div>
-
-              <div class="grid h-full grid-rows-[1fr_auto] gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-                <div class="flex h-full flex-col border-b border-(--sl-color-gray-5) lg:border-r lg:border-b-0">
-                  <div class="border-b border-(--sl-color-gray-5) px-5 py-3">
-                    <div class="text-[0.7rem] font-medium tracking-[0.08em] text-(--sl-color-gray-2) uppercase">
-                      <Trans>Preview</Trans>
-                    </div>
-                  </div>
-                  <div
-                    class="flex-1 p-5 text-base leading-7 text-(--sl-color-white)"
-                    translate="no"
-                  >
-                    {item.preview}
+              <div
+                {...style(
+                  "flex h-full flex-col border-panel-border border-b lg:border-r lg:border-b-0",
+                )}
+              >
+                <div {...style(sectionHeader)}>
+                  <div {...style("text-panel-label caption")}>
+                    <Trans>Preview</Trans>
                   </div>
                 </div>
-
-                <div class="flex h-full min-h-0 flex-col bg-(--sl-color-black)">
-                  <div class="border-b border-(--sl-color-gray-5) px-5 py-3">
-                    <div class="text-[0.7rem] font-medium tracking-[0.08em] text-(--sl-color-gray-2) uppercase">
-                      <Trans>Snippet</Trans>
-                    </div>
-                  </div>
-                  <div class="demo-code-block grid flex-1">
-                    <Code
-                      code={item.snippet}
-                      lang={item.snippetLang}
-                      themes={sourceCodeThemes}
-                      defaultColor="light"
-                      wrap
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="border-t border-(--sl-color-gray-5) bg-(--sl-color-bg-sidebar) px-5 py-3">
-                <a
-                  class="text-sm font-medium text-(--sl-color-text-accent) hover:underline"
-                  href={item.href}
+                <div
+                  {...style("p-5 flex-1 text-base/7 text-panel-strong")}
+                  translate="no"
                 >
-                  <Trans>See full demo</Trans>
-                </a>
+                  {item.preview}
+                </div>
               </div>
-            </article>
-          ))
-        }
+
+              <div {...style("flex h-full min-h-0 flex-col bg-panel")}>
+                <div {...style(sectionHeader)}>
+                  <div {...style("text-panel-label caption")}>
+                    <Trans>Snippet</Trans>
+                  </div>
+                </div>
+                <div {...style("grid flex-1 code-artifact")}>
+                  <Code
+                    code={item.snippet}
+                    lang={item.snippetLang}
+                    themes={sourceCodeThemes}
+                    defaultColor="light"
+                    wrap
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div
+              {...style(
+                "px-5 py-3 bg-panel-muted border-panel-border border-t",
+              )}
+            >
+              <a
+                {...style(
+                  "text-panel-accent text-sm font-medium hover:underline",
+                )}
+                href={item.href}
+              >
+                <Trans>See full demo</Trans>
+              </a>
+            </div>
+          </article>
+        ))}
       </section>
     </div>
   </div>

@@ -1,5 +1,6 @@
 ---
 import { Trans, t } from "lingui-for-astro/macro";
+import { style } from "stillwind/astro";
 
 import type { MacroWorkbenchResolvedDefinition } from "../lib/macro-workbench/spec.ts";
 import { ensureDocsLinguiContext, type DocsLocale } from "../lib/docs-i18n.ts";
@@ -38,6 +39,15 @@ const initialPreviewProps = {
   ...workbench.initialValues,
   ...workbench.result.preview.initialProps,
 };
+
+const header = style("overflow-hidden bg-panel-muted");
+const panelStack = style("grid bg-panel");
+const panel = style(
+  "grid overflow-auto overscroll-x-contain col-start-1 row-start-1",
+  "aria-hidden:invisible aria-hidden:pointer-events-none",
+);
+const sourcePanel = style(panel, "max-h-68 lg:max-h-100");
+const resultPanel = style(panel, "max-h-64 lg:max-h-96");
 const sourceTabs = [
   {
     label: workbench.source.demo.filename ?? t`Demo.svelte`,
@@ -86,17 +96,19 @@ const resultTabs = [
   data-workbench-id={workbench.id}
 >
   <div
-    class="not-content my-6 overflow-hidden border border-(--demo-border) bg-(--demo-background)"
+    {...style("overflow-hidden my-6 bg-panel border border-panel-border", {
+      class: "not-content",
+    })}
   >
-    <div class="grid gap-0 lg:grid-cols-2">
+    <div {...style("grid gap-0 lg:grid-cols-2")}>
       <section
-        class="grid grid-rows-[auto_1fr] border-b border-(--demo-border) lg:border-r lg:border-b-0"
+        {...style(
+          "grid grid-rows-[auto_1fr] border-panel-border border-b lg:border-r lg:border-b-0",
+        )}
       >
-        <header class="overflow-hidden bg-(--demo-toolbar-background)">
-          <div class="px-4 pt-3">
-            <div
-              class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-toolbar-text) uppercase"
-            >
+        <header {...style(header)}>
+          <div {...style("px-4 pbs-3")}>
+            <div {...style("text-panel-label caption")}>
               <Trans>Source</Trans>
             </div>
           </div>
@@ -107,12 +119,12 @@ const resultTabs = [
           />
         </header>
 
-        <div class="grid bg-(--demo-code-surface)">
+        <div {...style(panelStack)}>
           <div
             role="tabpanel"
             data-panel-group="source"
             data-panel-value="demo"
-            class="col-start-1 row-start-1 grid max-h-68 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-100"
+            {...style(sourcePanel)}
             aria-hidden={initialSourceTab !== "demo" ? "true" : "false"}
           >
             <MacroWorkbenchCodeArtifact
@@ -125,34 +137,30 @@ const resultTabs = [
             role="tabpanel"
             data-panel-group="source"
             data-panel-value="catalog"
-            class="col-start-1 row-start-1 grid max-h-68 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-100"
+            {...style(sourcePanel)}
             aria-hidden={initialSourceTab !== "catalog" ? "true" : "false"}
           >
-            {
-              sourceCatalogCodes.map((option) => (
-                <div
-                  data-locale-panel="source-catalog"
-                  data-locale-value={option.code}
-                  class="contents"
-                  hidden={option.code !== workbench.locale.initial}
-                >
-                  <MacroWorkbenchCodeArtifact
-                    artifact={workbench.source.catalogs[option.code]!}
-                    surface="source"
-                  />
-                </div>
-              ))
-            }
+            {sourceCatalogCodes.map((option) => (
+              <div
+                data-locale-panel="source-catalog"
+                data-locale-value={option.code}
+                {...style("contents")}
+                hidden={option.code !== workbench.locale.initial}
+              >
+                <MacroWorkbenchCodeArtifact
+                  artifact={workbench.source.catalogs[option.code]!}
+                  surface="source"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      <section class="grid grid-rows-[auto_1fr]">
-        <header class="overflow-hidden bg-(--demo-toolbar-background)">
-          <div class="px-4 pt-3">
-            <div
-              class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-toolbar-text) uppercase"
-            >
+      <section {...style("grid grid-rows-[auto_1fr]")}>
+        <header {...style(header)}>
+          <div {...style("px-4 pbs-3")}>
+            <div {...style("text-panel-label caption")}>
               <Trans>Result</Trans>
             </div>
           </div>
@@ -163,15 +171,15 @@ const resultTabs = [
           />
         </header>
 
-        <div class="grid bg-(--demo-result-background)">
+        <div {...style(panelStack)}>
           <div
             role="tabpanel"
             data-panel-group="result"
             data-panel-value="preview"
-            class="col-start-1 row-start-1 grid max-h-64 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
+            {...style(resultPanel)}
             aria-hidden={initialResultTab !== "preview" ? "true" : "false"}
           >
-            <div class="p-6" translate="no">
+            <div {...style("p-6 demo-preview")} translate="no">
               <MacroWorkbenchPreviewIsland
                 client:load
                 componentModule={workbench.result.preview.componentModule}
@@ -185,7 +193,7 @@ const resultTabs = [
             role="tabpanel"
             data-panel-group="result"
             data-panel-value="transformed"
-            class="col-start-1 row-start-1 grid max-h-64 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
+            {...style(resultPanel)}
             aria-hidden={initialResultTab !== "transformed" ? "true" : "false"}
           >
             <MacroWorkbenchCodeArtifact
@@ -198,66 +206,68 @@ const resultTabs = [
             role="tabpanel"
             data-panel-group="result"
             data-panel-value="compiledCatalog"
-            class="col-start-1 row-start-1 grid max-h-64 overflow-auto overscroll-x-contain aria-hidden:pointer-events-none aria-hidden:invisible lg:max-h-96"
-            aria-hidden={initialResultTab !== "compiledCatalog"
-              ? "true"
-              : "false"}
-          >
-            {
-              resultCompiledCodes.map((option) => (
-                <div
-                  data-locale-panel="result-compiled"
-                  data-locale-value={option.code}
-                  class="contents"
-                  hidden={option.code !== workbench.locale.initial}
-                >
-                  <MacroWorkbenchCodeArtifact
-                    artifact={workbench.result.compiledCatalogs[option.code]!}
-                    surface="result"
-                  />
-                </div>
-              ))
+            {...style(resultPanel)}
+            aria-hidden={
+              initialResultTab !== "compiledCatalog" ? "true" : "false"
             }
+          >
+            {resultCompiledCodes.map((option) => (
+              <div
+                data-locale-panel="result-compiled"
+                data-locale-value={option.code}
+                {...style("contents")}
+                hidden={option.code !== workbench.locale.initial}
+              >
+                <MacroWorkbenchCodeArtifact
+                  artifact={workbench.result.compiledCatalogs[option.code]!}
+                  surface="result"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
     </div>
 
     <div
-      class="overflow-x-auto border-t border-(--demo-control-border) bg-(--demo-control-background) px-4"
+      {...style(
+        "overflow-x-auto px-4 bg-panel-muted border-panel-border border-t",
+      )}
     >
-      <div class="flex min-w-max items-center justify-between gap-8 py-3">
-        <div class="flex items-center gap-3">
-          <div
-            class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-control-text) uppercase"
-          >
+      <div {...style("flex min-w-max py-3 items-center justify-between gap-8")}>
+        <div {...style("flex items-center gap-3")}>
+          <div {...style("text-panel-label caption")}>
             <Trans>Locale</Trans>
           </div>
           <div
-            class="inline-flex overflow-hidden rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) text-sm text-(--demo-control-field-text)"
+            {...style(
+              "inline-flex overflow-hidden text-panel-label text-sm bg-panel rounded-lg border border-panel-field-border",
+            )}
           >
-            {
-              workbench.locale.options.map((option) => (
-                <button
-                  type="button"
-                  aria-pressed={option.code === workbench.locale.initial}
-                  data-locale-button
-                  data-locale-code={option.code}
-                  class="border-r border-(--demo-control-field-border) px-3 py-1.5 transition-colors last:border-r-0 enabled:cursor-pointer aria-pressed:bg-(--demo-control-active-background) aria-pressed:font-medium aria-pressed:text-(--demo-control-active-text)"
-                >
-                  {t(option.label)}
-                </button>
-              ))
-            }
+            {workbench.locale.options.map((option) => (
+              <button
+                type="button"
+                aria-pressed={option.code === workbench.locale.initial}
+                data-locale-button
+                data-locale-code={option.code}
+                {...style(
+                  "px-3 py-1.5 border-panel-field-border border-r transition-colors last:border-r-0 enabled:cursor-pointer",
+                  {
+                    "aria-pressed:":
+                      "text-panel-strong font-medium bg-panel-selected",
+                  },
+                )}
+              >
+                {t(option.label)}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div class="flex items-center gap-3">
-          {
-            workbench.controls.map((control) => (
-              <MacroWorkbenchControlField control={control} />
-            ))
-          }
+        <div {...style("flex items-center gap-3")}>
+          {workbench.controls.map((control) => (
+            <MacroWorkbenchControlField control={control} />
+          ))}
         </div>
       </div>
     </div>

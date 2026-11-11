@@ -1,6 +1,9 @@
 import { defineConfig } from "vite-plus";
 
 export default defineConfig({
+  staged: {
+    "*": "vp check --fix",
+  },
   lint: {
     options: {
       typeAware: true,
@@ -17,12 +20,15 @@ export default defineConfig({
       "examples/compat/__snapshots__/**",
       "examples/compat/projects/**",
       "examples/config-types/cases/*",
+      "examples/e2e-astro/src/pages/framework/interpolation.astro",
+      "examples/e2e-astro/src/pages/interpolation.astro",
     ],
   },
   fmt: {
     endOfLine: "lf",
     sortTailwindcss: {},
     sortPackageJson: true,
+    astro: true,
     svelte: true,
     printWidth: 80,
     ignorePatterns: [
@@ -34,6 +40,8 @@ export default defineConfig({
       "**/generated",
       "crates/lingui-analyzer/benches/fixtures/*",
       "examples/compat/__snapshots__/**",
+      "examples/e2e-astro/src/pages/framework/interpolation.astro",
+      "examples/e2e-astro/src/pages/interpolation.astro",
       "pnpm-lock.yaml",
     ],
   },
@@ -70,20 +78,21 @@ export default defineConfig({
       },
       "build:wasm": {
         command: "node ./build-wasm.ts",
-        cache: true,
-        input: [
-          { auto: true },
-          "!target/**",
-          "!shared/lingui-analyzer-wasm/dist/**",
-        ],
-        env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
+        cache: {
+          input: [
+            { auto: true },
+            "!target/**",
+            "!shared/lingui-analyzer-wasm/dist/**",
+          ],
+          env: ["LINGUI_WASM_PREBUILT", "LINGUI_WASM_DEBUG"],
+        },
       },
       check: {
         command: "vp run -r check",
         cache: false,
       },
       format: {
-        command: "prettier -w **/*.{astro,mdx} && vp fmt .",
+        command: "stillwind fmt && vp fmt .",
         cache: false,
       },
       test: {
@@ -107,8 +116,9 @@ export default defineConfig({
       artifacts: {
         command: "node ./generate-artifacts.ts",
         dependsOn: ["build:lib"],
-        cache: true,
-        input: [{ auto: true }],
+        cache: {
+          input: [{ auto: true }],
+        },
       },
       release: {
         command: "vp exec changeset publish",

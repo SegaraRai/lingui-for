@@ -11,13 +11,15 @@ export default defineConfig({
           "unplugin-lingui-macro#build",
           "i18n:build",
         ],
-        input: [
-          { auto: true },
-          "!**/.vite-temp/**",
-          "!**/.vite/deps/_metadata.json",
-          "!.astro/**",
-          "!dist/**",
-        ],
+        cache: {
+          input: [
+            { auto: true },
+            "!**/.vite-temp/**",
+            "!**/.vite/deps/_metadata.json",
+            "!.astro/**",
+            "!dist/**",
+          ],
+        },
       },
       dev: {
         command: "astro dev",
@@ -36,7 +38,12 @@ export default defineConfig({
       },
       check: {
         command: "vp check",
-        dependsOn: ["build", "check:extra"],
+        dependsOn: ["build", "check:extra", "check:stillwind"],
+        cache: false,
+      },
+      "check:stillwind": {
+        command: "stillwind lint && stillwind fmt --check",
+        dependsOn: ["build"],
         cache: false,
       },
       "check:extra": {
@@ -56,8 +63,9 @@ export default defineConfig({
       "i18n:build": {
         command: "lingui compile && vp fmt src/i18n/locales",
         dependsOn: ["i18n:extract"],
-        cache: true,
-        input: ["src/i18n/locales/**/*.po"],
+        cache: {
+          input: ["src/i18n/locales/**/*.po"],
+        },
       },
     },
   },

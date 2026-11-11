@@ -1,4 +1,5 @@
 ---
+import { style } from "stillwind/astro";
 import {
   Plural,
   plural,
@@ -10,25 +11,23 @@ import {
 } from "lingui-for-astro/macro";
 ---
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body">
-    <p class="badge badge-accent badge-outline flex-none">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body")}>
+    <p {...style("badge badge-outline badge-accent flex-none")}>
       {t`Astro formats`}
     </p>
-    <h2 class="card-title">
-      {
-        t`Astro runs plural, select, and selectOrdinal macros in component code.`
-      }
+    <h2 {...style("card-title")}>
+      {t`Astro runs plural, select, and selectOrdinal macros in component code.`}
     </h2>
 
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <Plural
         value={3}
         one="# Astro format sample"
         other="# Astro format samples"
       />
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <Select
         value="excited"
         _calm="Astro select says calm."
@@ -36,7 +35,7 @@ import {
         other="Astro select says unknown."
       />
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       <SelectOrdinal
         value={2}
         one="Astro finished #st."
@@ -46,33 +45,27 @@ import {
       />
     </p>
 
-    <hr class="divider" />
-    <p class="text-base-content/70">
-      {
-        plural(3, {
-          one: "# Astro format sample",
-          other: "# Astro format samples",
-        })
-      }
+    <hr {...style("divider")} />
+    <p {...style("text-base-content/70")}>
+      {plural(3, {
+        one: "# Astro format sample",
+        other: "# Astro format samples",
+      })}
     </p>
-    <p class="text-base-content/70">
-      {
-        select("excited", {
-          calm: "Astro select says calm.",
-          excited: "Astro select says excited.",
-          other: "Astro select says unknown.",
-        })
-      }
+    <p {...style("text-base-content/70")}>
+      {select("excited", {
+        calm: "Astro select says calm.",
+        excited: "Astro select says excited.",
+        other: "Astro select says unknown.",
+      })}
     </p>
-    <p class="text-base-content/70">
-      {
-        selectOrdinal(2, {
-          one: "Astro finished #st.",
-          two: "Astro finished #nd.",
-          few: "Astro finished #rd.",
-          other: "Astro finished #th.",
-        })
-      }
+    <p {...style("text-base-content/70")}>
+      {selectOrdinal(2, {
+        one: "Astro finished #st.",
+        two: "Astro finished #nd.",
+        few: "Astro finished #rd.",
+        other: "Astro finished #th.",
+      })}
     </p>
   </div>
 </section>

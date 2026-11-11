@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { t } from "lingui-for-svelte/macro";
 
   import {
@@ -18,56 +19,60 @@
   );
 </script>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-5">
-    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-5")}>
+    <p
+      {...style(
+        "text-primary text-sm font-semibold tracking-[0.3em] uppercase",
+      )}
+    >
       {$t`Reactive`}
     </p>
-    <h1 class="text-4xl font-black md:text-5xl">
+    <h1 {...style("font-black text-4xl md:text-5xl")}>
       {$t`$t and rune-backed state`}
     </h1>
-    <p class="text-base-content/80">
+    <p {...style("text-base-content/80")}>
       {$t`This route isolates reactive string macros and state that lives in a .svelte.ts module.`}
     </p>
 
-    <div class="grid gap-4 lg:grid-cols-2">
-      <label class="form-control gap-2">
-        <span class="label-text font-semibold">{$t`Name`}</span>
+    <div {...style("grid gap-4 lg:grid-cols-2")}>
+      <label {...style("gap-2")}>
+        <span {...style("font-semibold")}>{$t`Name`}</span>
         <input
           bind:value={reactiveState.name}
-          class="input input-bordered"
+          {...style("input")}
           oninput={(event) =>
             setReactiveName((event.currentTarget as HTMLInputElement).value)}
         />
       </label>
-      <label class="form-control gap-2">
-        <span class="label-text font-semibold">{$t`Count`}</span>
+      <label {...style("gap-2")}>
+        <span {...style("font-semibold")}>{$t`Count`}</span>
         <input
           bind:value={reactiveState.count}
-          class="input input-bordered"
+          {...style("input")}
           min="0"
           type="number"
         />
       </label>
     </div>
 
-    <div class="flex flex-wrap gap-3">
+    <div {...style("flex flex-wrap gap-3")}>
       <button
-        class="btn btn-outline btn-primary"
+        {...style("btn btn-outline btn-primary")}
         onclick={decrementReactiveCount}
         type="button"
       >
         {$t`Decrease`}
       </button>
       <button
-        class="btn btn-primary"
+        {...style("btn btn-primary")}
         onclick={incrementReactiveCount}
         type="button"
       >
         {$t`Increase`}
       </button>
       <button
-        class="btn btn-secondary"
+        {...style("btn btn-secondary")}
         onclick={toggleReactiveStatus}
         type="button"
       >
@@ -75,12 +80,12 @@
       </button>
     </div>
 
-    <div class="space-y-3 text-lg">
+    <div {...style("space-y-3 text-lg")}>
       <p>{topLevelGreeting}</p>
       <p>{topLevelCount}</p>
       <p>
         {$t`Current status`}:
-        <strong class="font-semibold">{derivedStatus}</strong>
+        <strong {...style("font-semibold")}>{derivedStatus}</strong>
       </p>
     </div>
   </div>

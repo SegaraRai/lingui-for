@@ -1,0 +1,2 @@
+/* Loaded before Starlight's styles, so this statement decides the order of the layers */
+@layer properties, base, starlight, theme, components, utilities;

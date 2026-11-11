@@ -34,7 +34,7 @@ msgstr "3個の項目"
 msgid "Casual"
 msgstr "カジュアル"
 
-#: src/components/MacroWorkbench.astro:50
+#: src/components/MacroWorkbench.astro:60
 msgid "Catalog"
 msgstr "カタログ"
 
@@ -42,7 +42,7 @@ msgstr "カタログ"
 msgid "Choose ordinal text such as 1st, 2nd, or 3rd."
 msgstr "1番目、2番目、3番目などの序数テキストを選択します"
 
-#: src/components/MacroWorkbench.astro:71
+#: src/components/MacroWorkbench.astro:81
 msgid "Compiled Catalog"
 msgstr "コンパイルされたカタログ"
 
@@ -63,7 +63,7 @@ msgstr "数"
 msgid "Define a descriptor now and translate it later."
 msgstr "記述子を定義し、後で翻訳します"
 
-#: src/components/MacroWorkbench.astro:43
+#: src/components/MacroWorkbench.astro:53
 msgid "Demo.svelte"
 msgstr "Demo.svelte"
 
@@ -100,7 +100,7 @@ msgstr "やあ"
 msgid "JA"
 msgstr "JA"
 
-#: src/components/MacroWorkbench.astro:234
+#: src/components/MacroWorkbench.astro:240
 msgid "Locale"
 msgstr "ロケール"
 
@@ -141,16 +141,16 @@ msgstr "plural"
 msgid "Plural"
 msgstr "Plural"
 
-#: src/components/MacroFamilyOverview.astro:84
-#: src/components/MacroWorkbench.astro:59
+#: src/components/MacroFamilyOverview.astro:100
+#: src/components/MacroWorkbench.astro:69
 msgid "Preview"
 msgstr "プレビュー"
 
-#: src/components/MacroWorkbench.astro:156
+#: src/components/MacroWorkbench.astro:164
 msgid "Result"
 msgstr "結果"
 
-#: src/components/MacroWorkbench.astro:160
+#: src/components/MacroWorkbench.astro:168
 msgid "Result tabs"
 msgstr "結果タブ"
 
@@ -158,7 +158,7 @@ msgstr "結果タブ"
 msgid "Say hello to Lingui."
 msgstr "Linguiに挨拶する"
 
-#: src/components/MacroFamilyOverview.astro:118
+#: src/components/MacroFamilyOverview.astro:140
 msgid "See full demo"
 msgstr "完全なデモを見る"
 
@@ -178,15 +178,15 @@ msgstr "selectOrdinal"
 msgid "SelectOrdinal"
 msgstr "SelectOrdinal"
 
-#: src/components/MacroFamilyOverview.astro:98
+#: src/components/MacroFamilyOverview.astro:114
 msgid "Snippet"
 msgstr "スニペット"
 
-#: src/components/MacroWorkbench.astro:100
+#: src/components/MacroWorkbench.astro:112
 msgid "Source"
 msgstr "ソース"
 
-#: src/components/MacroWorkbench.astro:104
+#: src/components/MacroWorkbench.astro:116
 msgid "Source tabs"
 msgstr "ソースタブ"
 
@@ -207,7 +207,7 @@ msgstr "トーン"
 msgid "Trans"
 msgstr "Trans"
 
-#: src/components/MacroWorkbench.astro:64
+#: src/components/MacroWorkbench.astro:74
 msgid "Transformed Svelte"
 msgstr "変換されたSvelte"
 

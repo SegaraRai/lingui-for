@@ -21,13 +21,10 @@
   let welcome = $derived(msg`Welcome back, ${name}`);
 </script>
 
-<p class="mb-2">
+<p>
   {$t(welcome)}
 </p>
 
-<button
-  type="button"
-  class="rounded bg-blue-500 px-4 py-2 text-white enabled:hover:bg-blue-600"
->
+<button type="button">
   {$t(submitLabel)}
 </button>

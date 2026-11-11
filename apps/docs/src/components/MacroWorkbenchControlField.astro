@@ -1,5 +1,6 @@
 ---
 import { t } from "lingui-for-astro/macro";
+import { style } from "stillwind/astro";
 
 import type { MacroWorkbenchControl } from "../lib/macro-workbench/spec.ts";
 
@@ -8,74 +9,75 @@ interface Props {
 }
 
 const { control } = Astro.props;
+
+const field = style(
+  "h-9 px-3 text-panel-label text-sm bg-panel rounded-lg border border-panel-field-border",
+);
 ---
 
-<div class="flex items-center gap-3">
-  <div
-    class="text-[0.7rem] font-medium tracking-[0.08em] text-(--demo-control-text) uppercase"
-  >
-    {t(control.label)}
-  </div>
+<div {...style("flex items-center gap-3")}>
+  <div {...style("text-panel-label caption")}>{t(control.label)}</div>
 
-  {
-    control.type === "text" ? (
-      <input
-        data-control-id={control.id}
-        data-control-type="text"
-        name={control.id}
-        value={control.initial}
-        placeholder={control.placeholder ? t(control.placeholder) : undefined}
-        class:list={[
-          "h-9 rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) px-3 text-sm text-(--demo-control-field-text)",
-          {
-            sm: "w-28",
-            md: "w-40",
-            lg: "w-56",
-          }[control.width ?? "md"],
-        ]}
-      />
-    ) : control.type === "number" ? (
-      <input
-        data-control-id={control.id}
-        data-control-type="number"
-        type="number"
-        name={control.id}
-        value={String(control.initial)}
-        min={control.min}
-        max={control.max}
-        step={control.step}
-        class="h-9 w-24 rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) px-3 text-sm text-(--demo-control-field-text)"
-      />
-    ) : control.type === "boolean" ? (
-      <button
-        aria-pressed={control.initial ? "true" : "false"}
-        data-control-id={control.id}
-        data-control-type="boolean"
-        data-on-label={t(control.onLabel)}
-        data-off-label={t(control.offLabel)}
-        type="button"
-        name={control.id}
-        class="rounded-lg border border-(--demo-control-field-border) px-3 py-1.5 text-sm transition-colors aria-pressed:bg-(--demo-control-field-active-background) aria-pressed:text-(--demo-control-field-active-text) aria-[pressed=false]:text-(--demo-control-field-text)"
-      >
-        {t(control.initial ? control.onLabel : control.offLabel)}
-      </button>
-    ) : (
-      <select
-        data-control-id={control.id}
-        data-control-type="select"
-        name={control.id}
-        value={control.initial}
-        class="h-9 rounded-lg border border-(--demo-control-field-border) bg-(--demo-control-field-background) px-3 text-sm text-(--demo-control-field-text)"
-      >
-        {control.options.map((option) => (
-          <option
-            value={option.value}
-            selected={option.value === control.initial}
-          >
-            {t(option.label)}
-          </option>
-        ))}
-      </select>
-    )
-  }
+  {control.type === "text" ? (
+    <input
+      data-control-id={control.id}
+      data-control-type="text"
+      name={control.id}
+      value={control.initial}
+      placeholder={control.placeholder ? t(control.placeholder) : undefined}
+      {...style(
+        field,
+        {
+          sm: "w-28",
+          md: "w-40",
+          lg: "w-56",
+        }[control.width ?? "md"],
+      )}
+    />
+  ) : control.type === "number" ? (
+    <input
+      data-control-id={control.id}
+      data-control-type="number"
+      type="number"
+      name={control.id}
+      value={String(control.initial)}
+      min={control.min}
+      max={control.max}
+      step={control.step}
+      {...style(field, "w-24")}
+    />
+  ) : control.type === "boolean" ? (
+    <button
+      aria-pressed={control.initial ? "true" : "false"}
+      data-control-id={control.id}
+      data-control-type="boolean"
+      data-on-label={t(control.onLabel)}
+      data-off-label={t(control.offLabel)}
+      type="button"
+      name={control.id}
+      {...style(
+        "px-3 py-1.5 text-panel-label text-sm rounded-lg border border-panel-field-border transition-colors",
+        "aria-pressed:text-panel-strong aria-pressed:bg-panel-selected",
+      )}
+    >
+      {t(control.initial ? control.onLabel : control.offLabel)}
+    </button>
+  ) : (
+    <select
+      data-control-id={control.id}
+      data-control-type="select"
+      name={control.id}
+      value={control.initial}
+      {...style(field)}
+    >
+      {control.options.map((option) => (
+        <option
+          value={option.value}
+          selected={option.value === control.initial}
+        >
+          {t(option.label)}
+        </option>
+      ))}
+    </select>
+  )}
 </div>

@@ -18,15 +18,15 @@ const namedPlaceholder = t`Named compatibility subject: ${ph({ subjectName: subj
     <h1>{t`Hello ${subject}`}</h1>
     <p>{directiveMessage}</p>
     <p>{namedPlaceholder}</p>
-    <Trans id="cross-block"
-      >Compatibility directive inherited from Astro frontmatter.</Trans
-    >
+    <Trans id="cross-block">
+      Compatibility directive inherited from Astro frontmatter.
+    </Trans>
     {/* lingui-reset */}
-    <Trans
-      >Named compatibility component subject: {
-        ph({ subjectName: subject })
-      }.</Trans
-    >
-    <Trans>Build <strong>Astro</strong> compatibility.</Trans>
+    <Trans>
+      Named compatibility component subject: {ph({ subjectName: subject })}.
+    </Trans>
+    <Trans>
+      Build <strong>Astro</strong> compatibility.
+    </Trans>
   </body>
 </html>

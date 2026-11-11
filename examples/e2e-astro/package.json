@@ -13,13 +13,16 @@
     "lingui-for-svelte": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:",
+    "stillwind": "catalog:",
     "svelte": "catalog:"
   },
   "devDependencies": {
+    "@astrojs/astro2tsx": "catalog:",
     "@astrojs/check": "catalog:",
     "@lingui/cli": "catalog:",
     "@lingui/conf": "catalog:",
-    "@tailwindcss/vite": "catalog:",
+    "@stillwind/cli": "catalog:",
+    "@stillwind/integration": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",

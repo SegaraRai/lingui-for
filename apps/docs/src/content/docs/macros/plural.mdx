@@ -66,22 +66,18 @@ const count = 2;
 
 <!-- Standalone: produces the plural string directly. -->
 <p>
-  {
-    plural(count, {
-      one: "# item",
-      other: "# items",
-    })
-  }
+  {plural(count, {
+    one: "# item",
+    other: "# items",
+  })}
 </p>
 
 <!-- Embedded: plural is part of a larger translated unit. -->
 <p>
-  {
-    t`Cart: ${plural(count, {
-      one: "# item",
-      other: "# items",
-    })}`
-  }
+  {t`Cart: ${plural(count, {
+    one: "# item",
+    other: "# items",
+  })}`}
 </p>
 ```
 

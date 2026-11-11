@@ -1,3 +1,4 @@
+import { style } from "stillwind/react";
 import { I18nProvider } from "@lingui/react";
 import { useLingui } from "@lingui/react/macro";
 import { useState } from "react";
@@ -22,11 +23,11 @@ function ReactTransitionPanel({
 
   return (
     <section
-      className="card border-base-300 bg-base-100 border shadow-lg"
+      {...style("card bg-base-100 border border-base-300 shadow-lg")}
       data-testid={`react-${mode}-panel`}
     >
-      <div className="card-body gap-4">
-        <p className="badge badge-accent badge-outline flex-none">
+      <div {...style("card-body gap-4")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {
             {
               volatile: t`Volatile React island`,
@@ -35,7 +36,7 @@ function ReactTransitionPanel({
             }[mode]
           }
         </p>
-        <p className="text-base-content/70">
+        <p {...style("text-base-content/70")}>
           {
             {
               volatile: t`This React island remounts whenever the route or locale changes.`,
@@ -44,19 +45,19 @@ function ReactTransitionPanel({
             }[mode]
           }
         </p>
-        <p className="text-base-content/70" data-testid={`react-${mode}`}>
+        <p {...style("text-base-content/70")} data-testid={`react-${mode}`}>
           {t`React props say ${pageLabel} in ${localeLabel}.`}
         </p>
-        <div className="flex items-center gap-3">
+        <div {...style("flex items-center gap-3")}>
           <button
-            className="btn btn-secondary btn-sm"
+            {...style("btn btn-secondary btn-sm")}
             data-testid={`react-${mode}-increment`}
             onClick={() => setCount((current) => current + 1)}
           >
             {t`Increment`}
           </button>
           <p
-            className="badge badge-secondary badge-lg flex-none"
+            {...style("badge badge-secondary badge-lg flex-none")}
             data-testid={`react-${mode}-count`}
           >
             {t`${count} React clicks`}

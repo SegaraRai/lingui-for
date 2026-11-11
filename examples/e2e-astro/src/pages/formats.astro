@@ -1,4 +1,5 @@
 ---
+import { style } from "stillwind/astro";
 import { ph, t, Trans } from "lingui-for-astro/macro";
 
 import AppLayout from "../layouts/AppLayout.astro";
@@ -21,9 +22,9 @@ const namedPlaceholder = t`Astro format owner: ${ph({ ownerName: formatOwner })}
 // lingui-set context="e2e-cross-block" comment="Astro E2E directive crossing frontmatter" idPrefix="e2e."
 ---
 
-<Trans id="astro-cross-block"
-  >Astro directive inherited across the frontmatter boundary.</Trans
->
+<Trans id="astro-cross-block">
+  Astro directive inherited across the frontmatter boundary.
+</Trans>
 {/* lingui-reset */}
 
 <AppLayout
@@ -32,30 +33,26 @@ const namedPlaceholder = t`Astro format owner: ${ph({ ownerName: formatOwner })}
   pathname={Astro.url.pathname}
   currentPage={currentPage}
 >
-  <section class="card border-base-300 bg-base-100 border shadow-xl">
-    <div class="card-body gap-4">
-      <p class="badge badge-primary badge-outline flex-none">
+  <section {...style("card bg-base-100 border border-base-300 shadow-xl")}>
+    <div {...style("card-body gap-4")}>
+      <p {...style("badge badge-outline badge-primary flex-none")}>
         {t`Formats`}
       </p>
-      <h1 class="text-3xl font-black tracking-tight">
+      <h1 {...style("font-black text-3xl tracking-tight")}>
         {t`Plural and selection macros cover count, tone, and rank.`}
       </h1>
-      <p class="text-base-content/70">
-        {
-          t`The cards below mirror the same macro families inside component code.`
-        }
+      <p {...style("text-base-content/70")}>
+        {t`The cards below mirror the same macro families inside component code.`}
       </p>
       <p>{directiveMessage}</p>
       <p>{namedPlaceholder}</p>
-      <Trans
-        >Astro named component placeholder: {
-          ph({ ownerName: formatOwner })
-        }.</Trans
-      >
+      <Trans>
+        Astro named component placeholder: {ph({ ownerName: formatOwner })}.
+      </Trans>
     </div>
   </section>
 
-  <div class="grid gap-4 lg:grid-cols-3">
+  <div {...style("grid gap-4 lg:grid-cols-3")}>
     <AstroFormats />
     <SvelteFormatsIsland client:load locale={locale} />
     <ReactFormatsIsland client:load locale={locale} />

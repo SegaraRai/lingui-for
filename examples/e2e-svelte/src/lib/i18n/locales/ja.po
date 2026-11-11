@@ -16,84 +16,84 @@ msgstr ""
 #. placeholder {0}: _i18n._( /** i18n */ { id: "SMt_JO", message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}", values: { rank: rank, role: role } })
 #. placeholder {1}: _i18n._( /** i18n */ { id: "IN7jEl", message: "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}", values: { rank: rank, role: role } })
 #. placeholder {2}: _i18n._( /** i18n */ { id: "MTuVZ1", message: "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}", values: { rank: rank, role: role } })
-#: src/routes/playground/stress/+page.svelte:181
+#: src/routes/playground/stress/+page.svelte:186
 msgid "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
 msgstr "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
 
-#: src/routes/playground/stress/+page.svelte:133
+#: src/routes/playground/stress/+page.svelte:138
 msgid "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
 msgstr "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {コア・0・最初・管理者} other {コア・0・最初・その他}}} =2 {{role, select, admin {コア・0・2番目・管理者} other {コア・0・2番目・その他}}} other {{role, select, admin {コア・0・それ以降・管理者} other {コア・0・それ以降・その他}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {コア・2・最初・管理者} other {コア・2・最初・その他}}} =2 {{role, select, admin {コア・2・2番目・管理者} other {コア・2・2番目・その他}}} other {{role, select, admin {コア・2・それ以降・管理者} other {コア・2・それ以降・その他}}}}} other {{rank, selectordinal, =1 {{role, select, admin {コア・多・最初・管理者} other {コア・多・最初・その他}}} =2 {{role, select, admin {コア・多・2番目・管理者} other {コア・多・2番目・その他}}} other {{role, select, admin {コア・多・それ以降・管理者} other {コア・多・それ以降・その他}}}}}}"
 
-#: src/routes/playground/stress/+page.svelte:97
-#: src/routes/playground/stress/+page.svelte:111
+#: src/routes/playground/stress/+page.svelte:102
+#: src/routes/playground/stress/+page.svelte:116
 msgid "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
 msgstr "{count, plural, =0 {キューに入っているビルドはありません} =2 {キューに入っている正確に 2 つのビルド} other {キューに入っている # 個のビルド}}"
 
-#: src/routes/playground/components/+page.svelte:44
+#: src/routes/playground/components/+page.svelte:51
 msgid "{count, plural, one {# component task is queued} other {# component tasks are queued}}"
 msgstr "{count, plural, one {コンポーネントタスクは # 件待機中です} other {コンポーネントタスクは # 件待機中です}}"
 
-#: src/routes/playground/init-lazy/+page.svelte:66
-#: src/routes/playground/init-preloaded/+page.svelte:67
+#: src/routes/playground/init-lazy/+page.svelte:71
+#: src/routes/playground/init-preloaded/+page.svelte:72
 msgid "{count, plural, one {# item in the list.} other {# items in the list.}}"
 msgstr "{count, plural, one {リストに # 件あります。} other {リストに # 件あります。}}"
 
-#: src/routes/playground/components/+page.svelte:58
+#: src/routes/playground/components/+page.svelte:65
 msgid "{count, selectordinal, one {#st release candidate} two {#nd release candidate} few {#rd release candidate} other {#th release candidate}}"
 msgstr "{count, selectordinal, one {第 # リリース候補} two {第 # リリース候補} few {第 # リリース候補} other {第 # リリース候補}}"
 
-#: src/routes/playground/stress/+page.svelte:211
+#: src/routes/playground/stress/+page.svelte:216
 msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・多・最初・管理者} other {コンポーネント・多・最初・その他}}} =2 {{role, select, admin {コンポーネント・多・2番目・管理者} other {コンポーネント・多・2番目・その他}}} other {{role, select, admin {コンポーネント・多・それ以降・管理者} other {コンポーネント・多・それ以降・その他}}}}"
 
-#: src/routes/playground/stress/+page.svelte:197
+#: src/routes/playground/stress/+page.svelte:202
 msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・2・最初・管理者} other {コンポーネント・2・最初・その他}}} =2 {{role, select, admin {コンポーネント・2・2番目・管理者} other {コンポーネント・2・2番目・その他}}} other {{role, select, admin {コンポーネント・2・それ以降・管理者} other {コンポーネント・2・それ以降・その他}}}}"
 
-#: src/routes/playground/stress/+page.svelte:183
+#: src/routes/playground/stress/+page.svelte:188
 msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・0・最初・管理者} other {コンポーネント・0・最初・その他}}} =2 {{role, select, admin {コンポーネント・0・2番目・管理者} other {コンポーネント・0・2番目・その他}}} other {{role, select, admin {コンポーネント・0・それ以降・管理者} other {コンポーネント・0・それ以降・その他}}}}"
 
-#: src/routes/playground/stress/+page.svelte:104
-#: src/routes/playground/stress/+page.svelte:119
+#: src/routes/playground/stress/+page.svelte:109
+#: src/routes/playground/stress/+page.svelte:124
 msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 msgstr "{rank, selectordinal, =1 {近道をする} =2 {遠回りをする} other {# 位でゴール}}"
 
-#: src/routes/playground/components/+page.svelte:51
+#: src/routes/playground/components/+page.svelte:58
 msgid "{role, select, female {She approves the locale switch.} other {They approve the locale switch.}}"
 msgstr "{role, select, female {彼女はロケール切り替えを承認しました。} other {彼らはロケール切り替えを承認しました。}}"
 
 #. placeholder {0}: highlightedQueue.length
-#: src/routes/playground/rich-text/+page.svelte:52
+#: src/routes/playground/rich-text/+page.svelte:57
 msgid "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
 msgstr "<0>現在のロケールレビューでは、次のような詳細を要約できます</0> <1><2><3>{0} 件の注目キュー項目</3>と</2><4>選択中のリージョン {selectedRegion}。</4></1>"
 
-#: src/routes/playground/+page.svelte:26
-#: src/routes/playground/syntax/+page.svelte:48
+#: src/routes/playground/+page.svelte:27
+#: src/routes/playground/syntax/+page.svelte:53
 msgid "$t across Svelte syntax positions"
 msgstr "Svelte 構文の各所で使う $t"
 
-#: src/routes/playground/reactive/+page.svelte:27
+#: src/routes/playground/reactive/+page.svelte:32
 msgid "$t and rune-backed state"
 msgstr "$t とルーンベースのステート"
 
-#: src/routes/playground/+page.svelte:20
+#: src/routes/playground/+page.svelte:21
 msgid "$t follows locale changes and reactive values"
 msgstr "$t がロケール変更とリアクティブな値を追従する"
 
-#: src/routes/playground/reactivity/+page.svelte:27
+#: src/routes/playground/reactivity/+page.svelte:32
 msgid "$t script and template reactivity"
 msgstr "$t の script と template のリアクティビティ"
 
-#: src/routes/playground/+page.svelte:14
+#: src/routes/playground/+page.svelte:15
 msgid "$t with rune-backed state from a .svelte.ts module"
 msgstr ".svelte.ts モジュールのルーンベースのステートと $t"
 
-#: src/routes/playground/init-isolated/+page.svelte:16
+#: src/routes/playground/init-isolated/+page.svelte:21
 msgid "A child component can call setLinguiContext with its own i18n instance. Its subtree uses that context instead of the parent's."
 msgstr "子コンポーネントが独自の i18n インスタンスで setLinguiContext を呼び出すことができます。そのサブツリーは親のロケールを無視して、そのコンテキストを使用します。"
 
-#: src/routes/playground/+page.svelte:63
+#: src/routes/playground/+page.svelte:64
 msgid "A nested component calls setLinguiContext with an independent instance. Its subtree ignores the parent locale."
 msgstr "ネストされたコンポーネントが独立したインスタンスで setLinguiContext を呼び出します。そのサブツリーは親のロケールを無視します。"
 
@@ -101,97 +101,97 @@ msgstr "ネストされたコンポーネントが独立したインスタンス
 msgid "A plain TypeScript module can define Lingui descriptors for Svelte."
 msgstr "素の TypeScript モジュールでも Svelte 向けの Lingui ディスクリプタを定義できます。"
 
-#: src/routes/playground/reactive/+page.svelte:17
+#: src/routes/playground/reactive/+page.svelte:18
 msgid "Active"
 msgstr "アクティブ"
 
-#: src/routes/playground/+page.svelte:50
+#: src/routes/playground/+page.svelte:51
 msgid "All locales loaded at init, activate() only"
 msgstr "すべてのロケールを初期化時にロードし、activate() のみで切り替える"
 
-#: src/routes/playground/init-preloaded/+page.svelte:31
+#: src/routes/playground/init-preloaded/+page.svelte:36
 msgid "All locales preloaded at init"
 msgstr "すべてのロケールを初期化時に事前ロードする"
 
-#: src/lib/app/PlaygroundNav.svelte:23
-#: src/routes/playground/+page.svelte:7
-#: src/routes/playground/basic/+page.svelte:17
+#: src/lib/app/PlaygroundNav.svelte:22
+#: src/routes/playground/+page.svelte:8
+#: src/routes/playground/basic/+page.svelte:22
 msgid "Basic"
 msgstr "基本"
 
-#: src/routes/playground/syntax/+page.svelte:88
+#: src/routes/playground/syntax/+page.svelte:93
 msgid "Bump revision"
 msgstr "リビジョンを増やす"
 
-#: src/routes/playground/+page.svelte:62
+#: src/routes/playground/+page.svelte:63
 msgid "Child component with its own fixed i18n context"
 msgstr "独自の固定 i18n コンテキストを持つ子コンポーネント"
 
-#: src/routes/settings/+page.svelte:18
+#: src/routes/settings/+page.svelte:25
 msgid "Choose a language with the switcher in the header. The server stores your preference in a cookie so new routes keep the same locale."
 msgstr "ヘッダーの切り替えで言語を選べます。サーバーがクッキーに設定を保存するので、別のルートに移動しても同じロケールが維持されます。"
 
-#: src/lib/app/PlaygroundNav.svelte:58
-#: src/routes/playground/+page.svelte:37
-#: src/routes/playground/components/+page.svelte:11
+#: src/lib/app/PlaygroundNav.svelte:67
+#: src/routes/playground/+page.svelte:38
+#: src/routes/playground/components/+page.svelte:16
 msgid "Components"
 msgstr "コンポーネント"
 
-#: src/routes/playground/reactive/+page.svelte:44
+#: src/routes/playground/reactive/+page.svelte:49
 msgid "Count"
 msgstr "カウント"
 
 #. placeholder {0}: reactiveState.count
-#: src/routes/playground/reactive/+page.svelte:15
+#: src/routes/playground/reactive/+page.svelte:16
 msgid "Count: {0}"
 msgstr "件数: {0}"
 
-#: src/routes/playground/+page.svelte:27
+#: src/routes/playground/+page.svelte:28
 msgid "Covers @const, attributes, snippets, keyed blocks, and other expression sites."
 msgstr "@const、属性、snippet、key block など、Svelte の式位置を広く確認します。"
 
-#: src/routes/playground/+page.svelte:21
+#: src/routes/playground/+page.svelte:22
 msgid "Covers direct and descriptor-based translations in script and template expressions."
 msgstr "script と template の式位置で、直接呼び出しとディスクリプタ経由の翻訳を確認します。"
 
-#: src/routes/playground/+page.svelte:39
+#: src/routes/playground/+page.svelte:40
 msgid "Covers ICU component syntax with interactive values."
 msgstr "インタラクティブな値を使う ICU コンポーネント構文を確認します。"
 
-#: src/routes/playground/+page.svelte:33
+#: src/routes/playground/+page.svelte:34
 msgid "Covers placeholder parsing and runtime rendering of translated rich text."
 msgstr "プレースホルダーの解析と、翻訳済みリッチテキストのランタイム描画を確認します。"
 
-#: src/routes/playground/+page.svelte:9
+#: src/routes/playground/+page.svelte:10
 msgid "Covers t, msg, and RuntimeTrans without explicit ids."
 msgstr "明示的な id を付けない t、msg、RuntimeTrans を確認します。"
 
-#: src/routes/playground/+page.svelte:15
+#: src/routes/playground/+page.svelte:16
 msgid "Covers top-level reactive strings, callback contexts, and module-owned state."
 msgstr "トップレベルのリアクティブ文字列、コールバック文脈、モジュールが持つステートを確認します。"
 
-#: src/routes/playground/reactivity/+page.svelte:53
+#: src/routes/playground/reactivity/+page.svelte:58
 msgid "Current demo value"
 msgstr "現在のデモ値"
 
-#: src/routes/settings/+page.svelte:24
+#: src/routes/settings/+page.svelte:33
 msgid "Current language"
 msgstr "現在の言語"
 
-#: src/routes/playground/reactive/+page.svelte:82
+#: src/routes/playground/reactive/+page.svelte:87
 msgid "Current status"
 msgstr "現在の状態"
 
-#: src/routes/playground/components/+page.svelte:24
-#: src/routes/playground/reactive/+page.svelte:60
+#: src/routes/playground/components/+page.svelte:31
+#: src/routes/playground/reactive/+page.svelte:65
 msgid "Decrease"
 msgstr "減らす"
 
-#: src/routes/+page.svelte:70
+#: src/routes/+page.svelte:83
 msgid "Dedicated playground routes cover reactive macros, rich text, ICU components, and explicit id variants."
 msgstr "専用のプレイグラウンドルートがリアクティブマクロ、リッチテキスト、ICU コンポーネント、明示的 id のバリアントを確認します。"
 
-#: src/routes/playground/basic/+page.svelte:11
+#: src/routes/playground/basic/+page.svelte:12
 msgid "Descriptor created in a route component."
 msgstr "ルートコンポーネントで作成したディスクリプタ。"
 
@@ -199,203 +199,203 @@ msgstr "ルートコンポーネントで作成したディスクリプタ。"
 msgid "Descriptor imported from plain TypeScript."
 msgstr "素の TypeScript から import したディスクリプタです。"
 
-#: src/routes/playground/+page.svelte:8
+#: src/routes/playground/+page.svelte:9
 msgid "Direct macro usage in Svelte components"
 msgstr "Svelte コンポーネントで直接マクロを使う"
 
-#: src/routes/playground/basic/+page.svelte:20
+#: src/routes/playground/basic/+page.svelte:25
 msgid "Direct macros in Svelte components"
 msgstr "Svelte コンポーネントで直接マクロを使う"
 
-#: src/routes/+page.svelte:49
+#: src/routes/+page.svelte:60
 msgid "Direct usage"
 msgstr "直接利用"
 
-#: src/routes/playground/+layout.svelte:19
+#: src/routes/playground/+layout.svelte:24
 msgid "Each route keeps one category of Lingui-for-Svelte behavior easy to inspect, extract, compile, and test."
 msgstr "各ルートは Lingui for Svelte の 1 つの挙動に絞り、インスペクト、抽出、コンパイル、テストをしやすくしています。"
 
-#: src/routes/playground/+page.svelte:32
-#: src/routes/playground/rich-text/+page.svelte:17
+#: src/routes/playground/+page.svelte:33
+#: src/routes/playground/rich-text/+page.svelte:22
 msgid "Embedded elements and components inside Trans"
 msgstr "Trans 内の埋め込み要素とコンポーネント"
 
-#: src/routes/playground/+page.svelte:56
+#: src/routes/playground/+page.svelte:57
 msgid "Empty init, load each locale on demand"
 msgstr "空で初期化し、必要に応じて各ロケールをロードする"
 
-#: src/lib/app/LanguageSwitcher.svelte:25
-#: src/routes/settings/+page.svelte:7
+#: src/lib/app/LanguageSwitcher.svelte:27
+#: src/routes/settings/+page.svelte:8
 msgid "English"
 msgstr "英語"
 
-#: src/routes/playground/stress/+page.svelte:22
+#: src/routes/playground/stress/+page.svelte:27
 msgid "Exact-number branches and deep macro trees"
 msgstr "正確な数の分岐と深いマクロツリー"
 
 #. js-lingui-explicit-id
-#: src/routes/playground/ids/+page.svelte:5
+#: src/routes/playground/ids/+page.svelte:6
 msgid "playground.ids.descriptor"
 msgstr "ディスクリプタからの明示的な id。"
 
 #. Used by the ids playground route
 #. js-lingui-explicit-id
-#: src/routes/playground/ids/+page.svelte:25
+#: src/routes/playground/ids/+page.svelte:30
 msgid "playground.ids.trans"
 msgstr "Trans コンポーネントからの明示的な id。"
 
 #. js-lingui-explicit-id
-#: src/routes/playground/ids/+page.svelte:33
+#: src/routes/playground/ids/+page.svelte:38
 msgid "playground.ids.call"
 msgstr "t({...}) からの明示的な id。"
 
-#: src/lib/app/PlaygroundNav.svelte:65
-#: src/routes/playground/+page.svelte:43
-#: src/routes/playground/ids/+page.svelte:14
+#: src/lib/app/PlaygroundNav.svelte:73
+#: src/routes/playground/+page.svelte:44
+#: src/routes/playground/ids/+page.svelte:19
 msgid "Explicit ids"
 msgstr "明示的な id"
 
-#: src/routes/playground/syntax/+page.svelte:69
+#: src/routes/playground/syntax/+page.svelte:74
 msgid "Filter playground syntax examples"
 msgstr "プレイグラウンドの構文例を絞り込む"
 
-#: src/routes/playground/syntax/+page.svelte:111
+#: src/routes/playground/syntax/+page.svelte:116
 msgid "Filter text: (empty)"
 msgstr "フィルタ文字列: （未入力）"
 
 #. placeholder {0}: syntaxState.query
-#: src/routes/playground/syntax/+page.svelte:109
+#: src/routes/playground/syntax/+page.svelte:114
 msgid "Filter text: {0}"
 msgstr "フィルタ文字列: {0}"
 
-#: src/routes/playground/+layout.svelte:16
+#: src/routes/playground/+layout.svelte:21
 msgid "Focused routes for library verification"
 msgstr "ライブラリ検証に絞ったルート"
 
-#: src/routes/playground/syntax/+page.svelte:85
+#: src/routes/playground/syntax/+page.svelte:90
 msgid "Force a keyed subtree refresh"
 msgstr "キー付きサブツリーを更新する"
 
 #. placeholder {0}: reactiveState.name
-#: src/routes/playground/reactive/+page.svelte:13
+#: src/routes/playground/reactive/+page.svelte:14
 msgid "Hello {0} from the reactive route."
 msgstr "リアクティブルートからこんにちは、{0}。"
 
-#: src/routes/playground/basic/+page.svelte:33
+#: src/routes/playground/basic/+page.svelte:38
 msgid "Hello {name} from the basic route."
 msgstr "ベーシックルートからこんにちは、{name}。"
 
-#: src/routes/playground/init-isolated/IsolatedWidget.svelte:24
+#: src/routes/playground/init-isolated/IsolatedWidget.svelte:27
 msgid "Hello from the isolated widget."
 msgstr "独立したウィジェットからこんにちは。"
 
-#: src/routes/playground/init-lazy/+page.svelte:64
+#: src/routes/playground/init-lazy/+page.svelte:69
 msgid "Hello from the lazy init pattern."
 msgstr "遅延初期化パターンからこんにちは。"
 
-#: src/routes/playground/init-preloaded/+page.svelte:65
+#: src/routes/playground/init-preloaded/+page.svelte:70
 msgid "Hello from the preloaded init pattern."
 msgstr "事前ロード初期化パターンからこんにちは。"
 
-#: src/lib/app/AppShell.svelte:26
+#: src/lib/app/AppShell.svelte:29
 msgid "Home"
 msgstr "ホーム"
 
-#: src/routes/playground/components/+page.svelte:13
+#: src/routes/playground/components/+page.svelte:19
 msgid "ICU component macros"
 msgstr "ICU コンポーネントマクロ"
 
-#: src/routes/playground/reactive/+page.svelte:17
+#: src/routes/playground/reactive/+page.svelte:18
 msgid "Idle"
 msgstr "アイドル"
 
-#: src/routes/playground/basic/+page.svelte:32
+#: src/routes/playground/basic/+page.svelte:37
 msgid "Immediate translation in markup."
 msgstr "マークアップ内でそのまま翻訳する例。"
 
-#: src/routes/playground/rich-text/+page.svelte:40
+#: src/routes/playground/rich-text/+page.svelte:45
 msgid "Imported review digest: <0/>"
 msgstr "取り込み済みレビュー要約: <0/>"
 
-#: src/routes/playground/components/+page.svelte:31
-#: src/routes/playground/reactive/+page.svelte:67
+#: src/routes/playground/components/+page.svelte:38
+#: src/routes/playground/reactive/+page.svelte:72
 msgid "Increase"
 msgstr "増やす"
 
-#: src/lib/app/PlaygroundNav.svelte:86
-#: src/routes/playground/+page.svelte:61
-#: src/routes/playground/init-isolated/+page.svelte:10
+#: src/lib/app/PlaygroundNav.svelte:100
+#: src/routes/playground/+page.svelte:62
+#: src/routes/playground/init-isolated/+page.svelte:15
 msgid "Init: Isolated"
 msgstr "初期化: 独立"
 
-#: src/lib/app/PlaygroundNav.svelte:79
-#: src/routes/playground/+page.svelte:55
-#: src/routes/playground/init-lazy/+page.svelte:27
+#: src/lib/app/PlaygroundNav.svelte:91
+#: src/routes/playground/+page.svelte:56
+#: src/routes/playground/init-lazy/+page.svelte:32
 msgid "Init: Lazy"
 msgstr "初期化: 遅延"
 
-#: src/lib/app/PlaygroundNav.svelte:72
-#: src/routes/playground/+page.svelte:49
-#: src/routes/playground/init-preloaded/+page.svelte:28
+#: src/lib/app/PlaygroundNav.svelte:82
+#: src/routes/playground/+page.svelte:50
+#: src/routes/playground/init-preloaded/+page.svelte:33
 msgid "Init: Preloaded"
 msgstr "初期化: 事前ロード"
 
-#: src/routes/playground/init-isolated/+page.svelte:13
+#: src/routes/playground/init-isolated/+page.svelte:18
 msgid "Isolated sub-context"
 msgstr "独立したサブコンテキスト"
 
-#: src/routes/playground/init-isolated/IsolatedWidget.svelte:21
+#: src/routes/playground/init-isolated/IsolatedWidget.svelte:24
 msgid "Isolated widget (always English)"
 msgstr "独立したウィジェット（常に英語）"
 
-#: src/lib/app/LanguageSwitcher.svelte:27
-#: src/routes/settings/+page.svelte:7
+#: src/lib/app/LanguageSwitcher.svelte:29
+#: src/routes/settings/+page.svelte:8
 msgid "Japanese"
 msgstr "日本語"
 
-#: src/routes/playground/+page.svelte:45
+#: src/routes/playground/+page.svelte:46
 msgid "Keeps explicit-id coverage available without turning the whole app into test code."
 msgstr "アプリ全体をテストコード化せずに、明示的 id の確認だけを残します。"
 
-#: src/routes/playground/syntax/+page.svelte:133
+#: src/routes/playground/syntax/+page.svelte:140
 msgid "Keyed block example"
 msgstr "キー付きブロックの例"
 
 #. placeholder {0}: syntaxState.revision
-#: src/routes/playground/syntax/+page.svelte:134
+#: src/routes/playground/syntax/+page.svelte:141
 msgid "Keyed subtree revision {0}"
 msgstr "キー付きサブツリーのリビジョン {0}"
 
-#: src/routes/settings/+page.svelte:16
+#: src/routes/settings/+page.svelte:22
 msgid "Language preference"
 msgstr "言語設定"
 
-#: src/routes/+page.svelte:67
+#: src/routes/+page.svelte:80
 msgid "Library-specific checks stay out of the main app flow"
 msgstr "ライブラリ固有の確認はメインのアプリ導線から分離する"
 
-#: src/routes/+page.svelte:12
+#: src/routes/+page.svelte:19
 msgid "Lingui in a small SvelteKit application"
 msgstr "小さな SvelteKit アプリで使う Lingui"
 
-#: src/routes/playground/init-lazy/+page.svelte:30
+#: src/routes/playground/init-lazy/+page.svelte:35
 msgid "Locale loaded on demand"
 msgstr "必要に応じてロケールをロード"
 
-#: src/routes/+page.svelte:34
+#: src/routes/+page.svelte:43
 msgid "Locale session"
 msgstr "ロケールセッション"
 
-#: src/routes/+page.svelte:52
+#: src/routes/+page.svelte:63
 msgid "Messages live next to the code that renders them"
 msgstr "メッセージは描画するコードの近くに置く"
 
-#: src/routes/playground/basic/+page.svelte:27
-#: src/routes/playground/reactive/+page.svelte:35
+#: src/routes/playground/basic/+page.svelte:32
+#: src/routes/playground/reactive/+page.svelte:40
 msgid "Name"
 msgstr "名前"
 
-#: src/routes/+page.svelte:18
+#: src/routes/+page.svelte:25
 msgid "Open <0>Settings</0> to change your language or visit the <1>playground</1> for macro-specific checks."
 msgstr "<0>設定</0>で言語を変えるか、<1>プレイグラウンド</1>でマクロ固有の確認を行ってください。"
 
@@ -403,291 +403,291 @@ msgstr "<0>設定</0>で言語を変えるか、<1>プレイグラウンド</1>�
 msgid "Overview"
 msgstr "概要"
 
-#: src/routes/+page.svelte:55
+#: src/routes/+page.svelte:66
 msgid "Pages and components call Lingui macros directly instead of pulling copy from a central message file."
 msgstr "ページやコンポーネントは中央のメッセージファイルを経由せず、Lingui マクロを直接使います。"
 
-#: src/lib/app/AppShell.svelte:28
-#: src/routes/+page.svelte:64
-#: src/routes/playground/+layout.svelte:13
+#: src/lib/app/AppShell.svelte:32
+#: src/routes/+page.svelte:77
+#: src/routes/playground/+layout.svelte:18
 msgid "Playground"
 msgstr "プレイグラウンド"
 
-#: src/lib/app/PlaygroundNav.svelte:9
+#: src/lib/app/PlaygroundNav.svelte:10
 msgid "Playground sections"
 msgstr "プレイグラウンドのセクション"
 
-#: src/routes/playground/+page.svelte:38
+#: src/routes/playground/+page.svelte:39
 msgid "Plural, Select, and SelectOrdinal component macros"
 msgstr "Plural、Select、SelectOrdinal のコンポーネントマクロ"
 
-#: src/routes/playground/components/+page.svelte:15
+#: src/routes/playground/components/+page.svelte:22
 msgid "Plural, Select, and SelectOrdinal keep branch-heavy messages readable inside markup."
 msgstr "Plural、Select、SelectOrdinal を使うと、分岐の多いメッセージもマークアップ内で読みやすく保てます。"
 
-#: src/routes/settings/+page.svelte:14
+#: src/routes/settings/+page.svelte:19
 msgid "Preferences"
 msgstr "設定"
 
-#: src/lib/app/PlaygroundNav.svelte:30
-#: src/routes/playground/+page.svelte:13
-#: src/routes/playground/reactive/+page.svelte:24
+#: src/lib/app/PlaygroundNav.svelte:31
+#: src/routes/playground/+page.svelte:14
+#: src/routes/playground/reactive/+page.svelte:29
 msgid "Reactive"
 msgstr "リアクティブ"
 
-#: src/lib/app/PlaygroundNav.svelte:37
-#: src/routes/playground/+page.svelte:19
-#: src/routes/playground/reactivity/+page.svelte:24
+#: src/lib/app/PlaygroundNav.svelte:40
+#: src/routes/playground/+page.svelte:20
+#: src/routes/playground/reactivity/+page.svelte:29
 msgid "Reactivity"
 msgstr "リアクティビティ"
 
-#: src/routes/playground/rich-text/+page.svelte:25
+#: src/routes/playground/rich-text/+page.svelte:30
 msgid "Read the <0>settings page</0> and look for the <1>cookie-backed locale</1> behavior."
 msgstr "<0>設定ページ</0>を開いて、<1>クッキーで保持されるロケール</1>の挙動を確認してください。"
 
-#: src/routes/+page.svelte:9
+#: src/routes/+page.svelte:16
 msgid "Real app"
 msgstr "実アプリ"
 
-#: src/lib/app/PlaygroundNav.svelte:51
-#: src/routes/playground/+page.svelte:31
-#: src/routes/playground/rich-text/+page.svelte:14
+#: src/lib/app/PlaygroundNav.svelte:58
+#: src/routes/playground/+page.svelte:32
+#: src/routes/playground/rich-text/+page.svelte:19
 msgid "Rich text"
 msgstr "リッチテキスト"
 
-#: src/routes/playground/rich-text/+page.svelte:34
+#: src/routes/playground/rich-text/+page.svelte:39
 msgid "Rich text can keep <0>semantic emphasis</0> while still using Lingui's message extraction flow."
 msgstr "リッチテキストでも<0>意味のある強調</0>を保ったまま、Lingui のメッセージ抽出フローを使えます。"
 
 #. placeholder {0}: index + 1
-#: src/routes/playground/syntax/+page.svelte:119
+#: src/routes/playground/syntax/+page.svelte:124
 msgid "Row {0}: {item}"
 msgstr "行 {0}: {item}"
 
-#: src/routes/playground/reactivity/+page.svelte:59
+#: src/routes/playground/reactivity/+page.svelte:64
 msgid "Script bindings"
 msgstr "script バインディング"
 
-#: src/routes/playground/reactivity/+page.svelte:11
+#: src/routes/playground/reactivity/+page.svelte:12
 msgid "Script descriptor static reactivity."
 msgstr "スクリプトのディスクリプタ固定リアクティビティ。"
 
-#: src/routes/playground/reactivity/+page.svelte:9
+#: src/routes/playground/reactivity/+page.svelte:10
 msgid "Script direct static reactivity."
 msgstr "スクリプトの直接固定リアクティビティ。"
 
 #. placeholder {0}: reactivityDemoState.value
-#: src/routes/playground/reactivity/+page.svelte:14
+#: src/routes/playground/reactivity/+page.svelte:15
 msgid "Script value: {0}"
 msgstr "スクリプトの値: {0}"
 
-#: src/routes/playground/syntax/+page.svelte:63
+#: src/routes/playground/syntax/+page.svelte:68
 msgid "Search examples"
 msgstr "例を検索"
 
-#: src/routes/playground/reactivity/+page.svelte:40
+#: src/routes/playground/reactivity/+page.svelte:45
 msgid "Set Alpha"
 msgstr "Alpha にする"
 
-#: src/routes/playground/reactivity/+page.svelte:48
+#: src/routes/playground/reactivity/+page.svelte:53
 msgid "Set Beta"
 msgstr "Beta にする"
 
-#: src/lib/app/AppShell.svelte:27
+#: src/lib/app/AppShell.svelte:30
 msgid "Settings"
 msgstr "設定"
 
-#: src/routes/playground/+page.svelte:51
+#: src/routes/playground/+page.svelte:52
 msgid "setupI18n with a full messages map. Switching locales calls activate() without a preceding load()."
 msgstr "すべてのロケールを初期化時に事前ロードし、切り替えは activate() のみで行います。"
 
-#: src/routes/playground/+page.svelte:57
+#: src/routes/playground/+page.svelte:58
 msgid "setupI18n() with no arguments. loadAndActivate() loads and switches one locale at a time."
 msgstr "setupI18n() を引数なしで呼び出します。loadAndActivate() は各ロケールを順番にロードして切り替えます。"
 
-#: src/routes/playground/+page.svelte:44
+#: src/routes/playground/+page.svelte:45
 msgid "Small, isolated cases for ids, comments, and contexts"
 msgstr "id、コメント、コンテキストを小さく切り出したケース"
 
-#: src/routes/playground/syntax/+page.svelte:37
+#: src/routes/playground/syntax/+page.svelte:38
 msgid "Snippet badge"
 msgstr "スニペットバッジ"
 
-#: src/routes/playground/syntax/+page.svelte:38
+#: src/routes/playground/syntax/+page.svelte:39
 msgid "Snippet item: {text}"
 msgstr "スニペット項目: {text}"
 
-#: src/routes/playground/syntax/+page.svelte:97
+#: src/routes/playground/syntax/+page.svelte:102
 msgid "Status summary: active"
 msgstr "状態サマリー: アクティブ"
 
-#: src/routes/playground/syntax/+page.svelte:96
+#: src/routes/playground/syntax/+page.svelte:101
 msgid "Status summary: idle"
 msgstr "状態サマリー: アイドル"
 
-#: src/routes/playground/stress/+page.svelte:19
+#: src/routes/playground/stress/+page.svelte:24
 msgid "Stress"
 msgstr "ストレス"
 
 #. Svelte E2E directive crossing script
 #. js-lingui-explicit-id
-#: src/routes/playground/syntax/+page.svelte:31
+#: src/routes/playground/syntax/+page.svelte:32
 msgctxt "e2e-cross-block"
 msgid "e2e.svelte-cross-block"
 msgstr "Svelte の script 境界を越えて継承されたディレクティブ。"
 
 #. Svelte E2E directive
 #. js-lingui-explicit-id
-#: src/routes/playground/syntax/+page.svelte:6
+#: src/routes/playground/syntax/+page.svelte:7
 msgctxt "e2e-svelte-directive"
 msgid "e2e.svelte-directive"
 msgstr "Svelte E2E の script ディレクティブ。"
 
-#: src/routes/playground/syntax/+page.svelte:55
+#: src/routes/playground/syntax/+page.svelte:60
 msgid "Svelte named component placeholder: {ownerName}."
 msgstr "Svelte の名前付きコンポーネントプレースホルダー: {ownerName}。"
 
 #. Svelte E2E directive
-#: src/routes/playground/syntax/+page.svelte:10
+#: src/routes/playground/syntax/+page.svelte:11
 msgctxt "e2e-svelte-directive"
 msgid "Svelte syntax owner: {ownerName}."
 msgstr "Svelte 構文の担当: {ownerName}。"
 
-#: src/lib/app/LanguageSwitcher.svelte:16
+#: src/lib/app/LanguageSwitcher.svelte:17
 msgid "Switch language"
 msgstr "言語を切り替える"
 
-#: src/routes/+page.svelte:40
+#: src/routes/+page.svelte:49
 msgid "Switch languages from the header and the next route keeps the same locale."
 msgstr "ヘッダーから言語を切り替えると、次のルートでも同じロケールが保たれます。"
 
-#: src/routes/playground/init-isolated/+page.svelte:19
+#: src/routes/playground/init-isolated/+page.svelte:24
 msgid "Switch the app locale using the header. The isolated widget below stays in English."
 msgstr "ヘッダーからアプリのロケールを切り替えます。下の独立したウィジェットは常に英語のままです。"
 
-#: src/lib/app/PlaygroundNav.svelte:44
-#: src/routes/playground/+page.svelte:25
-#: src/routes/playground/syntax/+page.svelte:45
+#: src/lib/app/PlaygroundNav.svelte:49
+#: src/routes/playground/+page.svelte:26
+#: src/routes/playground/syntax/+page.svelte:50
 msgid "Syntax"
 msgstr "構文"
 
-#: src/routes/playground/ids/+page.svelte:17
+#: src/routes/playground/ids/+page.svelte:22
 msgid "Targeted id, comment, and context coverage"
 msgstr "id、コメント、コンテキストの確認に絞る"
 
-#: src/routes/playground/reactivity/+page.svelte:68
+#: src/routes/playground/reactivity/+page.svelte:73
 msgid "Template bindings"
 msgstr "template バインディング"
 
 #. placeholder {0}: reactivityDemoState.value
-#: src/routes/playground/reactivity/+page.svelte:71
+#: src/routes/playground/reactivity/+page.svelte:76
 msgid "Template direct value: {0}"
 msgstr "テンプレートの直接値: {0}"
 
 #. placeholder {0}: reactivityDemoState.value
-#: src/routes/playground/reactivity/+page.svelte:17
+#: src/routes/playground/reactivity/+page.svelte:18
 msgid "Template indirect value: {0}"
 msgstr "テンプレートの間接値: {0}"
 
-#: src/routes/playground/reactivity/+page.svelte:74
+#: src/routes/playground/reactivity/+page.svelte:79
 msgid "Template static reactivity."
 msgstr "テンプレートの固定リアクティビティ。"
 
-#: src/routes/settings/+page.svelte:29
+#: src/routes/settings/+page.svelte:38
 msgid "The application routes are intentionally small. Macro edge cases live under the playground instead of leaking into the main app."
 msgstr "アプリ側のルートは意図的に小さく保っています。マクロのエッジケースはメインのアプリには混ぜず、プレイグラウンド以下に分離しています。"
 
-#: src/routes/playground/ids/+page.svelte:20
+#: src/routes/playground/ids/+page.svelte:25
 msgid "The main app avoids explicit ids by default. This route keeps those variants available for extractor and compile tests."
 msgstr "メインのアプリでは通常、明示的な id を使いません。このルートでは抽出とコンパイルのテスト向けにそのバリアントだけを残しています。"
 
-#: src/routes/+page.svelte:37
+#: src/routes/+page.svelte:46
 msgid "The server remembers your preferred language"
 msgstr "サーバーが選択した言語を記憶する"
 
-#: src/routes/playground/syntax/+page.svelte:105
+#: src/routes/playground/syntax/+page.svelte:110
 msgid "The syntax playground is active."
 msgstr "構文プレイグラウンドはアクティブです。"
 
-#: src/routes/playground/syntax/+page.svelte:103
+#: src/routes/playground/syntax/+page.svelte:108
 msgid "The syntax playground is idle."
 msgstr "構文プレイグラウンドはアイドルです。"
 
-#: src/routes/playground/init-preloaded/+page.svelte:34
+#: src/routes/playground/init-preloaded/+page.svelte:39
 msgid "This component calls setupI18n with all locale messages upfront. Switching only requires activate() - no load() call."
 msgstr "このコンポーネントはすべてのロケールのメッセージを事前に setupI18n に渡します。切り替えは activate() のみで、load() は使用しません。"
 
-#: src/routes/playground/init-lazy/+page.svelte:33
+#: src/routes/playground/init-lazy/+page.svelte:38
 msgid "This component starts with an empty setupI18n() and calls loadAndActivate on each switch. Only one locale is in memory at a time."
 msgstr "このコンポーネントは空の setupI18n() で開始し、切り替えるたびに loadAndActivate を呼び出します。メモリには常に 1 つのロケールだけが存在します。"
 
-#: src/routes/+page.svelte:15
+#: src/routes/+page.svelte:22
 msgid "This example keeps locale state in a real app shell and moves library verification into isolated playground routes."
 msgstr "この例ではロケールステートを実際のアプリシェルに置き、ライブラリの確認は切り出したプレイグラウンドルートで行います。"
 
-#: src/routes/playground/init-isolated/+page.svelte:23
+#: src/routes/playground/init-isolated/+page.svelte:28
 msgid "This line follows the app locale."
 msgstr "この行はアプリのロケールに従います。"
 
-#: src/routes/playground/syntax/+page.svelte:68
+#: src/routes/playground/syntax/+page.svelte:73
 msgid "This placeholder comes from $t inside an attribute"
 msgstr "このプレースホルダーは属性内の $t から来ています"
 
-#: src/routes/playground/syntax/+page.svelte:51
+#: src/routes/playground/syntax/+page.svelte:56
 msgid "This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte."
 msgstr "このルートでは、Svelte の @const、属性、スニペット、キー付きブロックなどの式位置を確認します。"
 
-#: src/routes/playground/rich-text/+page.svelte:20
+#: src/routes/playground/rich-text/+page.svelte:25
 msgid "This route focuses on translated markup with both native elements and Svelte components."
 msgstr "このルートでは、ネイティブ要素と Svelte コンポーネントの両方を含む翻訳済みマークアップに絞って確認します。"
 
-#: src/routes/playground/reactivity/+page.svelte:30
+#: src/routes/playground/reactivity/+page.svelte:35
 msgid "This route isolates locale and value tracking across direct and descriptor-based translations."
 msgstr "このルートでは、直接呼び出しとディスクリプタ経由の翻訳がロケールと値の両方を追従することを切り分けて確認します。"
 
-#: src/routes/playground/reactive/+page.svelte:30
+#: src/routes/playground/reactive/+page.svelte:35
 msgid "This route isolates reactive string macros and state that lives in a .svelte.ts module."
 msgstr "このルートでは、リアクティブな文字列マクロと .svelte.ts モジュールにある状態を切り分けて確認します。"
 
-#: src/routes/playground/basic/+page.svelte:23
+#: src/routes/playground/basic/+page.svelte:28
 msgid "This route keeps the common Lingui flow simple: write messages next to the code that renders them."
 msgstr "このルートでは、メッセージを描画コードの近くに書くという Lingui の基本的な流れをシンプルに保っています。"
 
-#: src/routes/playground/init-isolated/IsolatedWidget.svelte:23
+#: src/routes/playground/init-isolated/IsolatedWidget.svelte:26
 msgid "This widget has its own context and ignores the app locale."
 msgstr "このウィジェットは独自のコンテキストを持ち、アプリのロケールを無視します。"
 
-#: src/routes/playground/init-lazy/+page.svelte:36
-#: src/routes/playground/init-preloaded/+page.svelte:37
+#: src/routes/playground/init-lazy/+page.svelte:41
+#: src/routes/playground/init-preloaded/+page.svelte:42
 msgid "This widget has its own i18n context, independent of the app locale."
 msgstr "このウィジェットは独自の i18n コンテキストを持ち、アプリのロケールとは独立しています。"
 
-#: src/routes/playground/init-lazy/+page.svelte:41
-#: src/routes/playground/init-preloaded/+page.svelte:42
+#: src/routes/playground/init-lazy/+page.svelte:46
+#: src/routes/playground/init-preloaded/+page.svelte:47
 msgid "Toggle locale"
 msgstr "ロケールを切り替える"
 
-#: src/routes/playground/syntax/+page.svelte:80
+#: src/routes/playground/syntax/+page.svelte:85
 msgid "Toggle mode"
 msgstr "モードを切り替える"
 
-#: src/routes/playground/components/+page.svelte:38
+#: src/routes/playground/components/+page.svelte:45
 msgid "Toggle role"
 msgstr "役割を切り替える"
 
-#: src/routes/playground/reactive/+page.svelte:74
+#: src/routes/playground/reactive/+page.svelte:79
 msgid "Toggle status"
 msgstr "状態を切り替える"
 
-#: src/routes/playground/syntax/+page.svelte:77
+#: src/routes/playground/syntax/+page.svelte:82
 msgid "Toggle the status branch"
 msgstr "状態分岐を切り替える"
 
-#: src/routes/playground/rich-text/+page.svelte:46
+#: src/routes/playground/rich-text/+page.svelte:51
 msgid "Translation previews can show <0/> and <1/> in the same sentence."
 msgstr "翻訳プレビューでは、同じ文の中に <0/> と <1/> を表示できます。"
 
-#: src/routes/playground/syntax/+page.svelte:67
+#: src/routes/playground/syntax/+page.svelte:72
 msgid "Type to filter syntax examples"
 msgstr "入力して構文例を絞り込む"
 

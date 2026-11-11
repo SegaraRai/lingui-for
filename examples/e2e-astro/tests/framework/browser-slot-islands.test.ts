@@ -9,8 +9,9 @@ import {
   openTrackedPage,
 } from "../support/playwright.ts";
 
-describe.sequential.for(serverModes)(
+describe.for(serverModes)(
   "%s framework slot island behavior",
+  { concurrent: false },
   (mode) => {
     const server = new AppServer(mode);
     let browser: Browser;

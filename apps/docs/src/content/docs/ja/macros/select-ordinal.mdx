@@ -68,26 +68,22 @@ const place = 2;
 
 <!-- 単独使用: 序数字符列を直接生成する -->
 <p>
-  {
-    selectOrdinal(place, {
-      one: "#st",
-      two: "#nd",
-      few: "#rd",
-      other: "#th",
-    })
-  }
+  {selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })}
 </p>
 
 <!-- 埋め込み: selectOrdinal はより大きな翻訳単位の一部 -->
 <p>
-  {
-    t`Ranked ${selectOrdinal(place, {
-      one: "#st",
-      two: "#nd",
-      few: "#rd",
-      other: "#th",
-    })}`
-  }
+  {t`Ranked ${selectOrdinal(place, {
+    one: "#st",
+    two: "#nd",
+    few: "#rd",
+    other: "#th",
+  })}`}
 </p>
 ```
 

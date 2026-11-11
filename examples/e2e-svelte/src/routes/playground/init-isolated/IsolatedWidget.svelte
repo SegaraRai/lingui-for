@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { setupI18n } from "@lingui/core";
   import { setLinguiContext } from "lingui-for-svelte";
   import { t } from "lingui-for-svelte/macro";
@@ -14,9 +15,11 @@
   setLinguiContext(i18n);
 </script>
 
-<div class="bg-base-200 rounded-box space-y-1 p-4 text-sm">
+<div {...style("rounded-box space-y-1 p-4 text-sm bg-base-200")}>
   <p
-    class="text-base-content/60 text-xs font-semibold tracking-widest uppercase"
+    {...style(
+      "text-base-content/60 text-xs font-semibold tracking-widest uppercase",
+    )}
   >
     {$t`Isolated widget (always English)`}
   </p>

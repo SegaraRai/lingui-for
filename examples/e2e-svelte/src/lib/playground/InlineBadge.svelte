@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import type { Snippet } from "svelte";
 
   let {
@@ -11,9 +12,13 @@
 </script>
 
 <span
-  class="badge flex-none border-0 font-bold"
-  class:badge-warning={tone === "warm"}
-  class:badge-info={tone === "cool"}
+  {...style(
+    "badge flex-none font-bold border-0",
+    {
+      warm: "badge-warning",
+      cool: "badge-info",
+    }[tone],
+  )}
 >
   {@render children?.()}
 </span>

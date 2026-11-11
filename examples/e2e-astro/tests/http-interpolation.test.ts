@@ -8,8 +8,9 @@ function cleanupHtml(html: string): string {
     .replaceAll(/\s*data-astro-source-loc="[^"]+"/g, "");
 }
 
-describe.sequential.for(serverModes)(
+describe.for(serverModes)(
   "%s Lingui Astro interpolation rendering",
+  { concurrent: false },
   (mode) => {
     const server = new AppServer(mode);
 

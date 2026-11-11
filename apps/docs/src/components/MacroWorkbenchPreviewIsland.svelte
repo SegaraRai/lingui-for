@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { onMount, untrack } from "svelte";
 
   import type { MacroWorkbenchScalar } from "../lib/macro-workbench/spec.ts";
@@ -58,7 +59,7 @@
 {#if PreviewComponent}
   <PreviewComponent {...values} />
 {:else}
-  <div class="text-sm text-(--demo-control-text)">
+  <div {...style("text-panel-label text-sm")}>
     Preview component could not be resolved.
   </div>
 {/if}

@@ -14,143 +14,143 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. placeholder {0}: 3
-#: src/components/astro/AstroFormats.astro:25
-#: src/components/astro/AstroFormats.astro:52
+#: src/components/astro/AstroFormats.astro:24
+#: src/components/astro/AstroFormats.astro:50
 msgid "{0, plural, one {# Astro format sample} other {# Astro format samples}}"
 msgstr "{0, plural, one {# 件の Astro フォーマットサンプル} other {# 件の Astro フォーマットサンプル}}"
 
 #. placeholder {0}: 3
-#: src/components/react/ReactFormatsIsland.tsx:20
+#: src/components/react/ReactFormatsIsland.tsx:21
 msgid "{0, plural, one {# React format sample} other {# React format samples}}"
 msgstr "{0, plural, one {# 件の React フォーマットサンプル} other {# 件の React フォーマットサンプル}}"
 
 #. placeholder {0}: 3
-#: src/components/svelte/SvelteFormatsIsland.svelte:29
-#: src/components/svelte/SvelteFormatsIsland.svelte:54
+#: src/components/svelte/SvelteFormatsIsland.svelte:30
+#: src/components/svelte/SvelteFormatsIsland.svelte:55
 msgid "{0, plural, one {# Svelte format sample} other {# Svelte format samples}}"
 msgstr "{0, plural, one {# 件の Svelte フォーマットサンプル} other {# 件の Svelte フォーマットサンプル}}"
 
 #. placeholder {0}: "excited"
-#: src/components/astro/AstroFormats.astro:32
-#: src/components/astro/AstroFormats.astro:60
+#: src/components/astro/AstroFormats.astro:31
+#: src/components/astro/AstroFormats.astro:56
 msgid "{0, select, calm {Astro select says calm.} excited {Astro select says excited.} other {Astro select says unknown.}}"
 msgstr "{0, select, calm {Astro の select は穏やかです。} excited {Astro の select は興奮しています。} other {Astro の select は不明です。}}"
 
 #. placeholder {0}: "excited"
-#: src/components/react/ReactFormatsIsland.tsx:27
+#: src/components/react/ReactFormatsIsland.tsx:28
 msgid "{0, select, calm {React select says calm.} excited {React select says excited.} other {React select says unknown.}}"
 msgstr "{0, select, calm {React の select は穏やかです。} excited {React の select は興奮しています。} other {React の select は不明です。}}"
 
 #. placeholder {0}: "excited"
-#: src/components/svelte/SvelteFormatsIsland.svelte:36
-#: src/components/svelte/SvelteFormatsIsland.svelte:60
+#: src/components/svelte/SvelteFormatsIsland.svelte:37
+#: src/components/svelte/SvelteFormatsIsland.svelte:61
 msgid "{0, select, calm {Svelte select says calm.} excited {Svelte select says excited.} other {Svelte select says unknown.}}"
 msgstr "{0, select, calm {Svelte の select は穏やかです。} excited {Svelte の select は興奮しています。} other {Svelte の select は不明です。}}"
 
 #. placeholder {0}: 2
-#: src/components/astro/AstroFormats.astro:40
-#: src/components/astro/AstroFormats.astro:69
+#: src/components/astro/AstroFormats.astro:39
+#: src/components/astro/AstroFormats.astro:63
 msgid "{0, selectordinal, one {Astro finished #st.} two {Astro finished #nd.} few {Astro finished #rd.} other {Astro finished #th.}}"
 msgstr "{0, selectordinal, one {Astro は # 位でした。} two {Astro は # 位でした。} few {Astro は # 位でした。} other {Astro は # 位でした。}}"
 
 #. placeholder {0}: 2
-#: src/components/react/ReactFormatsIsland.tsx:35
+#: src/components/react/ReactFormatsIsland.tsx:36
 msgid "{0, selectordinal, one {React finished #st.} two {React finished #nd.} few {React finished #rd.} other {React finished #th.}}"
 msgstr "{0, selectordinal, one {React は # 位でした。} two {React は # 位でした。} few {React は # 位でした。} other {React は # 位でした。}}"
 
 #. placeholder {0}: 2
-#: src/components/svelte/SvelteFormatsIsland.svelte:44
-#: src/components/svelte/SvelteFormatsIsland.svelte:67
+#: src/components/svelte/SvelteFormatsIsland.svelte:45
+#: src/components/svelte/SvelteFormatsIsland.svelte:68
 msgid "{0, selectordinal, one {Svelte finished #st.} two {Svelte finished #nd.} few {Svelte finished #rd.} other {Svelte finished #th.}}"
 msgstr "{0, selectordinal, one {Svelte は # 位でした。} two {Svelte は # 位でした。} few {Svelte は # 位でした。} other {Svelte は # 位でした。}}"
 
 #. placeholder {0}: _i18n._( /** i18n */ { id: "SMt_JO", message: "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}", values: { rank: rank, role: role } })
 #. placeholder {1}: _i18n._( /** i18n */ { id: "IN7jEl", message: "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}", values: { rank: rank, role: role } })
 #. placeholder {2}: _i18n._( /** i18n */ { id: "MTuVZ1", message: "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}", values: { rank: rank, role: role } })
-#: src/pages/stress.astro:132
+#: src/pages/stress.astro:129
 msgid "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
 msgstr "{count, plural, =0 {{0}} =2 {{1}} other {{2}}}"
 
-#: src/pages/stress.astro:18
+#: src/pages/stress.astro:19
 msgid "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} =2 {{role, select, admin {core zero second admin} other {core zero second other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {core two first admin} other {core two first other}}} =2 {{role, select, admin {core two second admin} other {core two second other}}} other {{role, select, admin {core two later admin} other {core two later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} =2 {{role, select, admin {core many second admin} other {core many second other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}"
 msgstr "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {コア、0、1番目、管理者} other {コア、0、1番目、その他}}} =2 {{role, select, admin {コア、0、2番目、管理者} other {コア、0、2番目、その他}}} other {{role, select, admin {コア、0、それ以降、管理者} other {コア、0、それ以降、その他}}}}} =2 {{rank, selectordinal, =1 {{role, select, admin {コア、2、1番目、管理者} other {コア、2、1番目、その他}}} =2 {{role, select, admin {コア、2、2番目、管理者} other {コア、2、2番目、その他}}} other {{role, select, admin {コア、2、それ以降、管理者} other {コア、2、それ以降、その他}}}}} other {{rank, selectordinal, =1 {{role, select, admin {コア、多、1番目、管理者} other {コア、多、1番目、その他}}} =2 {{role, select, admin {コア、多、2番目、管理者} other {コア、多、2番目、その他}}} other {{role, select, admin {コア、多、後の管理者} other {コア、多、後のその他}}}}}}"
 
 #: src/pages/stress.astro:92
-#: src/pages/stress.astro:109
+#: src/pages/stress.astro:106
 msgid "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}"
 msgstr "{count, plural, =0 {キューに入っているビルドはありません} =2 {キューに入っている正確に 2 つのビルド} other {キューに入っている # 個のビルド}}"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:33
+#: src/components/svelte/SvelteLinguiIsland.svelte:36
 msgid "{count, plural, one {# localized Svelte example} other {# localized Svelte examples}}"
 msgstr "{count, plural, one {# 件の Svelte 例} other {# 件の Svelte 例}}"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:62
+#: src/components/react/ReactTransitionCounterIsland.tsx:63
 msgid "{count} React clicks"
 msgstr "{count} 回の React クリック"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:58
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:59
 msgid "{count} Svelte clicks"
 msgstr "{count} 回の Svelte クリック"
 
-#: src/pages/stress.astro:162
+#: src/pages/stress.astro:159
 msgid "{rank, selectordinal, =1 {{role, select, admin {component many first admin} other {component many first other}}} =2 {{role, select, admin {component many second admin} other {component many second other}}} other {{role, select, admin {component many later admin} other {component many later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・多・最初・管理者} other {コンポーネント・多・最初・その他}}} =2 {{role, select, admin {コンポーネント・多・2番目・管理者} other {コンポーネント・多・2番目・その他}}} other {{role, select, admin {コンポーネント・多・それ以降・管理者} other {コンポーネント・多・それ以降・その他}}}}"
 
-#: src/pages/stress.astro:148
+#: src/pages/stress.astro:145
 msgid "{rank, selectordinal, =1 {{role, select, admin {component two first admin} other {component two first other}}} =2 {{role, select, admin {component two second admin} other {component two second other}}} other {{role, select, admin {component two later admin} other {component two later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・2・最初・管理者} other {コンポーネント・2・最初・その他}}} =2 {{role, select, admin {コンポーネント・2・2番目・管理者} other {コンポーネント・2・2番目・その他}}} other {{role, select, admin {コンポーネント・2・それ以降・管理者} other {コンポーネント・2・それ以降・その他}}}}"
 
-#: src/pages/stress.astro:134
+#: src/pages/stress.astro:131
 msgid "{rank, selectordinal, =1 {{role, select, admin {component zero first admin} other {component zero first other}}} =2 {{role, select, admin {component zero second admin} other {component zero second other}}} other {{role, select, admin {component zero later admin} other {component zero later other}}}}"
 msgstr "{rank, selectordinal, =1 {{role, select, admin {コンポーネント・0・最初・管理者} other {コンポーネント・0・最初・その他}}} =2 {{role, select, admin {コンポーネント・0・2番目・管理者} other {コンポーネント・0・2番目・その他}}} other {{role, select, admin {コンポーネント・0・それ以降・管理者} other {コンポーネント・0・それ以降・その他}}}}"
 
-#: src/pages/stress.astro:101
-#: src/pages/stress.astro:117
+#: src/pages/stress.astro:99
+#: src/pages/stress.astro:114
 msgid "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}"
 msgstr "{rank, selectordinal, =1 {近道をする} =2 {遠回りをする} other {# 位でゴール}}"
 
-#: src/pages/interpolation.astro:109
-#: src/pages/interpolation.astro:112
-#: src/pages/interpolation.astro:160
-#: src/pages/interpolation.astro:165
+#: src/pages/interpolation.astro:99
+#: src/pages/interpolation.astro:102
+#: src/pages/interpolation.astro:150
+#: src/pages/interpolation.astro:155
 msgid "<0/>"
 msgstr "<0/>"
 
-#: src/pages/interpolation.astro:129
+#: src/pages/interpolation.astro:119
 msgid "<0><1/><2>Trans-wrapped first fragment child after an HTML comment inside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment inside an Astro interpolation.</3></0>"
 msgstr "<0><1/><2>Astro interpolation 内で HTML コメントの後にある、Trans で囲まれた 1 つ目の fragment 子です。</2><3>Astro interpolation 内で HTML コメントの後にある、Trans で囲まれた 2 つ目の fragment 子です。</3></0>"
 
-#: src/pages/interpolation.astro:90
+#: src/pages/interpolation.astro:80
 msgid "<0><1/><2>Trans-wrapped first fragment child after an HTML comment outside an Astro interpolation.</2><3>Trans-wrapped second fragment child after an HTML comment outside an Astro interpolation.</3></0>"
 msgstr "<0><1/><2>Astro interpolation 外で HTML コメントの後にある、Trans で囲まれた 1 つ目の fragment 子です。</2><3>Astro interpolation 外で HTML コメントの後にある、Trans で囲まれた 2 つ目の fragment 子です。</3></0>"
 
-#: src/pages/interpolation.astro:119
+#: src/pages/interpolation.astro:109
 msgid "<0><1>Trans-wrapped first fragment child inside an Astro interpolation.</1><2>Trans-wrapped second fragment child inside an Astro interpolation.</2></0>"
 msgstr "<0><1>Astro interpolation 内にある、Trans で囲まれた 1 つ目の fragment 子です。</1><2>Astro interpolation 内にある、Trans で囲まれた 2 つ目の fragment 子です。</2></0>"
 
-#: src/pages/interpolation.astro:82
+#: src/pages/interpolation.astro:72
 msgid "<0><1>Trans-wrapped first fragment child outside an Astro interpolation.</1><2>Trans-wrapped second fragment child outside an Astro interpolation.</2></0>"
 msgstr "<0><1>Astro interpolation 外にある、Trans で囲まれた 1 つ目の fragment 子です。</1><2>Astro interpolation 外にある、Trans で囲まれた 2 つ目の fragment 子です。</2></0>"
 
 #. placeholder {0}: highlightedQueue.length
-#: src/components/astro/AstroRichText.astro:44
-#: src/components/svelte/SvelteRichTextIsland.svelte:49
+#: src/components/astro/AstroRichText.astro:46
+#: src/components/svelte/SvelteRichTextIsland.svelte:50
 msgid "<0>The current locale review can summarize nested details such as</0> <1><2><3>{0} highlighted queue items</3>, plus</2><4>the selected region {selectedRegion}.</4></1>"
 msgstr "<0>現在のロケールレビューでは、次のような詳細を要約できます</0> <1><2><3>{0} 件の注目キュー項目</3>と</2><4>選択中のリージョン {selectedRegion}。</4></1>"
 
-#: src/pages/interpolation.astro:117
+#: src/pages/interpolation.astro:107
 msgid "<0>Trans-wrapped single root inside an Astro interpolation.</0>"
 msgstr "<0>Astro interpolation 内の Trans で囲まれた単一 root です。</0>"
 
-#: src/pages/interpolation.astro:81
+#: src/pages/interpolation.astro:71
 msgid "<0>Trans-wrapped single root outside an Astro interpolation.</0>"
 msgstr "<0>Astro interpolation 外の Trans で囲まれた単一 root です。</0>"
 
-#: src/components/TransitionShowcase.astro:49
+#: src/components/TransitionShowcase.astro:52
 msgid "1. Increment one or more counters in Svelte or React."
 msgstr "1. Svelte または React のカウンターを 1 つ以上増やしてください。"
 
-#: src/components/TransitionShowcase.astro:53
+#: src/components/TransitionShowcase.astro:55
 msgid "2. Switch between English and Japanese in the header and watch the locale labels."
 msgstr "2. ヘッダーで日本語と英語を切り替えて、ロケールラベルの変化を確認してください。"
 
@@ -158,75 +158,75 @@ msgstr "2. ヘッダーで日本語と英語を切り替えて、ロケールラ
 msgid "3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen."
 msgstr "3. 対応するルートを開き、どのアイランドがカウンターを保持したか、どれがロケールとページプロパティを更新したか、どれが固定されたままかを比べてください。"
 
-#: src/components/astro/AstroRichText.astro:25
+#: src/components/astro/AstroRichText.astro:28
 msgid "Astro can preserve <0>strong emphasis</0> in translated output."
 msgstr "Astro は翻訳結果の中でも<0>強調表示</0>を保てます。"
 
 #. Astro E2E directive crossing frontmatter
 #. js-lingui-explicit-id
-#: src/pages/formats.astro:24
+#: src/pages/formats.astro:25
 msgctxt "e2e-cross-block"
 msgid "e2e.astro-cross-block"
 msgstr "Astro の frontmatter 境界を越えて継承されたディレクティブ。"
 
 #. Astro E2E directive
 #. js-lingui-explicit-id
-#: src/pages/formats.astro:14
+#: src/pages/formats.astro:15
 msgctxt "e2e-astro-directive"
 msgid "e2e.astro-directive"
 msgstr "Astro E2E の frontmatter ディレクティブ。"
 
 #. Astro E2E directive
-#: src/pages/formats.astro:18
+#: src/pages/formats.astro:19
 msgctxt "e2e-astro-directive"
 msgid "Astro format owner: {ownerName}."
 msgstr "Astro フォーマットの担当: {ownerName}。"
 
-#: src/components/astro/AstroFormats.astro:16
+#: src/components/astro/AstroFormats.astro:17
 msgid "Astro formats"
 msgstr "Astro フォーマット"
 
-#: src/pages/index.astro:59
+#: src/pages/index.astro:63
 msgid "Astro framework interpolation behavior"
 msgstr "Astro framework interpolation の挙動"
 
-#: src/pages/index.astro:119
+#: src/pages/index.astro:131
 msgid "Astro interpolation edge cases"
 msgstr "Astro interpolation のエッジケース"
 
-#: src/pages/interpolation.astro:21
+#: src/pages/interpolation.astro:20
 msgid "Astro interpolation extraction"
 msgstr "Astro interpolation の抽出"
 
-#: src/pages/interpolation.astro:13
+#: src/pages/interpolation.astro:14
 msgid "Astro interpolation extraction checks"
 msgstr "Astro interpolation 抽出の確認"
 
-#: src/pages/interpolation.astro:7
+#: src/pages/interpolation.astro:8
 msgid "Astro interpolation extraction page"
 msgstr "Astro interpolation 抽出ページ"
 
-#: src/pages/interpolation.astro:24
+#: src/pages/interpolation.astro:22
 msgid "Astro interpolations can contain comments and fragments."
 msgstr "Astro interpolation はコメントと fragment を含められます。"
 
-#: src/components/astro/AstroRichText.astro:18
+#: src/components/astro/AstroRichText.astro:19
 msgid "Astro keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Astro は翻訳された文の中でも<0>設定リンク</0>を保てます。"
 
-#: src/pages/formats.astro:50
+#: src/pages/formats.astro:49
 msgid "Astro named component placeholder: {ownerName}."
 msgstr "Astro の名前付きコンポーネントプレースホルダー: {ownerName}。"
 
-#: src/pages/server.astro:24
+#: src/pages/server.astro:25
 msgid "Astro pages render request-scoped translations through locals."
 msgstr "Astro のページは locals 経由でリクエスト単位の翻訳を描画します。"
 
-#: src/components/astro/AstroRichText.astro:12
+#: src/components/astro/AstroRichText.astro:13
 msgid "Astro rich text"
 msgstr "Astro リッチテキスト"
 
-#: src/components/astro/AstroRichText.astro:15
+#: src/components/astro/AstroRichText.astro:16
 msgid "Astro rich text keeps component placeholders intact."
 msgstr "Astro リッチテキストはコンポーネントのプレースホルダーをそのまま保ちます。"
 
@@ -234,7 +234,7 @@ msgstr "Astro リッチテキストはコンポーネントのプレースホル
 msgid "Astro runs plural, select, and selectOrdinal macros in component code."
 msgstr "Astro はコンポーネントコードの中で plural、select、selectOrdinal マクロを実行します。"
 
-#: src/pages/settings.astro:41
+#: src/pages/settings.astro:43
 msgid "Astro uses request-scoped locals."
 msgstr "Astro はリクエスト単位の locals を使います。"
 
@@ -242,68 +242,68 @@ msgstr "Astro はリクエスト単位の locals を使います。"
 msgid "Astro, Svelte, and React all translate the same imported descriptor."
 msgstr "Astro、Svelte、React の 3 つとも同じ import 済みディスクリプタを翻訳します。"
 
-#: src/pages/index.astro:47
+#: src/pages/index.astro:48
 msgid "Check request-scoped Astro translations and shared layout text."
 msgstr "リクエスト単位の Astro 翻訳と共有レイアウト文言を確認します。"
 
-#: src/pages/index.astro:122
+#: src/pages/index.astro:133
 msgid "Check translated Astro interpolations that contain comments and fragments."
 msgstr "コメントと fragment を含む翻訳済み Astro interpolation を確認します。"
 
-#: src/pages/transitions.astro:11
+#: src/pages/transitions.astro:12
 msgid "Client transition checks"
 msgstr "クライアント遷移の確認"
 
-#: src/pages/index.astro:167
+#: src/pages/index.astro:179
 msgid "Client transitions"
 msgstr "クライアント遷移"
 
-#: src/components/TransitionShowcase.astro:23
+#: src/components/TransitionShowcase.astro:24
 msgid "ClientRouter can preserve island state while locale and page props change."
 msgstr "ClientRouter を使うと、ロケールとページプロパティが変わってもアイランドのステートを保持できます。"
 
-#: src/components/TransitionShowcase.astro:21
+#: src/components/TransitionShowcase.astro:22
 msgid "ClientRouter enabled"
 msgstr "ClientRouter 有効"
 
-#: src/pages/interpolation.astro:52
+#: src/pages/interpolation.astro:46
 msgid "Comment-only interpolation neighbors"
 msgstr "コメントのみの interpolation の前後"
 
-#: src/pages/transitions.astro:22
+#: src/pages/transitions.astro:23
 msgid "Compare locale updates and state persistence side by side."
 msgstr "ロケールの更新とステートの保持を並べて比較します。"
 
-#: src/pages/index.astro:170
+#: src/pages/index.astro:181
 msgid "Compare whether persisted Svelte and React islands keep state while locale and page props still update."
 msgstr "永続化された Svelte アイランドと React アイランドが、ロケールとページプロパティの更新中もステートを保持するか比較します。"
 
-#: src/pages/interpolation.astro:64
+#: src/pages/interpolation.astro:56
 msgid "Conditional HTML comment branches"
 msgstr "HTML コメントを含む条件分岐"
 
-#: src/pages/index.astro:139
+#: src/pages/index.astro:149
 msgid "Confirm route params and locale cookies survive navigation."
 msgstr "ルートパラメータとロケールクッキーが遷移後も保持されることを確認します。"
 
-#: src/pages/index.astro:62
+#: src/pages/index.astro:66
 msgid "Confirm which interpolation forms Astro accepts before Lingui transforms run."
 msgstr "Lingui transform の実行前に Astro が受け付ける interpolation 形式を確認します。"
 
-#: src/components/TransitionShowcase.astro:35
+#: src/components/TransitionShowcase.astro:38
 msgid "Current demo: {pageLabel}"
 msgstr "現在のデモ: {pageLabel}"
 
-#: src/components/LanguageSwitcher.astro:42
-#: src/pages/settings.astro:32
+#: src/components/LanguageSwitcher.astro:37
+#: src/pages/settings.astro:31
 msgid "Current locale: {localeLabel}"
 msgstr "現在のロケール: {localeLabel}"
 
-#: src/layouts/AppLayout.astro:86
+#: src/layouts/AppLayout.astro:89
 msgid "Current page: {currentPage}"
 msgstr "現在のページ: {currentPage}"
 
-#: src/pages/routing/[slug].astro:13
+#: src/pages/routing/[slug].astro:14
 msgid "Dynamic route checks"
 msgstr "動的ルートの確認"
 
@@ -311,7 +311,7 @@ msgstr "動的ルートの確認"
 msgid "Dynamic routes can translate with params from Astro.url and route data."
 msgstr "動的ルートでも Astro.url とルートデータのパラメータを使って翻訳できます。"
 
-#: src/pages/index.astro:137
+#: src/pages/index.astro:147
 msgid "Dynamic routing"
 msgstr "動的ルーティング"
 
@@ -319,78 +319,78 @@ msgstr "動的ルーティング"
 msgid "Each island creates its own runtime, but Astro middleware hands both the same locale."
 msgstr "各アイランドは独自のランタイムを作りますが、Astro ミドルウェアが同じロケールを両方に渡します。"
 
-#: src/pages/index.astro:30
+#: src/pages/index.astro:31
 msgid "Each page isolates one concern so regressions are easier to spot."
 msgstr "各ページは 1 つの関心事だけを切り出し、回帰を見つけやすくします。"
 
-#: src/components/LanguageSwitcher.astro:26
+#: src/components/LanguageSwitcher.astro:24
 msgid "English"
 msgstr "英語"
 
-#: src/pages/stress.astro:76
+#: src/pages/stress.astro:79
 msgid "Exact-number branches and deep macro trees"
 msgstr "正確な数の分岐と深いマクロツリー"
 
-#: src/pages/index.astro:107
+#: src/pages/index.astro:117
 msgid "Exercise plural, select, and selectOrdinal macros."
 msgstr "plural、select、selectOrdinal マクロを確認します。"
 
-#: src/pages/interpolation.astro:31
+#: src/pages/interpolation.astro:27
 msgid "Expression and single root interpolations"
 msgstr "式と単一 root の interpolation"
 
-#: src/pages/interpolation.astro:43
+#: src/pages/interpolation.astro:39
 msgid "First translated fragment child after an HTML comment inside an Astro interpolation."
 msgstr "Astro interpolation 内で HTML コメントの後にある 1 つ目の翻訳済み fragment 子です。"
 
-#: src/pages/interpolation.astro:36
+#: src/pages/interpolation.astro:32
 msgid "First translated fragment child inside an Astro interpolation."
 msgstr "Astro interpolation 内の 1 つ目の翻訳済み fragment 子です。"
 
-#: src/pages/formats.astro:30
+#: src/pages/formats.astro:31
 msgid "Format macro checks"
 msgstr "フォーマットマクロの確認"
 
-#: src/layouts/AppLayout.astro:30
-#: src/pages/formats.astro:38
+#: src/layouts/AppLayout.astro:29
+#: src/pages/formats.astro:39
 msgid "Formats"
 msgstr "フォーマット"
 
-#: src/pages/formats.astro:10
+#: src/pages/formats.astro:11
 msgid "Formats page"
 msgstr "フォーマットページ"
 
-#: src/pages/index.astro:77
+#: src/pages/index.astro:83
 msgid "Framework islands"
 msgstr "フレームワークのアイランド"
 
-#: src/pages/index.astro:57
+#: src/pages/index.astro:60
 msgid "Framework routes"
 msgstr "Framework ルート"
 
-#: src/components/TransitionShowcase.astro:21
+#: src/components/TransitionShowcase.astro:22
 msgid "Full reload mode"
 msgstr "フルリロードモード"
 
-#: src/pages/transitions.astro:40
+#: src/pages/transitions.astro:38
 msgid "Full reload navigation resets every island before the locale can persist."
 msgstr "フルリロードの遷移では、ロケールが保たれる前にすべてのアイランドがリセットされます。"
 
-#: src/layouts/AppLayout.astro:26
+#: src/layouts/AppLayout.astro:25
 msgid "Home"
 msgstr "ホーム"
 
-#: src/components/TransitionShowcase.astro:46
+#: src/components/TransitionShowcase.astro:49
 msgid "How to use this demo"
 msgstr "このデモの使い方"
 
-#: src/components/astro/AstroRichText.astro:31
-#: src/components/svelte/SvelteRichTextIsland.svelte:37
+#: src/components/astro/AstroRichText.astro:34
+#: src/components/svelte/SvelteRichTextIsland.svelte:38
 msgid "Imported review digest: <0/>"
 msgstr "取り込み済みレビュー要約: <0/>"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:56
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:52
+#: src/components/react/ReactTransitionCounterIsland.tsx:57
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:53
 msgid "Increment"
 msgstr "増やす"
 
@@ -399,81 +399,81 @@ msgstr "増やす"
 msgid "Inline initialization check"
 msgstr "インライン初期化チェック"
 
-#: src/pages/islands.astro:17
+#: src/pages/islands.astro:18
 msgid "Island translation checks"
 msgstr "アイランド翻訳の確認"
 
-#: src/layouts/AppLayout.astro:28
-#: src/pages/islands.astro:25
+#: src/layouts/AppLayout.astro:27
+#: src/pages/islands.astro:26
 msgid "Islands"
 msgstr "アイランド"
 
-#: src/pages/islands.astro:13
+#: src/pages/islands.astro:14
 msgid "Islands page"
 msgstr "アイランドページ"
 
-#: src/components/LanguageSwitcher.astro:36
+#: src/components/LanguageSwitcher.astro:31
 msgid "Japanese"
 msgstr "日本語"
 
-#: src/pages/settings.astro:13
-#: src/pages/settings.astro:24
+#: src/pages/settings.astro:14
+#: src/pages/settings.astro:25
 msgid "Language settings"
 msgstr "言語設定"
 
-#: src/pages/index.astro:13
+#: src/pages/index.astro:14
 msgid "Lingui Astro multi-page playground"
 msgstr "Lingui Astro マルチページプレイグラウンド"
 
-#: src/layouts/AppLayout.astro:64
+#: src/layouts/AppLayout.astro:69
 msgid "Lingui for Astro"
 msgstr "Lingui for Astro"
 
-#: src/components/react/ReactFormatsIsland.tsx:45
+#: src/components/react/ReactFormatsIsland.tsx:46
 msgid "Lingui React does not seem to support functional macros for plural, select, and selectOrdinal."
 msgstr "Lingui React は plural、select、selectOrdinal の関数マクロをサポートしていないようです。"
 
-#: src/components/react/ReactLinguiIsland.tsx:32
+#: src/components/react/ReactLinguiIsland.tsx:33
 msgid "Locale badge: {localeLabel}"
 msgstr "ロケールバッジ: {localeLabel}"
 
-#: src/pages/index.astro:153
+#: src/pages/index.astro:163
 msgid "Locale persistence"
 msgstr "ロケール永続化"
 
-#: src/components/TransitionShowcase.astro:97
+#: src/components/TransitionShowcase.astro:101
 msgid "Locale prop: {locale}"
 msgstr "ロケールプロパティ: {locale}"
 
-#: src/pages/stress.astro:67
+#: src/pages/stress.astro:68
 msgid "Macro stress page"
 msgstr "マクロストレスページ"
 
-#: src/pages/interpolation.astro:55
+#: src/pages/interpolation.astro:49
 msgid "Message after a JavaScript comment interpolation."
 msgstr "JavaScript コメント interpolation の後のメッセージです。"
 
-#: src/pages/interpolation.astro:72
+#: src/pages/interpolation.astro:64
 msgid "Message after a selected HTML comment alternate branch."
 msgstr "選択された HTML コメント alternate branch の後のメッセージです。"
 
-#: src/pages/interpolation.astro:66
+#: src/pages/interpolation.astro:58
 msgid "Message after a selected HTML comment consequent branch."
 msgstr "選択された HTML コメント consequent branch の後のメッセージです。"
 
-#: src/pages/interpolation.astro:58
+#: src/pages/interpolation.astro:52
 msgid "Message after an HTML comment-only interpolation."
 msgstr "HTML コメントのみの interpolation の後のメッセージです。"
 
-#: src/pages/interpolation.astro:53
+#: src/pages/interpolation.astro:47
 msgid "Message before a JavaScript comment interpolation."
 msgstr "JavaScript コメント interpolation の前のメッセージです。"
 
-#: src/pages/interpolation.astro:56
+#: src/pages/interpolation.astro:50
 msgid "Message before an HTML comment-only interpolation."
 msgstr "HTML コメントのみの interpolation の前のメッセージです。"
 
-#: src/pages/index.astro:105
+#: src/pages/index.astro:115
 msgid "Message formats"
 msgstr "メッセージフォーマット"
 
@@ -487,19 +487,19 @@ msgstr "ルーターなしページ A"
 msgid "No-router page B"
 msgstr "ルーターなしページ B"
 
-#: src/pages/routing/[slug].astro:29
+#: src/pages/routing/[slug].astro:28
 msgid "Now viewing the slug {slug}."
 msgstr "現在表示中の slug は {slug} です。"
 
-#: src/pages/index.astro:27
+#: src/pages/index.astro:28
 msgid "One Astro app, several translation checkpoints"
 msgstr "1 つの Astro アプリで複数の翻訳チェックポイントを確認します"
 
-#: src/components/TransitionShowcase.astro:140
+#: src/components/TransitionShowcase.astro:143
 msgid "Open {nextLabel}"
 msgstr "{nextLabel} を開く"
 
-#: src/pages/transitions.astro:50
+#: src/pages/transitions.astro:48
 msgid "Open no-router demo"
 msgstr "ルーターなしデモを開く"
 
@@ -507,125 +507,125 @@ msgstr "ルーターなしデモを開く"
 msgid "Open one pair without ClientRouter and one pair with ClientRouter. Each pair contains volatile, persisted, and persisted-props Svelte and React islands so you can compare whether counters survive while locale and page props still update."
 msgstr "ClientRouter なしの組とありの組を 1 つずつ開いてください。各組には volatile / persisted / persisted-props の Svelte アイランドと React アイランドがあり、ロケールとページプロパティが更新されてもカウンターが残るかを比較できます。"
 
-#: src/pages/transitions.astro:73
+#: src/pages/transitions.astro:67
 msgid "Open router demo"
 msgstr "ルーターありデモを開く"
 
-#: src/pages/index.astro:9
-#: src/pages/index.astro:24
+#: src/pages/index.astro:10
+#: src/pages/index.astro:25
 msgid "Overview"
 msgstr "概要"
 
-#: src/components/TransitionShowcase.astro:67
+#: src/components/TransitionShowcase.astro:69
 msgid "Page label: {pageLabel}"
 msgstr "ページラベル: {pageLabel}"
 
-#: src/pages/transitions.astro:63
+#: src/pages/transitions.astro:60
 msgid "Persisted islands can keep state while still reflecting a new locale."
 msgstr "永続化されたアイランドは、新しいロケールを反映しつつ状態を保持できます。"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:33
+#: src/components/react/ReactTransitionCounterIsland.tsx:34
 msgid "Persisted React island"
 msgstr "永続化された React アイランド"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:32
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:33
 msgid "Persisted Svelte island"
 msgstr "永続化された Svelte アイランド"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:34
+#: src/components/react/ReactTransitionCounterIsland.tsx:35
 msgid "Persisted-props React island"
 msgstr "プロパティが永続化された React アイランド"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:33
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:34
 msgid "Persisted-props Svelte island"
 msgstr "プロパティが永続化された Svelte アイランド"
 
-#: src/pages/interpolation.astro:79
+#: src/pages/interpolation.astro:69
 msgid "Plain Trans component message on the interpolation page."
 msgstr "interpolation ページ上の通常の Trans コンポーネントメッセージです。"
 
-#: src/pages/interpolation.astro:32
+#: src/pages/interpolation.astro:28
 msgid "Plain translated expression inside an Astro interpolation."
 msgstr "Astro interpolation 内の通常の翻訳済み式です。"
 
-#: src/pages/formats.astro:41
+#: src/pages/formats.astro:42
 msgid "Plural and selection macros cover count, tone, and rank."
 msgstr "plural と selection マクロでカウント、トーン、順位を確認します。"
 
-#: src/components/react/ReactRichTextIsland.tsx:27
+#: src/components/react/ReactRichTextIsland.tsx:28
 msgid "React can preserve <0>strong emphasis</0> in translated output."
 msgstr "React は翻訳結果の中でも<0>強調表示</0>を保てます。"
 
-#: src/components/react/ReactLinguiIsland.tsx:22
+#: src/components/react/ReactLinguiIsland.tsx:23
 msgid "React components can translate Lingui descriptors inside Astro."
 msgstr "React コンポーネントは Astro の中で Lingui のディスクリプタを翻訳できます。"
 
-#: src/components/react/ReactFormatsIsland.tsx:14
+#: src/components/react/ReactFormatsIsland.tsx:15
 msgid "React formats"
 msgstr "React フォーマット"
 
-#: src/components/react/ReactLinguiIsland.tsx:19
+#: src/components/react/ReactLinguiIsland.tsx:20
 msgid "React island"
 msgstr "React アイランド"
 
-#: src/components/TransitionShowcase.astro:96
+#: src/components/TransitionShowcase.astro:99
 msgid "React islands"
 msgstr "React アイランド"
 
-#: src/components/react/ReactRichTextIsland.tsx:18
+#: src/components/react/ReactRichTextIsland.tsx:19
 msgid "React keeps the <0>settings link</0> inside a translated sentence."
 msgstr "React は翻訳された文の中でも<0>設定リンク</0>を保てます。"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:48
+#: src/components/react/ReactTransitionCounterIsland.tsx:49
 msgid "React props say {pageLabel} in {localeLabel}."
 msgstr "React のプロパティでは {pageLabel} / {localeLabel} が見えています。"
 
-#: src/pages/settings.astro:43
+#: src/pages/settings.astro:45
 msgid "React reads Lingui through an I18nProvider."
 msgstr "React は I18nProvider 経由で Lingui を読み取ります。"
 
-#: src/components/react/ReactRichTextIsland.tsx:12
+#: src/components/react/ReactRichTextIsland.tsx:13
 msgid "React rich text"
 msgstr "React リッチテキスト"
 
-#: src/components/react/ReactRichTextIsland.tsx:15
+#: src/components/react/ReactRichTextIsland.tsx:16
 msgid "React rich text keeps component placeholders intact."
 msgstr "React リッチテキストはコンポーネントのプレースホルダーをそのまま保ちます。"
 
-#: src/components/react/ReactFormatsIsland.tsx:17
+#: src/components/react/ReactFormatsIsland.tsx:18
 msgid "React runs plural, select, and selectOrdinal macros in component code."
 msgstr "React はコンポーネントコードの中で plural、select、selectOrdinal マクロを実行します。"
 
-#: src/components/TransitionShowcase.astro:127
+#: src/components/TransitionShowcase.astro:132
 msgid "Render stamp: {renderStamp}"
 msgstr "レンダースタンプ: {renderStamp}"
 
-#: src/pages/index.astro:79
+#: src/pages/index.astro:85
 msgid "Render Svelte and React islands with the same locale."
 msgstr "Svelte と React のアイランドを同じロケールで描画します。"
 
-#: src/pages/settings.astro:35
+#: src/pages/settings.astro:34
 msgid "Return to the <0>home page</0> when you are done."
 msgstr "終わったら<0>ホームページ</0>に戻ってください。"
 
-#: src/layouts/AppLayout.astro:29
-#: src/pages/rich-text.astro:22
+#: src/layouts/AppLayout.astro:28
+#: src/pages/rich-text.astro:23
 msgid "Rich text"
 msgstr "リッチテキスト"
 
-#: src/pages/index.astro:91
+#: src/pages/index.astro:99
 msgid "Rich text messages"
 msgstr "リッチテキストメッセージ"
 
-#: src/pages/rich-text.astro:10
+#: src/pages/rich-text.astro:11
 msgid "Rich text page"
 msgstr "リッチテキストページ"
 
-#: src/pages/rich-text.astro:14
+#: src/pages/rich-text.astro:15
 msgid "Rich text translation checks"
 msgstr "リッチテキスト翻訳の確認"
 
-#: src/pages/rich-text.astro:25
+#: src/pages/rich-text.astro:26
 msgid "Rich text translations keep links and emphasis intact."
 msgstr "リッチテキスト翻訳でもリンクと強調表示を保てます。"
 
@@ -639,50 +639,50 @@ msgstr "ルーターページ A"
 msgid "Router page B"
 msgstr "ルーターページ B"
 
-#: src/layouts/AppLayout.astro:31
-#: src/pages/routing/[slug].astro:21
+#: src/layouts/AppLayout.astro:30
+#: src/pages/routing/[slug].astro:22
 msgid "Routing"
 msgstr "ルーティング"
 
-#: src/pages/routing/[slug].astro:8
+#: src/pages/routing/[slug].astro:9
 msgid "Routing page"
 msgstr "ルーティングページ"
 
-#: src/pages/interpolation.astro:44
+#: src/pages/interpolation.astro:40
 msgid "Second translated fragment child after an HTML comment inside an Astro interpolation."
 msgstr "Astro interpolation 内で HTML コメントの後にある 2 つ目の翻訳済み fragment 子です。"
 
-#: src/pages/interpolation.astro:37
+#: src/pages/interpolation.astro:33
 msgid "Second translated fragment child inside an Astro interpolation."
 msgstr "Astro interpolation 内の 2 つ目の翻訳済み fragment 子です。"
 
-#: src/layouts/AppLayout.astro:27
-#: src/pages/server.astro:21
+#: src/layouts/AppLayout.astro:26
+#: src/pages/server.astro:22
 msgid "Server"
 msgstr "サーバー"
 
-#: src/pages/index.astro:33
+#: src/pages/index.astro:34
 msgid "Server locale: {localeLabel}"
 msgstr "サーバーロケール: {localeLabel}"
 
-#: src/pages/server.astro:9
+#: src/pages/server.astro:10
 msgid "Server page"
 msgstr "サーバーページ"
 
-#: src/pages/server.astro:13
+#: src/pages/server.astro:14
 msgid "Server translation checks"
 msgstr "サーバー翻訳の確認"
 
-#: src/pages/index.astro:45
+#: src/pages/index.astro:46
 msgid "Server translations"
 msgstr "サーバー翻訳"
 
-#: src/layouts/AppLayout.astro:32
-#: src/pages/settings.astro:21
+#: src/layouts/AppLayout.astro:31
+#: src/pages/settings.astro:22
 msgid "Settings"
 msgstr "設定"
 
-#: src/pages/settings.astro:9
+#: src/pages/settings.astro:10
 msgid "Settings page"
 msgstr "設定ページ"
 
@@ -690,35 +690,35 @@ msgstr "設定ページ"
 msgid "Shared descriptor imported from plain TypeScript."
 msgstr "素の TypeScript から import した共有ディスクリプタです。"
 
-#: src/pages/interpolation.astro:33
+#: src/pages/interpolation.astro:29
 msgid "Single translated element root inside an Astro interpolation."
 msgstr "Astro interpolation 内の単一の翻訳済み element root です。"
 
-#: src/pages/stress.astro:74
+#: src/pages/stress.astro:76
 msgid "Stress"
 msgstr "ストレス"
 
-#: src/pages/stress.astro:14
+#: src/pages/stress.astro:15
 msgid "Stress page"
 msgstr "ストレスページ"
 
-#: src/pages/settings.astro:42
+#: src/pages/settings.astro:44
 msgid "Svelte activates Lingui inside its island."
 msgstr "Svelte はアイランドの内部で Lingui を有効化します。"
 
-#: src/pages/islands.astro:28
+#: src/pages/islands.astro:29
 msgid "Svelte and React islands read the same active locale."
 msgstr "Svelte と React のアイランドは同じアクティブなロケールを読み取ります。"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:31
+#: src/components/svelte/SvelteRichTextIsland.svelte:32
 msgid "Svelte can preserve <0>strong emphasis</0> in translated output."
 msgstr "Svelte は翻訳結果の中でも<0>強調表示</0>を保てます。"
 
-#: src/components/svelte/SvelteFormatsIsland.svelte:23
+#: src/components/svelte/SvelteFormatsIsland.svelte:24
 msgid "Svelte formats"
 msgstr "Svelte フォーマット"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:23
+#: src/components/svelte/SvelteLinguiIsland.svelte:24
 msgid "Svelte island"
 msgstr "Svelte アイランド"
 
@@ -726,43 +726,43 @@ msgstr "Svelte アイランド"
 msgid "Svelte islands"
 msgstr "Svelte アイランド"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:24
+#: src/components/svelte/SvelteRichTextIsland.svelte:25
 msgid "Svelte keeps the <0>settings link</0> inside a translated sentence."
 msgstr "Svelte は翻訳された文の中でも<0>設定リンク</0>を保てます。"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:25
+#: src/components/svelte/SvelteLinguiIsland.svelte:27
 msgid "Svelte macros keep working inside Astro."
 msgstr "Svelte のマクロは Astro の中でもそのまま動きます。"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:44
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:45
 msgid "Svelte props say {pageLabel} in {localeLabel}."
 msgstr "Svelte のプロパティでは {pageLabel} / {localeLabel} が見えています。"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:18
+#: src/components/svelte/SvelteRichTextIsland.svelte:19
 msgid "Svelte rich text"
 msgstr "Svelte リッチテキスト"
 
-#: src/components/svelte/SvelteRichTextIsland.svelte:21
+#: src/components/svelte/SvelteRichTextIsland.svelte:22
 msgid "Svelte rich text keeps component placeholders intact."
 msgstr "Svelte リッチテキストはコンポーネントのプレースホルダーをそのまま保ちます。"
 
-#: src/components/svelte/SvelteFormatsIsland.svelte:26
+#: src/components/svelte/SvelteFormatsIsland.svelte:27
 msgid "Svelte runs plural, select, and selectOrdinal macros in component code."
 msgstr "Svelte はコンポーネントコードの中で plural、select、selectOrdinal マクロを実行します。"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:43
+#: src/components/svelte/SvelteLinguiIsland.svelte:46
 msgid "Svelte sees locale {localeLabel}."
 msgstr "Svelte からはロケール {localeLabel} が見えます。"
 
-#: src/pages/routing/[slug].astro:37
+#: src/pages/routing/[slug].astro:34
 msgid "Switch to the <0>second route</0> without dropping the locale."
 msgstr "ロケールを維持したまま <0>2 つ目のルート</0>へ移動します。"
 
-#: src/components/svelte/SvelteLinguiIsland.svelte:27
+#: src/components/svelte/SvelteLinguiIsland.svelte:30
 msgid "The active <0>Lingui context</0> is created inside the Svelte island."
 msgstr "アクティブな <0>Lingui コンテキスト</0>は Svelte アイランドの内部で作られます。"
 
-#: src/components/react/ReactLinguiIsland.tsx:25
+#: src/components/react/ReactLinguiIsland.tsx:26
 msgid "The active locale reaches React through a dedicated Lingui instance."
 msgstr "アクティブなロケールは専用の Lingui インスタンスを通じて React に届きます。"
 
@@ -770,11 +770,11 @@ msgstr "アクティブなロケールは専用の Lingui インスタンスを�
 msgid "The cards below mirror the same macro families inside component code."
 msgstr "下のカードはコンポーネントコードの中の同じマクロファミリーを反映しています。"
 
-#: src/pages/rich-text.astro:28
+#: src/pages/rich-text.astro:29
 msgid "The cards below render their own rich text messages for comparison."
 msgstr "下のカードは比較のためにそれぞれ独自のリッチテキストメッセージを描画します。"
 
-#: src/pages/server.astro:41
+#: src/pages/server.astro:39
 msgid "The current locale label is {localeLabel}, and it comes from the same request."
 msgstr "現在のロケールラベルは {localeLabel} で、同じリクエストから来ています。"
 
@@ -782,7 +782,7 @@ msgstr "現在のロケールラベルは {localeLabel} で、同じリクエス
 msgid "The layout, page body, and locale badge all resolve from the request-bound Lingui instance."
 msgstr "レイアウト、ページ本体、ロケールバッジはすべてリクエストに紐づいた Lingui インスタンスから解決されます。"
 
-#: src/pages/routing/[slug].astro:33
+#: src/pages/routing/[slug].astro:31
 msgid "The locale cookie still applies here, so the translated page matches the previous request."
 msgstr "ここでもロケールクッキーが適用されるため、翻訳されたページは前のリクエストと一致します。"
 
@@ -790,7 +790,7 @@ msgstr "ここでもロケールクッキーが適用されるため、翻訳さ
 msgid "The locale is stored in a cookie so the next request stays consistent."
 msgstr "ロケールはクッキーに保存されるため、次のリクエストでも一貫性が保たれます。"
 
-#: src/pages/transitions.astro:68
+#: src/pages/transitions.astro:63
 msgid "The page content still changes, but ClientRouter keeps matching persisted nodes mounted across the transition."
 msgstr "ページ本体が切り替わっても、ClientRouter は一致する永続化されたノードを遷移中もマウントしたまま保ちます。"
 
@@ -798,71 +798,71 @@ msgstr "ページ本体が切り替わっても、ClientRouter は一致する�
 msgid "This page initializes Lingui in its own frontmatter."
 msgstr "このページはフロントマターで Lingui を初期化します。"
 
-#: src/pages/server.astro:37
+#: src/pages/server.astro:36
 msgid "This paragraph was translated directly inside a .astro page."
 msgstr "この段落は .astro ページの中で直接翻訳されています。"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:41
+#: src/components/react/ReactTransitionCounterIsland.tsx:42
 msgid "This React island remounts whenever the route or locale changes."
 msgstr "この React アイランドはルートまたはロケールが変わるたびに再マウントされます。"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:43
+#: src/components/react/ReactTransitionCounterIsland.tsx:44
 msgid "This React island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
 msgstr "この React アイランドは transition:persist と transition:persist-props を使うため、カウンターは残りますがロケールとページのプロパティは固定されたままです。"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:42
+#: src/components/react/ReactTransitionCounterIsland.tsx:43
 msgid "This React island uses transition:persist, so its counter survives while locale and page props still update."
 msgstr "この React アイランドは transition:persist を使うため、カウンターは残りつつロケールとページのプロパティは更新されます。"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:38
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:39
 msgid "This Svelte island remounts whenever the route or locale changes."
 msgstr "この Svelte アイランドはルートまたはロケールが変わるたびに再マウントされます。"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:40
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:41
 msgid "This Svelte island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen."
 msgstr "この Svelte アイランドは transition:persist と transition:persist-props を使うため、カウンターは残りますがロケールとページのプロパティは固定されたままです。"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:39
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:40
 msgid "This Svelte island uses transition:persist, so its counter survives while locale and page props still update."
 msgstr "この Svelte アイランドは transition:persist を使うため、カウンターは残りつつロケールとページのプロパティは更新されます。"
 
-#: src/pages/interpolation.astro:154
+#: src/pages/interpolation.astro:144
 msgid "Trans alternate element after an unselected HTML comment consequent inside an Astro interpolation."
 msgstr "Astro interpolation 内で、選択されなかった HTML コメントの consequent の後にある Trans の alternate 要素です。"
 
-#: src/pages/interpolation.astro:78
+#: src/pages/interpolation.astro:68
 msgid "Trans component baseline"
 msgstr "Trans コンポーネントの基本ケース"
 
-#: src/pages/interpolation.astro:115
+#: src/pages/interpolation.astro:105
 msgid "Trans component rendered from inside an Astro interpolation."
 msgstr "Astro interpolation 内から描画された Trans コンポーネントです。"
 
-#: src/pages/interpolation.astro:157
+#: src/pages/interpolation.astro:147
 msgid "Trans consequent element before an unselected HTML comment alternate inside an Astro interpolation."
 msgstr "Astro interpolation 内で、選択されなかった HTML コメントの alternate の前にある Trans の consequent 要素です。"
 
-#: src/pages/interpolation.astro:140
+#: src/pages/interpolation.astro:130
 msgid "Trans-wrapped message before a JavaScript comment inside an Astro interpolation.  Trans-wrapped message after a JavaScript comment inside an Astro interpolation."
 msgstr "Astro interpolation 内の JavaScript コメント前にある Trans で囲まれたメッセージです。  Astro interpolation 内の JavaScript コメント後にある Trans で囲まれたメッセージです。"
 
-#: src/pages/interpolation.astro:99
+#: src/pages/interpolation.astro:89
 msgid "Trans-wrapped message before a JavaScript comment outside an Astro interpolation.  Trans-wrapped message after a JavaScript comment outside an Astro interpolation."
 msgstr "Astro interpolation 外の JavaScript コメント前にある Trans で囲まれたメッセージです。  Astro interpolation 外の JavaScript コメント後にある Trans で囲まれたメッセージです。"
 
-#: src/pages/interpolation.astro:147
+#: src/pages/interpolation.astro:137
 msgid "Trans-wrapped message before an HTML comment-only interpolation inside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation inside an Astro interpolation."
 msgstr "Astro interpolation 内の HTML コメントのみの interpolation 前にある Trans で囲まれたメッセージです。 <0/> Astro interpolation 内の HTML コメントのみの interpolation 後にある Trans で囲まれたメッセージです。"
 
-#: src/pages/interpolation.astro:104
+#: src/pages/interpolation.astro:94
 msgid "Trans-wrapped message before an HTML comment-only interpolation outside an Astro interpolation. <0/> Trans-wrapped message after an HTML comment-only interpolation outside an Astro interpolation."
 msgstr "Astro interpolation 外の HTML コメントのみの interpolation 前にある Trans で囲まれたメッセージです。 <0/> Astro interpolation 外の HTML コメントのみの interpolation 後にある Trans で囲まれたメッセージです。"
 
-#: src/pages/interpolation.astro:116
+#: src/pages/interpolation.astro:106
 msgid "Trans-wrapped plain expression inside an Astro interpolation."
 msgstr "Astro interpolation 内の Trans で囲まれた通常の式です。"
 
-#: src/pages/interpolation.astro:80
+#: src/pages/interpolation.astro:70
 msgid "Trans-wrapped plain expression outside an Astro interpolation."
 msgstr "Astro interpolation 外の Trans で囲まれた通常の式です。"
 
@@ -880,92 +880,92 @@ msgstr "ClientRouter ありの遷移デモ"
 msgid "Transition demo without ClientRouter"
 msgstr "ClientRouter なしの遷移デモ"
 
-#: src/pages/transitions.astro:45
+#: src/pages/transitions.astro:41
 msgid "transition:persist markers stay in the markup, but they have no effect because the browser performs a normal document navigation."
 msgstr "transition:persist のマーカーはマークアップに残りますが、ブラウザが通常のドキュメント遷移を行うため効果はありません。"
 
-#: src/layouts/AppLayout.astro:33
-#: src/pages/transitions.astro:19
+#: src/layouts/AppLayout.astro:32
+#: src/pages/transitions.astro:20
 msgid "Transitions"
 msgstr "トランジション"
 
-#: src/pages/transitions.astro:7
+#: src/pages/transitions.astro:8
 msgid "Transitions page"
 msgstr "トランジションページ"
 
-#: src/pages/interpolation.astro:67
+#: src/pages/interpolation.astro:59
 msgid "Translated alternate element after an unselected HTML comment consequent."
 msgstr "選択されなかった HTML コメント consequent の後にある翻訳済み alternate 要素です。"
 
-#: src/pages/interpolation.astro:69
+#: src/pages/interpolation.astro:61
 msgid "Translated alternate Trans branch after an unselected HTML comment consequent."
 msgstr "選択されなかった HTML コメント consequent の後にある翻訳済み Trans alternate 分岐です。"
 
-#: src/pages/interpolation.astro:68
+#: src/pages/interpolation.astro:60
 msgid "Translated consequent element before an unselected HTML comment alternate."
 msgstr "選択されなかった HTML コメント alternate の前にある翻訳済み consequent 要素です。"
 
-#: src/pages/interpolation.astro:70
+#: src/pages/interpolation.astro:62
 msgid "Translated consequent Trans branch before an unselected HTML comment alternate."
 msgstr "選択されなかった HTML コメント alternate の前にある翻訳済み Trans consequent 分岐です。"
 
-#: src/components/astro/AstroRichText.astro:37
-#: src/components/svelte/SvelteRichTextIsland.svelte:43
+#: src/components/astro/AstroRichText.astro:40
+#: src/components/svelte/SvelteRichTextIsland.svelte:44
 msgid "Translation previews can show <0/> and <1/> in the same sentence."
 msgstr "翻訳プレビューでは、同じ文の中に <0/> と <1/> を表示できます。"
 
-#: src/pages/index.astro:155
+#: src/pages/index.astro:165
 msgid "Use cookies to keep the next request aligned."
 msgstr "クッキーを使って次のリクエストでもロケールを揃えます。"
 
-#: src/pages/stress.astro:80
+#: src/pages/stress.astro:82
 msgid "Use query params to drive exact-number branches and nested macro output."
 msgstr "クエリパラメータを使って正確な数の分岐やネストされたマクロ出力を制御します。"
 
-#: src/components/TransitionShowcase.astro:26
+#: src/components/TransitionShowcase.astro:27
 msgid "Use the header language switcher and the paired route link below. The plain persisted islands should keep their counters while still updating to the new locale and page label, while persisted-props keeps both frozen."
 msgstr "ヘッダーの言語切り替えスイッチと下の対応するルートリンクを使ってください。通常の永続化されたアイランドは新しいロケールとページラベルに更新されつつカウンターを保持し、プロパティが永続化された場合は両方を固定したままにします。"
 
-#: src/components/TransitionShowcase.astro:27
+#: src/components/TransitionShowcase.astro:28
 msgid "Use the header language switcher and the paired route link below. Without ClientRouter, every island remounts, so no state survives and every locale change recreates the islands."
 msgstr "ヘッダーの言語切り替えスイッチと下の対応するルートリンクを使ってください。ClientRouter がない場合、すべてのアイランドが再マウントされるため状態は残らず、ロケールを変えるたびにアイランドが作り直されます。"
 
-#: src/components/TransitionShowcase.astro:131
+#: src/components/TransitionShowcase.astro:135
 msgid "Use this stamp to confirm that the page itself changed even when a persisted island keeps its state."
 msgstr "永続化されたアイランドが状態を保持していても、ページ自体が切り替わったことをこのスタンプで確認できます。"
 
-#: src/pages/index.astro:43
-#: src/pages/index.astro:75
-#: src/pages/index.astro:89
-#: src/pages/index.astro:103
-#: src/pages/index.astro:117
-#: src/pages/index.astro:135
-#: src/pages/index.astro:151
-#: src/pages/index.astro:165
+#: src/pages/index.astro:44
+#: src/pages/index.astro:81
+#: src/pages/index.astro:97
+#: src/pages/index.astro:113
+#: src/pages/index.astro:129
+#: src/pages/index.astro:145
+#: src/pages/index.astro:161
+#: src/pages/index.astro:177
 msgid "Verification routes"
 msgstr "検証ルート"
 
-#: src/pages/index.astro:93
+#: src/pages/index.astro:101
 msgid "Verify linked and emphasized translations across runtimes."
 msgstr "ランタイムをまたいだリンク付き / 強調された翻訳を確認します。"
 
-#: src/components/react/ReactTransitionCounterIsland.tsx:32
+#: src/components/react/ReactTransitionCounterIsland.tsx:33
 msgid "Volatile React island"
 msgstr "揮発性の React アイランド"
 
-#: src/components/svelte/SvelteTransitionCounterIsland.svelte:31
+#: src/components/svelte/SvelteTransitionCounterIsland.svelte:32
 msgid "Volatile Svelte island"
 msgstr "揮発性の Svelte アイランド"
 
-#: src/pages/transitions.astro:59
+#: src/pages/transitions.astro:57
 msgid "With ClientRouter"
 msgstr "ClientRouter あり"
 
-#: src/pages/transitions.astro:36
+#: src/pages/transitions.astro:35
 msgid "Without ClientRouter"
 msgstr "ClientRouter なし"
 
-#: src/components/TransitionShowcase.astro:24
+#: src/components/TransitionShowcase.astro:25
 msgid "Without ClientRouter, every navigation reloads the document."
 msgstr "ClientRouter がない場合、遷移のたびにドキュメント全体が再読み込みされます。"
 
