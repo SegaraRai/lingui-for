@@ -17,10 +17,10 @@ catalogs:
     "@astrojs/astro2tsx": ^0.1.4
     "@astrojs/react": ^7.1.5
     "@astrojs/svelte": ^9.1.2
-    "@babel/core": ^7.29.13
-    "@babel/generator": ^7.29.13
-    "@babel/traverse": ^7.29.13
-    "@babel/types": ^7.29.11
+    "@babel/core": ^8.1.0
+    "@babel/generator": ^8.1.0
+    "@babel/traverse": ^8.1.0
+    "@babel/types": ^8.1.0
     "@jridgewell/trace-mapping": ^0.3.31
     "@lingui/babel-plugin-lingui-macro": ^6.12.0
     "@lingui/cli": ^6.12.0
@@ -34,7 +34,6 @@ catalogs:
     "@stillwind/integration": ^0.9.0
     "@sveltejs/vite-plugin-svelte": ^7.3.1
     "@types/babel__core": ^7.20.5
-    "@types/babel__generator": ^7.27.0
     "@types/babel__traverse": ^7.28.0
     "@types/node": ^26.6.6
     "@types/react": ^19.3.0
@@ -64,7 +63,7 @@ catalogs:
     "@lingui/core": "^5 || ^6"
     "@lingui/babel-plugin-lingui-macro": "^5 || ^6"
     astro: "^5 || ^6 || ^7"
-    cosmiconfig: ^9
+    cosmiconfig: "^9 || ^10"
     esbuild: "*"
     jiti: ^2
     oxc-parser: ">=0.100.0 <1.0.0"
