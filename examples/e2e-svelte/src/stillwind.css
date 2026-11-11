@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "stillwind";
 
 @plugin "daisyui" {
   themes:
@@ -26,5 +26,16 @@
 
   a {
     color: inherit;
+  }
+}
+
+/* Translated messages keep their markup as written, so their links use plain class names */
+@layer components {
+  .link {
+    @apply link;
+  }
+
+  .link-primary {
+    @apply link-primary;
   }
 }

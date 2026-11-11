@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { t } from "lingui-for-svelte/macro";
 
   import { page } from "$app/state";
@@ -13,13 +14,14 @@
   }
 </script>
 
-<div class="join" aria-label={$t`Switch language`}>
+<div {...style("join")} aria-label={$t`Switch language`}>
   {#each supportedLocales as supportedLocale}
     <a
       href={buildLocaleHref(supportedLocale)}
-      class="btn btn-sm join-item"
-      class:btn-primary={supportedLocale === locale}
-      class:btn-ghost={supportedLocale !== locale}
+      {...style(
+        "btn btn-sm join-item",
+        supportedLocale === locale ? "btn-primary" : "btn-ghost",
+      )}
     >
       {#if supportedLocale === "en"}
         {$t`English`}

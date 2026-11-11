@@ -5,8 +5,6 @@
   import { appI18n, ensureLocale } from "$lib/i18n/session.svelte";
   import type { SupportedLocale } from "$lib/i18n/locale";
 
-  import "../app.css";
-
   let { data, children } = $props();
   setLinguiContext(appI18n);
 

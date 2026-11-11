@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { setupI18n } from "@lingui/core";
   import { setLinguiContext } from "lingui-for-svelte";
   import { plural, t } from "lingui-for-svelte/macro";
@@ -22,37 +23,41 @@
   }
 </script>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-5">
-    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-5")}>
+    <p
+      {...style(
+        "text-primary text-sm font-semibold tracking-[0.3em] uppercase",
+      )}
+    >
       {$t`Init: Preloaded`}
     </p>
-    <h1 class="text-4xl font-black md:text-5xl">
+    <h1 {...style("font-black text-4xl md:text-5xl")}>
       {$t`All locales preloaded at init`}
     </h1>
-    <p class="text-base-content/80">
+    <p {...style("text-base-content/80")}>
       {$t`This component calls setupI18n with all locale messages upfront. Switching only requires activate() - no load() call.`}
     </p>
-    <p class="text-base-content/60 text-sm">
+    <p {...style("text-base-content/60 text-sm")}>
       {$t`This widget has its own i18n context, independent of the app locale.`}
     </p>
 
-    <div class="flex flex-wrap items-center gap-4">
-      <button class="btn btn-primary" onclick={toggle} type="button">
+    <div {...style("flex flex-wrap items-center gap-4")}>
+      <button {...style("btn btn-primary")} onclick={toggle} type="button">
         {$t`Toggle locale`}
-        <span class="badge badge-neutral ml-1">{locale}</span>
+        <span {...style("badge badge-neutral ml-1")}>{locale}</span>
       </button>
-      <div class="flex items-center gap-2">
+      <div {...style("flex items-center gap-2")}>
         <button
-          class="btn btn-outline btn-sm"
+          {...style("btn btn-outline btn-sm")}
           onclick={() => (count = Math.max(0, count - 1))}
           type="button"
         >
           −
         </button>
-        <span class="font-mono text-lg">{count}</span>
+        <span {...style("font-mono text-lg")}>{count}</span>
         <button
-          class="btn btn-outline btn-sm"
+          {...style("btn btn-outline btn-sm")}
           onclick={() => (count += 1)}
           type="button"
         >
@@ -61,7 +66,7 @@
       </div>
     </div>
 
-    <div class="space-y-2 text-lg">
+    <div {...style("space-y-2 text-lg")}>
       <p>{$t`Hello from the preloaded init pattern.`}</p>
       <p>
         {$plural(count, {

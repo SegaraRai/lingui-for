@@ -1,37 +1,44 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { t, Plural, Select, SelectOrdinal } from "lingui-for-svelte/macro";
 
   let count = $state(2);
   let role = $state("other");
 </script>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-5">
-    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-5")}>
+    <p
+      {...style(
+        "text-primary text-sm font-semibold tracking-[0.3em] uppercase",
+      )}
+    >
       {$t`Components`}
     </p>
-    <h1 class="text-4xl font-black md:text-5xl">{$t`ICU component macros`}</h1>
-    <p class="text-base-content/80">
+    <h1 {...style("font-black text-4xl md:text-5xl")}>
+      {$t`ICU component macros`}
+    </h1>
+    <p {...style("text-base-content/80")}>
       {$t`Plural, Select, and SelectOrdinal keep branch-heavy messages readable inside markup.`}
     </p>
 
-    <div class="flex flex-wrap gap-3">
+    <div {...style("flex flex-wrap gap-3")}>
       <button
-        class="btn btn-outline btn-primary"
+        {...style("btn btn-outline btn-primary")}
         onclick={() => (count = Math.max(0, count - 1))}
         type="button"
       >
         {$t`Decrease`}
       </button>
       <button
-        class="btn btn-primary"
+        {...style("btn btn-primary")}
         onclick={() => (count += 1)}
         type="button"
       >
         {$t`Increase`}
       </button>
       <button
-        class="btn btn-secondary"
+        {...style("btn btn-secondary")}
         onclick={() => (role = role === "female" ? "other" : "female")}
         type="button"
       >
@@ -39,7 +46,7 @@
       </button>
     </div>
 
-    <div class="space-y-3 text-lg">
+    <div {...style("space-y-3 text-lg")}>
       <p>
         <Plural
           value={count}

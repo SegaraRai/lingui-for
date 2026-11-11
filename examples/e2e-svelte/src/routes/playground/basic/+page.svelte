@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { msg, t } from "lingui-for-svelte/macro";
   import { RuntimeTrans } from "lingui-for-svelte/runtime";
 
@@ -11,24 +12,28 @@
   const localDescriptor = msg`Descriptor created in a route component.`;
 </script>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-5">
-    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-5")}>
+    <p
+      {...style(
+        "text-primary text-sm font-semibold tracking-[0.3em] uppercase",
+      )}
+    >
       {$t`Basic`}
     </p>
-    <h1 class="text-4xl font-black md:text-5xl">
+    <h1 {...style("font-black text-4xl md:text-5xl")}>
       {$t`Direct macros in Svelte components`}
     </h1>
-    <p class="text-base-content/80">
+    <p {...style("text-base-content/80")}>
       {$t`This route keeps the common Lingui flow simple: write messages next to the code that renders them.`}
     </p>
 
-    <label class="form-control max-w-sm gap-2">
-      <span class="label-text font-semibold">{$t`Name`}</span>
-      <input bind:value={name} class="input input-bordered" />
+    <label {...style("max-w-sm gap-2")}>
+      <span {...style("font-semibold")}>{$t`Name`}</span>
+      <input bind:value={name} {...style("input")} />
     </label>
 
-    <div class="space-y-3 text-lg">
+    <div {...style("space-y-3 text-lg")}>
       <p>{$t`Immediate translation in markup.`}</p>
       <p>{$t`Hello ${name} from the basic route.`}</p>
       <p><RuntimeTrans {...localDescriptor} /></p>

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { ph, t, Trans } from "lingui-for-svelte/macro";
 
   const syntaxOwner = "Svelte syntax";
@@ -34,20 +35,24 @@
 <!-- lingui-reset -->
 
 {#snippet syntaxChip(text: string)}
-  <span class="badge badge-outline flex-none" title={$t`Snippet badge`}>
+  <span {...style("badge badge-outline flex-none")} title={$t`Snippet badge`}>
     {$t`Snippet item: ${text}`}
   </span>
 {/snippet}
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-5">
-    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-5")}>
+    <p
+      {...style(
+        "text-primary text-sm font-semibold tracking-[0.3em] uppercase",
+      )}
+    >
       {$t`Syntax`}
     </p>
-    <h1 class="text-4xl font-black md:text-5xl">
+    <h1 {...style("font-black text-4xl md:text-5xl")}>
       {$t`$t across Svelte syntax positions`}
     </h1>
-    <p class="text-base-content/80">
+    <p {...style("text-base-content/80")}>
       {$t`This route exercises @const, attributes, snippets, keyed blocks, and other expression sites in Svelte.`}
     </p>
     <p>{directiveMessage}</p>
@@ -58,21 +63,21 @@
       })}.</Trans
     >
 
-    <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]">
-      <label class="form-control gap-2">
-        <span class="label-text font-semibold">{$t`Search examples`}</span>
+    <div {...style("grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto]")}>
+      <label {...style("gap-2")}>
+        <span {...style("font-semibold")}>{$t`Search examples`}</span>
         <input
           bind:value={syntaxState.query}
-          class="input input-bordered"
+          {...style("input")}
           placeholder={$t`Type to filter syntax examples`}
           title={$t`This placeholder comes from $t inside an attribute`}
           aria-label={$t`Filter playground syntax examples`}
         />
       </label>
 
-      <div class="flex flex-wrap items-end gap-3">
+      <div {...style("flex flex-wrap items-end gap-3")}>
         <button
-          class="btn btn-outline btn-primary"
+          {...style("btn btn-outline btn-primary")}
           onclick={toggleMode}
           title={$t`Toggle the status branch`}
           type="button"
@@ -80,7 +85,7 @@
           {$t`Toggle mode`}
         </button>
         <button
-          class="btn btn-secondary"
+          {...style("btn btn-secondary")}
           onclick={bumpRevision}
           title={$t`Force a keyed subtree refresh`}
           type="button"
@@ -96,7 +101,7 @@
           ? $t`Status summary: idle`
           : $t`Status summary: active`}
 
-      <div class="space-y-3 text-lg">
+      <div {...style("space-y-3 text-lg")}>
         <p>{statusSummary}</p>
 
         {#if syntaxState.mode === "idle"}
@@ -113,16 +118,18 @@
       </div>
     {/if}
 
-    <div class="space-y-3">
+    <div {...style("space-y-3")}>
       {#each syntaxState.items as item, index (item)}
         {#if !syntaxState.query || item.includes(syntaxState.query)}
           {@const rowSummary = $t`Row ${index + 1}: ${item}`}
           <div
-            class="rounded-box border-base-300 bg-base-200/50 flex flex-wrap items-center justify-between gap-3 border px-4 py-3"
+            {...style(
+              "rounded-box flex px-4 py-3 flex-wrap items-center justify-between gap-3 bg-base-200/50 border border-base-300",
+            )}
             title={rowSummary}
             aria-label={rowSummary}
           >
-            <span class="font-medium">{rowSummary}</span>
+            <span {...style("font-medium")}>{rowSummary}</span>
             {@render syntaxChip(item)}
           </div>
         {/if}
@@ -130,7 +137,7 @@
     </div>
 
     {#key syntaxState.revision}
-      <div class="alert alert-info" aria-label={$t`Keyed block example`}>
+      <div {...style("alert alert-info")} aria-label={$t`Keyed block example`}>
         <span>{$t`Keyed subtree revision ${syntaxState.revision}`}</span>
       </div>
     {/key}

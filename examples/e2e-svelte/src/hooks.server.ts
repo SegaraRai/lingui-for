@@ -1,4 +1,6 @@
 import type { Handle } from "@sveltejs/kit";
+import { sequence } from "@sveltejs/kit/hooks";
+import { handle as stillwindHandle } from "@stillwind/integration/sveltekit/handle";
 
 import {
   LOCALE_COOKIE,
@@ -6,7 +8,7 @@ import {
   resolveLocale,
 } from "$lib/i18n/locale";
 
-export const handle: Handle = async ({ event, resolve }) => {
+const localeHandle: Handle = async ({ event, resolve }) => {
   const requestedLocale = event.url.searchParams.get("lang");
   const cookieLocale = event.cookies.get(LOCALE_COOKIE);
 
@@ -32,3 +34,5 @@ export const handle: Handle = async ({ event, resolve }) => {
       ),
   });
 };
+
+export const handle = sequence(stillwindHandle, localeHandle);

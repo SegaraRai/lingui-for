@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { t, Trans } from "lingui-for-svelte/macro";
 
   import InlineBadge from "$lib/playground/InlineBadge.svelte";
@@ -8,19 +9,23 @@
   let selectedRegion = $state("Kansai");
 </script>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-5">
-    <p class="text-primary text-sm font-semibold tracking-[0.3em] uppercase">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-5")}>
+    <p
+      {...style(
+        "text-primary text-sm font-semibold tracking-[0.3em] uppercase",
+      )}
+    >
       {$t`Rich text`}
     </p>
-    <h1 class="text-4xl font-black md:text-5xl">
+    <h1 {...style("font-black text-4xl md:text-5xl")}>
       {$t`Embedded elements and components inside Trans`}
     </h1>
-    <p class="text-base-content/80">
+    <p {...style("text-base-content/80")}>
       {$t`This route focuses on translated markup with both native elements and Svelte components.`}
     </p>
 
-    <div class="space-y-4 text-lg">
+    <div {...style("space-y-4 text-lg")}>
       <p>
         <Trans>
           Read the <a class="link link-primary" href="/settings"
