@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`extract fixtures > 'component-whitespacing' > astro extraction 1`] = `
+exports[`extract fixtures > component-whitespacing > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -61,7 +61,7 @@ exports[`extract fixtures > 'component-whitespacing' > astro extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'component-whitespacing' > official react extraction 1`] = `
+exports[`extract fixtures > component-whitespacing > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -122,7 +122,7 @@ exports[`extract fixtures > 'component-whitespacing' > official react extraction
 ]
 `;
 
-exports[`extract fixtures > 'component-whitespacing' > svelte extraction 1`] = `
+exports[`extract fixtures > component-whitespacing > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -183,7 +183,7 @@ exports[`extract fixtures > 'component-whitespacing' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'component-whitespacing-auto' > astro extraction 1`] = `
+exports[`extract fixtures > component-whitespacing-auto > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -244,7 +244,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > astro extraction 1`]
 ]
 `;
 
-exports[`extract fixtures > 'component-whitespacing-auto' > official react extraction 1`] = `
+exports[`extract fixtures > component-whitespacing-auto > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -305,7 +305,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > official react extra
 ]
 `;
 
-exports[`extract fixtures > 'component-whitespacing-auto' > svelte extraction 1`] = `
+exports[`extract fixtures > component-whitespacing-auto > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -366,7 +366,7 @@ exports[`extract fixtures > 'component-whitespacing-auto' > svelte extraction 1`
 ]
 `;
 
-exports[`extract fixtures > 'deep-rich-text-trans' > astro extraction 1`] = `
+exports[`extract fixtures > deep-rich-text-trans > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -387,7 +387,7 @@ exports[`extract fixtures > 'deep-rich-text-trans' > astro extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'deep-rich-text-trans' > official react extraction 1`] = `
+exports[`extract fixtures > deep-rich-text-trans > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -408,7 +408,7 @@ exports[`extract fixtures > 'deep-rich-text-trans' > official react extraction 1
 ]
 `;
 
-exports[`extract fixtures > 'deep-rich-text-trans' > svelte extraction 1`] = `
+exports[`extract fixtures > deep-rich-text-trans > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -429,7 +429,7 @@ exports[`extract fixtures > 'deep-rich-text-trans' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'exact-number-component' > astro extraction 1`] = `
+exports[`extract fixtures > exact-number-component > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -462,7 +462,7 @@ exports[`extract fixtures > 'exact-number-component' > astro extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'exact-number-component' > official react extraction 1`] = `
+exports[`extract fixtures > exact-number-component > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -495,7 +495,7 @@ exports[`extract fixtures > 'exact-number-component' > official react extraction
 ]
 `;
 
-exports[`extract fixtures > 'exact-number-component' > svelte extraction 1`] = `
+exports[`extract fixtures > exact-number-component > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -528,7 +528,7 @@ exports[`extract fixtures > 'exact-number-component' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'lingui-directive-cross-block' > astro extraction 1`] = `
+exports[`extract fixtures > lingui-directive-cross-block > astro extraction 1`] = `
 [
   {
     "comment": "Directive crossing source regions",
@@ -545,7 +545,7 @@ exports[`extract fixtures > 'lingui-directive-cross-block' > astro extraction 1`
 ]
 `;
 
-exports[`extract fixtures > 'lingui-directive-cross-block' > official react extraction 1`] = `
+exports[`extract fixtures > lingui-directive-cross-block > official react extraction 1`] = `
 [
   {
     "comment": "Directive crossing source regions",
@@ -562,7 +562,7 @@ exports[`extract fixtures > 'lingui-directive-cross-block' > official react extr
 ]
 `;
 
-exports[`extract fixtures > 'lingui-directive-cross-block' > svelte extraction 1`] = `
+exports[`extract fixtures > lingui-directive-cross-block > svelte extraction 1`] = `
 [
   {
     "comment": "Directive crossing source regions",
@@ -579,7 +579,7 @@ exports[`extract fixtures > 'lingui-directive-cross-block' > svelte extraction 1
 ]
 `;
 
-exports[`extract fixtures > 'named-ph' > astro extraction 1`] = `
+exports[`extract fixtures > named-ph > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -612,7 +612,7 @@ exports[`extract fixtures > 'named-ph' > astro extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'named-ph' > official react extraction 1`] = `
+exports[`extract fixtures > named-ph > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -645,7 +645,7 @@ exports[`extract fixtures > 'named-ph' > official react extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'named-ph' > svelte extraction 1`] = `
+exports[`extract fixtures > named-ph > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -678,7 +678,7 @@ exports[`extract fixtures > 'named-ph' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'nested-icu-core' > astro extraction 1`] = `
+exports[`extract fixtures > nested-icu-core > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -699,7 +699,7 @@ exports[`extract fixtures > 'nested-icu-core' > astro extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'nested-icu-core' > official core extraction 1`] = `
+exports[`extract fixtures > nested-icu-core > official core extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -720,7 +720,7 @@ exports[`extract fixtures > 'nested-icu-core' > official core extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'nested-icu-core' > svelte extraction 1`] = `
+exports[`extract fixtures > nested-icu-core > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -741,7 +741,7 @@ exports[`extract fixtures > 'nested-icu-core' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'rich-text-trans' > astro extraction 1`] = `
+exports[`extract fixtures > rich-text-trans > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -760,7 +760,7 @@ exports[`extract fixtures > 'rich-text-trans' > astro extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'rich-text-trans' > official react extraction 1`] = `
+exports[`extract fixtures > rich-text-trans > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -779,7 +779,7 @@ exports[`extract fixtures > 'rich-text-trans' > official react extraction 1`] = 
 ]
 `;
 
-exports[`extract fixtures > 'rich-text-trans' > svelte extraction 1`] = `
+exports[`extract fixtures > rich-text-trans > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -798,7 +798,7 @@ exports[`extract fixtures > 'rich-text-trans' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > astro extraction 1`] = `
+exports[`extract fixtures > trans-with-deeply-nested-component-icu > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -892,7 +892,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > astro ext
 ]
 `;
 
-exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > official react extraction 1`] = `
+exports[`extract fixtures > trans-with-deeply-nested-component-icu > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -986,7 +986,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > official 
 ]
 `;
 
-exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > svelte extraction 1`] = `
+exports[`extract fixtures > trans-with-deeply-nested-component-icu > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1080,7 +1080,7 @@ exports[`extract fixtures > 'trans-with-deeply-nested-component-icu' > svelte ex
 ]
 `;
 
-exports[`extract fixtures > 'trans-with-plural' > astro extraction 1`] = `
+exports[`extract fixtures > trans-with-plural > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1099,7 +1099,7 @@ exports[`extract fixtures > 'trans-with-plural' > astro extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'trans-with-plural' > official react extraction 1`] = `
+exports[`extract fixtures > trans-with-plural > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1118,7 +1118,7 @@ exports[`extract fixtures > 'trans-with-plural' > official react extraction 1`] 
 ]
 `;
 
-exports[`extract fixtures > 'trans-with-plural' > svelte extraction 1`] = `
+exports[`extract fixtures > trans-with-plural > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1137,7 +1137,7 @@ exports[`extract fixtures > 'trans-with-plural' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'unicode-adjacent-text' > astro extraction 1`] = `
+exports[`extract fixtures > unicode-adjacent-text > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1156,7 +1156,7 @@ exports[`extract fixtures > 'unicode-adjacent-text' > astro extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'unicode-adjacent-text' > official react extraction 1`] = `
+exports[`extract fixtures > unicode-adjacent-text > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1175,7 +1175,7 @@ exports[`extract fixtures > 'unicode-adjacent-text' > official react extraction 
 ]
 `;
 
-exports[`extract fixtures > 'unicode-adjacent-text' > svelte extraction 1`] = `
+exports[`extract fixtures > unicode-adjacent-text > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1194,7 +1194,7 @@ exports[`extract fixtures > 'unicode-adjacent-text' > svelte extraction 1`] = `
 ]
 `;
 
-exports[`extract fixtures > 'unicode-zwj-adjacent-text' > astro extraction 1`] = `
+exports[`extract fixtures > unicode-zwj-adjacent-text > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1213,7 +1213,7 @@ exports[`extract fixtures > 'unicode-zwj-adjacent-text' > astro extraction 1`] =
 ]
 `;
 
-exports[`extract fixtures > 'unicode-zwj-adjacent-text' > official react extraction 1`] = `
+exports[`extract fixtures > unicode-zwj-adjacent-text > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1232,7 +1232,7 @@ exports[`extract fixtures > 'unicode-zwj-adjacent-text' > official react extract
 ]
 `;
 
-exports[`extract fixtures > 'unicode-zwj-adjacent-text' > svelte extraction 1`] = `
+exports[`extract fixtures > unicode-zwj-adjacent-text > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1251,7 +1251,7 @@ exports[`extract fixtures > 'unicode-zwj-adjacent-text' > svelte extraction 1`] 
 ]
 `;
 
-exports[`extract fixtures > 'with-id-context-comment-component' > astro extraction 1`] = `
+exports[`extract fixtures > with-id-context-comment-component > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1386,7 +1386,7 @@ exports[`extract fixtures > 'with-id-context-comment-component' > astro extracti
 ]
 `;
 
-exports[`extract fixtures > 'with-id-context-comment-component' > official react extraction 1`] = `
+exports[`extract fixtures > with-id-context-comment-component > official react extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1495,7 +1495,7 @@ exports[`extract fixtures > 'with-id-context-comment-component' > official react
 ]
 `;
 
-exports[`extract fixtures > 'with-id-context-comment-component' > svelte extraction 1`] = `
+exports[`extract fixtures > with-id-context-comment-component > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1630,7 +1630,7 @@ exports[`extract fixtures > 'with-id-context-comment-component' > svelte extract
 ]
 `;
 
-exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`] = `
+exports[`extract fixtures > with-id-context-comment-core > astro extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1765,7 +1765,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > astro extraction 1`
 ]
 `;
 
-exports[`extract fixtures > 'with-id-context-comment-core' > official core extraction 1`] = `
+exports[`extract fixtures > with-id-context-comment-core > official core extraction 1`] = `
 [
   {
     "comment": undefined,
@@ -1900,7 +1900,7 @@ exports[`extract fixtures > 'with-id-context-comment-core' > official core extra
 ]
 `;
 
-exports[`extract fixtures > 'with-id-context-comment-core' > svelte extraction 1`] = `
+exports[`extract fixtures > with-id-context-comment-core > svelte extraction 1`] = `
 [
   {
     "comment": undefined,
