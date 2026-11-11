@@ -7,7 +7,7 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: ja\n"
 
-#: src/pages/index.astro:30
+#: src/pages/index.astro:28
 msgid "Build <0>Astro</0> compatibility."
 msgstr ""
 
