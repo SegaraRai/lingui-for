@@ -20,12 +20,15 @@ export default defineConfig({
       "examples/compat/__snapshots__/**",
       "examples/compat/projects/**",
       "examples/config-types/cases/*",
+      "examples/e2e-astro/src/pages/framework/interpolation.astro",
+      "examples/e2e-astro/src/pages/interpolation.astro",
     ],
   },
   fmt: {
     endOfLine: "lf",
     sortTailwindcss: {},
     sortPackageJson: true,
+    astro: true,
     svelte: true,
     printWidth: 80,
     ignorePatterns: [
@@ -37,6 +40,8 @@ export default defineConfig({
       "**/generated",
       "crates/lingui-analyzer/benches/fixtures/*",
       "examples/compat/__snapshots__/**",
+      "examples/e2e-astro/src/pages/framework/interpolation.astro",
+      "examples/e2e-astro/src/pages/interpolation.astro",
       "pnpm-lock.yaml",
     ],
   },
@@ -87,7 +92,7 @@ export default defineConfig({
         cache: false,
       },
       format: {
-        command: "prettier -w **/*.{astro,mdx} && vp fmt .",
+        command: "vp fmt .",
         cache: false,
       },
       test: {

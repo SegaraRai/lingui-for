@@ -70,24 +70,20 @@ const tone = "formal";
 
 <!-- 単独使用: select 文字列を直接生成する -->
 <p>
-  {
-    select(tone, {
-      formal: "Welcome",
-      casual: "Hi",
-      other: "Hello",
-    })
-  }
+  {select(tone, {
+    formal: "Welcome",
+    casual: "Hi",
+    other: "Hello",
+  })}
 </p>
 
 <!-- 埋め込み: select はより大きな翻訳単位の一部 -->
 <p>
-  {
-    t`Greeting: ${select(tone, {
-      formal: "Welcome",
-      casual: "Hi",
-      other: "Hello",
-    })}`
-  }
+  {t`Greeting: ${select(tone, {
+    formal: "Welcome",
+    casual: "Hi",
+    other: "Hello",
+  })}`}
 </p>
 ```
 

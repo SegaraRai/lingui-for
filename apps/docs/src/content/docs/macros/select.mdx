@@ -73,24 +73,20 @@ const tone = "formal";
 
 <!-- Standalone: produces the select string directly. -->
 <p>
-  {
-    select(tone, {
-      formal: "Welcome",
-      casual: "Hi",
-      other: "Hello",
-    })
-  }
+  {select(tone, {
+    formal: "Welcome",
+    casual: "Hi",
+    other: "Hello",
+  })}
 </p>
 
 <!-- Embedded: select is part of a larger translated unit. -->
 <p>
-  {
-    t`Greeting: ${select(tone, {
-      formal: "Welcome",
-      casual: "Hi",
-      other: "Hello",
-    })}`
-  }
+  {t`Greeting: ${select(tone, {
+    formal: "Welcome",
+    casual: "Hi",
+    other: "Hello",
+  })}`}
 </p>
 ```
 
