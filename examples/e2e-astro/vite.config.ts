@@ -38,11 +38,16 @@ export default defineConfig({
       },
       check: {
         command: "vp check",
-        dependsOn: ["build", "check:extra"],
+        dependsOn: ["build", "check:extra", "check:stillwind"],
         cache: false,
       },
       "check:extra": {
         command: "astro check",
+        dependsOn: ["build"],
+        cache: false,
+      },
+      "check:stillwind": {
+        command: "stillwind lint && stillwind fmt --check",
         dependsOn: ["build"],
         cache: false,
       },

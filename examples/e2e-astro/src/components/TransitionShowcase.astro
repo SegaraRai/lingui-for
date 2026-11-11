@@ -1,4 +1,5 @@
 ---
+import { style } from "stillwind/astro";
 import { t } from "lingui-for-astro/macro";
 
 import type { SupportedLocale } from "../lib/i18n/locale";
@@ -27,46 +28,48 @@ const modeBody = clientRouter
   : t`Use the header language switcher and the paired route link below. Without ClientRouter, every island remounts, so no state survives and every locale change recreates the islands.`;
 ---
 
-<section class="card border-base-300 bg-base-100 border shadow-xl">
-  <div class="card-body gap-4">
-    <div class="flex flex-wrap items-center gap-2">
-      <p class="badge badge-primary badge-outline flex-none">{modeBadge}</p>
-      <p class="badge badge-secondary badge-outline flex-none">
+<section {...style("card bg-base-100 border border-base-300 shadow-xl")}>
+  <div {...style("card-body gap-4")}>
+    <div {...style("flex flex-wrap items-center gap-2")}>
+      <p {...style("badge badge-outline badge-primary flex-none")}>
+        {modeBadge}
+      </p>
+      <p {...style("badge badge-outline badge-secondary flex-none")}>
         {t`Current demo: ${pageLabel}`}
       </p>
     </div>
-    <h1 class="text-3xl font-black tracking-tight">{modeHeading}</h1>
-    <p class="text-base-content/70">{modeBody}</p>
+    <h1 {...style("font-black text-3xl tracking-tight")}>{modeHeading}</h1>
+    <p {...style("text-base-content/70")}>{modeBody}</p>
   </div>
 </section>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-3">
-    <p class="badge badge-secondary badge-outline flex-none">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-3")}>
+    <p {...style("badge badge-outline badge-secondary flex-none")}>
       {t`How to use this demo`}
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       {t`1. Increment one or more counters in Svelte or React.`}
     </p>
-    <p class="text-base-content/70">
-      {
-        t`2. Switch between English and Japanese in the header and watch the locale labels.`
-      }
+    <p {...style("text-base-content/70")}>
+      {t`2. Switch between English and Japanese in the header and watch the locale labels.`}
     </p>
-    <p class="text-base-content/70">
-      {
-        t`3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen.`
-      }
+    <p {...style("text-base-content/70")}>
+      {t`3. Open the paired route and compare which islands kept their counters, which updated their locale and page props, and which stayed frozen.`}
     </p>
   </div>
 </section>
 
-<section class="grid gap-4">
-  <div class="flex items-center justify-between gap-3">
-    <h2 class="text-2xl font-black tracking-tight">{t`Svelte islands`}</h2>
-    <p class="badge badge-outline flex-none">{t`Page label: ${pageLabel}`}</p>
+<section {...style("grid gap-4")}>
+  <div {...style("flex items-center justify-between gap-3")}>
+    <h2 {...style("font-black text-2xl tracking-tight")}>
+      {t`Svelte islands`}
+    </h2>
+    <p {...style("badge badge-outline flex-none")}>
+      {t`Page label: ${pageLabel}`}
+    </p>
   </div>
-  <div class="grid gap-4 xl:grid-cols-3">
+  <div {...style("grid gap-4 xl:grid-cols-3")}>
     <SvelteTransitionCounterIsland
       client:load
       locale={locale}
@@ -91,12 +94,14 @@ const modeBody = clientRouter
   </div>
 </section>
 
-<section class="grid gap-4">
-  <div class="flex items-center justify-between gap-3">
-    <h2 class="text-2xl font-black tracking-tight">{t`React islands`}</h2>
-    <p class="badge badge-outline flex-none">{t`Locale prop: ${locale}`}</p>
+<section {...style("grid gap-4")}>
+  <div {...style("flex items-center justify-between gap-3")}>
+    <h2 {...style("font-black text-2xl tracking-tight")}>{t`React islands`}</h2>
+    <p {...style("badge badge-outline flex-none")}>
+      {t`Locale prop: ${locale}`}
+    </p>
   </div>
-  <div class="grid gap-4 xl:grid-cols-3">
+  <div {...style("grid gap-4 xl:grid-cols-3")}>
     <ReactTransitionCounterIsland
       client:load
       locale={locale}
@@ -121,20 +126,18 @@ const modeBody = clientRouter
   </div>
 </section>
 
-<section class="card border-base-300 bg-base-100 border shadow-lg">
-  <div class="card-body gap-4">
-    <p class="badge badge-neutral badge-outline flex-none">
+<section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+  <div {...style("card-body gap-4")}>
+    <p {...style("badge badge-outline badge-neutral flex-none")}>
       {t`Render stamp: ${renderStamp}`}
     </p>
-    <p class="text-base-content/70">
-      {
-        t`Use this stamp to confirm that the page itself changed even when a persisted island keeps its state.`
-      }
+    <p {...style("text-base-content/70")}>
+      {t`Use this stamp to confirm that the page itself changed even when a persisted island keeps its state.`}
     </p>
-    <div class="card-actions justify-end">
+    <div {...style("card-actions justify-end")}>
       <a
         data-testid="transition-next-link"
-        class="btn btn-primary btn-sm"
+        {...style("btn btn-primary btn-sm")}
         href={nextHref}
       >
         {t`Open ${nextLabel}`}

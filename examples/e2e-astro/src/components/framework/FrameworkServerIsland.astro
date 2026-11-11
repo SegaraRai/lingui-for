@@ -1,4 +1,6 @@
 ---
+import { style } from "stillwind/astro";
+
 interface Props {
   label: string;
   mode: string;
@@ -8,7 +10,7 @@ const { label, mode } = Astro.props;
 ---
 
 <section
-  class="rounded-box border-base-300 border p-4"
+  {...style("rounded-box p-4 border border-base-300")}
   data-testid={`framework-server-${mode}-content`}
 >
   <p data-testid={`framework-server-${mode}-label`}>{label}</p>

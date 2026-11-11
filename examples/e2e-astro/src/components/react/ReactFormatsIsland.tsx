@@ -1,3 +1,4 @@
+import { style } from "stillwind/react";
 import { I18nProvider } from "@lingui/react";
 import { Plural, Select, SelectOrdinal, useLingui } from "@lingui/react/macro";
 
@@ -8,22 +9,22 @@ function ReactFormatsPanel() {
   const { t } = useLingui();
 
   return (
-    <section className="card border-base-300 bg-base-100 border shadow-lg">
-      <div className="card-body">
-        <p className="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`React formats`}
         </p>
-        <h2 className="card-title">
+        <h2 {...style("card-title")}>
           {t`React runs plural, select, and selectOrdinal macros in component code.`}
         </h2>
-        <p className="text-base-content/70">
+        <p {...style("text-base-content/70")}>
           <Plural
             value={3}
             one="# React format sample"
             other="# React format samples"
           />
         </p>
-        <p className="text-base-content/70">
+        <p {...style("text-base-content/70")}>
           <Select
             value="excited"
             _calm="React select says calm."
@@ -31,7 +32,7 @@ function ReactFormatsPanel() {
             other="React select says unknown."
           />
         </p>
-        <p className="text-base-content/70">
+        <p {...style("text-base-content/70")}>
           <SelectOrdinal
             value={2}
             one="React finished #st."
@@ -40,8 +41,8 @@ function ReactFormatsPanel() {
             other="React finished #th."
           />
         </p>
-        <hr className="divider" />
-        <p className="text-base-content/70">
+        <hr {...style("divider")} />
+        <p {...style("text-base-content/70")}>
           {t`Lingui React does not seem to support functional macros for plural, select, and selectOrdinal.`}
         </p>
       </div>

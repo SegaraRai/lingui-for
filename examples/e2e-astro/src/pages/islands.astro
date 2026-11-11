@@ -1,4 +1,5 @@
 ---
+import { style } from "stillwind/astro";
 import { t } from "lingui-for-astro/macro";
 
 import AppLayout from "../layouts/AppLayout.astro";
@@ -19,25 +20,25 @@ const currentPage = t`Islands page`;
   pathname={Astro.url.pathname}
   currentPage={currentPage}
 >
-  <section class="card border-base-300 bg-base-100 border shadow-xl">
-    <div class="card-body gap-4">
-      <p class="badge badge-primary badge-outline flex-none">
+  <section {...style("card bg-base-100 border border-base-300 shadow-xl")}>
+    <div {...style("card-body gap-4")}>
+      <p {...style("badge badge-outline badge-primary flex-none")}>
         {t`Islands`}
       </p>
-      <h1 class="text-3xl font-black tracking-tight">
+      <h1 {...style("font-black text-3xl tracking-tight")}>
         {t`Svelte and React islands read the same active locale.`}
       </h1>
-      <p class="text-base-content/70">
-        {
-          t`Each island creates its own runtime, but Astro middleware hands both the same locale.`
-        }
+      <p {...style("text-base-content/70")}>
+        {t`Each island creates its own runtime, but Astro middleware hands both the same locale.`}
       </p>
-      <p class="text-base-content/70">{t(sharedImportedDescriptor)}</p>
-      <p class="text-base-content/70">{t(sharedImportedDetailDescriptor)}</p>
+      <p {...style("text-base-content/70")}>{t(sharedImportedDescriptor)}</p>
+      <p {...style("text-base-content/70")}>
+        {t(sharedImportedDetailDescriptor)}
+      </p>
     </div>
   </section>
 
-  <div class="grid gap-4 lg:grid-cols-2">
+  <div {...style("grid gap-4 lg:grid-cols-2")}>
     <SvelteLinguiIsland client:load locale={locale} />
     <ReactLinguiIsland client:load locale={locale} />
   </div>

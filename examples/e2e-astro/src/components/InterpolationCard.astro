@@ -1,0 +1,31 @@
+---
+import { style } from "stillwind/astro";
+
+interface Props {
+  hero?: boolean;
+}
+
+const { hero = false } = Astro.props;
+---
+
+{hero ? (
+  <section {...style("card bg-base-100 border border-base-300 shadow-xl")}>
+    <div {...style("card-body gap-4")}>
+      <p {...style("badge badge-outline badge-primary flex-none")}>
+        <slot name="badge" />
+      </p>
+      <h1 {...style("font-black text-3xl tracking-tight")}>
+        <slot name="title" />
+      </h1>
+    </div>
+  </section>
+) : (
+  <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+    <div {...style("card-body")}>
+      <h2 {...style("card-title")}>
+        <slot name="title" />
+      </h2>
+      <slot />
+    </div>
+  </section>
+)}

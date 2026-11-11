@@ -1,11 +1,10 @@
 ---
+import { style } from "stillwind/astro";
 import { ClientRouter } from "astro:transitions";
 import { t } from "lingui-for-astro/macro";
 
 import type { SupportedLocale } from "../lib/i18n/locale";
 import LanguageSwitcher from "../components/LanguageSwitcher.astro";
-
-import "../styles/app.css";
 
 interface Props {
   title: string;
@@ -48,46 +47,50 @@ const navItems = [
     <title>{title}</title>
     {useClientRouter ? <ClientRouter /> : null}
   </head>
-  <body class="min-h-screen">
+  <body {...style("min-h-screen")}>
     <div
-      class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 py-6 lg:px-6"
+      {...style(
+        "flex mx-auto min-h-screen w-full max-w-7xl px-4 py-6 flex-col gap-6 lg:px-6",
+      )}
     >
       <header
-        class="rounded-box border-base-300 bg-base-100/90 border p-4 shadow-xl backdrop-blur"
+        {...style(
+          "rounded-box p-4 bg-base-100/90 border border-base-300 shadow-xl backdrop-blur",
+        )}
       >
-        <div class="flex flex-col gap-4">
+        <div {...style("flex flex-col gap-4")}>
           <div
-            class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between"
+            {...style(
+              "flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between",
+            )}
           >
-            <div class="space-y-2">
-              <p class="badge badge-primary badge-outline flex-none">
+            <div {...style("space-y-2")}>
+              <p {...style("badge badge-outline badge-primary flex-none")}>
                 {t`Lingui for Astro`}
               </p>
-              <nav class="flex flex-wrap gap-2">
-                {
-                  navItems.map((item) => (
-                    <a
-                      href={item.href}
-                      class:list={[
-                        "btn btn-sm",
-                        item.active ? "btn-primary" : "btn-ghost",
-                      ]}
-                      aria-current={item.active ? "page" : undefined}
-                    >
-                      {item.label}
-                    </a>
-                  ))
-                }
+              <nav {...style("flex flex-wrap gap-2")}>
+                {navItems.map((item) => (
+                  <a
+                    href={item.href}
+                    {...style(
+                      "btn btn-sm",
+                      item.active ? "btn-primary" : "btn-ghost",
+                    )}
+                    aria-current={item.active ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                ))}
               </nav>
             </div>
             <LanguageSwitcher locale={locale} pathname={pathname} />
           </div>
-          <div class="alert alert-info alert-soft text-sm">
+          <div {...style("alert alert-info alert-soft text-sm")}>
             <span>{t`Current page: ${currentPage}`}</span>
           </div>
         </div>
       </header>
-      <main class="grid gap-6">
+      <main {...style("grid gap-6")}>
         <slot />
       </main>
     </div>

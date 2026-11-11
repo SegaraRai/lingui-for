@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { style } from "stillwind/svelte";
   import { t } from "lingui-for-svelte/macro";
 
   import type { SupportedLocale } from "../../lib/i18n/locale";
@@ -23,37 +24,37 @@
 
 <section
   data-testid={`svelte-${mode}-panel`}
-  class="card border-base-300 bg-base-100 border shadow-lg"
+  {...style("card bg-base-100 border border-base-300 shadow-lg")}
 >
-  <div class="card-body gap-4">
-    <p class="badge badge-accent badge-outline flex-none">
+  <div {...style("card-body gap-4")}>
+    <p {...style("badge badge-outline badge-accent flex-none")}>
       {{
         volatile: $t`Volatile Svelte island`,
         persisted: $t`Persisted Svelte island`,
         "persisted-props": $t`Persisted-props Svelte island`,
       }[mode]}
     </p>
-    <p class="text-base-content/70">
+    <p {...style("text-base-content/70")}>
       {{
         volatile: $t`This Svelte island remounts whenever the route or locale changes.`,
         persisted: $t`This Svelte island uses transition:persist, so its counter survives while locale and page props still update.`,
         "persisted-props": $t`This Svelte island uses transition:persist and transition:persist-props, so its counter survives but locale and page props stay frozen.`,
       }[mode]}
     </p>
-    <p data-testid={`svelte-${mode}`} class="text-base-content/70">
+    <p data-testid={`svelte-${mode}`} {...style("text-base-content/70")}>
       {$t`Svelte props say ${pageLabel} in ${localeLabel}.`}
     </p>
-    <div class="flex items-center gap-3">
+    <div {...style("flex items-center gap-3")}>
       <button
         data-testid={`svelte-${mode}-increment`}
-        class="btn btn-secondary btn-sm"
+        {...style("btn btn-secondary btn-sm")}
         onclick={() => (count += 1)}
       >
         {$t`Increment`}
       </button>
       <p
         data-testid={`svelte-${mode}-count`}
-        class="badge badge-secondary badge-lg flex-none"
+        {...style("badge badge-secondary badge-lg flex-none")}
       >
         {$t`${count} Svelte clicks`}
       </p>

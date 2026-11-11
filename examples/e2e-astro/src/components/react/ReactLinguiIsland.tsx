@@ -1,3 +1,4 @@
+import { style } from "stillwind/react";
 import { I18nProvider } from "@lingui/react";
 import { useLingui } from "@lingui/react/macro";
 
@@ -13,22 +14,22 @@ function ReactLinguiPanel({ locale }: { readonly locale: SupportedLocale }) {
   const localeLabel = getLocaleLabel(locale);
 
   return (
-    <section className="card border-base-300 bg-base-100 border shadow-lg">
-      <div className="card-body">
-        <p className="badge badge-accent badge-outline flex-none">
+    <section {...style("card bg-base-100 border border-base-300 shadow-lg")}>
+      <div {...style("card-body")}>
+        <p {...style("badge badge-outline badge-accent flex-none")}>
           {t`React island`}
         </p>
-        <h2 className="card-title">
+        <h2 {...style("card-title")}>
           {t`React components can translate Lingui descriptors inside Astro.`}
         </h2>
-        <p className="text-base-content/70">
+        <p {...style("text-base-content/70")}>
           {t`The active locale reaches React through a dedicated Lingui instance.`}
         </p>
-        <p className="text-base-content/70">{t(sharedImportedDescriptor)}</p>
-        <p className="text-base-content/70">
+        <p {...style("text-base-content/70")}>{t(sharedImportedDescriptor)}</p>
+        <p {...style("text-base-content/70")}>
           {t(sharedImportedDetailDescriptor)}
         </p>
-        <p className="badge badge-secondary badge-lg flex-none">
+        <p {...style("badge badge-secondary badge-lg flex-none")}>
           {t`Locale badge: ${localeLabel}`}
         </p>
       </div>
