@@ -4,7 +4,7 @@
   import { setLinguiContext } from "lingui-for-svelte";
   import { t } from "lingui-for-svelte/macro";
 
-  import { messages as en } from "$lib/i18n/locales/en";
+  import { messages as en } from "#lib/i18n/locales/en.ts";
 
   // This component has its own i18n context fixed to English,
   // regardless of what locale the parent app is using.

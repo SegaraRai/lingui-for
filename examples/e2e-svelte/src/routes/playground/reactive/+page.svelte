@@ -8,7 +8,7 @@
     reactiveState,
     setReactiveName,
     toggleReactiveStatus,
-  } from "$lib/playground/reactive-state.svelte";
+  } from "#lib/playground/reactive-state.svelte.ts";
 
   const topLevelGreeting = $derived(
     $t`Hello ${reactiveState.name} from the reactive route.`,

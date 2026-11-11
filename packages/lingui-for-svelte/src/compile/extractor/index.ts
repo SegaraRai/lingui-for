@@ -1,14 +1,11 @@
-import type {
-  ExtractorCtx,
-  LinguiConfigNormalized,
-  PerFileExtractorType,
-} from "@lingui/conf";
+import type { ExtractorCtx, LinguiConfigNormalized } from "@lingui/conf";
 
 import {
   buildSvelteSyntheticModule,
   parseCanonicalSourceMap,
   runBabelExtractionUnits,
   toBabelSourceMap,
+  type PerFileExtractor,
 } from "@lingui-for/framework-core/compile";
 import { initWasmOnce } from "@lingui-for/framework-core/compile/wasm-loader";
 import {
@@ -37,18 +34,15 @@ export interface SvelteExtractorOptions {
  * and forwards that module to Lingui's Babel-based extractor together with the corresponding
  * source map. Messages are emitted through Lingui's `onMessageExtracted` callback.
  */
-export const svelteExtractor: PerFileExtractorType &
-  typeof svelteExtractorFactory = /*#__PURE__*/ Object.assign(
-  svelteExtractorFactory,
-  svelteExtractorFactory(),
-);
+export const svelteExtractor: PerFileExtractor & typeof svelteExtractorFactory =
+  /*#__PURE__*/ Object.assign(svelteExtractorFactory, svelteExtractorFactory());
 
 /**
  * Lingui extractor factory for `.svelte` files.
  */
 function svelteExtractorFactory(
   options?: SvelteExtractorOptions,
-): PerFileExtractorType {
+): PerFileExtractor {
   const configResolver = createLinguiConfigResolver({
     loadConfig: loadLinguiConfig,
     config: options?.config,

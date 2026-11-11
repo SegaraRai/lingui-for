@@ -4,8 +4,8 @@
 
   import { t } from "lingui-for-svelte/macro";
 
-  import LanguageSwitcher from "$lib/app/LanguageSwitcher.svelte";
-  import type { SupportedLocale } from "$lib/i18n/locale";
+  import LanguageSwitcher from "#lib/app/LanguageSwitcher.svelte";
+  import type { SupportedLocale } from "#lib/i18n/locale.ts";
 
   let {
     locale,

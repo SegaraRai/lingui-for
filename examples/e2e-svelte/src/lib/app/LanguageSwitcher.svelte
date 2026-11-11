@@ -3,12 +3,12 @@
   import { t } from "lingui-for-svelte/macro";
 
   import { page } from "$app/state";
-  import { supportedLocales, type SupportedLocale } from "$lib/i18n/locale";
+  import { supportedLocales, type SupportedLocale } from "#lib/i18n/locale.ts";
 
-  let { locale } = $props<{ locale: SupportedLocale }>();
+  let { locale }: { locale: SupportedLocale } = $props();
 
   function buildLocaleHref(nextLocale: SupportedLocale): string {
-    const query = new URLSearchParams(page.url.searchParams);
+    const query = new URLSearchParams(page.url.search);
     query.set("lang", nextLocale);
     return `${page.url.pathname}?${query.toString()}`;
   }

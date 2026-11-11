@@ -2,7 +2,7 @@
   import { style } from "stillwind/svelte";
   import { t, Trans } from "lingui-for-svelte/macro";
 
-  import InlineBadge from "$lib/playground/InlineBadge.svelte";
+  import InlineBadge from "#lib/playground/InlineBadge.svelte";
 
   const htmlDigest = "<strong>Locale review digest</strong>";
   const highlightedQueue = ["North", "West", "South"];

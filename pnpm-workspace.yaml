@@ -12,44 +12,44 @@ allowBuilds:
 catalogs:
   default:
     "@arethetypeswrong/core": ^0.18.5
-    "@astrojs/check": ^0.9.10
-    "@astrojs/node": ^11.1.5
+    "@astrojs/check": 0.9.10
+    "@astrojs/node": ^11.1.11
     "@astrojs/astro2tsx": ^0.1.4
-    "@astrojs/react": ^6.0.5
-    "@astrojs/svelte": ^9.0.1
-    "@babel/core": ^7.29.7
-    "@babel/generator": ^7.29.8
-    "@babel/traverse": ^7.29.8
-    "@babel/types": ^7.29.8
+    "@astrojs/react": ^7.1.5
+    "@astrojs/svelte": ^9.1.2
+    "@babel/core": ^7.29.13
+    "@babel/generator": ^7.29.13
+    "@babel/traverse": ^7.29.13
+    "@babel/types": ^7.29.11
     "@jridgewell/trace-mapping": ^0.3.31
-    "@lingui/babel-plugin-lingui-macro": ^6.6.0
-    "@lingui/cli": ^6.6.0
-    "@lingui/conf": ^6.6.0
-    "@lingui/core": ^6.6.0
-    "@lingui/format-po": ^6.6.0
-    "@lingui/react": ^6.6.0
-    "@sveltejs/adapter-node": ^5.5.7
-    "@sveltejs/kit": ^2.70.3
+    "@lingui/babel-plugin-lingui-macro": ^6.12.0
+    "@lingui/cli": ^6.12.0
+    "@lingui/conf": ^6.12.0
+    "@lingui/core": ^6.12.0
+    "@lingui/format-po": ^6.12.0
+    "@lingui/react": ^6.12.0
+    "@sveltejs/adapter-node": ^6.0.2
+    "@sveltejs/kit": ^3.2.0
     "@stillwind/cli": ^0.9.0
     "@stillwind/integration": ^0.9.0
-    "@sveltejs/vite-plugin-svelte": ^7.3.0
+    "@sveltejs/vite-plugin-svelte": ^7.3.1
     "@types/babel__core": ^7.20.5
     "@types/babel__generator": ^7.27.0
     "@types/babel__traverse": ^7.28.0
-    "@types/node": ^26.4.0
-    "@types/react": ^19.2.18
-    "@types/react-dom": ^19.2.5
-    astro: ^7.2.10
+    "@types/node": ^26.6.6
+    "@types/react": ^19.3.0
+    "@types/react-dom": ^19.3.0
+    astro: ^7.4.8
     astro-strip-whitespace: ^0.2.2
-    daisyui: ^5.7.25
+    daisyui: ^5.7.50
     dedent: ^1.7.2
-    playwright: ^1.62.1
-    react: ^19.2.8
-    react-dom: ^19.2.8
+    playwright: ^1.65.0
+    react: ^19.3.1
+    react-dom: ^19.3.1
     stillwind: ^0.9.0
-    svelte: ^5.57.0
-    svelte-check: ^4.7.6
-    tailwindcss: ^4.3.3
+    svelte: ^5.57.3
+    svelte-check: ^4.7.8
+    tailwindcss: ^4.3.5
     typescript: ^6.0.3
     vite: npm:@voidzero-dev/vite-plus-core@1.6.0
     vite-plus: 1.6.0
@@ -93,6 +93,10 @@ minimumReleaseAgeExclude:
   - vite-plus@1.6.0
 
 overrides:
+  # @astrojs/language-server 2.17+ uses @astrojs/astro2tsx, which fails to parse HTML comment-only
+  # interpolations nested in expressions (examples/e2e-astro/src/pages/interpolation.astro).
+  # Remove this pin (and the exact @astrojs/check version) once astro2tsx handles them.
+  "@astrojs/check>@astrojs/language-server": 2.16.16
   vite@*: "catalog:"
 
 peerDependencyRules:
