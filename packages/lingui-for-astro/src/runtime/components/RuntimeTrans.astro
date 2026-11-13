@@ -1,11 +1,13 @@
 ---
+import type { MessageDescriptor } from "@lingui/core";
+
 import { formatRichTextTranslation } from "@lingui-for/framework-core/runtime";
 
 import { getLinguiContext } from "../core/context.ts";
 import type { TransRenderNode } from "./types.ts";
 
 interface Props {
-  id: string;
+  id: MessageDescriptor["id"];
   message?: string | undefined;
   values?: Readonly<Record<string, unknown>> | undefined;
   placeholders?: readonly string[] | undefined;

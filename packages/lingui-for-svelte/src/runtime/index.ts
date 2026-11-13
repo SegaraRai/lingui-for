@@ -1,3 +1,4 @@
+import type { MessageDescriptor } from "@lingui/core";
 import type { Component, Snippet } from "svelte";
 
 import RuntimeTransComponent from "./components/RuntimeTrans.svelte";
@@ -26,7 +27,7 @@ type RuntimeTransType = Component<{
   /**
    * Explicit message id to translate.
    */
-  id: string;
+  id: MessageDescriptor["id"];
   /**
    * Default-message string produced by macro lowering.
    */

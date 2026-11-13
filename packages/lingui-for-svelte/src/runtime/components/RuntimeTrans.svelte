@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { MessageDescriptor } from "@lingui/core";
   import type { Snippet } from "svelte";
 
   import { formatRichTextTranslation } from "@lingui-for/framework-core/runtime";
@@ -17,7 +18,7 @@
     children: _children,
     ...snippetProps
   }: {
-    id: string;
+    id: MessageDescriptor["id"];
     message?: string | undefined;
     values?: Readonly<Record<string, unknown>> | undefined;
     children?: Snippet | undefined;
