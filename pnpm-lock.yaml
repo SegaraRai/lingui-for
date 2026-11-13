@@ -155,6 +155,9 @@ catalogs:
     '@lingui/format-po':
       specifier: ^6.12.0
       version: 6.12.0
+    '@lingui/native-tools':
+      specifier: ^0.2.0
+      version: 0.2.0
     '@lingui/react':
       specifier: ^6.12.0
       version: 6.12.0
@@ -856,6 +859,9 @@ importers:
       '@lingui/conf':
         specifier: 'catalog:'
         version: 6.12.0
+      '@lingui/native-tools':
+        specifier: 'catalog:'
+        version: 0.2.0(@lingui/conf@6.12.0)
       '@types/babel__core':
         specifier: 'catalog:'
         version: 7.20.5

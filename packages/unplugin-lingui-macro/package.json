@@ -83,6 +83,7 @@
     "@arethetypeswrong/core": "catalog:",
     "@lingui-for/internal-shared-common": "workspace:*",
     "@lingui/conf": "catalog:",
+    "@lingui/native-tools": "catalog:",
     "@types/babel__core": "catalog:",
     "@types/node": "catalog:",
     "dedent": "catalog:",
@@ -91,6 +92,7 @@
   },
   "peerDependencies": {
     "@lingui/conf": "catalog:dep",
+    "@lingui/native-tools": "catalog:dep",
     "esbuild": "catalog:dep",
     "rolldown": "catalog:dep",
     "rollup": "catalog:dep",
@@ -99,6 +101,9 @@
   },
   "peerDependenciesMeta": {
     "@lingui/conf": {
+      "optional": true
+    },
+    "@lingui/native-tools": {
       "optional": true
     },
     "esbuild": {

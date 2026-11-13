@@ -92,19 +92,15 @@ import linguiMacro from "unplugin-lingui-macro/vite";
 export default {
   plugins: [
     linguiMacro({
-      linguiConfig: {
-        runtimeConfigModule: {
-          i18n: ["@lingui/core", "i18n"],
-        },
-      },
+      config: "./lingui.config.ts",
+      native: true,
     }),
   ],
 };
 ```
 
-Supported option shape:
-
-- `linguiConfig`: partial Lingui config forwarded to the Lingui Babel macro plugin. See the [Lingui configuration reference](https://lingui.dev/ref/conf) for available fields.
+- `config`: a Lingui config object, or a path / `URL` to a Lingui config file. When omitted, `lingui.config.*` is discovered from the project root.
+- `native`: transform macros with the native (Rust + SWC) transformer from [`@lingui/native-tools`](https://www.npmjs.com/package/@lingui/native-tools) instead of Babel. Install `@lingui/native-tools` to use it. Pass `true`, or an object with `macro` (macro option overrides) and `parser` (SWC parser options). The native transformer also strips TypeScript syntax, so `.ts` and `.tsx` files come out as JavaScript with JSX preserved. Defaults to `false`.
 
 ## Entrypoints
 
