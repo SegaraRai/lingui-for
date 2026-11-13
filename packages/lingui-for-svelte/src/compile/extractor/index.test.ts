@@ -106,6 +106,43 @@ describe("svelteExtractor", () => {
     );
   });
 
+  test("inlines nested t and msg macros into a single message (Lingui 6.6+)", async () => {
+    const source = dedent`
+      <script lang="ts">
+        import { msg, plural, t } from "lingui-for-svelte/macro";
+
+        let count = $state(1);
+        const nested = $derived($t\`Field \${$t\`First Name\`} is required\`);
+        const books = msg\`You have \${plural(count, { 0: msg\`No books\`, one: msg\`One book\`, other: "# books" })}\`;
+      </script>
+
+      <p>{nested}</p>
+      <p>{$t\`Markup \${$t\`Inner markup\`} outer\`}</p>
+      <p>{$t(books)}</p>
+    `;
+
+    const messages = await collectMessages((onMessageExtracted) =>
+      Promise.resolve(
+        extractor.extract(
+          "/virtual/Nested.svelte",
+          source,
+          onMessageExtracted,
+          createExtractorContext(),
+        ),
+      ),
+    );
+
+    expect(
+      messages
+        .map((message) => message.message ?? message.id)
+        .sort((a, b) => a.localeCompare(b)),
+    ).toEqual([
+      "Field First Name is required",
+      "Markup Inner markup outer",
+      "You have {count, plural, =0 {No books} one {One book} other {# books}}",
+    ]);
+  });
+
   test("extracts named ph placeholders from script and aliased Trans markup", async () => {
     const source = dedent`
       <script lang="ts">

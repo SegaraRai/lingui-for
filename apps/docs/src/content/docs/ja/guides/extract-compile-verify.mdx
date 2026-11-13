@@ -80,6 +80,20 @@ Lingui ディレクティブについても、この 2 つの経路で挙動が�
 - Lingui CLI
   - 抽出とカタログのコンパイル
 
+## CI でカタログを検査する
+
+Lingui 6.8 以降では、`lingui check` でカタログを書き換えずに検査できます。
+`lingui.config.ts` のエクストラクタを使うため、フレームワークのエクストラクタを登録していれば `.svelte` と `.astro` ファイルも対象になります。
+
+```sh
+# カタログがソースコードと同期していなければ失敗する
+lingui check sync
+# 翻訳が欠けていれば失敗する（fallbackLocales を適用した後で判定）
+lingui check missing
+```
+
+すべてのオプションは [公式の `check` リファレンス](https://lingui.dev/ref/cli#check) を参照してください。
+
 ## おすすめの進め方
 
 新しい構文パターンを追加したら、次の 3 点を必ず確認してください。

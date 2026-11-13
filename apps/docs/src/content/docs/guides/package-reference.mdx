@@ -59,3 +59,12 @@ single-framework and mixed-framework projects.
 Plain `.js` and `.ts` files use `@lingui/core/macro` (official Lingui) with
 `unplugin-lingui-macro` for the build transform and `@lingui/cli/api/extractors/babel` for
 extraction. These are not part of `lingui-for-*`. See [Plain JS/TS Setup](/guides/plain-js-ts).
+
+### `i18n` instance features work as-is
+
+Compiled macros translate through the `i18n` instance you pass to `setLinguiContext`, so instance
+features such as [custom ICU formatters](https://lingui.dev/ref/core#i18n.setformatters)
+(`setFormatters`, Lingui 6.12+) and
+[default variables](https://lingui.dev/ref/core#i18n.setvariables) (`setVariables`, Lingui 6.10+)
+need no extra setup. In Svelte, changing them emits the instance's `change` event, so reactive
+macros such as `$t` re-render the same way as after `activate`.

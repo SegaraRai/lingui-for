@@ -78,6 +78,38 @@ const label = t\`Frontmatter origin message\`;
     );
   });
 
+  test("inlines nested t and msg macros into a single message (Lingui 6.6+)", async () => {
+    const source = dedent`
+      ---
+      import { msg, plural, t } from "lingui-for-astro/macro";
+
+      const count = 1;
+      const nested = t\`Field \${t\`First Name\`} is required\`;
+      const books = msg\`You have \${plural(count, { 0: msg\`No books\`, one: msg\`One book\`, other: "# books" })}\`;
+      ---
+
+      <p>{nested}</p>
+      <p>{t\`Markup \${t\`Inner markup\`} outer\`}</p>
+      <p>{t(books)}</p>
+    `;
+    const messages: ExtractedMessage[] = [];
+
+    await extractor.extract(
+      "/virtual/Nested.astro",
+      source,
+      (message) => {
+        messages.push(message);
+      },
+      createExtractorContext(),
+    );
+
+    expect(messages.map(extractedText).sort()).toEqual([
+      "Field First Name is required",
+      "Markup Inner markup outer",
+      "You have {count, plural, =0 {No books} one {One book} other {# books}}",
+    ]);
+  });
+
   test("preserves origins for nested extracted messages inside component macro ICU branches", async () => {
     const source = `---
 import {
