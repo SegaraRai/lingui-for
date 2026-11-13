@@ -1,3 +1,5 @@
+import type { MessageDescriptor } from "@lingui/core";
+
 import RuntimeTransComponent from "./components/RuntimeTrans.astro";
 
 export type { TransRenderNode } from "./components/types.ts";
@@ -20,7 +22,7 @@ interface RuntimeTransProps {
   /**
    * Explicit message id to translate.
    */
-  id: string;
+  id: MessageDescriptor["id"];
   /**
    * Default-message string produced by macro lowering.
    */

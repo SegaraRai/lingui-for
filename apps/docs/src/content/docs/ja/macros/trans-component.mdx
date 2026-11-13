@@ -87,6 +87,12 @@ function Component() {
 | レンダー、スニペットホール | `{@render ...}` | なし             |
 | テキスト ホール            | なし            | `set:text={...}` |
 
+## 型付き message ID
+
+`id` プロパティには Lingui の `MessageId` 型を使っています。
+[message ID を登録](https://lingui.dev/guides/typed-message-ids) すると（Lingui 6.2 以降）、`t({ id })` や `i18n._()` と同じく `<Trans id="...">` も登録済みの ID だけを受け付けます。
+登録していない場合や Lingui 5 では、`id` は任意の文字列を受け付けます。
+
 ## フレームワーク固有の補足
 
 許可されるラッパー構文の正確な範囲は、テンプレート言語によって異なります。

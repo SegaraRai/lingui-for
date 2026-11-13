@@ -90,6 +90,13 @@ Framework-native rich-text holes are also supported:
 | Render/snippet hole | `{@render ...}` | n/a              |
 | Text hole           | n/a             | `set:text={...}` |
 
+## Typed message IDs
+
+The `id` prop uses Lingui's `MessageId` type. When you
+[register your message IDs](https://lingui.dev/guides/typed-message-ids) (Lingui 6.2 or later),
+`<Trans id="...">` only accepts the registered IDs, the same as `t({ id })` and `i18n._()`. Without
+registration, or with Lingui 5, `id` accepts any string.
+
 ## Framework-specific notes
 
 The exact set of allowed wrapper syntax depends on the template language.

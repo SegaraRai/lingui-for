@@ -4,6 +4,7 @@ import {
   selectOrdinal as linguiSelectOrdinal,
   t as linguiT,
 } from "@lingui/core/macro";
+import type { MessageDescriptor } from "@lingui/core";
 import type { Component, Snippet } from "svelte";
 import type { Readable } from "svelte/store";
 
@@ -97,7 +98,7 @@ export interface TransProps {
   /**
    * Explicit message id to use instead of an auto-generated id.
    */
-  id?: string | undefined;
+  id?: MessageDescriptor["id"] | undefined;
   /**
    * Translator comment that is included in extracted catalog metadata.
    */
