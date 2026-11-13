@@ -23,7 +23,6 @@
     "daisyui": "catalog:",
     "playwright": "catalog:",
     "svelte-check": "catalog:",
-    "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "unplugin-lingui-macro": "workspace:*",
     "vite": "catalog:",
