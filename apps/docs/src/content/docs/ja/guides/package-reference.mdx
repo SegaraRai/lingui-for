@@ -57,3 +57,9 @@ Astro 7 対応は正式版のリリース系列に追従しています。
 素の `.js` と `.ts` ファイルでは、公式 Lingui の `@lingui/core/macro` を使い、ビルド変換には `unplugin-lingui-macro`、抽出には `@lingui/cli/api/extractors/babel` を使います。
 これらは `lingui-for-*` には含まれません。
 詳しくは [プレーンな JS/TS でのセットアップ](/ja/guides/plain-js-ts) を参照してください。
+
+### `i18n` インスタンスの機能はそのまま使える
+
+コンパイル済みのマクロは `setLinguiContext` に渡した `i18n` インスタンスを通して翻訳します。
+そのため、[カスタム ICU フォーマッタ](https://lingui.dev/ref/core#i18n.setformatters)（`setFormatters`、Lingui 6.12 以降）や [デフォルト変数](https://lingui.dev/ref/core#i18n.setvariables)（`setVariables`、Lingui 6.10 以降）のようなインスタンスの機能は、追加の設定なしで使えます。
+Svelte では、これらを変更するとインスタンスの `change` イベントが発火するため、`$t` などのリアクティブマクロは `activate` 後と同じように再描画されます。

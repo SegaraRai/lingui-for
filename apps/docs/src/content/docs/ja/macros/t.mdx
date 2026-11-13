@@ -74,3 +74,28 @@ const label = t`Hello ${name}`;
 - すぐに翻訳済み文字列が欲しい
 - メッセージがテキストまたは文字列テンプレートとして自然に書ける
 - リッチテキスト構造が主目的ではない
+
+## `t` と `msg` のネスト
+
+Lingui 6.6 以降では、別のコアマクロの中に書いた `t` や `msg` のタグ付きテンプレートは、別々の翻訳呼び出しにはならず外側のメッセージへインライン展開されます。
+これにより、`plural` や `select` の選択肢に補間を含めたい場合に `msg` を使えます。
+
+```svelte
+<script lang="ts">
+  import { msg, plural, t } from "lingui-for-svelte/macro";
+
+  let count = $state(1);
+  const books = msg`You have ${plural(count, {
+    0: msg`No books`,
+    one: msg`One book`,
+    other: "# books",
+  })}`;
+</script>
+
+<!-- "Field First Name is required" として抽出される -->
+<p>{$t`Field ${$t`First Name`} is required`}</p>
+<p>{$t(books)}</p>
+```
+
+`.astro` ファイルの `t` でも同様です。
+Lingui 6.5 以前では内側のマクロは別に翻訳され、外側のメッセージには `{0}` のような位置プレースホルダーとして渡されます。

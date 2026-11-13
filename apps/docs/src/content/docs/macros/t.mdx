@@ -75,3 +75,29 @@ const label = t`Hello ${name}`;
 - you want a translated string immediately
 - the message is naturally authored as text or a string template
 - rich text structure is not the main concern
+
+## Nesting `t` and `msg`
+
+With Lingui 6.6 or later, a `t` or `msg` tagged template nested inside another core macro is inlined
+into the outer message instead of becoming a separate translation call. This also lets you use
+`msg` as a `plural` or `select` option when an option needs its own interpolations.
+
+```svelte
+<script lang="ts">
+  import { msg, plural, t } from "lingui-for-svelte/macro";
+
+  let count = $state(1);
+  const books = msg`You have ${plural(count, {
+    0: msg`No books`,
+    one: msg`One book`,
+    other: "# books",
+  })}`;
+</script>
+
+<!-- Extracted as "Field First Name is required" -->
+<p>{$t`Field ${$t`First Name`} is required`}</p>
+<p>{$t(books)}</p>
+```
+
+The same applies to `t` in `.astro` files. With Lingui 6.5 or earlier, the inner macro is translated
+separately and the outer message receives it as a positional placeholder such as `{0}`.

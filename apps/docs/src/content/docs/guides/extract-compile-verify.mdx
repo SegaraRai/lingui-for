@@ -85,6 +85,21 @@ syntax and scope rules.
 - Lingui CLI
   - extraction and catalog compilation
 
+## Check catalogs in CI
+
+With Lingui 6.8 or later, `lingui check` verifies catalogs without writing them. It uses the
+extractors from `lingui.config.ts`, so `.svelte` and `.astro` files are covered as long as the
+framework extractors are listed.
+
+```sh
+# Fail when catalogs are out of date with the source code
+lingui check sync
+# Fail when translations are missing (after applying fallbackLocales)
+lingui check missing
+```
+
+See the [official `check` reference](https://lingui.dev/ref/cli#check) for all options.
+
 ## Recommended habit
 
 After adding a new syntax pattern, verify all three:
