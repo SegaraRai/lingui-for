@@ -13,14 +13,14 @@ catalogs:
   default:
     "@arethetypeswrong/core": ^0.18.5
     "@astrojs/check": 0.9.10
-    "@astrojs/node": ^11.1.11
+    "@astrojs/node": ^11.1.12
     "@astrojs/astro2tsx": ^0.1.4
-    "@astrojs/react": ^7.1.5
-    "@astrojs/svelte": ^9.1.2
-    "@babel/core": ^8.1.0
-    "@babel/generator": ^8.1.0
-    "@babel/traverse": ^8.1.0
-    "@babel/types": ^8.1.0
+    "@astrojs/react": ^7.1.8
+    "@astrojs/svelte": ^9.1.5
+    "@babel/core": ^8.1.2
+    "@babel/generator": ^8.1.2
+    "@babel/traverse": ^8.1.2
+    "@babel/types": ^8.1.2
     "@jridgewell/trace-mapping": ^0.3.31
     "@lingui/babel-plugin-lingui-macro": ^6.12.0
     "@lingui/cli": ^6.12.0
@@ -39,7 +39,7 @@ catalogs:
     "@types/node": ^26.6.6
     "@types/react": ^19.3.0
     "@types/react-dom": ^19.3.0
-    astro: ^7.4.8
+    astro: ^7.4.11
     astro-strip-whitespace: ^0.2.2
     daisyui: ^5.7.50
     dedent: ^1.7.2
@@ -49,7 +49,6 @@ catalogs:
     stillwind: ^0.9.0
     svelte: ^5.57.3
     svelte-check: ^4.7.8
-    tailwindcss: ^4.3.5
     typescript: ^6.0.3
     vite: npm:@voidzero-dev/vite-plus-core@1.6.0
     vite-plus: 1.6.0

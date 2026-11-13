@@ -26,7 +26,6 @@ export default defineConfig({
   },
   fmt: {
     endOfLine: "lf",
-    sortTailwindcss: {},
     sortPackageJson: true,
     astro: true,
     svelte: true,

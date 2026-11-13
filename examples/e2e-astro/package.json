@@ -29,7 +29,6 @@
     "astro-strip-whitespace": "catalog:",
     "daisyui": "catalog:",
     "playwright": "catalog:",
-    "tailwindcss": "catalog:",
     "typescript": "catalog:",
     "unplugin-lingui-macro": "workspace:*",
     "vite": "catalog:",
