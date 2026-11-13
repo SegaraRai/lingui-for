@@ -8,3 +8,5 @@ extend-exclude = [
 [default]
 # "#nd"
 extend-ignore-words-re = ["^nd$"]
+# Commit hashes in changesets-generated CHANGELOG links, e.g. [`d31afe7`](.../commit/d31afe7...)
+extend-ignore-re = ["`[0-9a-f]{7,40}`", "/commit/[0-9a-f]{7,40}"]
