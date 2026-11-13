@@ -305,7 +305,7 @@ describe("transformAstro", () => {
     expect(code).not.toContain("{t`inline emphasis`}");
   });
 
-  test("emits returned msg descriptors with an i18n marker", async () => {
+  test("keeps returned msg descriptors on the same line as the i18n marker", async () => {
     const result = await expectTransformed(
       dedent`
         ---
@@ -319,7 +319,7 @@ describe("transformAstro", () => {
       { filename: "/virtual/Page.astro" },
     );
 
-    expect(result.code).toContain("return /** i18n */\n  {");
+    expect(result.code).toContain("return /** i18n */ {");
   });
 
   test("does not inject Astro i18n context for descriptor-only files", async () => {
