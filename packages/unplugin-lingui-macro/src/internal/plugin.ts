@@ -14,11 +14,20 @@ import {
 
 import {
   createLinguiMacroPluginOptions,
+  resolveLinguiMacroPluginMajorVersion,
   stripQuery,
 } from "@lingui-for/internal-shared-common";
 
-import type { LinguiMacroPluginOptions } from "../types.ts";
+import type {
+  LinguiMacroPluginOptions,
+  LinguiNativeMacroTransformOptions,
+} from "../types.ts";
 import { hasImport } from "./imports.ts";
+
+type NativeTools = typeof import("@lingui/native-tools");
+
+const LINGUI_MACRO_PLUGIN_ENTRY_URL = import.meta
+  .resolve("@lingui/babel-plugin-lingui-macro");
 
 type RuntimeConfigModule = LinguiConfig["runtimeConfigModule"];
 
@@ -162,9 +171,71 @@ function toUnpluginSourceMap(
   };
 }
 
+let nativeToolsPromise: Promise<NativeTools> | undefined;
+
+function loadNativeTools(): Promise<NativeTools> {
+  nativeToolsPromise ??= import("@lingui/native-tools").then(
+    (module) =>
+      // `@lingui/native-tools` is CommonJS; fall back to the default export if the named exports
+      // are not detected by the host's CommonJS interop.
+      ("transform" in module
+        ? module
+        : (module as { default: NativeTools }).default) as NativeTools,
+    (error: unknown) => {
+      nativeToolsPromise = undefined;
+      throw new Error(
+        'unplugin-lingui-macro: the `native` option requires "@lingui/native-tools". Install it as a dependency of your project.',
+        { cause: error },
+      );
+    },
+  );
+  return nativeToolsPromise;
+}
+
+function resolveNativeOptions(
+  native: LinguiMacroPluginOptions["native"],
+): LinguiNativeMacroTransformOptions | undefined {
+  if (native == null || native === false) {
+    return undefined;
+  }
+  return native === true ? {} : native;
+}
+
+async function transformWithNativeTools(
+  code: string,
+  filename: string,
+  linguiConfig: LoadedLinguiMacroConfig,
+  options: LinguiNativeMacroTransformOptions,
+): Promise<{ code: string; map: string | undefined }> {
+  const { transform, mapMacroOptions } = await loadNativeTools();
+
+  const result = await transform(code, filename, {
+    macro: mapMacroOptions(
+      linguiConfig as Parameters<typeof mapMacroOptions>[0],
+      {
+        // The native transformer generates Lingui 6 ids by default. Keep ids compatible with the
+        // installed Lingui version so they match catalogs extracted by the Lingui CLI.
+        ...(resolveLinguiMacroPluginMajorVersion(
+          LINGUI_MACRO_PLUGIN_ENTRY_URL,
+        ) === 5
+          ? { useLinguiV5IdGeneration: true }
+          : {}),
+        ...options.macro,
+      },
+    ),
+    ...(options.parser != null ? { parser: options.parser } : {}),
+  });
+
+  return {
+    code: result.code,
+    map: result.map,
+  };
+}
+
 export const unpluginFactory: UnpluginFactory<
   LinguiMacroPluginOptions | undefined
 > = (options) => {
+  const nativeOptions = resolveNativeOptions(options?.native);
   const loadedConfig =
     options?.config != null
       ? loadLinguiConfig(options.config, process.cwd())
@@ -208,6 +279,15 @@ export const unpluginFactory: UnpluginFactory<
         return null;
       }
 
+      if (nativeOptions != null) {
+        return transformWithNativeTools(
+          code,
+          filename,
+          linguiConfig,
+          nativeOptions,
+        );
+      }
+
       const transformed = await transformAsync(code, {
         filename,
         babelrc: false,
@@ -223,8 +303,7 @@ export const unpluginFactory: UnpluginFactory<
             createLinguiMacroPluginOptions({
               extract: false,
               linguiConfig,
-              pluginEntryUrl: import.meta
-                .resolve("@lingui/babel-plugin-lingui-macro"),
+              pluginEntryUrl: LINGUI_MACRO_PLUGIN_ENTRY_URL,
             }),
           ] as unknown as PluginItem,
         ],
@@ -273,6 +352,7 @@ function loadLinguiConfig(
           source.runtimeConfigModule,
         ),
         macro: {
+          ...source.macro,
           corePackage: uniqueStrings([
             "@lingui/macro",
             "@lingui/core/macro",

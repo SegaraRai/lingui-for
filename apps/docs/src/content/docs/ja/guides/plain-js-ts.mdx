@@ -65,6 +65,53 @@ export default defineConfig({
 
 Astro では、`astro.config.ts` の `vite.plugins` に追加します。
 
+### ネイティブのマクロ変換
+
+`unplugin-lingui-macro` では、Babel の代わりに `@lingui/native-tools` のネイティブ（Rust + SWC）マクロ変換を使えます。
+パッケージをインストールし、`native: true` を指定します。
+
+<Tabs syncKey="package-manager">
+  <TabItem label="Vite+">
+
+```sh
+vp add -D @lingui/native-tools
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```sh
+npm install -D @lingui/native-tools
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```sh
+pnpm add -D @lingui/native-tools
+```
+
+  </TabItem>
+  <TabItem label="yarn">
+
+```sh
+yarn add -D @lingui/native-tools
+```
+
+  </TabItem>
+</Tabs>
+
+```ts title="vite.config.ts"
+linguiMacro({ native: true });
+```
+
+message ID と記述子は Babel で変換した場合と同じです。
+ネイティブ変換は TypeScript の構文も取り除くため、`.ts` と `.tsx` ファイルは JavaScript として後続に渡されます。
+`native: { macro: { ... }, parser: { ... } }` のようにオブジェクトを渡すと、マクロのオプションや SWC のパーサーオプションを上書きできます。
+
+このオプションが効くのは素の JS / TS モジュールだけです。
+`.svelte` と `.astro` ファイルは各フレームワークのパッケージが変換します。
+
 ## 抽出処理を設定する
 
 `lingui.config.ts` に Babel エクストラクタを追加します。

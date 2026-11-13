@@ -174,6 +174,163 @@ describe("unplugin-lingui-macro", () => {
   });
 });
 
+describe("unplugin-lingui-macro native transform", () => {
+  const config = {
+    locales: ["en"],
+  };
+
+  async function withNodeEnv<T>(
+    value: string | undefined,
+    run: () => Promise<T>,
+  ): Promise<T> {
+    const previousNodeEnv = process.env.NODE_ENV;
+    if (value == null) {
+      delete process.env.NODE_ENV;
+    } else {
+      process.env.NODE_ENV = value;
+    }
+    try {
+      return await run();
+    } finally {
+      if (previousNodeEnv == null) {
+        delete process.env.NODE_ENV;
+      } else {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    }
+  }
+
+  function collectDescriptors(code: string): string[] {
+    return [...code.matchAll(/id: "([^"]+)"/g)].map((match) => match[1] ?? "");
+  }
+
+  test("generates the same message ids as the Babel transform", async () => {
+    const source = dedent`
+      import { msg, plural, t } from "@lingui/core/macro";
+
+      const count = 2;
+      export const descriptor = msg\`Hello from native.\`;
+      export const label = t\`Field \${t\`First Name\`} is required\`;
+      export const books = msg\`You have \${plural(count, { one: "# book", other: "# books" })}\`;
+      export const withContext = msg({ message: "Open", context: "verb" });
+    `;
+
+    const [babel, native] = await withNodeEnv(undefined, () =>
+      Promise.all([
+        runTransform(source, "/virtual/parity.ts", {
+          config,
+        }),
+        runTransform(source, "/virtual/parity.ts", {
+          config,
+          native: true,
+        }),
+      ]),
+    );
+
+    const babelIds = collectDescriptors(getCode(babel));
+    expect(babelIds).toHaveLength(4);
+    expect(collectDescriptors(getCode(native))).toEqual(babelIds);
+    expect(getCode(native)).toContain(
+      'message: "Field First Name is required"',
+    );
+    expect(getCode(native)).not.toContain("@lingui/core/macro");
+  });
+
+  test("transforms React macros and strips TypeScript syntax", async () => {
+    const result = await withNodeEnv(undefined, () =>
+      runTransform(
+        dedent`
+          import { Trans } from "@lingui/react/macro";
+
+          type Props = { name: string };
+
+          export function Greeting({ name }: Props) {
+            return <Trans>Hello <strong>{name}</strong></Trans>;
+          }
+        `,
+        "/virtual/native-react.tsx",
+        {
+          config,
+          native: true,
+        },
+      ),
+    );
+
+    const code = getCode(result);
+    expect(code).not.toContain("@lingui/react/macro");
+    expect(code).toContain("@lingui/react");
+    expect(code).toContain('message: "Hello <0>{name}</0>"');
+    expect(code).not.toContain("type Props");
+  });
+
+  test("omits descriptor messages in production transforms", async () => {
+    const result = await withNodeEnv("production", () =>
+      runTransform(
+        dedent`
+          import { msg } from "@lingui/core/macro";
+
+          export const descriptor = msg\`Hello from native production.\`;
+        `,
+        "/virtual/native-production.ts",
+        {
+          config,
+          native: true,
+        },
+      ),
+    );
+
+    const code = getCode(result);
+    expect(code).toContain('id: "');
+    expect(code).not.toContain("Hello from native production.");
+  });
+
+  test("honors custom macro package names and macro overrides", async () => {
+    const result = await withNodeEnv(undefined, () =>
+      runTransform(
+        dedent`
+          import { msg } from "@acme/lingui-core";
+
+          export const descriptor = msg\`Hello from a custom native package.\`;
+        `,
+        "/virtual/native-custom.ts",
+        {
+          config: {
+            locales: ["en"],
+            macro: {
+              corePackage: ["@acme/lingui-core"],
+            },
+          },
+          native: {
+            macro: {
+              descriptorFields: "id-only",
+            },
+          },
+        },
+      ),
+    );
+
+    const code = getCode(result);
+    expect(code).toContain('id: "');
+    expect(code).not.toContain("@acme/lingui-core");
+    expect(code).not.toContain("Hello from a custom native package.");
+  });
+
+  test("returns a source map", async () => {
+    const result = await runTransform(
+      dedent`
+        import { msg } from "@lingui/core/macro";
+
+        export const descriptor = msg\`Mapped.\`;
+      `,
+      "/virtual/native-map.ts",
+      { config, native: true },
+    );
+
+    expect(result).not.toBeNull();
+    expect(typeof result === "object" && result?.map).toBeTruthy();
+  });
+});
+
 function createUnpluginContext(): UnpluginBuildContext & UnpluginContext {
   return {} as UnpluginBuildContext & UnpluginContext;
 }

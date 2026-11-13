@@ -65,6 +65,53 @@ export default defineConfig({
 
 For Astro, add it under `vite.plugins` in `astro.config.ts`.
 
+### Native macro transform
+
+`unplugin-lingui-macro` can use the native (Rust + SWC) macro transformer from
+`@lingui/native-tools` instead of Babel. Install the package and pass `native: true`:
+
+<Tabs syncKey="package-manager">
+  <TabItem label="Vite+">
+
+```sh
+vp add -D @lingui/native-tools
+```
+
+  </TabItem>
+  <TabItem label="npm">
+
+```sh
+npm install -D @lingui/native-tools
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```sh
+pnpm add -D @lingui/native-tools
+```
+
+  </TabItem>
+  <TabItem label="yarn">
+
+```sh
+yarn add -D @lingui/native-tools
+```
+
+  </TabItem>
+</Tabs>
+
+```ts title="vite.config.ts"
+linguiMacro({ native: true });
+```
+
+Message ids and descriptors are the same as with the Babel transform. The native transformer also
+strips TypeScript syntax, so `.ts` and `.tsx` files are passed on as JavaScript. Pass an object such
+as `native: { macro: { ... }, parser: { ... } }` to override macro options or SWC parser options.
+
+This option affects plain JS/TS modules only. `.svelte` and `.astro` files are transformed by
+their framework packages.
+
 ## Configure extraction
 
 Add the Babel extractor to `lingui.config.ts`. In a framework project, keep using that framework's
