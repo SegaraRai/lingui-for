@@ -1,5 +1,15 @@
 # lingui-for-astro
 
+## 0.7.2
+
+### Patch Changes
+
+- [#62](https://github.com/SegaraRai/lingui-for/pull/62) [`d31afe7`](https://github.com/SegaraRai/lingui-for/commit/d31afe798db82af0c575079183cc06aca9197474) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Fix extractor type declarations with Lingui 6.12 and later, which no longer export `PerFileExtractorType` from `@lingui/conf`.
+
+- [#67](https://github.com/SegaraRai/lingui-for/pull/67) [`89ace48`](https://github.com/SegaraRai/lingui-for/commit/89ace48ad272da93cc95d8e679fff52741a5cf4c) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Type the `id` prop of `Trans` with Lingui's `MessageId`, so typed message IDs registered through `@lingui/core`'s `Register` interface (Lingui 6.2+) also apply to `<Trans id="...">`.
+- Updated dependencies [[`8dfee45`](https://github.com/SegaraRai/lingui-for/commit/8dfee4551e40efb46e5b587b260822527cbbcee3), [`d7fd645`](https://github.com/SegaraRai/lingui-for/commit/d7fd645531a3d04fc75fff5441d04b7416036480), [`d31afe7`](https://github.com/SegaraRai/lingui-for/commit/d31afe798db82af0c575079183cc06aca9197474)]:
+  - @lingui-for/framework-core@0.7.2
+
 ## 0.7.1
 
 ### Patch Changes

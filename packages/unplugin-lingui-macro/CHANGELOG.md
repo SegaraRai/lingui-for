@@ -1,5 +1,11 @@
 # unplugin-lingui-macro
 
+## 0.5.0
+
+### Minor Changes
+
+- [#69](https://github.com/SegaraRai/lingui-for/pull/69) [`c7814e9`](https://github.com/SegaraRai/lingui-for/commit/c7814e9bcf06e894fcfa51dee799e0052d31c120) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Add a `native` option that transforms macros with the native (Rust + SWC) transformer from `@lingui/native-tools` instead of Babel. Macro options from an inline `config` object (such as `macro.jsxPlaceholderAttribute`) are now passed through to the transform instead of being dropped.
+
 ## 0.4.1
 
 ### Patch Changes
