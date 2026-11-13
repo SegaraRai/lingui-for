@@ -1,5 +1,6 @@
 {
   "name": "docs",
+  "private": true,
   "type": "module",
   "dependencies": {
     "@astrojs/starlight": "^0.42.10",
@@ -18,6 +19,7 @@
     "@stillwind/cli": "catalog:",
     "@stillwind/integration": "catalog:",
     "astro-strip-whitespace": "catalog:",
+    "cf": "catalog:",
     "lingui-for-astro": "workspace:*",
     "lingui-for-svelte": "workspace:*",
     "sharp": "^0.35.5",

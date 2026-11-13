@@ -24,7 +24,8 @@ const hashTabSyncScript = readFileSync(
 
 export default defineConfig({
   output: "static",
-  site: "https://lingui-for.roundtrip.dev",
+  // CI sets `PUBLIC_SITE_URL` to the Preview origin for `main` and pull requests.
+  site: process.env.PUBLIC_SITE_URL ?? "https://lingui-for.roundtrip.dev",
   trailingSlash: "never",
   build: {
     format: "preserve",

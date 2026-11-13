@@ -4,10 +4,19 @@ on:
   pull_request:
   push:
     branches: [main]
+  # The Release workflow runs these jobs before it stages the packages.
+  workflow_call:
+    inputs:
+      release:
+        description: Run every job, even for a push that changes the ledger
+        type: boolean
+        default: true
 
+# The Release workflow calls this workflow, so the group includes the name of the calling
+# workflow. A release must not cancel the CI run of the same commit, or the other way around.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !inputs.release }}
 
 permissions:
   contents: read
@@ -25,9 +34,33 @@ jobs:
 
     outputs:
       playwright-container-image: ${{ steps.playwright-container-image.outputs.image }}
+      skip: ${{ steps.release.outputs.skip }}
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          persist-credentials: false
+
+      # A push to `main` that changes the ledger starts the Release workflow, which runs this
+      # workflow before it stages the packages. This run skips the other jobs, so the release
+      # commit is tested once. The condition reads the pushed commits, not commit messages.
+      - id: release
+        name: Detect a Release run
+        env:
+          BEFORE: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+          RELEASE: ${{ inputs.release }}
+        # A push without a previous commit, such as the creation of a branch, keeps the jobs.
+        run: |
+          if [ "$EVENT_NAME" = push ] && [ "$RELEASE" != true ] \
+            && git cat-file -e "$BEFORE^{commit}" 2> /dev/null \
+            && ! git diff --quiet "$BEFORE" "$GITHUB_SHA" -- .changeset/ledger.yaml; then
+            echo 'skip=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'skip=false' >> "$GITHUB_OUTPUT"
+          fi
 
       - id: playwright-container-image
         name: Resolve Playwright Container Image
@@ -42,19 +75,47 @@ jobs:
           )"
           echo "image=$image" >> "$GITHUB_OUTPUT"
 
+  versioning:
+    name: Check Versioning
+    needs: config
+    if: needs.config.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      - run: vp i --frozen-lockfile --ignore-scripts --filter lingui-for-workspace
+
+      # Validates the pending change intents and the fixed version group.
+      - run: vp exec pnpm change check
+
   build-wasm:
     name: Build Wasm Package and Test Rust Code
+    needs: config
+    if: needs.config.outputs.skip != 'true'
     runs-on: ubuntu-latest
 
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Rust
         run: rustup install stable
 
-      - uses: actions/cache@v6
+      - uses: actions/cache@v6.1.0
         with:
           path: |
             ~/.cargo/registry
@@ -66,7 +127,7 @@ jobs:
 
       - run: cargo test
 
-      - uses: voidzero-dev/setup-vp@v1.21.2
+      - uses: voidzero-dev/setup-vp@v1.22.0
         with:
           node-version-file: ".node-version"
           cache: true
@@ -75,7 +136,7 @@ jobs:
 
       - run: vp run build:wasm
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: ${{ env.WASM_PACKAGE_ARTIFACT_NAME }}
           path: shared/lingui-analyzer-wasm/dist/
@@ -99,14 +160,16 @@ jobs:
       LINGUI_WASM_PREBUILT: "1"
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
-      - uses: actions/download-artifact@v8
+      - uses: actions/download-artifact@v8.0.2
         with:
           name: ${{ env.WASM_PACKAGE_ARTIFACT_NAME }}
           path: shared/lingui-analyzer-wasm/dist
 
-      - uses: voidzero-dev/setup-vp@v1.21.2
+      - uses: voidzero-dev/setup-vp@v1.22.0
         with:
           node-version-file: ".node-version"
           cache: true
@@ -123,7 +186,7 @@ jobs:
       - name: Pack built repository
         run: tar --exclude='./.git' --exclude='./built-repository.tar' -cf built-repository.tar .
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v7.0.2
         with:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
           path: built-repository.tar
@@ -152,7 +215,7 @@ jobs:
       # The built repository artifact is large and its download occasionally stalls;
       # bound each attempt and retry once instead of hanging until the job timeout.
       - id: download-built-repository
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.2
         continue-on-error: true
         timeout-minutes: 8
         with:
@@ -160,7 +223,7 @@ jobs:
           path: .
 
       - if: steps.download-built-repository.outcome != 'success'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.2
         timeout-minutes: 8
         with:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
@@ -171,7 +234,7 @@ jobs:
           tar -xf built-repository.tar
           rm built-repository.tar
 
-      - uses: voidzero-dev/setup-vp@v1.21.2
+      - uses: voidzero-dev/setup-vp@v1.22.0
         with:
           node-version-file: ".node-version"
           cache: true
@@ -220,7 +283,7 @@ jobs:
       # The built repository artifact is large and its download occasionally stalls;
       # bound each attempt and retry once instead of hanging until the job timeout.
       - id: download-built-repository
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.2
         continue-on-error: true
         timeout-minutes: 8
         with:
@@ -228,14 +291,14 @@ jobs:
           path: .
 
       - if: steps.download-built-repository.outcome != 'success'
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8.0.2
         timeout-minutes: 8
         with:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
           path: .
 
       - name: Run compatibility in isolated container
-        uses: SegaraRai/gha-sandbox-probes@807dc79aa0e5cadeffc55d34672628ff745ebb8d
+        uses: SegaraRai/gha-sandbox-probes@main
         with:
           image: ${{ needs.config.outputs.playwright-container-image }}
           network: bridge
@@ -257,27 +320,32 @@ jobs:
 
   compatibility-matrix:
     name: Compatibility Matrix
-    needs: compatibility
-    if: always()
+    needs:
+      - config
+      - compatibility
+    if: ${{ !cancelled() && needs.config.outputs.skip != 'true' }}
     runs-on: ubuntu-latest
 
     timeout-minutes: 10
 
     steps:
       - name: Check compatibility matrix result
+        env:
+          RESULT: ${{ needs.compatibility.result }}
         run: |
-          echo "compatibility result: ${{ needs.compatibility.result }}"
-          test "${{ needs.compatibility.result }}" = "success"
+          echo "compatibility result: $RESULT"
+          test "$RESULT" = "success"
 
   cleanup-transfer-artifacts:
     name: Cleanup Transfer Artifacts
     needs:
+      - config
       - build-wasm
       - build
       - test
       - compatibility
       - compatibility-matrix
-    if: always()
+    if: ${{ always() && needs.config.outputs.skip != 'true' }}
     runs-on: ubuntu-latest
 
     timeout-minutes: 10
@@ -287,7 +355,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v8.0.0
         env:
           TRANSFER_ARTIFACT_NAMES: |
             ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
@@ -326,13 +394,17 @@ jobs:
 
   spelling:
     name: Spell Check with Typos
+    needs: config
+    if: needs.config.outputs.skip != 'true'
     runs-on: ubuntu-latest
 
     timeout-minutes: 10
 
     steps:
       - name: Checkout Actions Repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Spell Check Repo
         uses: crate-ci/typos@v1.50.1

@@ -6,6 +6,12 @@
 - Use Vite+ (`vp`) instead of `npx` and `pnpm` for all commands.
 - DO NOT invoke `vp` or `pnpm` from test code.
 
+## Change Intents
+
+- Record a change intent for each new feature and each other user-visible package change. Run `vp exec pnpm change`, and commit the intent file in `.changeset/` with the change.
+- Use `minor` for a new feature or a breaking change and `patch` for a user-visible fix. Name the packages that users install or import for the change. `@lingui-for/framework-core`, `lingui-for-astro`, and `lingui-for-svelte` release at one shared version.
+- Do not edit `.changeset/ledger.yaml` or `CHANGELOG.md` files by hand. The Version PR workflow generates them.
+
 ## Writing Tests
 
 When writing tests, the most important thing is the accuracy of the test code. It’s not about having all tests pass.

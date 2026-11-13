@@ -1,0 +1,193 @@
+name: Site Preview
+
+# Every job here runs from the default branch and must never check out or execute pull request
+# code. An artifact from a pull request is untrusted data, and `cloudflare.ts` reads only its
+# assets.
+on:
+  workflow_run:
+    workflows: [Sites, Site Preview Request]
+    types: [completed]
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+env:
+  CF_SEND_TELEMETRY: "false"
+
+jobs:
+  resolve:
+    name: Select Preview build
+    if: >-
+      (github.event_name == 'workflow_run' &&
+        github.event.workflow_run.event == 'pull_request' &&
+        github.event.workflow_run.conclusion != 'skipped') ||
+      (github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        startsWith(github.event.comment.body, '/preview'))
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 5
+
+    permissions:
+      actions: read
+      contents: read
+      # GitHub checks `pull-requests` for reactions and replies on a pull request's comments.
+      pull-requests: write
+
+    outputs:
+      deploy: ${{ steps.resolve.outputs.deploy }}
+      pull: ${{ steps.resolve.outputs.pull }}
+      sha: ${{ steps.resolve.outputs.sha }}
+      run: ${{ steps.resolve.outputs.run }}
+      artifact: ${{ steps.resolve.outputs.artifact }}
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      - id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/sites/preview.ts resolve
+
+  deploy:
+    name: Publish Preview
+    needs: resolve
+    if: needs.resolve.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 20
+
+    permissions:
+      actions: read
+      contents: read
+
+    environment:
+      name: sites-pr-preview
+      url: ${{ steps.publish.outputs.url }}
+
+    concurrency:
+      group: site-preview-${{ needs.resolve.outputs.pull }}
+      cancel-in-progress: true
+
+    outputs:
+      docs_url: ${{ steps.publish.outputs.docs_url }}
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      # `apps/docs/cloudflare.config.ts` imports `cf/config`.
+      - name: Install deployment tools
+        run: vp i --frozen-lockfile --ignore-scripts --filter @lingui-for/internal-tools-sites --filter docs
+
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: ${{ needs.resolve.outputs.artifact }}
+          path: ${{ runner.temp }}/site-preview/.cloudflare/output/v0/
+          run-id: ${{ needs.resolve.outputs.run }}
+          github-token: ${{ github.token }}
+
+      - name: Publish and check the docs
+        id: publish
+        env:
+          ARTIFACT: ${{ runner.temp }}/site-preview
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PREVIEW_NAME: pr-${{ needs.resolve.outputs.pull }}
+          PREVIEW_SHA: ${{ needs.resolve.outputs.sha }}
+        run: |
+          node tools/sites/cloudflare.ts docs "$ARTIFACT"
+          node tools/sites/deploy.ts docs "$PREVIEW_NAME"
+
+  report:
+    name: Report Preview
+    needs: [resolve, deploy]
+    if: ${{ !cancelled() && needs.resolve.outputs.deploy == 'true' && needs.deploy.result != 'skipped' }}
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 5
+
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          PREVIEW_PULL: ${{ needs.resolve.outputs.pull }}
+          PREVIEW_SHA: ${{ needs.resolve.outputs.sha }}
+          PREVIEW_RESULT: ${{ needs.deploy.result }}
+          DOCS_URL: ${{ needs.deploy.outputs.docs_url }}
+        run: node tools/sites/preview.ts report
+
+  cleanup:
+    name: Delete closed Previews
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+
+    environment: sites-pr-preview-cleanup
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      - id: closed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node tools/sites/preview.ts closed
+
+      - name: Delete Previews
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          PULLS: ${{ steps.closed.outputs.pulls }}
+        run: |
+          for pull in $PULLS; do
+            node tools/sites/deploy.ts delete docs "pr-$pull"
+            gh pr edit "$pull" --repo "$GITHUB_REPOSITORY" --remove-label preview:active
+          done

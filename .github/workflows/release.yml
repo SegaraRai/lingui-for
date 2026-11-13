@@ -1,55 +1,231 @@
 name: Release
 
 on:
+  # `pnpm version -r` updates the ledger, so this push always carries a version commit.
   push:
     branches: [main]
+    paths:
+      - ".changeset/ledger.yaml"
+  # The version pull request changes the ledger. Its run builds and packs the npm packages before
+  # the merge, and the CI workflow tests the pull request. The upload jobs skip refs other than
+  # `main`.
+  pull_request:
+    branches: [main]
+    paths:
+      - ".changeset/ledger.yaml"
   workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Build and test every package, but do not upload them
+        type: boolean
+        default: true
 
 permissions:
-  contents: write
-  pull-requests: write
-  id-token: write
+  contents: read
 
+# A pull request run must not wait for a release on `main`. A new push to the version branch
+# replaces the commit under test, but a release on `main` must finish its uploads.
 concurrency:
   group: release-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  release:
-    name: Create Release PR or Publish
+  ci:
+    name: CI
+    # The CI workflow tests the version pull request itself. On a push that changes the ledger,
+    # the CI workflow skips its jobs, and this job runs them instead.
+    if: github.event_name != 'pull_request'
+    uses: ./.github/workflows/ci.yml
+    with:
+      release: true
+    permissions:
+      actions: write
+      contents: read
+
+  # This job runs beside the tests and has no access to the npm credentials. `publish` uploads
+  # its outputs after the tests pass.
+  npm-packages:
+    name: Build npm packages
+    # A fork can also name a branch `version/main`, so the condition checks the head repository.
+    if: github.event_name != 'pull_request' || (github.head_ref == 'version/main' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
 
     timeout-minutes: 30
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Set up Rust
         run: rustup install stable
 
-      - uses: actions/cache@v6
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target/release/deps
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-
-      - uses: voidzero-dev/setup-vp@v1.21.2
+      # The packages that npm serves must not depend on a cache that another run saved.
+      - uses: voidzero-dev/setup-vp@v1.22.0
         with:
           node-version-file: ".node-version"
-          cache: true
+          cache: false
+          run-install: false
 
-      - run: vp install
+      - run: vp install --frozen-lockfile
 
-      - run: vp run build
+      - run: vp run build:wasm
 
-      - name: Create release PR or publish
-        uses: changesets/action@v2
+      - run: vp run build:lib
+
+      - run: vp run build:plugin
+
+      - name: Ensure build leaves working tree clean
+        run: |
+          git status --short
+          test -z "$(git status --porcelain)"
+
+      # Recursive publication skips versions that already exist on npm.
+      - name: Pack every package
+        run: vp exec pnpm publish -r --dry-run --no-git-checks --ignore-scripts
+
+      # The archive holds the files that the build generates. Tracked files come from the
+      # checkout in `publish`.
+      - name: Archive the built packages
+        run: tar --create --gzip --file npm-packages.tar.gz packages/*/dist
+
+      - uses: actions/upload-artifact@v7.0.2
         with:
-          version-script: vp run changeset version
-          publish-script: vp run release
-          create-github-releases: true
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          name: npm-packages
+          path: npm-packages.tar.gz
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Stage packages
+    needs: [ci, npm-packages]
+    # A push has no inputs, so `dry-run` is empty and the job stages the packages.
+    if: github.ref == 'refs/heads/main' && !inputs.dry-run
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    environment: npm-release
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      # Publication needs pnpm and the workspace manifests, but no dependency or install script.
+      - run: vp i --frozen-lockfile --ignore-scripts --filter lingui-for-workspace
+
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: npm-packages
+
+      - name: Extract the built packages
+        run: |
+          tar --extract --gzip --file npm-packages.tar.gz
+          rm npm-packages.tar.gz
+
+      - name: Configure the bootstrap token
+        # Trusted publishing needs no token. A package must exist before npm can trust this
+        # workflow, so the first publication of a new package uses NPM_TOKEN.
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> "$HOME/.npmrc"
+          fi
+
+      - name: Stage
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # Branch rules and the job condition replace pnpm's Git checks. Recursive staging skips
+        # versions that already exist on npm. A prerelease receives the npm tag `next`, and any
+        # other version receives `latest`. A maintainer publishes the staged versions by
+        # approving them with 2FA.
+        run: |
+          node tools/release/npm-tags.ts > "$RUNNER_TEMP/npm-tags.tsv"
+          cat "$RUNNER_TEMP/npm-tags.tsv"
+          for tag in latest next; do
+            filters=()
+            while IFS=$'\t' read -r package_tag name; do
+              if [ "$package_tag" = "$tag" ]; then
+                filters+=(--filter "$name")
+              fi
+            done < "$RUNNER_TEMP/npm-tags.tsv"
+            if [ "${#filters[@]}" -eq 0 ]; then
+              continue
+            fi
+            vp exec pnpm stage publish -r "${filters[@]}" --no-git-checks --ignore-scripts --tag "$tag" --report-summary
+            if [ -f pnpm-publish-summary.json ]; then
+              mv pnpm-publish-summary.json "pnpm-publish-summary-$tag.json"
+            fi
+          done
+
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: publish-summary
+          path: pnpm-publish-summary-*.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  github-release:
+    name: Draft GitHub Releases
+    needs: publish
+    if: github.ref == 'refs/heads/main' && !inputs.dry-run
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      # A draft becomes public when a maintainer publishes it after approving the staged npm
+      # packages, and GitHub creates the tag at that time. A package version whose tag exists
+      # already has a published release. A rerun after a partial failure keeps the notes of an
+      # existing draft.
+      - name: Create the drafts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          export RELEASE_TAGS GIT_TAGS
+          RELEASE_TAGS=$(gh release list --exclude-drafts --limit 1000 --json tagName --jq '.[].tagName')
+          GIT_TAGS=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags" --paginate --jq '.[].ref | sub("^refs/tags/"; "")')
+          node tools/release/release-draft.ts --repository "$GITHUB_REPOSITORY" --commit "$GITHUB_SHA" --out-dir "$RUNNER_TEMP/drafts" > "$RUNNER_TEMP/drafts.tsv"
+          while IFS=$'\t' read -r tag prerelease body; do
+            draft=$(gh release view "$tag" --json isDraft --jq '.isDraft' 2> /dev/null || true)
+            case "$draft" in
+              false) echo "The GitHub Release $tag is already published." ;;
+              true) echo "The draft of $tag already exists." ;;
+              *)
+                flags=()
+                # The release of the main package stays the latest release of the repository.
+                if [ "$prerelease" = true ]; then
+                  flags+=(--prerelease --latest=false)
+                elif [ "${tag%@*}" != lingui-for-svelte ]; then
+                  flags+=(--latest=false)
+                fi
+                gh release create "$tag" --draft --target "$GITHUB_SHA" --title "$tag" --notes-file "$body" "${flags[@]}"
+                ;;
+            esac
+          done < "$RUNNER_TEMP/drafts.tsv"

@@ -16,3 +16,5 @@ __screenshots__
 *.local
 *.log
 *.tsbuildinfo
+
+.deploy

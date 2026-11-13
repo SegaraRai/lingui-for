@@ -3,11 +3,13 @@ packages:
   - examples/*
   - packages/*
   - shared/*
+  - tools/*
 
 allowBuilds:
   esbuild: true
   sharp: true
   wasm-pack: true
+  workerd: false # The runtime resolves its binary from the platform package.
 
 catalogs:
   default:
@@ -40,6 +42,7 @@ catalogs:
     "@types/react": ^19.3.0
     "@types/react-dom": ^19.3.0
     astro: ^7.4.11
+    cf: ^1.0.0-beta.29
     astro-strip-whitespace: ^0.2.2
     daisyui: ^5.7.50
     dedent: ^1.7.2
@@ -74,6 +77,31 @@ catalogs:
     unplugin: ^3
     vite: npm:@voidzero-dev/vite-plus-core@1.6.0
     webpack: "^4 || ^5"
+
+versioning:
+  # Releases before 1.0 can break existing code with a minor version. The cap keeps an intent
+  # from releasing 1.0 by accident.
+  maxBump: minor
+  changelog:
+    storage: repository
+  # `fixed` and `ignore` accept exact names only. tools/release/versioning.test.ts keeps them in
+  # step with the workspace.
+  fixed:
+    - - "@lingui-for/framework-core"
+      - "lingui-for-astro"
+      - "lingui-for-svelte"
+  ignore:
+    - "@lingui-for/internal-lingui-analyzer-wasm"
+    - "@lingui-for/internal-shared-common"
+    - "@lingui-for/internal-shared-test-helpers"
+    - "@lingui-for/internal-tools-release"
+    - "@lingui-for/internal-tools-sites"
+    - "config-types"
+    - "conformance"
+    - "docs"
+    - "e2e-astro"
+    - "e2e-svelte"
+    - "lingui-for-workspace"
 
 minimumReleaseAgeExclude:
   - "@astrojs/starlight@0.42.0"

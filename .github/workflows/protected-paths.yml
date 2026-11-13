@@ -1,0 +1,32 @@
+name: Protected paths
+
+# A pull request from a fork must not change these paths. Workflows and release scripts run with
+# write permissions or npm credentials after the merge, and the Version PR workflow generates the
+# ledger and the changelogs. A change to the ledger on `main` starts the Release workflow.
+#
+# A pull request runs the workflow files from its merge commit, so a fork can edit this check. The
+# `/.github/` entry in CODEOWNERS requests a maintainer review for such an edit.
+on:
+  pull_request:
+    branches: [main]
+    # Keep this list in sync with the matching entries in `.github/CODEOWNERS`.
+    paths:
+      - ".github/**"
+      - ".changeset/ledger.yaml"
+      - "**/CHANGELOG.md"
+      - "tools/release/**"
+
+permissions: {}
+
+jobs:
+  reject:
+    name: Reject protected changes from forks
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 5
+
+    steps:
+      - run: |
+          echo '::error::A pull request from a fork must not change `.github/`, `.changeset/ledger.yaml`, `CHANGELOG.md` files, or `tools/release/`.'
+          exit 1

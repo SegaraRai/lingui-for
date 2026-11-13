@@ -1,0 +1,32 @@
+# Changes to these paths run with write permissions or npm credentials after the merge, change
+# the published packages, or change the instructions that coding agents follow.
+# The Protected paths workflow rejects changes to `.github/`, the ledger, changelogs, and the
+# release scripts from forks. Keep its `paths` list in sync with those entries.
+
+# Workflows, pinned actions, and this file.
+/.github/ @SegaraRai
+
+# The Version PR workflow generates these files.
+/.changeset/ledger.yaml @SegaraRai
+CHANGELOG.md @SegaraRai
+
+# Scripts that privileged workflows run on `main`.
+/tools/release/ @SegaraRai
+/tools/sites/ @SegaraRai
+/apps/docs/cloudflare.config.ts @SegaraRai
+/build-wasm.ts @SegaraRai
+/generate-artifacts.ts @SegaraRai
+
+# Dependencies and package metadata.
+package.json @SegaraRai
+/Cargo.toml @SegaraRai
+/Cargo.lock @SegaraRai
+/pnpm-lock.yaml @SegaraRai
+/pnpm-workspace.yaml @SegaraRai
+/.node-version @SegaraRai
+
+# License files that the packages publish.
+LICENSE @SegaraRai
+
+# Instructions for coding agents.
+/AGENTS.md @SegaraRai

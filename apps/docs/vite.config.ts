@@ -12,6 +12,7 @@ export default defineConfig({
           "i18n:build",
         ],
         cache: {
+          env: ["PUBLIC_SITE_URL"],
           input: [
             { auto: true },
             "!**/.vite-temp/**",
