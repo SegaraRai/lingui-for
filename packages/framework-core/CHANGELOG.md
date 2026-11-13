@@ -1,5 +1,15 @@
 # @lingui-for/framework-core
 
+## 0.7.2
+
+### Patch Changes
+
+- [#64](https://github.com/SegaraRai/lingui-for/pull/64) [`8dfee45`](https://github.com/SegaraRai/lingui-for/commit/8dfee4551e40efb46e5b587b260822527cbbcee3) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Allow `cosmiconfig` 10 for loading Lingui config files.
+
+- [#66](https://github.com/SegaraRai/lingui-for/pull/66) [`d7fd645`](https://github.com/SegaraRai/lingui-for/commit/d7fd645531a3d04fc75fff5441d04b7416036480) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Recognize the `/** i18n */` extraction marker emitted by Lingui 6.4+ (and other `/* i18n */` variants) when normalizing descriptor layout in transformed output.
+
+- [#62](https://github.com/SegaraRai/lingui-for/pull/62) [`d31afe7`](https://github.com/SegaraRai/lingui-for/commit/d31afe798db82af0c575079183cc06aca9197474) Thanks [@SegaraRai](https://github.com/SegaraRai)! - Fix extractor type declarations with Lingui 6.12 and later, which no longer export `PerFileExtractorType` from `@lingui/conf`.
+
 ## 0.7.1
 
 ### Patch Changes
