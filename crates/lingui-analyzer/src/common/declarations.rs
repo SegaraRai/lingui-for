@@ -189,7 +189,7 @@ fn collect_i18n_comment_whitespace_spans_recursive(
     if node.kind() == "comment"
         && node.start_byte() >= declaration_start
         && node.end_byte() <= declaration_end
-        && node_text(source, node) == "/*i18n*/"
+        && is_i18n_marker_comment(node_text(source, node))
         && let Some(span) = whitespace_span_before_object(source, node.end_byte(), declaration_end)
     {
         spans.push(Span::new(span.start - base_offset, span.end - base_offset)?);
@@ -207,6 +207,21 @@ fn collect_i18n_comment_whitespace_spans_recursive(
         )?;
     }
     Ok(())
+}
+
+/// Returns whether `text` is a Lingui extraction marker comment.
+///
+/// Accepts both the legacy `/*i18n*/` form and the `/** i18n */` form emitted by Lingui 6.4+,
+/// i.e. any block comment matching `^/\*+\s*i18n\s*\*+/$`.
+fn is_i18n_marker_comment(text: &str) -> bool {
+    let Some(inner) = text
+        .strip_prefix("/*")
+        .and_then(|rest| rest.strip_suffix("*/"))
+    else {
+        return false;
+    };
+
+    inner.trim_start_matches('*').trim_end_matches('*').trim() == "i18n"
 }
 
 fn whitespace_span_before_object(source: &str, start: usize, limit: usize) -> Option<Span> {
@@ -232,11 +247,59 @@ mod tests {
 
     use super::{
         collect_i18n_comment_whitespace_spans, collect_variable_initializer_declarations,
-        initializer_start_for_declarator, normalize_i18n_comment_layout_rendered,
+        initializer_start_for_declarator, is_i18n_marker_comment,
+        normalize_i18n_comment_layout_rendered,
     };
 
     fn ls(text: &str) -> LeanString {
         LeanString::from(text)
+    }
+
+    #[test]
+    fn is_i18n_marker_comment_accepts_legacy_and_jsdoc_forms() {
+        for text in [
+            "/*i18n*/",
+            "/** i18n */",
+            "/**i18n*/",
+            "/* i18n */",
+            "/***  i18n  ***/",
+            "/*\ti18n\n*/",
+        ] {
+            assert!(is_i18n_marker_comment(text), "{text:?} should match");
+        }
+    }
+
+    #[test]
+    fn is_i18n_marker_comment_rejects_other_comments() {
+        for text in [
+            "/**/",
+            "/*/",
+            "/* */",
+            "/*i18n */ x",
+            "// i18n",
+            "/* i18n: note */",
+            "/* * i18n */",
+            "/* i18nx */",
+            "/* xi18n */",
+            "/*I18N*/",
+        ] {
+            assert!(!is_i18n_marker_comment(text), "{text:?} should not match");
+        }
+    }
+
+    #[test]
+    fn normalize_i18n_comment_layout_collapses_jsdoc_style_comment() {
+        let input = "render(/** i18n */\n  { id: \"x\" })";
+        let tree = parse_tsx(input).expect("parse succeeds");
+        let spans = collect_i18n_comment_whitespace_spans(input, tree.root_node(), 0, input.len())
+            .expect("span collection succeeds");
+
+        assert_eq!(
+            normalize_i18n_comment_layout_rendered(&ls(input), None, &spans)
+                .expect("rendered normalization succeeds")
+                .code,
+            "render(/** i18n */ { id: \"x\" })",
+        );
     }
 
     #[test]

@@ -84,32 +84,28 @@ exports[`NODE_ENV=development > component-whitespacing > svelte transform 1`] = 
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "DFZbAv",
   message: "Before{value}After",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "INRnBm",
   message: " Before  {value}  After ",
   values: {
@@ -202,32 +198,28 @@ exports[`NODE_ENV=development > component-whitespacing-auto > svelte transform 1
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   message: "Before {value} After",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "INRnBm",
   message: " Before  {value}  After ",
   values: {
@@ -298,8 +290,7 @@ exports[`NODE_ENV=development > deep-rich-text-trans > svelte transform 1`] = `
   let name = $state("Ada");
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "zt7J-8",
   message: "Read <0><1>{name}</1></0> before opening <2>{count}</2> tabs to {action}.",
   values: {
@@ -377,16 +368,14 @@ exports[`NODE_ENV=development > exact-number-component > svelte transform 1`] = 
   let rank = $state(1);
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "a-Xhin",
   message: "{count, plural, =0 {no queued builds} =2 {exactly two queued builds} other {# queued builds}}",
   values: {
     count: count
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "gM41pk",
   message: "{rank, selectordinal, =1 {take the shortcut} =2 {take the scenic route} other {finish in #th place}}",
   values: {
@@ -431,8 +420,7 @@ exports[`NODE_ENV=development > lingui-directive-cross-block > svelte transform 
   // lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "conformance.title",
   message: "Directive inherited by Trans.",
   comment: "Directive crossing source regions",
@@ -448,8 +436,7 @@ import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const owner = { name: "Ada" };
 const greeting = __l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "2w7LlI",
   message: "Named owner: {ownerName}.",
   values: {
@@ -508,8 +495,7 @@ exports[`NODE_ENV=development > named-ph > svelte transform 1`] = `
   const __l4s_translate = __l4s_ctx._;
   const owner = { name: "Ada" };
   const greeting = __l4s_getI18n()._(
-  /** i18n */
-  {
+  /** i18n */ {
     id: "2w7LlI",
     message: "Named owner: {ownerName}.",
     values: {
@@ -521,8 +507,7 @@ exports[`NODE_ENV=development > named-ph > svelte transform 1`] = `
 </script>
 
 <p>{greeting}</p>
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "3NoARm",
   message: "Welcome {ownerName}!",
   values: {
@@ -540,8 +525,7 @@ const count = 0;
 const rank = 1;
 const role = "admin";
 const deepCore = __l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "K9g4_G",
   message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
   values: {
@@ -582,8 +566,7 @@ exports[`NODE_ENV=development > nested-icu-core > svelte transform 1`] = `
   let role = $state("admin");
 
   const deepCore = $derived($__l4s_translate(
-  /** i18n */
-  {
+  /** i18n */ {
     id: "K9g4_G",
     message: "{count, plural, =0 {{rank, selectordinal, =1 {{role, select, admin {core zero first admin} other {core zero first other}}} other {{role, select, admin {core zero later admin} other {core zero later other}}}}} other {{rank, selectordinal, =1 {{role, select, admin {core many first admin} other {core many first other}}} other {{role, select, admin {core many later admin} other {core many later other}}}}}}",
     values: {
@@ -645,8 +628,7 @@ exports[`NODE_ENV=development > rich-text-trans > svelte transform 1`] = `
   let name = $state("Ada");
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "9_omjw",
   message: "Hello <0>{name}</0>.",
   values: {
@@ -671,8 +653,7 @@ const role = "admin";
   message: "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
   values: {
     0: __l4a_i18n._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "Ro3jDG",
       message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
       values: {
@@ -681,8 +662,7 @@ const role = "admin";
       }
     }),
     1: __l4a_i18n._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "_uwo4-",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
       values: {
@@ -691,8 +671,7 @@ const role = "admin";
       }
     }),
     2: __l4a_i18n._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "OsAInm",
       message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
       values: {
@@ -772,14 +751,12 @@ exports[`NODE_ENV=development > trans-with-deeply-nested-component-icu > svelte 
   let role = $state("admin");
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "Y5Pnrw",
   message: "Before <0>{count, plural, =0 {{0}} =2 {{1}} other {{2}}}</0> after.",
   values: {
     0: __l4s_getI18n()._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "Ro3jDG",
       message: "{rank, selectordinal, =1 {{role, select, admin {zero first admin} other {zero first other}}} =2 {{role, select, admin {zero second admin} other {zero second other}}} other {{role, select, admin {zero later admin} other {zero later other}}}}",
       values: {
@@ -788,8 +765,7 @@ exports[`NODE_ENV=development > trans-with-deeply-nested-component-icu > svelte 
       }
     }),
     1: __l4s_getI18n()._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "_uwo4-",
       message: "{rank, selectordinal, =1 {{role, select, admin {two first admin} other {two first other}}} =2 {{role, select, admin {two second admin} other {two second other}}} other {{role, select, admin {two later admin} other {two later other}}}}",
       values: {
@@ -798,8 +774,7 @@ exports[`NODE_ENV=development > trans-with-deeply-nested-component-icu > svelte 
       }
     }),
     2: __l4s_getI18n()._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "OsAInm",
       message: "{rank, selectordinal, =1 {{role, select, admin {many first admin} other {many first other}}} =2 {{role, select, admin {many second admin} other {many second other}}} other {{role, select, admin {many later admin} other {many later other}}}}",
       values: {
@@ -860,8 +835,7 @@ exports[`NODE_ENV=development > trans-with-plural > svelte transform 1`] = `
   let count = $state(0);
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "BWlbIC",
   message: "You have <0>{count, plural, =0 {no unread messages} one {# unread message} other {# unread messages}}</0>.",
   values: {
@@ -928,8 +902,7 @@ exports[`NODE_ENV=development > unicode-adjacent-text > svelte transform 1`] = `
 
 <section>
   前置き😀
-  <L4sRuntimeTrans {.../** i18n */
-  {
+  <L4sRuntimeTrans {.../** i18n */ {
     id: "5u37ZP",
     message: "ようこそ <0>{name}</0> さん🚀",
     values: {
@@ -998,8 +971,7 @@ exports[`NODE_ENV=development > unicode-zwj-adjacent-text > svelte transform 1`]
 
 <section>
   先頭😀😃😄
-  <L4sRuntimeTrans {.../** i18n */
-  {
+  <L4sRuntimeTrans {.../** i18n */ {
     id: "jlsvLV",
     message: "家族👨‍👩‍👧‍👦 <0>{name}</0> 終端🚀🎉",
     values: {
@@ -1161,32 +1133,28 @@ exports[`NODE_ENV=development > with-id-context-comment-component > svelte trans
   const value = $state("foo");
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "with-interpolation-with-id",
   message: "Message with interpolation: {value}",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "bVvypv",
   message: "Message with interpolation: {value}",
   context: "This is a context",
@@ -1194,8 +1162,7 @@ exports[`NODE_ENV=development > with-id-context-comment-component > svelte trans
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   comment: "This is a comment",
@@ -1204,29 +1171,24 @@ exports[`NODE_ENV=development > with-id-context-comment-component > svelte trans
   }
 }} />
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation"
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation"
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "no-interpolation-with-id",
   message: "Message without interpolation"
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "SSpjjA",
   message: "Message without interpolation",
   context: "This is a context"
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation",
   comment: "This is a comment"
@@ -1243,8 +1205,7 @@ __l4a_i18n.prime();
 ---
 
 <p id="v1a">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   values: {
@@ -1252,8 +1213,7 @@ __l4a_i18n.prime();
   }
 })}</p>
 <p id="v1b">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   values: {
@@ -1261,8 +1221,7 @@ __l4a_i18n.prime();
   }
 })}</p>
 <p id="v2">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "with-interpolation-with-id",
   message: "Message with interpolation: {value}",
   values: {
@@ -1270,8 +1229,7 @@ __l4a_i18n.prime();
   }
 })}</p>
 <p id="v3">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "bVvypv",
   message: "Message with interpolation: {value}",
   context: "This is a context",
@@ -1280,8 +1238,7 @@ __l4a_i18n.prime();
   }
 })}</p>
 <p id="v4">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   comment: "This is a comment",
@@ -1291,33 +1248,28 @@ __l4a_i18n.prime();
 })}</p>
 
 <p id="p1a">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation"
 })}</p>
 <p id="p1b">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation"
 })}</p>
 <p id="p2">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "no-interpolation-with-id",
   message: "Message without interpolation"
 })}</p>
 <p id="p3">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "SSpjjA",
   message: "Message without interpolation",
   context: "This is a context"
 })}</p>
 <p id="p4">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation",
   comment: "This is a comment"
@@ -1420,8 +1372,7 @@ exports[`NODE_ENV=development > with-id-context-comment-core > svelte transform 
 </script>
 
 <p id="v1a">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   values: {
@@ -1429,8 +1380,7 @@ exports[`NODE_ENV=development > with-id-context-comment-core > svelte transform 
   }
 })}</p>
 <p id="v1b">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   values: {
@@ -1438,8 +1388,7 @@ exports[`NODE_ENV=development > with-id-context-comment-core > svelte transform 
   }
 })}</p>
 <p id="v2">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "with-interpolation-with-id",
   message: "Message with interpolation: {value}",
   values: {
@@ -1447,8 +1396,7 @@ exports[`NODE_ENV=development > with-id-context-comment-core > svelte transform 
   }
 })}</p>
 <p id="v3">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "bVvypv",
   message: "Message with interpolation: {value}",
   context: "This is a context",
@@ -1457,8 +1405,7 @@ exports[`NODE_ENV=development > with-id-context-comment-core > svelte transform 
   }
 })}</p>
 <p id="v4">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   message: "Message with interpolation: {value}",
   comment: "This is a comment",
@@ -1468,33 +1415,28 @@ exports[`NODE_ENV=development > with-id-context-comment-core > svelte transform 
 })}</p>
 
 <p id="p1a">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation"
 })}</p>
 <p id="p1b">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation"
 })}</p>
 <p id="p2">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "no-interpolation-with-id",
   message: "Message without interpolation"
 })}</p>
 <p id="p3">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "SSpjjA",
   message: "Message without interpolation",
   context: "This is a context"
 })}</p>
 <p id="p4">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl",
   message: "Message without interpolation",
   comment: "This is a comment"
@@ -1577,29 +1519,25 @@ exports[`NODE_ENV=production > component-whitespacing > svelte transform 1`] = `
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "DFZbAv",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "INRnBm",
   values: {
     value: value
@@ -1683,29 +1621,25 @@ exports[`NODE_ENV=production > component-whitespacing-auto > svelte transform 1`
   import { RuntimeTrans as L4sRuntimeTrans } from "lingui-for-svelte/runtime";
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "_txFeF",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "INRnBm",
   values: {
     value: value
@@ -1773,8 +1707,7 @@ exports[`NODE_ENV=production > deep-rich-text-trans > svelte transform 1`] = `
   let name = $state("Ada");
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "zt7J-8",
   values: {
     name: name,
@@ -1847,15 +1780,13 @@ exports[`NODE_ENV=production > exact-number-component > svelte transform 1`] = `
   let rank = $state(1);
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "a-Xhin",
   values: {
     count: count
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "gM41pk",
   values: {
     rank: rank
@@ -1893,8 +1824,7 @@ exports[`NODE_ENV=production > lingui-directive-cross-block > svelte transform 1
   // lingui-set context="conformance" comment="Directive crossing source regions" idPrefix="conformance."
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "conformance.title"
 }} />"
 `;
@@ -1907,8 +1837,7 @@ import { RuntimeTrans as L4aRuntimeTrans } from "lingui-for-astro/runtime";
 
 const owner = { name: "Ada" };
 const greeting = __l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "2w7LlI",
   values: {
     ownerName: owner.name
@@ -1963,8 +1892,7 @@ exports[`NODE_ENV=production > named-ph > svelte transform 1`] = `
   const __l4s_translate = __l4s_ctx._;
   const owner = { name: "Ada" };
   const greeting = __l4s_getI18n()._(
-  /** i18n */
-  {
+  /** i18n */ {
     id: "2w7LlI",
     values: {
       ownerName: owner.name
@@ -1975,8 +1903,7 @@ exports[`NODE_ENV=production > named-ph > svelte transform 1`] = `
 </script>
 
 <p>{greeting}</p>
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "3NoARm",
   values: {
     ownerName: owner.name
@@ -1993,8 +1920,7 @@ const count = 0;
 const rank = 1;
 const role = "admin";
 const deepCore = __l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "K9g4_G",
   values: {
     count: count,
@@ -2033,8 +1959,7 @@ exports[`NODE_ENV=production > nested-icu-core > svelte transform 1`] = `
   let role = $state("admin");
 
   const deepCore = $derived($__l4s_translate(
-  /** i18n */
-  {
+  /** i18n */ {
     id: "K9g4_G",
     values: {
       count: count,
@@ -2093,8 +2018,7 @@ exports[`NODE_ENV=production > rich-text-trans > svelte transform 1`] = `
   let name = $state("Ada");
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "9_omjw",
   values: {
     name: name
@@ -2117,8 +2041,7 @@ const role = "admin";
   id: "Y5Pnrw",
   values: {
     0: __l4a_i18n._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "Ro3jDG",
       values: {
         rank: rank,
@@ -2126,8 +2049,7 @@ const role = "admin";
       }
     }),
     1: __l4a_i18n._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "_uwo4-",
       values: {
         rank: rank,
@@ -2135,8 +2057,7 @@ const role = "admin";
       }
     }),
     2: __l4a_i18n._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "OsAInm",
       values: {
         rank: rank,
@@ -2211,13 +2132,11 @@ exports[`NODE_ENV=production > trans-with-deeply-nested-component-icu > svelte t
   let role = $state("admin");
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "Y5Pnrw",
   values: {
     0: __l4s_getI18n()._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "Ro3jDG",
       values: {
         rank: rank,
@@ -2225,8 +2144,7 @@ exports[`NODE_ENV=production > trans-with-deeply-nested-component-icu > svelte t
       }
     }),
     1: __l4s_getI18n()._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "_uwo4-",
       values: {
         rank: rank,
@@ -2234,8 +2152,7 @@ exports[`NODE_ENV=production > trans-with-deeply-nested-component-icu > svelte t
       }
     }),
     2: __l4s_getI18n()._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "OsAInm",
       values: {
         rank: rank,
@@ -2293,8 +2210,7 @@ exports[`NODE_ENV=production > trans-with-plural > svelte transform 1`] = `
   let count = $state(0);
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "BWlbIC",
   values: {
     count: count
@@ -2358,8 +2274,7 @@ exports[`NODE_ENV=production > unicode-adjacent-text > svelte transform 1`] = `
 
 <section>
   前置き😀
-  <L4sRuntimeTrans {.../** i18n */
-  {
+  <L4sRuntimeTrans {.../** i18n */ {
     id: "5u37ZP",
     values: {
       name: name
@@ -2425,8 +2340,7 @@ exports[`NODE_ENV=production > unicode-zwj-adjacent-text > svelte transform 1`] 
 
 <section>
   先頭😀😃😄
-  <L4sRuntimeTrans {.../** i18n */
-  {
+  <L4sRuntimeTrans {.../** i18n */ {
     id: "jlsvLV",
     values: {
       name: name
@@ -2561,60 +2475,50 @@ exports[`NODE_ENV=production > with-id-context-comment-component > svelte transf
   const value = $state("foo");
 </script>
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "with-interpolation-with-id",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "bVvypv",
   values: {
     value: value
   }
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
   }
 }} />
 
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "YYBbrl"
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "YYBbrl"
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "no-interpolation-with-id"
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "SSpjjA"
 }} />
-<L4sRuntimeTrans {.../** i18n */
-{
+<L4sRuntimeTrans {.../** i18n */ {
   id: "YYBbrl"
 }} />"
 `;
@@ -2629,40 +2533,35 @@ __l4a_i18n.prime();
 ---
 
 <p id="v1a">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
   }
 })}</p>
 <p id="v1b">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
   }
 })}</p>
 <p id="v2">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "with-interpolation-with-id",
   values: {
     value: value
   }
 })}</p>
 <p id="v3">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "bVvypv",
   values: {
     value: value
   }
 })}</p>
 <p id="v4">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
@@ -2670,28 +2569,23 @@ __l4a_i18n.prime();
 })}</p>
 
 <p id="p1a">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl"
 })}</p>
 <p id="p1b">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl"
 })}</p>
 <p id="p2">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "no-interpolation-with-id"
 })}</p>
 <p id="p3">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "SSpjjA"
 })}</p>
 <p id="p4">{__l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl"
 })}</p>"
 `;
@@ -2778,40 +2672,35 @@ exports[`NODE_ENV=production > with-id-context-comment-core > svelte transform 1
 </script>
 
 <p id="v1a">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
   }
 })}</p>
 <p id="v1b">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
   }
 })}</p>
 <p id="v2">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "with-interpolation-with-id",
   values: {
     value: value
   }
 })}</p>
 <p id="v3">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "bVvypv",
   values: {
     value: value
   }
 })}</p>
 <p id="v4">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "dBHrOY",
   values: {
     value: value
@@ -2819,28 +2708,23 @@ exports[`NODE_ENV=production > with-id-context-comment-core > svelte transform 1
 })}</p>
 
 <p id="p1a">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl"
 })}</p>
 <p id="p1b">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl"
 })}</p>
 <p id="p2">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "no-interpolation-with-id"
 })}</p>
 <p id="p3">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "SSpjjA"
 })}</p>
 <p id="p4">{$__l4s_translate(
-/** i18n */
-{
+/** i18n */ {
   id: "YYBbrl"
 })}</p>"
 `;

@@ -8,8 +8,7 @@ const selectedPath: string | null = "/資料/レビュー/案内😀.md";
 const relatedPaths = ["/資料/概要.md", "/案内/導入👨‍👩‍👧‍👦.md", "/履歴/更新🙂.md"];
 
 const headline = __l4a_i18n._(
-/** i18n */
-{
+/** i18n */ {
   id: "bzKC4u",
   message: "ようこそ {localeLabel}",
   values: {
@@ -25,14 +24,12 @@ const summary = __l4a_i18n._(
   message: "参照中のパスは {0} で、候補は {1} です。",
   values: {
     0: String(selectedPath ?? __l4a_i18n._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "ggPEgU",
       message: "未設定"
     })),
     1: String(relatedPaths[1] ?? __l4a_i18n._(
-    /** i18n */
-    {
+    /** i18n */ {
       id: "gkv1jV",
       message: "ありません"
     }))
@@ -62,8 +59,7 @@ __l4a_i18n.prime();
       relatedPaths.map((path) => (
         <li class="rounded border px-3 py-2">
           {__l4a_i18n._(
-          /** i18n */
-          {
+          /** i18n */ {
             id: "AUUW5v",
             message: "候補パス: {0}",
             values: {

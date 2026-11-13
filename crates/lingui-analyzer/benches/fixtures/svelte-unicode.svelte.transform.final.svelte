@@ -15,8 +15,7 @@
   ]);
 
   const headline = $derived($__l4s_translate(
-  /** i18n */
-  {
+  /** i18n */ {
     id: "grYdd0",
     message: "ようこそ {readerName}",
     values: {
@@ -33,14 +32,12 @@
       message: "参照中のパスは {0} で、候補は {1} です。",
       values: {
         0: String(selectedPath ?? __l4s_getI18n()._(
-        /** i18n */
-        {
+        /** i18n */ {
           id: "ggPEgU",
           message: "未設定"
         })),
         1: String(relatedPaths[1] ?? __l4s_getI18n()._(
-        /** i18n */
-        {
+        /** i18n */ {
           id: "gkv1jV",
           message: "ありません"
         }))
@@ -55,8 +52,7 @@
   <h1 class="text-2xl font-semibold">{headline}</h1>
   <p class="text-sm">{summary}</p>
   <p class="text-sm">
-    <L4sRuntimeTrans {.../** i18n */
-    {
+    <L4sRuntimeTrans {.../** i18n */ {
       id: "fgdhx6",
       message: "ロケール <0>{localeLabel}</0> で <1>{0}</1> を確認しています。",
       values: {
@@ -72,8 +68,7 @@
     {#each relatedPaths as path}
       <li class="rounded border px-3 py-2">
         {$__l4s_translate(
-        /** i18n */
-        {
+        /** i18n */ {
           id: "AUUW5v",
           message: "候補パス: {0}",
           values: {
