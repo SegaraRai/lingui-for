@@ -1,0 +1,20 @@
+"@lingui-for/framework-core@0.7.3":
+  dir: packages/framework-core
+  intents:
+    - strong-emus-learn
+lingui-for-astro@0.7.3:
+  dir: packages/lingui-for-astro
+  intents:
+    - strong-emus-learn
+lingui-for-svelte@0.7.3:
+  dir: packages/lingui-for-svelte
+  intents:
+    - strong-emus-learn
+unplugin-lingui-macro@0.5.1:
+  dir: packages/unplugin-lingui-macro
+  intents:
+    - strong-emus-learn
+unplugin-markup-import@0.2.3:
+  dir: packages/unplugin-markup-import
+  intents:
+    - strong-emus-learn

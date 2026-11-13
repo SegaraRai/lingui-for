@@ -1,5 +1,14 @@
 # lingui-for-svelte
 
+## 0.7.3
+
+### Patch Changes
+
+- Publish through npm staged publishing from GitHub Actions. A maintainer approves each version with 2FA before npm serves it. This release contains no code changes.
+
+- Updated dependencies:
+  - @lingui-for/framework-core@0.7.3
+
 ## 0.7.2
 
 ### Patch Changes

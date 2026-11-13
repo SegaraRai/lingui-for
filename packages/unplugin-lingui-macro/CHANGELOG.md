@@ -1,5 +1,11 @@
 # unplugin-lingui-macro
 
+## 0.5.1
+
+### Patch Changes
+
+- Publish through npm staged publishing from GitHub Actions. A maintainer approves each version with 2FA before npm serves it. This release contains no code changes.
+
 ## 0.5.0
 
 ### Minor Changes

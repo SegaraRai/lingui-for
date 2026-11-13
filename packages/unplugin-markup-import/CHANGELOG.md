@@ -1,5 +1,11 @@
 # unplugin-markup-import
 
+## 0.2.3
+
+### Patch Changes
+
+- Publish through npm staged publishing from GitHub Actions. A maintainer approves each version with 2FA before npm serves it. This release contains no code changes.
+
 ## 0.2.2
 
 ### Patch Changes
