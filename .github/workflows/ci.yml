@@ -149,7 +149,19 @@ jobs:
       LINGUI_WASM_PREBUILT: "1"
 
     steps:
-      - uses: actions/download-artifact@v8
+      # The built repository artifact is large and its download occasionally stalls;
+      # bound each attempt and retry once instead of hanging until the job timeout.
+      - id: download-built-repository
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        timeout-minutes: 8
+        with:
+          name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
+          path: .
+
+      - if: steps.download-built-repository.outcome != 'success'
+        uses: actions/download-artifact@v8
+        timeout-minutes: 8
         with:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
           path: .
@@ -205,7 +217,19 @@ jobs:
       LINGUI_WASM_PREBUILT: "1"
 
     steps:
-      - uses: actions/download-artifact@v8
+      # The built repository artifact is large and its download occasionally stalls;
+      # bound each attempt and retry once instead of hanging until the job timeout.
+      - id: download-built-repository
+        uses: actions/download-artifact@v8
+        continue-on-error: true
+        timeout-minutes: 8
+        with:
+          name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
+          path: .
+
+      - if: steps.download-built-repository.outcome != 'success'
+        uses: actions/download-artifact@v8
+        timeout-minutes: 8
         with:
           name: ${{ env.BUILT_REPOSITORY_ARTIFACT_NAME }}
           path: .
