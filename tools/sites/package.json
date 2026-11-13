@@ -1,0 +1,15 @@
+{
+  "name": "@lingui-for/internal-tools-sites",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Static site preparation and Cloudflare deployments for the docs.",
+  "type": "module",
+  "devDependencies": {
+    "@cloudflare/build-output-utils": "^0.9.12",
+    "@cloudflare/config": "^0.32.0",
+    "@types/node": "catalog:",
+    "cf": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

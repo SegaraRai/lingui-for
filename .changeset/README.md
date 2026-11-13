@@ -1,11 +1,13 @@
-# Changesets
+# Change intents
 
-This directory contains changesets for the lingui-for packages.
+This directory contains the pending change intents for the lingui-for packages and
+`ledger.yaml`, which records the intents that each released version consumed.
 
-To add a changeset, run:
+To record a change intent, run:
 
 ```sh
-vp exec changeset
+vp exec pnpm change
 ```
 
-See the [Changesets documentation](https://github.com/changesets/changesets) for more details.
+`vp exec pnpm change status` shows the release plan. See [Releases](../CONTRIBUTING.md#releases)
+for the release process.

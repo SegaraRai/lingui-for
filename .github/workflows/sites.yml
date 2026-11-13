@@ -1,0 +1,127 @@
+name: Sites
+
+on:
+  push:
+    branches: [main, stable]
+  pull_request:
+    branches: [main, stable]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # `stable` builds production. A pull request builds its own Preview origin, and any other ref
+  # builds the `main` Preview origin.
+  PUBLIC_SITE_URL: ${{ github.ref == 'refs/heads/stable' && 'https://lingui-for.roundtrip.dev/' || (github.event_name == 'pull_request' && format('https://pr-{0}.lingui-for-preview.roundtrip.dev/', github.event.pull_request.number) || 'https://main.lingui-for-preview.roundtrip.dev/') }}
+  SITE_DEPLOYMENT: ${{ github.ref == 'refs/heads/stable' && 'production' || 'preview' }}
+  CF_SEND_TELEMETRY: "false"
+
+jobs:
+  build:
+    name: Build and verify
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 30
+
+    concurrency:
+      group: sites-build-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Rust
+        run: rustup install stable
+
+      # Production builds must not depend on a cache that another run saved.
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: ${{ github.ref != 'refs/heads/stable' }}
+          run-install: false
+
+      - run: vp install --frozen-lockfile
+
+      - run: vp run build:wasm
+
+      - name: Check the site tools
+        run: |
+          vp run @lingui-for/internal-tools-sites#check
+          vp run @lingui-for/internal-tools-sites#test
+
+      - name: Build and check the docs
+        run: |
+          vp run @lingui-for/internal-tools-sites#check:urls
+          vp run @lingui-for/internal-tools-sites#prepare
+
+      - name: Validate production deploy
+        if: github.ref == 'refs/heads/stable'
+        run: vp run --ignore-depends-on @lingui-for/internal-tools-sites#check:production
+
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: sites-${{ github.sha }}
+          path: .deploy/docs/.cloudflare/output/v0/
+          overwrite: true
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  deploy:
+    name: Deploy docs
+    needs: build
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/stable')
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 15
+
+    environment:
+      name: ${{ github.ref == 'refs/heads/stable' && 'sites-production' || 'sites-preview' }}
+      url: ${{ steps.publish.outputs.url }}
+
+    concurrency:
+      group: sites-deploy
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check branch head
+        id: head
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current_sha=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$GITHUB_REF_NAME" --jq '.object.sha')
+          if [ "$current_sha" = "$GITHUB_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'This run is obsolete because the branch has a newer commit.' >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      # The deployment needs only `cf` and its Build Output libraries, and runs no install script.
+      - name: Install deployment tools
+        run: vp i --frozen-lockfile --ignore-scripts --filter @lingui-for/internal-tools-sites
+
+      - uses: actions/download-artifact@v8.0.2
+        with:
+          name: sites-${{ github.sha }}
+          path: .deploy/docs/.cloudflare/output/v0/
+
+      - name: Publish and check the docs
+        id: publish
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node tools/sites/deploy.ts docs "$GITHUB_REF_NAME"

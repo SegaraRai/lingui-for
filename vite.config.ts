@@ -119,11 +119,6 @@ export default defineConfig({
           input: [{ auto: true }],
         },
       },
-      release: {
-        command: "vp exec changeset publish",
-        dependsOn: ["build"],
-        cache: false,
-      },
     },
   },
 });

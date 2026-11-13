@@ -1,11 +1,6 @@
 {
   "name": "lingui-for-workspace",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "examples/*",
-    "packages/*"
-  ],
   "type": "module",
   "scripts": {
     "dev:e2e-svelte": "vp run --filter e2e-svelte dev",
@@ -15,12 +10,9 @@
     "preview:e2e-astro": "vp run --filter e2e-astro preview",
     "preview:docs": "vp run --filter docs preview",
     "test:rust": "cargo test",
-    "changeset": "changeset",
     "prepare": "vp config"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^1.0.1",
-    "@changesets/cli": "^3.0.3",
     "@stillwind/cli": "catalog:",
     "@types/node": "catalog:",
     "playwright": "catalog:",
@@ -30,5 +22,12 @@
     "vite-plus": "catalog:",
     "wasm-pack": "^0.15.1"
   },
-  "packageManager": "pnpm@12.2.1"
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.18.0",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.18.0"
 }

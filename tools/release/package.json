@@ -1,0 +1,12 @@
+{
+  "name": "@lingui-for/internal-tools-release",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Release scripts for the lingui-for workflows.",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:",
+    "vite-plus": "catalog:"
+  }
+}

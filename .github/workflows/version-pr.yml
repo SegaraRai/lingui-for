@@ -1,0 +1,77 @@
+name: Version PR
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".changeset/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: version-pr
+  cancel-in-progress: true
+
+env:
+  VERSION_BRANCH: version/main
+  VERSION_LABEL: release
+
+jobs:
+  version-pr:
+    name: Update the version pull request
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version-file: ".node-version"
+          cache: false
+          run-install: false
+
+      - run: vp i --frozen-lockfile --ignore-scripts --filter lingui-for-workspace
+
+      - name: Update the version branch and its pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # A later push replaces the branch, so the pull request always contains one version
+        # commit on top of `main`.
+        run: |
+          remote="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          # `.changeset/README.md` is not a change intent.
+          if ! find .changeset -maxdepth 1 -name '*.md' ! -name README.md | grep --quiet .; then
+            if git ls-remote --exit-code --heads "$remote" "$VERSION_BRANCH" > /dev/null; then
+              git push "$remote" --delete "$VERSION_BRANCH"
+            fi
+            exit 0
+          fi
+
+          plan=$(vp exec pnpm change status)
+          vp exec pnpm version -r
+          title="chore(release): version packages"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch --create "$VERSION_BRANCH"
+          git add --all
+          git commit --message "$title"
+          git push --force "$remote" "$VERSION_BRANCH"
+
+          printf 'Merging this pull request starts the Release workflow.\n\n```text\n%s\n```\n' "$plan" > "$RUNNER_TEMP/body.md"
+          number=$(gh pr list --head "$VERSION_BRANCH" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$number" ]; then
+            gh pr edit "$number" --title "$title" --body-file "$RUNNER_TEMP/body.md" --add-label "$VERSION_LABEL"
+          else
+            gh pr create --base main --head "$VERSION_BRANCH" --title "$title" --body-file "$RUNNER_TEMP/body.md" --label "$VERSION_LABEL"
+          fi

@@ -2,6 +2,6 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
-    projects: ["packages/*", "apps/*", "examples/*"],
+    projects: ["packages/*", "apps/*", "examples/*", "tools/*"],
   },
 });
